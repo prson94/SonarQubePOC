@@ -1,0 +1,130 @@
+﻿@{
+    var title = ViewBag.Title;
+    
+    var type = ViewBag.Type;
+    var id = ViewBag.ID;
+    
+    var targetType = ViewBag.TargetType;
+    var targetID = ViewBag.TargetID;
+    
+    var parentAttributeID = ViewBag.ParentAttributeID;
+}
+<div class="large-overlay">
+    <div class="ui segment">
+        <h4>@(title)</h4>
+        <div class="form-instructions"></div>
+        <div class="row">
+            <div class="col s12">
+                <div id="RelationshipAggregatesOverlayGrid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var roagType = "@(type)";
+    var roagID = @(id);
+    var roagTargetType = "@targetType";
+    var roagTargetID = @(targetID);
+    var roagParentAttributeID = @(parentAttributeID);
+
+    $(function () {
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        //#region Main Grid
+
+        var fields = [
+            {name: 'FusionAttribute', type: 'string'},
+            {name: 'FusionAttributeTextPath', type: 'string'},
+            {name: 'FusionAttributeID', type: 'number'},
+            {name: 'FusionAttributeType', type: 'string'}
+        ];
+        var columns = [
+            {
+                datafield: "FusionAttributeType", text: "Attribute Type", width: '10%', filtertype: 'checkedlist'
+            },
+            {
+                datafield: "FusionAttributeTextPath", text: "Attribute", width: '30%'//,
+                //cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                //    return previewLinkRenderer(data.FusionAttributeType, data.FusionAttributeID, '', data.FusionAttributeTextPath);
+                //}
+            }
+        ];
+
+        switch(roagTargetType) {
+            case 'IntersectType':
+                fields.push({name: 'SourceID', type: 'number'});
+                fields.push({name: 'SourceType', type: 'string'});
+                fields.push({name: 'SourceName', type: 'string'});
+                fields.push({name: 'SourceTypeName', type: 'string'});
+                fields.push({name: 'SourceUrl', type: 'string'});
+                fields.push({name: 'TargetUrl', type: 'string'});
+
+                columns.push({ datafield: "SourceTypeName", text: "Target Side 1 Type", width: '10%', filtertype: 'checkedlist' });
+                columns.push({
+                    datafield: "SourceName", text: "Target Side 1 Name", width: '20%'//,
+                    //cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    //    return previewLinkRenderer(data.SourceType, data.SourceID, data.SourceUrl, data.SourceName);
+                    //}
+                });
+                columns.push({ datafield: "TargetTypeName", text: "Target Side 2 Type", width: '10%', filtertype: 'checkedlist' });
+                columns.push({
+                    datafield: "TargetName", text: "Target Side 2 Name", width: '20%'//,
+                    //cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    //    return previewLinkRenderer(data.TargetType, data.TargetID, data.TargetUrl, data.TargetName);
+                    //}
+                });
+                break;
+            default:
+                columns.push({ datafield: "TargetTypeName", text: "Target Type", width: '20%', filtertype: 'checkedlist' });
+                columns.push({
+                    datafield: "TargetName", text: "Target Name", width: '40%'//,
+                    //cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    //    return previewLinkRenderer(data.TargetType, data.TargetID, data.TargetUrl, data.TargetName);
+                    //}
+                });
+                break;
+        }
+
+        fields.push({name: 'TargetID', type: ''});
+        fields.push({name: 'TargetType', type: ''});
+        fields.push({name: 'TargetName', type: ''});
+        fields.push({name: 'TargetTypeID', type: ''});
+        fields.push({name: 'TargetTypeName', type: ''});
+        fields.push({name: 'TargetUrl', type: ''});
+
+
+        var RelationshipAggregatesOverlaySource = {
+            datatype: 'json',
+            url: '/services/relationships/' + roagType + '/' + roagID + '/' + roagTargetType + '/' + roagTargetID + '/' + roagParentAttributeID,
+            datafields: fields
+        };
+
+        var RelationshipAggregatesOverlayAdapter = new $.jqx.dataAdapter(RelationshipAggregatesOverlaySource);
+
+        try {
+            $('#RelationshipAggregatesOverlayGrid').jqxGrid({
+                altrows: true,
+                autoheight: true,
+                columnsresize: true,
+                width: grid_width,
+                showheader: true,
+                showfilterrow: true,
+                sortable: true,
+                filterable: true,
+                pageable: true,
+                source: RelationshipAggregatesOverlayAdapter,
+                theme: theme,
+                columns: columns
+            });
+        } catch (e) {
+        }
+
+        $('#RelationshipAggregatesOverlayGrid').on('rowselect', function (event) {
+            var row = event.args.row;
+            //technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
+        });
+
+        //#endregion
+    });
+</script>

@@ -1,0 +1,55 @@
+﻿@model d360.core.entities.ObjectModel
+<div class="tile tile-detail">
+    <header>Audit</header>
+    <div id="AuditPart"></div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var auditType = '@(Model.ObjectType)';
+        var auditID = '@(Model.ObjectID)';
+
+        var auditResourceNameRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            return textrenderer("<a href='#/resources/" + data.CreatingResourceID + "'>" + data.CreatingResourceName + "</a>");
+        }
+
+        var sourceAudit = {
+            datafields: [
+                { name: 'FieldName' },
+                { name: 'FieldValue' },
+                { name: 'Version' },
+                { name: 'Status' },
+                { name: 'CreatingResourceID' },
+                { name: 'CreatingResourceName' },
+                { name: 'DateCreated' }
+            ],
+            datatype: "json",
+            url: '/api/' + auditType + '/' + auditID + '/audit'
+        };
+
+        var auditAdapter = new $.jqx.dataAdapter(sourceAudit);
+
+        $('#AuditPart').jqxGrid({
+            altrows: true,
+            theme: list_theme,
+            source: auditAdapter,
+            groupable: true,
+            sortable: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            filterable: true,
+            showfilterrow: true,
+            width: grid_width,
+            autoheight: true,
+            columns: [
+                { datafield: "FieldName", text: "Field", width: 125 },
+                { datafield: "FieldValue", text: "Value" },
+                { datafield: "Version", text: "Version", width: 75 },
+                { datafield: "Status", text: "Status", width: 75 },
+                { datafield: "CreatingResourceName", text: "Updated By", width: 125, cellsrenderer: auditResourceNameRenderer },
+                { datafield: "DateCreated", text: "Updated On", width: 150 }
+            ]
+        });
+
+    });
+</script>

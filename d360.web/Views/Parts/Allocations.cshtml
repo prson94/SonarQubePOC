@@ -1,0 +1,136 @@
+﻿@using d360.core;
+@model d360.core.entities.ObjectModel
+<div id="Allocations"></div>
+<script type="text/javascript">
+    $(function () {
+        var allocationContext = "";
+        var type = "@(Model.ObjectType)";
+        var id = @(Model.ObjectID);
+        var fields = [];
+        var columns = [];
+
+        var AttributeTypeValue = "@(SystemObjects.AttributeType)";
+        var StatisticTypeValue = "@(SystemObjects.StatisticType)";
+        var SynonymTypeValue = "@(SystemObjects.SynonymType)";
+
+        var allocationtoolsrenderer = function (index, datafield, value, defaultvalue, column, data) {
+            var tools = [];
+
+            switch(allocationContext) {
+                case contextList.AttributeTypeRelation:
+                    tools = [
+                        { icon: 'pencil', urlprefix: '/form/EditAttributeTypeRelation?id=' + data.AttributeTypeID + "&objectType=" + data.ObjectType + "&objectTypeID=" + data.ObjectID },
+                        { icon: 'trash-o', urlprefix: '/form/DeleteAttributeTypeRelation?id=' + data.AttributeTypeID + "&objectType=" + data.ObjectType + "&objectTypeID=" + data.ObjectID }
+                    ];
+                    break;
+                case contextList.StatisticTypeRelation:
+                    tools = [
+                        { icon: 'pencil', urlprefix: '/form/EditStatisticTypeRelation?id=' + data.StatisticTypeID + "&objectType=" + data.ObjectType + "&objectTypeID=" + data.ObjectID },
+                        { icon: 'trash-o', urlprefix: '/form/DeleteStatisticTypeRelation?id=' + data.StatisticTypeID + "&objectType=" + data.ObjectType + "&objectTypeID=" + data.ObjectID }
+                    ];
+                    break;
+                case contextList.SynonymTypeRelation:
+                    tools = [
+                        { icon: 'trash-o', urlprefix: '/form/DeleteSynonymTypeRelation?synonymTypeID=' + data.SynonymTypeID + "&type=" + data.ObjectType + "&id=" + data.ObjectID }
+                    ];
+                    break;
+            }
+            return renderToolsHtml(value, tools, allocationContext);
+        }
+
+        switch(type)
+        {
+            case AttributeTypeValue:
+                allocationContext = "@(ContextList.AttributeTypeRelation)";
+                fields  = [
+                    { name: 'ObjectID' },
+                    { name: 'AttributeTypeID' },
+                    { name: 'ObjectName' },
+                    { name: 'ObjectType' },
+                    { name: 'AllowMultipleEntries' }
+                ];
+                columns = [
+                    { text: 'Object Type', dataField: 'ObjectType' },
+                    { text: 'Object Name', dataField: 'ObjectName' },
+                    { text: 'Allow Multiple Entries?', dataField: 'AllowMultipleEntries', width: 125, cellsrenderer: booleanrenderer },
+                    { text: '', dataField: 'AttributeTypeID', width: 80, filterable: false, cellsrenderer: allocationtoolsrenderer }
+                ];
+                break;
+            case StatisticTypeValue:
+                allocationContext = "@(ContextList.StatisticTypeRelation)";
+                fields  = [
+                    { name: 'ObjectID' },
+                    { name: 'StatisticTypeID' },
+                    { name: 'ObjectName' },
+                    { name: 'ObjectType' },
+                    { name: 'Score' }
+                ];
+                columns = [
+                    { text: 'Object Type', dataField: 'ObjectType' },
+                    { text: 'Object Name', dataField: 'ObjectName' },
+                    { text: 'Score', dataField: 'Score', width: 75 },
+                    { text: '', dataField: 'StatisticTypeID', width: 80, filterable: false, cellsrenderer: allocationtoolsrenderer }
+                ];
+                break;
+            case SynonymTypeValue:
+                allocationContext = "@(ContextList.SynonymTypeRelation)";
+                fields  = [
+                    { name: 'ObjectID' },
+                    { name: 'SynonymTypeID' },
+                    { name: 'ObjectName' },
+                    { name: 'ObjectType' },
+                    { name: 'TypeName' },
+                ];
+                columns = [
+                    { text: 'Object Type', dataField: 'ObjectType' },
+                    { text: 'Object Name', dataField: 'ObjectName' },
+                    { text: '', dataField: 'SynonymTypeID', width: 80, filterable: false, cellsrenderer: allocationtoolsrenderer }
+                ];
+                break;
+        }
+
+        //#region Grid
+
+        var srcAllocationsGrid = {
+            datatype: 'json',
+            url: '/api/' + type + '/' + id + '/allocations',
+            datafields: fields
+        };
+
+        var adapterAllocationsGrid = new $.jqx.dataAdapter(srcAllocationsGrid);
+
+        $("#Allocations").jqxGrid({
+            width: grid_width,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pageable: true,
+            altrows: true,
+            columnsresize: true,
+            source: adapterAllocationsGrid,
+            theme: list_theme,
+            columns: columns
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case allocationContext:
+                        $('#Allocations').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("Allocations", e);
+            }
+        });
+
+        //#endregion
+    });
+</script>

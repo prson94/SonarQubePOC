@@ -1,0 +1,47 @@
+﻿<div class="row">
+    <div class="col s12 m3 l3">
+        <div class="tile tile-detail" style="margin-bottom: 15px">
+            <div id="PolicyRuleGrid"></div>
+        </div>
+        <div id="FieldsWrapper" class="tile tile-detail" style="display:none; margin-bottom: 15px">
+            <div class="header">Rule Fields</div>
+            <div>
+                <div id="Fields"></div>
+            </div>
+        </div>
+        <div id="ResponsibilitiesWrapper" class="tile tile-detail" style="display:none; margin-bottom: 15px">
+            <div>Responsibilities</div>
+            <div><div id="Responsibilities"></div></div>
+        </div>
+    </div>
+    <div class="col s12 m9 l9">
+
+        <div class="row">
+            <div class="col s12 m8 l8">
+                <div class="tile tile-detail">
+                    <div class="row">
+                        <div class="col s12 m12 l4">
+                            <div id="EventStatusChart"></div>
+                        </div>
+                        <div class="col s12 m12 l4">
+                            <div id="EventAgeChart"></div>
+                        </div>
+                        <div class="col s12 m12 l4">
+                            <div id="EventCriticalityChart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m4 l4">
+                <div id="StatisticsTile" class="tile tile-detail" style="height: 100%" data-bind="template: {name: 'policyRuleStatisticsTileTmpl' }"></div>
+            </div>
+        </div>
+
+        <div id="EventHeadersTile" class="tile tile-detail" style="margin-bottom: 15px"></div>
+
+        <div id="EventsTile" class="tile tile-detail" style="margin-bottom: 15px"></div>
+
+        <div id="AttributesTile" class="tile tile-detail"></div>
+
+    </div>
+</div>

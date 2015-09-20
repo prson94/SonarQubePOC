@@ -1,0 +1,82 @@
+﻿/* Common app styling */
+
+/* Main Primary color */
+/* Main Secondary color (1) */
+/* Main Secondary color (2) */
+/* Main Complement color */
+body {
+  font-size: 11px;
+  font-family: 'segoe ui', arial, sans-serif;
+}
+#content-header {
+  background: #3979a2;
+  color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding-left: 25px;
+  padding-top: 15px;
+  font-size: 20px;
+  line-height: 20px;
+  height: 50px;
+  /* Fixed header height */
+  overflow: hidden;
+  /* Disable scrollbars for header */
+
+}
+#content-main {
+  background: white;
+  position: fixed;
+  top: 50px;
+  /* Same value as #content-header's height */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  /* Enable scrollbars within main content section */
+
+}
+.padding {
+  padding: 15px;
+}
+#notification-message {
+  background-color: #818285;
+  color: white;
+  position: absolute;
+  width: 100%;
+  min-height: 80px;
+  right: 0;
+  z-index: 100;
+  bottom: 0;
+  display: none;
+  /* Hidden until invoked */
+
+}
+#notification-message #notification-message-header {
+  font-size: medium;
+  margin-bottom: 10px;
+}
+#notification-message #notification-message-close {
+  background-image: url("images/Close.png");
+  background-repeat: no-repeat;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  cursor: pointer;
+}
+.jqx-widget-metro .jqx-grid-column-header-metro,
+.jqx-grid-cell-metro,
+.jqx-widget-metro .jqx-grid-cell-metro,
+.jqx-widget-metro .jqx-grid-group-cell-metro,
+.jqx-grid-group-cell-metro {
+  font-size: 10px !important;
+  font-family: 'segoe ui', arial, sans-serif;
+  border-color: #f0f0f0;
+}
+.jqx-listbox {
+  font-size: 10px !important;
+  font-family: 'segoe ui', arial, sans-serif;
+}

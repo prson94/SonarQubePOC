@@ -1,0 +1,137 @@
+﻿@using Syncfusion.Mvc.Shared
+@using Syncfusion.Mvc.Diagram
+@using d360.web.Models
+@model d360.core.entities.IntersectContextMap
+@{
+    var height = 150;
+    var list = new List<LineageDiagramItem>();
+    string connector = "Straight";
+    string background = "#ebebeb";
+    string fontColor = "#666";//"#159ED9"
+    string borderColor = "#666";
+    string borderWidth = "3";
+    string shape = Syncfusion.Mvc.Diagram.Shapes.Ellipse.ToString();
+
+    var legendBoostrapColumn = 1;
+    var legendItems = new Dictionary<string, string>();
+
+    if (Model != null)
+    {
+        list.Add(new LineageDiagramItem
+        {
+            Connector = connector,
+            Background = background,
+            FontColor = fontColor,
+            BorderColor = borderColor,
+            BorderWidth = borderWidth,
+            Shape = shape,
+            ID = Model.IntersectID.ToString(),
+            ParentID = null,
+            Text = Model.Name,
+            Height = 100,
+            Width = 100
+        });
+        if (Model.Items != null)
+        {
+            Model.Items.ForEach(r =>
+            {
+                if (r.Items.Count > 0)
+                {
+                    legendBoostrapColumn += 1;
+                    if (!string.IsNullOrEmpty(r.Role))
+                        legendItems.Add(r.Role, r.RoleFontColor);
+                    //list.Add(new LineageDiagramItem
+                    //{
+                    //    Connector = connector,
+                    //    Background = background,
+                    //    FontColor = r.FontColor,
+                    //    BorderColor = borderColor,
+                    //    BorderWidth = borderWidth,
+                    //    Shape = shape,
+                    //    Height = 75,
+                    //    ID = r.RoleID.ToString(),
+                    //    ParentID = Model.IntersectID.ToString(),
+                    //    Text = r.Role,
+                    //    Width = 75
+                    //});
+                    r.Items.ForEach(i =>
+                    {
+                        list.Add(new LineageDiagramItem
+                        {
+                            Connector = connector,
+                            Background = background,
+                            FontColor = r.RoleFontColor ?? fontColor,
+                            BorderColor = borderColor,
+                            BorderWidth = borderWidth,
+                            Shape = shape,
+                            Height = 100,
+                            ID = i.IntersectID.ToString(),
+                            ParentID = Model.IntersectID.ToString(),//r.RoleID.ToString(),
+                            Text = i.Name,
+                            Width = 100
+                        });
+                        i.Domains.ForEach(d =>
+                        {
+                            height += 75;
+
+                            list.Add(new LineageDiagramItem
+                            {
+                                Connector = connector,
+                                Background = background,
+                                FontColor = fontColor,
+                                BorderColor = borderColor,
+                                BorderWidth = borderWidth,
+                                Height = 30,
+                                ID = string.Format("{0}_{1}", i.IntersectID, d.Code),
+                                ParentID = i.IntersectID.ToString(),
+                                Shape = Syncfusion.Mvc.Diagram.Shapes.RoundedRectangle.ToString(),
+                                Text = string.Format("{0} : {1}", d.List, d.Code),
+                                Width = 250
+                            });
+                        });
+                    });
+                }
+            });
+        }    
+    }
+    
+    legendBoostrapColumn = (int)Math.Floor((decimal)12/legendBoostrapColumn);
+    var legendHtml = "<div class='row'>";
+    foreach (var k in legendItems.Keys)
+    {
+        legendHtml += string.Format("<div class='col-lg-{2} col-md-{2} col-sm-{2} col-xs-{2}' style='color:{1}'>{0} Relationships</div>", k, legendItems[k], legendBoostrapColumn);
+    }
+    legendHtml += "</div>";
+}
+<div class="well">
+    <h4>Legend</h4>
+    @Html.Raw(legendHtml)
+</div>
+@{
+    Html.Syncfusion()
+        .Diagram("FlatDiagram")
+        .BindTo(bt =>
+            bt.NodeId("ID")
+            .ParentNodeId("ParentID")
+            .NodeText("Text")
+            .NodeShape("Shape")
+            .BorderWidth("BorderWidth")
+            .BorderColor("BorderColor")
+            .LabelFontColor("FontColor")
+            .BackgroundColor("Background")
+            .ConnectorType("Connector")
+            .Height("Height")
+            .Width("Width")
+            //.LineText("")
+        )
+        .LayoutType(LayoutType.HierarchicalTreeLayout)
+        .Orientation(TreeOrientation.LeftRight)
+        .DataSource(list)
+        .BackgroundColor("transparent")
+        .BorderWidth(0).BorderColor("transparent")
+        .ModelHeight(System.Web.UI.WebControls.Unit.Pixel(height))
+        .ModelWidth(System.Web.UI.WebControls.Unit.Percentage(100))
+        .Height(System.Web.UI.WebControls.Unit.Pixel(height+25))
+        .Width(System.Web.UI.WebControls.Unit.Percentage(100))
+        .Render();
+}

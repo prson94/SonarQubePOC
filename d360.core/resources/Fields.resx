@@ -1,0 +1,1146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Action_Description" xml:space="preserve">
+    <value>The action or event that triggers this template.</value>
+  </data>
+  <data name="Action_Name" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="Active_Description" xml:space="preserve">
+    <value>Indicates whether this item is in an active state.</value>
+  </data>
+  <data name="Active_Name" xml:space="preserve">
+    <value>Is active?</value>
+  </data>
+  <data name="AllowEventNotification_Description" xml:space="preserve">
+    <value>Should changes generate an event notification?</value>
+  </data>
+  <data name="AllowEventNotification_Name" xml:space="preserve">
+    <value>Allow Event Notification</value>
+  </data>
+  <data name="AllowMultipleEntries_Description" xml:space="preserve">
+    <value>May this attribute be assigned to the underlying item multiple times?</value>
+  </data>
+  <data name="AllowMultipleEntries_Name" xml:space="preserve">
+    <value>Allow multiple entries?</value>
+  </data>
+  <data name="AllowMultiple_Description" xml:space="preserve">
+    <value>The setting for this item.</value>
+  </data>
+  <data name="AllowMultiple_Name" xml:space="preserve">
+    <value>Allow multiple instances?</value>
+  </data>
+  <data name="AllowOptions_Description" xml:space="preserve">
+    <value>Does this response allow for selecting a predefined option?</value>
+  </data>
+  <data name="AllowOptions_Name" xml:space="preserve">
+    <value>Allow options?</value>
+  </data>
+  <data name="AllowValueOverride_Description" xml:space="preserve">
+    <value>Does this response allow for overriding a predefined option with a custom value?</value>
+  </data>
+  <data name="AllowValueOverride_Name" xml:space="preserve">
+    <value>Allow custom value?</value>
+  </data>
+  <data name="ArtifactType_Description" xml:space="preserve">
+    <value>The type of artifact.</value>
+  </data>
+  <data name="ArtifactType_ErrorRequired" xml:space="preserve">
+    <value>Artifact type is a required field.</value>
+  </data>
+  <data name="ArtifactType_Name" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Artifact_Description" xml:space="preserve">
+    <value>Artifact</value>
+  </data>
+  <data name="Artifact_Name" xml:space="preserve">
+    <value>Artifact</value>
+  </data>
+  <data name="Assignable_Description" xml:space="preserve">
+    <value>Is item assignable?</value>
+  </data>
+  <data name="Assignable_Name" xml:space="preserve">
+    <value>Assignable?</value>
+  </data>
+  <data name="AttributeType_Description" xml:space="preserve">
+    <value>The selected attribute type.</value>
+  </data>
+  <data name="AttributeType_Name" xml:space="preserve">
+    <value>Attribute Type</value>
+  </data>
+  <data name="Body_Description" xml:space="preserve">
+    <value>The content/body for this item.</value>
+  </data>
+  <data name="Body_ErrorRequired" xml:space="preserve">
+    <value>Body is a required field.</value>
+  </data>
+  <data name="Body_Name" xml:space="preserve">
+    <value>Body</value>
+  </data>
+  <data name="SourcingApplies_Description" xml:space="preserve">
+    <value>Items of this type can inherit sourcing information and optionally override sourcing.</value>
+  </data>
+  <data name="SourcingApplies_Name" xml:space="preserve">
+    <value>Sourcing Applies?</value>
+  </data>
+  <data name="CheckType_Description" xml:space="preserve">
+    <value>The type of check this analytic should perform for the target object.</value>
+  </data>
+  <data name="CheckType_Name" xml:space="preserve">
+    <value>Check Type</value>
+  </data>
+  <data name="Check_PropertyName_Description" xml:space="preserve">
+    <value>The property of the target item to check.</value>
+  </data>
+  <data name="Check_PropertyName_Name" xml:space="preserve">
+    <value>Property to Check</value>
+  </data>
+  <data name="Check_PropertyValue_Description" xml:space="preserve">
+    <value>The value of the target item's property.</value>
+  </data>
+  <data name="Check_PropertyValue_Name" xml:space="preserve">
+    <value>Property Value to Validate</value>
+  </data>
+  <data name="Check_SQL_Description" xml:space="preserve">
+    <value>The SQL query to perform for this check.  The SQL query must return a boolean (bit) true or false.  Only SELECT statements are allowed.</value>
+  </data>
+  <data name="Check_SQL_Name" xml:space="preserve">
+    <value>SQL Query</value>
+  </data>
+  <data name="Check_ValueEnd_Description" xml:space="preserve">
+    <value>The end value of the value range to check.</value>
+  </data>
+  <data name="Check_ValueEnd_Name" xml:space="preserve">
+    <value>End Value to Check</value>
+  </data>
+  <data name="Check_ValueStart_Description" xml:space="preserve">
+    <value>The start value of the value range to check.</value>
+  </data>
+  <data name="Check_ValueStart_Name" xml:space="preserve">
+    <value>Start Value to Check</value>
+  </data>
+  <data name="Check_Value_Description" xml:space="preserve">
+    <value>The value to check for.</value>
+  </data>
+  <data name="Check_Value_Name" xml:space="preserve">
+    <value>Value to Check</value>
+  </data>
+  <data name="Code_Description" xml:space="preserve">
+    <value>The code for this item.</value>
+  </data>
+  <data name="Code_Name" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="CommentCount_Description" xml:space="preserve">
+    <value>The # of comments for this item.</value>
+  </data>
+  <data name="CommentCount_Name" xml:space="preserve">
+    <value># Comments</value>
+  </data>
+  <data name="Company_Description" xml:space="preserve">
+    <value>The assigned company for this item.</value>
+  </data>
+  <data name="Company_ErrorRequired" xml:space="preserve">
+    <value>Company is a required field.</value>
+  </data>
+  <data name="Company_Name" xml:space="preserve">
+    <value>Company</value>
+  </data>
+  <data name="CreatingResource_Description" xml:space="preserve">
+    <value>The resource who created this item.</value>
+  </data>
+  <data name="CreatingResource_Name" xml:space="preserve">
+    <value>Created by</value>
+  </data>
+  <data name="CurrentDescription_Description" xml:space="preserve">
+    <value>What is Going Wrong?</value>
+  </data>
+  <data name="CurrentDescription_ErrorRequired" xml:space="preserve">
+    <value>What is Going Wrong? is a required field.</value>
+  </data>
+  <data name="CurrentDescription_Name" xml:space="preserve">
+    <value>What is Going Wrong?</value>
+  </data>
+  <data name="DatabaseName_Description" xml:space="preserve">
+    <value>The name of the database for your account.</value>
+  </data>
+  <data name="DatabaseName_ErrorRequired" xml:space="preserve">
+    <value>Database name is a required field.</value>
+  </data>
+  <data name="DatabaseName_Name" xml:space="preserve">
+    <value>Database name</value>
+  </data>
+  <data name="DatabasePassword_Description" xml:space="preserve">
+    <value>The password used to connect to your database.</value>
+  </data>
+  <data name="DatabasePassword_ErrorRequired" xml:space="preserve">
+    <value>Database password is a required field.</value>
+  </data>
+  <data name="DatabasePassword_Name" xml:space="preserve">
+    <value>Database password</value>
+  </data>
+  <data name="DatabaseServer_Description" xml:space="preserve">
+    <value>The server name of the database for your account.</value>
+  </data>
+  <data name="DatabaseServer_ErrorRequired" xml:space="preserve">
+    <value>Database server is a required field.</value>
+  </data>
+  <data name="DatabaseServer_Name" xml:space="preserve">
+    <value>Database server</value>
+  </data>
+  <data name="DatabaseUsername_Description" xml:space="preserve">
+    <value>The username used to connect to your database.</value>
+  </data>
+  <data name="DatabaseUsername_ErrorRequired" xml:space="preserve">
+    <value>Database username is a required field.</value>
+  </data>
+  <data name="DatabaseUsername_Name" xml:space="preserve">
+    <value>Database username</value>
+  </data>
+  <data name="DateCreated_Description" xml:space="preserve">
+    <value>The date this item was created.</value>
+  </data>
+  <data name="DateCreated_Name" xml:space="preserve">
+    <value>Created on</value>
+  </data>
+  <data name="DateLastLoggedIn_Description" xml:space="preserve">
+    <value>The date this resource last logged in.</value>
+  </data>
+  <data name="DateLastLoggedIn_Name" xml:space="preserve">
+    <value>Last logged in on</value>
+  </data>
+  <data name="DateUpdated_Description" xml:space="preserve">
+    <value>The date this item was last updated.</value>
+  </data>
+  <data name="DateUpdated_Name" xml:space="preserve">
+    <value>Last updated on</value>
+  </data>
+  <data name="Definition_Description" xml:space="preserve">
+    <value>This item's definition</value>
+  </data>
+  <data name="Definition_Name" xml:space="preserve">
+    <value>Definition</value>
+  </data>
+  <data name="Description_Description" xml:space="preserve">
+    <value>The description for this item.</value>
+  </data>
+  <data name="Description_ErrorRequired" xml:space="preserve">
+    <value>Description is a required field.</value>
+  </data>
+  <data name="Description_Name" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="DomainPrefix_Description" xml:space="preserve">
+    <value>The domain prefix for your account.</value>
+  </data>
+  <data name="DomainPrefix_ErrorRequired" xml:space="preserve">
+    <value>Domain prefix is a required field.</value>
+  </data>
+  <data name="DomainPrefix_Name" xml:space="preserve">
+    <value>Domain Prefix</value>
+  </data>
+  <data name="Email_Description" xml:space="preserve">
+    <value>The email for this resource.</value>
+  </data>
+  <data name="Email_ErrorRegex" xml:space="preserve">
+    <value>Email contains characters that are not allowed.</value>
+  </data>
+  <data name="Email_ErrorRequired" xml:space="preserve">
+    <value>Email is a required field.</value>
+  </data>
+  <data name="Email_Name" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Enabled_Description" xml:space="preserve">
+    <value>Is this item enabled for use?</value>
+  </data>
+  <data name="Enabled_Name" xml:space="preserve">
+    <value>Enabled?</value>
+  </data>
+  <data name="EnforceParentItemSelection_Description" xml:space="preserve">
+    <value>Enforce parent item selection?</value>
+  </data>
+  <data name="EnforceParentItemSelection_Name" xml:space="preserve">
+    <value>Enforce parent item selection?</value>
+  </data>
+  <data name="ExceptionLogCount_Description" xml:space="preserve">
+    <value>The number of logs associated with this exception</value>
+  </data>
+  <data name="ExceptionLogCount_Name" xml:space="preserve">
+    <value># Logs</value>
+  </data>
+  <data name="FirstName_Description" xml:space="preserve">
+    <value>The first name for this resource.</value>
+  </data>
+  <data name="FirstName_ErrorRegex" xml:space="preserve">
+    <value>First name contains characters that are not allowed.</value>
+  </data>
+  <data name="FirstName_ErrorRequired" xml:space="preserve">
+    <value>First name is a required field.</value>
+  </data>
+  <data name="FirstName_Name" xml:space="preserve">
+    <value>First name</value>
+  </data>
+  <data name="FontColor_Description" xml:space="preserve">
+    <value>The color of the font in RBG (i.e. #RRGGBB) format.</value>
+  </data>
+  <data name="FontColor_Name" xml:space="preserve">
+    <value>Font Color</value>
+  </data>
+  <data name="FormatExpression_Description" xml:space="preserve">
+    <value>The format expression, if any, to format all entries with.</value>
+  </data>
+  <data name="FormatExpression_Name" xml:space="preserve">
+    <value>Format Expression</value>
+  </data>
+  <data name="FriendlyName_Description" xml:space="preserve">
+    <value>The name used when displaying this field value to your audience.</value>
+  </data>
+  <data name="FriendlyName_ErrorRequired" xml:space="preserve">
+    <value>Friendly Name is required.</value>
+  </data>
+  <data name="FriendlyName_Name" xml:space="preserve">
+    <value>Friendly Name</value>
+  </data>
+  <data name="FusionAssembly_Description" xml:space="preserve">
+    <value>The name of the Fusion assembly, including dll extension. Not required if this is a manual Fusion process.</value>
+  </data>
+  <data name="FusionAssembly_Name" xml:space="preserve">
+    <value>Fusion Assembly Name</value>
+  </data>
+  <data name="FusionFact_Description" xml:space="preserve">
+    <value>Fusion Fact</value>
+  </data>
+  <data name="FusionFact_Name" xml:space="preserve">
+    <value>Fusion Fact</value>
+  </data>
+  <data name="FusionType_Description" xml:space="preserve">
+    <value>Fusion Type</value>
+  </data>
+  <data name="FusionType_Name" xml:space="preserve">
+    <value>Fusion Type</value>
+  </data>
+  <data name="GroupAllowed_Description" xml:space="preserve">
+    <value>Is group assignment allowed?</value>
+  </data>
+  <data name="GroupAllowed_Name" xml:space="preserve">
+    <value>Group Assignment Allowed</value>
+  </data>
+  <data name="Group_Description" xml:space="preserve">
+    <value>The group assigned to this item.</value>
+  </data>
+  <data name="Group_ErrorRequired" xml:space="preserve">
+    <value>Group is a required field.</value>
+  </data>
+  <data name="Group_Name" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="ID_Description" xml:space="preserve">
+    <value>The unique identifier for this item.</value>
+  </data>
+  <data name="ID_Name" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Impact_Description" xml:space="preserve">
+    <value>The Impact for this item.</value>
+  </data>
+  <data name="Impact_ErrorRequired" xml:space="preserve">
+    <value>Impact is a required field.</value>
+  </data>
+  <data name="Impact_Name" xml:space="preserve">
+    <value>Impact</value>
+  </data>
+  <data name="IsGlobal_Description" xml:space="preserve">
+    <value>Is this item globally available?</value>
+  </data>
+  <data name="IsGlobal_Name" xml:space="preserve">
+    <value>Is Global?</value>
+  </data>
+  <data name="IsHierarchical_Description" xml:space="preserve">
+    <value>Can this item have nested/hierarchical levels?</value>
+  </data>
+  <data name="IsHierarchical_Name" xml:space="preserve">
+    <value>Is Hierarchical?</value>
+  </data>
+  <data name="IsManual_Description" xml:space="preserve">
+    <value>Is this fusion type automatically synchronized or must a user manually create and synchronize the fusion items?</value>
+  </data>
+  <data name="IsManual_Name" xml:space="preserve">
+    <value>Manual Process?</value>
+  </data>
+  <data name="IsRequired_Description" xml:space="preserve">
+    <value>Is a user required to choose or provide a value for this field?</value>
+  </data>
+  <data name="IsRequired_Name" xml:space="preserve">
+    <value>Required?</value>
+  </data>
+  <data name="IsSystemLookup_Description" xml:space="preserve">
+    <value>Is this item set as a system lookup?</value>
+  </data>
+  <data name="IsSystemLookup_Name" xml:space="preserve">
+    <value>Is System Lookup?</value>
+  </data>
+  <data name="IsTechnical_Description" xml:space="preserve">
+    <value>Is this a technical relationship, storing technical metadata and pointing to something not specifically business-related?</value>
+  </data>
+  <data name="IsTechnical_Name" xml:space="preserve">
+    <value>Technical Relationship?</value>
+  </data>
+  <data name="ItemCount_Description" xml:space="preserve">
+    <value>The # items for this lookup.</value>
+  </data>
+  <data name="ItemCount_Name" xml:space="preserve">
+    <value># Items</value>
+  </data>
+  <data name="LastName_Description" xml:space="preserve">
+    <value>The last name for this resource.</value>
+  </data>
+  <data name="LastName_ErrorRegex" xml:space="preserve">
+    <value>Last name contains characters that are not allowed.</value>
+  </data>
+  <data name="LastName_ErrorRequired" xml:space="preserve">
+    <value>Last name is a required field.</value>
+  </data>
+  <data name="LastName_Name" xml:space="preserve">
+    <value>Last name</value>
+  </data>
+  <data name="Length_Description" xml:space="preserve">
+    <value>The exactl length that this field requires for a value.</value>
+  </data>
+  <data name="Length_Name" xml:space="preserve">
+    <value>Length</value>
+  </data>
+  <data name="LicenseKey_Description" xml:space="preserve">
+    <value>The license key for this item.</value>
+  </data>
+  <data name="LicenseKey_ErrorRequired" xml:space="preserve">
+    <value>License Key is a required field.</value>
+  </data>
+  <data name="LicenseKey_Name" xml:space="preserve">
+    <value>License Key</value>
+  </data>
+  <data name="LogCount_Description" xml:space="preserve">
+    <value>The # logs for this item.</value>
+  </data>
+  <data name="LogCount_Name" xml:space="preserve">
+    <value># Exceptions</value>
+  </data>
+  <data name="LookupDisplayFormat_Description" xml:space="preserve">
+    <value>The format used for displaying this field.  This format is used when resolving the underlying lookup value to display.</value>
+  </data>
+  <data name="LookupDisplayFormat_Name" xml:space="preserve">
+    <value>Lookup Display Format</value>
+  </data>
+  <data name="LookupObjectID_Description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="LookupObjectID_Name" xml:space="preserve">
+    <value>Lookup Object ID</value>
+  </data>
+  <data name="LookupObjectType_Description" xml:space="preserve">
+    <value>The type of lookup this field uses.</value>
+  </data>
+  <data name="LookupObjectType_Name" xml:space="preserve">
+    <value>Lookup Object Type</value>
+  </data>
+  <data name="MasterList_Description" xml:space="preserve">
+    <value>The domain list that acts as the master list for this group that all other list synchronize with.</value>
+  </data>
+  <data name="MasterList_Name" xml:space="preserve">
+    <value>Master List</value>
+  </data>
+  <data name="MaximumLength_Description" xml:space="preserve">
+    <value>The maximum allowed length for this field's value.</value>
+  </data>
+  <data name="MaximumLength_Name" xml:space="preserve">
+    <value>Maximum Length</value>
+  </data>
+  <data name="MeasurementDescription_Description" xml:space="preserve">
+    <value>How Do We Measure?</value>
+  </data>
+  <data name="MeasurementDescription_ErrorRequired" xml:space="preserve">
+    <value>How Do We Measure? is a required field.</value>
+  </data>
+  <data name="MeasurementDescription_Name" xml:space="preserve">
+    <value>How Do We Measure?</value>
+  </data>
+  <data name="MinimumLength_Description" xml:space="preserve">
+    <value>The minimum allowed length for this field's value.</value>
+  </data>
+  <data name="MinimumLength_Name" xml:space="preserve">
+    <value>Minimum Length</value>
+  </data>
+  <data name="Name_Description" xml:space="preserve">
+    <value>The name for this item.</value>
+  </data>
+  <data name="Name_ErrorRegex" xml:space="preserve">
+    <value>Name contains characters that are not allowed.</value>
+  </data>
+  <data name="Name_ErrorRequired" xml:space="preserve">
+    <value>Name is a required field.</value>
+  </data>
+  <data name="Name_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NotificationLevel_Description" xml:space="preserve">
+    <value>The notification level for this item.</value>
+  </data>
+  <data name="NotificationLevel_ErrorRequired" xml:space="preserve">
+    <value>Notification level is a required field.</value>
+  </data>
+  <data name="NotificationLevel_Name" xml:space="preserve">
+    <value>Notification level</value>
+  </data>
+  <data name="Order_Description" xml:space="preserve">
+    <value>The assigned company for this item.</value>
+  </data>
+  <data name="Order_ErrorRequired" xml:space="preserve">
+    <value>Company is a required field.</value>
+  </data>
+  <data name="Order_Name" xml:space="preserve">
+    <value>Company</value>
+  </data>
+  <data name="OwnerDomain_Description" xml:space="preserve">
+    <value>The information model that owns this item.</value>
+  </data>
+  <data name="OwnerDomain_Name" xml:space="preserve">
+    <value>Information model</value>
+  </data>
+  <data name="OwnershipType_Description" xml:space="preserve">
+    <value>The type of ownership</value>
+  </data>
+  <data name="OwnershipType_Name" xml:space="preserve">
+    <value>Ownership Type</value>
+  </data>
+  <data name="Parent_Description" xml:space="preserve">
+    <value>The owner for this item.</value>
+  </data>
+  <data name="Parent_Name" xml:space="preserve">
+    <value>Owner/Parent</value>
+  </data>
+  <data name="CanOwnFusion_Description" xml:space="preserve">
+    <value>Items of this type can own fusion configurations, which applies during auto-promotion.</value>
+  </data>
+  <data name="CanOwnFusion_Name" xml:space="preserve">
+    <value>Can Own Fusion?</value>
+  </data>
+  <data name="PartOfScore_Description" xml:space="preserve">
+    <value>Should this check be part of the overall scoring of the target object?  If not part of the scoring, this statistic will display on the top bar of the object detail page.</value>
+  </data>
+  <data name="PartOfScore_Name" xml:space="preserve">
+    <value>Part of Scoring?</value>
+  </data>
+  <data name="Path_Description" xml:space="preserve">
+    <value>The path within the hierachy.</value>
+  </data>
+  <data name="Path_Name" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="Pattern_Description" xml:space="preserve">
+    <value>The validation pattern used when providing a value for this field.</value>
+  </data>
+  <data name="Pattern_Name" xml:space="preserve">
+    <value>Validation Pattern</value>
+  </data>
+  <data name="Probability_Description" xml:space="preserve">
+    <value>The Probability for this item.</value>
+  </data>
+  <data name="Probability_ErrorRequired" xml:space="preserve">
+    <value>Probability is a required field.</value>
+  </data>
+  <data name="Probability_Name" xml:space="preserve">
+    <value>Probability</value>
+  </data>
+  <data name="PublicID_Description" xml:space="preserve">
+    <value>The value used when associating multiple events together.  This public ID can be any value.</value>
+  </data>
+  <data name="PublicID_Name" xml:space="preserve">
+    <value>Public ID</value>
+  </data>
+  <data name="Public_Description" xml:space="preserve">
+    <value>The visibility for this item.</value>
+  </data>
+  <data name="Public_Name" xml:space="preserve">
+    <value>Publicly available?</value>
+  </data>
+  <data name="ReadOnly_Description" xml:space="preserve">
+    <value>Is this item read-only, updateable via the API only?</value>
+  </data>
+  <data name="ReadOnly_Name" xml:space="preserve">
+    <value>Read Only?</value>
+  </data>
+  <data name="Regex_Description" xml:space="preserve">
+    <value>The regular expression, if any, to validate all entries against.</value>
+  </data>
+  <data name="Regex_Name" xml:space="preserve">
+    <value>Regular Expression</value>
+  </data>
+  <data name="Region_Description" xml:space="preserve">
+    <value>The assigned region for this item.</value>
+  </data>
+  <data name="Region_ErrorRequired" xml:space="preserve">
+    <value>Region is a required field.</value>
+  </data>
+  <data name="Region_Name" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="ResourceAllowed_Description" xml:space="preserve">
+    <value>Is resource assignment allowed?</value>
+  </data>
+  <data name="ResourceAllowed_Name" xml:space="preserve">
+    <value>Resource Assignment Allowed</value>
+  </data>
+  <data name="ResourceCount_Description" xml:space="preserve">
+    <value>The # of resources for this item.</value>
+  </data>
+  <data name="ResourceCount_Name" xml:space="preserve">
+    <value># Resources</value>
+  </data>
+  <data name="ResourceType_Description" xml:space="preserve">
+    <value>The type of resource for this item.</value>
+  </data>
+  <data name="ResourceType_ErrorRequired" xml:space="preserve">
+    <value>Type is a required field.</value>
+  </data>
+  <data name="ResourceType_Name" xml:space="preserve">
+    <value>Resource Type</value>
+  </data>
+  <data name="Resource_Description" xml:space="preserve">
+    <value>The assigned resource for this item.</value>
+  </data>
+  <data name="Resource_ErrorRequired" xml:space="preserve">
+    <value>Resource is a required field.</value>
+  </data>
+  <data name="Resource_Name" xml:space="preserve">
+    <value>Resource</value>
+  </data>
+  <data name="Role_Description" xml:space="preserve">
+    <value>The role assigned to this item.</value>
+  </data>
+  <data name="Role_ErrorRequired" xml:space="preserve">
+    <value>Role is a required field.</value>
+  </data>
+  <data name="Role_Name" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="Rule_Description" xml:space="preserve">
+    <value>The presence rule for this item.</value>
+  </data>
+  <data name="Rule_Name" xml:space="preserve">
+    <value>Rule</value>
+  </data>
+  <data name="SourceID_Description" xml:space="preserve">
+    <value>The item's ID from the system that generated it.</value>
+  </data>
+  <data name="SourceID_Name" xml:space="preserve">
+    <value>Source System's ID</value>
+  </data>
+  <data name="StandardDescription_Description" xml:space="preserve">
+    <value>What is The Data Standard?</value>
+  </data>
+  <data name="StandardDescription_ErrorRequired" xml:space="preserve">
+    <value>What is The Data Standard? is a required field.</value>
+  </data>
+  <data name="StandardDescription_Name" xml:space="preserve">
+    <value>What is The Data Standard?</value>
+  </data>
+  <data name="Status_Description" xml:space="preserve">
+    <value>The status of this item.</value>
+  </data>
+  <data name="Status_ErrorRequired" xml:space="preserve">
+    <value>Status is a required field.</value>
+  </data>
+  <data name="Status_Name" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Subject_Description" xml:space="preserve">
+    <value>The subject of the email.</value>
+  </data>
+  <data name="Subject_ErrorRequired" xml:space="preserve">
+    <value>Subject is a required field.</value>
+  </data>
+  <data name="Subject_Name" xml:space="preserve">
+    <value>Subject</value>
+  </data>
+  <data name="SurveyTypeObject_Description" xml:space="preserve">
+    <value>The target filter based on the selected type of object.</value>
+  </data>
+  <data name="SurveyTypeObject_Name" xml:space="preserve">
+    <value>Object</value>
+  </data>
+  <data name="System_Description" xml:space="preserve">
+    <value>Is this item a system-level object?</value>
+  </data>
+  <data name="System_Name" xml:space="preserve">
+    <value>System-level?</value>
+  </data>
+  <data name="Tab_Description" xml:space="preserve">
+    <value>The name of the tab this information appears under.</value>
+  </data>
+  <data name="Tab_Name" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="TaxonomyType_Name" xml:space="preserve">
+    <value>Information model</value>
+  </data>
+  <data name="TextFormatString_Description" xml:space="preserve">
+    <value>The format used for displaying this field.  This format is used when resolving the underlying fields to display.</value>
+  </data>
+  <data name="TextFormatString_Name" xml:space="preserve">
+    <value>Text Format</value>
+  </data>
+  <data name="Type_Description" xml:space="preserve">
+    <value>The type for this item.</value>
+  </data>
+  <data name="Type_ErrorRequired" xml:space="preserve">
+    <value>Type is a required field.</value>
+  </data>
+  <data name="Type_Name" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="UpdatingResource_Description" xml:space="preserve">
+    <value>The resource who last updated this item.</value>
+  </data>
+  <data name="UpdatingResource_Name" xml:space="preserve">
+    <value>Last updated by</value>
+  </data>
+  <data name="Username_Description" xml:space="preserve">
+    <value>The username for this resource.</value>
+  </data>
+  <data name="Username_ErrorRegex" xml:space="preserve">
+    <value>Username contains characters that are not allowed.</value>
+  </data>
+  <data name="Username_ErrorRequired" xml:space="preserve">
+    <value>Username is a required field.</value>
+  </data>
+  <data name="Username_Name" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Value_Description" xml:space="preserve">
+    <value>The value for this option.</value>
+  </data>
+  <data name="Value_Name" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="Version_Description" xml:space="preserve">
+    <value>The version number for this item.</value>
+  </data>
+  <data name="Version_Name" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Class_Description" xml:space="preserve">
+    <value>The class of catalog you are configuring, such as Informational or Organizational.</value>
+  </data>
+  <data name="Class_Name" xml:space="preserve">
+    <value>Catalog Class</value>
+  </data>
+  <data name="ControlsOwnership_Description" xml:space="preserve">
+    <value>All ownership propagates from these models to any related artifacts.  Only one catalog can control ownership.</value>
+  </data>
+  <data name="ControlsOwnership_Name" xml:space="preserve">
+    <value>Controls Ownership?</value>
+  </data>
+  <data name="Level_Description" xml:space="preserve">
+    <value>The level of this information model within the overall catalog tree.</value>
+  </data>
+  <data name="Level_Name" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="DisplayDescription_Description" xml:space="preserve">
+    <value>The description that will be visible when a user reads the information in this field.</value>
+  </data>
+  <data name="DisplayDescription_Name" xml:space="preserve">
+    <value>Display Description</value>
+  </data>
+  <data name="FormDescription_Description" xml:space="preserve">
+    <value>The description that will be visible when a user updates the information in this field.</value>
+  </data>
+  <data name="FormDescription_Name" xml:space="preserve">
+    <value>Form Description</value>
+  </data>
+  <data name="MaximumDepth_Description" xml:space="preserve">
+    <value>The maximum depth of the information model.</value>
+  </data>
+  <data name="MaximumDepth_Name" xml:space="preserve">
+    <value>Maximum Depth</value>
+  </data>
+  <data name="LockPromotedItems_Description" xml:space="preserve">
+    <value>Objects that are promoted within this configuration are locked and cannot be edited.</value>
+  </data>
+  <data name="LockPromotedItems_Name" xml:space="preserve">
+    <value>Lock Promoted Objects?</value>
+  </data>
+  <data name="Locked_Description" xml:space="preserve">
+    <value>Item is locked via Fusion Promotion.</value>
+  </data>
+  <data name="Locked_Name" xml:space="preserve">
+    <value>Locked?</value>
+  </data>
+  <data name="Promoted_Description" xml:space="preserve">
+    <value>Item was promoted via Fusion Promotion?</value>
+  </data>
+  <data name="Promoted_Name" xml:space="preserve">
+    <value>Promoted?</value>
+  </data>
+  <data name="ResponsibilityTypeGroup_Description" xml:space="preserve">
+    <value>The group associated with this responsibility type.</value>
+  </data>
+  <data name="ResponsibilityTypeGroup_Name" xml:space="preserve">
+    <value>Responsibility Group</value>
+  </data>
+  <data name="Score_Description" xml:space="preserve">
+    <value>The score that will be added to the total.</value>
+  </data>
+  <data name="Score_Name" xml:space="preserve">
+    <value>Score</value>
+  </data>
+  <data name="CheckType_PropertyName_Name" xml:space="preserve">
+    <value>Object Property Name</value>
+  </data>
+  <data name="CheckType_SQL_Name" xml:space="preserve">
+    <value>SQL Query</value>
+  </data>
+  <data name="CheckType_ValueEnd_Name" xml:space="preserve">
+    <value>Object Property Range End</value>
+  </data>
+  <data name="CheckType_ValueStart_Name" xml:space="preserve">
+    <value>Object Property Range Start</value>
+  </data>
+  <data name="CheckType_Value_Name" xml:space="preserve">
+    <value>Object Property Value</value>
+  </data>
+  <data name="IntervalType_Description" xml:space="preserve">
+    <value>This interval type is the time between agent executions for a given configuration.</value>
+  </data>
+  <data name="IntervalType_Name" xml:space="preserve">
+    <value>Interval Type</value>
+  </data>
+  <data name="Interval_Description" xml:space="preserve">
+    <value>The amount of time between agent executions for a given fusion configuration.</value>
+  </data>
+  <data name="Interval_Name" xml:space="preserve">
+    <value>Interval</value>
+  </data>
+  <data name="GroupPrimaryOwner_Description" xml:space="preserve">
+    <value>The primary owner of the group.  This person is responsible for the day to day management of the group, including assigning any tasks to members.</value>
+  </data>
+  <data name="GroupPrimaryOwner_Name" xml:space="preserve">
+    <value>Primary Owner</value>
+  </data>
+  <data name="GroupSecondaryOwner_Description" xml:space="preserve">
+    <value>The seondary owner of the group.  This person is the backup owner of the group if the primary owner is not available.</value>
+  </data>
+  <data name="GroupSecondaryOwner_Name" xml:space="preserve">
+    <value>Secondary Owner</value>
+  </data>
+  <data name="Vocabulary_Description" xml:space="preserve">
+    <value>The assigned subject area this item falls under.</value>
+  </data>
+  <data name="Vocabulary_Name" xml:space="preserve">
+    <value>Subject Area</value>
+  </data>
+  <data name="AllowRelatedArtifacts_Description" xml:space="preserve">
+    <value>Allowing related artifacts will enable a new tile on artifact details of this type.</value>
+  </data>
+  <data name="AllowRelatedArtifacts_Name" xml:space="preserve">
+    <value>Allow Related Artifacts?</value>
+  </data>
+  <data name="CommandText_Description" xml:space="preserve">
+    <value>The SQL SELECT statement to pull contents from.  You may only query objects within the reporting schema.</value>
+  </data>
+  <data name="CommandText_Name" xml:space="preserve">
+    <value>Command Text</value>
+  </data>
+  <data name="ContentAreaNumber_Description" xml:space="preserve">
+    <value>Location within the rpeort's layout that this tile will appear in.</value>
+  </data>
+  <data name="ContentAreaNumber_Name" xml:space="preserve">
+    <value>Content Area Number</value>
+  </data>
+  <data name="ReportDescription_Description" xml:space="preserve">
+    <value>A description of the meaning for this report; what this report trying to explain.</value>
+  </data>
+  <data name="ReportLayout_Description" xml:space="preserve">
+    <value>The layout this report will renders its content in.</value>
+  </data>
+  <data name="ReportLayout_Name" xml:space="preserve">
+    <value>Report Layout</value>
+  </data>
+  <data name="ReportName_Description" xml:space="preserve">
+    <value>The name for this report.  This name will be used wherever the report is available for display.</value>
+  </data>
+  <data name="ReportTileName_Description" xml:space="preserve">
+    <value>The name for this report tile.  the name will be displayed at the top of the contents for this tile.</value>
+  </data>
+  <data name="ReportTileType_Description" xml:space="preserve">
+    <value>The type of report tile to render with.</value>
+  </data>
+  <data name="ReportTileType_Name" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="ReportObjectType_Description" xml:space="preserve">
+    <value>The type of object where this report will be available.</value>
+  </data>
+  <data name="ReportObjectType_Name" xml:space="preserve">
+    <value>Target Type</value>
+  </data>
+  <data name="AttributeTypeCategory_Description" xml:space="preserve">
+    <value>An attribute category that groups similar attributes together.</value>
+  </data>
+  <data name="AttributeTypeCategory_Name" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Policy_Description" xml:space="preserve">
+    <value>The policy that this rule is assigned to.</value>
+  </data>
+  <data name="Policy_Name" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+  <data name="RuleType_Description" xml:space="preserve">
+    <value>The type of rule defined.  This impacts whether the events under a rule can be assigned.</value>
+  </data>
+  <data name="RuleType_Name" xml:space="preserve">
+    <value>Rule Type</value>
+  </data>
+  <data name="IntersectClassification_Description" xml:space="preserve">
+    <value>The classification for this relationship (Critical, Normal)</value>
+  </data>
+  <data name="IntersectClassification_Name" xml:space="preserve">
+    <value>Classification</value>
+  </data>
+  <data name="IntersectDescription_Description" xml:space="preserve">
+    <value>Information regarding why this relationship exists.</value>
+  </data>
+  <data name="IntersectDescription_Name" xml:space="preserve">
+    <value>Relationship Description</value>
+  </data>
+  <data name="DateLastCertified_Description" xml:space="preserve">
+    <value>The date this item was last certified by its owners.</value>
+  </data>
+  <data name="DateLastCertified_Name" xml:space="preserve">
+    <value>Date Last Certified</value>
+  </data>
+  <data name="RequiresCertification_Description" xml:space="preserve">
+    <value>Items of this type require a periodic re-certification of data accuracy.  This is conducted by the owners of the item.</value>
+  </data>
+  <data name="RequiresCertification_Name" xml:space="preserve">
+    <value>Requires Certification</value>
+  </data>
+  <data name="CertificationEndDate_Description" xml:space="preserve">
+    <value>The certification process ends on this date.</value>
+  </data>
+  <data name="CertificationEndDate_Name" xml:space="preserve">
+    <value>Certification Ends On</value>
+  </data>
+  <data name="CertificationStartDate_Description" xml:space="preserve">
+    <value>The certification process started on this date.</value>
+  </data>
+  <data name="CertificationStartDate_Name" xml:space="preserve">
+    <value>Certification Started On</value>
+  </data>
+  <data name="DaysGivenToCompleteCertification_Description" xml:space="preserve">
+    <value>Indicates the number of days an owner has to complete a certification of a given item.</value>
+  </data>
+  <data name="DaysGivenToCompleteCertification_Name" xml:space="preserve">
+    <value># Days To Complete Certification</value>
+  </data>
+  <data name="MonthsUntilCertification_Description" xml:space="preserve">
+    <value>Indicates the number of months before a certification request is triggered.</value>
+  </data>
+  <data name="MonthsUntilCertification_Name" xml:space="preserve">
+    <value># Months Between Certifications</value>
+  </data>
+  <data name="RequiresSuggestionToAdd_Description" xml:space="preserve">
+    <value>When enabled, additions of this type of artifact are only allowed via the Suggest Artifact UI and workflow.</value>
+  </data>
+  <data name="RequiresSuggestionToAdd_Name" xml:space="preserve">
+    <value>Enable Add via Suggestion Only?</value>
+  </data>
+  <data name="ResponsibilityTransformationType_Description" xml:space="preserve">
+    <value>The type of transformation you are working with.</value>
+  </data>
+  <data name="ResponsibilityTransformationType_Name" xml:space="preserve">
+    <value>Transformation Type</value>
+  </data>
+  <data name="ResponsibilityTransformation_Description_Description" xml:space="preserve">
+    <value>The detailed description of the transformation taking place for this responsibility.</value>
+  </data>
+  <data name="AllowGrouping_Description" xml:space="preserve">
+    <value>Allow users to group similar relationships together to form a grouping.</value>
+  </data>
+  <data name="AllowGrouping_Name" xml:space="preserve">
+    <value>Allow Grouping of Relationships?</value>
+  </data>
+  <data name="AllowSourcing_Description" xml:space="preserve">
+    <value>Allow sources to be defined for this relationship.</value>
+  </data>
+  <data name="AllowSourcing_Name" xml:space="preserve">
+    <value>Allow Sourcing on Relationship?</value>
+  </data>
+  <data name="GroupComment_Description" xml:space="preserve">
+    <value>A comment on or description of the role this item has within the relationship group.</value>
+  </data>
+  <data name="GroupComment_Name" xml:space="preserve">
+    <value>Comment</value>
+  </data>
+  <data name="EventCount_Description" xml:space="preserve">
+    <value>The number of items for this particular run or group.</value>
+  </data>
+  <data name="EventCount_Name" xml:space="preserve">
+    <value># Events</value>
+  </data>
+  <data name="EnableValidations_Description" xml:space="preserve">
+    <value>Allow for storing validations</value>
+  </data>
+  <data name="EnableValidations_Name" xml:space="preserve">
+    <value>Enable Field Validations?</value>
+  </data>
+  <data name="AllowHierarchy_Description" xml:space="preserve">
+    <value>Hierarchies are allowed within this type of artifact.</value>
+  </data>
+  <data name="AllowHierarchy_Name" xml:space="preserve">
+    <value>Allow Hierarchy?</value>
+  </data>
+  <data name="HierarchyParent_Description" xml:space="preserve">
+    <value>The item's parent within a hierarchy.</value>
+  </data>
+  <data name="HierarchyParent_Name" xml:space="preserve">
+    <value>Hierarchy Parent</value>
+  </data>
+  <data name="IsListable_Description" xml:space="preserve">
+    <value>Should this field be displayed in the relevant grid or list within the application?</value>
+  </data>
+  <data name="IsListable_Name" xml:space="preserve">
+    <value>Listable?</value>
+  </data>
+  <data name="ValidationDescription_Description" xml:space="preserve">
+    <value>This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear.</value>
+  </data>
+  <data name="ValidationDescription_Name" xml:space="preserve">
+    <value>Validation Message</value>
+  </data>
+  <data name="SynonymType_Description" xml:space="preserve">
+    <value>The type or category for this synonym.</value>
+  </data>
+  <data name="SynonymType_Name" xml:space="preserve">
+    <value>Synonym Type</value>
+  </data>
+</root>

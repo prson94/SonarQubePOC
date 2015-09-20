@@ -1,0 +1,32 @@
+﻿[
+  {
+    "outputFile": "Content/styles/ContentFormatting.css",
+    "inputFile": "Content/styles/ContentFormatting.less",
+    "minify": {
+      "enabled": true
+    },
+    "includeInProject": true,
+    "sourceMap": false,
+    "options": {}
+  },
+  {
+    "outputFile": "Content/styles/Root.css",
+    "inputFile": "Content/styles/Root.less",
+    "minify": {
+      "enabled": true
+    },
+    "includeInProject": true,
+    "sourceMap": false,
+    "options": {}
+  },
+  {
+    "outputFile": "Content/styles/OfficeApps.css",
+    "inputFile": "Content/styles/OfficeApps.less",
+    "minify": {
+      "enabled": true
+    },
+    "includeInProject": true,
+    "sourceMap": false,
+    "options": {}
+  }
+]

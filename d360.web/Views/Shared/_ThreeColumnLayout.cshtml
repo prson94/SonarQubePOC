@@ -1,0 +1,57 @@
+﻿@{
+    Layout = "~/Views/Shared/_Authorized.cshtml";
+}
+
+@section CustomCSS {
+    @RenderSection("CustomCSS", false)
+}
+
+@section Title {
+    @RenderSection("Title", false)
+}
+
+@section Directions {
+    @RenderSection("Directions", false)
+}
+
+@section Breadcrumb {
+    @RenderSection("Breadcrumb", false)
+}
+
+@section PageTools {
+    @RenderSection("PageTools", false)
+}
+
+@section FilterBar {
+    @RenderSection("FilterBar", false)
+}
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            amplify.subscribe("ToolAction", function (data) {
+                if (data.context != 'command') {
+                    $("#ContentArea").jqxTabs('select', data.tabindex);
+                }
+            });
+        });
+    </script>
+    @RenderSection("Scripts", false)
+}
+
+@section SideIcons {
+    @RenderSection("SideIcons", false)
+}
+
+@section StatisticsBar {
+    @RenderSection("StatisticsBar", false)
+}
+
+<div class="col-md-1 col-sm-1" id="SideBorder">@RenderSection("Sidebar", false)</div>
+<div class="col-md-8 col-md-offset-1" id="ContentArea">
+    @RenderSection("PageNavigation", false)
+    @RenderBody()
+</div>
+<div class="col-md-1 col-sm-1 col-md-offset-1" id="SmallContentArea">
+    @RenderSection("SmallContentArea", false)
+</div>

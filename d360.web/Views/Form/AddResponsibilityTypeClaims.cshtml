@@ -1,0 +1,38 @@
+﻿@using d360.core.enums;
+@model d360.web.Models.ClaimsMatrixEditorModel
+<div class="medium-overlay">
+    <div class="ui segment">
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.ResponsibilityTypeObjectClaim, Description = Resources.FormInfo.Add_ResponsibilityTypeClaims_Directions, Name = Resources.FormInfo.Add_ResponsibilityTypeClaims_Title })
+        @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = "POST", Url = "/Form/AddResponsibilityTypeClaims", OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
+        {
+            @Html.HiddenFor(m => m.ObjectType)
+            @Html.HiddenFor(m => m.ObjectID)
+            @Html.HiddenFor(m => m.ResponsibilityTypeID)
+            @Html.EditorForModel()
+        }
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('#EditableFormSaveButton').on('click', function () {
+            $('#form0').submit();
+        });
+
+        $('#EditableFormCancelButton').on('click', function () {
+            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+        });
+        amplify.subscribe("ErrorOccurredAction", function (data) {
+            $('#EditableFormSaveButton').hide();
+        });
+        amplify.subscribe("StartingAjax", function () {
+            $('#EditableFormSaveButton').attr('disabled', 'disabled');
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+        });
+        amplify.subscribe("EndingAjax", function () {
+            $('#EditableFormSaveButton').removeAttr('disabled');
+            $('#progress').html('');
+        });
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

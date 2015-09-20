@@ -1,0 +1,62 @@
+﻿@{
+    var id = ViewData["ID"];
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var lookupAllocationUri = '/api/lookups/@(id)/allocations';
+
+        //#region Grid
+
+        var srcLookupAllocationsGrid = {
+            datatype: 'json',
+            url: lookupAllocationUri,
+            datafields:
+            [
+                { name: 'FieldTypeID' },
+                { name: 'FieldTypeName' },
+                { name: 'LookupTypeID' },
+                { name: 'LookupTypeName' },
+                { name: 'LookupObjectType' },
+                { name: 'ObjectID' },
+                { name: 'ObjectName' },
+                { name: 'ObjectType' },
+                { name: 'ObjectTypeName' },
+                { name: 'ObjectUrl' }
+            ]
+        };
+
+        var adapterLookupAllocationsGrid = new $.jqx.dataAdapter(srcLookupAllocationsGrid);
+
+        $("#LookupAllocations").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pageable: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            source: adapterLookupAllocationsGrid,
+            theme: list_theme,
+            columns: [
+                { datafield: "ObjectTypeName", text: "Referencing Type" },
+                { 
+                    datafield: "ObjectName", 
+                    text: "Referencing Object", 
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return previewLinkRenderer(data.ObjectType, data.ObjectID, '#', value);
+                    } 
+                },
+                { datafield: "FieldTypeName", text: "Referencing Field" }
+            ]
+        });
+
+        //#endregion
+
+    });
+</script>
+
+<div id="LookupAllocations"></div>

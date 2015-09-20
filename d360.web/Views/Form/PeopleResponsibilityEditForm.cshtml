@@ -1,0 +1,142 @@
+﻿@using d360.web.Models;
+@using d360.core.resources;
+@model PeopleResponsibilityEditorModel
+<div class="small-overlay">
+    <div class="ui segment">
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.PeopleResponsibility, Description = Model.FormDescription, Name = Model.FormName })
+        @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Model.FormUri, OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
+        {
+            <input type="hidden" id="_context" name="_context" value="@(ContextList.PeopleResponsibility)" />
+            <input type="hidden" id="ID" name="ID" value="@(Model.Responsibility.ID)" />
+            <input type="hidden" id="ObjectType" name="ObjectType" value="@(Model.Responsibility.ObjectType)" />
+            <input type="hidden" id="ObjectID" name="ObjectID" value="@(Model.Responsibility.ObjectID)" />
+
+            <div class="row">
+                <div class="col s6">
+                    <label id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</label>
+                    @Html.DropDownList("ResponsibilityType", Model.ResponsibilityTypes, "Choose responsibility", new { @class = "browser-default" })
+                </div>
+                <div class="col s6">
+                    <label id='ResponsibleObjectTip' class="FieldNameRequired">Resource</label>
+                    @Html.DropDownList("ResponsibleObject", Model.Resources, "Choose resource", new { @class = "browser-default" })
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div id='ContextTip' class="FieldName">Contexts</div>
+                    <div id="Context" name="Context"></div>
+                </div>
+            </div>
+            <div class="row" @(Model.Responsibility.ObjectType.EndsWith("Type") ? "" : "style=display:none")>
+                <div class="col s12">
+                    <input type="checkbox" id="IsVisible" name="IsVisible" @(Model.Responsibility.Visible ? "checked=checked" : "") />
+                    <label id='IsVisibleTip' for="IsVisible">Visible?</label>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        //@(Model.Responsibility.ObjectType)
+        @*var _ResponsibilityTypeTip = "@Model.Responsibility.GetDescription(i => i.Name)";
+            var _ResponsibleObjectTip = "@Model.Responsibility.GetDescription(i => i.Description)";
+            var _ContextTip = "";
+            var _VisibleTip = "@Model.Responsibility.GetDescription(i => i.AllowRelatedArtifacts)";*@
+
+        var ContextSource = [];
+        @{foreach (var c in Model.Contexts) {
+            <text>ContextSource.push({ label: '@(c.Text)', value: '@(c.Value)', checked: @(c.Selected ? "true": "false") });</text>     @*, group: '@(c.Group.Name)'*@
+        }}
+
+        //#region Control Instantiation
+
+        $('#ResponsibilityType').jqxDropDownList({ enableBrowserBoundsDetection: true, width: '100%', theme: theme });
+
+        $('#ResponsibleObject').jqxDropDownList({ enableBrowserBoundsDetection: true, filterable: true, width: '100%', theme: theme });
+
+        $('#Context').jqxDropDownList({
+            checkboxes: true,
+            filterable: true,
+            searchMode: 'containsignorecase',
+            enableBrowserBoundsDetection: true,
+            width: '100%',
+            source: ContextSource,
+            theme: theme
+        });
+
+        $('#form0').jqxValidator({
+            hintType: 'label',
+            rules: [
+                //{
+                //    input: "#Name",
+                //    rule: 'required',
+                //    action: 'blur',
+                //    message: 'Name is required.'
+                //}
+            ]
+        });
+
+        //#endregion
+
+        //#region Help Tooltips
+
+        tipCss = 'qtip-blue qtip-shadow';
+        //$('#NameTip').qtip({
+        //    content: { text: nameTip },
+        //    style: { classes: tipCss }
+        //});
+
+        //$('#DescriptionTip').qtip({
+        //    content: { text: descriptionTip },
+        //    style: { classes: tipCss }
+        //});
+
+        //$('#CanOwnFusionTip').qtip({
+        //    content: { text: canOwnFusionTip },
+        //    style: { classes: tipCss }
+        //});
+
+        //$('#AllowRelatedArtifactsTip').qtip({
+        //    content: { text: allowRelatedArtifactsTip },
+        //    style: { classes: tipCss }
+        //});
+
+        //$('#AllowHierarchyTip').qtip({
+        //    content: { text: allowHierarchyTip },
+        //    style: { classes: tipCss }
+        //});
+
+        //#endregion
+
+        //#region Events
+
+        $('#form0').on('validationSuccess', function (event) {
+            // You can submit the form.
+            $('#form0').submit();
+        });
+        $('#EditableFormSaveButton').on('click', function () {
+            $('#form0').jqxValidator('validate');
+        });
+
+        $('#EditableFormCancelButton').on('click', function () {
+            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+        });
+        amplify.subscribe("ErrorOccurredAction", function (data) {
+            $('#EditableFormSaveButton').hide();
+        });
+        amplify.subscribe("StartingAjax", function () {
+            $('#EditableFormSaveButton').attr('disabled', 'disabled');
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+        });
+        amplify.subscribe("EndingAjax", function () {
+            $('#EditableFormSaveButton').removeAttr('disabled');
+            $('#progress').html('');
+        });
+
+        //#endregion
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

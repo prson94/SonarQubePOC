@@ -1,0 +1,3464 @@
+﻿using System.Linq;
+using System.Collections.Generic;
+using System.Data.Entity;
+using d360.core.entities;
+using d360.core.entities.Views;
+using d360.extensions;
+using d360.core;
+using System;
+using System.Collections.Specialized;
+using System.Xml.Linq;
+using System.Data.Entity.Infrastructure;
+using d360.core.entities.Contracts;
+using System.Linq.Expressions;
+using System.Data;
+using d360.core.exceptions;
+using System.Data.SqlClient;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Core;
+using d360.core.resources;
+using d360.core.enums;
+using Dapper;
+using d360.core.entities.Transitive;
+using System.Data.Entity.Validation;
+using System.Data.Entity.Design.PluralizationServices;
+using gudusoft.gsqlparser;
+using d360.workflow;
+using d360.workflow.entities;
+using d360.workflow.models;
+
+namespace d360.model
+{
+    [DbConfigurationType(typeof(AzureConfiguration))]
+    public class CompanyContext : BaseContext
+    {
+        #region Caching Methods
+
+        internal string FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY = "AttributesByFusion_{0}_{1}";
+        internal string REPORTING_SCHEMA_KEY = "ReportingSchema_{0}";
+        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";
+        internal string TAXONOMY_BY_TYPE_PREFIX_KEY = "TaxonomyByType_{0}_{1}";
+        internal string TAXONOMYDETAIL_BY_TYPE_PREFIX_KEY = "TaxonomyDetailByType_{0}_{1}";
+        internal string ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY = "ArtifactDictionaryByType_{0}_{1}";
+
+        internal string key(string token)
+        {
+            return string.Format(token, CurrentCompanyID);
+        }
+
+        internal string key(string token, int id)
+        {
+            return string.Format(token, CurrentCompanyID, id);
+        }
+
+        #endregion
+
+        internal IQueueSource QueueSource;
+
+        CommunityContext Community;
+
+        #region Ctors
+
+        public CompanyContext(CommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
+            : base(community.GetCompanyConnectionString())
+        {
+            Context = context;
+
+            Community = community;
+
+            Caching = caching;
+            QueueSource = queueSource;
+
+            CurrentCompanyID = GetCompanyID();
+            CurrentResourceID = GetResourceID();
+            CurrentResourceIsAdmin = GetResourceAdminFlag();
+        }
+
+        #endregion
+
+        #region DbSets
+
+        public DbSet<AlertFlag> AlertFlags { get; set; }
+
+        public DbSet<Artifact> Artifacts { get; set; }
+
+        public DbSet<ArtifactType> ArtifactTypes { get; set; }
+
+        public DbSet<d360.core.entities.Attribute> Attributes { get; set; }
+
+        public DbSet<AttributeDetail> AttributeDetails { get; set; }                            /* VIEW */
+
+        public DbSet<AttributeType> AttributeTypes { get; set; }
+
+        public DbSet<AttributeTypeCategory> AttributeTypeCategories { get; set; }
+
+        public DbSet<AttributeTypeRelation> AttributeTypeRelations { get; set; }
+
+        public DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }    /* VIEW */
+
+        public DbSet<Comment> Comments { get; set; }
+
+        public DbSet<CommentRelation> CommentRelations { get; set; }
+
+        public DbSet<DomainAllocationDetail> DomainAllocationDetails { get; set; }      /* VIEW */
+
+        public DbSet<Domain> Domains { get; set; }
+
+        public DbSet<DomainGroup> DomainGroups { get; set; }
+
+        public DbSet<DomainItem> DomainItems { get; set; }
+
+        public DbSet<DomainType> DomainTypes { get; set; }
+
+        public DbSet<EmailTemplate> EmailTemplates { get; set; }
+
+        public DbSet<Event> Events { get; set; }
+
+        public DbSet<EventGroup> EventGroups { get; set; }
+
+        public DbSet<Field> Fields { get; set; }
+
+        public DbSet<FieldLookupValue> FieldLookupValues { get; set; }                          /* VIEW */
+
+        public DbSet<FieldWithRelation> FieldWithRelations { get; set; }                        /* VIEW */
+
+        public DbSet<FieldType> FieldTypes { get; set; }
+
+        public DbSet<FieldTypeLookupValue> FieldTypeLookupValues { get; set; }                  /* VIEW */
+
+        public DbSet<FieldTypeWithRelation> FieldTypeWithRelations { get; set; }                /* VIEW */
+
+        public DbSet<Follow> Follows { get; set; }
+
+        public DbSet<FollowDetail> FollowDetails { get; set; }                                  /* VIEW */
+
+        public DbSet<FusionExecution> FusionExecutions { get; set; }
+
+        public DbSet<FusionExecutionResultDetail> FusionExecutionResultDetails { get; set; }    /* VIEW */
+        
+        public DbSet<Fusion> FusionTypeConfigurations { get; set; }
+
+        public DbSet<FusionAttributeOwnerDetail> FusionAttributeOwnerDetails { get; set; }          /* VIEW */
+
+        public DbSet<FusionAttributePromotionDetail> FusionAttributePromotionDetails { get; set; }  /* VIEW */
+
+        public DbSet<FusionAttributeOwnerRule> FusionAttributeOwnerRules { get; set; }
+
+        public DbSet<FusionAttributeOwnerRuleItem> FusionAttributeOwnerRuleItems { get; set; }
+
+        public DbSet<FusionAttribute> FusionAttributes { get; set; }
+
+        public DbSet<FusionAttributePromotionRule> FusionAttributePromotionRules { get; set; }
+
+        public DbSet<FusionAttributePromotionRuleItem> FusionAttributePromotionRuleItems { get; set; }
+
+        public DbSet<FusionAttributePromotionRuleMapping> FusionAttributePromotionRuleMappings { get; set; }
+
+        public DbSet<FusionAttributePromotion> FusionAttributePromotions { get; set; }
+
+        public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
+
+        public DbSet<FusionAttributeTypePromotion> FusionAttributeTypePromotions { get; set; }
+
+        public DbSet<FusionFilter> FusionFilters { get; set; }
+
+        public DbSet<FusionJobHistory> FusionJobHistories { get; set; }
+
+        public DbSet<FusionJobSchedule> FusionJobSchedules { get; set; }
+
+        public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
+
+        public DbSet<FusionType> FusionTypes { get; set; }
+
+        public DbSet<Group> Groups { get; set; }
+        
+        public DbSet<Intersect> Intersects { get; set; }
+
+        public DbSet<IntersectFlow> IntersectFlows { get; set; }
+
+        public DbSet<IntersectFlowItem> IntersectFlowItems { get; set; }
+
+        public DbSet<IntersectFlowMapping> IntersectFlowMappings { get; set; }
+
+        public DbSet<IntersectFlowMappingItem> IntersectFlowMappingItems { get; set; }
+
+        public DbSet<IntersectFlowType> IntersectFlowTypes { get; set; }
+
+        public DbSet<IntersectNode> IntersectNodes { get; set; }
+
+        public DbSet<IntersectType> IntersectTypes { get; set; }
+
+        public DbSet<IntersectTypeNode> IntersectTypeNodes { get; set; }
+
+        public DbSet<IntersectTypeRoleRelation> IntersectTypeRoleRelations { get; set; }
+
+        public DbSet<IntersectTypeRole> IntersectTypeRoles { get; set; }
+
+        public DbSet<LeafFusionAttribute> LeafFusionAttributes { get; set; }                                /* VIEW */
+
+        public DbSet<Load> Loads { get; set; }
+
+        public DbSet<LoadItem> LoadItems { get; set; }
+
+        public DbSet<LoadItemField> LoadItemFields { get; set; }
+
+        public DbSet<LoadItemRuleResult> LoadItemRuleResults { get; set; }
+
+        public DbSet<LoadType> LoadTypes { get; set; }
+
+        public DbSet<LoadTypeFieldDetail> LoadTypeFieldDetails { get; set; }                                /* VIEW */
+
+        public DbSet<LoadTypeField> LoadTypeFields { get; set; }
+
+        public DbSet<LoadTypeRuleDetail> LoadTypeRuleDetails { get; set; }   
+
+        public DbSet<LoadTypeRule> LoadTypeRules { get; set; }
+
+        public DbSet<LoadTypeRuleItem> LoadTypeRuleItems { get; set; }
+
+        public DbSet<LookupAllocation> LookupAllocations { get; set; }                                      /* VIEW */
+
+        public DbSet<Lookup> Lookups { get; set; }
+
+        public DbSet<LookupType> LookupTypes { get; set; }
+
+        public DbSet<ObjectSecurity> ObjectSecurities { get; set; }                                         /* CACHED TABLE LOADED BY JOB */
+
+        public DbSet<ObjectStyle> ObjectStyles { get; set; }
+
+        public DbSet<ObjectVersion> ObjectVersions { get; set; }
+
+        public DbSet<Policy> Policies { get; set; }
+
+        public DbSet<QueueFusionItem> QueueFusionItems { get; set; }
+
+        public DbSet<Question> Questions { get; set; }
+
+        public DbSet<QuestionType> QuestionTypes { get; set; }
+
+        public DbSet<Relationship> Relationships { get; set; }                                              /* VIEW */
+
+        //public DbSet<RelationshipAggregate> RelationshipAggregates { get; set; }                            /* VIEW */
+
+        //public DbSet<RelationshipWithContextAggregate> RelationshipWithContextAggregates { get; set; }      /* VIEW */
+
+        public DbSet<ReportLayout> ReportLayouts { get; set; }
+
+        public DbSet<Report> Reports { get; set; }
+
+        public DbSet<ReportTile> ReportTiles { get; set; }
+
+        public DbSet<Resolution> Resolutions { get; set; }
+
+        public DbSet<ResolutionRelation> ResolutionRelations { get; set; }
+
+        public DbSet<ResourceGroup> ResourceGroups { get; set; }
+
+        public DbSet<ResourceType> ResourceTypes { get; set; }
+
+        public DbSet<ResponseType> ResponseTypes { get; set; }
+
+        public DbSet<ResponseTypeOption> ResponseTypeOptions { get; set; }
+
+        public DbSet<Responsibility> Responsibilities { get; set; }
+
+        public DbSet<ResponsibilityContextItem> ResponsibilityContextItems { get; set; }
+
+        public DbSet<ResponsibilityDetailForResource> ResponsibilityDetailForResources { get; set; }        /* VIEW */
+
+        public DbSet<ResponsibilityDetail> ResponsibilityDetails { get; set; }                              /* VIEW */
+
+        public DbSet<ResponsibilitySummaryDetail> ResponsibilitySummaryDetails { get; set; }                /* VIEW */
+
+        public DbSet<ResponsibilityTransformation> ResponsibilityTransformations { get; set; }
+
+        public DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
+
+        public DbSet<ResponsibilityTypeClaim> ResponsibilityTypeClaims { get; set; }
+
+        public DbSet<ResponsibilityTypeObjectClaim> ResponsibilityTypeObjectClaims { get; set; }
+
+        public DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
+
+        public DbSet<ResponsibilityTypeSourceType> ResponsibilityTypeSourceTypes { get; set; }
+
+        public DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
+
+        public DbSet<ResponsibilityTypeObjectClaimDetail> ResponsibilityTypeObjectClaimDetail { get; set; } /* VIEW */
+
+        public DbSet<d360.core.entities.Rule> Rules { get; set; }
+
+        public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
+
+        public DbSet<SourcingResponsibilityDetail> SourcingResponsibilityDetails { get; set; }              /* VIEW */
+
+        public DbSet<Statistic> Statistics { get; set; }
+
+        public DbSet<StatisticType> StatisticTypes { get; set; }
+
+        public DbSet<StatisticTypeCheckOption> StatisticTypeCheckOptions { get; set; }
+        
+        public DbSet<StatisticTypeRelation> StatisticTypeRelations { get; set; }
+
+        public DbSet<StatisticTypeRelationDetail> StatisticTypeRelationDetails { get; set; }                /*VIEW*/
+
+        public DbSet<Survey> Surveys { get; set; }
+
+        public DbSet<SurveyObjectCache> SurveyObjectCaches { get; set; }
+
+        public DbSet<SurveyType> SurveyTypes { get; set; }
+
+        public DbSet<Tag> Tags { get; set; }
+
+        public DbSet<TagRelation> TagRelations { get; set; }
+
+        public DbSet<Taxonomy> Taxonomies { get; set; }
+
+        public DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
+
+        public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
+
+        public DbSet<TooltipTemplate> TooltipTemplates { get; set; }
+
+        public DbSet<d360.workflow.entities.Workflow> Workflows { get; set; }
+        public DbSet<d360.workflow.entities.WorkflowResource> WorkflowResources { get; set; }
+        public DbSet<d360.workflow.entities.WorkflowStatus> WorkflowStatuses { get; set; }
+        public DbSet<d360.workflow.entities.WorkflowTypeRelation> WorkflowTypeRelations { get; set; }
+
+        public DbSet<AuditField> AuditFields { get; set; }
+        public DbSet<Audit> Audits { get; set; }
+
+        #endregion
+
+        #region Internal Models
+
+        class ChildrenByFusionAndAttribute
+        {
+            public string ID { get; set; }
+            public string ParentID { get; set; }
+            public string Name { get; set; }
+        }
+
+        class RedFlagByTypeAndCurrentResource : ObjectDetail
+        {
+            public int CriticalRelationshipCount { get; set; }
+        }
+
+        class AllocationPossibilityComparer : IEqualityComparer<AllocationPossibility>
+        {
+            public bool Equals(AllocationPossibility x, AllocationPossibility y)
+            {
+                return (x.ObjectType == y.ObjectType && x.ObjectTypeID == y.ObjectTypeID);
+            }
+
+            public int GetHashCode(AllocationPossibility obj)
+            {
+                return obj.ObjectType.GetHashCode() ^ obj.ObjectTypeID.GetHashCode();
+            }
+        }
+
+        #endregion
+
+        #region Repository Methods
+
+        #region AlertFlag
+
+        public void AddActiveAlertFlag(SystemObjects type, int id, string comment)
+        {
+            var sType = type.ToString();
+            var anyActive = AlertFlags.Where(i => i.ObjectType == sType && i.ObjectID == id && i.Active).OrderByDescending(i => i.Date).ToList();
+            foreach (var a in anyActive)
+            {
+                a.Active = false;
+            }
+
+            if (string.IsNullOrEmpty(comment))
+            {
+                comment = "This item has been red flagged due to a critical issue.";
+            }
+
+            var c = new Comment { Body = comment, CommentTypeID = core.enums.CommentType.RedFlag, CreatingResourceID = CurrentResourceID, DateCreated = DateTime.UtcNow };
+            Comments.Add(c);
+            SaveChanges();
+
+            CommentRelations.Add(new CommentRelation { CommentID = c.ID, ObjectID = id, ObjectType = sType });
+            AlertFlags.Add(new AlertFlag { Date = DateTime.UtcNow, Active = true, ObjectID = id, ObjectType = sType, CommentID = c.ID });
+            SaveChanges();
+        }
+
+        public void CloseActiveAlertFlag(SystemObjects type, int id, string comment)
+        {
+            var sType = type.ToString();
+            var active = AlertFlags.Where(i => i.ObjectType == sType && i.ObjectID == id && i.Active).FirstOrDefault();
+
+            if (active != null)
+            {
+                active.Active = false;
+                if (string.IsNullOrEmpty(comment))
+                {
+                    comment = "The critical issue is resolved.  Closing red flag.";
+                }
+
+                Comments.Add(new Comment { Body = comment, CommentTypeID = core.enums.CommentType.RedFlag, DateCreated = DateTime.UtcNow, CreatingResourceID = CurrentResourceID, ParentID = active.CommentID });
+                SaveChanges();
+            }
+        }
+
+        public void UpdateActiveAlertFlag(SystemObjects type, int id, string comment)
+        {
+            var sType = type.ToString();
+            var active = AlertFlags.Where(i => i.ObjectType == sType && i.ObjectID == id && i.Active).FirstOrDefault();
+
+            if (active != null)
+            {
+                Comments.Add(new Comment { Body = comment, CommentTypeID = core.enums.CommentType.RedFlag, DateCreated = DateTime.UtcNow, CreatingResourceID = CurrentResourceID, ParentID = active.CommentID });
+                SaveChanges();
+            }
+        }
+
+        public AlertFlag GetActiveAlertFlagByObject(SystemObjects type, int id)
+        {
+            var sType = type.ToString();
+            return AlertFlags.Where(i => i.ObjectType == sType && i.ObjectID == id && i.Active).OrderByDescending(i => i.Date).FirstOrDefault();
+        }
+
+        #endregion
+
+        public void AddOrUpdateFields(List<Field> items)
+        {
+            if (items.Count > 0)
+            {
+                var oID = items[0].ObjectID;
+                var oType = items[0].ObjectType;
+                var existingFieldTypeIDs = Fields.Where(i => i.ObjectID == oID && i.ObjectType == oType).Select(i => i.FieldTypeID).ToList();
+                items.ForEach(item =>
+                {
+                    if (existingFieldTypeIDs.Any(i => item.FieldTypeID == i))
+                    {
+                        Fields.Attach(item);
+                        Entry(item).State = EntityState.Modified;
+                    }
+                    else
+                    {
+                        Fields.Add(item);
+                    }
+                });
+                try
+                {
+                    var existingFields = Fields.Where(i => i.ObjectID == oID && i.ObjectType == oType).ToList();
+                    existingFields.ForEach(item =>
+                    {
+                        if (!items.Any(i => i.FieldTypeID == item.FieldTypeID))
+                        {
+                            Fields.Remove(item);
+                        }
+                    });
+                }
+                catch
+                {
+                }
+                SaveChanges();
+            }
+        }
+
+        public void AddMappingDependency(int mappingID, 
+            string sourceSystem, int sourceSystemID, string sourceObject, int sourceObjectID, int sourceFusionAttributeID,
+            string targetSystem, int targetSystemID, string targetObject, int targetObjectID, int targetFusionAttributeID)
+        {
+            Database.Connection.Execute(
+                @"AddMappingDependencies @ResourceID, @MappingID, @SourceSystem, @SourceSystemID, @SourceObject, @SourceObjectID, @SourceFusionAttributeID, @TargetSystem, @TargetSystemID, @TargetObject, @TargetObjectID, @TargetFusionAttributeID",
+                new
+                {
+                    ResourceID = CurrentResourceID,
+                    MappingID = mappingID,
+                    SourceSystem = sourceSystem,
+                    SourceSystemID = sourceSystemID,
+                    SourceObject = sourceObject,
+                    SourceObjectID = sourceObjectID,
+                    SourceFusionAttributeID = sourceFusionAttributeID,
+                    TargetSystem = targetSystem,
+                    TargetSystemID = targetSystemID,
+                    TargetObject = targetObject,
+                    TargetObjectID = targetObjectID,
+                    TargetFusionAttributeID = targetFusionAttributeID
+                }, null, 90);
+        }
+
+        public void AddRelatedArtifact(int artifact, int artifactToRelate)
+        {
+            try
+            {
+                // See if there items are already related.
+                Database.Connection.Execute(@"
+declare @s int, @t int, @sG int, @tG int
+
+set @s = @ss
+set @t = @tt
+set @sG = 0
+set @tG = 0
+
+if exists(select GroupID from RelatedArtifact where ArtifactID = @s)
+begin
+	select @sG = GroupID from RelatedArtifact where ArtifactID = @s
+end
+if exists(select GroupID from RelatedArtifact where ArtifactID = @t)
+begin
+	select @tG = GroupID from RelatedArtifact where ArtifactID = @t
+end
+
+if @sG = @tG and @sG = 0 and @tG = 0
+begin
+ select @sG = coalesce(max(GroupID), 0) + 1 from RelatedArtifact
+ begin try
+  insert into RelatedArtifact (GroupID, ArtifactID) values (@sG, @s)
+  insert into RelatedArtifact (GroupID, ArtifactID) values (@sG, @t)
+ end try
+ begin catch
+  select ''
+ end catch
+end
+
+if @sG <> @tG and @sG <> 0 and @tG = 0
+begin
+ insert into RelatedArtifact (GroupID, ArtifactID) values (@sG, @t)
+end
+
+if @sG <> @tG and @sG = 0 and @tG <> 0
+begin
+ insert into RelatedArtifact (GroupID, ArtifactID) values (@tG, @s)
+end
+", new { ss = artifact, tt = artifactToRelate });
+            }
+            catch
+            {
+            }
+        }
+
+        public void AddSourceTypesToResponsibilityType(int id, List<ObjectModel> items)
+        {
+            foreach (var o in items)
+            {
+                var r = new ResponsibilityTypeSourceType { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = id };
+                ResponsibilityTypeSourceTypes.Add(r);
+            }
+            SaveChanges();
+        }
+
+        public void DeleteRelatedArtifact(int source, int target)
+        {
+            // See if there items are already related.
+            Database.Connection.Execute(@"
+declare @s int, @t int, @sG int, @tG int, @count int
+
+set @s = @ss
+set @t = @tt
+set @sG = 0
+set @tG = 0
+
+if exists(select GroupID from RelatedArtifact where ArtifactID = @s)
+begin
+	select @sG = GroupID from RelatedArtifact where ArtifactID = @s
+end
+if exists(select GroupID from RelatedArtifact where ArtifactID = @t)
+begin
+	select @tG = GroupID from RelatedArtifact where ArtifactID = @t
+end
+
+if @sG = @tG
+begin
+ delete RelatedArtifact where GroupID = @tG and ArtifactID = @t
+ select @count = count(1) from RelatedArtifact where GroupID = @tG
+ if @count = 1
+ begin
+  delete RelatedArtifact where GroupID = @tG
+ end
+end", new { ss = source, tt = target });
+        }
+
+        public void EditSourceTypesForResponsibilityType(int id, List<ObjectModel> items)
+        {
+            Delete<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == id);
+            AddSourceTypesToResponsibilityType(id, items);
+        }
+
+        public List<AllocationPossibility> GetAllocationOptions()
+        {
+            //EXEC GetAllocationOptions
+            return Database.Connection.Query<AllocationPossibility>(@"
+			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
+			union
+			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Domains :: ' + Name as Name from DomainType
+			union
+			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Information Models :: ' + Name as Name from TaxonomyType
+			union
+			select	'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + Name as Name from IntersectType
+			union
+			select	'FusionType' as ObjectType, ID as ObjectTypeID, 'Fusion Types :: ' + Name as Name from FusionType
+			union
+			select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
+			union
+			select	'PolicyType' as ObjectType, 0 as ObjectTypeID, 'Policies and Rules' as Name
+").ToList(); 
+        }
+
+        public List<AllocationPossibility> GetAvailableAllocationOptions(int attributeTypeID)
+        {
+            return Database.Connection.Query<AllocationPossibility>(@"
+select A.* from (
+			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
+			union
+			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Domains :: ' + Name as Name from DomainType
+			union
+			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Information Models :: ' + Name as Name from TaxonomyType
+			union
+			select	'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + Name as Name from IntersectType
+			union
+			select	'FusionType' as ObjectType, ID as ObjectTypeID, 'Fusion Types :: ' + Name as Name from FusionType
+			union
+			select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
+			union
+			select	'Policy' as ObjectType, 0 as ObjectTypeID, 'Policy' as Name
+			union
+			select	'Rule' as ObjectType, 0 as ObjectTypeID, 'Rule' as Name
+) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
+where R.ObjectID is null", new { id = attributeTypeID }).ToList(); 
+        }
+
+        public List<AllocationPossibility> GetAvailableAllocationPossibilities()
+        {
+            return GetAllocationOptions();
+        }
+
+        public IQueryable<ResponsibilityType> GetAllowedAndUnallocatedResponsibilityTypesByObject(SystemObjects type, int id)
+        {
+            try
+            {
+                return Database.Connection.Query<ResponsibilityType>("EXEC GetAllowedAndUnallocatedResponsibilityTypesByObject @type, @id", new
+                {
+                    type = type.ToString(),
+                    id = id
+                }).AsQueryable();
+            }
+            catch (SqlException ex)
+            {
+                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public List<AllowedIntersectionType> GetAllowedIntersectionTypes(string type, int id, int intersectID = 0)
+        {
+            return Database.Connection
+                .Query<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID, @IntersectID", 
+                new 
+                { 
+                    SourceType = type.ToString(), 
+                    SourceTypeID = id, 
+                    IntersectID = intersectID 
+                }).ToList();
+        }
+
+        public IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByObject(SystemObjects type, int id)
+        {
+            try
+            {
+                return Database.Connection.Query<ResponsibilityType>("EXEC GetAllowedResponsibilityTypesByObject @type, @id", new
+                {
+                    type = type.ToString(),
+                    id = id
+                }).AsQueryable();
+            }
+            catch (SqlException ex)
+            {
+                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        
+        //public List<Dictionary<string, object>> GetArtifactsAsDictionary(int id)
+        //{
+        //    string k = key(ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY, id);
+        //    if (Caching.ItemExists<List<Dictionary<string, object>>>(k))
+        //    {
+        //        return Caching.GetItem<List<Dictionary<string, object>>>(k);
+        //    }
+        //    else
+        //    {
+        //        var items = Filter<Artifact>(i => i.ArtifactTypeID == id).ToList();
+        //        var IDs = items.Select(i => i.ID).ToList();
+        //        var sType = SystemObjects.Artifact.ToString();
+        //        var fields = (
+        //                     from f in FieldWithRelations
+        //                     join a in Artifacts on f.ObjectID equals a.ID
+        //                     where f.ObjectType == sType
+        //                     where f.IsListable
+        //                     where a.ArtifactTypeID == id
+        //                     select f
+        //                     ).ToList();
+
+        //        var model = new List<Dictionary<string, object>>();
+        //        items.ForEach(i =>
+        //        {
+        //            var item = new Dictionary<string, object>();
+
+        //            item.Add("ID", i.ID);
+        //            item.Add("Name", i.Name);
+        //            item.Add("Description", i.Description);
+        //            item.Add("ParentID", i.ParentID);
+        //            item.Add("Status", i.Status);
+
+        //            foreach (var n in fields.Where(f => f.ObjectID == i.ID).OrderBy(f => f.SortOrder))
+        //            {
+        //                item.Add(n.Name, n.FormattedValue);
+        //            }
+
+        //            model.Add(item);
+        //        });
+
+        //        Caching.SetItem<List<Dictionary<string, object>>>(k, model);
+        //        return model;
+        //    }
+        //}
+
+        public IQueryable<AttributeHierarchyItem> GetAttributeAndIntersectHierarchyByObject(SystemObjects type, int id)
+        {
+            return Query<AttributeHierarchyItem>("EXEC GetAttributeAndIntersectHierarchyByObject @type, @id", new { type = type.ToString(), id = id }).AsQueryable();
+        }
+
+        public List<ChildArtifactStatisticsByObject> GetChildArtifactStatisticsByObject(int id)
+        {
+            var list = Database.Connection.Query<ChildArtifactStatisticsByObject>("tile.GetChildArtifactStatisticsByObject @id", new { id = id}).ToList();
+
+            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+
+            list.ForEach(i =>
+            {
+                i.Name = pluralize.Pluralize(i.Name);
+            });
+
+            return list;
+        }
+
+        public List<KeyValuePair<int, string>> GetClaimObjects()
+        {
+            var array = (ClaimObject[])(Enum.GetValues(typeof(ClaimObject)).Cast<ClaimObject>());
+            return array
+                .Select(a => new KeyValuePair<int, string>(Convert.ToInt32(a), a.ToString()))
+                .ToList();
+        }
+
+        public List<KeyValuePair<int, string>> GetClaims()
+        {
+            var array = (Claim[])(Enum.GetValues(typeof(Claim)).Cast<Claim>());
+            return array
+                .Select(a => new KeyValuePair<int, string>(Convert.ToInt32(a), a.ToString()))
+                .ToList();
+        }
+
+        public List<KeyValuePair<int, string>> GetClassifications()
+        {
+            var array = (IntersectClassification[])(Enum.GetValues(typeof(IntersectClassification)).Cast<IntersectClassification>());
+            return array
+                .Select(a => new KeyValuePair<int, string>(Convert.ToInt32(a), a.ToString()))
+                .ToList();
+        }
+
+        public List<CommentDetail> GetCommentDetailsByID(int id)
+        {
+            return Database.Connection.Query<CommentDetail>("EXEC GetCommentDetailByID", new { id = id }).ToList();
+        }
+
+        public IQueryable<FieldNameByObjectType> GetFieldNamesByObjectType(string type, int id)
+        {
+            return GetFieldNamesByObjectType((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id);
+        }
+
+        public IQueryable<FieldNameByObjectType> GetFieldNamesByObjectType(SystemObjects type, int id)
+        {
+            return Database.Connection
+                .Query<FieldNameByObjectType>("EXEC GetFieldNamesByObjectType @type, @id", new { type = type.ToString(), id = id })
+                .OrderBy(i => i.Name)
+                .AsQueryable();
+        }
+
+        public IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id)
+        {
+            string query = string.Format("EXEC GetFieldsWithRelationsByObject '{0}', {1}", type.ToString(), id);
+            return Database.SqlQuery<FieldWithRelation>(query).OrderBy(i => i.SortOrder).AsQueryable();
+        }
+
+        public IQueryable<FieldTypeWithRelation> GetFieldTypeRelationsByObject(SystemObjects type, int id)
+        {
+            var sType = type.ToString();
+            return Filter<FieldTypeWithRelation>(
+                i => i.Object == sType && i.ObjectID == id
+                )
+                .OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName)
+                .AsQueryable();
+        }
+
+        #region Fusion
+
+        public Dictionary<string, object> GetFusionAsDictionary(int id)
+        {
+            var item = GetById<Fusion>(id, i => i.FusionFilters);
+            var sType = SystemObjects.Fusion.ToString();
+            var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == item.ID && i.IsListable).ToList();
+
+            var model = new Dictionary<string, object>();
+            model.Add("ID", item.ID);
+            model.Add("FusionTypeID", item.FusionTypeID);
+            model.Add("Name", item.Name);
+            model.Add("Enabled", item.Enabled);
+            model.Add("Manual", item.Manual);
+            if (item.ForceRefresh.HasValue)
+            {
+                if (item.ForceRefresh.Value)
+                    model.Add("ForceRefresh", item.ForceRefresh.Value);
+            }
+            foreach (var n in fields.Where(f => f.ObjectID == item.ID).OrderBy(f => f.SortOrder))
+            {
+                model.Add(n.Name, n.FormattedValue);
+            }
+
+            if (item.FusionFilters.Count > 0)
+            {
+                model.Add("Filters", item.FusionFilters.Select(i => new { i.FusionAttributeTypeID, i.Filter }).ToDictionary(k => k.FusionAttributeTypeID, v => v.Filter));
+            }
+            
+            return model;
+        }
+        
+        public List<Dictionary<string, object>> GetFusionsAsDictionary(bool enabledOnly = false)
+        {
+            return GetFusionsAsDictionary(null, enabledOnly);
+        }
+
+        public List<Dictionary<string, object>> GetFusionsAsDictionary(int? id = null, bool enabledOnly = false)
+        {
+            var items = FusionTypeConfigurations.Where(i => (id.HasValue ? i.FusionTypeID == id.Value : 1 == 1)).ToList();
+            if (enabledOnly)
+            {
+                items = items.Where(i => i.Enabled).ToList();
+            }
+            var IDs = items.Select(i => i.ID).ToList();
+            var sType = SystemObjects.Fusion.ToString();
+            var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && IDs.Contains(i.ObjectID) && i.IsListable).ToList();
+
+            var model = new List<Dictionary<string, object>>();
+            items.ForEach(i =>
+            {
+                var item = new Dictionary<string, object>();
+                item.Add("ID", i.ID);
+                item.Add("FusionTypeID", i.FusionTypeID.ToString());
+                item.Add("Name", i.Name);
+                item.Add("Enabled", i.Enabled);
+                item.Add("Manual", i.Manual);
+                if (i.ForceRefresh.HasValue)
+                {
+                    if (i.ForceRefresh.Value)
+                        item.Add("ForceRefresh", i.ForceRefresh.Value);
+                }
+                foreach (var n in fields.Where(f => f.ObjectID == i.ID).OrderBy(f => f.SortOrder))
+                {
+                    item.Add(n.Name, n.FormattedValue);
+                }
+
+                model.Add(item);
+            });
+
+            return model;
+        }
+
+        public List<FusionOwnerOption> GetFusionOwnerOptions()
+        {
+            return Database.Connection.Query<FusionOwnerOption>("EXEC fusion.GetFusionOwnerOptions").ToList();
+        }
+
+        public List<FusionPromotionOption> GetFusionPromotionOptions()
+        {
+            return Query<FusionPromotionOption>(@"
+select	'ArtifactType' as PromotionObjectType, 
+		ID as PromotionObjectID, 
+		'Glossary: ' + Name as Name, 
+		ParentID as ParentObjectTypeID
+from	ArtifactType 
+union
+select 'TaxonomyType' as PromotionObjectType, 
+		ID as PromotionObjectID, 
+		'Information Model: ' + Name as Name, 
+		ID as ParentObjectTypeID
+from	TaxonomyType 
+union
+select	'DomainType' as PromotionObjectType, 
+		ID as PromotionObjectID, 
+		'Reference: ' + Name + ' List' as Name, 
+		NULL as ParentObjectTypeID 
+from	DomainType 
+union
+select	'DomainType' as PromotionObjectType, 
+		ID as PromotionObjectID, 
+		'Reference:' + Name + ' List Item' as Name, 
+		ID as ParentObjectTypeID 
+from	DomainType
+").OrderBy(i => i.Name).ToList();
+        }
+
+        public List<FusionAttributeItem> GetAttributesByFusion(int fusionID)
+        {
+            string k = key(FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY, fusionID);
+            if (Caching.ItemExists<List<FusionAttributeItem>>(k))
+            {
+                return Caching.GetItem<List<FusionAttributeItem>>(k);
+            }
+            else
+            {
+
+                string query = string.Format("fusion.GetAttributesByFusion {0}", fusionID);
+                var list = Database.Connection.Query<FusionAttributeItem>(query).ToList();
+                Caching.SetItem<List<FusionAttributeItem>>(k, list);
+
+                return list;
+            }
+        }
+
+        //public List<FusionAttributeItem> GetAttributesByFusion(int fusionID)
+        //{
+        //    string k = key(FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY, fusionID);
+        //    if (Caching.ItemExists<List<FusionAttributeItem>>(k))
+        //    {
+        //        return Caching.GetItem<List<FusionAttributeItem>>(k);
+        //    }
+        //    else
+        //    {
+
+        //        string query = string.Format("fusion.GetAttributesByFusion {0}", fusionID);
+        //        var list = Database.Connection.Query<FusionAttributeItem>(query).ToList();
+        //        Caching.SetItem<List<FusionAttributeItem>>(k, list);
+
+        //        return list;
+        //    }
+        //}
+
+        //public DataTable GetItemsWithDynamicFieldsByFusionParent(int parentID, int childFusionAttributeTypeID)
+        //{
+        //    //return Query<DataRow>(
+        //    //    "exec fusion.GetItemsWithDynamicFieldsByParent @id, @fusionAttributeTypeID", 
+        //    //    new { id = parentID, fusionAttributeTypeID = childFusionAttributeTypeID }
+        //    //    );
+
+        //    //var model = new List<Dictionary<string, object>>();
+
+        //    using (var cmd = (SqlCommand)Database.Connection.CreateCommand())
+        //    {
+        //        var sql = @"exec fusion.GetItemsWithDynamicFieldsByParent @id, @fusionAttributeTypeID";
+        //        cmd.Parameters.Add(new SqlParameter("id", parentID));
+        //        cmd.Parameters.Add(new SqlParameter("fusionAttributeTypeID", childFusionAttributeTypeID));
+        //        cmd.CommandText = sql;
+        //        cmd.CommandTimeout = 180;
+        //        var da = new SqlDataAdapter(cmd);
+        //        var dt = new DataTable();
+        //        da.Fill(dt);
+        //        da.Dispose();
+        //        return dt;
+        //        //foreach (DataRow r in dt.Rows)
+        //        //{
+        //        //    var d = new Dictionary<string, object>();
+        //        //    foreach (DataColumn c in dt.Columns)
+        //        //    {
+        //        //        d.Add(c.ColumnName, r[c]);
+        //        //    }
+        //        //    model.Add(d);
+        //        //}
+        //    }
+        //    //return model;
+        //}
+
+        #endregion
+
+        public List<Dictionary<string, object>> GetLookupItemsAsDictionary(int typeID)
+        {
+            var items = new List<Dictionary<string, object>>();
+
+            var values = Filter<Lookup>(i => i.LookupTypeID == typeID).ToList();
+            
+            var lookupIDs = values.Select(i => i.ID).ToList();
+            var sType = SystemObjects.Lookup.ToString();
+            var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && lookupIDs.Contains(i.ObjectID)).ToList();
+
+            values.ForEach(e =>
+            {
+                var item = new Dictionary<string, object>();
+
+                item.Add("ID", e.ID.ToString());
+                foreach (var field in fields.Where(i => i.ObjectID == e.ID).OrderBy(i => i.SortOrder))
+                {
+                    if (!item.ContainsKey(field.Name)) item.Add(field.Name, field.FormattedValue);
+                }
+
+                items.Add(item);
+            });
+
+            return items;
+        }
+
+        public ObjectDetail GetObjectDetail(SystemObjects type, long id)
+        {
+            var model = GetObjectDetail(type.ToString(), id);
+            return model;
+        }
+
+        public ObjectDetail GetObjectDetail(string type, long id)
+        {
+            string query = string.Format("SELECT * FROM utility.ObjectDetail('{0}', {1})", type, id);
+            var model = Database.SqlQuery<ObjectDetail>(query).SingleOrDefault();
+            if (model != null)
+            {
+                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                model.PluralizedName = pluralize.Pluralize(model.Name);
+                pluralize = null;
+            }
+            return model;
+        }
+
+        public ObjectStyle GetObjectStyle(SystemObjects type, int id)
+        {
+            var sType = type.ToString();
+            return ObjectStyles.SingleOrDefault(i => i.ObjectType == sType && i.ObjectID == id);
+        }
+        
+        public IEnumerable<NonIntersectionPoint> GetPossibleRelationshipsBySourceAndTargetType(SystemObjects source, int sourceID, SystemObjects targetType, int targetTypeID, int intersectTypeID)
+        {
+            return
+                Database.Connection.Query<NonIntersectionPoint>(
+                    "EXEC GetNonIntersections @SourceID, @TargetTypeID, @SourceType, @TargetType, @Prefix, @IntersectTypeID",
+                    new
+                    {
+                        SourceID = sourceID,
+                        TargetTypeID = targetTypeID,
+                        SourceType = source.ToString(),
+                        TargetType = targetType.ToString(),
+                        Prefix = "",
+                        IntersectTypeID = intersectTypeID
+                    }, null, true, 120
+                );
+        }
+
+        public IQueryable<ObjectModel> GetRelatedObjectsByEventType(int id)
+        {
+            string query = string.Format("EXEC GetRelatedObjectsByEventTypeWrapper {0}", id);
+            return Database.SqlQuery<ObjectModel>(query).AsQueryable();
+        }
+        
+        public XElement GetRandomSurveyQuestionForUser(SystemObjects type, int id)
+        {
+            string query = string.Format("GetRandomSurveyQuestionForUser {0}, '{1}', {2}", CurrentResourceID, type.ToString(), id);
+            var xmlString = Database.SqlQuery<string>(query).First();
+            return XElement.Parse(xmlString);
+        }
+        
+        public IEnumerable<dynamic> GetRedFlagsByTypeAndCurrentResource(SystemObjects type, int id)
+        {
+            return
+                Database.Connection.Query<RedFlagByTypeAndCurrentResource>(
+                    "EXEC tile.GetRedFlagsByTypeAndResource @type, @id, @resourceID",
+                    new
+                    {
+                        type = type.ToString(),
+                        id = id,
+                        resourceID = CurrentResourceID
+                    }
+                );
+        }
+        
+        public IEnumerable<RedFlagSummariesByResource> GetRedFlagSummariesByCurrentResource()
+        {
+            return
+                Database.Connection.Query<RedFlagSummariesByResource>(
+                    "EXEC tile.GetRedFlagSummariesByResource @resourceID", 
+                    new { resourceID = CurrentResourceID }
+                );
+        }
+
+        public List<Dictionary<string, object>> GetResourcesAsDictionaries(List<Resource> companyResources)
+        {
+            var sType = SystemObjects.Resource.ToString();
+            var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && i.IsListable).ToList();
+
+            var list = new List<Dictionary<string, object>>();
+
+            companyResources.ForEach(r => {
+                var model = new Dictionary<string, object>();
+                model.Add("ID", r.ID);
+                model.Add("Email", r.Email);
+                model.Add("FirstName", r.FirstName);
+                model.Add("LastName", r.LastName);
+                model.Add("Status", r.Status);
+                model.Add("DateLastLoggedIn", r.DateLastLoggedIn);
+                foreach (var n in fields.Where(f => f.ObjectID == r.ID).OrderBy(f => f.SortOrder))
+                {
+                    model.Add(n.Name, n.FormattedValue);
+                }
+                list.Add(model);
+            });
+
+            return list;
+        }
+
+        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id, bool showHidden = true)
+        {
+            try
+            {
+                var sql = @"select * from ResponsibilityDetail where ObjectType = @type and ObjectID = @id" + (showHidden ? "" : " and Visible = 1") + " order by [Role], [ResponsibleObjectName]";
+                return Query<ResponsibilityDetail>(sql, new { type = type.ToString(), id = id }).AsQueryable();
+            }
+            catch (SqlException ex)
+            {
+                throw CheckAndTranslateSqlException(ex, "Responsibility");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByResource(SystemObjects type, int id)
+        {
+            try
+            {
+                var sType = type.ToString();
+                return Filter<ResponsibilityDetail>(i => i.ResponsibleObjectType == sType && i.ResponsibleObjectID == id);
+            }
+            catch (SqlException ex)
+            {
+                throw CheckAndTranslateSqlException(ex, "Responsibility");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public IQueryable<ResponsibilitySummaryDetail> GetResponsibilitiesByType(int id)
+        {
+            try
+            {
+                return Filter<ResponsibilitySummaryDetail>(i => i.ResponsibilityTypeID == id);
+            }
+            catch (SqlException ex)
+            {
+                throw CheckAndTranslateSqlException(ex, "Responsibility");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private IQueryable<ResponsibilitySummaryDetail> loadResponsibilitySummaryResourceData(List<ResponsibilitySummaryDetail> responsibilities)
+        {
+            var IDs = responsibilities.Where(i => i.ResponsibleObjectType == SystemObjects.Resource.ToString()).Select(i => i.ResponsibleObjectID).ToList();
+            var resources = Community.Filter<Resource>(i => IDs.Contains(i.ID)).ToList();
+            responsibilities.Where(i => i.ResponsibleObjectType == SystemObjects.Resource.ToString()).ToList().ForEach(f =>
+            {
+                var r = resources.SingleOrDefault(i => i.ID == f.ResponsibleObjectID);
+                if (r != null)
+                {
+                    f.ResponsibleObjectName = r.FormatDisplayName();
+                    f.ResponsibleObjectUrl = string.Format("#/resources/{0}", r.ID);
+                    f.ResponsibleObjectTypeName = "Resource";
+                }
+            });
+
+            return responsibilities.AsQueryable();
+        }
+
+        public IQueryable<int> GetTargetObjectIDsBySourceIDsAndType(SystemObjects sourceType, List<int> sourceIDs, SystemObjects targetType)
+        {
+            var sSourceType = sourceType.ToString();
+            var sTargetType = targetType.ToString();
+
+            return (
+                    from i in Intersects
+                    from sn in i.Nodes
+                    from tn in i.Nodes
+                    where sn.ObjectType == sSourceType
+                    where sourceIDs.Contains(sn.ObjectID)
+                    where tn.ObjectType == sTargetType
+                    select tn.ObjectID
+                    ).AsQueryable();
+        }
+
+        public List<StatisticDetail> GetStatisticDetailsByType(SystemObjects type, int id)
+        {
+            return Query<StatisticDetail>(string.Format("GetStatisticDetails '{0}', {1}", type.ToString(), id)).ToList();
+        } 
+
+        public IEnumerable<dynamic> GetStatisticTypeExistenceCheckOptions()
+        {
+            string sql = @"SELECT 'AttributeType|'+ cast(ID as varchar(15)) as ID, 'Attribute :' + Name as Name from AttributeType Where ParentID is null
+            union SELECT 'ResponsibilityType|'+ cast(ID as varchar(15)) as ID, 'Responsibility :' + Name as Name from ResponsibilityType";
+            return Query<dynamic>(sql);
+        }
+
+        public IEnumerable<dynamic> GetStatisticTypeCountCheckOptions()
+        {
+            string sql = @"SELECT 'AttributeType|'+ cast(ID as varchar(15)) as ID, 'Attribute :' + Name as Name from AttributeType Where ParentID is null
+            union SELECT 'ResponsibilityType|'+ cast(ID as varchar(15)) as ID, 'Responsibility :' + Name as Name from ResponsibilityType";
+            return Query<dynamic>(sql);
+        }
+
+        public IEnumerable<dynamic> GetStatisticTypeRelationshipCheckOptions()
+        {
+            var sql = @"select * from (
+			select	'ArtifactType|' + cast(ID as varchar(15)) as ID, 'Artifacts :: ' + Name as Name from ArtifactType union
+			select	'DomainType|' + cast(ID as varchar(15)) as ID,  'Domains :: ' + Name as Name from DomainType union
+			select	'TaxonomyType|' + cast(ID as varchar(15)) as ID,  'Information Models :: ' + Name as Name from TaxonomyType union
+			select	'IntersectType|' + cast(ID as varchar(15)) as ID, 'Relationships :: ' + Name as Name from IntersectType union
+			select	'FusionAttributeType|' + cast(ID as varchar(15)) as ID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
+			) O order by Name";
+            return Query<dynamic>(sql).ToList();
+        }
+
+        public IEnumerable<dynamic> GetStatisticTypeRollupCheckOptions()
+        {
+            var sql = @"select * from (
+			select	'ArtifactType|' + cast(ID as varchar(15)) as ID, 'Artifacts :: ' + Name as Name from ArtifactType
+			) O order by Name";
+            return Query<dynamic>(sql).ToList();
+        }
+
+        public List<StatisticTypeCheckOption> GetAvailableObjectsToCheck()
+        {
+
+            var list = StatisticTypeCheckOptions.ToList();
+            list.Add(new StatisticTypeCheckOption { Name = "All", NamePrefix = "Artifact", ObjectID = 0, ObjectType = "ArtifactType" });
+            list.Add(new StatisticTypeCheckOption { Name = "All", NamePrefix = "Information Model", ObjectID = 0, ObjectType = "TaxonomyType" });
+            return list.OrderBy(i => i.NamePrefix).ThenBy(i => i.Name).ToList();
+        }
+
+        public bool HasClaimInCurrentPermissionList(List<SecurityDetail> list, Claim claim, ClaimObject claimObject = ClaimObject.Root)
+        {
+            var has = CurrentResourceIsAdmin;
+            if (!has) has = list.Any(i => i.Claim == claim && i.ClaimObject == claimObject);
+            return has;
+        }
+
+        public bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID)
+        {
+            if (!resourceID.HasValue)
+            {
+                resourceID = CurrentResourceID;
+            }
+            string sType = type.ToString();
+            return Follows.Any(i => i.ResourceID == resourceID && i.ObjectType == sType && i.ObjectID == objectID);
+        }
+
+        public NameValueCollection LoadLookupList(FieldType field)
+        {
+            var values = new NameValueCollection();
+
+            if (field.LookupObjectID > 0)
+            {
+                switch (field.LookupObjectType)
+                {
+                    case "Artifact":
+                        #region Parse
+
+                        var a = Artifacts.Where(t => t.ArtifactTypeID == field.LookupObjectID).ToList();
+
+                        //var idTokens = field.Lookup.IDFormatString.ParseTokens();
+                        //var textTokens = field.Lookup.TextFormatString.ParseTokens();
+
+                        foreach (var value in a)
+                        {
+                            // Copy instance of the text and ID format strings and replace with values.
+                            string txt = value.Name; //field.Lookup.TextFormatString.ReplaceTokenWithValues(textTokens, element);
+                            string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
+
+                            // Add the item to the list of displayed values.
+                            values.Add(txt, val);
+                        }
+
+                        #endregion
+                        break;
+                    case "Domain":
+                        #region Parse
+
+                        var d = Domains.Where(t => t.DomainTypeID == field.LookupObjectID).ToList();
+
+                        //var idTokens = field.Lookup.IDFormatString.ParseTokens();
+                        //var textTokens = field.Lookup.TextFormatString.ParseTokens();
+
+                        foreach (var value in d)
+                        {
+                            // Copy instance of the text and ID format strings and replace with values.
+                            string txt = value.Name; //field.Lookup.TextFormatString.ReplaceTokenWithValues(textTokens, element);
+                            string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
+
+                            // Add the item to the list of displayed values.
+                            values.Add(txt, val);
+                        }
+
+
+                        #endregion
+                        break;
+                    case "Intersect":
+                        #region Parse
+
+                        var i = Intersects.Where(t => t.IntersectTypeID == field.LookupObjectID).ToList();
+
+                        //var idTokens = field.Lookup.IDFormatString.ParseTokens();
+                        //var textTokens = field.Lookup.TextFormatString.ParseTokens();
+
+                        foreach (var value in i)
+                        {
+                            // Copy instance of the text and ID format strings and replace with values.
+                            string txt = value.Name; //field.Lookup.TextFormatString.ReplaceTokenWithValues(textTokens, element);
+                            string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
+
+                            // Add the item to the list of displayed values.
+                            values.Add(txt, val);
+                        }
+
+                        #endregion
+                        break;
+                    default:    //default = Standard
+                        #region Parse
+
+                        var l = Lookups.Where(t => t.LookupTypeID == field.LookupObjectID).ToList();
+                        var lIDs = l.Select(t => t.ID).ToList();
+                        var sType = SystemObjects.Lookup.ToString();
+                        var lFields = Fields.Include(t => t.FieldType).Where(t => t.ObjectType == sType && lIDs.Contains(t.ObjectID)).ToList();
+                        var textTokens = field.LookupDisplayFormat.ParseTokens();
+
+                        foreach (var value in l)
+                        {
+                            var fields = lFields.Where(t => t.ObjectID == value.ID).ToList();
+                            // Copy instance of the text and ID format strings and replace with values.
+                            string txt = field.LookupDisplayFormat.ReplaceTokenWithValues(textTokens, fields);
+                            string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
+
+                            // Immediately replace the ID in the value format string, if present.
+                            val = val.Replace("{ID}", value.ID.ToString());
+
+                            // Add the item to the list of displayed values.
+                            values.Add(txt, val);
+                        }
+
+                        #endregion
+                        break;
+                }
+            }
+
+            return values;
+        }
+
+        public void MergeCommonFieldTypesToMaster(int fieldTypeID)
+        {
+            string query = string.Format("MergeCommonFieldTypesToMaster {0}", fieldTypeID);
+            Database.ExecuteSqlCommand(query);
+        }
+
+        public IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90)
+        {
+            return Database.Connection.Query<T>(sql, param, null, true, timeout);
+        }
+
+        public NameValueCollection Render(ICollection<Field> fields, List<Lookup> list = null, List<Field> lookupFields = null)
+        {
+            var values = new NameValueCollection();
+
+            foreach (var field in fields)
+            {
+                string key = field.FieldType.FriendlyName;
+                string value = "";
+
+                if (field.FieldType.LookupObjectID > 0)
+                {
+                    int id;
+                    if (int.TryParse(field.Value, out id))
+                    {
+                        switch (field.FieldType.LookupObjectType)
+                        {
+                            case "Artifact":
+                                var ar = Artifacts.Include(i => i.ArtifactType).SingleOrDefault(i => i.ID == id);
+                                if (ar != null)
+                                {
+                                    value = string.Format("<a data-type='Artifact' data-action='Preview' data-id='{0}' href='/artifacts/item/{0}'>{1}</a>", ar.ID, ar.Name);
+                                }
+                                break;
+                            case "Domain":
+                                var dl = Domains.Include(i => i.DomainType).SingleOrDefault(i => i.ID == id);
+                                if (dl != null)
+                                {
+                                    value = string.Format("<a data-type='Domain' data-action='Preview' data-id='{1}' href='/domains/{0}#{1}'>{2}</a>", dl.DomainTypeID, dl.ID, dl.Name);
+                                }
+                                break;
+                            default:
+                                var lv = (list != null) ?
+                                                        list.SingleOrDefault(i => i.ID == id) :
+                                                        Lookups.SingleOrDefault(i => i.ID == id);
+                                if (lv != null)
+                                {
+                                    var theseLookupFields = (lookupFields == null) ?
+                                        Fields.Where(i => i.ObjectType == SystemObjects.Lookup.ToString() && i.ObjectID == id).ToList() :              //load from database if missing from parameters
+                                        lookupFields.Where(i => i.ObjectType == SystemObjects.Lookup.ToString() && i.ObjectID == id).ToList();
+
+                                    value = field.FieldType.LookupDisplayFormat.ReplaceTokenWithValues(theseLookupFields);
+                                }
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    value = "";
+
+                    switch (field.FieldType.Type)
+                    {
+                        case "Boolean":
+                            bool bVal = false;
+                            value = bool.TryParse(field.Value, out bVal) ? (bVal ? "Yes" : "No") : "No";
+                            break;
+                        case "Date":
+                            DateTime d;
+                            value = DateTime.TryParse(field.Value, out d) ? d.ToShortDateString() : "No date specified.";
+                            break;
+                        case "DateTime":
+                            DateTime dt;
+                            value = DateTime.TryParse(field.Value, out dt) ? dt.ToString() : "No date specified.";
+                            break;
+                        default:
+                            value = field.Value;
+                            break;
+                    }
+                }
+
+                values.Add(key, value);
+            }
+
+            return values;
+        }
+
+        public bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID)
+        {
+            if (!resourceID.HasValue)
+            {
+                resourceID = CurrentResourceID;
+            }
+
+            bool value = false;
+
+            string sType = type.ToString();
+            var f = Follows.SingleOrDefault(i => i.ObjectID == objectID && i.ObjectType == sType && i.ResourceID == resourceID);
+
+            if (f != null)
+            {
+                Follows.Remove(f);
+                SaveChanges();
+                value = false;
+            }
+            else
+            {
+                f = new Follow { ObjectID = objectID, ObjectType = type.ToString(), ResourceID = resourceID.Value, DateCreated = DateTime.UtcNow };
+                Follows.Add(f);
+                SaveChanges();
+                value = true;
+            }
+
+            return value;
+        }
+
+        public void ValidateIntersectType(int id, List<IntersectTypeNode> nodes)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("ObjectType");
+            dt.Columns.Add("ObjectID");
+
+            nodes.ForEach(n =>
+            {
+                dt.Rows.Add(n.ObjectType, n.ObjectID);
+            });
+
+            var pId = new SqlParameter("ID", SqlDbType.Int);
+            pId.Value = id;
+
+            var pTbl = new SqlParameter("Nodes", SqlDbType.Structured);
+            pTbl.Value = dt;
+            pTbl.TypeName = "dbo.IntersectionNodeType";
+
+            Database.ExecuteSqlCommand("validate.IntersectType @ID, @Nodes", pId, pTbl);
+        }
+
+        #region Events
+
+        public IQueryable<OverlayEventHeader> GetEventHeadersByObject(SystemObjects type, int id)
+        {
+            return Database.Connection.Query<OverlayEventHeader>(@"
+select		R.Name as [Rule],
+			G.ID,
+			G.Name,
+			case coalesce(E.Status, 'Closed')
+				when 'Closed' then 'Closed'
+				else 'Active'
+			end as Status,
+			max(Date) as Date,
+			coalesce(count(E.ID), 0) as [Count]
+from		EventGroup G
+			inner join [Rule] R on R.ID = G.RuleID
+			inner join cache.Relationships CR on CR.SourceObject = @t and CR.SourceObjectID = @i and CR.TargetObject = 'Rule' and CR.TargetObjectID = R.ID
+			left join [Event] E on E.EventGroupID = G.ID
+group by	R.Name,
+			G.ID,
+			G.Name,
+			case coalesce(E.Status, 'Closed')
+				when 'Closed' then 'Closed'
+				else 'Active'
+			end
+order by	Date desc",
+                new { t = type.ToString(), i = id }
+            ).AsQueryable();
+        }
+
+        //public IQueryable<EventHeader> GetEventsByAssignedResource(int id)
+        //{
+        //    return Database.Connection.Query<EventHeader>(string.Format("GetEventsByAssignedResource 'R', {0}", id)).AsQueryable();
+        //}
+
+        //public List<Dictionary<string, object>> GetEventsByGroupAsDictionary(int id)
+        //{
+        //    var items = new List<Dictionary<string, object>>();
+
+        //    var events = Events.Where(i => i.EventGroupID == id).Select(e => new { e.ID, e.Date, e.SourceID, e.Status }).ToList();
+        //    var eventIDs = events.Select(i => i.ID).ToList();
+        //    var sType = SystemObjects.Event.ToString();
+        //    var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && eventIDs.Contains(i.ObjectID)).ToList();
+
+        //    events.ForEach(e =>
+        //    {
+        //        var item = new Dictionary<string, object>();
+
+        //        item.Add("ID", e.ID);
+        //        item.Add("SourceID", e.SourceID);
+        //        item.Add("Status", e.Status);
+        //        item.Add("Date", e.Date);
+        //        foreach (var field in fields.Where(i => i.ObjectID == e.ID).OrderBy(i => i.SortOrder))
+        //        {
+        //            item.Add(field.Name, field.FormattedValue);
+        //        }
+        //        items.Add(item);
+        //    });
+
+        //    return items;
+        //}
+
+        //public IQueryable<EventByModel> GetEventsByObject(SystemObjects type, int id)
+        //{
+        //    return Database.Connection.Query<EventByModel>(string.Format("GetEventsByObject '{0}', {1}", type.ToString(), id)).AsQueryable();
+        //}
+
+        //public IQueryable<StatusCount> GetEventStatisticsByObject(SystemObjects type, int id)
+        //{
+        //    return Database.Connection.Query<StatusCount>(
+        //        "select Status, [Count] from overlay.EventStatistic where ObjectType = @t and ObjectID = @i", 
+        //        new { t = type.ToString(), i = id}
+        //    ).AsQueryable();
+        //}
+
+        #endregion
+
+        public ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id)
+        {
+            var model = new ObjectStatisticTileModel { Items = new List<ObjectStatisticTileItemModel>() };
+
+            var sql = @"
+	declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25), Url varchar(250))
+	
+	insert into @table
+		select NULL, count(1), 'Followers', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/followers'
+		from	Follow
+		where	ObjectType = @type and ObjectID = @id
+	
+	insert into @table
+		select	NULL, count(1), 'Comments', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/comments'
+		from	Comment C
+				inner join CommentRelation R	on R.CommentID = C.ID and C.ParentID is null
+												and R.ObjectType = @type and R.ObjectID = @id
+                                                and C.ParentID is null
+	insert into @table
+		select NULL, count(1), 'Events', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/events'
+			FROM	    [Event] E
+					    INNER JOIN EventGroup G ON E.EventGroupID = G.ID and E.Status in ('Active', 'Open')
+					    INNER JOIN [Rule] R on R.ID = G.RuleID
+					    inner join cache.Relationships CR on CR.SourceObject = @type and CR.SourceObjectID = @id and CR.TargetObject = 'Rule' and CR.TargetObjectID = R.ID
+
+	insert into @table values (null, dbo.[GetObjectStatisticScore](@type, @id) * 100, 'Score', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/score')
+
+	if @type = 'Artifact'
+	begin
+		insert into @table 
+			select		lower(T.Name),
+						count(1),
+						'Children',
+						'/overlays/' + cast(@id as varchar(10)) + '/' + cast(T.ID as varchar(10)) + '/ChildArtifacts'
+			from		Artifact A
+						inner join ArtifactType T on T.ID = A.ArtifactTypeID and A.ParentID = @id
+			group by	T.Name,
+						T.ID
+			order by	T.Name
+	end
+
+	select * from @table";
+            var list = Database.Connection.Query<RawObjectStatistic>(sql, new { type = type.ToString(), id = id }).ToList();
+            
+            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+
+            list.ForEach(i =>
+            {
+                switch (i.Group)
+                {
+                    case "Events":
+                        model.EventCount = i.Value;
+                        model.EventUrl = i.Url;
+                        break;
+                    case "Comments":
+                        model.CommentCount = i.Value;
+                        model.CommentUrl = i.Url;
+                        break;
+                    case "Followers":
+                        model.FollowerCount = i.Value;
+                        model.FollowerUrl = i.Url;
+                        break;
+                    case "Score":
+                        model.Score = i.Value;
+                        model.ScoreUrl = i.Url;
+                        break;
+                    default:
+                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name), Url = i.Url });
+                        break;
+                }
+            });
+
+            return model;
+        }
+
+        public IEnumerable<FieldTypeLookupValue> GetFieldTypeLookupOptions()
+        {
+            return Query<FieldTypeLookupValue>(
+@"
+select	*
+from	(
+		SELECT	'Artifact' as LookupObjectType,
+				ID as LookupObjectID,
+				'Artifact : ' + Name as Name
+		FROM	ArtifactType
+		UNION
+		SELECT	'Domain' as LookupObjectType,
+				ID as LookupObjectID,
+				'Reference : ' + Name as Name
+		FROM	DomainType
+		UNION
+		SELECT	'Taxonomy' as LookupObjectType,
+				ID as LookupObjectID,
+				'Information Model : ' + Name as Name
+		FROM	TaxonomyType
+		UNION
+		SELECT	'Lookup' as LookupObjectType,
+				ID as LookupObjectID,
+				'Lookup : ' + Name as Name
+		FROM	LookupType
+		) O
+order by Name");
+        }
+
+        #region Bulk Load
+
+        public IEnumerable<FieldTypeLookupValue> GetLoadTypeFieldLookupOptions()
+        {
+            return Query<FieldTypeLookupValue>(
+@"
+select	*
+from	(
+		SELECT	'ArtifactType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Artifact : ' + Name as Name
+		FROM	ArtifactType
+		UNION
+		SELECT	'DomainType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Reference : ' + Name as Name
+		FROM	DomainType
+		UNION
+		SELECT	'FusionAttributeType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Fusion : ' + TextPath as Name
+		FROM	FusionAttributeType
+		UNION
+		SELECT	'LookupType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Lookup : ' + Name as Name
+		FROM	LookupType
+        UNION
+		SELECT	'TaxonomyType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Model : ' + Name as Name
+		FROM	TaxonomyType
+        UNION
+		SELECT	'OwningModel' as LookupObjectType,
+				0 as LookupObjectID,
+				'Subject Area' as Name
+        UNION
+		SELECT	'IntersectType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Relationship : ' + Name as Name
+		FROM	IntersectType
+) O
+order by Name");
+        }
+
+        public IEnumerable<FieldTypeLookupValue> GetLoadTypeRulePromotionOptions()
+        {
+            return Query<FieldTypeLookupValue>(
+@"
+select	*
+from	(
+		SELECT	'ArtifactType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Artifact : ' + Name as Name
+		FROM	ArtifactType
+        UNION
+		SELECT	'AttributeType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Attribute : ' + Name as Name
+		FROM	AttributeType
+        WHERE   ParentID is null
+		UNION
+		SELECT	'TaxonomyType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Information Model : ' + Name as Name
+		FROM	TaxonomyType
+		) O
+order by Name");
+        }
+
+        #endregion
+
+        #region Permission
+
+        public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int id)
+        {
+            var sType = type.ToString();
+            return SecurityDetails.Where(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
+        }
+
+        public IQueryable<SecurityDetail> GetPermissionsByType(SystemObjects type)
+        {
+            var sType = type.ToString();
+            return (
+                   from s in SecurityDetails
+                   where s.ObjectType == sType
+                   where s.ResponsibleObjectID == CurrentResourceID
+                   where s.ClaimObject == ClaimObject.Root
+                   select s
+                   ).AsQueryable();
+        }
+        public bool HasPermission(SystemObjects type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
+        {
+            bool hasPermission = CurrentResourceIsAdmin;
+            if (!hasPermission)
+            {
+                var sType = type.ToString();
+                hasPermission = SecurityDetails.Any(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID && i.Claim == claim && i.ClaimObject == claimObject);
+            }
+
+            return hasPermission;
+        }
+
+        #endregion
+
+        #region Queue
+
+        public bool AddFusionQueueItem(QueueFusionItem model)
+        {
+            try
+            {
+                model.ID = Guid.NewGuid();
+                Database.CommandTimeout = 1500;
+                return Add<QueueFusionItem>(model);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public void CalculateStatistics(string objectType, int objectID)
+        {
+            ExecuteNonQueryCommand("utility.CalculateStatistics @ObjectType, @ObjectID", 
+                new List<SqlParameter> {
+                new SqlParameter("ObjectType", objectType),
+                new SqlParameter("ObjectID", objectID)
+                }
+           );
+        }
+
+        public void IncrementFieldVersion(string objectType, int objectID, int fieldTypeID, string value)
+        {
+            ExecuteNonQueryCommand(
+                "utility.IncrementFieldVersionAction @ObjectType, @ObjectID, @FieldTypeID, @Value",
+                new List<SqlParameter> {
+                    new SqlParameter("ObjectType", objectType),
+                    new SqlParameter("ObjectID", objectID),
+                    new SqlParameter("FieldTypeID", fieldTypeID),
+                    new SqlParameter("Value", value)
+                }
+            );
+        }
+
+        public void ProcessFusionInQueue(Guid queueID)
+        {
+            ExecuteNonQueryCommand("EXEC fusion.ProcessFusionInQueue @queueID", new List<SqlParameter>{
+                new SqlParameter("queueID", SqlDbType.UniqueIdentifier) { Value = queueID }
+            });
+        }
+
+        public void ProcessFusionInQueue(int fusionTypeID, int fusionID, BulkFusionImport import)
+        {
+            import.Models.ForEach(o =>
+            {
+                foreach (var k in o.Keys)
+                {
+                    var value = (o[k] == null) ? "" : o[k];
+                }
+            });
+
+            import.Relationships.ForEach(o =>
+            {
+                //rXml.Add(new XElement("r", new XAttribute("s", o.StartID), new XAttribute("e", o.EndID)));
+            });
+        }
+
+        //public void UpdateEventTypesByObject()
+        //{
+        //    ExecuteNonQueryCommand("EXEC utility.UpdateEventTypesByObject", new List<SqlParameter> { });
+        //}
+
+        #endregion
+
+        #region Relationships
+
+        public void AddRelationship(SystemObjects type, int id, SystemObjects targetType, int targetID, IntersectClassification classification, int? roleID, string description)
+        {
+            if (!roleID.HasValue) roleID = 0;
+
+            Database.Connection.Execute(
+                "AddRelationship @ResourceID, @Date, @Type, @ID, @Classification, @IntersectRole, @Description, @TargetType, @TargetID",
+                new {
+                    ResourceID = CurrentResourceID,
+                    Date = DateTime.UtcNow,
+                    Type = type.ToString(),
+                    ID = id,
+                    Classification = (int)classification,
+                    IntersectRole = roleID,
+                    Description = description,
+                    TargetType = targetType.ToString(),
+                    TargetID = targetID
+                });
+        }
+
+        public void AddRelationships(SystemObjects type, int id, IntersectClassification classification, int? roleID, string description, List<ObjectModel> objects)
+        {
+            #region Load Objects Parameter
+
+            var tObjects = new DataTable();
+            tObjects.Columns.Add("ObjectType");
+            tObjects.Columns.Add("ObjectID");
+
+            objects.ForEach(o =>
+            {
+                tObjects.Rows.Add(o.ObjectType, o.ObjectID);
+            });
+
+            #endregion
+
+            if (!roleID.HasValue) roleID = 0;
+
+            ExecuteNonQueryCommand(
+                "EXEC AddRelationships @ResourceID, @Date, @Type, @ID, @Classification, @IntersectRole, @Description, @Objects",
+                new List<SqlParameter>() {
+                    new SqlParameter("ResourceID", CurrentResourceID),
+                    new SqlParameter("Date", DateTime.UtcNow) { SqlDbType = SqlDbType.DateTime },
+                    new SqlParameter("Type", type.ToString()),
+                    new SqlParameter("ID", id),
+                    new SqlParameter("Classification", (int)classification),
+                    new SqlParameter("IntersectRole", roleID),
+                    new SqlParameter("Description", description + ""),
+                    new SqlParameter("Objects", tObjects) { SqlDbType = SqlDbType.Structured, TypeName = "dbo.ObjectsTable" }
+                }
+            );
+        }
+
+        public bool DeleteRelationship(int id)
+        {
+
+            var item = GetById<Intersect>(id, i => i.Nodes);
+            if (item == null) throw new NotFoundException("Relationship");
+            return Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
+        }
+
+        public void EditRelationship(int id, int? roleID, IntersectClassification classification, string description)
+        {
+            if (!roleID.HasValue) roleID = 0;
+
+            ExecuteNonQueryCommand(
+                "EditRelationship @ResourceID, @Date, @ID, @Classification, @IntersectRole, @Description",
+                new List<SqlParameter>() {
+                    new SqlParameter("ResourceID", CurrentResourceID),
+                    new SqlParameter("Date", DateTime.UtcNow) { SqlDbType = SqlDbType.DateTime },
+                    new SqlParameter("ID", id),
+                    new SqlParameter("Classification", (int)classification),
+                    new SqlParameter("IntersectRole", roleID),
+                    new SqlParameter("Description", description + "")
+                }
+            );
+        }
+
+        public IQueryable<CriticalRelationshipsByObject> GetCriticalRelationshipsByObject(SystemObjects type, int id)
+        {
+            return Database.Connection.Query<CriticalRelationshipsByObject>(
+@"select		R.IntersectID,
+				S.IconBackColor,
+				S.IconForeColor,
+				S.IconText,
+				dbo.GenerateObjectUrl(R.TargetObject, R.TargetTypeID, R.TargetObjectID) as Url,
+				R.TargetObjectID as ID,
+				R.TargetObject as ObjectType,
+				R.TargetTypeName as TypeName,
+				R.TargetObjectName as Name,
+				Description
+	from		cache.Relationships R
+				left join ObjectStyle R on R.ObjectType = R.TargetType and S.ObjectID = R.TargetTypeID 
+	where		R.SourceObject = @type 
+				and R.SourceObjectID = @id
+				and R.Classification = 1
+	order by	R.TargetTypeName,
+				R.TargetObjectName", new { type = type.ToString(), id = id }).AsQueryable();
+        }
+
+        public class DetailDisplayableRelationship
+        {
+            public string SourceObject { get; set; }
+            public int SourceObjectID { get; set; }
+            public string TargetObject { get; set; }
+            public int TargetObjectID { get; set; }
+            public string TargetObjectName { get; set; }
+            public string TargetTypeName { get; set; }
+            public int Count { get; set; }
+            public string TargetUrl { get; set; }
+        }
+
+        public List<DetailDisplayableRelationship> GetDetailDisplayableRelationships(SystemObjects type, int id)
+        {
+            return Query<DetailDisplayableRelationship>(@"
+select	SourceObject,
+		SourceObjectID,
+		TargetObject,
+		TargetObjectID,
+		TargetObjectName,
+		TargetTypeName,
+		C.[Count],
+		D.Url as TargetUrl
+from	cache.Relationships R
+        inner join cache.ObjectDetails D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID
+		outer apply (
+					select	count(1) as [Count]
+					from	FusionAttributeType
+					where	ParentID = R.TargetTypeID
+					) C
+where	R.SourceObject = 'FusionAttribute'
+		and R.TargetObject = 'FusionAttribute'
+		--and R.SourceTypeID = 301
+        --and R.SourceObject =  @type
+        and R.SourceObjectID = @id
+        and R.TargetTypeID = 302", new { type = type.ToString(), id }).ToList();
+        }
+
+        public List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? startType = null, int? startID = null, SystemObjects? endType = null, int? endID = null)
+        {
+            var sql = @"
+	SELECT		I.ID,
+				I.Name,
+				I.Type
+	FROM		(
+				SELECT	ID,
+						'Artifact - ' + Name AS Name,
+						'ArtifactType' AS Type
+				FROM	ArtifactType
+				UNION
+				SELECT	ID,
+						'Reference - ' + Name AS Name,
+						'DomainType' AS Type
+				FROM	DomainType
+				UNION
+				SELECT	A.ID,
+						'Fusion Attribute - ' + A.TextPath AS Name,
+						'FusionAttributeType' AS Type
+				FROM	FusionAttributeType A
+						INNER JOIN FusionType T ON A.FusionTypeID = T.ID
+				UNION
+				SELECT	1 as ID,
+						'Group' as Name,
+						'GroupType' as Type
+				UNION
+				SELECT	ID,
+						'Model - ' + Name AS Name,
+						'TaxonomyType' AS Type
+				FROM	TaxonomyType
+				UNION
+				SELECT	0 as ID,
+						'Policy' as Name,
+						'Policy' as Type
+				UNION
+				SELECT	CAST(ID as int) ID,
+						'Relationship Type - ' + Name AS Name,
+						'IntersectType' AS Type
+				FROM	IntersectType
+				UNION
+				SELECT	1 as ID,
+						'Resource' as Name,
+						'ResourceType' as Type
+				UNION
+				SELECT	0 as ID,
+						'Rule' as Name,
+						'Rule' as Type
+				) I";
+
+            if (startType.HasValue && startID.HasValue)
+            {
+                sql += string.Format(@" left join [utility].[RelationshipTypes] T on T.SourceObjectType = '{0}' and T.SourceObjectID = {1} and T.TargetObjectType = I.[Type] and T.TargetObjectID = I.ID", startType.Value.ToString(), startID.Value);
+
+                if (endType.HasValue && endID.HasValue)
+                {
+                    sql += string.Format(@" where (T.IntersectTypeID is null OR (T.TargetObjectType = '{0}' and T.TargetObjectID = {1}) )", endType.Value.ToString(), endID.Value);
+                }
+                else
+                {
+                    sql += " where T.IntersectTypeID is null";
+                }
+            }
+
+
+            sql += " ORDER BY I.Name";
+
+            return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
+        }
+
+        public List<SourcingResponsibilityDetail> GetRelatedObjectContextMap(SystemObjects type, int id, SystemObjects relatedType, int relatedID, int typeToRemoveFromName = 1)
+        {
+            string query = @"
+select	*
+from	SourcingResponsibilityDetail
+where	ObjectType = 'Intersect' 
+		and ObjectID in 
+		(
+		select	N.IntersectID 
+		from	IntersectNode N
+				inner join SourcingResponsibilityDetail S	on N.ObjectType = @StartType 
+															and N.ObjectID = @StartID 
+															and S.ObjectType = 'Intersect' 
+															and S.ObjectID = N.IntersectID
+															and S.ResponsibleObjectType = @EndType
+															and S.ResponsibleObjectID = @EndID
+		)            
+";
+            return Query<SourcingResponsibilityDetail>(
+                query, 
+                new { StartType = type.ToString(), StartID = id, EndType = relatedType.ToString(), EndID = relatedID }
+            ).ToList();
+        }
+
+        public List<GetRelationshipModel> GetRelationships(SystemObjects type, int id)
+        {
+            var parameters = new List<SqlParameter>(){
+                new SqlParameter("ObjectType", type.ToString()),
+                new SqlParameter("ObjectID", id)
+            };
+            return ExecuteQuery<GetRelationshipModel>("GetRelationships @ObjectType, @ObjectID", parameters);
+        }
+
+        /// <summary>
+        /// Gets a list of relationship counts for a given object, broken up by All Glossary Items, Critical Glossary ITems, and All Models.
+        /// </summary>
+        /// <param name="type">The type of object</param>
+        /// <param name="id">The ID of the object</param>
+        /// <returns>A list of aggregate relationship data. <seealso cref="RelationshipAggregate"/></returns>
+        public IEnumerable<RelationshipAggregate> GetAggregateRelationshipBreakdownsByObject(SystemObjects type, int id)
+        {
+            #region
+            var sql =
+@"select	T.[Group], T.GroupName, T.Critical,
+		T.TargetTypeName as TypeName,
+		T.TargetTypeID as TypeID,
+		T.TargetType as [Type],
+		D.IconBackColor,
+		T.[Count]
+from	(
+		select	'1' as [Group], 'All Glossary Items' as GroupName, cast(0 as bit) as Critical,
+				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName
+		from	cache.Relationships
+		where	SourceObject = @type and SourceObjectID = @id and TargetObject <> 'Taxonomy'
+		group by	TargetType, TargetTypeID, TargetTypeName
+union
+		select	'2' as [Group], 'Critical Glossary Items' as GroupName, cast(1 as bit) as Critical,
+				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName
+		from	cache.Relationships
+		where	SourceObject = @type and SourceObjectID = @id and TargetObject <> 'Taxonomy' and Classification = 1
+		group by	TargetType, TargetTypeID, TargetTypeName
+union
+		select	'3' as [Group], 'All Models' as GroupName, cast(0 as bit) as Critical,
+				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName
+		from	cache.Relationships
+		where	SourceObject = @type and SourceObjectID = @id and TargetObject = 'Taxonomy'
+		group by	TargetType, TargetTypeID, TargetTypeName
+) T 
+inner join cache.ObjectDetails D on D.[Object] = T.TargetType and D.ObjectID = T.TargetTypeID 
+order by T.[Group], T.TargetTypeName";
+            #endregion
+
+            return Query<RelationshipAggregate>(sql, new { type = type.ToString(), id = id });
+        }
+
+        #endregion
+
+        #region Reporting Engine
+
+        public IEnumerable<dynamic> GetReportQueryResults(int reportTileID, SystemObjects type, int id)
+        {
+            return Query<dynamic>(@"
+declare @commandText nvarchar(max)
+select @commandText = CommandText from ReportTile where ID = @id
+set  @commandText = REPLACE(@commandText, '[TYPE]', @t)
+set  @commandText = REPLACE(@commandText, '[ID]', @i)
+exec sp_executesql @commandText", new { id = reportTileID, t = type.ToString(), i = id }, 180);
+        }
+
+        public class SqlStatementValidityTest
+        {
+            public SqlStatementValidityTest()
+            {
+                IsValid = false;
+                Results = new List<SqlStatementValidityTestResult>();
+            }
+
+            public bool IsValid { get; set; }
+
+            public List<SqlStatementValidityTestResult> Results { get; set; }
+        }
+
+        public class SqlStatementValidityTestResult
+        {
+            public string ErrorToken { get; set; }
+            public int XPosition { get; set; }
+            public int YPosition { get; set; }
+            public string ErrorMessage { get; set; }
+        }
+
+        public SqlStatementValidityTest IsValidSqlStatement(string statement)
+        {
+            var model = new SqlStatementValidityTest();
+
+            var dbv = TDbVendor.DbVMssql;
+            var parser = new TGSqlParser(dbv);
+            parser.SqlText.Text = statement;
+            var result = parser.Parse();
+
+            if (result == 0)
+            {
+                model.IsValid = true;
+            }
+            else
+            { 
+                foreach(var error in parser.SyntaxErrors)
+                {
+                    model.Results.Add(new SqlStatementValidityTestResult { ErrorMessage = error.Hint, ErrorToken = error.Token, XPosition = error.XPosition, YPosition = error.YPosition });
+                }
+            }
+
+            return model;
+        }
+
+        public bool IsValidReportingQuery(string statement)
+        {
+            bool isValid = false;
+
+            var dbv = TDbVendor.DbVMssql;
+            var parser = new TGSqlParser(dbv);
+            parser.SqlText.Text = statement;
+            parser.Parse();
+            isValid = (parser.SqlStatements[0] is TSelectSqlStatement);
+            //TSelectSqlStatement selectStatement
+            //TSqlStatementType.sstMssqlSelect
+
+            return isValid;
+        }
+
+        public List<ReportSchemaModel> GetReportingSchema()
+        {
+            string k = key(REPORTING_SCHEMA_KEY, CurrentCompanyID);
+            if (Caching.ItemExists<List<ReportSchemaModel>>(k))
+            {
+                return Caching.GetItem<List<ReportSchemaModel>>(k);
+            }
+            else
+            {
+                var models = Query<ReportSchemaModel>(
+@"select	distinct 
+		SUBSTRING(TABLE_NAME, 0, CHARINDEX('_', TABLE_NAME)) as ID,
+        NULL as ParentID,
+        SUBSTRING(TABLE_NAME, 0, CHARINDEX('_', TABLE_NAME)) as Name,
+        TABLE_SCHEMA as [Schema],
+        0 as [Position],
+        'Group' as [Type]
+from	[INFORMATION_SCHEMA].[VIEWS] 
+where	TABLE_SCHEMA = 'reporting'
+union
+select	TABLE_NAME as ID,
+        SUBSTRING(TABLE_NAME, 0, CHARINDEX('_', TABLE_NAME)) as ParentID,
+        TABLE_NAME as Name,
+        TABLE_SCHEMA as [Schema],
+        0 as [Position],
+        'View' as [Type]
+from	[INFORMATION_SCHEMA].[TABLES] 
+where	TABLE_SCHEMA = 'reporting'
+union
+select	TABLE_NAME as ID,
+        SUBSTRING(TABLE_NAME, 0, CHARINDEX('_', TABLE_NAME)) as ParentID,
+        TABLE_NAME as Name,
+        TABLE_SCHEMA as [Schema],
+        0 as [Position],
+        'View' as [Type]
+from	[INFORMATION_SCHEMA].[VIEWS] 
+where	TABLE_SCHEMA = 'reporting'
+union
+select	TABLE_NAME + cast(ORDINAL_POSITION as varchar(10)) as ID,
+        TABLE_NAME as ParentID,
+        COLUMN_NAME as Name,
+        TABLE_SCHEMA as [Schema],
+        ORDINAL_POSITION as [Position],
+        'Column' as [Type]
+from	[INFORMATION_SCHEMA].[COLUMNS]
+where	TABLE_SCHEMA = 'reporting'").ToList();
+
+                var altered = loadSchemaChildren(models, null);
+                Caching.SetItem<List<ReportSchemaModel>>(k, altered, true, 5);
+                return altered;
+            }
+
+        }
+
+        List<ReportSchemaModel> loadSchemaChildren(List<ReportSchemaModel> schemaItems, string parentID)
+        {
+            var array = new List<ReportSchemaModel>();
+
+            foreach (var c in schemaItems.Where(i => i.ParentID == parentID).OrderBy(i => i.Position).ThenBy(i => i.Name))
+            {
+                c.Items = loadSchemaChildren(schemaItems, c.ID);
+                array.Add(c);
+            }
+
+            return array;
+        }
+
+        #endregion
+
+        #region Scheduled Job Methods
+
+        public void CalculateStatistics()
+        {
+            ExecuteNonQueryCommand("EXEC utility.CalculateStatistics @CompanyID", new List<SqlParameter>());
+        }
+
+        #endregion
+
+        #region Social
+
+        public IQueryable<CommentDetail> AddComment(Comment comment, ICollection<CommentRelation> relations)
+        {
+
+            comment.DateCreated = DateTime.UtcNow;
+            comment.CreatingResourceID = CurrentResourceID;
+            SaveOrUpdate<Comment>(comment);
+
+            foreach (var r in relations)
+            {
+                try
+                {
+                    if (r.CommentID == 0) r.CommentID = comment.ID; //If comment ID is not 0, then a parent comment ID has already been assigned.
+                    CommentRelations.Add(r);
+                    SaveChanges();
+                }
+                catch
+                { }
+            }
+
+
+            return GetCommentDetail(comment.ID);
+        }
+
+        public IQueryable<CommentDetail> GetCommentDetail(int id)
+        {
+            return (
+                    from c in Database.SqlQuery<CommentDetail>("GetCommentDetailByID @id", new SqlParameter("id", id)).ToList()
+                    join r in Community.Resources on c.CreatingResourceID equals r.ID
+                    select new CommentDetail
+                    {
+                        Body = c.Body,
+                        Comments = c.Comments,
+                        CommentTypeID = c.CommentTypeID,
+                        CreatingResourceID = c.CreatingResourceID,
+                        DateCreated = c.DateCreated,
+                        ID = c.ID,
+                        ObjectID = c.ObjectID,
+                        ObjectName = c.ObjectName,
+                        ObjectType = c.ObjectType,
+                        ObjectUrl = c.ObjectUrl,
+                        ParentID = c.ParentID,
+                        ResourceEmail = r.Email,
+                        ResourceName = r.FormatDisplayName()
+                    }
+                   ).AsQueryable();
+        }
+
+        public IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0)
+        {
+
+            DateTime dateStart;
+            DateTime dateEnd = DateTime.UtcNow;
+            if (daysToGet == 0)
+            {
+                dateStart = new DateTime(2000, 1, 1);
+            }
+            else
+            {
+                dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
+            }
+
+            return
+                Query<CommentDetail>("GetCommentDetailsByFollower @resourceID, @skip, @take, @dateStart, @dateEnd, @commentTypeID",
+                new {
+                    resourceID = resourceID,
+                    skip = skip,
+                    take = take,
+                    dateStart = dateStart,
+                    dateEnd = dateEnd, 
+                    commentTypeID = commentType
+                }).AsQueryable();
+
+        }
+
+        public IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0)
+        {
+
+            DateTime dateStart;
+            DateTime dateEnd = DateTime.UtcNow;
+            if (daysToGet == 0)
+            {
+                dateStart = new DateTime(2000, 1, 1);
+            }
+            else
+            {
+                dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
+            }
+            return
+                Query<CommentDetail>("GetCommentDetailsByType @type, @id, @skip, @take, @dateStart, @dateEnd, @commentTypeID",
+                new {
+                    type = type.ToString(),
+                    id = id,
+                    skip = skip,
+                    take = take,
+                    dateStart = dateStart,
+                    dateEnd = dateEnd, 
+                    commentTypeID = commentType
+                }).AsQueryable();
+        }
+
+        public IQueryable<CommentCategory> GetCategoriesForComments()
+        {
+            return
+            Database.SqlQuery<CommentCategory>(
+                                                    "GetCommentCategoriesByFollower @FollowingResourceID",
+                                                    new SqlParameter("FollowingResourceID", CurrentResourceID)
+                                                   ).AsQueryable();
+        }
+
+        /// <summary>
+        /// Get a list of those following the current object.
+        /// </summary>
+        public IQueryable<FollowDetail> GetFollowersByObject(SystemObjects type, int id)
+        {
+            var fs = type.ToString();
+            return FollowDetails.Where(i => i.ObjectType == fs && i.ObjectID == id);
+        }
+
+        /// <summary>
+        /// Get a list of those followed by the current object.  Right now, just resources can follow.
+        /// </summary>
+        public IQueryable<FollowDetail> GetFollowingByObject(SystemObjects type, int id)
+        {
+            return FollowDetails.Where(i => i.ResourceID == id);
+        }
+
+        public IQueryable<MostActiveUserReportModel> GetMostActiveUsersReport()
+        {
+            return Database.SqlQuery<MostActiveUserReportModel>("report.GetMostActiveUsers").AsQueryable();
+        }
+
+        public SocialStatisticsByObject GetSocialStatisticsByObject(SystemObjects type, int id)
+        {
+            return
+            ExecuteQuery<SocialStatisticsByObject>("tile.GetSocialStatisticsByObject @type, @id",
+                new List<SqlParameter>() {
+                    new SqlParameter("type", type.ToString()),
+                    new SqlParameter("id", id)
+                }
+            ).FirstOrDefault();
+        }
+
+        public dynamic GetSocialDataForCurrentResource()
+        {
+            return Query<dynamic>(@"select	* from 
+(select	count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id) FC
+full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @id) G on 1=1", new { id = CurrentResourceID }).SingleOrDefault();
+        }
+
+        public dynamic GetSocialDataForGroup(int id)
+        {
+            return Query<dynamic>(@"select	* from 
+(select	count(1) as FollowerCount from Follow where ObjectType = 'Group' and ObjectID = @id) FC
+full join (select count(1) as MemberCount from ResourceGroup where GroupID = @id) G on 1=1", new { id = id }).SingleOrDefault();
+        }
+
+        public dynamic GetSocialDataForResource(int id)
+        {
+            return Query<dynamic>(@"select	* from 
+(select	count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id) FC
+full join (select count(1) as FollowingCount from Follow where ResourceID = @id) FO on 1=1
+full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @id) G on 1=1", new { id = id }).SingleOrDefault();
+        }
+
+        #endregion
+
+        #region Token Processing Methods
+
+        private string renderTemplate(string templateType, string action, SystemObjects type, int id)
+        {
+            string query = string.Format("GetRenderedTemplateBody '{0}', '{1}', {2}, '{3}'", templateType, type.ToString(), id, action);
+            var model = Database.SqlQuery<RenderTemplateModel>(query).SingleOrDefault();
+            var html = "";
+            if (model != null) html = model.Body;
+            return html;
+        }
+
+        public string RenderEmail(string action, SystemObjects type, int id)
+        {
+            return renderTemplate("Email", action, type, id);
+        }
+
+        public string RenderTooltip(string action, SystemObjects type, int id)
+        {
+            return renderTemplate("Tooltip", action, type, id);
+        }
+
+        #endregion
+
+        #region Workflow
+
+        public IEnumerable<Resource> GetResponsibleResourcesByArtifactAndWorkflowType(WorkflowType workflowType, int id)
+        {
+            return Query<Resource>(
+@"
+select	R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status
+from	ResponsibilityDetail RD 
+		inner join Artifact A on RD.ObjectType = 'Artifact' and RD.ObjectID = A.ID and A.ID = @id
+		inner join WorkflowTypeRelation WTR on WTR.[Object] = 'ArtifactType' and WTR.ObjectID = A.ArtifactTypeID and WTR.WorkflowType = @wt and WTR.ResponsibilityTypeID = RD.ResponsibilityTypeID
+		inner join reporting.Global_Resource R 
+			on	(
+					(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
+					(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
+				)
+			and R.Email not like '%?subject=%'", new { wt = (int)workflowType, id = id });
+        }
+
+        public Workflow GetMostRecentCertificationWorkflowByArtifact(int id)
+        {
+            return Query<Workflow>(
+@"select    top 1
+			*
+from		Workflow
+where		WorkflowType = 2
+			and Data.exist('/fields/ArtifactID[text() = sql:variable(""@id"")]') = 1
+order by	DateStarted desc", new { id = id }).FirstOrDefault();
+        }
+
+        public List<WorkflowRelationResponsibilityModel> GetWorkflowRelations()
+        {
+            return Query<WorkflowRelationResponsibilityModel>(@"select	W.ID,
+		W.WorkflowType,
+		W.[Object],
+		W.ObjectID, 
+		OD.Name as ObjectName,
+		W.Parent,
+		W.ParentID,
+		PD.Name as ParentName,
+		W.Fields,
+        W.[Enabled],
+		W.ResponsibilityTypeID,
+		RT.Name as ResponsibilityType
+from	WorkflowTypeRelation W
+        inner join cache.ObjectDetails OD on OD.[Object] = W.[Object] and OD.ObjectID = W.ObjectID
+		left join cache.ObjectDetails PD on PD.[Object] = W.[Parent] and PD.ObjectID = W.ParentID
+		inner join ResponsibilityType RT on RT.ID = W.ResponsibilityTypeID").ToList();
+        }
+
+        public IEnumerable<FieldTypeLookupValue> GetWorkflowObjectTypeOptions()
+        {
+            return Query<FieldTypeLookupValue>(
+@"
+select	*
+from	(
+		SELECT	'ArtifactType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Artifact : ' + Name as Name
+		FROM	ArtifactType
+) O
+order by Name");
+        }
+
+        public IEnumerable<FieldTypeLookupValue> GetWorkflowParentTypeOptions(int workflowType, string type, int id, bool includeAlreadyAssignedItem = false)
+        {
+            if (includeAlreadyAssignedItem)
+            {
+                return Query<FieldTypeLookupValue>(
+    @"
+select	*
+from	(
+		SELECT	'TaxonomyType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Model : ' + Name as Name
+		FROM	TaxonomyType
+) O
+order by Name", new { workflowType, type, id });  
+            }
+            else 
+            {
+                return Query<FieldTypeLookupValue>(
+    @"
+select	*
+from	(
+		SELECT	'TaxonomyType' as LookupObjectType,
+				ID as LookupObjectID,
+				'Model : ' + Name as Name
+		FROM	TaxonomyType
+        WHERE   ID not in   (
+                            SELECT  ParentID 
+                            FROM    WorkflowTypeRelation
+                            WHERE   Parent = 'TaxonomyType'
+                                    AND WorkflowType = @workflowType
+                                    AND [Object] = @type 
+                                    AND ObjectID = @id
+                            )
+) O
+order by Name", new { workflowType, type, id });          
+            }
+        }
+
+        public List<ResponsibilityType> GetWorkflowResponsibilityTypeOptions(string type, int id)
+        {
+            return Filter<ResponsibilityTypeRelation>(i => i.ObjectType == type && i.ObjectID == id, i => i.ResponsibilityType)
+                    .OrderBy(i => i.ResponsibilityType.Name)
+                    .ToList().Where(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People)
+                    .Select(i => i.ResponsibilityType)
+                    .ToList();
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Generic Methods
+
+        public override bool Add<T>(T item)
+        {
+            Set<T>().Add(item);
+            var returnValue = (SaveChanges() > 0);
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
+        /// </summary>
+        public override bool Delete<T>(Expression<Func<T, bool>> predicate)
+        {
+            var items = Filter(predicate).ToList();
+            bool allDeleted = true;
+
+            items.ForEach(i =>
+            {
+                if (!Delete(i))
+                {
+                    allDeleted = false;
+                }
+            });
+
+            return allDeleted;
+        }
+
+        /// <summary>
+        /// Removes the item from the system, as well as any dynamic fields associated with this item, if any.
+        /// </summary>
+        public override bool Delete<T>(T entity)
+        {
+            try
+            {
+                Set<T>().Remove(entity);
+                return (SaveChanges() > 0);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<IntersectTypeNode>().HasRequired(t => t.IntersectType).WithMany(t => t.Nodes).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
+            modelBuilder.Entity<IntersectFlowMapping>().HasMany<DomainItem>(i => i.Contexts).WithMany(i => i.Mappings).Map(i =>
+            {
+                i.MapLeftKey("IntersectFlowMappingID").MapRightKey("DomainItemID").ToTable("IntersectFlowMappingContextItem");
+            });
+            base.OnModelCreating(modelBuilder);
+        }
+
+        public override bool Update<T>(T item)
+        {
+            ObjectContext.ObjectStateManager.ChangeObjectState(item, EntityState.Modified);
+            return (SaveChanges() > 0);
+        }
+
+        public bool SaveOrUpdate<T>(T entity, List<Field> fields) where T : BaseIntObject
+        {
+            //var count = SaveOrUpdate<T>(entity);
+            var returnValue = false;
+
+            if (IsPersistent(entity))
+            {
+                returnValue = Update<T>(entity);
+            }
+            else
+            {
+                returnValue = Add<T>(entity);
+            }
+
+            if (fields != null)
+            {
+                fields.ForEach(i => {
+                    i.ObjectID = entity.ID;
+                });
+                AddOrUpdateFields(fields);
+            }
+
+            return returnValue;
+        }
+
+        public override int SaveChanges()
+        {
+            int returnValue = 0;
+
+            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(System.Data.Entity.EntityState.Added | System.Data.Entity.EntityState.Unchanged | System.Data.Entity.EntityState.Modified | System.Data.Entity.EntityState.Deleted))
+            {
+                #region Business logic : IUpdatedMetadata
+                if (entry.Entity is IUpdatedMetadata)
+                {
+                    var o = entry.Entity as IUpdatedMetadata;
+                    o.UpdatedBy = CurrentResourceID;
+                    o.UpdatedOn = DateTime.UtcNow;
+                }
+                #endregion
+
+                #region Business logic : Artifact
+                if (entry.Entity is Artifact)
+                {
+                    var o = entry.Entity as Artifact;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    { 
+                        case EntityState.Added:
+                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            var any = (
+                                        from f in Fields
+                                        join t in FieldTypes on f.FieldTypeID equals t.ID
+                                        where t.LookupObjectType == "Artifact"
+                                        where t.LookupObjectID == o.ArtifactTypeID
+                                        where f.Value == id
+                                        select f
+                                      ).Any();
+                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_List_FieldReferences);
+                            any = Attributes.Any(i => i.ObjectType == "Artifact" && i.ObjectID == o.ID);
+                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_AttributesReferences);
+                            any = IntersectNodes.Any(i => i.ObjectType == "Artifact" && i.ObjectID == o.ID);
+                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
+                            break;
+                        case EntityState.Modified:
+                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+
+                    Caching.RemoveItem(key(ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY, o.ArtifactTypeID));
+                }
+                #endregion
+
+                #region Business logic : ArtifactType
+                if (entry.Entity is ArtifactType)
+                {
+                    var o = entry.Entity as ArtifactType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (ArtifactTypes.Any(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            if (Artifacts.Any(i => i.ArtifactTypeID == o.ID))
+                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
+                            var childIDs = ArtifactTypes.Where(i => i.ParentID == o.ID).Select(i => i.ID).ToList();
+                            if (childIDs.Count > 0)
+                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ChildTypesAssignedToType);
+                            //if (Artifacts.Any(i => childIDs.Contains(i.ArtifactTypeID)))
+                            //    throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
+                            break;
+                        case EntityState.Modified:
+                            if (ArtifactTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : AttributeType
+                if (entry.Entity is AttributeType)
+                {
+                    var o = entry.Entity as AttributeType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (AttributeTypes.Any(i => i.ParentID == o.ParentID && i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            if (AttributeTypeRelations.Any(i => i.AttributeTypeID == o.ID))
+                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_AttributeType_Allocations);
+                            break;
+                        case EntityState.Modified:
+                            if (AttributeTypes.Any(i => i.ParentID == o.ParentID && i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : Domain
+                if (entry.Entity is Domain)
+                {
+                    var o = entry.Entity as Domain;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Domains.Any(i => i.Name == o.Name && i.DomainTypeID == o.DomainTypeID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            var any = (
+                                        from f in Fields
+                                        join t in FieldTypes on f.FieldTypeID equals t.ID
+                                        where t.LookupObjectType == "Domain"
+                                        where t.LookupObjectID == o.DomainTypeID
+                                        where f.Value == id
+                                        select f
+                                      ).Any();
+                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Domain list"), Messages.Error_List_FieldReferences);
+                            any = IntersectNodes.Any(i => i.ObjectType == "Domain" && i.ObjectID == o.ID);
+                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Domain list"), Messages.Error_List_FieldReferences);
+                            break;
+                        case EntityState.Modified:
+                            if (Domains.Any(i => i.Name == o.Name && i.DomainTypeID == o.DomainTypeID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : DomainGroup
+                if (entry.Entity is DomainGroup)
+                {
+                    var o = entry.Entity as DomainGroup;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (DomainGroups.Any(i => i.DomainTypeID == o.DomainTypeID && i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (DomainGroups.Any(i => i.DomainTypeID == o.DomainTypeID && i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : DomainItem
+                if (entry.Entity is DomainItem)
+                {
+                    var o = entry.Entity as DomainItem;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (DomainItems.Any(i => ((i.Code == o.Code) || (i.Name == o.Name)) && i.DomainID == o.DomainID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        //case EntityState.Unchanged:
+                        case EntityState.Modified:
+                            if (DomainItems.Any(i => ((i.Code == o.Code) || (i.Name == o.Name)) && i.DomainID == o.DomainID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : DomainType
+                if (entry.Entity is DomainType)
+                {
+                    var o = entry.Entity as DomainType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (DomainTypes.Any(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (DomainTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : EmailTemplate
+                if (entry.Entity is EmailTemplate)
+                {
+                    var o = entry.Entity as EmailTemplate;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (EmailTemplates.Any(i => i.Name == o.Name && i.Action == o.Action))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (EmailTemplates.Any(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : FieldType
+                if (entry.Entity is FieldType)
+                {
+                    var o = entry.Entity as FieldType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (FieldTypes.Any(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        //case EntityState.Deleted:
+                        //    if (Fields.Any(i => i.FieldTypeID == o.ID))
+                        //        throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.FriendlyName), Messages.Error_FieldType_Allocations);
+                        //    break;
+                        case EntityState.Modified:
+                            if (FieldTypes.Any(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : FusionAttributeType
+                if (entry.Entity is FusionAttributeType)
+                {
+                    var o = entry.Entity as FusionAttributeType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (FusionAttributeTypes.Any(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (FusionAttributeTypes.Any(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : FusionType
+                if (entry.Entity is FusionType)
+                {
+                    var o = entry.Entity as FusionType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (FusionTypes.Any(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (FusionTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : Group
+                if (entry.Entity is Group)
+                {
+                    var o = entry.Entity as Group;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Groups.Any(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (Groups.Any(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            if (Responsibilities.Any(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == o.ID))
+                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : Intersect
+                if (entry.Entity is Intersect)
+                {
+                    var o = entry.Entity as Intersect;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Deleted:
+                            var any = (
+                                        from f in Fields
+                                        join t in FieldTypes on f.FieldTypeID equals t.ID
+                                        where t.LookupObjectType == "Intersect"
+                                        where t.LookupObjectID == o.IntersectTypeID
+                                        where f.Value == id
+                                        select f
+                                      ).Any();
+                            if (any) throw new ConflictException("Relationship Could not be Removed", "One or more fields reference this relationship.");
+                            any = Attributes.Any(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
+                            if (any) throw new ConflictException("Relationship Could not be Removed", "One or more attributes reference this relationship.");
+                            any = IntersectNodes.Any(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
+                            if (any) throw new ConflictException("Relationship Could not be Removed", "One or more relationships reference this relationship.");
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : Lookup
+                if (entry.Entity is Lookup)
+                {
+                    var o = entry.Entity as Lookup;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Deleted:
+                            var any = (
+                                        from f in Fields
+                                        join t in FieldTypes on f.FieldTypeID equals t.ID
+                                        where t.LookupObjectType == "Lookup"
+                                        where t.LookupObjectID == o.LookupTypeID
+                                        where f.Value == id
+                                        select f
+                                      ).Any();
+                            if (any) throw new ConflictException("Lookup Could not be Removed", "One or more fields reference this lookup.");
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : LookupType
+                if (entry.Entity is LookupType)
+                {
+                    var o = entry.Entity as LookupType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (LookupTypes.Any(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (LookupTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : QuestionType
+                if (entry.Entity is QuestionType)
+                {
+                    var o = entry.Entity as QuestionType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (QuestionTypes.Any(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (QuestionTypes.Any(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : Report
+                if (entry.Entity is Report)
+                {
+                    var o = entry.Entity as Report;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Reports.Any(i => i.Name == o.Name)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            var any = ReportTiles.Any(i => i.ReportID == o.ID);
+                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Report"), Messages.Error_List_FieldReferences);
+                            break;
+                        case EntityState.Modified:
+                            if (Reports.Any(i => i.Name == o.Name && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : ReportTile
+                if (entry.Entity is ReportTile)
+                {
+                    var o = entry.Entity as ReportTile;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (ReportTiles.Any(i => i.Name == o.Name && i.ReportID == o.ReportID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (ReportTiles.Any(i => i.Name == o.Name && i.ReportID == o.ReportID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : ResponseType
+                if (entry.Entity is ResponseType)
+                {
+                    var o = entry.Entity as ResponseType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (ResponseTypes.Any(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (ResponseTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : ResponsibilityType
+                if (entry.Entity is ResponsibilityType)
+                {
+                    var o = entry.Entity as ResponsibilityType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (ResponsibilityTypes.Any(i =>
+                                i.Name == o.Name
+                                )) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            if (Responsibilities.Any(i =>
+                                i.ResponsibilityTypeID == o.ID
+                                )) throw new ArgumentException(Messages.Error_ResponsibilityType_ExistingResponsibilities);
+                            break;
+                        case EntityState.Modified:
+                            if (ResponsibilityTypes.Any(i =>
+                                i.Name == o.Name &&
+                                i.ID != o.ID
+                                )) throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : ResponsibilityTypeClaim
+                if (entry.Entity is ResponsibilityTypeClaim)
+                {
+                    var o = entry.Entity as ResponsibilityTypeClaim;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (ResponsibilityTypeClaims.Any(i =>
+                                i.Claim == o.Claim &&
+                                i.ClaimObject == o.ClaimObject &&
+                                i.ResponsibilityTypeID == o.ResponsibilityTypeID
+                                )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
+                            break;
+                        case EntityState.Modified:
+                            if (ResponsibilityTypeClaims.Any(i =>
+                                i.Claim == o.Claim &&
+                                i.ClaimObject == o.ClaimObject &&
+                                i.ResponsibilityTypeID == o.ResponsibilityTypeID &&
+                                i.ID != o.ID
+                                )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : ResponsibilityTypeObjectClaim
+                if (entry.Entity is ResponsibilityTypeObjectClaim)
+                {
+                    var o = entry.Entity as ResponsibilityTypeObjectClaim;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (ResponsibilityTypeObjectClaims.Any(i =>
+                                i.Claim == o.Claim &&
+                                i.ClaimObject == o.ClaimObject &&
+                                i.ObjectID == o.ObjectID &&
+                                i.ObjectType == o.ObjectType &&
+                                i.ResponsibilityTypeID == o.ResponsibilityTypeID
+                                )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
+                            break;
+                        case EntityState.Modified:
+                            if (ResponsibilityTypeObjectClaims.Any(i => 
+                                i.Claim == o.Claim &&
+                                i.ClaimObject == o.ClaimObject &&
+                                i.ObjectID == o.ObjectID &&
+                                i.ObjectType == o.ObjectType &&
+                                i.ResponsibilityTypeID == o.ResponsibilityTypeID &&
+                                i.ID != o.ID
+                                )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : StatisticType
+                if (entry.Entity is StatisticType)
+                {
+                    var o = entry.Entity as StatisticType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (StatisticTypes.Any(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (StatisticTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : SurveyType
+                if (entry.Entity is SurveyType)
+                {
+                    var o = entry.Entity as SurveyType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (SurveyTypes.Any(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (SurveyTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : Taxonomy
+                if (entry.Entity is Taxonomy)
+                {
+                    var o = entry.Entity as Taxonomy;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Taxonomies.Any(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) 
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            var any = (
+                                        from f in Fields
+                                        join t in FieldTypes on f.FieldTypeID equals t.ID
+                                        where t.LookupObjectType == "Taxonomy"
+                                        where t.LookupObjectID == o.TaxonomyTypeID
+                                        where f.Value == id
+                                        select f
+                                      ).Any();
+                            if (any) 
+                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_FieldReference);
+                            if (Attributes.Any(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
+                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_AttributeReference);
+                            if (IntersectNodes.Any(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
+                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_RelationshipReference);
+                            if (Taxonomies.Any(i => i.ParentID == o.ID)) 
+                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_ChildModelsExist);
+                            if (Responsibilities.Any(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectType == "Taxonomy" && i.ObjectID == o.ID)) 
+                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_PeopleResponsibilitiesExist);
+                            if (Responsibilities.Any(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.Sourcing && i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
+                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_SourcingResponsibilitiesExist);
+                            break;
+                        case EntityState.Modified:
+                            if (Taxonomies.Any(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID && i.ID != o.ID)) 
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+
+                    Caching.RemoveItem(key(TAXONOMY_BY_TYPE_PREFIX_KEY, o.TaxonomyTypeID));
+                    Caching.RemoveItem(key(TAXONOMYDETAIL_BY_TYPE_PREFIX_KEY, o.TaxonomyTypeID));
+                }
+                #endregion
+
+                #region Business logic : TaxonomyType
+                if (entry.Entity is TaxonomyType)
+                {
+                    var o = entry.Entity as TaxonomyType;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (TaxonomyTypes.Any(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (TaxonomyTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+
+                    Caching.RemoveItem(key(TAXONOMY_TYPES_KEY));
+                }
+                #endregion
+
+                #region Business logic : TooltipTemplate
+                if (entry.Entity is TooltipTemplate)
+                {
+                    var o = entry.Entity as TooltipTemplate;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (TooltipTemplates.Any(i => i.Name == o.Name && i.Action == o.Action))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (TooltipTemplates.Any(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+            }
+           
+            try
+            {
+                returnValue = base.SaveChanges();
+            }
+            catch (OptimisticConcurrencyException)
+            {
+            }
+
+            return returnValue;
+        }
+
+        protected override DbEntityValidationResult ValidateEntity(DbEntityEntry entityEntry, IDictionary<object, object> items)
+        {
+            return base.ValidateEntity(entityEntry, items);
+        }
+
+        #endregion
+
+        #region For Deriving company and resource records based on incoming raw values
+
+        internal override Company GetCompany()
+        {
+            Company c = null;
+
+            switch (Context.CompanyIDType)
+            {
+                case CompanyIdentifierType.ID:
+                    int iID;
+                    if (int.TryParse(Context.RawCompanyID, out iID))
+                    {
+                        c = Community.GetById<Company>(iID, i => i.DatabaseServer);
+                    }
+                    break;
+                //case CompanyIdentifierType.PublicID:
+                //    Guid gID;
+                //    if (Guid.TryParse(Context.RawCompanyID, out gID))
+                //    {
+                //        c = Community.Filter<Company>(i => i.PublicID == gID, i => i.DatabaseServer).SingleOrDefault();
+                //    }
+                //    break;
+                case CompanyIdentifierType.Uri:
+                    c = Community.Companies.Include(i => i.DatabaseServer).Where(i => i.CompanyDomainSettings.Any(d => d.UrlPrefix == Context.RawCompanyID)).SingleOrDefault();
+                    break;
+            }
+
+            return c;
+        }
+
+        internal override Resource GetResource()
+        {
+            Resource r = null;
+
+            switch (Context.UserIDType)
+            {
+                case UserIdentifierType.ApiKey:
+                    r = Community.Filter<Resource>(i => i.APIPublicKey == Context.RawUserID).SingleOrDefault();
+                    break;
+                case UserIdentifierType.Email:
+                    r = Community.Filter<Resource>(i => i.Email == Context.RawUserID).SingleOrDefault();
+                    break;
+                case UserIdentifierType.ID:
+                    r = Community.GetById<Resource>(int.Parse(Context.RawUserID));
+                    break;
+                case UserIdentifierType.Username:
+                    r = Community.Filter<Resource>(i => i.Username == Context.RawUserID).SingleOrDefault();
+                    break;
+            }
+
+            return r;
+        }
+
+        internal override bool GetResourceAdminFlag()
+        {
+            bool isAdmin;
+            int companyID = GetCompanyID();
+            int resourceID = GetResourceID();
+            string cacheKey = "";
+
+            switch (Context.UserIDType)
+            {
+                case UserIdentifierType.ApiKey:
+                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_APIKEY, companyID);
+                    break;
+                case UserIdentifierType.Email:
+                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_EMAIL, companyID);
+                    break;
+                case UserIdentifierType.ID:
+                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_ID, companyID);
+                    break;
+                case UserIdentifierType.Username:
+                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_USERNAME, companyID);
+                    break;
+            }
+
+            if (Caching.ListItemExists<bool, string>(cacheKey, Context.RawUserID))
+            {
+                isAdmin = Caching.GetItemInListByID<bool, string>(cacheKey, Context.RawUserID);
+            }
+            else
+            {
+                var r = Community.Filter<CompanyResource>(i => i.CompanyID == companyID && i.ResourceID == resourceID).SingleOrDefault();
+                if (r != null)
+                {
+                    isAdmin = r.IsAdministrator;
+                    r = null;
+
+                    Caching.SetItemInListByID<bool, string>(cacheKey, Context.RawUserID, isAdmin);
+                }
+                else
+                {
+                    isAdmin = false;
+                }
+            }
+
+            return isAdmin;
+        }
+
+        #endregion
+    }
+}

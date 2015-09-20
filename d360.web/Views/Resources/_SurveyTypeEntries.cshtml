@@ -1,0 +1,46 @@
+﻿<script type="text/javascript">
+    var surveyTypeEntriesID = @(ViewData["ID"]);
+
+    $(function () {
+        //#region Grid Logic
+
+        var srcSurveyEntriesGrid = {
+            datatype: 'json',
+            type: 'get',
+            url: '/api/surveys/' + surveyTypeEntriesID + '/entries',
+            datafields: [
+                { name: 'ID' },
+                { name: 'ResourceName' },
+                { name: 'PercentComplete' }
+            ],
+            filter: function () {
+                $("#SurveyTypeEntries").jqxGrid('updatebounddata');
+            },
+            sort: function () {
+                $("#SurveyTypeEntries").jqxGrid('updatebounddata');
+            }
+        };
+
+        var adapterSurveyEntriesGrid = new $.jqx.dataAdapter(srcSurveyEntriesGrid);
+
+        $("#SurveyTypeEntries").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            virtualmode: false,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            pageable: true,
+            source: adapterSurveyEntriesGrid,
+            theme: list_theme,
+            columns: [
+                { datafield: "ResourceName", text: "Name" },
+                { datafield: "PercentComplete", text: "% Complete", width: '100px', cellsrenderer: progressrenderer }
+            ]
+        });
+
+        //#endregion
+    });
+</script>
+<div id="SurveyTypeEntries"></div>

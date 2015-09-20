@@ -1,0 +1,89 @@
+﻿<div class="small-overlay">
+    <div class="ui segment">
+        <h4 id="FusionOwnershipOverlayTitle">Ownership Rules</h4>
+        <div class="form-instructions"></div>
+        <div id="OwnershipGrid"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var owCommandPrefixUri = "/form/fusion/@(ViewData["FusionTypeID"])/configurations/@(ViewData["FusionID"])/owners/";
+    var owGridUri = "/api/fusion/@(ViewData["FusionTypeID"])/configurations/@(ViewData["FusionID"])/ownership";
+
+    $(function () {
+
+        var OwnershipSource = {
+            datatype: 'json',
+            url: owGridUri,
+            datafields: [
+                { name: "ID", type: "number" },
+                { name: "FusionID", type: "number" },
+                { name: "ObjectType", type: "string" },
+                { name: "ObjectID", type: "number" },
+                { name: "ObjectName", type: "string" },
+                { name: "ParentObjectType", type: "string" },
+                { name: "ParentObjectID", type: "number" },
+                { name: "ParentName", type: "string" },
+                { name: "RelationshipOwnerObjectType", type: "string" },
+                { name: "RelationshipOwnerObjectID", type: "number" },
+                { name: "RelationshipOwnerName", type: "string" }
+            ]
+        };
+        var OwnershipAdapter = new $.jqx.dataAdapter(OwnershipSource);
+        $("#OwnershipGrid").jqxGrid({
+            altrows: true,
+            source: OwnershipAdapter,
+            theme: theme,
+            autoheight: true,
+            width: grid_width,
+            showfilterrow: false,
+            filterable: false,
+            selectionmode: 'singlerow',
+            scrollmode: 'logical',
+            sortable: true,
+            pageable: false,
+            pagerMode: 'advanced',
+            columns: [
+                {
+                    text: 'Description', dataField: 'ObjectName',
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        var html = '';
+                        html += data.RelationshipOwnerName + ' owns ' + data.ObjectName;
+                        if (data.ParentName) {
+                            html += ' under ' + data.ParentName;
+                        }
+                        html += '.';
+                        return html;
+                    }
+                },
+                {
+                    text: '',
+                    filterable: false,
+                    dataField: 'ID',
+                    width: '40px',
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+
+                        var tools = [
+                            //{ icon: 'pencil', urlprefix: owCommandPrefixUri + '{0}/edit' },
+                            { icon: 'trash-o', urlprefix: owCommandPrefixUri + '{0}/delete' }
+                        ];
+
+                        return renderToolsHtml(value, tools, contextList.Fusion, data);
+                    }
+                }
+            ]
+        });
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case contextList.FusionOwnerRule:
+                        $('#OwnershipGrid').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("Ownership", e);
+            }
+        });
+
+    });
+</script>

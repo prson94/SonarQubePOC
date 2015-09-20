@@ -1,0 +1,69 @@
+﻿<script type="text/javascript">
+    $(document).ready(function () {
+        var responseTypeID = @(ViewData["ID"]);
+
+        //#region Grid
+
+        var responseTypeOptionsToolsRenderer = function (index, datafield, value, defaultvalue, column, data) {
+
+            var tools = [
+                { icon: 'pencil', urlprefix: '/form/responsetypes/' + responseTypeID + '/{0}/edit' },
+                { icon: 'trash-o', urlprefix: '/form/responsetypes/' + responseTypeID + '/{0}/delete' }
+            ];
+
+            return renderToolsHtml(value, tools, '@ContextList.ResponseTypeOption');
+        };
+
+        var srcResponseTypeOptionsGrid =
+                    {
+                        datatype: 'json',
+                        url: '/api/responsetypes/' + responseTypeID + '/options',
+                        datafields:
+                        [
+                            { name: 'ID', type: 'number' },
+                            { name: 'Name', type: 'string' }
+                        ]
+                    };
+
+        var adapterResponseTypeOptionsGrid = new $.jqx.dataAdapter(srcResponseTypeOptionsGrid);
+
+        $("#ResponseTypeOptions").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            showfilterrow: true,
+            pageable: true,
+            //columnresize: true,
+            source: adapterResponseTypeOptionsGrid,
+            theme: list_theme,
+            columns: [
+                { datafield: "Name", text: "Name" },
+                { datafield: "ID", text: "", width: 80, cellsrenderer: responseTypeOptionsToolsRenderer }
+            ]
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case "@ContextList.ResponseTypeOption":
+                        $('#ResponseTypeOptions').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("ResponseTypeOptions : SaveAction", e);
+            }
+        });
+
+        //#endregion
+
+    });
+</script>
+<div id="ResponseTypeOptions"></div>

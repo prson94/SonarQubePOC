@@ -1,0 +1,134 @@
+﻿@model d360.web.Models.EditRelationshipModel
+<div class="small-overlay">
+    <div class="ui segment">
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.Intersect, Description = "Please provide as much detail as possible in the form below.", Name = "Edit Relationship" })
+
+        <div style="display:none">
+            <div class="FieldNameRequired"><span>1.</span>What Role Is This Relationship?</div>
+            <div id="RoleDropdown"></div>
+       </div>
+
+        <div class="FieldNameRequired"><span>1.</span>How Important Is This Relationship?</div>
+        <div id="ImportanceDropdown"></div>
+
+        <div class="FieldNameRequired"><span>2.</span>Is There Anything Else We Should Know?</div>
+        <textarea id="Description">@Html.Raw(Model.Description)</textarea>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var IntersectID = "@(ViewData["IntersectID"])";
+    var IntersectTypeID = @(Model.IntersectTypeID);
+
+    var FormValidationException = function (message) {
+        this.message = message;
+        this.toString = function () {
+            return this.message;
+        }
+    };
+
+    var EditRelationshipDestroy = function () {
+        $('#RoleDropdown').jqxDropDownButton('destroy');
+        $('#Description').redactor('destroy');
+        $('#ImportanceDropdown').jqxDropDownList('destroy');
+    }
+
+    $(function () {
+
+
+        //#region Question 1
+
+        var RoleSource = {
+            datatype: "json",
+            datafields: [
+                { name: 'Name' },
+                { name: 'ID' }
+            ],
+            url: '/relations/Roles?IntersectTypeID=' + IntersectTypeID,
+            async: false
+        };
+
+        var RoleAdapter = new $.jqx.dataAdapter(RoleSource);
+
+        $('#RoleDropdown').jqxDropDownList({ theme: theme, placeHolder: 'Choose Role...', source: RoleAdapter, displayMember: 'Name', valueMember: 'ID', width: field_width, height: field_height, dropDownWidth: 250 });
+
+        //#endregion
+
+        //#region Question 2
+
+        var ImportanceSource = {
+            datatype: "json",
+            datafields: [
+                { name: 'Name' },
+                { name: 'ID' }
+            ],
+            url: '/relations/Classifications',
+            async: false
+        };
+
+        var ImportanceAdapter = new $.jqx.dataAdapter(ImportanceSource);
+
+        $('#ImportanceDropdown').jqxDropDownList({ theme: theme, placeHolder: 'Choose Classification...', source: ImportanceAdapter, displayMember: 'Name', valueMember: 'ID', width: '100%', dropDownWidth: 250 });
+
+        //#endregion
+
+
+        //#region Question 3
+
+        $('#Description').redactor();
+
+        //#endregion
+
+
+        //#region Form Events
+
+        $('#EditableFormSaveButton').on('click', function () {
+            $('#EditableFormSaveButton').attr('disabled', 'disabled');
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+
+            var model = {
+                Classification: $('#ImportanceDropdown').val(),
+                Role: $('#RoleDropdown').val(),
+                Description: $('#Description').val()
+            };
+
+            try {
+                $.ajax('/api/relationships/' + IntersectID, {
+                    type: 'PUT',
+                    dataType: 'json',
+                    data: model,
+                    error: function (xhr, status, error) {
+                        amplify.publish("RelationshipFormStatus", { title: 'Error When Updating Relationship', message: xhr.responseText, success: false });
+                        $('#EditableFormSaveButton').removeAttr('disabled');
+                        $('#progress').html('');
+                    },
+                    success: function (data, status, xhr) {
+                        EditRelationshipDestroy();
+                        amplify.publish("RelationshipFormStatus", { title: 'Success!', message: xhr.responseText, success: true });
+                        amplify.publish("RelationshipSave", { action: 'Edit' });
+                        $('#EditableFormSaveButton').removeAttr('disabled');
+                        $('#progress').html('');
+                    }
+                });
+
+            } catch (e) {
+                amplify.publish("RelationshipFormStatus", { title: 'Validation Error', message: e, success: false });
+                $('#EditableFormSaveButton').removeAttr('disabled');
+                $('#progress').html('');
+                //logError("RelationOverlay : saveModelToApi", e);
+            }
+        });
+
+        $('#EditableFormCancelButton').on('click', function () {
+            EditRelationshipDestroy();
+            amplify.publish("RelationshipCancel");
+        });
+
+        //#endregion
+
+
+        // Set Current Values
+        $('#ImportanceDropdown').val("@((int)Model.Classification)");
+        $('#RoleDropdown').val("@(Model.Role)");
+    });
+</script>

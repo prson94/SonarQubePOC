@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - Data3Sixty, Inc.</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="Data3Sixty: Data Collaboration Suite : API Services Help" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="Shortcut Icon" href="/favicon.ico" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/Content/styles/all.min.css" />
+    @RenderSection("scripts", required: false)
+</head>
+<body>
+    <div style="position: fixed; left: 0px; top: 0px; width: 70px; height: 100%; z-index: 0; background-color: #666"></div>
+    <nav>
+        <div class="container-fluid">
+            <div class="row" id="TopLine">
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 blue1 top-line">&nbsp;</div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 blue2 top-line">&nbsp;</div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 blue3 top-line">&nbsp;</div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 blue4 top-line">&nbsp;</div>
+            </div>
+            <div class="nav-top clearfix">
+                <div class="logo"></div>
+            </div>
+        </div>
+        <div id="TopMenu" class="main-nav">
+            @*<ul>
+                <li><a href="#/">Home</a></li>
+            </ul>*@
+        </div>
+    </nav>
+    <table class="d3s-page">
+        <tr style="vertical-align: top">
+            <td style="width: 70px; padding-left: 10px;">
+                <div id="SideIcons"></div>
+            </td>
+            <td>
+                <div id="ContentHeader"></div>
+                <div id="main">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            @RenderBody()
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

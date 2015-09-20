@@ -1,0 +1,129 @@
+﻿@{
+    var fusionTypeID = ViewData["FusionTypeID"].ToString();
+    var fusionID = ViewData["FusionID"].ToString();
+    var tab = ViewData["Tab"].ToString();
+    var idSuffix = tab.Replace(" ", "").Substring(0, 5);
+}
+<script type="text/javascript">
+    $(function () {
+        var datafields@(idSuffix) = [];
+        var columns@(idSuffix) = [];
+
+        $.getJSON('/api/fusion/@(fusionTypeID)/configurations/@(fusionID)/tabs/@(tab)', function (model) {
+
+            var contextFA = "@(ContextList.FusionAttribute)";
+
+            var fusedItemRenderer@(idSuffix) = function (index, datafield, value, defaultvalue, column, data) {
+                var html = "";
+                if (value > 0) {
+                    html = "<div style='background-color: green; text-align: center; color: white; height: 100%; vertical-align: middle; font-weight: 600'>";
+                    html += value;
+                    html += "</div>";
+                }
+                return html;
+            }
+
+            $.each(model.Columns, function (index, value) {
+                var column = this;
+                datafields@(idSuffix).push({ name: column.Name, type: column.ColumnType });
+                if (column.Name != "ID" && column.Name != "ParentID") {
+                    var c = { datafield: column.Name, text: column.FriendlyName };
+                    if (column.SortGroup == "D") c.width = column.Width;
+                    columns@(idSuffix).push(c);//, width: column.Width });
+                }
+            });
+
+            var source@(idSuffix) = {
+                datatype: 'json',
+                localdata: model.Models,
+                datafields: datafields@(idSuffix)
+            };
+            var adapter@(idSuffix) = new $.jqx.dataAdapter(source@(idSuffix));
+
+            var width = $('#Objects@(idSuffix)').parent().width();
+            $('#Objects@(idSuffix)').jqxGrid({
+                altrows: true,
+                theme: theme,
+                groupable: true,
+                height: 400,
+                sortable: true,
+                filterable: true,
+                //showfilterrow: true,
+                scrollmode: 'deferred',
+                columnsresize: true,
+                enabletooltips: true,
+                width: width,//'100%',
+                source: adapter@(idSuffix),
+                columns: columns@(idSuffix),
+                ready: function () {
+                    amplify.publish("TabContentLoaded");
+                    $('#Spinner@(idSuffix)').fadeOut(50);
+                    //$('#Objects@(idSuffix)').jqxGrid('autoresizecolumns');
+                }
+            });
+
+            //#region Event Subscriptions
+
+            $('#Objects@(idSuffix)').on('rowselect', function (event) {
+                try {
+                    var row = $('#Objects@(idSuffix)').jqxGrid('getrowdata', event.args.rowindex);
+                    amplify.publish("RowSelectedAction", { context: contextFA, id: row.ID, rowdata: row });
+                } catch (e) {
+                    logError("FusionAttributesByTab", e);
+                }
+            });
+
+            amplify.subscribe("IDPreSelected", function (data) {
+                //data.id
+                try {
+                    if (data.id) {
+                        var fusionHierarchyRows = $('#Objects@(idSuffix)').jqxGrid('getboundrows');
+                        for (var i in fusionHierarchyRows) {
+                            var rowData = fusionHierarchyRows[i];
+                            if (rowData.ID == data.id) {
+                                var selectedIndex = i;
+                                $('#Objects@(idSuffix)').jqxGrid('ensurerowvisible', selectedIndex);
+                                $('#Objects@(idSuffix)').jqxGrid('selectrow', selectedIndex);
+                                break;
+                            }
+                        }
+                        fusionHierarchyRows = null;
+                    }
+                } catch (e) {
+                    logError("FusionAttributesByTab", e);
+                }
+            });
+            amplify.subscribe("PageTabChanged", function (data) {
+                try {
+                    $('#Objects@(idSuffix)').jqxGrid('refresh');
+                    //$('#Objects@(idSuffix)').jqxGrid('updatebounddata');
+                } catch (e) {
+                    logError("FusionAttributesByTab", e);
+                }
+            });
+            amplify.subscribe("SaveAction", function (data) {
+                try {
+                    $('#Objects@(idSuffix)').jqxGrid('updatebounddata');
+                } catch (e) {
+                    logError("FusionAttributesByTab", e);
+                }
+            });
+            amplify.subscribe("ToolAction", function (data) {
+                try {
+                    switch (data.context) {
+                        case contextFA:
+                            $('#Objects@(idSuffix)').jqxGrid('updatebounddata');
+                            break;
+                    }
+                } catch (e) {
+                    logError("FusionAttributesByTab", e);
+                }
+            });
+
+            //#endregion
+
+        });
+    });
+</script>
+<i id="Spinner@(idSuffix)" class='fa fa-spinner fa-spin fa-4x'></i>
+<div id="Objects@(idSuffix)"></div>

@@ -1,0 +1,29 @@
+﻿@model d360.web.Models.EditableForm
+@Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = Model.Context, Description = Model.FormDescription, Name = Model.FormTitle })
+@using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Html.Raw(Model.FormUri).ToHtmlString(), OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
+{ }
+
+<script type="text/javascript">
+    $(function () {
+        $('#form0').Editor({ context: '@(Model.Context)', uri: '@(Html.Raw(Model.FieldUri))' });
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        $('#EditableFormCancelButton').on('click', function () {
+            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+        });
+        amplify.subscribe("ErrorOccurredAction", function (data) {
+            $('#EditableFormSaveButton').hide();
+        });
+        amplify.subscribe("StartingAjax", function () {
+            $('#EditableFormSaveButton').attr('disabled', 'disabled');
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+        });
+        amplify.subscribe("EndingAjax", function () {
+            $('#EditableFormSaveButton').removeAttr('disabled');
+            $('#progress').html('');
+        });
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

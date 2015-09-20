@@ -1,0 +1,167 @@
+﻿@model d360.core.entities.TopNavigation
+@helper MenuLink(d360.core.entities.NavigationItem n)
+{
+    <li>
+        <a href="@(n.Url)">@(n.Name)</a>
+        @if (n.Items != null)
+        {
+            <ul>
+                @foreach (var c in n.Items)
+                {
+                    @MenuLink(c)
+                }
+            </ul>
+        }
+    </li>
+}
+<div id="nav">
+    <div class="row" id="TopLine">
+        <div class="col s3 blue1 top-line">&nbsp;</div>
+        <div class="col s3 blue2 top-line">&nbsp;</div>
+        <div class="col s3 blue3 top-line">&nbsp;</div>
+        <div class="col s3 blue4 top-line">&nbsp;</div>
+    </div>
+    <div class="nav-top">
+        <div class="logo"></div>
+        <div class="profile hide-on-small-and-down">
+            <a href="@(Model.ResourceUrl)">@(Model.ResourceName)@*<img src="/resources/image/@(Model.ResourceID)?size=25">*@</a>
+            <input type="text" id="SearchString" placeholder="Search" style="color: #000" />
+        </div>
+    </div>
+    <div id="TopMenu" class="main-nav">
+        <ul>
+            <li><a href="#/">Home</a></li>
+            @{
+                d360.core.entities.TopNavigationItem navItem = null;
+
+                navItem = Model.NavigationItems.Single(i => i.MenuID == "#Glossary");
+                if (navItem.ShouldDisplay || navItem.Feature == d360.core.enums.Feature.Base)
+                {
+                    <li>
+                        <a>Glossary</a>
+                        <ul>
+                            @foreach (var n in navItem.NavigationItems)
+                            {
+                                @MenuLink(n)
+                            }
+                        </ul>
+                    </li>
+                }
+
+                navItem = Model.NavigationItems.Single(i => i.MenuID == "#Models");
+                if (navItem.ShouldDisplay || navItem.Feature == d360.core.enums.Feature.Base)
+                {
+                    <li>
+                        <a>Models</a>
+                        <ul>
+                            @foreach (var n in navItem.NavigationItems)
+                            {
+                                @MenuLink(n)
+                            }
+                        </ul>
+                    </li>
+                }
+
+                navItem = Model.NavigationItems.Single(i => i.MenuID == "#People");
+                if (navItem.ShouldDisplay || navItem.Feature == d360.core.enums.Feature.Base)
+                {
+                    <li><a href="#/groups">People</a></li>
+                }
+
+                navItem = Model.NavigationItems.Single(i => i.MenuID == "#Monitor");
+                if (navItem.ShouldDisplay)
+                {
+                    <li><a href="#/monitor">@(Resources.PageInfo.Monitor_Title)</a></li>
+                }
+
+                navItem = Model.NavigationItems.Single(i => i.MenuID == "#Fusion");
+                if (navItem.ShouldDisplay)
+                {
+                    <li>
+                        <a href="#/fusion">Fusion</a>
+                        @*<ul>
+                                @foreach (var n in navItem.NavigationItems)
+                                        {
+                                        @MenuLink(n)
+                                        }
+                            </ul>*@
+                    </li>
+                }
+
+                navItem = Model.NavigationItems.Single(i => i.MenuID == "#Domains");
+                if (navItem.ShouldDisplay || navItem.Feature == d360.core.enums.Feature.Base)
+                {
+                    <li>
+                        <a>@(Resources.PageInfo.Domains_Title)</a>
+                        <ul>
+                            @foreach (var n in navItem.NavigationItems)
+                            {
+                                @MenuLink(n)
+                            }
+                        </ul>
+                    </li>
+                }
+
+                navItem = Model.NavigationItems.Single(i => i.MenuID == "#Community");
+                if (navItem.ShouldDisplay)
+                {
+                    <li><a href="#">Community</a></li>
+                }
+
+                navItem = Model.NavigationItems.SingleOrDefault(i => i.MenuID == "#Admin");
+                if (navItem != null)
+                {
+                    <li>
+                        <a>Administration</a>
+                        <ul>
+                            @foreach (var n in navItem.NavigationItems)
+                            {
+                                @MenuLink(n)
+                            }
+                        </ul>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+</div>
+<script type="text/javascript">
+    var resizeMenubar = function () {
+        if ($(window).innerWidth() < 800) {
+            $('#TopMenu').jqxMenu('minimize');
+        }
+        else {
+            $('#TopMenu').jqxMenu('restore');
+        }
+    }
+    $(function () {
+        $('#TopMenu').jqxMenu({ theme: theme, autoCloseInterval: 0, animationHideDelay: 1500 });
+
+        //#region Events
+
+        $("#SearchString").keypress(function (e) {
+            var code = (e.keyCode ? e.keyCode : e.which);
+            if (code == 13) { //Enter key
+                if (document.location.href.indexOf("#/search") == -1) {
+                    document.location.assign('#/search');
+                }
+            }
+        });
+
+        $(window).resize(function () {
+            resizeMenubar();
+        });
+
+        $(document).on("scroll", function () {
+            if ($(document).scrollTop() > 77) {
+                $("#nav").addClass("nav-top-small");
+            } else {
+                $("#nav").removeClass("nav-top-small");
+            }
+        });
+
+        //#endregion
+
+        resizeMenubar();
+    });
+</script>

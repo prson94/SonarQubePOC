@@ -1,0 +1,72 @@
+﻿@model d360.core.entities.ObjectModel
+<script type="text/javascript">
+    $(function () {
+
+        var levelsUri = '/api/@(Model.ObjectType)/@(Model.ObjectID)/levels';
+        var levelsGridContext = "@(ContextList.TaxonomyTypeLevel)";
+
+        //#region Grid
+
+        var LevelsSource = {
+            datafields: [
+                { name: 'TaxonomyTypeID' },
+                { name: 'Name' },
+                { name: 'Level' },
+                { name: 'Description' }
+            ],
+            datatype: "json",
+            url: levelsUri
+        };
+
+        var LevelsAdapter = new $.jqx.dataAdapter(LevelsSource);
+
+        $('#LevelsPart').jqxGrid({
+            altrows: true,
+            theme: list_theme,
+            source: LevelsAdapter,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 10,
+            sortable: true,
+            filterable: false,
+            width: grid_width,
+            autoheight: true,
+            columns: [
+                { datafield: "Level", text: "Level", width: '10%' },
+                { datafield: "Name", text: "Name", width: '30%' },
+                { datafield: "Description", text: "Description" },
+                {
+                    datafield: "TaxonomyTypeID",
+                    text: '',
+                    width: '10%',
+                    sortable: false,
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        var tools = [
+                            { icon: 'pencil', urlprefix: '/form/catalogs/' + data.TaxonomyTypeID + '/levels/' + data.Level + '/edit' },
+                            { icon: 'trash-o', urlprefix: '/form/catalogs/' + data.TaxonomyTypeID + '/levels/' + data.Level + '/delete' }
+                        ];
+                        return renderToolsHtml(value, tools, levelsGridContext);
+                    }
+                }
+            ]
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case levelsGridContext:
+                        $('#LevelsPart').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("Levels : SaveAction", e);
+            }
+        });
+
+        //#endregion
+    });
+</script>
+<div id="LevelsPart"></div>

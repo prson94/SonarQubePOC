@@ -1,0 +1,52 @@
+﻿@model d360.web.Models.ReportOverlayModel
+<div class="large-overlay">
+    <div class="ui segment">
+        <div class="left form-header-info">
+            <h4>@(Model.ReportName) : Report Preview</h4>
+        </div>
+        <div class="right">
+            @if (Model.ObjectTypes.Count > 0)
+            {
+                <div style="float: right"><button id="OverlayRefreshButton" type="button" class="btn waves-effect waves-light"><i class="fa fa-refresh" title="Load Preview"></i></button></div>
+                <div style="float: right; margin-right: 10px">@(Html.DropDownList("ObjectType", Model.ObjectTypes, "Select one..."))</div>
+            }
+        </div>
+        <div class="clear"></div>
+        <div class="form-instructions"></div>
+        <div id="Layout" data-bind="template: { name: 'reportTmpl' }"></div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(function () {
+        var reportID = @(Model.ReportID);
+        var reportType = '@(Model.ObjectType)';
+        var reportTypeID = @(Model.ObjectID);
+
+        var layoutTileVm = new ReportModel(reportID, reportType, reportTypeID, false);
+        ko.applyBindings(layoutTileVm, document.getElementById('Layout'));
+
+        if (reportType != '' && reportTypeID > 0) {
+            var changePromise = layoutTileVm.ChangeObject(reportID, reportType, reportTypeID);
+            changePromise
+                .then(layoutTileVm.GetLayout)
+                .done(function (message) {
+                    layoutTileVm.Render();
+                });
+            //layoutTileVm.GetLayout().done(layoutTileVm.Render);
+        }
+        //else {
+        $('#OverlayRefreshButton').on('click', function () {
+            var type = $('#ObjectType').val();
+            var typeInfo = type.split('|', 2);
+            var changePromise = layoutTileVm.ChangeObject(reportID, typeInfo[0], typeInfo[1]);
+            changePromise
+                .then(layoutTileVm.GetLayout)
+                .done(function (message) {
+                    layoutTileVm.Render();
+                });
+        });
+        //}
+    });
+</script>

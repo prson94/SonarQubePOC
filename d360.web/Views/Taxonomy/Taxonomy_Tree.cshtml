@@ -1,0 +1,21 @@
+﻿@model List<d360.core.entities.TaxonomyDetail>
+
+@helper Node(d360.core.entities.TaxonomyDetail t)
+{
+    <li item-expanded='false'>
+        <span @{if (t.HasChildren) { <text>style="font-weight: 800;"</text> }} id="Node@(t.ID)" data-i="@t.ID" data-p="@(t.ParentID.HasValue ? t.ParentID.Value : 0)" data-c="@(ContextList.Taxonomy)">@t.Name</span>
+        <ul>
+            @foreach (var s in Model.Where(i => i.ParentID == t.ID).OrderBy(i => i.Name))
+            {
+                @Node(s)
+            }
+        </ul>
+    </li>
+}
+
+<ul>
+    @foreach (var t in Model.Where(i => !i.ParentID.HasValue).OrderBy(i => i.Name))
+    {
+        @Node(t)
+    }
+</ul>

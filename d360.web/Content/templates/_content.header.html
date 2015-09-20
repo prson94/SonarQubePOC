@@ -1,0 +1,20 @@
+﻿<div class="PageHeader">
+    <div class="row">
+        <div class="col l7 m7 s12">
+            <h3>{{Title}}</h3>
+            <div class="PageDescription">{{{Directions}}}</div>
+        </div>
+        <div class="col l5 m5 hide-on-small-and-down" style="text-align: right">
+            {{{Status}}}
+            <ol class="breadcrumb">
+                {{#each breadcrumbs}}
+                {{#if Active}}
+                <li class="active" id="BreadcrumbActiveName">{{Name}}</li>
+                {{else}}
+                <li>{{Name}}</li>
+                {{/if}}
+                {{/each}}
+            </ol>
+        </div>
+    </div>
+</div>

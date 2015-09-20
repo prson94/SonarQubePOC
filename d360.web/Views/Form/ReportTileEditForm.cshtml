@@ -1,0 +1,746 @@
+﻿@using d360.web.Models;
+@using d360.core.resources;
+@model ReportTileEditorModel
+
+@helper TypeNode(d360.core.entities.ReportSchemaModel t)
+{
+    <li item-expanded='false' data-t="@t.Type" data-id="@t.ID" data-schema="@t.Schema" data-position="@t.Position" class="report-schema-@(t.Type.ToLower())">
+        @t.Name
+        @if (t.Items.Count > 0)
+        {
+            <ul>
+                @foreach (var c in t.Items.OrderBy(i => i.Position))
+                {
+                    @TypeNode(c)
+                }
+            </ul>
+        }
+    </li>
+}
+
+<style type="text/css" media="screen">
+    #Sql {
+        width: 100%;
+        height: 400px;
+    }
+</style>
+
+<div class="large-overlay">
+    <div class="ui segment">
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.ReportTile, Description = Model.FormDirections, Name = Model.FormName })
+        @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Model.FormUri, OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
+        {
+            <input type="hidden" id="TileID" name="TileID" value="@(Model.ReportTile.ID)" />
+            <input type="hidden" id="ReportID" name="ReportID" value="@(Model.ReportTile.ReportID)" />
+
+            <div class="row">
+                <div class="col l6 m4">
+                    <div id='NameTip' class="FieldNameRequired">@d360.core.resources.Fields.Name_Name</div>
+                    <input id="Name" name="Name" type="text" value="@(Model.ReportTile.Name)" />
+                </div>
+                <div class="col l3 m4">
+                    <div id='ReportTileTypeTip' class="FieldNameRequired">@d360.core.resources.Fields.ReportTileType_Name</div>
+                    @Html.DropDownList("ReportTileType", Model.ReportTileTypes, "Select one...", new { @class = "browser-default" })
+                </div>
+                <div class="col l3 m4">
+                    <div id='ContentAreaNumberTip' class="FieldNameRequired">@d360.core.resources.Fields.ContentAreaNumber_Name</div>
+                    @Html.DropDownList("ContentAreaNumber", Model.ContentAreaNumbers, "Select one...", new { @class = "browser-default" })
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col l3 m4">
+                    <h4>Reporting Schema</h4>
+                    <div class="form-instructions">Double-click a table or column to copy its query syntax to the editor.</div>
+                    <div id="SchemaTree"></div>
+                </div>
+                <div class="col l7 m6">
+                    <h4>SQL Query</h4>
+                    <div class="form-instructions">
+                        Be sure to use the <b>[ID]</b> token to have the Reporting system automatically insert the current object's ID during run-time.<br />
+                        For example: SELECT * from reporting.BusinessTermRelationships where BusinessTermID = <b>[ID]</b>.
+                    </div>
+                    <div id="Sql">@(Model.ReportTile.CommandText)</div>
+                </div>
+                <div class="col l2 m3">
+                    <h4>Chart Settings</h4>
+                    <div class="form-instructions">
+                        Please provide appropriate fields based on the columns contained in your query.
+                    </div>
+                    <div id="XAxisField">
+                        <div class="FieldName">X-Axis Field</div>
+                        <input type="text" id="xaxis" name="xaxis" value="@(Model.ReportTile.GetSettingsPropertyValue("xaxis"))" />
+                    </div>
+                    <div id="DataField">
+                        <div class="FieldName">Series Data Field</div>
+                        <input type="text" id="data" name="data" value="@(Model.ReportTile.GetSettingsPropertyValue("data"))" />
+                    </div>
+                    <div id="DisplayField">
+                        <div class="FieldName">Series Display Field</div>
+                        <input type="text" id="display" name="display" value="@(Model.ReportTile.GetSettingsPropertyValue("display"))" />
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col s8">
+                    <h4><i class="fa fa-search fa-2x"></i>Preview Tile Configuration</h4>
+                </div>
+                <div class="col s4" style="text-align: right">
+                    @(Html.DropDownList("ObjectType", Model.ObjectTypes, "Select one...", new { @class = "browser-default" }))
+                    <button id="PreviewQueryButton" type="button" class="btn waves-effect waves-light cyan lighten-3" title="Load Preview"><i class="fa fa-refresh"></i>&nbsp;Preview</button>
+                    <button id="CopyUriButton" type="button" class="btn waves-effect waves-light cyan lighten-3" style="display: none" title="Show Tile Data URI"><i class="fa fa-code"></i>&nbsp;Show URI</button>
+                </div>
+                <div class=" col s12 form-instructions">Preview the way your tile will appear based on the settings above.</div>
+
+                <div class="col s12">
+                    <div id="TilePreview"></div>
+                    <div id="CopyUri_Wrapper" style="margin-top: 50px; display:none;">
+                        <div class="directions">
+                            You can use this URI within a JSON-compatible reporting system to pull this data directly.
+                        </div>
+                        <input id="CopyUri_Text" type="text" style="margin-top: 10px; width: 100%; border: 1px solid #ebebeb; border-radius: 3px; background-color: #FAF9FA; padding: 3px;" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script type="text/javascript">
+    var formUri = "@(Model.FormUri)";
+    var formMethod = "@(Model.FormMethod)";
+    var reportObjectType = '@(Model.ReportTile.Report.ObjectType)';
+    var reportObjectID = @(Model.ReportTile.Report.ObjectID);
+    var reportBaseUri = '@(Model.ReportBaseUri)';
+    var reportID = @(Model.ReportTile.ReportID);
+    var reportTileID = @(Model.ReportTile.ID);
+    var copyClient;
+
+    var loadTileDataUri = function (type, id) {
+        if (reportTileID > 0 && type != '' && id > 0) {
+            var uri = 'https://' + reportBaseUri + '.data3sixty.com/services/reports/' + reportID + '/' + type + '/' + id + '/tiles/' + reportTileID + '/data';
+            $('#CopyUri_Text').val(uri);
+            $('#CopyUriButton').show();
+        }
+        else {
+            $('#CopyUriButton').hide();
+        }
+    }
+
+    $(function () {
+        var nameTipDescription = "Please provide a name for this report.  This name will be used wherever the report is available for display.";
+        var typeTipDescription = "@(d360.core.resources.Fields.ReportTileType_Description)";
+        var contentAreaTipDescription = "@(d360.core.resources.Fields.ContentAreaNumber_Description)";
+        var sqlTipDescription = "@(d360.core.resources.Fields.CommandText_Description)";
+
+        //#region Control Instantiation
+
+        $("#Name").jqxInput({ width: field_width, theme: theme, height: 25 });
+        $("#ReportTileType").jqxDropDownList({ width: field_width, theme: theme });
+        $("#ContentAreaNumber").jqxDropDownList({ width: field_width, theme: theme });
+        $("#xaxis").jqxInput({ width: field_width, theme: theme, height: 25 });
+        $("#data").jqxInput({ width: field_width, theme: theme, height: 25 });
+        $("#display").jqxInput({ width: field_width, theme: theme, height: 25 });
+        $("#ObjectType").jqxDropDownList({ width: field_width, theme: theme });
+
+        var editor = ace.edit('Sql');
+        editor.setTheme('ace/theme/dawn');
+        editor.getSession().setMode('ace/mode/sql');
+
+        //#region Tree
+
+        var SchemaTreeGridSource =
+        {
+            dataType: 'json',
+            url: '/reports/schema',
+            dataFields: [
+                { name: 'ID', type: 'string' },
+                { name: 'ParentID', type: 'string' },
+                { name: 'Name', type: 'string' },
+                { name: 'Schema', type: 'string' },
+                { name: 'Position', type: 'number' },
+                { name: 'Type', type: 'string' },
+                { name: 'Items', type: 'array' }
+            ],
+            hierarchy: {
+                root: 'Items'
+            },
+            id: 'ID'
+        };
+
+        var SchemaTreeGridAdapter = new $.jqx.dataAdapter(SchemaTreeGridSource);
+
+        $("#SchemaTree").jqxTreeGrid(
+        {
+            width: '100%',
+            height: '400px',
+            source: SchemaTreeGridAdapter,
+            filterable: true,
+            theme: theme,
+            altRows: true,
+            showHeader: false,
+            columns: [
+                {
+                    text: 'Name', dataField: 'Name',
+                    cellsRenderer: function (rowKey, dataField, value, data) {
+                        switch (data.Type) {
+                            case "Group":
+                                return "<b>" + value + "</b>";
+                            case "View":
+                                return value;
+                            default:
+                                return "<i>" + value + "</i>";
+                        }
+                    }
+                },
+                {
+                    text: 'Type', dataField: 'Type', width: 30,
+                    cellsRenderer: function (rowKey, dataField, value, data) {
+                        switch (value) {
+                            case "Group":
+                                return "";
+                            case "View":
+                                return "<i class='fa fa-table' title='" + value + "'></i>";
+                            default:
+                                return "<i class='fa fa-columns' style='color: #999' title='" + value + "'></i>";
+                        }
+                    }
+                }
+            ]
+        });
+
+        //#endregion
+
+        //#region Validator
+
+        $('#form0').jqxValidator({
+            hintType: 'label',
+            rules: [
+                {
+                    input: "#Name",
+                    rule: 'required',
+                    action: 'blur',
+                    message: 'Name is required.'
+                },
+                {
+                    input: "#xaxis",
+                    rule: function () {
+                        var t = $('#ReportTileType').val();
+                        var xaxis = $('#xaxis').val().trim();
+                        if (t == 'Area' || t == 'Bar' || t == 'Line') {
+                            return (xaxis != '');
+                        }
+                        else {
+                            return true;
+                        }
+                    },
+                    action: 'blur',
+                    message: 'X-Axis is required when the report tile type is set to: Area, Bar or Line.'
+                },
+                {
+                    input: "#data",
+                    rule: function () {
+                        var t = $('#ReportTileType').val();
+                        var data = $('#data').val().trim();
+                        if (t == 'Area' || t == 'Bar' || t == 'Line' || t == 'Pie') {
+                            return (data != '');
+                        }
+                        else {
+                            return true;
+                        }
+                    },
+                    action: 'blur',
+                    message: 'Series Data Field is required when Type is set to: Area, Bar, Line or Pie.'
+                },
+                {
+                    input: "#display",
+                    rule: function () {
+                        var t = $('#ReportTileType').val();
+                        var display = $('#display').val().trim();
+
+                        if (t == 'Area' || t == 'Bar' || t == 'Line' || t == 'Pie') {
+                            return (display != '');
+                        }
+                        else {
+                            return true;
+                        }
+                    },
+                    action: 'blur',
+                    message: 'Series Display Field is required when Type is set to: Area, Bar, Line or Pie.'
+                },
+                {
+                    input: "#ContentAreaNumber",
+                    rule: function () {
+                        var contentAreaNumber = $('#ContentAreaNumber').val();
+                        return contentAreaNumber != '' && contentAreaNumber > 0;
+                    },
+                    action: 'blur',
+                    message: 'Content Area Number is required.'
+                }
+            ]
+        });
+
+        //#endregion
+
+        //#endregion
+
+        //#region Help Tooltips
+
+        tipCss = 'qtip-blue qtip-shadow';
+        $('#NameTip').qtip({
+            content: { text: nameTipDescription },
+            style: { classes: tipCss }
+        });
+        $('#ReportTileTypeTip').qtip({
+            content: { text: typeTipDescription },
+            style: { classes: tipCss }
+        });
+        $('#ContentAreaNumberTip').qtip({
+            content: { text: contentAreaTipDescription },
+            style: { classes: tipCss }
+        });
+        $('#SqlTip').qtip({
+            content: { text: sqlTipDescription },
+            style: { classes: tipCss }
+        });
+
+        //#endregion
+
+        if (reportObjectType.indexOf('Type') > 0) {
+            $('#ObjectType').hide();
+            loadTileDataUri(reportObjectType, reportObjectID);
+        }
+        else {
+            loadTileDataUri('', 0);
+        }
+
+        //#region Events
+
+        $('#form0').on('validationSuccess', function (event) {
+            // You can submit the form.
+            if (editor.getValue().trim() != '') {
+                $('#progress').addClass('jqx-validator-error-label');
+                $('#progress').html('');
+
+                amplify.publish("StartingAjax");
+                $.ajax({
+                    dataType: 'json',
+                    type: formMethod,
+                    url: formUri,
+                    data: {
+                        TileID: $('#TileID').val(),
+                        ReportID: $('#ReportID').val(),
+                        ContentAreaNumber: $('#ContentAreaNumber').val(),
+                        ReportTileType: $('#ReportTileType').val(),
+                        Name: $('#Name').val(),
+                        SqlStatement: editor.getValue(),
+                        data: $('#data').val(),
+                        display: $('#display').val(),
+                        xaxis: $('#xaxis').val()
+                    },
+                    error: function (xhr, status, error) {
+                        OnFailed(error, status, xhr);
+                    },
+                    success: function (data, status, xhr) {
+                        OnSuccess(data, status, xhr)
+                    }
+                });
+                //$('#form0').submit();
+            }
+            else {
+                $('#progress').removeClass('jqx-validator-error-label');
+                $('#progress').html('You must provide a valid SQL query.');
+            }
+        });
+        $('#EditableFormSaveButton').on('click', function () {
+            $('#form0').jqxValidator('validate');
+        });
+
+        $('#EditableFormCancelButton').on('click', function () {
+            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+        });
+        amplify.subscribe("ErrorOccurredAction", function (data) {
+            $('#EditableFormSaveButton').hide();
+        });
+        amplify.subscribe("StartingAjax", function () {
+            $('#EditableFormSaveButton').attr('disabled', 'disabled');
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+        });
+        amplify.subscribe("EndingAjax", function () {
+            $('#EditableFormSaveButton').removeAttr('disabled');
+            $('#progress').html('');
+        });
+
+        $('#ReportTileType').on('change', function () {
+            //var tile = $('#TilePreview');
+            //var pluginAlreadyApplied = tile.hasClass('jqx-widget');
+            $('#form0').jqxValidator('validateInput', '#data');
+            $('#form0').jqxValidator('validateInput', '#display');
+            $('#form0').jqxValidator('validateInput', '#xaxis');
+        });
+
+        $('#CopyUriButton').on('click', function(){
+            if ($('#CopyUri_Wrapper').css('display') != 'none') {
+                $('#CopyUri_Wrapper').hide();
+            }
+            else {
+                $('#CopyUri_Wrapper').show();
+            }
+            //window.prompt("Copy to clipboard: Ctrl+C, Enter", $(this).data('uri'));
+        });
+
+        $('#ObjectType').on('change', function () {
+            var type = $('#ObjectType').val();
+            if (type != '') {
+                var typeInfo = type.split('|', 2);
+                loadTileDataUri(typeInfo[0], typeInfo[1]);
+            }
+            else {
+                loadTileDataUri('', 0);
+            }
+        });
+
+        $('#PreviewQueryButton').on('click', function () {
+
+            var $this = $(this);
+
+            if (!$this.data('executing')) {
+                var type = $('#ObjectType').val();
+
+                var tile = $('#TilePreview');
+
+                if (reportObjectType.indexOf('Type') > 0) {
+                    type = reportObjectType + '|' + reportObjectID;
+                }
+
+                if (type != '') {
+                    var typeInfo = type.split('|', 2);
+                    var sql = editor.getValue();
+                    sql = sql.replace('[TYPE]', typeInfo[0]);
+                    sql = sql.replace('[ID]', typeInfo[1]);
+
+                    var reportTileType = $('#ReportTileType').val();
+
+                    if (sql != '') {
+                        tile.removeClass('jqx-validator-error-label');
+                        $this.html('<i class="fa fa-spinner fa-spin" title="Processing"></i>&nbsp;Preview');
+                        $this.attr('disabled', 'disabled');
+                        $this.data('executing', true);
+
+                        $.ajax({
+                            url: '/reports/data',
+                            type: 'post',
+                            dataType: 'json',
+                            data: { sql: sql },
+                            complete: function (xhr, status) {
+                                $('#PreviewQueryButton').html('<i class="fa fa-refresh" title="Load Preview"></i>&nbsp;Preview');
+                                $('#PreviewQueryButton').removeAttr('disabled');
+                                $('#PreviewQueryButton').data('executing', false);
+                            },
+                            success: function (data, status, xhr) {
+
+                                //var pluginAlreadyApplied = tile.hasClass('jqx-widget');
+                                tile.html('');
+
+                                if (data.error) {
+                                    tile.html(data.error);
+                                }
+                                else {
+                                    var tileControl = $('<div></div>');
+                                    tile.append(tileControl);
+
+                                    var getHeaders = function () {
+                                        var cols = new Array();
+                                        var p = data[0];
+                                        for (var key in p) {
+                                            cols.push(key);
+                                        }
+                                        return cols;
+                                    }
+
+                                    var cols = getHeaders();
+                                    var fields = [];
+
+                                    //tile.html('');
+
+                                    switch (reportTileType) {
+                                        case 'Table':
+                                            //#region Grid
+                                            var columns = [];
+                                            $.each(cols, function () {
+                                                fields.push({ name: this });
+                                                columns.push({ text: this, dataField: this });
+                                            });
+
+                                            var source = {
+                                                localData: data,
+                                                dataType: "array",
+                                                dataFields: fields
+                                            };
+
+                                            //if (pluginAlreadyApplied) {
+                                            //    tile.jqxDataTable('destroy');
+                                            //}
+
+                                            var adapter = new $.jqx.dataAdapter(source);
+                                            tileControl.jqxDataTable(
+                                            {
+                                                width: grid_width,
+                                                theme: list_theme,
+                                                filterable: true,
+                                                sortable: true,
+                                                pageable: true,
+                                                pagerMode: 'advanced',
+                                                source: adapter,
+                                                columnsResize: true,
+                                                columns: columns
+                                            });
+                                            //#endregion
+                                            break;
+                                        case 'Matrix':
+                                            //#region Matrix
+                                            //#endregion
+                                            break;
+                                        default:
+                                            //#region Chart
+
+                                            $.each(cols, function () {
+                                                fields.push({ name: this });
+                                            });
+
+                                            tileControl.css('width', '100%');
+                                            tileControl.css('height', '400px');
+                                            var source = {
+                                                localData: data,
+                                                dataType: "array",
+                                                datafields: fields
+                                            };
+
+                                            var adapter = new $.jqx.dataAdapter(source);
+
+                                            var seriesDataField = $('#data').val();
+                                            var seriesDisplayField = $('#display').val();
+                                            var xAxisField = $('#xaxis').val();
+
+                                            switch (reportTileType) {
+                                                case 'Pie':
+                                                    //#region Pie
+
+                                                    tileControl.jqxChart({
+                                                        title: '',
+                                                        backgroundColor: '#FAF9FA',
+                                                        description: '',
+                                                        enableAnimations: true,
+                                                        showLegend: true,
+                                                        showBorderLine: false,
+                                                        source: adapter,
+                                                        colorScheme: chartDefaultTheme,
+                                                        seriesGroups: [{
+                                                            type: 'pie',
+                                                            series: [{
+                                                                showLabels: true,
+                                                                useGradient: false,
+                                                                dataField: seriesDataField,
+                                                                displayText: seriesDisplayField,
+                                                                labelRadius: 80,
+                                                                initialAngle: 15,
+                                                                radius: 100,
+                                                                innerRadius: 50,
+                                                                centerOffset: 0
+                                                            }]
+                                                        }]
+                                                    });
+
+                                                    //#endregion
+                                                    break;
+                                                case 'Area':
+                                                    //#region Area
+
+                                                    tileControl.jqxChart({
+                                                        title: '',
+                                                        backgroundColor: '#FAF9FA',
+                                                        description: '',
+                                                        enableAnimations: true,
+                                                        showLegend: true,
+                                                        showBorderLine: false,
+                                                        source: adapter,
+                                                        colorScheme: chartDefaultTheme,
+                                                        xAxis: {
+                                                            dataField: xAxisField,
+                                                            showTickMarks: true,
+                                                            tickMarksInterval: 1,
+                                                            tickMarksColor: '#888888',
+                                                            unitInterval: 1,
+                                                            showGridLines: true,
+                                                            gridLinesInterval: 3,
+                                                            gridLinesColor: '#888888',
+                                                            valuesOnTicks: true,
+                                                            textRotationAngle: -45,
+                                                            textRotationPoint: 'topright',
+                                                            textOffset: { x: 0, y: -25 }
+
+                                                        },
+                                                        seriesGroups: [{
+                                                            type: 'area',
+                                                            valueAxis: {
+                                                                displayValueAxis: true,
+                                                                description: '',
+                                                                axisSize: 'auto',
+                                                                tickMarksColor: '#888888'
+                                                            },
+                                                            series: [
+                                                                    { dataField: seriesDataField, displayText: seriesDisplayField }
+                                                            ]
+                                                        }]
+                                                    });
+
+                                                    //#endregion
+                                                    break;
+                                                case 'Bar':
+                                                    //#region Bar
+
+                                                    tileControl.jqxChart({
+                                                        title: '',
+                                                        backgroundColor: '#FAF9FA',
+                                                        description: '',
+                                                        enableAnimations: true,
+                                                        showLegend: true,
+                                                        showBorderLine: false,
+                                                        source: adapter,
+                                                        colorScheme: chartDefaultTheme,
+                                                        xAxis: {
+                                                            dataField: xAxisField,
+                                                            showTickMarks: true,
+                                                            tickMarksInterval: 1,
+                                                            tickMarksColor: '#888888',
+                                                            unitInterval: 1,
+                                                            showGridLines: true,
+                                                            gridLinesInterval: 3,
+                                                            gridLinesColor: '#888888',
+                                                            valuesOnTicks: true,
+                                                            textRotationAngle: -45,
+                                                            textRotationPoint: 'topright',
+                                                            textOffset: { x: 0, y: -25 }
+
+                                                        },
+                                                        seriesGroups: [{
+                                                            type: 'column',
+                                                            columnsGapPercent: 20,
+                                                            valueAxis: {
+                                                                displayValueAxis: true,
+                                                                description: '',
+                                                                axisSize: 'auto',
+                                                                tickMarksColor: '#888888'
+                                                            },
+                                                            series: [
+                                                                    { dataField: seriesDataField, displayText: seriesDisplayField }
+                                                            ]
+                                                        }]
+                                                    });
+
+                                                    //#endregion
+                                                    break;
+                                                case 'Line':
+                                                    //#region Line
+
+                                                    tileControl.jqxChart({
+                                                        title: '',
+                                                        backgroundColor: '#FAF9FA',
+                                                        description: '',
+                                                        enableAnimations: true,
+                                                        showLegend: true,
+                                                        showBorderLine: false,
+                                                        source: adapter,
+                                                        colorScheme: chartDefaultTheme,
+                                                        xAxis: {
+                                                            dataField: xAxisField,
+                                                            showTickMarks: true,
+                                                            tickMarksInterval: 1,
+                                                            tickMarksColor: '#888888',
+                                                            unitInterval: 1,
+                                                            showGridLines: true,
+                                                            gridLinesInterval: 3,
+                                                            gridLinesColor: '#888888',
+                                                            valuesOnTicks: true,
+                                                            textRotationAngle: -45,
+                                                            textRotationPoint: 'topright',
+                                                            textOffset: { x: 0, y: -25 }
+
+                                                        },
+                                                        seriesGroups: [{
+                                                            type: 'line',
+                                                            valueAxis: {
+                                                                displayValueAxis: true,
+                                                                description: '',
+                                                                axisSize: 'auto',
+                                                                tickMarksColor: '#888888'
+                                                            },
+                                                            series: [
+                                                                    { dataField: seriesDataField, displayText: seriesDisplayField }
+                                                            ]
+                                                        }]
+                                                    });
+
+                                                    //#endregion
+                                                    break;
+                                            }
+
+                                            //#endregion
+                                            break;
+                                    }
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                            }
+                        });
+                    }
+                    else {
+                        tile.addClass('jqx-validator-error-label');
+                        tile.html('You must provide a valid SQL query.');
+                    }
+
+                    loadTileDataUri(typeInfo[0], typeInfo[1]);
+                }
+                else {
+                    tile.addClass('jqx-validator-error-label');
+                    tile.html('You must select an object to preview with.');
+                }
+            }
+        });
+
+        $('#SchemaTree').on('rowDoubleClick', function (event) {
+            // event args.
+            var args = event.args;
+            // row data.
+            var row = args.row;
+            // row key.         var key = args.key;
+            // data field       var dataField = args.dataField;
+            // original double click event.
+            // var clickEvent = args.originalEvent;
+
+            var textToCopy = "";
+
+            switch (row.Type) {
+                case 'View':
+                    textToCopy = "select ";
+                    var columnText = "";
+                    $.each(row.Items, function(){
+                        columnText += ((columnText != '') ? ', \n\t\t' : '\t') + '[' + this.Name + ']'
+                    });
+                    textToCopy += columnText + " \nfrom \treporting." + row.Name;
+                    break;
+                case 'Column':
+                    textToCopy = "[" + row.Name + "]";
+                    break;
+            }
+
+            editor.insert(textToCopy);
+        });
+
+        //#endregion
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

@@ -1,0 +1,2763 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>d360.web</name>
+    </assembly>
+    <members>
+        <member name="T:Resources.Actions">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.AddClaim_Text">
+            <summary>
+              Looks up a localized string similar to Claim.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.AddField_Text">
+            <summary>
+              Looks up a localized string similar to Field.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.AddGovernance_Text">
+            <summary>
+              Looks up a localized string similar to Responsibility.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.AddLevel_Text">
+            <summary>
+              Looks up a localized string similar to Level.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.AddSourceResponsibility_Text">
+            <summary>
+              Looks up a localized string similar to Sourcing.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.AddVerticalSecurity_Text">
+            <summary>
+              Looks up a localized string similar to Vertical Responsibilities.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Add_Icon">
+            <summary>
+              Looks up a localized string similar to plus.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Allocation_Icon">
+            <summary>
+              Looks up a localized string similar to tag.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Allocation_Text">
+            <summary>
+              Looks up a localized string similar to Allocation.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.ArtifactType_Text">
+            <summary>
+              Looks up a localized string similar to Artifact Type.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.AttributeType_Text">
+            <summary>
+              Looks up a localized string similar to Attribute Type.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Audit">
+            <summary>
+              Looks up a localized string similar to Audit.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Audit_Icon">
+            <summary>
+              Looks up a localized string similar to archive.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Board">
+            <summary>
+              Looks up a localized string similar to Show/Hide Board.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Board_Icon">
+            <summary>
+              Looks up a localized string similar to comments.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.ChildArtifactType_Text">
+            <summary>
+              Looks up a localized string similar to Child Artifact Type.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.ChildAttributeType_Text">
+            <summary>
+              Looks up a localized string similar to Child Attribute Type.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Delete">
+            <summary>
+              Looks up a localized string similar to Remove.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Delete_Icon">
+            <summary>
+              Looks up a localized string similar to trash-o.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Diagram_Icon">
+            <summary>
+              Looks up a localized string similar to sitemap.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Edit">
+            <summary>
+              Looks up a localized string similar to Edit.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Edit_Icon">
+            <summary>
+              Looks up a localized string similar to pencil.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.ExportToExcel_Icon">
+            <summary>
+              Looks up a localized string similar to cloud-download.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.ExportToExcel_Text">
+            <summary>
+              Looks up a localized string similar to Export.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Fields">
+            <summary>
+              Looks up a localized string similar to Fields.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Fields_Icon">
+            <summary>
+              Looks up a localized string similar to columns.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Follow">
+            <summary>
+              Looks up a localized string similar to Follow.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Follow_Icon">
+            <summary>
+              Looks up a localized string similar to bookmark.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Governance">
+            <summary>
+              Looks up a localized string similar to Governance.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Governance_Icon">
+            <summary>
+              Looks up a localized string similar to legal.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Group_Icon">
+            <summary>
+              Looks up a localized string similar to group.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Levels">
+            <summary>
+              Looks up a localized string similar to Levels.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Levels_Icon">
+            <summary>
+              Looks up a localized string similar to sitemap.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Report_Icon">
+            <summary>
+              Looks up a localized string similar to bar-chart-o.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.StatisticType_Icon">
+            <summary>
+              Looks up a localized string similar to tachometer.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.StatisticType_Text">
+            <summary>
+              Looks up a localized string similar to Analytic Type.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.SynonymType_Icon">
+            <summary>
+              Looks up a localized string similar to magnet.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.SynonymType_Text">
+            <summary>
+              Looks up a localized string similar to Synonym Type.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.TemplateDownload_Icon">
+            <summary>
+              Looks up a localized string similar to cloud-download.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Unfollow">
+            <summary>
+              Looks up a localized string similar to Stop Following.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Unfollow_Icon">
+            <summary>
+              Looks up a localized string similar to bookmark-o.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Upload_Icon">
+            <summary>
+              Looks up a localized string similar to cloud-upload.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Usage">
+            <summary>
+              Looks up a localized string similar to Usage.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Usage_Icon">
+            <summary>
+              Looks up a localized string similar to language.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.User_Icon">
+            <summary>
+              Looks up a localized string similar to user.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.ViewRelationships">
+            <summary>
+              Looks up a localized string similar to View Relationships.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.ViewRelationships_Icon">
+            <summary>
+              Looks up a localized string similar to retweet.
+            </summary>
+        </member>
+        <member name="T:Resources.FieldInfo">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ApiName_Description">
+            <summary>
+              Looks up a localized string similar to Please provide a name with no spaces.  This name is also used in any API requests where this field is allocated..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ApiName_Name">
+            <summary>
+              Looks up a localized string similar to API Name.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.DisplayDescription_Description">
+            <summary>
+              Looks up a localized string similar to Provide any description that will be displayed by default any time someone sees information in this field..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.DisplayDescription_Name">
+            <summary>
+              Looks up a localized string similar to Display Description.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.FilterEnabled_Description">
+            <summary>
+              Looks up a localized string similar to Should this field be displayed in the relevant grid or list within the application?.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.FilterEnabled_Name">
+            <summary>
+              Looks up a localized string similar to Filter Enabled?.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.FormDescription_Description">
+            <summary>
+              Looks up a localized string similar to Provide any description that will be displayed by default any time someone adds or edits information in this field..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.FormDescription_Name">
+            <summary>
+              Looks up a localized string similar to Form Description.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.FriendlyName_Description">
+            <summary>
+              Looks up a localized string similar to Please provide a user-friendly name that will be displayed in forms..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.FriendlyName_Name">
+            <summary>
+              Looks up a localized string similar to Friendly Name.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.InputType_Description">
+            <summary>
+              Looks up a localized string similar to You can choose from a variety of field types, including Lookup..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.InputType_Name">
+            <summary>
+              Looks up a localized string similar to Input Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ListDisplayFormat_Description">
+            <summary>
+              Looks up a localized string similar to Since list themselves can also contain dynamic fields, you must choose at least one field from the list to use as the display value.  You can also choose more than one field.  For example: {Name} : {Description}..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ListDisplayFormat_Name">
+            <summary>
+              Looks up a localized string similar to List Display Format.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ListType_Description">
+            <summary>
+              Looks up a localized string similar to Since you have chosen Lookup as the field type, you can choose a list that will provide values for this field..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ListType_Name">
+            <summary>
+              Looks up a localized string similar to Type of List.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.MaximumLength_Description">
+            <summary>
+              Looks up a localized string similar to You may force a maximum length that the user is allowed to provide..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.MaximumLength_Name">
+            <summary>
+              Looks up a localized string similar to Maximum Length.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.MinimumLength_Description">
+            <summary>
+              Looks up a localized string similar to You may force a minimum length that the user is required to provide.  This will make the field required..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.MinimumLength_Name">
+            <summary>
+              Looks up a localized string similar to Minimum Length.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Name_Name">
+            <summary>
+              Looks up a localized string similar to Name.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Pattern_Description">
+            <summary>
+              Looks up a localized string similar to For text fields you can validate user entries using advanced regular expression.  You will find some common regular expressions below to the right..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Pattern_Name">
+            <summary>
+              Looks up a localized string similar to Validation Pattern.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RelationshipSide1_Name">
+            <summary>
+              Looks up a localized string similar to Relationship Side 1.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RelationshipSide2_Name">
+            <summary>
+              Looks up a localized string similar to Relationship Side 2.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Required_Description">
+            <summary>
+              Looks up a localized string similar to Is a user required to choose or provide a value for this field?.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Required_Name">
+            <summary>
+              Looks up a localized string similar to Required?.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ResponsibilityAllocatedTo_Name">
+            <summary>
+              Looks up a localized string similar to Responsibility Allocated To.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ResponsibilitySourcedFrom_Name">
+            <summary>
+              Looks up a localized string similar to Responsibility Sourced From.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.Role_Name">
+            <summary>
+              Looks up a localized string similar to Role.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.TaxonomyType_Description">
+            <summary>
+              Looks up a localized string similar to The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.TaxonomyType_Name">
+            <summary>
+              Looks up a localized string similar to Subject Area.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.TestPattern_Name">
+            <summary>
+              Looks up a localized string similar to Test Pattern.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ValidationDescription_Description">
+            <summary>
+              Looks up a localized string similar to This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.ValidationDescription_Name">
+            <summary>
+              Looks up a localized string similar to Validation Message.
+            </summary>
+        </member>
+        <member name="T:Resources.FormInfo">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_AnalyticType_Directions">
+            <summary>
+              Looks up a localized string similar to Add an analytic type to start tracking scores on different items thorughout the system.  This analytic type can later be allocated to different types of items..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_AnalyticType_Title">
+            <summary>
+              Looks up a localized string similar to Add Analytic Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_ArtifactType_Directions">
+            <summary>
+              Looks up a localized string similar to Add an artifact type using the form below..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_ArtifactType_Title">
+            <summary>
+              Looks up a localized string similar to Add Artifact Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_AttributeTypeCategory_Title">
+            <summary>
+              Looks up a localized string similar to Add Attribute Category.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_AttributeType_Confirmation">
+            <summary>
+              Looks up a localized string similar to Attribute type successfully added..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_AttributeType_Directions">
+            <summary>
+              Looks up a localized string similar to Add an attribute type using the form below..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_AttributeType_Title">
+            <summary>
+              Looks up a localized string similar to Add Attribute Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_FieldType_Confirmation">
+            <summary>
+              Looks up a localized string similar to Field type successfully added..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_FieldType_Title">
+            <summary>
+              Looks up a localized string similar to Add Definition Attribute.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_Generic_Title">
+            <summary>
+              Looks up a localized string similar to Add {0}.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_LoadTypeRule_Directions">
+            <summary>
+              Looks up a localized string similar to Add a rule to perform when a spreadsheet with the associated layout is uploaded.  A promotion rule promotes the specified fields to a particular type of object.  A Relation rule identifies the underlying object from two selected spreadsheet fields and relates them together..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_LoadTypeRule_Title">
+            <summary>
+              Looks up a localized string similar to Add Load Type Rule.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_Policy_Directions">
+            <summary>
+              Looks up a localized string similar to Add a type to associate rules to..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_Policy_Title">
+            <summary>
+              Looks up a localized string similar to Add Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_RelationshipType_Directions">
+            <summary>
+              Looks up a localized string similar to When creating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_Report_Directions">
+            <summary>
+              Looks up a localized string similar to Add a report to the list of reports, which can then be exposed in other areas of this system..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_Report_Title">
+            <summary>
+              Looks up a localized string similar to Add Report.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_ResponsibilityTransformation_Directions">
+            <summary>
+              Looks up a localized string similar to Use the form below to add a transformation comment to the current source..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_ResponsibilityTransformation_Title">
+            <summary>
+              Looks up a localized string similar to Add Responsibility Transformation.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_ResponsibilityTypeClaims_Directions">
+            <summary>
+              Looks up a localized string similar to .
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_ResponsibilityTypeClaims_Title">
+            <summary>
+              Looks up a localized string similar to Add Claims to Responsibility Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_Rule_Directions">
+            <summary>
+              Looks up a localized string similar to Add a rule to track events against..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_Rule_Title">
+            <summary>
+              Looks up a localized string similar to Add Rule.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_SourceTargetMapping_Directions">
+            <summary>
+              Looks up a localized string similar to .
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_SourceTargetMapping_Title">
+            <summary>
+              Looks up a localized string similar to Define a Source to Target Mapping.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Allocate_Workflow_Confirmation">
+            <summary>
+              Looks up a localized string similar to {0} workflow successfully allocated..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Allocate_Workflow_Description">
+            <summary>
+              Looks up a localized string similar to Allocating a workflow to this type will activate workflow when items of this type trigger an even associated with the workflow, such as certifications, updates, etc..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Allocate_Workflow_Title">
+            <summary>
+              Looks up a localized string similar to Allocate Workflow.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.AttributeTypeCategory_Directions">
+            <summary>
+              Looks up a localized string similar to A category can group different types of attributes together into more meaningful sets of of similar information..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.DeAllocate_Workflow_Confirmation">
+            <summary>
+              Looks up a localized string similar to Workflow successfully de-allocated..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.DeAllocate_Workflow_Title">
+            <summary>
+              Looks up a localized string similar to De-allocate Workflow.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Delete_AttributeType_Confirmation">
+            <summary>
+              Looks up a localized string similar to Attribute type successfully removed..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Delete_Attribute_Confirmation">
+            <summary>
+              Looks up a localized string similar to Attribute successfully removed..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Delete_Attribute_Description">
+            <summary>
+              Looks up a localized string similar to Removing this attribute may affect the score of the item it is tagged to..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Delete_FieldType_Confirmation">
+            <summary>
+              Looks up a localized string similar to Definition attribute successfully removed..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Delete_Generic_Title">
+            <summary>
+              Looks up a localized string similar to Are you sure you want to remove {0}?.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Delete_Generic_Undone">
+            <summary>
+              Looks up a localized string similar to You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_ArtifactType_Directions">
+            <summary>
+              Looks up a localized string similar to Modify this artifact type using the form below..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_ArtifactType_Title">
+            <summary>
+              Looks up a localized string similar to Edit Artifact Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_AttributeTypeCategory_Title">
+            <summary>
+              Looks up a localized string similar to Edit Category.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_AttributeType_Confirmation">
+            <summary>
+              Looks up a localized string similar to Attribute type successfully updated..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_AttributeType_Directions">
+            <summary>
+              Looks up a localized string similar to Modify your attribute type using the form below..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_AttributeType_Title">
+            <summary>
+              Looks up a localized string similar to Edit Attribute Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Attribute_Description">
+            <summary>
+              Looks up a localized string similar to Updating this attribute may affect the score of the item it is tagged to..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_FieldType_Confirmation">
+            <summary>
+              Looks up a localized string similar to Field type successfully updated..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_FieldType_Title">
+            <summary>
+              Looks up a localized string similar to Edit Definition Attribute.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Generic_Title">
+            <summary>
+              Looks up a localized string similar to Edit {0}.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_LoadTypeRule_Directions">
+            <summary>
+              Looks up a localized string similar to Edit a rule to perform when a spreadsheet with the associated layout is uploaded.  A promotion rule promotes the specified fields to a particular type of object.  A Relation rule identifies the underlying object from two selected spreadsheet fields and relates them together..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_LoadTypeRule_Title">
+            <summary>
+              Looks up a localized string similar to Edit Load Type Rule.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Policy_Directions">
+            <summary>
+              Looks up a localized string similar to Use the form below to update the information related to this type..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Policy_Title">
+            <summary>
+              Looks up a localized string similar to Edit Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_RelationshipType_Directions">
+            <summary>
+              Looks up a localized string similar to When updating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Report_Directions">
+            <summary>
+              Looks up a localized string similar to Edit the settings for this report and the components that make it up..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Report_Title">
+            <summary>
+              Looks up a localized string similar to Edit Report.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_ResponsibilityTransformation_Directions">
+            <summary>
+              Looks up a localized string similar to Use the form below to edit the transformation comment for the current source..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_ResponsibilityTransformation_Title">
+            <summary>
+              Looks up a localized string similar to Edit Responsibility Transformation.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_ResponsibilityTypeClaims_Directions">
+            <summary>
+              Looks up a localized string similar to .
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_ResponsibilityTypeClaims_Title">
+            <summary>
+              Looks up a localized string similar to Edit Claims for Responsibility Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Rule_Directions">
+            <summary>
+              Looks up a localized string similar to Use the form below to update the information related to this rule..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Rule_Title">
+            <summary>
+              Looks up a localized string similar to Edit Rule.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Workflow_Allocation_Confirmation">
+            <summary>
+              Looks up a localized string similar to Workflow allocation successfully updated..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Workflow_Allocation_Title">
+            <summary>
+              Looks up a localized string similar to Edit Allocated Workflow.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.FieldType_Error_Used">
+            <summary>
+              Looks up a localized string similar to This field type is in use and cannot be removed..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.FusionAttributeType_Remove">
+            <summary>
+              Looks up a localized string similar to You may not remove this fusion attribute type as there are existing attributes based on it..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.FusionType_Remove">
+            <summary>
+              Looks up a localized string similar to You may not remove this fusion type as there are existing attribute types based on it..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.NoFormData_AttributeType">
+            <summary>
+              Looks up a localized string similar to attribute type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.NoFormData_FieldType">
+            <summary>
+              Looks up a localized string similar to field type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Permisions_Error_Add">
+            <summary>
+              Looks up a localized string similar to You do not have permissions to add this..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Permisions_Error_Delete">
+            <summary>
+              Looks up a localized string similar to You do not have permissions to remove this..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Permisions_Error_Edit">
+            <summary>
+              Looks up a localized string similar to You do not have permissions to update this..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Policy_Error_Delete_ExistingRulesPresent">
+            <summary>
+              Looks up a localized string similar to You may not remove this policy as there are existing rules assigned to it..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.SynonymType_Remove">
+            <summary>
+              Looks up a localized string similar to Removing this synonym type will permanently remove all synonyms associated with this type.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.TaxonomyType_Remove">
+            <summary>
+              Looks up a localized string similar to Removing this top-level information model will permanently remove all models under it, as well as any relationships that these models participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Taxonomy_ChangeParent_Warning">
+            <summary>
+              Looks up a localized string similar to Altering a model&apos;s parent could potentially have a significant impact on ownership throughout the system..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Workflow_Certification_Request_Error">
+            <summary>
+              Looks up a localized string similar to No proper responsibilities assigned to this item in order to act on this certification request..
+            </summary>
+        </member>
+        <member name="T:Resources.PageInfo">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Analytics_Description">
+            <summary>
+              Looks up a localized string similar to Create various types of measurements on items throughout the system, including analytics that factor into scores..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Analytics_Title">
+            <summary>
+              Looks up a localized string similar to Analytic Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Artifact_Description">
+            <summary>
+              Looks up a localized string similar to Here you will find all artifact types and custom fields associated with them.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Artifact_Title">
+            <summary>
+              Looks up a localized string similar to Artifact Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_DomainType_Description">
+            <summary>
+              Looks up a localized string similar to All type of reference data lists for the organization are defined here. To add a new type of list, go under Actions and select Add type..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_DomainType_Title">
+            <summary>
+              Looks up a localized string similar to Reference Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Fact_Description">
+            <summary>
+              Looks up a localized string similar to Here you will find all metadata that can be assigned to various objects and relationships.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Fact_Title">
+            <summary>
+              Looks up a localized string similar to Attribute  Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Fields_Description">
+            <summary>
+              Looks up a localized string similar to You will find all global field types used by items like artifacts, information models, and resources..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Fields_Title">
+            <summary>
+              Looks up a localized string similar to Field Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Fusion_Description">
+            <summary>
+              Looks up a localized string similar to Here you will find all Fusion sources and synchronization settings.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Fusion_Title">
+            <summary>
+              Looks up a localized string similar to Fusion Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Governance_Description">
+            <summary>
+              Looks up a localized string similar to Assign which objects can be owned, and whether groups, users or both may own them.  You may also define application and licensing source types..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Governance_Title">
+            <summary>
+              Looks up a localized string similar to Responsibility Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Group_Description">
+            <summary>
+              Looks up a localized string similar to Here you will find groups and membership.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Group_Title">
+            <summary>
+              Looks up a localized string similar to Groups.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Intersect_Description">
+            <summary>
+              Looks up a localized string similar to Create the possibility of establishing relationships between different objects within the system..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Intersect_Title">
+            <summary>
+              Looks up a localized string similar to Relationship Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Lookup_Description">
+            <summary>
+              Looks up a localized string similar to Here you will find all general lookups used.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Lookup_Title">
+            <summary>
+              Looks up a localized string similar to Lookup Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Reporting_Description">
+            <summary>
+              Looks up a localized string similar to Manage your report overlays and tiles..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Reporting_Title">
+            <summary>
+              Looks up a localized string similar to Reporting.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Resource_Description">
+            <summary>
+              Looks up a localized string similar to Here you will find all current resources.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Resource_Title">
+            <summary>
+              Looks up a localized string similar to Resources.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_ResponseType_Description">
+            <summary>
+              Looks up a localized string similar to Manage the available lists of responses that can be associated with different survey questions..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_ResponseType_Title">
+            <summary>
+              Looks up a localized string similar to Response Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_SurveyType_Description">
+            <summary>
+              Looks up a localized string similar to Manage surveys throughout the system, targeting them to different types of objects..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_SurveyType_Title">
+            <summary>
+              Looks up a localized string similar to Survey Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_SynonymType_Description">
+            <summary>
+              Looks up a localized string similar to Manage the variety of synonym types contained within your firm..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_SynonymType_Title">
+            <summary>
+              Looks up a localized string similar to Synonym Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_TaxonomyType_Description">
+            <summary>
+              Looks up a localized string similar to All top-level information models for the organization are defined here. To add a new top-level model, go under Actions and select Add Type..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_TaxonomyType_Title">
+            <summary>
+              Looks up a localized string similar to Model Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Template_Description">
+            <summary>
+              Looks up a localized string similar to All email and tooltip templates for notifications..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Template_Title">
+            <summary>
+              Looks up a localized string similar to Templates.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Workflow_Description">
+            <summary>
+              Looks up a localized string similar to Manage all workflow settings for types within your environment..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Workflow_Title">
+            <summary>
+              Looks up a localized string similar to Workflow.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Artifacts_Description">
+            <summary>
+              Looks up a localized string similar to Here you can find all your data and sourcing information.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Artifacts_Title">
+            <summary>
+              Looks up a localized string similar to Artifacts.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Community_Home_Description">
+            <summary>
+              Looks up a localized string similar to A place to share and report issues to the greater Data3Sixty audience..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Community_Home_Title">
+            <summary>
+              Looks up a localized string similar to Community.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Domains_Description">
+            <summary>
+              Looks up a localized string similar to You can administer all reference data groups, lists, and values from this screen..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Domains_Title">
+            <summary>
+              Looks up a localized string similar to Reference.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Error_Title">
+            <summary>
+              Looks up a localized string similar to An error occurred while attempting to fulfill your request!.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Groups_Description">
+            <summary>
+              Looks up a localized string similar to Search for a group below.  See the activity happening on publisc groups.  If interested, feel free to join..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Groups_Title">
+            <summary>
+              Looks up a localized string similar to Groups.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Home_Description">
+            <summary>
+              Looks up a localized string similar to Here you can find all your data and sourcing information.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Home_Title">
+            <summary>
+              Looks up a localized string similar to Home.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Load_Description">
+            <summary>
+              Looks up a localized string similar to You can bulk load almost any piece of content contained within the Data3Sixty platform..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Load_Title">
+            <summary>
+              Looks up a localized string similar to Bulk Loading.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Login_Description">
+            <summary>
+              Looks up a localized string similar to Please login.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Login_Title">
+            <summary>
+              Looks up a localized string similar to Login.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Monitor_Description">
+            <summary>
+              Looks up a localized string similar to Manage all your policies and rules.  Each rule can maintain a list of fields.  These fields will define what an event looks like that the selected rule..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Monitor_Title">
+            <summary>
+              Looks up a localized string similar to Events.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.People_Description">
+            <summary>
+              Looks up a localized string similar to Find people and groups and see the most active users..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.People_Title">
+            <summary>
+              Looks up a localized string similar to People.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Search_Description">
+            <summary>
+              Looks up a localized string similar to Are you looking for the info you need?  Find it here....
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Search_Title">
+            <summary>
+              Looks up a localized string similar to Search.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Taxonomies_Description">
+            <summary>
+              Looks up a localized string similar to Select an available model below on the left-hand side.  If no models exist, create one using the menu to the left..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Taxonomies_Title">
+            <summary>
+              Looks up a localized string similar to Models.
+            </summary>
+        </member>
+        <member name="T:Resources.Validation">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Action">
+            <summary>
+              Looks up a localized string similar to Please provide an action..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Body">
+            <summary>
+              Looks up a localized string similar to Please provide a body..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Code">
+            <summary>
+              Looks up a localized string similar to Please provide a code..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.CurrentPassword">
+            <summary>
+              Looks up a localized string similar to Please provide your current password..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.ExtensionName">
+            <summary>
+              Looks up a localized string similar to Please provide an extension name..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.FirstName">
+            <summary>
+              Looks up a localized string similar to Please provide a first name..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.LastName">
+            <summary>
+              Looks up a localized string similar to Please provide a last name..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Length_Tokenized">
+            <summary>
+              Looks up a localized string similar to {0} must be between {1} and {2} characters in length..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Level">
+            <summary>
+              Looks up a localized string similar to Please provide a level number..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.MaximumDepth">
+            <summary>
+              Looks up a localized string similar to Please provide a maximum depth..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.MaxLength_Tokenized">
+            <summary>
+              Looks up a localized string similar to {0} may only be a maximum of {1} characters in length..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.MinLength_Tokenized">
+            <summary>
+              Looks up a localized string similar to {0} must be at least {1} characters in length..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Name">
+            <summary>
+              Looks up a localized string similar to Please provide a name..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.NewPassword">
+            <summary>
+              Looks up a localized string similar to Please provide your new password..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Password">
+            <summary>
+              Looks up a localized string similar to Please provide a password at least seven (7) characters long..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Pattern_Tokenized">
+            <summary>
+              Looks up a localized string similar to {0} must adhere to the following requirements: {1}..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Required_Tokenized">
+            <summary>
+              Looks up a localized string similar to Please provide a valid {0}..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Score">
+            <summary>
+              Looks up a localized string similar to Please provide a score..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Subject">
+            <summary>
+              Looks up a localized string similar to Please provide a subject..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Tab">
+            <summary>
+              Looks up a localized string similar to Please provide a tab name..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.TextFormatString">
+            <summary>
+              Looks up a localized string similar to Please provide a proper format string..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Username">
+            <summary>
+              Looks up a localized string similar to Please provide a valid username..
+            </summary>
+        </member>
+        <member name="P:Resources.Validation.Value">
+            <summary>
+              Looks up a localized string similar to Please provide a value..
+            </summary>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.ApiDescriptionExtensions.GetFriendlyId(System.Web.Http.Description.ApiDescription)">
+            <summary>
+            Generates an URI-friendly ID for the <see cref="T:System.Web.Http.Description.ApiDescription"/>. E.g. "Get-Values-id_name" instead of "GetValues/{id}?name={name}"
+            </summary>
+            <param name="description">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <returns>The ID as a string.</returns>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.HelpPageConfig">
+            <summary>
+            Use this class to customize the Help Page.
+            For example you can set a custom <see cref="T:System.Web.Http.Description.IDocumentationProvider"/> to supply the documentation
+            or you can provide the samples for the requests/responses.
+            </summary>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.Controllers.HelpController">
+            <summary>
+            The controller that will handle requests for the help page.
+            </summary>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetDocumentationProvider(System.Web.Http.HttpConfiguration,System.Web.Http.Description.IDocumentationProvider)">
+            <summary>
+            Sets the documentation provider for help page.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="documentationProvider">The documentation provider.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleObjects(System.Web.Http.HttpConfiguration,System.Collections.Generic.IDictionary{System.Type,System.Object})">
+            <summary>
+            Sets the objects that will be used by the formatters to produce sample requests/responses.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sampleObjects">The sample objects.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleRequest(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.String,System.String)">
+            <summary>
+            Sets the sample request directly for the specified media type and action.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample request.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleRequest(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.String,System.String,System.String[])">
+            <summary>
+            Sets the sample request directly for the specified media type and action with parameters.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample request.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleResponse(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.String,System.String)">
+            <summary>
+            Sets the sample request directly for the specified media type of the action.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample response.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleResponse(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.String,System.String,System.String[])">
+            <summary>
+            Sets the sample response directly for the specified media type of the action with specific parameters.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample response.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleForMediaType(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue)">
+            <summary>
+            Sets the sample directly for all actions with the specified media type.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample.</param>
+            <param name="mediaType">The media type.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleForType(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.Type)">
+            <summary>
+            Sets the sample directly for all actions with the specified type and media type.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="type">The parameter type or return type of an action.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetActualRequestType(System.Web.Http.HttpConfiguration,System.Type,System.String,System.String)">
+            <summary>
+            Specifies the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> passed to the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            The help page will use this information to produce more accurate request samples.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="type">The type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetActualRequestType(System.Web.Http.HttpConfiguration,System.Type,System.String,System.String,System.String[])">
+            <summary>
+            Specifies the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> passed to the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            The help page will use this information to produce more accurate request samples.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="type">The type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetActualResponseType(System.Web.Http.HttpConfiguration,System.Type,System.String,System.String)">
+            <summary>
+            Specifies the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> returned as part of the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            The help page will use this information to produce more accurate response samples.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="type">The type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetActualResponseType(System.Web.Http.HttpConfiguration,System.Type,System.String,System.String,System.String[])">
+            <summary>
+            Specifies the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> returned as part of the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            The help page will use this information to produce more accurate response samples.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="type">The type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.GetHelpPageSampleGenerator(System.Web.Http.HttpConfiguration)">
+            <summary>
+            Gets the help page sample generator.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <returns>The help page sample generator.</returns>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.SetHelpPageSampleGenerator(System.Web.Http.HttpConfiguration,d360.web.Areas.HelpPage.HelpPageSampleGenerator)">
+            <summary>
+            Sets the help page sample generator.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sampleGenerator">The help page sample generator.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.GetModelDescriptionGenerator(System.Web.Http.HttpConfiguration)">
+            <summary>
+            Gets the model description generator.
+            </summary>
+            <param name="config">The configuration.</param>
+            <returns>The <see cref="T:d360.web.Areas.HelpPage.ModelDescriptions.ModelDescriptionGenerator"/></returns>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageConfigurationExtensions.GetHelpPageApiModel(System.Web.Http.HttpConfiguration,System.String)">
+            <summary>
+            Gets the model that represents an API displayed on the help page. The model is initialized on the first call and cached for subsequent calls.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="apiDescriptionId">The <see cref="T:System.Web.Http.Description.ApiDescription"/> ID.</param>
+            <returns>
+            An <see cref="T:d360.web.Areas.HelpPage.Models.HelpPageApiModel"/>
+            </returns>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.ModelDescriptions.ModelDescription">
+            <summary>
+            Describes a type model.
+            </summary>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.ModelDescriptions.ModelDescriptionGenerator">
+            <summary>
+            Generates model descriptions for given types.
+            </summary>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.ModelDescriptions.ModelNameAttribute">
+            <summary>
+            Use this attribute to change the name of the <see cref="T:d360.web.Areas.HelpPage.ModelDescriptions.ModelDescription"/> generated for a type.
+            </summary>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.Models.HelpPageApiModel">
+            <summary>
+            The model that represents an API displayed on the help page.
+            </summary>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.Models.HelpPageApiModel.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:d360.web.Areas.HelpPage.Models.HelpPageApiModel"/> class.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.ApiDescription">
+            <summary>
+            Gets or sets the <see cref="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.ApiDescription"/> that describes the API.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.UriParameters">
+            <summary>
+            Gets or sets the <see cref="T:d360.web.Areas.HelpPage.ModelDescriptions.ParameterDescription"/> collection that describes the URI parameters for the API.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.RequestDocumentation">
+            <summary>
+            Gets or sets the documentation for the request.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.RequestModelDescription">
+            <summary>
+            Gets or sets the <see cref="T:d360.web.Areas.HelpPage.ModelDescriptions.ModelDescription"/> that describes the request body.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.RequestBodyParameters">
+            <summary>
+            Gets the request body parameter descriptions.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.ResourceDescription">
+            <summary>
+            Gets or sets the <see cref="T:d360.web.Areas.HelpPage.ModelDescriptions.ModelDescription"/> that describes the resource.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.ResourceProperties">
+            <summary>
+            Gets the resource property descriptions.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.SampleRequests">
+            <summary>
+            Gets the sample requests associated with the API.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.SampleResponses">
+            <summary>
+            Gets the sample responses associated with the API.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.Models.HelpPageApiModel.ErrorMessages">
+            <summary>
+            Gets the error messages associated with this model.
+            </summary>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.HelpPageSampleGenerator">
+            <summary>
+            This class will generate the samples for the help page.
+            </summary>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:d360.web.Areas.HelpPage.HelpPageSampleGenerator"/> class.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.HelpPageSampleGenerator.ActualHttpMessageTypes">
+            <summary>
+            Gets CLR types that are used as the content of <see cref="T:System.Net.Http.HttpRequestMessage"/> or <see cref="T:System.Net.Http.HttpResponseMessage"/>.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.HelpPageSampleGenerator.ActionSamples">
+            <summary>
+            Gets the objects that are used directly as samples for certain actions.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.HelpPageSampleGenerator.SampleObjects">
+            <summary>
+            Gets the objects that are serialized as samples by the supported formatters.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.HelpPageSampleGenerator.SampleObjectFactories">
+            <summary>
+            Gets factories for the objects that the supported formatters will serialize as samples. Processed in order,
+            stopping when the factory successfully returns a non-<see langref="null"/> object.
+            </summary>
+            <remarks>
+            Collection includes just <see cref="M:d360.web.Areas.HelpPage.ObjectGenerator.GenerateObject(System.Type)"/> initially. Use
+            <code>SampleObjectFactories.Insert(0, func)</code> to provide an override and
+            <code>SampleObjectFactories.Add(func)</code> to provide a fallback.</remarks>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.GetSampleRequests(System.Web.Http.Description.ApiDescription)">
+            <summary>
+            Gets the request body samples for a given <see cref="T:System.Web.Http.Description.ApiDescription"/>.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <returns>The samples keyed by media type.</returns>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.GetSampleResponses(System.Web.Http.Description.ApiDescription)">
+            <summary>
+            Gets the response body samples for a given <see cref="T:System.Web.Http.Description.ApiDescription"/>.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <returns>The samples keyed by media type.</returns>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.GetSample(System.Web.Http.Description.ApiDescription,d360.web.Areas.HelpPage.SampleDirection)">
+            <summary>
+            Gets the request or response body samples.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <param name="sampleDirection">The value indicating whether the sample is for a request or for a response.</param>
+            <returns>The samples keyed by media type.</returns>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.GetActionSample(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.Type,System.Net.Http.Formatting.MediaTypeFormatter,System.Net.Http.Headers.MediaTypeHeaderValue,d360.web.Areas.HelpPage.SampleDirection)">
+            <summary>
+            Search for samples that are provided directly through <see cref="P:d360.web.Areas.HelpPage.HelpPageSampleGenerator.ActionSamples"/>.
+            </summary>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+            <param name="type">The CLR type.</param>
+            <param name="formatter">The formatter.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="sampleDirection">The value indicating whether the sample is for a request or for a response.</param>
+            <returns>The sample that matches the parameters.</returns>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.GetSampleObject(System.Type)">
+            <summary>
+            Gets the sample object that will be serialized by the formatters. 
+            First, it will look at the <see cref="P:d360.web.Areas.HelpPage.HelpPageSampleGenerator.SampleObjects"/>. If no sample object is found, it will try to create
+            one using <see cref="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.DefaultSampleObjectFactory(d360.web.Areas.HelpPage.HelpPageSampleGenerator,System.Type)"/> (which wraps an <see cref="T:d360.web.Areas.HelpPage.ObjectGenerator"/>) and other
+            factories in <see cref="P:d360.web.Areas.HelpPage.HelpPageSampleGenerator.SampleObjectFactories"/>.
+            </summary>
+            <param name="type">The type.</param>
+            <returns>The sample object.</returns>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.ResolveHttpRequestMessageType(System.Web.Http.Description.ApiDescription)">
+            <summary>
+            Resolves the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> passed to the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <returns>The type.</returns>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.ResolveType(System.Web.Http.Description.ApiDescription,System.String,System.String,System.Collections.Generic.IEnumerable{System.String},d360.web.Areas.HelpPage.SampleDirection,System.Collections.ObjectModel.Collection{System.Net.Http.Formatting.MediaTypeFormatter}@)">
+            <summary>
+            Resolves the type of the action parameter or return value when <see cref="T:System.Net.Http.HttpRequestMessage"/> or <see cref="T:System.Net.Http.HttpResponseMessage"/> is used.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+            <param name="sampleDirection">The value indicating whether the sample is for a request or a response.</param>
+            <param name="formatters">The formatters.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleGenerator.WriteSampleObjectUsingFormatter(System.Net.Http.Formatting.MediaTypeFormatter,System.Object,System.Type,System.Net.Http.Headers.MediaTypeHeaderValue)">
+            <summary>
+            Writes the sample object using formatter.
+            </summary>
+            <param name="formatter">The formatter.</param>
+            <param name="value">The value.</param>
+            <param name="type">The type.</param>
+            <param name="mediaType">Type of the media.</param>
+            <returns></returns>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.HelpPageSampleKey">
+            <summary>
+            This is used to identify the place where the sample should be applied.
+            </summary>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleKey.#ctor(System.Net.Http.Headers.MediaTypeHeaderValue)">
+            <summary>
+            Creates a new <see cref="T:d360.web.Areas.HelpPage.HelpPageSampleKey"/> based on media type.
+            </summary>
+            <param name="mediaType">The media type.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleKey.#ctor(System.Net.Http.Headers.MediaTypeHeaderValue,System.Type)">
+            <summary>
+            Creates a new <see cref="T:d360.web.Areas.HelpPage.HelpPageSampleKey"/> based on media type and CLR type.
+            </summary>
+            <param name="mediaType">The media type.</param>
+            <param name="type">The CLR type.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleKey.#ctor(d360.web.Areas.HelpPage.SampleDirection,System.String,System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Creates a new <see cref="T:d360.web.Areas.HelpPage.HelpPageSampleKey"/> based on <see cref="P:d360.web.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>, controller name, action name and parameter names.
+            </summary>
+            <param name="sampleDirection">The <see cref="P:d360.web.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.HelpPageSampleKey.#ctor(System.Net.Http.Headers.MediaTypeHeaderValue,d360.web.Areas.HelpPage.SampleDirection,System.String,System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Creates a new <see cref="T:d360.web.Areas.HelpPage.HelpPageSampleKey"/> based on media type, <see cref="P:d360.web.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>, controller name, action name and parameter names.
+            </summary>
+            <param name="mediaType">The media type.</param>
+            <param name="sampleDirection">The <see cref="P:d360.web.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.HelpPageSampleKey.ControllerName">
+            <summary>
+            Gets the name of the controller.
+            </summary>
+            <value>
+            The name of the controller.
+            </value>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.HelpPageSampleKey.ActionName">
+            <summary>
+            Gets the name of the action.
+            </summary>
+            <value>
+            The name of the action.
+            </value>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.HelpPageSampleKey.MediaType">
+            <summary>
+            Gets the media type.
+            </summary>
+            <value>
+            The media type.
+            </value>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.HelpPageSampleKey.ParameterNames">
+            <summary>
+            Gets the parameter names.
+            </summary>
+        </member>
+        <member name="P:d360.web.Areas.HelpPage.HelpPageSampleKey.SampleDirection">
+            <summary>
+            Gets the <see cref="P:d360.web.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>.
+            </summary>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.ImageSample">
+            <summary>
+            This represents an image sample on the help page. There's a display template named ImageSample associated with this class.
+            </summary>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.ImageSample.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:d360.web.Areas.HelpPage.ImageSample"/> class.
+            </summary>
+            <param name="src">The URL of an image.</param>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.InvalidSample">
+            <summary>
+            This represents an invalid sample on the help page. There's a display template named InvalidSample associated with this class.
+            </summary>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.ObjectGenerator">
+            <summary>
+            This class will create an object of a given type and populate it with sample data.
+            </summary>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.ObjectGenerator.GenerateObject(System.Type)">
+            <summary>
+            Generates an object for a given type. The type needs to be public, have a public default constructor and settable public properties/fields. Currently it supports the following types:
+            Simple types: <see cref="T:System.Int32"/>, <see cref="T:System.String"/>, <see cref="T:System.Enum"/>, <see cref="T:System.DateTime"/>, <see cref="T:System.Uri"/>, etc.
+            Complex types: POCO types.
+            Nullables: <see cref="T:System.Nullable`1"/>.
+            Arrays: arrays of simple types or complex types.
+            Key value pairs: <see cref="T:System.Collections.Generic.KeyValuePair`2"/>
+            Tuples: <see cref="T:System.Tuple`1"/>, <see cref="T:System.Tuple`2"/>, etc
+            Dictionaries: <see cref="T:System.Collections.Generic.IDictionary`2"/> or anything deriving from <see cref="T:System.Collections.Generic.IDictionary`2"/>.
+            Collections: <see cref="T:System.Collections.Generic.IList`1"/>, <see cref="T:System.Collections.Generic.IEnumerable`1"/>, <see cref="T:System.Collections.Generic.ICollection`1"/>, <see cref="T:System.Collections.IList"/>, <see cref="T:System.Collections.IEnumerable"/>, <see cref="T:System.Collections.ICollection"/> or anything deriving from <see cref="T:System.Collections.Generic.ICollection`1"/> or <see cref="T:System.Collections.IList"/>.
+            Queryables: <see cref="T:System.Linq.IQueryable"/>, <see cref="T:System.Linq.IQueryable`1"/>.
+            </summary>
+            <param name="type">The type.</param>
+            <returns>An object of the given type.</returns>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.SampleDirection">
+            <summary>
+            Indicates whether the sample is used for request or response
+            </summary>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.TextSample">
+            <summary>
+            This represents a preformatted text sample on the help page. There's a display template named TextSample associated with this class.
+            </summary>
+        </member>
+        <member name="T:d360.web.Areas.HelpPage.XmlDocumentationProvider">
+            <summary>
+            A custom <see cref="T:System.Web.Http.Description.IDocumentationProvider"/> that reads the API documentation from an XML documentation file.
+            </summary>
+        </member>
+        <member name="M:d360.web.Areas.HelpPage.XmlDocumentationProvider.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:d360.web.Areas.HelpPage.XmlDocumentationProvider"/> class.
+            </summary>
+            <param name="documentPath">The physical path to XML document.</param>
+        </member>
+        <member name="M:d360.web.Controllers.CustomController.GetAttributesByAttributeType(System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="id">The ID of the rule to retrieve attributes for.</param>
+            <param name="typeID">The ID of the attribute type to get.</param>
+            <returns></returns>
+        </member>
+        <member name="T:d360.web.Controllers.Services.ReportsController">
+            <summary>
+            Retrieve report tile results.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.AgentController.GetPackages">
+            <summary>
+            Get a list of packages.
+            </summary>
+            <returns>A list of packages.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.AgentController.GetPackageContents(System.Int32)">
+            <summary>
+            Gets the ZIP file containing the contents outlined.
+            </summary>
+            <param name="id">The package ID</param>
+            <returns>Artifact</returns>
+        </member>
+        <member name="T:d360.web.Controllers.Services.DomainsController">
+            <summary>
+            This services houses all endpoints handling domain types, groups, lists, and items.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.AddItemToDomain(System.Int32,System.Int32,d360.core.entities.DomainItem)">
+            <summary>
+            Adds an item to a specified domain.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="listID">The ID of the domain to add the item to.</param>
+            <param name="item">The item to add to the specified domain.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.AddGroupToType(System.Int32,d360.core.entities.DomainGroup)">
+            <summary>
+            Adds a group to a specified domain type.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="group">The group to add to the specified domain type.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.AddDomainToType(System.Int32,d360.core.entities.Domain)">
+            <summary>
+            Adds a domain to a specified domain type.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="list">The list to add to the specified domain type.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.DeleteItemFromDomain(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Removes an item from a specified domain, based on its ID.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="listID">The ID of the domain to remove the item from.</param>
+            <param name="id">The ID of the item to remove.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.DeleteGroupFromType(System.Int32,System.Int32)">
+            <summary>
+            Removes a group from a specified domain type, based on its ID.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="groupID">The ID of the group to remove.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.DeleteListFromType(System.Int32,System.Int32)">
+            <summary>
+            Removes a domain from a specified domain type, based on its ID.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="id">The ID of the list to remove.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.PutItemInDomain(System.Int32,System.Int32,System.Int32,d360.core.entities.DomainItem)">
+            <summary>
+            Updates an item in the specified domain, based on its ID.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="listID">The ID of the domain to update the item from.</param>
+            <param name="id">The ID of the item to update.</param>
+            <param name="item">The item to update</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.PutListInType(System.Int32,System.Int32,d360.core.entities.Domain)">
+            <summary>
+            Updates a list in the specified domain type, based on its ID.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="listID">The ID of the domain to add the item to.</param>
+            <param name="list">The list to update</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.PutGroupInType(System.Int32,System.Int32,d360.core.entities.DomainGroup)">
+            <summary>
+            Updates a group in the specified domain type, based on its ID.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="groupID">The ID of the group to update.</param>
+            <param name="group">The group to update.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.GetTypes">
+            <summary>
+            Gets an OData-queryable list of domain types. 
+            </summary>
+            <returns>A list of domain types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.GetGroupsByType(System.Int32)">
+            <summary>
+            Gets an OData-queryable list of groups within a specified domain type.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <returns>A list of groups.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.GetListsByType(System.Int32)">
+            <summary>
+            Gets an OData-queryable list of domains within a specified domain type.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <returns>A list of domains.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.DomainsController.GetItemsByDomain(System.Int32,System.Int32)">
+            <summary>
+            Gets an OData-queryable list of items within a specified domain.
+            </summary>
+            <param name="typeID">The ID of the domain type the domain belongs to.</param>
+            <param name="listID">The ID of the domain to get the items from.</param>
+            <returns>A list of items.</returns>
+        </member>
+        <member name="T:d360.web.Controllers.Services.WorkflowController.WorkflowBreakdown">
+            <summary>
+            A workflow breakdown.
+            </summary>
+        </member>
+        <member name="T:d360.web.Controllers.Services.WorkflowController.WorkflowTask">
+            <summary>
+            An open workflow task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.WorkflowID">
+            <summary>
+            The instance ID of the workflow that this task is related to.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.Workflow">
+            <summary>
+            The workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.WorkflowName">
+            <summary>
+            The name of the workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.WorkflowDescription">
+            <summary>
+            The description of the workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.Activity">
+            <summary>
+            The type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.ActivityName">
+            <summary>
+            The name for this type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.ActivityDescription">
+            <summary>
+            The description for this type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.Data">
+            <summary>
+            Contains the raw XML data settings for this workflow.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.DateStarted">
+            <summary>
+            The date this task was created.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.Properties">
+            <summary>
+            Contains the hydrated list of key properties for this workflow.
+            </summary>
+        </member>
+        <member name="T:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment">
+            <summary>
+            An open workflow assignment.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.WorkflowID">
+            <summary>
+            The instance ID of the workflow that this task is related to.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.Workflow">
+            <summary>
+            The workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.WorkflowName">
+            <summary>
+            The name of the workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.WorkflowDescription">
+            <summary>
+            The description of the workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.Data">
+            <summary>
+            Contains the raw XML data settings for this workflow.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.Settings">
+            <summary>
+            Contains the data settings for this workflow.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.DateStarted">
+            <summary>
+            The date this task was created.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.Activity">
+            <summary>
+            The type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.ActivityName">
+            <summary>
+            The name for this type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.ActivityDescription">
+            <summary>
+            The description for this type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.RequestingResourceID">
+            <summary>
+            The ID of the user that made the initial request.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.RequestingResourceName">
+            <summary>
+            The full name of the user that made the initial request.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.RequestingResourceUrl">
+            <summary>
+            The relative url of the user that made the initial request.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.WorkflowController.GetTaskBreakdownForCurrentUser">
+            <summary>
+            Gets a list of open workflow tasks for the current user.
+            </summary>
+            <returns>A list of workflow tasks.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.WorkflowController.GetTasksForCurrentUser(System.Int32)">
+            <summary>
+            Gets a list of open workflow tasks for the current user, based on the workflow type.
+            </summary>
+            <returns>A list of workflow tasks.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.WorkflowController.GetTaskByIDForCurrentUser(System.Guid)">
+            <summary>
+            Gets a list of open workflow tasks for the current user.
+            </summary>
+            <returns>A list of workflow tasks.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.WorkflowController.ActOnTaskForCurrentUser(System.Guid,d360.web.Controllers.Services.WorkflowController.WorkflowRequestModel)">
+            <summary>
+            Approve or reject the current workflow task for the current user.
+            </summary>
+            <returns>A status code.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.WorkflowController.GetWorkflowStatus(System.Guid)">
+            <summary>
+            Gets the status of a given workflow, containing all steps executed as well as assignments.
+            </summary>
+            <param name="id">The ID of the workflow record to retrieve status for.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.GetPolicies">
+            <summary>
+            Gets an OData-queryable list of policies contained within your environment.
+            </summary>
+            <returns>A list of policies.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.GetRules">
+            <summary>
+            Gets an OData-queryable list of rules contained within your environment.
+            </summary>
+            <returns>A list of rules.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.AddPolicy(d360.core.entities.PolicyModel)">
+            <summary>
+            Add a policy to your environment.  Once created, this policy can hold child policies and rules.
+            </summary>
+            <param name="model">A policy</param>
+            <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new policy is also returned.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.AddRule(d360.core.entities.RuleModel)">
+            <summary>
+            Add a rule to your environment.  Once created, this rule can hold events
+            </summary>
+            <param name="model">A rule</param>
+            <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new rule is also returned.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.AddEvents(System.Int32,d360.web.Controllers.Services.EventsController.CreateEventsModelRequest)">
+            <summary>
+            Add one or more events to a rule.
+            </summary>
+            <param name="id">The ID of the rule to add events to.</param>
+            <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.GetAttributesByAttributeType(System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="id">The ID of the rule to retrieve attributes for.</param>
+            <param name="typeID">The ID of the attribute type to get.</param>
+            <returns></returns>
+        </member>
+        <member name="T:d360.web.Controllers.Services.GlossaryController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactTypes">
+            <summary>
+            Gets all artifact types.  You can optionally use OData query parameters: $filter, $order, $skip, $take, etc.
+            </summary>
+            <returns>A list of artifact types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactsByType(System.Int32)">
+            <summary>
+            Gets all artifacts based on a given type ID.
+            </summary>
+            <returns>A list of artifacts.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.AddArtifact(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Add an artifact.
+            </summary>
+            <param name="id">The type ID</param>
+            <param name="model">The artifact fields</param>
+            <returns>Artifact</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.EditArtifact(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Update a specific artifact.
+            </summary>
+            <param name="typeID">The type ID</param>
+            <param name="id">The artifact ID</param>
+            <param name="model">The artifact fields</param>
+            <returns>Artifact</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.GetModelTypes">
+            <summary>
+            Gets all model types.  You can optionally use OData query parameters: $filter, $order, $skip, $take, etc.
+            </summary>
+            <returns>A list of model types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.GetModelsByType(System.Int32)">
+            <summary>
+            Gets all models based on a given type ID.
+            </summary>
+            <returns>A list of models.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.AddModel(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Add a model.
+            </summary>
+            <param name="id">The type ID</param>
+            <param name="model">The model fields</param>
+            <returns>Model</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.EditModel(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Update a specific model.
+            </summary>
+            <param name="typeID">The type ID</param>
+            <param name="id">The model ID</param>
+            <param name="model">The model fields</param>
+            <returns>Model</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.RelationshipsController.GetIntersectTypes">
+            <summary>
+            Allows for OData filtering on relationships types.
+            </summary>
+            <returns>A list of relationships types present in the system.</returns>
+        </member>
+        <member name="T:d360.web.Controllers.Services.FusionController">
+            <summary>
+            This service houses all endpoints handling third-party metadata synchronization.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurations">
+            <summary>
+            Get all available fusion configurations accross all types.  These configurations provide required connection and security credentials to connect to the underlying source.
+            </summary>
+            <returns>A list of available fusion configurations.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurationsByType(System.Int32)">
+            <summary>
+            Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
+            </summary>
+            <returns>A list of available fusion configurations.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetConfiguration(System.Int32,System.Int32)">
+            <summary>
+            Get a specific fusion configuration.  This configuration will provide required connection and security credentials to connect to the underlying source.
+            </summary>
+            <returns>The specific configuration.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetNextConfigurationInSchedule">
+            <summary>
+            Gets the next configuration in the schedule that an agent may execute.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel">
+            <summary>
+            Contains information relating to a specific instance the Fusion Agent is scheduled to run, as well as wether it completed successfully.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel.DateStarted">
+            <summary>
+            Date that the scheduler create this run record.  This corresponds roughly to when a local Fusion Agent picks up the scheduled task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel.DateCompleted">
+            <summary>
+            The date the Fusion Agent completes the task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel.MachineQueuedOn">
+            <summary>
+            The machine that contains the Fusion Agent that picked up the task.  The Fusion Agent sets this when picking up this task to effectively lock it so that no other Fusion Agents will act upon it.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel.Success">
+            <summary>
+            A flag indicating wether the Fusion Agent successfully executing all steps for this task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel.Message">
+            <summary>
+            An optional message that the Fusion Agent can send when completing this task.  This usually contains an error message.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel.FusionID">
+            <summary>
+            The ID of the particular Fusion instance/configuration that this task references.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel.Fusion">
+            <summary>
+            The Name of the particular Fusion instance/configuration that this task references.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel.FusionTypeID">
+            <summary>
+            The ID of the particular Fusion instance's type that this task references.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.Services.FusionController.AgentHistoryApiModel.FusionType">
+            <summary>
+            The Name of the particular Fusion instance's type that this task references.
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:d360.web.Controllers.Services.FusionController.GetAgentHistory" -->
+        <member name="M:d360.web.Controllers.Services.FusionController.AssignOrCompleteAvailableConfigurationSchedule(d360.core.entities.api.FusionConfigurationScheduleRequestModel)">
+            <summary>
+            Allows authorized fusion agents to take an open item from the schedule to work on, thereby reserving that item so no other agent can work on it.
+            </summary>
+            <param name="model"></param>
+            <returns>An Http Status code</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetAttributesByFusion(System.Int32,System.Int32)">
+            <summary>
+            Internal endpoint.
+            </summary>
+            <param name="typeID">The ID of the fusion type.</param>
+            <param name="fusionID">The ID of the fusion configuration.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetPromotionRulesByFusion(System.Int32,System.Int32)">
+            <summary>
+            Internal endpoint.
+            </summary>
+            <param name="typeID">The ID of the fusion type.</param>
+            <param name="fusionID">The ID of the fusion configuration.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetPromotionRuleFieldsByFusion(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Internal endpoint.
+            </summary>
+            <param name="typeID">The ID of the fusion type.</param>
+            <param name="fusionID">The ID of the fusion configuration.</param>
+            <param name="ruleID">The ID of the fusion promotion rule.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.PostBulkAttributesAsync(System.Int32,System.Int32)">
+            <summary>
+            Takes a given set of fusion data for a particular fusion configuration.
+            </summary>
+            <param name="typeID">The ID of the fusion type.</param>
+            <param name="fusionID">The fusion configuration</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetAgentLogRequestStatus">
+            <summary>
+            Gets whether the agent should upload its log data.
+            </summary>
+            <returns>Http Status Code: 202 (Accepted), 204 (No Content)</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.PostAgentLogAsync">
+            <summary>
+            Takes a given agent log and saves it to long-term storage for analysis.
+            </summary>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="T:d360.web.Controllers.Services.SearchController">
+            <summary>
+            Search everything in Data3Sixty.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.SearchController.GetSearchResults(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="phrase"></param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.D3SApiController.GetRelationshipTypes(d360.core.SystemObjects,System.Int32)">
+            <summary>
+            Gets a list of available relationships types based on the source type specified in parameters. 
+            Used in the Filter By Relationship tile on artifact list pages.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.D3SApiController.GetFieldForObject(d360.core.SystemObjects,System.Int32)">
+            <summary>
+            Used mainly by the client-side search tool.
+            </summary>
+            <param name="type">The type of object</param>
+            <param name="id">The ID of the object</param>
+            <returns>A list of fields with the name, friendly name, and value.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.AttributesController.AttributeActions(d360.core.SystemObjects,System.Int32,d360.core.SystemObjects,System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Gets list of allowed actions that you can take on the selected attribute or node.
+            </summary>
+            <param name="type">The object type to get actions for.</param>
+            <param name="id">The object ID to get actions for.</param>
+            <param name="owner">The type of the object that owns this attribute.</param>
+            <param name="ownerID">The ID of the object that owns this attribute.</param>
+            <param name="attributeID">The current or new parent attribute ID.</param>
+            <returns>A list of available actions as JSON.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">
+            <param name="at">ArtifactTypeID</param>
+            <param name="p">ParentID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Artifact_DeleteFields(System.Int32)">
+            <param name="id">ArtifactID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Artifact_EditFields(System.Int32)">
+            <param name="id">ArtifactID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Artifact_RequestCertification(System.Int32)">
+            <param name="id">ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Artifact_SuggestFields(System.Int32,System.Int32)">
+            <param name="at">ArtifactTypeID</param>
+            <param name="p">ParentID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ArtifactType_DeleteFields(System.Int32)">
+            <param name="id">ArtifactID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Attribute_AddFields(System.Int32,System.String,System.Int32,System.Int32)">
+            <param name="at">AttributeTypeID</param>
+            <param name="ot">ObjectType</param>
+            <param name="oid">ObjectID</param>
+            <param name="p">ParentID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Attribute_DeleteFields(System.Int32)">
+            <param name="id">AttributeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Attribute_EditFields(System.Int32)">
+            <param name="id">AttributeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.AttributeType_DeleteFields(System.Int32)">
+            <param name="id">AttributeTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.AttributeTypeCategory_AddFields">
+            <param name="p">ParentID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.AttributeTypeCategory_DeleteFields(System.Int32)">
+            <param name="id">AttributeTypeCategoryID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.AttributeTypeCategory_EditFields(System.Int32)">
+            <param name="id">AttributeTypeCategoryID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.AttributeTypeRelation_AddFields(System.Int32)">
+            <param name="at">AttributeTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.AttributeTypeRelation_DeleteFields(System.Int32,System.String,System.Int32)">
+            <param name="at">AttributeTypeID</param>
+            <param name="ot">ObjectType</param>
+            <param name="oid">ObjectID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.AttributeTypeRelation_EditFields(System.Int32,System.String,System.Int32)">
+            <param name="at">AttributeTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Domain_AddFields(System.Int32,System.Int32)">
+            <param name="t">DomainTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Domain_DeleteFields(System.Int32)">
+            <param name="id">DomainID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Domain_EditFields(System.Int32)">
+            <param name="id">DomainID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.DomainGroup_AddFields(System.Int32)">
+            <param name="t">DomainTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.DomainGroup_DeleteFields(System.Int32)">
+            <param name="id">DomainGroupID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.DomainGroup_EditFields(System.Int32)">
+            <param name="id">DomainGroupID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.DomainItem_AddFields(System.Int32)">
+            <param name="t">DomainID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.DomainItem_DeleteFields(System.Int32)">
+            <param name="id">DomainItemID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.DomainItem_EditFields(System.Int32)">
+            <param name="id">DomainItemID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.DomainType_DeleteFields(System.Int32)">
+            <param name="id">DomainTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.DomainType_EditFields(System.Int32)">
+            <param name="id">DomainTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.EmailTemplate_DeleteFields(System.Int32)">
+            <param name="id">EmailTemplateID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.EmailTemplate_EditFields(System.Int32)">
+            <param name="id">EmailTemplateID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FieldType_DeleteFields(System.Int32)">
+            <param name="id">ID of the object</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Fusion_AddFields(System.Int32)">
+            <param name="fat">FusionTypeID</param>
+            <param name="p">ParentID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Fusion_DeleteFields(System.Int32)">
+            <param name="id">FusionAttributeTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Fusion_EditFields(System.Int32)">
+            <param name="id">FusionAttributeTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FusionOwnerRule_DeleteFields(System.Int32)">
+            <param name="id">FusionAttributeOwnerRuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FusionPromotionRule_DeleteFields(System.Int32)">
+            <param name="id">FusionAttributePromotionRuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FusionType_DeleteFields(System.Int32)">
+            <param name="id">FusionTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FusionType_EditFields(System.Int32)">
+            <param name="id">FusionTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FusionAttributeType_AddFields(System.Int32,System.Int32)">
+            <param name="fat">FusionTypeID</param>
+            <param name="p">ParentID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FusionAttributeType_DeleteFields(System.Int32)">
+            <param name="id">FusionAttributeTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FusionAttributeType_EditFields(System.Int32)">
+            <param name="id">FusionAttributeTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.IntersectType_DeleteFields(System.Int32)">
+            <param name="id">IntersectTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Group_DeleteFields(System.Int32)">
+            <param name="id">GroupID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Group_EditFields(System.Int32)">
+            <param name="id">GroupID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LoadType_DeleteFields(System.Int32)">
+            <param name="id">LoadTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LoadType_EditFields(System.Int32)">
+            <param name="id">LoadTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LoadTypeField_AddFields(System.Int32)">
+            <param name="id">LoadTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LoadTypeField_DeleteFields(System.Int32)">
+            <param name="id">LoadTypeFieldID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LoadTypeField_EditFields(System.Int32)">
+            <param name="id">LoadTypeFieldID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LoadTypeRule_DeleteFields(System.Int32)">
+            <param name="id">LoadTypeRuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LoadTypeRuleItem_AddFields(System.Int32)">
+            <param name="id">LoadTypeRuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LoadTypeRuleItem_DeleteFields(System.Int32)">
+            <param name="id">LoadTypeRuleItemID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LoadTypeRuleItem_EditFields(System.Int32)">
+            <param name="id">LoadTypeRuleItemID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Lookup_AddFields(System.Int32)">
+            <param name="id">LookupTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Lookup_DeleteFields(System.Int32)">
+            <param name="id">LookupID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Lookup_EditFields(System.Int32)">
+            <param name="id">LookupID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LookupType_DeleteFields(System.Int32)">
+            <param name="id">LookupTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.LookupType_EditFields(System.Int32)">
+            <param name="id">LookupTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Policy_DeleteFields(System.Int32)">
+            <param name="id">PolicyID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Policy_EditFields(System.Int32)">
+            <param name="id">PolicyID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Report_DeleteFields(System.Int32)">
+            <param name="id">ID of the object</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ReportTile_DeleteFields(System.Int32)">
+            <param name="id">ID of the object</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Responsibility_DeleteFields(System.Int32)">
+            <param name="id">ResponsibilityID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponsibilityTransformation_DeleteFields(System.Int32)">
+            <param name="id">ResponsibilityTransformationID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponsibilityTransformation_EditFields(System.Int32)">
+            <param name="id">ResponsibilityTransformationID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponsibilityType_DeleteFields(System.Int32)">
+            <param name="id">ResponsibilityTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponsibilityType_EditFields(System.Int32)">
+            <param name="id">ResponsibilityTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponsibilityTypeHierarchy_DeleteFields(System.Int32,System.Nullable{System.Int32})">
+            <param name="id">ResponsibilityTypeHierarchy ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.QuestionType_AddFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.QuestionType_DeleteFields(System.Int32)">
+            <param name="id">QuestionTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.QuestionType_EditFields(System.Int32)">
+            <param name="id">QuestionTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Resolution_AddFields(d360.core.SystemObjects,System.Int32)">
+            <param name="t">ObjectType</param>
+            <param name="id">ObjectID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Resolution_DeleteFields(System.Int32)">
+            <param name="id">ResolutionID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Resolution_EditFields(System.Int32)">
+            <param name="id">ResolutionID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Resource_AddFields(System.Int32)">
+            <param name="id">ResourceTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Resource_DeleteFields(System.Int32)">
+            <param name="id">ResourceID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Resource_EditFields(System.Int32)">
+            <param name="id">ResourceID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResourceType_DeleteFields(System.Int32)">
+            <param name="id">ResourceTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResourceType_EditFields(System.Int32)">
+            <param name="id">ResourceTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponseType_DeleteFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponseType_EditFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponseTypeOption_DeleteFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.ResponseTypeOption_EditFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Rule_DeleteFields(System.Int32)">
+            <param name="id">RuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Rule_EditFields(System.Int32)">
+            <param name="id">RuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.StatisticType_DeleteFields(System.Int32)">
+            <param name="id">StatisticTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.StatisticTypeRelation_AddFields(System.Int32)">
+            <param name="st">StatisticTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.StatisticTypeRelation_DeleteFields(System.Int32,System.String,System.Int32)">
+            <param name="at">StatisticTypeID</param>
+            <param name="ot">ObjectType</param>
+            <param name="oid">ObjectID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.SurveyType_DeleteFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.SurveyType_EditFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Taxonomy_AddFields(System.Int32,System.Int32)">
+            <param name="t">TaxonomyTypeID</param>
+            <param name="p">ParentID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Taxonomy_DeleteFields(System.Int32)">
+            <param name="id">TaxonomyID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Taxonomy_EditFields(System.Int32)">
+            <param name="id">TaxonomyID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.TaxonomyType_DeleteFields(System.Int32)">
+            <param name="id">TaxonomyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.TaxonomyType_EditFields(System.Int32)">
+            <param name="id">TaxonomyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_DeleteFields(System.Int32,System.Int32)">
+            <param name="id">TaxonomyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_EditFields(System.Int32,System.Int32)">
+            <param name="id">TaxonomyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.TooltipTemplate_DeleteFields(System.Int32)">
+            <param name="id">TooltipTemplateID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.TooltipTemplate_EditFields(System.Int32)">
+            <param name="id">TooltipTemplateID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FusionController._AttributeTypesByParentType(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Gets fusion attribute types based on the given fusion type and possible parent attribute type
+            </summary>
+            <param name="t">The fusion type ID</param>
+            <param name="p">The parent fusion attribute type (optional)</param>
+            <returns>A list of fusion attributes types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FusionController.GetFusionRuleStatistics(System.Int32)">
+            <summary>
+            Gets fusion attribute types based on the given fusion type and possible parent attribute type
+            </summary>
+            <param name="t">The fusion ID</param>
+            <param name="p">The parent fusion attribute type (optional)</param>
+            <returns>A list of fusion attributes types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.DiagramsController.LineageDiagramData(System.Int32)">
+            <summary>
+            Gets the actual sources for the given relationship.
+            </summary>
+            <param name="id">The target IntersectID</param>
+            <returns>JSON Data</returns>
+        </member>
+        <member name="M:d360.web.Controllers.DiagramsController.EnvironmentDetailsDiagramData(d360.core.SystemObjects,System.Int32)">
+            <summary>
+            Gets the ideal sources for the given relationship.
+            </summary>
+            <param name="id">The target IntersectID</param>
+            <returns>JSON Data</returns>
+        </member>
+        <member name="M:d360.web.Models.Attributes.FileDownloadAttribute.CheckAndHandleFileResult(System.Web.Mvc.ActionExecutedContext)">
+            <summary>
+            If the current response is a FileResult (an MVC base class for files) then write a
+            cookie to inform jquery.fileDownload that a successful file download has occured
+            </summary>
+            <param name="filterContext"></param>
+        </member>
+        <member name="T:d360.web.Models.EditorModel">
+            <summary>
+            Serves as the base editor model for all forms.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.FieldValidationModel.message">
+            <summary>
+            The error message to display to the user.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.FieldValidationModel.action">
+            <summary>
+            keyup, blur, focus, change
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.FieldValidationModel.rule">
+            <summary>
+            required; length=3,12; right:0,0; phone; ssn; zipCode; email; inline javascript function
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.IntersectTypeEditorModel.LimitedChangesOnly">
+            <summary>
+            Should certain fields be made read-only based on whether any 
+            relationships exist for this type.
+            </summary>
+        </member>
+        <member name="M:d360.web.Models.Formatters.IDictionaryExtensions.ToExpando(System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Extension method that turns a dictionary of string and object to an ExpandoObject
+            Snagged from http://theburningmonk.com/2011/05/idictionarystring-object-to-expandoobject-extension-method/
+            </summary>
+        </member>
+        <member name="T:d360.web.Models.Formatters.ExpandoJsonConverter">
+            <summary>
+            Allows JSON serialization of Expando objects into expected results (e.g., "x: 1, y: 2") instead of the default dictionary serialization.
+            </summary>
+        </member>
+        <member name="T:System.Net.Http.HttpRequestMessageExtensions">
+            <summary>
+            Extends the HttpRequestMessage collection
+            </summary>
+        </member>
+        <member name="M:System.Net.Http.HttpRequestMessageExtensions.GetQueryStrings(System.Net.Http.HttpRequestMessage)">
+            <summary>
+            Returns a dictionary of QueryStrings that's easier to work with 
+            than GetQueryNameValuePairs KevValuePairs collection.
+            
+            If you need to pull a few single values use GetQueryString instead.
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Net.Http.HttpRequestMessageExtensions.GetQueryString(System.Net.Http.HttpRequestMessage,System.String)">
+            <summary>
+            Returns an individual querystring value
+            </summary>
+            <param name="request"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Net.Http.HttpRequestMessageExtensions.GetHeader(System.Net.Http.HttpRequestMessage,System.String)">
+            <summary>
+            Returns an individual HTTP Header value
+            </summary>
+            <param name="request"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:System.Net.Http.HttpRequestMessageExtensions.GetCookie(System.Net.Http.HttpRequestMessage,System.String)">
+            <summary>
+            Retrieves an individual cookie from the cookies collection
+            </summary>
+            <param name="request"></param>
+            <param name="cookieName"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

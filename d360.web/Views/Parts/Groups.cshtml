@@ -1,0 +1,45 @@
+﻿@model d360.core.entities.ObjectModel
+<div id="GroupsPart"></div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var groupsType = '@(Model.ObjectType)';
+        var groupsID = '@(Model.ObjectID)';
+
+        var srcAssignedGroupsGrid = {
+            datatype: 'json',
+            type: 'get',
+            url: '/api/' + groupsType + '/' + groupsID + '/groups',
+            datafields:
+            [
+                { name: 'ID', type: 'number' },
+                { name: 'Name', type: 'string' }
+            ]
+        };
+
+        var adapterAssignedGroupsGrid = new $.jqx.dataAdapter(srcAssignedGroupsGrid);
+
+        $("#GroupsPart").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            height: '250px',
+            scrollmode: 'logical',
+            scrollbarsize: 10,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            virtualmode: false,
+            pageable: false,
+            source: adapterAssignedGroupsGrid,
+            theme: list_theme,
+            columns: [
+                {
+                    datafield: "Name",
+                    text: "Name",
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return previewLinkRenderer('Group', data.ID, '#/groups/' + data.ID, data.Name);
+                    }
+                }
+            ]
+        });
+    });
+</script>

@@ -1,0 +1,67 @@
+﻿@model d360.core.entities.ObjectModel
+<div id="FollowersPart"></div>
+<script type="text/javascript">
+    $(function () {
+        var followingType = '@(Model.ObjectType)';
+        var followingID = '@(Model.ObjectID)';
+
+        //#region Grid Logic
+
+        var srcFollowersGrid = {
+            datatype: 'json',
+            type: 'get',
+            url: '/api/' + followingType + '/' + followingID + '/followers',
+            datafields: [
+                { name: 'FollowerName' },
+                { name: 'FollowerFirstName' },
+                { name: 'FollowerLastName' },
+                { name: 'FollowerObjectID' },
+                { name: 'FollowerObjectType' },
+                { name: 'FollowerUrl' }
+            ]
+        };
+
+        var adapterFollowersGrid = new $.jqx.dataAdapter(srcFollowersGrid);
+
+        $("#FollowersPart").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            scrollmode: 'logical',
+            scrollbarsize: 10,
+            filterable: true,
+            autoheight: true,
+            showfilterrow: true,
+            sortable: true,
+            virtualmode: false,
+            pageable: false,
+            source: adapterFollowersGrid,
+            theme: list_theme,
+            columns: [
+                { 
+                    datafield: "FollowerFirstName", 
+                    text: "First Name", 
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        //return linkRenderer(data.FollowerUrl, data.FollowerName);
+                        return previewLinkRenderer(data.FollowerObjectType, data.FollowerObjectID, data.FollowerUrl, data.FollowerFirstName);
+                    }
+                },
+                {
+                    datafield: "FollowerLastName", 
+                    text: "Last Name", 
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        //return linkRenderer(data.FollowerUrl, data.FollowerName);
+                        return previewLinkRenderer(data.FollowerObjectType, data.FollowerObjectID, data.FollowerUrl, data.FollowerLastName);
+                    }
+                }
+            ]
+        });
+
+        amplify.subscribe("CommandExecuted", function (command) {
+            if (command == 'follow') {
+                $("#FollowersPart").jqxGrid('updatebounddata');
+            }
+        });
+
+        //#endregion
+    });
+</script>

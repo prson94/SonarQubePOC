@@ -1,0 +1,9 @@
+﻿{
+  "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
+  "webJobName": "Update-Database-Statistics",
+  "startTime": "2014-11-21T00:00:00-05:00",
+  "endTime": null,
+  "jobRecurrenceFrequency": "Day",
+  "interval": 1,
+  "runMode": "Scheduled"
+}

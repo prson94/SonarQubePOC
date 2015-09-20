@@ -1,0 +1,388 @@
+﻿@{
+    var title = ViewData["Title"];
+    var type = (d360.core.SystemObjects)ViewData["type"];
+    var id = (int)ViewData["id"];
+    var targetType = (d360.core.SystemObjects)ViewData["targetType"];
+    var targetID = (int)ViewData["targetID"];
+    var criticalOnly = (bool)ViewData["criticalOnly"];
+}
+<div class="large-overlay">
+    <div class="ui segment">
+        <h4>@(title)</h4>
+        <div class="form-instructions"></div>
+        <div class="row">
+            <div class="col l3 m4 s12">
+                <div id="AggregateRelationsOverlayGrid"></div>
+            </div>
+            <div class="col l9 m8 s12">
+                <div class="col s12">
+                    <ul id="AggregateRelationsRibbon" class="tabs">
+                        <li class="tab col s4"><a class="active" href="#lineage" data-index="0">Lineage</a></li>
+                        <li class="tab col s4"><a href="#attributes" data-index="1">Attributes</a></li>
+                        <li class="tab col s4"><a href="#fusion" data-index="2">Fusion</a></li>
+                    </ul>
+                </div>
+                <div id="lineage" class="col s12">
+                    <div id="DiagramTile"></div>
+                </div>
+                <div id="attributes" class="col s12">
+                    <div id="RelationshipDetailTile" class="tile"></div>
+                    <div id="RelationshipAttributesTile" class="tile"></div>
+                </div>
+                <div id="fusion" class="col s12">
+                    <div class="pull-left" style="width: 49%">
+                        <div class="tile">
+                            <header>Relationships</header>
+                            <article id="TechnicalRelationsGrid"></article>
+                        </div>
+                    </div>
+                    <div class="pull-right" style="width: 49%">
+                        <div id="TechnicalRelationDetailWrapper" class="tile">
+                            <header id="TechnicalRelationDetailHeader"></header>
+                            <article id="TechnicalRelationDetail"></article>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var aggregateRelationshipCriticalOnly = "@criticalOnly.ToString()";
+    var aggregateRelationshipOverlayType = "@type.ToString()";
+    var aggregateRelationshipOverlayId = @id;
+    var aggregateRelationshipOverlayTargetType = "@targetType.ToString()";
+    var aggregateRelationshipOverlayTargetID = @targetID;
+    var aggregateRelationsModelType = function() {
+        var self = this;
+        self.RibbonIndex = 0;
+        self.IntersectID = -1;
+
+        self.TargetType = 'Intersect';
+        self.TargetID = -1;
+
+        self.DetailTileIntersectID = -1;
+        self.AttributeTileIntersectID = -1;
+        self.TechnicalRelationIntersectID = -1;
+        self.DiagramTargetType = 'Intersect';
+        self.DiagramTargetID = -1;
+
+        self.updateRibbonData = function(selectedIndex) {
+            if (selectedIndex != undefined)
+                self.RibbonIndex = selectedIndex;
+
+            switch(self.RibbonIndex) {
+                case 0:
+                    if ( (self.DiagramTargetType != self.TargetType) || (self.DiagramTargetID != self.TargetID) ) {
+                        self.DiagramTargetType = self.TargetType;
+                        self.DiagramTargetID = self.TargetID;
+
+                        if (self.DiagramTargetType == 'TaxonomyType') {
+                            information_catalog_diagram('DiagramTile', self.DiagramTargetID);
+                        }
+                        else {
+                            lineage_diagram('DiagramTile', self.DiagramTargetID);
+                        }                    
+                    }
+                    break;
+                case 1:
+                    if (self.DetailTileIntersectID != self.IntersectID) {
+                        self.DetailTileIntersectID = self.IntersectID;
+                        DetailTile('RelationshipDetailTile', null, null, 'Intersect', self.DetailTileIntersectID);
+                    }
+                    if (self.AttributeTileIntersectID != self.IntersectID) {
+                        self.AttributeTileIntersectID = self.IntersectID;
+                        AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", self.AttributeTileIntersectID, 'Business Attributes', true);
+                    }
+                    break;
+                case 2:
+                    if (self.TechnicalRelationIntersectID != self.IntersectID) {
+                        self.TechnicalRelationIntersectID = self.IntersectID;
+                        $('#TechnicalRelationDetailWrapper').fadeOut(100);
+                        $('#TechnicalRelationDetail').html('');
+                        $('#TechnicalRelationsGrid').jqxGrid('clearselection');
+                        technicalRelationsSource.url = "/api/Intersect/" + self.TechnicalRelationIntersectID + "/relations";
+                        $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');                    
+                    }                    
+                    break;
+            }
+        }
+    };
+    var aggregateRelationsModel = new aggregateRelationsModelType();
+
+    //#region Grid Loading Variables
+
+    var aggregateRelationshipOverlaySource;
+    var aggregateRelationshipOverlayAdapter;
+    var technicalRelationsSource;
+    var technicalRelationsAdapter;
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function aggregateRelationsOverlayGridBindingComplete(event) {
+        if ($("#AggregateRelationsOverlayGrid").jqxGrid('getdisplayrows').length > 0) {
+
+            try {
+                // gets all rows loaded from the data source.
+                var rows = $('#AggregateRelationsOverlayGrid').jqxGrid('getdisplayrows');
+                var showParent = false;
+                $.each(rows, function(){
+                    if (this.TargetParentName > '') {
+                        showParent = true;
+                    }
+                });
+                if (!showParent) {
+                    $('#AggregateRelationsOverlayGrid').jqxGrid('setcolumnproperty', 'TargetParentName', 'width', 250);
+                    $('#AggregateRelationsOverlayGrid').jqxGrid('hidecolumn', 'TargetParentName');
+                }
+            } catch (e) {
+
+            }
+
+            $("#AggregateRelationsOverlayGrid").jqxGrid('selectrow', 0);
+        }
+    }
+
+    function aggregateRelationsOverlayGridRowDoubleClick(event) {
+        //var args = event.args;
+        var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', event.args.rowindex);
+        location.assign(row.TargetUrl);
+    }
+
+    function aggregateRelationsOverlayGridRowSelect(event) {
+        var row = event.args.row;
+
+        aggregateRelationsModel.IntersectID = row.IntersectID;
+        aggregateRelationsModel.TargetType = row.TargetType;
+        aggregateRelationsModel.TargetID = (row.TargetType == 'TaxonomyType') ? row.TargetTypeID : row.IntersectID;
+        aggregateRelationsModel.updateRibbonData();
+
+
+        //DetailTile('RelationshipDetailTile', null, null, 'Intersect', row.IntersectID);
+        //$('#TechnicalRelationDetailWrapper').fadeOut(100);
+        //$('#TechnicalRelationDetail').html('');
+        //$('#TechnicalRelationsGrid').jqxGrid('clearselection');
+        //technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
+        //$('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
+
+        //AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.IntersectID, 'Business Attributes');
+
+        //if (row.TargetType == 'TaxonomyType') {
+        //    information_catalog_diagram('DiagramTile', row.TargetTypeID);
+        //}
+        //else {
+        //    lineage_diagram('DiagramTile', row.IntersectID);
+        //}
+    }
+
+    function aggregateRelationsRibbonSelect(event) {
+        aggregateRelationsModel.updateRibbonData(event.args.selectedIndex);
+    }
+
+    function technicalRelationsGridBindingComplete(event) {
+        if ($("#TechnicalRelationsGrid").jqxGrid('getdisplayrows').length > 0) {
+            $("#TechnicalRelationsGrid").jqxGrid('selectrow', 0);
+        }
+    }
+
+    function technicalRelationsGridRowSelect(event) {
+        var row = event.args.row;
+        $('#TechnicalRelationDetailWrapper').fadeIn(250);
+        $('#TechnicalRelationDetailHeader').text(row.TargetTypeName + ' Information');
+        $('#TechnicalRelationDetail').load('/parts/' + row.TargetObjectType + '/' + row.TargetObjectID + '/detail');
+    }
+
+    function unsubscribe(data) {
+        technicalRelationsAdapter = null;
+        technicalRelationsSource = null;
+        aggregateRelationshipOverlayAdapter = null;
+        aggregateRelationshipOverlaySource = null;
+
+        $('#AggregateRelationsRibbon > li > a').off('click', relationsRibbonSelect);
+        //$('#AggregateRelationsRibbon').off('select', aggregateRelationsRibbonSelect); 
+        $("#AggregateRelationsOverlayGrid").off("bindingcomplete", aggregateRelationsOverlayGridBindingComplete);
+        $('#AggregateRelationsOverlayGrid').off('rowdoubleclick', aggregateRelationsOverlayGridRowDoubleClick);
+        $('#AggregateRelationsOverlayGrid').off('rowselect', aggregateRelationsOverlayGridRowSelect);
+        $('#TechnicalRelationsGrid').off('rowselect', technicalRelationsGridRowSelect);
+        $("#TechnicalRelationsGrid").off("bindingcomplete", technicalRelationsGridBindingComplete);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    //#endregion
+
+    function relationsRibbonSelect() { //(event) {
+        var tab = $(this);
+        var ix = tab.data('index'); //event.args.selectedIndex
+        aggregateRelationsModel.updateRibbonData(ix);
+    }
+
+    $(function () {
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        $("#AggregateRelationsRibbon").tabs();
+
+        //#region Main Grid
+
+        aggregateRelationshipOverlaySource = {
+            datatype: 'json',
+            url: '/api/' + aggregateRelationshipOverlayType + '/' + aggregateRelationshipOverlayId + '/relationships/' + aggregateRelationshipOverlayTargetType + '/' + aggregateRelationshipOverlayTargetID + '/' + aggregateRelationshipCriticalOnly + '?$orderby=TargetName',
+            datafields:
+            [
+                { name: 'IntersectID' },
+                { name: 'Description' },
+                { name: 'TargetName' },
+                { name: 'TargetObjectID' },
+                { name: 'TargetParent' },
+                { name: 'TargetParentID' },
+                { name: 'TargetParentName' },
+                { name: 'TargetObjectType' },
+                { name: 'TargetTypeID' },
+                { name: 'TargetType' },
+                { name: 'TargetTypeName' },
+                { name: 'Classification' },
+                { name: 'TargetUrl' },
+                { name: 'HasTechnicalRelationships' }
+            ]
+        };
+
+        aggregateRelationshipOverlayAdapter = new $.jqx.dataAdapter(aggregateRelationshipOverlaySource);
+
+        try {
+            var mainGridHeight = 400;
+            $('#AggregateRelationsOverlayGrid').jqxGrid({
+                altrows: true,
+                width: grid_width,
+                height: mainGridHeight,//400,
+                showheader: true,
+                showfilterrow: true,
+                sortable: false,
+                columnsresize: true,
+                filterable: true,
+                pageable: false,
+                scrollmode: 'deferred',
+                deferreddatafields: ['TargetName'],
+                source: aggregateRelationshipOverlayAdapter,
+                theme: theme,
+                columns: [
+                    {
+                        datafield: "TargetName",
+                        text: "Name",
+                        cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return "<div class='d3s-cell'>" + (data.HasTechnicalRelationships ? "<b>" + data.TargetName + "</b>" : data.TargetName) + "</div>";
+                        }
+                    },
+                    {
+                        datafield: "TargetParentName",
+                        text: "Parent",
+                        filtertype: 'checkedlist',
+                        cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return "<div class='d3s-cell'>" + data.TargetParentName + "</div>";
+                        }
+                    },
+                    {
+                        text: '',
+                        groupable: false,
+                        datafield: 'IntersectID',
+                        width: '40px',
+                        filterable: false,
+                        cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewIconRenderer(data.TargetObjectType, data.TargetObjectID, data.TargetUrl);
+                        }
+                    }
+                ]
+            });
+        } catch (e) {
+        }
+
+        //#endregion
+
+        //#region Technical Relations Grid
+
+        technicalRelationsSource = {
+            datatype: 'json',
+            url: null,
+            datafields: [
+                { name: 'IntersectID' },
+                //{ name: 'Description' },
+                { name: 'TargetName' },
+                { name: 'TargetObjectID' },
+                { name: 'TargetObjectType' },
+                { name: 'TargetTypeID' },
+                { name: 'TargetType' },
+                { name: 'TargetTypeName' },
+                //{ name: 'Classification' },
+                { name: 'TargetUrl' }
+                //{ name: "IntersectID", type: "number" },
+                //{ name: "TypeName", type: "string" },
+                //{ name: "ObjectType", type: "string" },
+                //{ name: "ObjectID", type: "number" },
+                //{ name: "ObjectName", type: "string" },
+                //{ name: "Url", type: "string" }
+            ]
+        };
+
+        technicalRelationsAdapter = new $.jqx.dataAdapter(technicalRelationsSource);
+
+        try {
+            $('#TechnicalRelationsGrid').jqxGrid({
+                width: grid_width,
+                autoheight: true,
+                autorowheight: true,
+                sortable: true,
+                altrows: true,
+                filterable: true,
+                showfilterrow: true,
+                pagesizeoptions: ['10', '20', '50'],
+                pagesize: 20,
+                pageable: true,
+                autorowheight: true,
+                columnsresize: true,
+                source: technicalRelationsAdapter,
+                theme: list_theme,
+                groupable: false,
+                groupsrenderer: function (text, group, expanded, data) {
+                    var style = "background-color: " + data.subItems[0].IconBackColor + "; color: " + data.subItems[0].IconForeColor;
+                    var html = "";
+                    html += "<h2>";
+                    html += group;
+                    html += "</h2>";
+                    return html;
+                },
+                groupsexpandedbydefault: false,
+                columns: [
+                    { text: 'Type', groupable: true, datafield: 'TargetTypeName', width: '100px' }, //, hidden: true
+                    {
+                        text: 'Name',
+                        groupable: false,
+                        //width: 300,
+                        datafield: 'TargetName',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewLinkRenderer(data.TargetObjectType, data.TargetObjectID, data.TargetUrl, data.TargetName);
+                        }
+                    }
+                ]
+            });
+        } catch (e) {
+        }
+
+        //#endregion
+
+        //#region Event Registration
+
+        $('#AggregateRelationsRibbon > li > a').on('click', relationsRibbonSelect);
+        //$('#AggregateRelationsRibbon').on('select', aggregateRelationsRibbonSelect);
+        $("#AggregateRelationsOverlayGrid").on("bindingcomplete", aggregateRelationsOverlayGridBindingComplete);
+        $('#AggregateRelationsOverlayGrid').on('rowdoubleclick', aggregateRelationsOverlayGridRowDoubleClick);
+        $('#AggregateRelationsOverlayGrid').on('rowselect', aggregateRelationsOverlayGridRowSelect);
+        $('#TechnicalRelationsGrid').on('rowselect', technicalRelationsGridRowSelect);
+        $("#TechnicalRelationsGrid").on("bindingcomplete", technicalRelationsGridBindingComplete);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+        //#endregion
+
+    });
+</script>

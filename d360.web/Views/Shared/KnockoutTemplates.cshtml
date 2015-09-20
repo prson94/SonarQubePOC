@@ -1,0 +1,549 @@
+﻿3<script id="reportTmpl" type="text/html">
+    <div class="report" data-bind="foreach: Rows">
+        <div class="row" data-bind="foreach: Cells">
+            <div data-bind="css: BootstrapClass, foreach: Areas">
+                <div data-bind="css: BootstrapClass, attr: {'id': AreaID, 'data-area': ID, 'style': HeightStyle}, foreach: Tiles">
+                    <h3 data-bind="text: Name"></h3>
+                    <div data-bind="attr: {'id': TileID, 'data-reporttype': ReportTileType, 'data-reporttileid': ID, 'data-data': Data, 'data-display': Display, 'data-xaxis': XAxis, 'data-settings': Settings}" data-design="0"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script id="reportDesignerTmpl" type="text/html">
+    <div class="report" data-bind="foreach: Rows">
+        <div class="row" data-bind="foreach: Cells">
+            <div data-bind="css: BootstrapClass, foreach: Areas">
+                <div data-bind="css: BootstrapClass, attr: {'id': DesignerAreaID, 'data-area': ID, 'style': HeightStyle}, foreach: Tiles">
+                    <h3 data-bind="text: Name"></h3>
+                    <div data-bind="attr: {'id': DesignerTileID, 'data-reporttype': ReportTileType, 'data-reporttileid': ID, 'data-data': Data, 'data-display': Display, 'data-xaxis': XAxis, 'data-settings': Settings}" data-design="1">
+                        <i data-bind="css: IconClasses"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script id="policyRuleStatisticsTileTmpl" type="text/html">
+    <div>
+        <div data-bind="foreach: SocialModels">
+            <div style="margin: 10px 0px 10px 25px">
+                <span class="StatisticValue SocialStatisticValue" data-bind="text:Count, attr: {'data-tile':'', 'data-uri': SocialOverlayUri, 'data-context': 'TileOverlay'}" class="tile-clickable"></span>
+                <span class="StatisticName SocialStatisticName" data-bind="text:Name"></span>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script id="detailTileTmpl" type="text/x-handlebars-template">
+    <header>Definition</header>
+    <div class="row">
+        <div class="col s12">
+            <ul id="DetailTileTabs" class="tabs">
+                <li class="tab col s4"><a class="active" href="#D_SubTile" data-index="0" style="position: relative">Details</a></li>
+                <li class="tab col s4"><a href="#S_SubTile" data-index="1" style="position: relative">Synonyms<span id="DetailsTile_SynonymBadge" class="badge"></span></a></li>
+                <li class="tab col s4"><a href="#A_SubTile" data-index="2" style="position: relative">Attributes<span id="DetailsTile_AttributeBadge" class="badge"></span></a></li>
+            </ul>
+        </div>
+        <div id="D_SubTile" class="col s12 active" style="background-color: #fff;">
+            @*<div class="root-tile">
+                <header><div id="DetailSubTileTools"></div></header>*@
+                <div id="DetailSubTile" style="margin-top: 20px"></div>
+            @*</div>*@
+        </div>
+        <div id="S_SubTile" class="col s12" style="background-color: #fff;">
+            <div class="root-tile">
+                <header><div id="SynonymsSubTileTools"></div></header>
+                <div id="SynonymsSubTile" style="margin-top: 20px"></div>
+            </div>
+        </div>
+        <div id="A_SubTile" class="col s12" style="background-color: #fff;"><div id="AttributesSubTile" style="margin-top: 20px"></div></div>
+    </div>
+</script>
+
+<script id="relatedArtifactsTileTmpl" type="text/x-handlebars-template">
+    <header>Related {{Title}}(s)</header>
+    <div style="margin: auto">
+        <div style="margin: auto; width: 98%">
+            <input id="RelatedArtifactsTileText" />
+            <div id="RelatedArtifactsTileGrid"></div>
+        </div>
+    </div>
+</script>
+
+<script id="tagsTileTmpl" type="text/x-handlebars-template">
+    <header>Tags</header>
+    <div style="margin: auto">
+        <div style="margin: auto; width: 98%">
+            <input id="TagsTileText" />
+            <div id="TagsTileGrid"></div>
+        </div>
+    </div>
+</script>
+
+<script id="objectStatisticsTile" type="text/x-handlebars-template">
+    <table style="width: 99.5%; margin: auto">
+        <tr>
+            <td>
+                <div class="tile-clickable StatisticValue SocialStatisticValue" data-tile data-uri="{{FollowerUrl}}" data-context="TileOverlay">{{FollowerCount}}</div>
+                <div class="StatisticName SocialStatisticName">followers</div>
+            </td>
+            <td>
+                <div class="tile-clickable StatisticValue SocialStatisticValue" data-tile data-uri="{{CommentUrl}}" data-context="TileOverlay">{{CommentCount}}</div>
+                <div class="StatisticName SocialStatisticName">comments</div>
+            </td>
+            <td rowspan="2" style="width: 160px; vertical-align: top; text-align: right" align="right" class="tile-clickable" data-tile data-uri="{{ScoreUrl}}" data-context="TileOverlay">
+                <div id="ScoreKpi" style="width: 150px; height: 150px;"></div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div class="tile-clickable StatisticValue EventStatisticValue" data-tile data-uri="{{EventUrl}}" data-context="TileOverlay">{{EventCount}}</div>
+                <div class="StatisticName EventStatisticName">open events</div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <table class="hoverable" style="width: 100%">
+                    <tbody>
+                        {{#each Items }}
+                        <tr class="tile-clickable" data-tile="" data-uri="{{Url}}" data-context="TileOverlay">
+                            <td class="ChildArtifactStatisticValue">{{Count}}</td>
+                            <td class="ChildArtifactStatisticName">{{Name}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</script>
+
+<script id="resourceStatisticsTile" type="text/x-handlebars-template">
+    <table style="width: 99.5%; margin: auto">
+        <tr>
+            <td>
+                <div class="tile-clickable StatisticValue SocialStatisticValue" data-tile data-uri="{{FollowerUrl}}" data-context="TileOverlay">{{FollowerCount}}</div>
+                <div class="StatisticName SocialStatisticName">followers</div>
+            </td>
+            <td style="width: 160px; vertical-align: top; text-align: right" align="right" class="tile-clickable" data-tile data-uri="{{ScoreUrl}}" data-context="TileOverlay">
+                <div id="ScoreKpi" style="width: 150px; height: 150px;"></div>
+            </td>
+        </tr>
+    </table>
+</script>
+
+<script id="workflowStatusTile" type="text/x-handlebars-template">
+    <div class="row">
+        <div class="col s6">
+            <div class="FieldName">Workflow</div>
+            <div>
+                {{WorkflowTypeName}}
+                <div class="small">{{WorkflowTypeDescription}}</div>
+            </div>
+
+            <div class="FieldName">Started On</div>
+            <div>{{DateStarted}}</div>
+
+            <div class="FieldName">Completed On</div>
+            <div>{{DateCompleted}}</div>
+        </div>
+        <div class="col s6">
+            <div class="FieldName">Information About This Request</div>
+            <table class="hoverable">
+                <tbody>
+                    {{#each Fields }}
+                    <tr>
+                        <td>{{Name}}</td>
+                        <td>{{{Value}}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col s6">
+            <div class="FieldName">Steps Completed</div>
+            <table class="hoverable">
+                <tbody>
+                    {{#each Steps }}
+                    <tr>
+                        <td>{{Name}}</td>
+                        <td>{{Date}}</td>
+                        <td>{{TraceLevel}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+        <div class="col s6">
+            <div class="FieldName">Assignments</div>
+            <table class="hoverable">
+                <tbody>
+                    {{#each Assignments }}
+                    <tr>
+                        <td>{{ActivityTypeName}}</td>
+                        <td>{{ActivityTypeDescription}}</td>
+                        <td>{{ResourceName}}</td>
+                        <td>{{IsComplete}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</script>
+
+<script id="objectStatisticsTileTmpl" type="text/html">
+    <div>
+        <table style="width: 95%; margin: auto">
+            <tr>
+                <td>
+                    <table style="width: 100%">
+                        <tr data-bind="foreach: EventModels">
+                            <td class="StatisticValue EventStatisticValue" data-bind="text:Value, attr: {'data-tile':'', 'data-uri': EventsOverlayUri, 'data-context': 'TileOverlay'}" class="tile-clickable"></td>
+                            <td class="StatisticName EventStatisticName" data-bind="text:Name"></td>
+                        </tr>
+                        <tr data-bind="foreach: SocialModels">
+                            <td class="StatisticValue SocialStatisticValue" data-bind="text:Value, attr: {'data-tile':'', 'data-uri': SocialOverlayUri, 'data-context': 'TileOverlay'}" class="tile-clickable"></td>
+                            <td class="StatisticName SocialStatisticName" data-bind="text:Name"></td>
+                        </tr>
+                    </table>
+                </td>
+                <td style="text-align: center; vertical-align: middle">
+                    <div data-bind="foreach: ScoreModels">
+                        <div style="margin: auto" data-bind="attr: {'data-tile':'', 'data-uri': ScoreOverlayUri, 'data-context': 'TileOverlay'}" class="tile-clickable">
+                            <canvas class="StatisticGauge" data-bind="gauge:Value"></canvas>
+                            <span class="ScoreStatisticValue"><span data-bind="text:Value"></span>%</span>
+                            <span class="ScoreStatisticName" data-bind="text:Name"></span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <div style="width: 90%; margin: 15px auto 15px auto;">
+            <table class="hoverable">
+                <tbody data-bind="foreach: ChildModels">
+                    <tr class="tile-clickable" data-bind="attr: {'data-tile':'', 'data-uri': ChildArtifactsOverlayUri, 'data-context': 'TileOverlay'}">
+                        <td class="ChildArtifactStatisticValue" data-bind="text:Value"></td>
+                        <td class="ChildArtifactStatisticName" data-bind="text:Name"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</script>
+
+<script id="childArtifactsMicroTileItemTmpl" type="text/html">
+    <div class="clear tile-clickable" data-bind="attr: {'data-tile':'', 'data-uri': OverlayUri, 'data-context': 'TileOverlay'}">
+        @*data-bind="click: $parent.OpenOverlay"*@
+        <div class=" left tile-stat-name" data-bind="text: Name"></div>
+        <div class="right tile-stat-value" data-bind="text: Count"></div>
+        @*<span data-bind="text: Trend"></span>*@
+    </div>
+</script>
+<script id="childArtifactsMicroTileTmpl" type="text/html">
+    <header>Child Artifacts</header>
+    <div title="Get more info">
+        <div data-bind="template: {name: 'childArtifactsMicroTileItemTmpl', foreach: Statistics }"></div>
+    </div>
+</script>
+
+<script id="eventsMicroTileItemTmpl" type="text/html">
+    <div class="clear">
+        <div class="left tile-stat-name" data-bind="text: Name"></div>
+        <div class="right tile-stat-value" data-bind="text: Count"></div>
+        @*<span data-bind="text: Trend"></span>*@
+    </div>
+</script>
+<script id="eventsMicroTileTmpl" type="text/html">
+    <header>Events</header>
+    <div title="Get more info" class="tile-clickable" data-bind="attr: {'data-tile':'', 'data-uri': eventsOverlayUri, 'data-context': overlayContext}">
+        <div data-bind="template: {name: 'eventsMicroTileItemTmpl', foreach: Statistics }"></div>
+    </div>
+</script>
+
+<script id="fusionCommandMicroTileTmpl" type="text/html">
+    <header>Fusion Rules</header>
+    <div title="Get more info">
+        <table class="responsive-table hoverable" style="width: 100%">
+            <tr class="tile-clickable" data-bind="attr: {'data-tile':'', 'data-uri': ownershipOverlayUri, 'data-context': overlayContext}">
+                <td class="tile-stat-name"># Ownership Rules</td>
+                <td class="tile-stat-value" data-bind="text: OwnershipRuleCount"></td>
+            </tr>
+            <tr class="tile-clickable" data-bind="attr: {'data-tile':'', 'data-uri': promotionOverlayUri, 'data-context': overlayContext}">
+                <td class="tile-stat-name"># Promotion Rules</td>
+                <td class="tile-stat-value" data-bind="text: PromotionRuleCount"></td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<script id="questionTileTmpl" type="text/html">
+    <header data-bind="text: Name"></header>
+    <article></article>
+</script>
+
+<script id="redFlagSummaryMicroTileItemTmpl" type="text/html">
+    <tr class="tile-clickable">
+        <td class="tile-stat-name" data-bind="text: TypeName, click: Open"></td>
+        <td style="width:40px; text-align: center" class="tile-stat-value" data-bind="text: RedFlagCount, click: Open"></td>
+        <td style="width:40px; text-align: center" class="tile-stat-value" data-bind="text: CriticalRelationshipCount"></td>
+    </tr>
+</script>
+<script id="redFlagSummaryMicroTileTmpl" type="text/html">
+    <header>Red Flag Summary</header>
+    <div>
+        <table style="width: 100%">
+            <tr>
+                <td></td>
+                <td style="width:40px; text-align: center"><div class="circular ui icon red button" title="# of red flags"><i class="fa fa-flag"></i></div></td>
+                <td style="width:40px; text-align: center"><div class="circular ui icon blue button" title="# of critical relationships"><i class="fa fa-retweet"></i></div></td>
+            </tr>
+            <tbody data-bind="template: {name: 'redFlagSummaryMicroTileItemTmpl', foreach: Statistics }"></tbody>
+        </table>
+    </div>
+</script>
+
+<script id="scoreMicroTileTmpl" type="text/html">
+    <header>Score</header>
+    <div title="Get more info">
+        <div data-bind="template: {name: 'scoreMicroTileItemTmpl', foreach: statistics }"></div>
+        @*<div class="clear">
+                <div class="left tile-stat-name">Governance</div>
+                <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+                <div class="right tile-stat-value tile-stat-value-green">84%</div>
+            </div>
+            <div class="clear">
+                <div class="left tile-stat-name">Steward</div>
+                <div class="right tile-stat-value tile-stat-value-red"><i class="fa fa-arrow-down"></i></div>
+                <div class="right tile-stat-value tile-stat-value-yellow">72%</div>
+            </div>
+            <div class="clear">
+                <div class="left tile-stat-name">Owner</div>
+                <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+                <div class="right tile-stat-value tile-stat-value-yellow">77%</div>
+            </div>
+            <div class="clear">
+                <div class="left tile-stat-name">Consumers</div>
+                <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+                <div class="right tile-stat-value tile-stat-value-red">49%</div>
+            </div>*@
+    </div>
+</script>
+<script id="scoreMicroTileItemTmpl" type="text/html">
+    <div class="clear">
+        <div class="left tile-stat-name tile-stat-large" data-bind="text: Name"></div>
+        <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+        <div class="right tile-stat-value tile-stat-large" data-bind="text: Score"></div>
+    </div>
+</script>
+
+<script id="homeSocialMicroTileTmpl" type="text/html">
+    <header>Community</header>
+    <table>
+        <tr id="HomeSocialFollowerCount" class="tile-clickable" data-bind="click: OpenFollowers">
+            <td class="tile-stat-name"># Following You</td>
+            <td class="tile-stat-value" data-bind="text: FollowerCount"></td>
+        </tr>
+        <tr id="HomeSocialGroupCount" class="tile-clickable" data-bind="click: OpenGroups">
+            <td class="tile-stat-name"># Groups You Belong To</td>
+            <td class="tile-stat-value" data-bind="text: GroupCount"></td>
+        </tr>
+    </table>
+</script>
+<script id="groupSocialMicroTileTmpl" type="text/html">
+    <header>Community</header>
+    <table>
+        <tr id="SocialFollowerCount" class="tile-clickable" data-bind="click: OpenFollowers">
+            <td class="tile-stat-name"># Following Group</td>
+            <td class="tile-stat-value" data-bind="text: FollowerCount"></td>
+        </tr>
+        <tr id="SocialMemberCount" class="tile-clickable" data-bind="click: OpenMembers">
+            <td class="tile-stat-name"># Members</td>
+            <td class="tile-stat-value" data-bind="text: MemberCount"></td>
+        </tr>
+    </table>
+</script>
+<script id="profileSocialMicroTileTmpl" type="text/html">
+    <header>Community</header>
+    <div title="Get more info">
+        <div id="HomeSocialFollowerCount" class="clear tile-clickable" data-bind="click: OpenFollowers">
+            <div class="left tile-stat-name"># Following User</div>
+            <div class="right tile-stat-value" data-bind="text: FollowerCount"></div>
+        </div>
+        <div id="HomeSocialFollowingCount" class="clear tile-clickable" data-bind="click: OpenFollowing">
+            <div class="left tile-stat-name"># User Is Following</div>
+            <div class="right tile-stat-value" data-bind="text: FollowingCount"></div>
+        </div>
+        <div id="HomeSocialGroupCount" class="clear tile-clickable" data-bind="click: OpenGroups">
+            <div class="left tile-stat-name"># Group Memberships</div>
+            <div class="right tile-stat-value" data-bind="text: GroupCount"></div>
+        </div>
+    </div>
+</script>
+
+<script id="socialStatisticsMicroTileTmpl" type="text/html">
+    <header>Community</header>
+    <div title="Get more info">
+        <div class="clear tile-clickable" data-bind="attr: {'data-tile':'', 'data-uri': followersOverlayUri, 'data-context': overlayContext}">
+            <div class="left tile-stat-name"># Followers</div>
+            <div class="right tile-stat-value" data-bind="text: FollowerCount"></div>
+        </div>
+        <div class="clear tile-clickable" data-bind="attr: {'data-tile':'', 'data-uri': commentsOverlayUri, 'data-context': overlayContext}">
+            <div class="left tile-stat-name"># Comments</div>
+            <div class="right tile-stat-value" data-bind="text: CommentCount"></div>
+        </div>
+        <div class="clear">
+            <div class="right tile-stat-value-highlight" data-bind="text: CommentCountLast48Hours"></div>
+        </div>
+        <div class="footnote">Comments in last 48 hours</div>
+    </div>
+</script>
+
+<script id="boardTmpl" type="text/html">
+    <div class="social">
+        <table class="CommentForm" data-bind="visible: ShowAddCommentControls">
+            <tr>
+                <td class="input-field" colspan="2">
+                    <div class="FieldName">What's on your mind?</div>
+                    <textarea data-bind="value: newMessage, htmlarea: {}"></textarea> @*class="htmlArea"*@
+                </td>
+            <tr>
+                <td class="type-field"><select data-bind="options: typeEntryOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageType" class="browser-default" /></td>
+                <td><button class="btn waves-effect waves-light brown lighten-1" type="button" data-bind="click: addComment">Share</button></td>
+            </tr>
+            </tr>
+        </table>
+
+        <div class="Board-Spacer" data-bind="visible: ShowAddCommentControls"></div>
+
+        <div class="FieldName">Filter Board</div>
+        <div class="FilterForm">
+            <table>
+                <tr>
+                    <td class="date-filter">
+                        <select id="BoardDateFilter" data-bind="options: dateFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedDateFilterOption" class="browser-default" />
+                    </td>
+                    <td class="type-filter">
+                        <select id="BoardTypeFilter" data-bind="options: typeFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedTypeFilterOption" class="browser-default" />
+                    </td>
+                    <td>
+                        <button class="btn waves-effect waves-light brown lighten-1" id="BoardFilter" data-bind="click: filterComments"><i class="fa fa-search" title="Filter Comments"></i></button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="Board-Spacer"></div>
+
+        <p class="error" style="color:red" data-bind="text: error"></p>
+        <div class="notification" data-bind="visible: newComments().length > 0"><a data-bind="    click: loadNewComments"> <span data-bind="    text: newComments().length"></span> new post(s)</a></div>
+        <!-- ko template: {name: 'commentTmpl', foreach: comments } -->
+        <!-- /ko -->
+
+        <button class="btn waves-effect waves-light" type="button" data-bind="visible: moreComments(), click: getMoreComments">Load More</button>
+    </div>
+</script>
+<script id="commentTmpl" type="text/html">
+    <div class="entry top-entry" data-bind="css: { 'entry-alt': $index()%2 }, visible: isVisible, attr: { id: ID }">
+        <table>
+            <tr>
+                <td rowspan="3" class="profile">
+                    <!-- ko if: CommentTypeID == 7 -->
+                    <i class="fa fa-flag active-flag fa-3x"></i>
+                    <!-- /ko -->
+                    <!-- ko if: CommentTypeID != 7 -->
+                    <img data-bind="attr: { src: getResourceImage() }" class="img-rounded" />
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <div>
+                        <a data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind="    text: ObjectName"></span></a>
+                    </div>
+                    <div class="type" data-bind="text: getCommentType()"></div>
+                </td>
+                <td class="author">
+                    <div data-bind="if: isNonResourceComment">
+                        <a data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: ResourceName"></a>
+                    </div>
+                    <div data-bind="text: formatDate(DateCreated)"></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="message" data-bind="html: Body"></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="ChildComments">
+                    <a class="commentNotification" data-bind="click: loadNewComments, visible: NewComments().length > 0"> <span data-bind="    text: NewComments().length"></span> new comment(s)</a>
+                    <div data-bind="template: {name: 'subCommentTmpl', foreach: Comments }"></div>
+                    <table class="ChildComment" data-bind="visible: ShowAddCommentControls">
+                        <tr>
+                            <td class="input-field"><textarea data-bind="value: newCommentMessage, htmlarea: {}"></textarea></td>   @*class="replyHtmlArea"*@
+                            <td><button class="btn-flat waves-effect waves-light" type="button" data-bind="click: addComment"><i class="fa fa-reply" title="Reply"></i></button></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</script>
+<script id="subCommentTmpl" type="text/html">
+    <div class="entry sub-entry" data-bind="attr: { id: ID }">
+        <table>
+            <tr>
+                <td rowspan="3" class="profile">
+                    <img data-bind="attr: { src: getResourceImage() }" class="img-rounded" />
+                </td>
+                <td>
+                    <div>
+                        <div data-bind="if: isNonResourceComment">
+                            <a data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: ResourceName"></a>
+                        </div>
+                        @*<a data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind="    text: ObjectName"></span></a>*@
+                    </div>
+                </td>
+                <td class="author">
+                    <div data-bind="text: formatDate(DateCreated)"></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="message" data-bind="html: Body"></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="ChildComments">
+                    <a class="commentNotification" data-bind="click: loadNewComments, visible: NewComments().length > 0"> <span data-bind="    text: NewComments().length"></span> new comment(s)</a>
+                    <div data-bind="template: {name: 'subCommentTmpl', foreach: Comments }"></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<script id="searchResultTmpl" type="text/html">
+    <div class="entry" data-bind="attr: {'data-category': Type}">
+        <div class="name">
+            <strong data-bind="text: Type"></strong> : <a data-bind="attr: {href: Url}, html: Name"></a>
+        </div>
+        <div class="description" data-bind="html: Description"></div>
+    </div>
+</script>
+<script id="searchResultsCategoriesTmpl" type="text/html">
+    <div class="widget" id="CategoryResults">
+        <div class='entry'><a href='#' data-category=''>All item(s)</a></div>
+        <div data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
+    </div>
+</script>
+<script id="searchResultsCategoryTmpl" type="text/html">
+    <div class="entry">
+        <a href="#" data-bind="attr: {'data-category': Name}, html: Name"></a> : <span data-bind="text: ResultCount"></span> item(s)
+    </div>
+</script>

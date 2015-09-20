@@ -1,0 +1,35 @@
+﻿@{
+    var divID = "DetailPart" + ViewData["type"] + ViewData["id"];
+}
+<div class="tile tile-detail">
+    <article id="@(divID)"></article>
+</div>
+<script type="text/javascript">
+    var detailDivID = '#@(divID)';
+    var dpContext = '@(ViewData["context"])';
+    var dpType = '@(ViewData["type"])';
+    var dpID = '@(ViewData["id"])';
+
+    $(document).ready(function () {
+
+        $(detailDivID).Detail({ context: dpContext, id: dpID, type: dpType });
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case dpContext:
+                        $(detailDivID).Detail('refresh', data);
+                        break;
+                }
+                
+            } catch (e) {
+                logError("Detail", e);
+            }
+        });
+
+        //#endregion
+
+    });
+</script>

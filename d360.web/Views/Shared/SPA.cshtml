@@ -1,0 +1,625 @@
+﻿@{
+    Layout = null;
+    var CurrentResourceID = ViewData["ResourceID"].ToString();
+    var VersionNumber = ViewData["VersionNumber"].ToString();
+    var settings = (Dictionary<string, string>)ViewData["Settings"];
+    var settingsJson = "";
+    foreach (var k in settings.Keys)
+    {
+        settingsJson += (string.IsNullOrEmpty(settingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, settings[k]);
+    }
+    settingsJson = "{" + settingsJson + "}";
+    var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
+}
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - Data3Sixty, Inc.</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="Data3Sixty: Data Collaboration Suite" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="Shortcut Icon" href="/favicon.ico" />
+    @*<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet" type="text/css">*@
+    <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
+    <script type="text/javascript">
+        var appInsights=window.appInsights||function(config){
+            function s(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},r=document,f=window,e="script",o=r.createElement(e),i,u;for(o.src=config.url||"//az416426.vo.msecnd.net/scripts/a/ai.0.js",r.getElementsByTagName(e)[0].parentNode.appendChild(o),t.cookie=r.cookie,t.queue=[],i=["Event","Exception","Metric","PageView","Trace"];i.length;)s("track"+i.pop());return config.disableExceptionTracking||(i="onerror",s("_"+i),u=f[i],f[i]=function(config,r,f,e,o){var s=u&&u(config,r,f,e,o);return s!==!0&&t["_"+i](config,r,f,e,o),s}),t
+        }({
+            instrumentationKey:"f73a9469-9371-4409-8bd5-2ee7f1a7c667"
+        });
+
+        window.appInsights=appInsights;
+        appInsights.trackPageView();
+        var CompanySettings = @(Html.Raw(settingsJson));
+    </script>
+    <script src="/Scripts/d3/d3.js"></script>
+    <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
+
+    @*<script src="~/signalr/hubs"></script>*@
+    @Html.Partial("KnockoutTemplates")
+</head>
+<body>
+    <div style="position: fixed; left: 0px; top: 0px; width: 100px; height: 100%; z-index: 0" class="grey darken-2"></div>
+    <div id="TopNav">@Html.Action("Top", "Navigation", new { area = string.Empty })</div>
+    <table class="d3s-page">
+        <tr>
+            <td class="d3s-sidebar">
+                <div id="SideIcons"></div>
+            </td>
+            <td class="d3s-contentarea">
+                <div id="ContentHeader"></div>
+                <div id="main"></div>
+            </td>
+        </tr>
+    </table>
+    <script type="text/javascript" title="Context List">
+    var getContextList = function () {
+        var self = this;
+        self.Artifact = "@(ContextList.Artifact)";
+        self.ArtifactType = "@(ContextList.ArtifactType)";
+        self.Attribute = "@(ContextList.Attribute)";
+        self.Attribute_Embedded = "@(ContextList.Attribute_Embedded)";
+        self.AttributeType = "@(ContextList.AttributeType)";
+        self.AttributeTypeCategory = "@(ContextList.AttributeTypeCategory)";
+        self.AttributeTypeRelation = "@(ContextList.AttributeTypeRelation)";
+        self.Comment = "commentform";
+        self.Domain = "@(ContextList.Domain)";
+        self.DomainGroup = "@(ContextList.DomainGroup)";
+        self.DomainItem = "@(ContextList.DomainItem)";
+        self.DomainType = "@(ContextList.DomainType)";
+        self.EmailTemplate = "@(ContextList.EmailTemplate)";
+        self.Event = "@(ContextList.Event)";
+        self.EventType = "@(ContextList.EventType)";
+        self.Field = "@(ContextList.Field)";
+        self.FieldType = "@(ContextList.FieldType)";
+        self.Fusion = "@(ContextList.Fusion)";
+        self.FusionAttribute = "@(ContextList.FusionAttribute)";
+        self.FusionAttributeType = "@(ContextList.FusionAttributeType)";
+        self.FusionFilter = "@(ContextList.FusionFilter)";
+        self.FusionOwnerRule = "@ContextList.FusionOwnerRule";
+        self.FusionOwnerRuleItem = "@ContextList.FusionOwnerRuleItem";
+        self.FusionPromotionRule = "@ContextList.FusionPromotionRule";
+        self.FusionPromotionRuleItem = "@ContextList.FusionPromotionRuleItem";
+        self.FusionPromotionRuleMapping = "@ContextList.FusionPromotionRuleMapping";
+        self.FusionType = "@(ContextList.FusionType)";
+        self.Group = "@(ContextList.Group)";
+        self.Intersect = "@(ContextList.Intersect)";
+        self.IntersectType = "@(ContextList.IntersectType)";
+        self.Load = "@(ContextList.Load)";
+        self.LoadType = "@(ContextList.LoadType)";
+        self.LoadTypeField = "@(ContextList.LoadTypeField)";
+        self.LoadTypeRule = "@(ContextList.LoadTypeRule)";
+        self.LoadTypeRuleItem = "@(ContextList.LoadTypeRuleItem)";
+        self.Lookup = "@(ContextList.Lookup)";
+        self.LookupType = "@(ContextList.LookupType)";
+        self.Ownership = "@(ContextList.Ownership)";
+        self.OwnershipType = "@(ContextList.OwnershipType)";
+        self.Policy = "@(ContextList.Policy)";
+        self.QuestionType = "@(ContextList.QuestionType)";
+        self.Report = "@(ContextList.Report)";
+        self.ReportTile = "@(ContextList.ReportTile)";
+        self.Resource = "@(ContextList.Resource)";
+        self.ResourceGroup = "@(ContextList.ResourceGroup)";
+        self.ResourceType = "@(ContextList.ResourceType)";
+        self.ResponseType = "@(ContextList.ResponseType)";
+        self.ResponseTypeOption = "@(ContextList.ResponseTypeOption)";
+        self.Responsibility_Embedded = "@(ContextList.Responsibility_Embedded)";
+        self.PeopleResponsibility = "@(ContextList.PeopleResponsibility)";
+        self.SourcingResponsibility = "@(ContextList.SourcingResponsibility)";
+        self.IntersectSourcingResponsibility = "@(ContextList.IntersectSourcingResponsibility)";
+        self.Responsibility = "@(ContextList.Responsibility)";
+        self.ResponsibilityTransformation = "@(ContextList.ResponsibilityTransformation)";
+        self.ResponsibilityType = "@(ContextList.ResponsibilityType)";
+        self.ResponsibilityTypeClaim = "@(ContextList.ResponsibilityTypeClaim)";
+        self.ResponsibilityTypeObjectClaim = "@(ContextList.ResponsibilityTypeObjectClaim)";
+        self.ResponsibilityTypeGroup = "@(ContextList.ResponsibilityTypeGroup)";
+        self.ResponsibilityTypeHierarchy = "@(ContextList.ResponsibilityTypeHierarchy)";
+        self.Role = "@(ContextList.Role)";
+        self.Rule = "@(ContextList.Rule)";
+        self.SourceToTarget = "@(ContextList.SourceToTarget)";
+        self.StatisticType = "@(ContextList.StatisticType)";
+        self.StatisticTypeRelation = "@(ContextList.StatisticTypeRelation)";
+        self.SurveyType = "@(ContextList.SurveyType)";
+
+        self.Synonym = "@(ContextList.Synonym)";
+        self.SynonymType = "@(ContextList.SynonymType)";
+        self.SynonymTypeRelation = "@(ContextList.SynonymTypeRelation)";
+
+        self.Taxonomy = "@(ContextList.Taxonomy)";
+        self.TaxonomyType = "@(ContextList.TaxonomyType)";
+        self.TaxonomyTypeLevel = "@(ContextList.TaxonomyTypeLevel)";
+        self.TooltipTemplate = "@(ContextList.TooltipTemplate)";
+
+        self.EmbeddedAttribute = "embeddedattributeform";
+
+        self.Workflow = "@(ContextList.Workflow)";
+        self.WorkflowTypeRelation = "@(ContextList.WorkflowTypeRelation)";
+
+        self.ActionBoard = "@(ContextList.ActionBoard)";
+        self.ActionCommand = "@(ContextList.ActionCommand)";
+        self.ActionDiagram = "@(ContextList.ActionDiagram)";
+        self.ActionExport = "@(ContextList.ActionExport)";
+        self.ActionFilter = "@(ContextList.ActionFilter)";
+        self.ActionFollow = "@(ContextList.ActionFollow)";
+        self.ActionGeneric = "@(ContextList.ActionGeneric)";
+        self.ActionGenericReport = "@(ContextList.ActionGenericReport)";
+        self.ActionLink = "@(ContextList.ActionLink)";
+        self.ActionRelate = "@(ContextList.ActionRelate)";
+        self.ActionResponsibility = "@(ContextList.ActionResponsibility)";
+        self.ActionEditRelate = "@(ContextList.ActionEditRelate)";
+        self.ActionUnrelate = "@(ContextList.ActionUnrelate)";
+
+        return self;
+    }
+
+    var contextList = getContextList();
+</script>
+    <script type="text/javascript" title="SPA Instantiation">
+        var app = Sammy('#main', function () {
+
+            var templatePath = '/Content/templates/';
+
+            this.helper('contentHeader', function (model) {
+                this.render(templatePath + '_content.header.html', model).replace('#ContentHeader');
+            });
+
+            this.helper('spinner', function () {
+                this.app.swap("<i class='fa fa-spinner fa-spin fa-4x'></i>");
+            });
+
+            this.use('Handlebars', 'html');
+            this.use("Title");
+
+            this.setTitle('D3S - ');
+
+            var adminTitle = "Administration";
+
+            // Administration Routes ------
+            analytics_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Analytics_Title)", "@(Resources.PageInfo.Administration_Analytics_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Analytics_Title)", Active: true }]), templatePath, contextList);
+            artifacts_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Artifact_Title)", "@(Resources.PageInfo.Administration_Artifact_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Artifact_Title)", Active: true }]), templatePath, contextList);
+            attributes_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Fact_Title)", "@(Resources.PageInfo.Administration_Fact_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Fact_Title)", Active: true }]), templatePath, contextList);
+            domains_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_DomainType_Title)", "@(Resources.PageInfo.Administration_DomainType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_DomainType_Title)", Active: true }]), templatePath, contextList);
+            fusion_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Fusion_Title)", "@(Resources.PageInfo.Administration_Fusion_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Fusion_Title)", Active: true }]), templatePath, contextList);
+            governance_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Governance_Title)", "@(Resources.PageInfo.Administration_Governance_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Governance_Title)", Active: true }]), templatePath, contextList);
+            groups_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Group_Title)", "@(Resources.PageInfo.Administration_Group_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Group_Title)", Active: true }]), templatePath, contextList);
+            lookups_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Lookup_Title)", "@(Resources.PageInfo.Administration_Lookup_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Lookup_Title)", Active: true }]), templatePath, contextList);
+            relations_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Intersect_Title)", "@(Resources.PageInfo.Administration_Intersect_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Intersect_Title)", Active: true }]), templatePath, contextList);
+            reporting_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Reporting_Title)", "@(Resources.PageInfo.Administration_Reporting_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Reporting_Title)", Active: true }]), templatePath, contextList);
+            resources_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Resource_Title)", "@(Resources.PageInfo.Administration_Resource_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Resource_Title)", Active: true }]), templatePath, contextList);
+            surveys_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_SurveyType_Title)", "@(Resources.PageInfo.Administration_SurveyType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SurveyType_Title)", Active: true }]), templatePath, contextList);
+            surveyresponsetypes_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_ResponseType_Title)", "@(Resources.PageInfo.Administration_ResponseType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SurveyType_Title)" }, { Name: "@(Resources.PageInfo.Administration_ResponseType_Title)", Active: true }]), templatePath, contextList);
+            taxonomies_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_TaxonomyType_Title)", "@(Resources.PageInfo.Administration_TaxonomyType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_TaxonomyType_Title)", Active: true }]), templatePath, contextList);
+            synonyms_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_SynonymType_Title)", "@(Resources.PageInfo.Administration_SynonymType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SynonymType_Title)", Active: true }]), templatePath, contextList);
+            templates_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Template_Title)", "@(Resources.PageInfo.Administration_Template_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Template_Title)", Active: true }]), templatePath, contextList);
+            workflow_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Workflow_Title)", "@(Resources.PageInfo.Administration_Workflow_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Workflow_Title)", Active: true }]), templatePath, contextList);
+
+            load(this, new PageViewModel("@(Resources.PageInfo.Load_Title)", "@(Resources.PageInfo.Load_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Load_Title)", Active: true }]), templatePath, contextList);
+            workflow_item(this, new PageViewModel('Tasks', '', []), templatePath, contextList);
+            workflow_item_status(this, new PageViewModel('Tasks', '', []), templatePath, contextList);
+
+            artifacts_list(this, new PageViewModel("@(Resources.PageInfo.Administration_Artifact_Title)", "@(Resources.PageInfo.Administration_Artifact_Description)", [{ Name: 'Glossary' }]), templatePath, contextList);
+            artifacts_item(this, new PageViewModel("", "", [{ Name: "Glossary" }]), templatePath, contextList);
+            domains_list(this, new PageViewModel("@(Resources.PageInfo.Administration_DomainType_Title)", "@(Resources.PageInfo.Administration_DomainType_Description)", [{ Name: "Reference Data" }]), templatePath, contextList);
+            fusion_list(this, new PageViewModel("", "", [{ Name: "Fusion" }]), templatePath, contextList);
+            fusion_item(this, new PageViewModel("", "", [{ Name: "Fusion" }]), templatePath, contextList);
+            groups_list(this, new PageViewModel("@(Resources.PageInfo.People_Title)", "@(Resources.PageInfo.People_Description)", [{ Name: '@(Resources.PageInfo.People_Title)', Active: true }]), templatePath, contextList);
+            groups_item(this, new PageViewModel("@(Resources.PageInfo.Groups_Title)", "@(Resources.PageInfo.Groups_Description)", [{ Name: '@(Resources.PageInfo.Groups_Title)' }]), templatePath, contextList);
+            monitor_list(this, new PageViewModel("@(Resources.PageInfo.Monitor_Title)", "@(Resources.PageInfo.Monitor_Description)", [{ Name: '@(Resources.PageInfo.Monitor_Title)', Active: true }]), templatePath, contextList);
+            resources_item(this, new ResourcePageViewModel("", "", [{ Name: "@(Resources.PageInfo.People_Title)" }]), templatePath, contextList);
+            taxonomies_list(this, new PageViewModel("", "@(Resources.PageInfo.Taxonomies_Description)", [{ Name: "Models" }]), templatePath, contextList);
+
+            search(this, new PageViewModel("@(Resources.PageInfo.Search_Title)", "@(Resources.PageInfo.Search_Description)", [{ Name: '@(Resources.PageInfo.Search_Title)', Active: true }]), templatePath, contextList);
+            home(this, new PageViewModel("@(Resources.PageInfo.Home_Title)", "@(Resources.PageInfo.Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
+            community_home(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
+            //community_alert(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
+            //community_group(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
+            //community_vendor(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
+
+            this.before(function(){
+                amplify.publish(AmplifyActions.Unsubscribe, { });
+            });
+
+            this.after(function () {
+                amplify.publish("OverlayRemoved");
+                amplify.publish("RelationOverlayRemoved");
+            });
+
+            //this.error(function (message, ex) {
+            //    console.log(message, ex);
+            //});
+
+        });
+    </script>
+    <script type="text/javascript">
+        var currentUserName = "@(User.Identity.Name)";
+
+        //#region Settings and global variables for shared models
+
+        var logError = function (location, e) {
+            console.log(location + ": " + e.message);
+        }
+
+        $.ajaxSetup({
+            "error": function (jqXHR, textStatus, errorThrown) {
+                console.log("error " + textStatus);
+                console.log("incoming Text " + jqXHR.responseText);
+            }
+        });
+
+        //$.connection.hub.logging = false;
+        //var SocialHub = $.connection.socialHub;
+
+        //#endregion
+
+        var setupPage = function() {
+            $('.htmlArea').redactor({ minHeight: 200, convertVideoLinks: true });
+            $('.simpleHtmlArea').redactor({ minHeight: 200, convertVideoLinks: true, buttons: ['bold', 'italic', 'unorderedlist', 'orderedlist'] });
+            $('.replyHtmlArea').redactor({ minHeight: 50, convertVideoLinks: true, buttons: ['bold', 'italic', 'unorderedlist', 'orderedlist'] });
+
+            //#region Click Handlers
+
+            $('body').on('click', '*[data-command]', function (event) {
+                var tool = $(this);
+                $.ajax({
+                    type: tool.data('method') || 'POST',
+                    url: tool.data('uri'),
+                    error: function(xhr, status, error){
+                        amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.statusText, type: 'error' });
+                    },
+                    success: function(data, status, xhr){
+                        amplify.publish("ShowMessage", { title: "Success!", message: xhr.statusText, type: 'confirm' });
+                        amplify.publish("CommandExecuted", { context: tool.data('context'), customdata: data });
+                    }
+                });
+            });
+
+            $('body').on('click', '*[data-local]', function (event) {
+                var tool = $(this);
+                amplify.publish("LocalAction", { context: tool.data('context'), uri: tool.data('uri') });
+            });
+
+            $('body').on('click', '*[data-overlay]', function (event) {
+                var tool = $(this);
+                var overlaybg = $('<div id="OverlayBackground" style="display:none"></div>');
+                var overlay = $('<div id="Overlay" style="padding-top: 50px; display:none;"></div>');
+                overlay.load(tool.data('uri'));
+                $('body').append(overlaybg);
+                $('body').append(overlay);
+                overlaybg.fadeIn(250);
+                overlay.fadeIn(500);
+            });
+
+            $('body').on('click', '*[data-sidebaroverlay]', function (event) {
+                var tool = $(this);
+
+            });
+
+            $('body').on('click', '*[data-tile]', function (event) {
+                var tile = $(this);
+                //amplify.publish("ToolAction", { uri: tile.data("uri"), context: tile.data("context") });
+                openTileOverlay(tile.data("uri"));
+            });
+
+            //#endregion
+
+            //#region MouseEnter Handlers
+
+            $('body').on('mouseenter', '*[data-flags]', function (event) {
+                $(this).qtip({
+                    content: {
+                        text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
+                        ajax: {
+                            url: "/resources/" + $(this).data("t") + "/" + $(this).data("i") + "/flags"
+                        }
+                    },
+                    position: {
+                        at: 'left center',
+                        my: 'right center',
+                        viewport: $(window), // Keep the tooltip on-screen at all times
+                        effect: false // Disable positioning animation
+                    },
+                    overwrite: false,
+                    show: {
+                        event: event.type,  // show using same event as above.
+                        solo: false,         // Only show one tooltip at a time
+                        ready: true
+                    },
+                    hide: {
+                        fixed: true,
+                        delay: 1000,
+                    },
+                    //hide: 'mouseout',
+                    style: {
+                        classes: 'qtip-blue qtip-rounded'
+                    }
+                    //addTooltip(this);
+                });
+            });
+
+            $('body').on('mouseenter', '*[data-tools]', function (event) {
+                $(this).qtip({
+                    content: {
+                        text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
+                        ajax: {
+                            url: "/resources/" + $(this).data("t") + "/" + $(this).data("i") + "/tools"
+                        }
+                    },
+                    position: {
+                        at: 'left center',
+                        my: 'right center',
+                        viewport: $(window), // Keep the tooltip on-screen at all times
+                        effect: false // Disable positioning animation
+                    },
+                    overwrite: false,
+                    show: {
+                        event: event.type,  // show using same event as above.
+                        solo: false,         // Only show one tooltip at a time
+                        ready: true
+                    },
+                    hide: {
+                        fixed: true,
+                        delay: 1000,
+                    },
+                    //hide: 'mouseout',
+                    style: {
+                        classes: 'qtip-blue qtip-rounded'
+                    }
+                    //addTooltip(this);
+                });
+            });
+
+            $('body').on('mouseenter', '*[data-type]', function (event) {
+                $(this).qtip({
+                    content: {
+                        title: $(this).data('title'),
+                        // Set the text to an image HTML string with the correct src URL to the loading image you want to use
+                        text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
+                        ajax: {
+                            url: "/resources/" + $(this).data("type") + "/" + $(this).data("id") + "/templates/tooltip/" + $(this).data("context")
+                        }
+                    },
+                    position: {
+                        at: 'bottom center', // Position the tooltip above the link
+                        my: 'top center',
+                        viewport: $(window), // Keep the tooltip on-screen at all times
+                        effect: false // Disable positioning animation
+                    },
+                    overwrite: false,
+                    show: {
+                        event: event.type,  // show using same event as above.
+                        solo: false,         // Only show one tooltip at a time
+                        ready: true
+                    },
+                    hide: {
+                        fixed: true,
+                        delay: 1000,
+                    },
+                    //hide: 'mouseout',
+                    style: {
+                        classes: 'qtip-blue qtip-rounded'
+                    }
+                    //addTooltip(this);
+                });
+            });
+
+            //#endregion
+
+            //#region Event Subscription
+
+            amplify.subscribe("RefreshNavigation", function (data) {
+                $('#TopNav').load('/Navigation/Top');
+            });
+
+            amplify.subscribe("CommandAction", function (data) {
+                var method = "POST";
+                if (data.customdata.method) {
+                    method = data.customdata.method;
+                }
+                if (data.context != "nullform") {
+                    $.ajax({
+                        type: method,
+                        url: data.uri
+                    }).always(function (msg) {
+                        amplify.publish("ShowMessage", msg);
+
+                        amplify.publish("RefreshActionMenu", msg);
+
+                        if (data.customdata.commandname) {
+                            amplify.publish("CommandExecuted", data.customdata.commandname);
+                        }
+                    });
+                }
+            });
+
+            amplify.subscribe("CancelAction", function (data) {
+                try {
+                    switch (data.context) {
+                        case contextList.Attribute:
+                        case contextList.Attribute_Embedded:
+                        case contextList.Comment:
+                        case contextList.FusionFilter:
+                        case contextList.FusionOwnerRule:
+                        case contextList.FusionOwnerRuleItem:
+                        case contextList.FusionPromotionRule:
+                        case contextList.FusionPromotionRuleItem:
+                        case contextList.FusionPromotionRuleMapping:
+                        case contextList.Intersect:
+                        case contextList.ActionEditRelate:
+                        case contextList.ActionResponsibility:
+                        case contextList.IntersectSourcingResponsibility:
+                        case contextList.ResponsibilityTransformation:
+                        case contextList.AttributeTypeCategory:
+                        case contextList.ResponsibilityTypeHierarchy:
+                        case contextList.SourceToTarget:
+                            break;
+                        default:
+                            removeOverlay();
+                            break;
+                    }
+                } catch (e) {
+                    logError("SPA : CancelAction", e);
+                }
+            });
+
+            amplify.subscribe("SaveAction", function (data) {
+                try {
+                    switch (data.context) {
+                        case contextList.Attribute:
+                        case contextList.Attribute_Embedded:
+                        case contextList.Comment:
+                        case contextList.FusionFilter:
+                        case contextList.FusionOwnerRule:
+                        case contextList.FusionOwnerRuleItem:
+                        case contextList.FusionPromotionRule:
+                        case contextList.FusionPromotionRuleItem:
+                        case contextList.FusionPromotionRuleMapping:
+                        case contextList.Intersect:
+                        case contextList.ActionResponsibility:
+                        case contextList.IntersectSourcingResponsibility:
+                        case contextList.ResponsibilityTransformation:
+                        case contextList.AttributeTypeCategory:
+                        case contextList.ResponsibilityTypeHierarchy:
+                        case contextList.SourceToTarget:
+                            break;
+                        default:
+                            removeOverlay();
+                    }
+                } catch (e) {
+                    logError("SPA : SaveAction", e);
+                }
+            });
+
+            amplify.subscribe("OverlayOpening", function (data) {
+                switch(data.name) {
+                    case 'Board':
+                        break;
+                    default:
+                        var target = $('#Board');
+                        if (target.data('visible') == true) {
+                            target.fadeOut(500);
+                            target.data('visible', false);
+                        }
+                        break;
+                }
+            });
+
+            amplify.subscribe("ToolAction", function (data) {
+                if (data.context != "nullform") {
+                    try {
+                        switch (data.context) {
+                            case contextList.ActionBoard:
+                                var target = $('#Board');
+                                if (target.data('visible') == true) {
+                                    target.fadeOut(500);
+                                    target.data('visible', false);
+                                }
+                                else {
+                                    target.fadeIn(500);
+                                    target.data('visible', true);
+                                }
+                                break;
+                            case contextList.ActionCommand:
+                            case contextList.ActionGeneric:
+                                var method = "POST";
+                                if (data.customdata.method) {
+                                    method = data.customdata.method;
+                                }
+
+                                $.ajax({
+                                    type: method,
+                                    url: data.uri,
+                                    error: function (xhr, textStatus, error) {
+                                        amplify.publish("ShowMessage", { title: 'Error Attempting Action', message: xhr.statusText, type: 'error' }); // + xhr.responseText
+                                    },
+                                    success: function (data, statusText, xhr) {
+                                        amplify.publish("ShowMessage", { title: "Success!", message: data.message, type: 'confirm' });
+                                        amplify.publish("RefreshActionMenu", data);
+                                        if (data.custom.commandname) {
+                                            amplify.publish("CommandExecuted", data.custom.commandname);
+                                        }
+                                    }
+                                });
+                                break;
+                            case contextList.ActionExport:
+                            case contextList.ActionFilter:
+                            case contextList.ActionFollow:
+                            case contextList.ActionLink:
+                            case contextList.ActionEditRelate:
+                            case contextList.ActionResponsibility:
+                            case contextList.ActionUnrelate:
+                            case contextList.Attribute:
+                            case contextList.Attribute_Embedded:
+                            case contextList.AttributeTypeCategory:
+                            case contextList.Comment:
+                            case contextList.FusionFilter:
+                            case contextList.FusionOwnerRule:
+                            case contextList.FusionOwnerRuleItem:
+                            case contextList.FusionPromotionRule:
+                            case contextList.FusionPromotionRuleItem:
+                            case contextList.FusionPromotionRuleMapping:
+                            case contextList.Responsibility_Embedded:
+                            case contextList.IntersectSourcingResponsibility:
+                            case contextList.ResponsibilityTransformation:
+                            case contextList.ResponsibilityTypeHierarchy:
+                            case contextList.SourceToTarget:
+                                break;
+                            default:
+                                var overlaybg = $('<div id="OverlayBackground" style="display:none"></div>');
+                                var overlay = $('<div id="Overlay" style="padding-top: 50px; display:none;"></div>');
+                                var ocenter = $('<div style="width: 90%; margin: auto; padding-bottom: 30px; position: relative;"></div>');
+                                var oclose = $('<button class="overlay-close"><i class="fa fa-times fa-4x"></i></button>');
+                                ocenter.load(data.uri);
+
+                                oclose.on('click', function () {
+                                    removeOverlay();
+                                });
+
+                                overlay.append(oclose);
+                                overlay.append(ocenter);
+
+                                $('body').append(overlaybg);
+                                $('body').append(overlay);
+                                overlaybg.fadeIn(750);
+                                overlay.fadeIn(750);
+                                break;
+                        }
+                    } catch (e) {
+                        logError("SPA : ToolAction", e);
+                    }
+                }
+            });
+
+            amplify.subscribe("ShowMessage", function (data) {
+                //{ title, message, type }
+                var stickTime = '';
+                if (data.type == 'error') stickTime = '15000';
+                $.gritter.add({
+                    type: data.type, title: data.title, text: data.message, sticky: false, time: stickTime
+                });
+            });
+
+            //#endregion
+
+            app.run('#/');
+        }
+
+        $(function () {
+            setupPage();
+            $('select').material_select();
+        });
+
+        $(document).ajaxComplete(function () {
+            $('.htmlArea').redactor({ minHeight: 200, convertVideoLinks: true });
+            $('.simpleHtmlArea').redactor({ minHeight: 200, convertVideoLinks: true, buttons: ['bold', 'italic', 'unorderedlist', 'orderedlist'] });
+            $('.replyHtmlArea').redactor({ minHeight: 50, convertVideoLinks: true, buttons: ['bold', 'italic', 'unorderedlist', 'orderedlist'] });
+            $('select').material_select();
+        });
+
+        $(window).resize(function () {
+            amplify.publish("PageResized");
+        });
+    </script>
+</body>
+</html>

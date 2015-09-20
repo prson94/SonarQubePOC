@@ -1,0 +1,89 @@
+﻿@{
+    var loadTypeID = (int)ViewData["LoadTypeID"];
+}
+
+<script id="loadTmpl" type="text/html">
+    <div class="left form-header-info">
+        <h4>Upload a Spreadsheet Job</h4>
+    </div>
+    <div class="right">
+        <button type="button" id="EditableFormCancelButton" data-bind="click: cancel" class="btn waves-effect waves-light brown lighten-4">Cancel</button>
+        <button type="button" id="EditableFormSaveButton" data-bind="click: save" class="btn waves-effect waves-light brown lighten-1 saveButton">Save</button>
+    </div>
+    <div class="clear"></div>
+    <div class="form-instructions">Please ensure that you have column headers in your spreadsheet.</div>
+    <div id="progress" data-bind="visible: InProgress"><i class="fa fa-spinner fa-spin fa-4x"></i></div>
+
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldNameRequired">Action</div>
+            <div data-bind="actionFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: ActionIndex,
+                 source: ActionOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+        <div class="col s12" data-bind="visible: ActionSelected">
+            <div class="FieldNameRequired">Type To Load</div>
+            <div data-bind="typeFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: TypeIndex,
+                 source: TypeOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+            <span data-bind="visible: TypeOptionsLoading">Loading, please wait...</span>
+        </div>
+        <div class="col s12" data-bind="visible: ActionAndTypeSelected">
+            <div class="FieldName">Notes</div>
+            <div data-bind="jqxEditor: { width: field_width, theme: theme, value: Notes}" />
+        </div>
+        <div class="col s12" data-bind="visible: ActionAndTypeSelected">
+            <div class="FieldName">File</div>
+            <div data-bind="fileDrag: File">
+                <input type="file" data-bind="fileInput: File, customFileInput: {}">
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<div class="small-overlay">
+    <div class="ui segment">
+        @*<div id="LoadWrapper" data-bind="template: {name: 'loadTmpl' }"></div>*@
+
+        <div class="row">
+            <div class="col s12">
+                <div class="FieldNameRequired">File</div>
+            </div>
+            <div class="col s12"><div id="File"></div></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+
+        //var model = new LoadViewModel({
+        //});
+        //ko.applyBindings(model, document.getElementById('LoadWrapper'));
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+
+
+        $('#File').jqxFileUpload({ width: 300, uploadUrl: "/form/AddLoadFile?id=@(loadTypeID)", fileInputName: 'Load@(loadTypeID)', accept: '.xls, .xlsx', multipleFilesUpload: false });
+
+        $('#File').on('uploadEnd', function (event) {
+            var args = event.args;
+            //var fileName = args.file;
+            var serverResponse = args.response;
+            amplify.publish("SaveAction", { context: '@(ContextList.Load)', action: 'Add', id: 0, title: 'Success!', message: serverResponse, type: 'confirm' });
+        });
+    });
+</script>

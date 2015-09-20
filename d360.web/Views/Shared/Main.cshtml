@@ -1,0 +1,93 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html ng-app="d3s" ng-controller="d3sCtrl">
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>D3S</title>
+    <link href="~/css/semantic/semantic.css" rel="stylesheet" />
+    <script src="~/Scripts/ang.js"></script>
+    <script src="~/Scripts/app/js/controllers.js"></script>
+    <script src="~/Scripts/semantic/semantic.js"></script>
+</head>
+<body>
+    <div id="BG"></div>
+    <div id="Page">
+        <div class="ui grid">
+            <div class="two wide column"><div id="Logo"></div></div>
+            <div class="fourteen wide column">
+                <div class="ui compact menu">
+                    <div class="menu">
+                        <div class="right item">
+                            <div class="ui icon input">
+                                <input type="text" placeholder="Search...">
+                                <i class="search icon"></i>
+                            </div>
+                        </div>
+                        <a class="active item">
+                            <i class="home icon"></i> Home
+                        </a>
+                        <div class="ui pointing dropdown link item">
+                            <i class="icon mail"></i> Business Glossary <i class="dropdown icon"></i>
+                            <div class="menu">
+                                <a class="item"><i class="mail icon"></i>Applications</a>
+                                <a class="item"><i class="book icon"></i>Business Processes</a>
+                            </div>
+                        </div>
+                        <a class="item">
+                            <i class="user icon"></i> Information Models
+                        </a>
+                        <a class="item">
+                            <i class="user icon"></i> People
+                        </a>
+                        <a class="item">
+                            <i class="user icon"></i> Monitor
+                        </a>
+                        <a class="item">
+                            <i class="user icon"></i> Domains
+                        </a>
+                        <a class="item">
+                            <i class="user icon"></i> Fusion
+                        </a>
+                        <a class="item">
+                            <i class="user icon"></i> Administration
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui grid">
+            <div class="four wide column blue1 top-line">&nbsp;</div>
+            <div class="four wide column blue2 top-line">&nbsp;</div>
+            <div class="four wide column blue3 top-line">&nbsp;</div>
+            <div class="four wide column blue4 top-line">&nbsp;</div>
+        </div>
+
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-2">
+                    <!--Sidebar content-->
+                    Search: <input ng-model="query">
+
+                </div>
+                <div class="col-md-10">
+                    <!--Body content-->
+
+                    <ul class="phones">
+                        <li ng-repeat="p in phones | filter:query">
+                            {{p.name}}
+                            <p>{{p.snippet}}</p>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $('.ui.dropdown').dropdown();
+    </script>
+</body>
+</html>

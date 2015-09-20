@@ -1,0 +1,51 @@
+﻿@model d360.web.Models.LoginModel
+@{
+    ViewBag.Title = "Login";
+    Layout = null;
+    var VersionNumber = ViewData["VersionNumber"].ToString();
+    var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
+}
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - Data3Sixty, Inc.</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="Shortcut Icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
+    <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
+    <script type="text/javascript">
+    $(document).ready(function () {
+        $("#UserName").jqxInput({ width: '95%', theme: theme, minLength: 10 });
+        $("#Password").jqxInput({ width: '95%', theme: theme, minLength: 6 });
+        //$("#RememberMe").jqxCheckBox({ width: 25 });
+        $("#LoginButton").jqxButton({ width: '95%' });
+        $("#Username").focus();
+        $('input').keypress(function (e) {
+            if (e.which == 13) {
+                $('#LoginButton').submit();
+            }
+        });
+    });
+    </script>
+</head>
+<body>
+    <div id="loginForm">
+        @Html.ValidationSummary()
+
+        @using (Html.BeginForm())
+        {
+            <div class="FieldNameRequired">@Html.LabelFor(m => m.UserName)</div>
+            @Html.TextBoxFor(m => m.UserName)
+            @Html.ValidationMessageFor(m => m.UserName)
+            <div class="FieldNameRequired">@Html.LabelFor(m => m.Password)</div>
+            @Html.PasswordFor(m => m.Password)
+            @Html.ValidationMessageFor(m => m.Password)
+            <br /><br />
+            <input id="LoginButton" type="submit" value="Login!" tabindex="3" />
+        }
+    </div>
+</body>
+</html>

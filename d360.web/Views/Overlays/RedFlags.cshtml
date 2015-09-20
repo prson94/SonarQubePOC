@@ -1,0 +1,90 @@
+﻿@model d360.core.entities.ObjectModel
+<div class="small-overlay">
+    <div class="ui segment">
+        <h4 id="RedFlagTitle"></h4>
+        <div class="form-instructions"></div>
+        <div id="RedFlagOverlayGrid"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var OverlayDataUrl = '/api/@(Model.ObjectType)/@(Model.ObjectID)/RedFlags';
+    var RedFlagsOverlayDetailData = '/api/@(Model.ObjectType)/@(Model.ObjectID)';
+
+    var OverlayGridSource;
+    var OverlayGridAdapter;
+
+    function redFlagsOverlayGridRowDoubleClick(event) {
+        try {
+            var args = event.args;
+            var row = args.rowindex;
+            var data = $('#RedFlagOverlayGrid').jqxGrid('getrowdata', row);
+            location.assign(data.Url);
+        } catch (e) {
+            logError(overlayName + " : " + overlayName + "RedFlagOverlayGrid.rowdoubleclick", e);
+        }
+    }
+
+    function unsubscribe() {
+        OverlayGridAdapter = null;
+        OverlayGridSource = null;
+
+        $('#RedFlagOverlayGrid').off('rowdoubleclick', redFlagsOverlayGridRowDoubleClick);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+    }
+
+    $(function () {
+
+        $.getJSON(RedFlagsOverlayDetailData, function (data) {
+            $('#RedFlagTitle').text("Your Red-flagged " + data.PluralizedName);
+        });
+
+        //#region Header Grid
+
+        OverlayGridSource = {
+            datatype: 'json',
+            type: 'get',
+            datafields: [
+                { name: 'ID' },
+                { name: 'Name' },
+                { name: 'Description' },
+                { name: 'Status' },
+                { name: 'Url' },
+                { name: 'CriticalRelationshipCount' },
+            ],
+            url: OverlayDataUrl
+        };
+
+        OverlayGridAdapter = new $.jqx.dataAdapter(OverlayGridSource);
+
+        $('#RedFlagOverlayGrid').jqxGrid({
+            source: OverlayGridAdapter,
+            width: overlay_grid_width,
+            //height: '400px',
+            pagesizeoptions: ['5', '10', '20'],
+            pagesize: 20,
+            autoheight: true,
+            autorowheight: true,
+            sortable: true,
+            altrows: true,
+            showfilterrow: true,
+            filterable: true,
+            pageable: true,
+            theme: list_theme,
+            columns: [
+                { datafield: "Name", text: "Name", width: 200 },
+                { datafield: "Description", text: "Description" },
+                { datafield: "CriticalRelationshipCount", text: "# Critical Relationships", width: 75 }
+            ]
+        });
+
+        //#endregion
+
+        $('#RedFlagOverlayGrid').on('rowdoubleclick', redFlagsOverlayGridRowDoubleClick);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

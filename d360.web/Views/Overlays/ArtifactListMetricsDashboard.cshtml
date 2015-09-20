@@ -1,0 +1,166 @@
+﻿@model d360.core.entities.ObjectModel
+<div class="medium-overlay">
+    <div class="ui segment">
+        <h4>Metrics for @(ViewBag.TypeName)</h4>
+        <div class="form-instructions"></div>
+        <div class="row">
+            <div class="col s6">
+                <div class="tile tile-detail">
+                    <header>Applied Responsibilities</header>
+                    <table style="width: 96%">
+                        <tr>
+                            <td style="width: 100%"><div id="ResponsibilityBreakdownChart" style="width: 100%; height:350px;"></div></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="col s6">
+                <div class="tile tile-detail">
+                    <header>Status Breakdown</header>
+                    <table style="width: 96%">
+                        <tr>
+                            <td style="width: 100%"><div id="StatusBreakdownChart" style="width: 100%; height:350px;"></div></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var typeID = @ViewBag.TypeID;
+
+    $(function () {
+        //#region Responsibility Chart
+
+        $.ajax({
+            url: '/queries/' + typeID + '/UsedVsUnusedResponsibilitiesByArtifactType',
+            method: 'GET',
+            dataType: 'json'
+        }).fail(function (xhr, status, error) {
+
+        }).done(function (data, status, xhr) {
+            var colors = [];
+            $.each(data, function () {
+                colors.push(this.BackColor);
+            });
+
+            var cht = $('#ResponsibilityBreakdownChart');
+            if (data.length == 0) {
+                cht.css('height', '40px');
+                cht.html('No data to display');
+            }
+            else {
+                cht.css('height', '300px');
+                cht.jqxChart({
+                    title: "",
+                    description: "",
+                    enableAnimations: true,
+                    showLegend: true,
+                    borderLineWidth: 0,
+                    showBorderLine: false,
+                    theme: theme,
+                    padding: { left: 5, top: 5, right: 5, bottom: 5 },
+                    titlePadding: { left: 90, top: 0, right: 0, bottom: 10 },
+                    source: data,
+                    xAxis:
+                        {
+                            dataField: 'Responsibility',
+                            showTickMarks: true,
+                            tickMarksInterval: 1,
+                            tickMarksColor: '#bababa',
+                            unitInterval: 1,
+                            showGridLines: false,
+                            gridLinesInterval: 1,
+                            gridLinesColor: '#bababa',
+                            textRotationAngle: 15,
+                            textRotationPoint: 'center',
+                            axisSize: 'auto'
+                        },
+                    seriesGroups:
+                        [
+                            {
+                                useGradientColors: false,
+                                type: 'stackedcolumn',
+                                columnsGapPercent: 100,
+                                seriesGapPercent: 5,
+                                valueAxis:
+                                {
+                                    displayValueAxis: true,
+                                    description: '# Items',
+                                    tickMarksColor: '#bababa'
+                                },
+                                series: [
+                                        { dataField: 'AssignedCount', displayText: '# Assigned' },
+                                        { dataField: 'UnassignedCount', displayText: '# Unassigned' }
+                                ]
+                            }
+                        ]
+                });
+                cht.jqxChart('addColorScheme', 'myScheme', chartYesNoColorScheme);
+                cht.jqxChart('colorScheme', 'myScheme');
+                cht.jqxChart('refresh');
+            }
+        });
+
+        //#endregion
+
+        //#region Status Chart
+
+        $.ajax({
+            url: '/queries/' + typeID + '/StatusBreakdownByArtifactType',
+            method: 'GET',
+            dataType: 'json'
+        }).fail(function (xhr, status, error) {
+
+        }).done(function (data, status, xhr) {
+            var colors = [];
+            $.each(data, function () {
+                colors.push(this.BackColor);
+            });
+
+            var cht = $('#StatusBreakdownChart');
+            if (data.length == 0) {
+                cht.css('height', '40px');
+                cht.html('No data to display');
+            }
+            else {
+                cht.css('height', '300px');
+                cht.jqxChart({
+                    source: data,
+                    title: '',
+                    description: '',
+                    enableAnimations: false,
+                    showLegend: true,
+                    showBorderLine: false,
+                    legendLayout: { flow: 'horizontal' },
+                    seriesGroups: [
+                        {
+                            useGradientColors: false,
+                            type: 'pie',
+                            showLegend: true,
+                            enableSeriesToggle: true,
+                            series: [
+                                {
+                                    dataField: 'Count',
+                                    displayText: 'Status',
+                                    showLabels: true,
+                                    labelLinesEnabled: true,
+                                    labelLinesAngles: true,
+                                    labelsAutoRotate: false
+                                }
+                            ]
+                        }
+                    ]
+                });
+                cht.jqxChart('addColorScheme', 'myScheme', colors);
+                cht.jqxChart('colorScheme', 'myScheme');
+                cht.jqxChart('refresh');
+            }
+        });
+
+        //#endregion
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

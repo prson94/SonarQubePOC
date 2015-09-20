@@ -1,0 +1,84 @@
+﻿@model d360.web.Models.LoadTypeRuleEditorModel
+
+@Html.Hidden("_context", ContextList.LoadTypeRule)
+@Html.HiddenFor(i => i.LoadTypeID)
+
+<div class="ui form">
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldRequired"><span id='LookupTypeRuleGroupTip'>Rule Type</span></div>
+            @Html.DropDownList("LookupTypeRuleGroup", Model.LookupTypeRuleGroups.Select(i => new SelectListItem { Value = i.Value, Text = i.Text, Selected = i.Selected }), new { @class = "browser-default" })
+        </div>
+    </div>
+    <div class="row" id="PromotionOnly">
+        <div class="col s6">
+            <div class="FieldRequired"><span id='LookupTypeRuleGroupTip'>Target Type</span></div>
+            @Html.DropDownList("Object", Model.Objects.Select(i => new SelectListItem { Value = i.Value, Text = i.Text, Selected = i.Selected }), new { @class = "browser-default" })
+            <span id="ObjectSelectionError" class="error"></span>
+        </div>
+        <div class="col s6">
+            <div class="FieldRequired"><span id='ContextTip'>Uniqueness Field In Spreadsheet</span></div>
+            @Html.DropDownList("UniqueLoadTypeFieldID", Model.Fields.Select(i => new SelectListItem { Value = i.Value, Text = i.Text, Selected = i.Selected }), new { @class = "browser-default" })
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var loadTypeID = '@(Model.LoadTypeID)';
+
+    $(function () {
+
+        $("#LookupTypeRuleGroup").jqxDropDownList({ width: field_width, theme: theme });
+        $("#Object").jqxDropDownList({ width: field_width, theme: theme });
+        $("#UniqueLoadTypeFieldID").jqxDropDownList({ width: field_width, theme: theme });
+
+        $('#LookupTypeRuleGroup').on('change', function () {
+            var value = $('#LookupTypeRuleGroup').val();
+            if (value == '1')
+                $('#PromotionOnly').show();
+            else {
+                $('#PromotionOnly').hide();
+            }
+        });
+
+        $('#Object').on('change', function () {
+            var value = $('#Object').val();
+            var ruleGroup = $('#LookupTypeRuleGroup').val();
+            if (ruleGroup == '1') { // promotion = proceed with check
+
+                $.ajax({
+                    url: '/api/PromotionRuleIsValid?loadTypeID=' + loadTypeID + '&target=' + value
+                }).fail(function (xhr, textStatus, errorThrown) {
+                    $('#EditableFormSaveButton').hide();
+                    $('#ObjectSelectionError').text(JSON.parse(xhr.responseText).Message);
+                }).done(function (xhr, textStatus, errorThrown) {
+                    $('#EditableFormSaveButton').show();
+                    $('#ObjectSelectionError').text('');
+                });
+            }
+            else {
+                $('#EditableFormSaveButton').show();
+            }
+        });
+
+        $('#EditableFormCancelButton').on('click', function () {
+            amplify.publish("CancelAction", { context: '@(ContextList.ActionResponsibility)' });
+        });
+        amplify.subscribe("ErrorOccurredAction", function (data) {
+            $('#EditableFormSaveButton').hide();
+        });
+        amplify.subscribe("StartingAjax", function () {
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+            $('#EditableFormSaveButton').attr('disabled', 'disabled');
+        });
+        amplify.subscribe("EndingAjax", function () {
+            $('#progress').html('');
+        });
+
+        if ($('#LookupTypeRuleGroup').val() != '1') {
+            $('#PromotionOnly').hide();
+        }
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

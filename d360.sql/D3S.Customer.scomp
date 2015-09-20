@@ -1,0 +1,271 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Devart (www.devart.com), compare document file -->
+<!-- Modifying this generated file will probably render it invalid -->
+<CompareDocument>
+  <Properties>
+    <DatabaseProvider>aa8afe9c-7d62-4564-b477-c12e62e0f440</DatabaseProvider>
+    <ProviderVersion>4.0.57.0</ProviderVersion>
+    <SchemaVersion>1.5</SchemaVersion>
+  </Properties>
+  <Source Type="Database">
+    <DataConnection>4.PF</DataConnection>
+    <ConnectionString>Data Source=pfz6cpw42u.database.windows.net;Initial Catalog=D3S_4;Integrated Security=False;User ID=d3s_4_user</ConnectionString>
+    <Category>00000000-0000-0000-0000-000000000000</Category>
+    <Schema>D3S_4</Schema>
+  </Source>
+  <Target Type="Database">
+    <DataConnection>1.XV</DataConnection>
+    <ConnectionString>Data Source=xvla548aed.database.windows.net;Initial Catalog=D3S_1;Integrated Security=False;User ID=d3s_1_user</ConnectionString>
+    <Category>e48bae52-25bc-4af0-bd93-c5cfc0c5aed2</Category>
+    <Schema>D3S_1</Schema>
+  </Target>
+  <GroupType Value="Status" />
+  <Filter Value="0" />
+  <ComparisonOptions>
+    <UseSubSchemaNamePrefix>true</UseSubSchemaNamePrefix>
+    <IgnorePermissions>false</IgnorePermissions>
+    <IgnoreColumnOrderInIndexes>false</IgnoreColumnOrderInIndexes>
+    <IgnoreForeignKeys>false</IgnoreForeignKeys>
+    <CountColumnsToDropUK>true</CountColumnsToDropUK>
+    <ForceColumnOrder>true</ForceColumnOrder>
+    <IgnoreCase>false</IgnoreCase>
+    <IgnoreComments>false</IgnoreComments>
+    <IgnoreWhiteSpace>true</IgnoreWhiteSpace>
+    <CompareSecurityObjectPrivileges>false</CompareSecurityObjectPrivileges>
+    <IgnoreCollations>false</IgnoreCollations>
+    <IgnoreAuthorization>false</IgnoreAuthorization>
+    <IgnoreEventNotificationOnQueues>false</IgnoreEventNotificationOnQueues>
+    <IgnoreExtendedProperties>false</IgnoreExtendedProperties>
+    <IgnoreIndexes>false</IgnoreIndexes>
+    <IgnoreTriggerFireOrder>false</IgnoreTriggerFireOrder>
+    <IgnoreStatistics>false</IgnoreStatistics>
+    <IgnoreDMLTriggers>false</IgnoreDMLTriggers>
+    <IgnoreLogins>true</IgnoreLogins>
+    <IgnoreNotForReplication>false</IgnoreNotForReplication>
+    <IgnoreFullTextSearch>false</IgnoreFullTextSearch>
+    <IgnoreFullTextCatalogPath>false</IgnoreFullTextCatalogPath>
+    <IgnoreFilegroupsPartitionSchemes>false</IgnoreFilegroupsPartitionSchemes>
+    <IgnoreUserDefaultSchema>true</IgnoreUserDefaultSchema>
+    <PopulateFullTextIndexes>false</PopulateFullTextIndexes>
+    <CompareDatabaseProperties>true</CompareDatabaseProperties>
+    <IgnoreIndexesNames>false</IgnoreIndexesNames>
+    <IgnoreStatisticsNorecompute>false</IgnoreStatisticsNorecompute>
+    <IgnorePadIndexAndFillfactor>false</IgnorePadIndexAndFillfactor>
+    <IgnoreDataCompression>true</IgnoreDataCompression>
+    <IgnoreChangeTracking>false</IgnoreChangeTracking>
+    <IgnoreIndexColumnsSortOrder>false</IgnoreIndexColumnsSortOrder>
+    <IgnoreIndexPageAndRowLock>false</IgnoreIndexPageAndRowLock>
+    <QuoteObjectNames>false</QuoteObjectNames>
+    <IgnoreCheckConstraints>false</IgnoreCheckConstraints>
+    <IgnoreRules>false</IgnoreRules>
+    <IgnoreDefaultConstraints>false</IgnoreDefaultConstraints>
+    <IgnoreIdentitySeedIncrementValues>false</IgnoreIdentitySeedIncrementValues>
+    <IgnoreIdentity>false</IgnoreIdentity>
+    <IgnorePrimaryKeys>false</IgnorePrimaryKeys>
+    <IgnoreUniqueKeys>false</IgnoreUniqueKeys>
+    <IgnoreNocheck>false</IgnoreNocheck>
+    <DecryptEncryptedObjects>true</DecryptEncryptedObjects>
+    <IgnoreSignatures>false</IgnoreSignatures>
+    <IgnoreWithOptionOrder>true</IgnoreWithOptionOrder>
+    <IgnoreKeywordReduction>true</IgnoreKeywordReduction>
+    <IgnoreQuotedIdentifierAndANSINulls>false</IgnoreQuotedIdentifierAndANSINulls>
+    <CheckInconsistency>false</CheckInconsistency>
+    <SetDelimiter>true</SetDelimiter>
+    <UseDelimiter>true</UseDelimiter>
+    <TargetDatabaseName xml:space="preserve">D3S_1</TargetDatabaseName>
+    <TargetChangeTracking>false</TargetChangeTracking>
+    <IsTarget>false</IsTarget>
+    <OmitIgnoreOptions>false</OmitIgnoreOptions>
+    <IncludeFilesAndFilegroups>false</IncludeFilesAndFilegroups>
+    <IgnoreMemoryOptimizedProperty>false</IgnoreMemoryOptimizedProperty>
+    <IncludeSetNoExec>true</IncludeSetNoExec>
+    <IncludeUseDatabase>true</IncludeUseDatabase>
+    <CompareServerObjects>false</CompareServerObjects>
+    <IgnoreObjectTypeFilter>false</IgnoreObjectTypeFilter>
+    <IgnoreConstraintsNames>false</IgnoreConstraintsNames>
+  </ComparisonOptions>
+  <ObjectFilter>
+    <Include>Table</Include>
+    <Include>View</Include>
+    <Include>Procedure</Include>
+    <Include>Function</Include>
+    <Include>UserDefinedType</Include>
+    <Include>Schema</Include>
+  </ObjectFilter>
+  <ModifiedObjects>
+    <Object Name="dbo.Artifact:dbo.Artifact" Type="Table" Include="False" Operation="None" />
+    <Object Name="dbo.AttributeType:dbo.AttributeType" Type="Table" Include="False" Operation="None" />
+    <Object Name="dbo.DomainGroup:dbo.DomainGroup" Type="Table" Include="False" Operation="None" />
+    <Object Name="dbo.DomainType:dbo.DomainType" Type="Table" Include="False" Operation="None" />
+    <Object Name="dbo.FusionAttribute:dbo.FusionAttribute" Type="Table" Include="False" Operation="None" />
+    <Object Name="dbo.ObjectVersion:dbo.ObjectVersion" Type="Table" Include="False" Operation="None" />
+    <Object Name="dbo.Taxonomy:dbo.Taxonomy" Type="Table" Include="False" Operation="None" />
+    <Object Name="dbo.LoadTypeRuleDetail:dbo.LoadTypeRuleDetail" Type="View" Include="False" Operation="None" />
+    <Object Name="utility.RelationshipTypes:utility.RelationshipTypes" Type="View" Include="False" Operation="None" />
+    <Object Name="dbo.GetAllowedResponsibilityTypesByObject:dbo.GetAllowedResponsibilityTypesByObject" Type="Procedure" Include="False" Operation="None" />
+    <Object Name="dbo.ArtifactSiteNavigation:dbo.ArtifactSiteNavigation" Type="Function" Include="False" Operation="None" />
+  </ModifiedObjects>
+  <SynchronizationOptions>
+    <PropertyValue Name="BackupDatabase">false</PropertyValue>
+    <PropertyValue Name="CreateBackupFolder">false</PropertyValue>
+    <PropertyValue Name="ExecuteAsSingleTransaction">true</PropertyValue>
+    <PropertyValue Name="GenerateScriptHeader">true</PropertyValue>
+    <PropertyValue Name="UseSchemaNamePrefix">false</PropertyValue>
+    <PropertyValue Name="UseSqlExtensionCommands">true</PropertyValue>
+    <PropertyValue Name="DisableDdlTriggers">false</PropertyValue>
+    <PropertyValue Name="VerifyTableData">false</PropertyValue>
+    <PropertyValue Name="AddWithNocheck">false</PropertyValue>
+    <PropertyValue Name="CommentDdlForKeysCertificates">true</PropertyValue>
+    <PropertyValue Name="SynchronizeAsmViaFiles">false</PropertyValue>
+    <PropertyValue Name="AssembliesStoragePath" xml:space="preserve" />
+    <PropertyValue Name="CheckObjectExistence">false</PropertyValue>
+    <PropertyValue Name="UseSchemaTransfer">false</PropertyValue>
+    <PropertyValue Name="RefreshViews">true</PropertyValue>
+    <PropertyValue Name="ExcludeDependencies">false</PropertyValue>
+    <PropertyValue Name="SynchronizeType">0</PropertyValue>
+    <PropertyValue Name="SynchronizationFileName" xml:space="preserve">C:\Projects\D3S\d360.sql\D3S_4 vs D3S_1 (pfz6cpw42u_database_windows_net vs xvla548aed_database_windows_net)_20150320-1953.sql</PropertyValue>
+    <PropertyValue Name="SynchronizationEditorFileName" xml:space="preserve" />
+    <PropertyValue Name="OpenScriptInEditor">false</PropertyValue>
+    <PropertyValue Name="RefreshAfterSynchronization">true</PropertyValue>
+    <PropertyValue Name="CommitToVersionControl">false</PropertyValue>
+    <PropertyValue Name="CommentString" xml:space="preserve" />
+    <PropertyValue Name="IncludePrintComments">false</PropertyValue>
+    <PropertyValue Name="ExcludeComments">false</PropertyValue>
+    <PropertyValue Name="PureScript">false</PropertyValue>
+    <PropertyValue Name="IsPartOfScript">false</PropertyValue>
+    <PropertyValue Name="BackupPathName" xml:space="preserve" />
+    <PropertyValue Name="IgnoreEncryptionProperty">false</PropertyValue>
+    <PropertyValue Name="UseCommitMode">false</PropertyValue>
+    <PropertyValue Name="CommitPageLength" xml:space="preserve">200</PropertyValue>
+  </SynchronizationOptions>
+  <Mapping ExcludeUnmappedSchemas="True">
+    <Schemas>
+      <Object SourceName="api" TargetName="api" State="DefaultMapped" Included="True" />
+      <Object SourceName="cache" TargetName="cache" State="DefaultMapped" Included="True" />
+      <Object SourceName="dbo" TargetName="dbo" State="DefaultMapped" Included="True" />
+      <Object SourceName="fusion" TargetName="fusion" State="DefaultMapped" Included="True" />
+      <Object SourceName="guest" TargetName="guest" State="DefaultMapped" Included="True" />
+      <Object SourceName="overlay" TargetName="overlay" State="DefaultMapped" Included="True" />
+      <Object SourceName="report" TargetName="report" State="DefaultMapped" Included="True" />
+      <Object SourceName="reporting" Unmapped="True" />
+      <Object SourceName="tile" TargetName="tile" State="DefaultMapped" Included="True" />
+      <Object SourceName="utility" TargetName="utility" State="DefaultMapped" Included="True" />
+      <Object SourceName="validate" TargetName="validate" State="DefaultMapped" Included="True" />
+    </Schemas>
+    <ComparedObjects>
+      <Object SourceName="cache.Relationships" TargetName="cache.Relationships" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.AlertFlag" TargetName="dbo.AlertFlag" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Artifact" TargetName="dbo.Artifact" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ArtifactDefaultResponsibility" TargetName="dbo.ArtifactDefaultResponsibility" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ArtifactResponsibility" TargetName="dbo.ArtifactResponsibility" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ArtifactType" TargetName="dbo.ArtifactType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Attribute" TargetName="dbo.Attribute" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.AttributeType" TargetName="dbo.AttributeType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.AttributeTypeCategory" TargetName="dbo.AttributeTypeCategory" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.AttributeTypeRelation" TargetName="dbo.AttributeTypeRelation" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Comment" TargetName="dbo.Comment" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.CommentRelation" TargetName="dbo.CommentRelation" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Domain" TargetName="dbo.Domain" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.DomainGroup" TargetName="dbo.DomainGroup" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.DomainItem" TargetName="dbo.DomainItem" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.DomainType" TargetName="dbo.DomainType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.EmailTemplate" TargetName="dbo.EmailTemplate" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Event" TargetName="dbo.Event" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.EventAssignment" TargetName="dbo.EventAssignment" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.EventGroup" TargetName="dbo.EventGroup" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.EventType" TargetName="dbo.EventType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.EventTypeAssignment" TargetName="dbo.EventTypeAssignment" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Field" TargetName="dbo.Field" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FieldType" TargetName="dbo.FieldType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FieldTypeRelation" TargetName="dbo.FieldTypeRelation" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FieldVersion" TargetName="dbo.FieldVersion" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Follow" TargetName="dbo.Follow" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Fusion" TargetName="dbo.Fusion" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionAttribute" TargetName="dbo.FusionAttribute" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionAttributeOwnerRule" TargetName="dbo.FusionAttributeOwnerRule" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionAttributePromotion" TargetName="dbo.FusionAttributePromotion" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionAttributePromotionRule" TargetName="dbo.FusionAttributePromotionRule" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionAttributeSynchronizationStatus" TargetName="dbo.FusionAttributeSynchronizationStatus" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionAttributeType" TargetName="dbo.FusionAttributeType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionFilter" TargetName="dbo.FusionFilter" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionJobHistory" TargetName="dbo.FusionJobHistory" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionJobSchedule" TargetName="dbo.FusionJobSchedule" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionStatusLog" TargetName="dbo.FusionStatusLog" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.FusionType" TargetName="dbo.FusionType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.[Group]" TargetName="dbo.[Group]" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.[Intersect]" TargetName="dbo.[Intersect]" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.IntersectNode" TargetName="dbo.IntersectNode" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.IntersectRelation" TargetName="dbo.IntersectRelation" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.IntersectType" TargetName="dbo.IntersectType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.IntersectTypeNode" TargetName="dbo.IntersectTypeNode" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.IntersectTypeRole" TargetName="dbo.IntersectTypeRole" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Load" TargetName="dbo.Load" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.LoadItem" TargetName="dbo.LoadItem" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.LoadItemField" TargetName="dbo.LoadItemField" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.LoadItemRuleResult" TargetName="dbo.LoadItemRuleResult" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.LoadType" TargetName="dbo.LoadType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.LoadTypeField" TargetName="dbo.LoadTypeField" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.LoadTypeRule" TargetName="dbo.LoadTypeRule" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.LoadTypeRuleItem" TargetName="dbo.LoadTypeRuleItem" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Lookup" TargetName="dbo.Lookup" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.LookupType" TargetName="dbo.LookupType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ObjectStyle" TargetName="dbo.ObjectStyle" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ObjectVersion" TargetName="dbo.ObjectVersion" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Policy" TargetName="dbo.Policy" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Question" TargetName="dbo.Question" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.QuestionType" TargetName="dbo.QuestionType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.RelatedArtifact" TargetName="dbo.RelatedArtifact" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Report" TargetName="dbo.Report" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ReportLayout" TargetName="dbo.ReportLayout" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ReportTile" TargetName="dbo.ReportTile" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Resolution" TargetName="dbo.Resolution" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResolutionRelation" TargetName="dbo.ResolutionRelation" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResourceGroup" TargetName="dbo.ResourceGroup" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResponseType" TargetName="dbo.ResponseType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResponseTypeOption" TargetName="dbo.ResponseTypeOption" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Responsibility" TargetName="dbo.Responsibility" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResponsibilityContextItem" TargetName="dbo.ResponsibilityContextItem" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResponsibilityType" TargetName="dbo.ResponsibilityType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResponsibilityTypeClaim" TargetName="dbo.ResponsibilityTypeClaim" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResponsibilityTypeHierarchy" TargetName="dbo.ResponsibilityTypeHierarchy" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResponsibilityTypeObjectClaim" TargetName="dbo.ResponsibilityTypeObjectClaim" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResponsibilityTypeRelation" TargetName="dbo.ResponsibilityTypeRelation" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.ResponsibilityTypeSourceType" TargetName="dbo.ResponsibilityTypeSourceType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.[Rule]" TargetName="dbo.[Rule]" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.StaticFieldVersion" TargetName="dbo.StaticFieldVersion" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.StaticFieldVersionType" TargetName="dbo.StaticFieldVersionType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Statistic" TargetName="dbo.Statistic" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.StatisticType" TargetName="dbo.StatisticType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.StatisticTypeRelation" TargetName="dbo.StatisticTypeRelation" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Survey" TargetName="dbo.Survey" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.SurveyObjectCache" TargetName="dbo.SurveyObjectCache" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.SurveyType" TargetName="dbo.SurveyType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Synonym" TargetName="dbo.Synonym" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.SynonymType" TargetName="dbo.SynonymType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.SynonymTypeRelation" TargetName="dbo.SynonymTypeRelation" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Taxonomy" TargetName="dbo.Taxonomy" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.TaxonomyType" TargetName="dbo.TaxonomyType" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.TaxonomyTypeLevel" TargetName="dbo.TaxonomyTypeLevel" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.TooltipTemplate" TargetName="dbo.TooltipTemplate" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Vocabulary" TargetName="dbo.Vocabulary" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.Workflow" TargetName="dbo.Workflow" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.WorkflowResource" TargetName="dbo.WorkflowResource" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="dbo.WorkflowStatus" TargetName="dbo.WorkflowStatus" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="fusion.Error" TargetName="fusion.Error" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="fusion.Execution" TargetName="fusion.Execution" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="fusion.Result" TargetName="fusion.Result" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="fusion.StagingError" TargetName="fusion.StagingError" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="fusion.StagingItem" TargetName="fusion.StagingItem" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="fusion.StagingItemArchive" TargetName="fusion.StagingItemArchive" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="fusion.StagingStatistic" TargetName="fusion.StagingStatistic" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="fusion.StepStatistic" TargetName="fusion.StepStatistic" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="utility.ApiError" TargetName="utility.ApiError" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="utility.ApiRawReceivedMessage" TargetName="utility.ApiRawReceivedMessage" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="utility.EventTypesByObject" TargetName="utility.EventTypesByObject" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="utility.FusionAttributeSynchronizationError" TargetName="utility.FusionAttributeSynchronizationError" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="utility.FusionSynchronizationInstance" TargetName="utility.FusionSynchronizationInstance" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="utility.Queue" TargetName="utility.Queue" SourceType="Table" TargetType="Table" State="Different" />
+      <Object SourceName="reporting.Global_Resource" TargetName="reporting.Global_Resource" SourceType="Table" TargetType="Table" State="Different" />
+    </ComparedObjects>
+  </Mapping>
+</CompareDocument>

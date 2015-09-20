@@ -1,0 +1,9 @@
+﻿{
+  "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
+  "webJobName": "Process-Fusion-Queues",
+  "startTime": "2014-11-21T00:00:00-05:00",
+  "endTime": null,
+  "jobRecurrenceFrequency": "Minute",
+  "interval": 1,
+  "runMode": "Scheduled"
+}

@@ -1,0 +1,96 @@
+﻿@model d360.core.entities.ObjectModel
+<header>
+    Critical Relationships
+</header>
+<article>
+    <div id="CriticalRelationshipsByObjectGrid"></div>
+</article>
+<script type="text/javascript">
+    var CriticalRelationshipsByObjectGridUrl = '/api/@(Model.ObjectType)/@(Model.ObjectID)/relations/critical';
+
+    $(function () {
+
+        //#region Header Grid
+
+        var CriticalRelationshipsByObjectGridSource = {
+            datatype: 'json',
+            type: 'get',
+            datafields: [
+                { name: "IntersectID" },
+                { name: "ID" },
+                { name: "ObjectType" },
+                { name: 'TypeName' },
+                { name: 'Url' },
+                { name: 'Name' },
+                { name: 'Description' },
+                { name: 'IconBackColor' },
+                { name: 'IconForeColor' },
+                { name: 'IconText' }
+            ],
+            url: CriticalRelationshipsByObjectGridUrl//,
+            //beforeprocessing: function (data) {
+            //    ChildArtifactsOverlayGridSource.totalrecords = data.total;
+            //},
+            //filter: function () {
+            //    $("#CriticalRelationshipsByObjectGrid").jqxGrid('updatebounddata');
+            //},
+            //sort: function () {
+            //    $("#CriticalRelationshipsByObjectGrid").jqxGrid('updatebounddata');
+            //}
+        };
+
+        CriticalRelationshipsByObjectGridAdapter = new $.jqx.dataAdapter(CriticalRelationshipsByObjectGridSource);
+
+        $('#CriticalRelationshipsByObjectGrid').jqxGrid({
+            source: CriticalRelationshipsByObjectGridAdapter,
+            width: grid_width,
+            //height: '400px',
+            pagesizeoptions: ['5', '10', '20'],
+            pagesize: 20,
+            autoheight: true,
+            sortable: true,
+            altrows: true,
+            showfilterrow: true,
+            filterable: true,
+            groupsrenderer: function (text, group, expanded, data) {
+                return '<h2>' + group + '</h2>';
+            },
+            groupable: true,
+            groupsexpandedbydefault: true,
+            showgroupsheader: true,
+            //virtualmode: true,
+            //rendergridrows: function () {
+            //    return CriticalRelationshipsByObjectGridAdapter.records;
+            //},
+            groups: ['TypeName'],
+            pageable: true,
+            theme: list_theme,
+            columns: [
+                { datafield: "TypeName", text: "Type", hidden: true },
+                {
+                    datafield: "Name",
+                    text: "Name",
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return previewLinkRenderer(data.ObjectType, data.ID, data.Url, data.Name);
+                    }
+                },
+                { datafield: "Description", text: "Description" },
+            ]
+        });
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case 'Intersect':
+                        $('#CriticalRelationshipsByObjectGrid').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("CriticalRelationshipsByObject : SaveAction", e);
+            }
+
+        });
+
+        //#endregion
+    });
+</script>

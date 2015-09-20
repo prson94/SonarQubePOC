@@ -1,0 +1,9 @@
+﻿{
+  "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
+  "webJobName": "ProcessDatabaseVersionQueue",
+  "startTime": "2015-04-25T00:00:00-05:00",
+  "endTime": null,
+  "jobRecurrenceFrequency": "Minute",
+  "interval": 1,
+  "runMode": "Scheduled"
+}

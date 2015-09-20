@@ -1,0 +1,68 @@
+﻿@model Dictionary<string, int>
+@{
+    var values = "";
+
+    foreach (var key in Model.Keys)
+    {
+        values += "{" + string.Format("key: '{0}', value: {1}", key, Model[key]) + "},";
+    }
+    if (values.Length > 0)
+    {
+        values = values.Remove(values.Length - 1, 1);
+    }
+    values = "[" + values + "]";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var title = "@(ViewData["title"])";
+        var description = "@(Html.Raw(ViewData["description"]))";
+        var data = @Html.Raw(values);
+
+        // prepare chart data as an array
+        var source =
+        {
+            localdata: data,
+            datatype: "array"
+        };
+
+        var dataAdapter = new $.jqx.dataAdapter(source, { async: false, autoBind: true, loadError: function (xhr, status, error) { alert('Error loading "' + source.url + '" : ' + error); } });
+
+        // prepare jqxChart settings
+        var settings = {
+            title: title,
+            description: description,
+            enableAnimations: true,
+            showLegend: true,
+            legendPosition: { left: 520, top: 40, width: 100, height: 100 },
+            padding: { left: 5, top: 5, right: 5, bottom: 5 },
+            titlePadding: { left: 0, top: 0, right: 0, bottom: 0 },
+            source: dataAdapter,
+            backgroundColor: 'transparent',
+            showBorderLine: false,
+            colorScheme: 'scheme01',
+            seriesGroups:
+                [
+                    {
+                        type: 'pie',
+                        showLabels: true,
+                        series:
+                            [
+                                {
+                                    dataField: 'value',
+                                    displayText: 'key',
+                                    labelRadius: 100,
+                                    initialAngle: 15,
+                                    radius: 75,
+                                    centerOffset: 0
+                                }
+                            ]
+                    }
+                ]
+        };
+        // setup the chart
+        $('#container').jqxChart(settings);
+    });
+</script>
+
+<div id="container" style="min-width: 250px; height: 400px; margin: 0 auto"></div>

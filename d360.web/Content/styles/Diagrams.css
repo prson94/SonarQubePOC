@@ -1,0 +1,42 @@
+﻿/* Main Primary color */
+/* Main Secondary color (1) */
+/* Main Secondary color (2) */
+/* Main Complement color */
+.zoomBar {
+  margin-left: 5px;
+  margin-bottom: 5px;
+}
+.zoomBtn {
+  margin-right: 5px;
+}
+.node {
+  cursor: pointer;
+}
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+.node text {
+  font: 10px sans-serif;
+}
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+.fill {
+  width: 100%;
+  height: 95%;
+  min-height: 95%;
+  overflow: auto;
+}
+.diagram-icon {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome !important;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/*# sourceMappingURL=Diagrams.css.map */

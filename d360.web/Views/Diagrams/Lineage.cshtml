@@ -1,0 +1,410 @@
+﻿<style type='text/css'>
+    /*.node {
+        cursor: pointer;
+    }
+
+        .node circle {
+            fill: #fff;
+            stroke: steelblue;
+            stroke-width: 1.5px;
+        }
+
+        .node text {
+            font: 10px sans-serif;
+        }
+
+    .link {
+        fill: none;
+        stroke: black;
+        stroke-width: 1.5px;
+    }
+
+    #tooltip {
+        display: none;
+        position: absolute;
+        top: 2%;
+        right: 0;
+        min-height: 100%;
+        height: 100%;
+        width: 20%;
+    }
+
+    .fill {
+        width: 100%;
+        height: 95%;
+        min-height: 95%;
+        overflow: auto;
+    }
+
+    #zoomBtn {
+        float: right;
+    }
+
+    #map {
+        width: 960px;
+        height: 500px;
+    }*/
+
+    #Diagram {
+        min-height: 300px;
+    }
+</style>
+<div id="zoomBtn">
+    <button type="button" rel="out" value="-" class="zoomBtn btn btn-info btn-xs"><i class="fa fa-minus"></i></button>
+    <button type="button" rel="in" value="+" class="zoomBtn btn btn-info btn-xs"><i class="fa fa-plus"></i></button>
+    <button type="button" rel="reset" value="reset" class="zoomBtn btn btn-info btn-xs"><i class="fa fa-refresh"></i></button>
+</div>
+<div id="Diagram"></div>
+<script type="text/javascript">
+    $(function () {
+        var controlID = "#Diagram";
+
+        var margin = {
+            top: 20,
+            right: 120,
+            bottom: 20,
+            left: 120
+        },
+                width = 3960 - margin.right - margin.left,
+                height = 800 - margin.top - margin.bottom;
+
+        var i = 0,
+            duration = 750,
+            rectW = 130,
+            rectH = 80;
+        nodePaddingH = 30;
+
+        var treeVerticalSeparation = 500;
+
+        var color = d3.scale.category20();
+
+        var tree = d3.layout.tree().nodeSize([rectW + nodePaddingH, rectH + 20]);
+
+        var longElbow = function (d, i) {
+            var hy = (d.target.y - d.source.y) / 2;
+            var rectDiff = (rectW / 2);
+            return "M" + (d.source.x + rectDiff) + "," + d.source.y
+                   + "V" + (d.source.y + hy)
+                   + "H" + (d.target.x + rectDiff)
+                   + "V" + d.target.y;
+        };
+
+        var connector = longElbow;
+
+        var zoomOptions = {
+            minZoomLevel: 0.1,
+            maxZoomLevel: 5
+        };
+
+        var pageWidth = $(controlID).width();
+        var pageHeight = $(controlID).height() - 5;
+        var initialX = 10;//(pageWidth / 2) - 300;
+        var initialY = 10;
+
+        var svg = d3.select(controlID).append("svg")
+            .attr("width", pageWidth)
+            .attr("height", pageHeight)
+            .call(zm = d3.behavior.zoom().scaleExtent([zoomOptions.minZoomLevel, zoomOptions.maxZoomLevel]).on("zoom", redraw)).append("g")
+            .attr("transform", "translate(" + initialX + "," + initialY + ")");
+
+        //necessary so that zoom knows where to zoom and unzoom from
+        zm.translate([initialX, initialY]);
+        //Handlebars.
+
+        // left right arrow for the solid tree connections
+        svg.append("svg:defs").selectAll("marker")
+            .data(["endRoot"])      // Different link/path types can be defined here
+            .enter().append("svg:marker")    // This section adds in the arrows
+            .attr("id", String)
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", (rectW / 2) + 19)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .attr("fill", "black")
+            .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5");
+
+        //    d3.json("tech_rel.json", function (error, data) {
+        var data = {
+            "term": "% Water Recycled",
+            "tree":
+            [
+            {
+                "name": "Back Data License",
+                "type": "Data License"
+            },
+            {
+                "name": "Exchange Data International(EDI)",
+                "type": "Application",
+                "children": [
+
+                  {
+                      "name": "EDI BBO",
+                      "content": "PCT_WATER_REC",
+                      "type": "EDI BBO Fusion"
+                  }
+                ]
+            },
+            {
+                "name": "Eagle PACE",
+                "type": "Application",
+                "children": [
+
+                  {
+                      "name": "PACE DEV",
+                      "content": "PCT_WATER_REC",
+                      "type": "Field Attribute"
+                  },
+                  {
+                      "name": "PACE DEV",
+                      "content": "PCT_WATER_REC",
+                      "type": "Report Profile"
+                  }
+                ]
+            }
+            ]
+        };
+
+        $.each(data.tree, function (ix, item) {
+            item.x0 = height / 2;
+            item.y0 = 0;
+            draw(item, ix, data.tree.length);
+        });
+
+        $('.zoomBtn').on('click', function (e) {
+            zoomBtn($(this).attr('rel'));
+            e.preventDefault();
+        });
+
+        //    });
+
+        function draw(source, treeNumber, totalTrees) {
+            // Compute the new tree layout.
+            var nodes = tree.nodes(source).reverse(),
+                links = tree.links(nodes);
+
+
+            var treeId = "tree" + treeNumber;
+            var verticalOffset = (treeNumber * treeVerticalSeparation);
+
+            // Normalize for fixed-depth.
+            nodes.forEach(function (d) {
+                d.y = d.depth * 120;
+                d.x = d.x + verticalOffset;
+            });
+
+            // Update the nodesâ€¦
+            var node = svg.selectAll("g.node")
+                .data(nodes, function (d) {
+                    return d.id || (d.id = ++i);
+                });
+
+            var link = svg.selectAll("." + treeId)
+                  .data(tree.links(nodes))
+                  .enter().append("line")
+                  .attr("class", "link " + treeId)
+                  .attr("y1", function (d) { return d.source.y + (rectH / 2); })
+                  .attr("x1", function (d) { return d.source.x + (rectW / 2); })
+                  .attr("y2", function (d) { return d.target.y + (rectH / 2) + 18; })
+                  .attr("x2", function (d) { return d.target.x + (rectW / 2); })
+                  .style("stroke-dasharray", "3, 3")
+                  .attr("marker-end", "url(#end)");
+
+            // Enter any new nodes at the parent's previous position.
+            var nodeEnter = node.enter().append("g")
+                .attr("class", function (d) { return d.depth == 0 ? "node root" + treeNumber : "node" })
+                .attr("transform", function (d) {
+                    return "translate(" + d.x + "," + d.y + ")";
+                });
+
+            nodeEnter.append("rect")
+                .attr("width", rectW)
+                .attr("height", rectH)
+                .attr("ry", 3)
+                .attr("rx", 3)
+                .attr("stroke", "black")
+                .attr("stroke-width", 1)
+                .style("fill", function (d) {
+                    return color(treeNumber);
+                })
+                .on("click", click);
+
+            if (treeNumber < (totalTrees - 1)) {
+                d3.select('g.root' + treeNumber) // find the root nodes by there class name
+                  .append("line")
+                  .attr("class", "link")
+                  .attr("y1", (rectH / 2))
+                  .attr("x1", (rectW))
+                  .attr("y2", (rectH / 2))
+                  .attr("x2", treeVerticalSeparation + (rectW / 2))
+                  .attr("marker-end", "url(#endRoot)");
+            }
+
+            nodeEnter.append("text")
+                .attr("x", rectW / 2)
+                .attr("y", rectH / 2)
+                .attr("dy", "-2.5em")
+                .attr("text-anchor", "middle")
+                .style("font-weight", "bold")
+                .text(function (d) {
+                    return d.name;
+                })
+                .call(wrap, (rectW - 5))
+                .on("click", click);
+
+            nodeEnter.append('svg:foreignObject')
+                .attr("x", 5)//rectW + 50)
+                .attr("y", -20)
+                .attr("width", 25)
+                .attr("height", 25)
+                .append("xhtml:body")
+                .html('<i style="font-size: 1.4em" class="fa fa-info"></i>')
+                .on("click", iconClick);
+
+            nodeEnter.append('svg:foreignObject')
+                .attr("x", 25)//rectW + 50)
+                .attr("y", -20)
+                .attr("width", 25)
+                .attr("height", 25)
+                .append("xhtml:body")
+                .html('<i style="font-size: 1.4em" class="fa fa-gears"></i>')
+                .on("click", iconClick);
+
+            nodeEnter.append("text")
+                .attr("x", rectW / 2)
+                .attr("y", rectH / 2)
+                .attr("dy", "0em")
+                .attr("text-anchor", "middle")
+                .text(function (d) {
+                    return d.content;
+                })
+                .call(wrap, (rectW - 5))
+                .on("click", click);
+
+            nodeEnter.append("text")
+                .attr("x", rectW / 2)
+                .attr("y", rectH / 2)
+                .attr("dy", "2.5em")
+                .attr("text-anchor", "middle")
+                .text(function (d) {
+                    return d.type;
+                })
+                .call(wrap, (rectW - 5))
+                .on("click", click);
+        }
+
+        //handle the zoom buttons
+        function zoomBtn(action) {
+            var currentZoom = zm.scale();
+            var zoomScale = 1;
+
+            if (currentZoom <= 1) zoomScale = 0.1;
+
+            if (action == 'reset') {
+                zm.scale(1).translate([initialX, initialY]).event(svg);
+            }
+            else if (action == 'in') {
+                if (currentZoom < zoomOptions.maxZoomLevel) {
+                    var newScale = currentZoom + zoomScale;
+
+                    console.log(newScale);
+                    zm.scale(newScale)
+                        .event(svg);
+                }
+            } else {
+                if (currentZoom > zoomOptions.minZoomLevel) {
+                    var newScale = currentZoom - zoomScale;
+
+                    console.log(newScale);
+
+                    zm.scale(newScale)
+                        .event(svg);
+                }
+            }
+        }
+
+        function iconClick(d) {
+            console.log(d);
+            $(this).qtip({
+                content: {
+                    title: 'Relationships',
+                    text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
+                    ajax: {
+                        url: '/overlays/Artifact/733/followers'//"http://echo.jsontest.com/content/relationship data for this node goes here some data some data some data some data some data some data some data some data some data some data some data some data some data"
+                    }
+                },
+                position: {
+                    at: 'bottom center', // Position the tooltip above the link
+                    my: 'top center',
+                    viewport: $(window), // Keep the tooltip on-screen at all times
+                    effect: false // Disable positioning animation
+                },
+                overwrite: false,
+                show: {
+                    event: event.type,  // show using same event as above.
+                    solo: false,         // Only show one tooltip at a time
+                    ready: true
+                },
+                hide: {
+                    fixed: true,
+                    delay: 500,
+                },
+                //hide: 'mouseout',
+                style: {
+                    width: '400',
+                    //height: '250',
+                    classes: 'qtip-light qtip-rounded'
+                }
+            });
+
+            //$.ajax({
+            //    url: "http://echo.jsontest.com/content/relationship data for this node goes here some data some data some data some data some data some data some data some data some data some data some data some data some data",
+            //    dataType: "json"
+            //}).success(function (data) {
+            //    $('#relContents').empty(); $('#relTitle').empty();
+            //    $('#relTitle').append(d.name);
+            //    $('#relContents').append(decodeURIComponent(data.content));
+            //});
+            //$('#tooltip').show();
+        }
+
+        function click(d) {
+            location.assign('/#/catalogs/3');
+        }
+
+        //Redraw for zoom
+        function redraw() {
+            svg.attr("transform",
+                "translate(" + d3.event.translate + ")"
+                + " scale(" + d3.event.scale + ")");
+        }
+
+        function wrap(text, width) {
+            text.each(function () {
+                var text = d3.select(this),
+                    words = text.text().split(/\s+/).reverse(),
+                    word,
+                    line = [],
+                    lineNumber = 0,
+                    lineHeight = 1.1, // ems
+                    y = text.attr("y"),
+                    x = text.attr("x"),
+                    dy = parseFloat(text.attr("dy")),
+                    tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+                while (word = words.pop()) {
+                    line.push(word);
+                    tspan.text(line.join(" "));
+                    if (tspan.node().getComputedTextLength() > width) {
+                        line.pop();
+                        tspan.text(line.join(" "));
+                        line = [word];
+                        tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                    }
+                }
+            });
+        }
+    });
+</script>
+

@@ -1,0 +1,85 @@
+﻿@model d360.core.entities.ObjectModel
+<div class="small-overlay">
+    <div class="ui segment">
+        <h4>Following</h4>
+        <div class="form-instructions"></div>
+        <div id="FollowersOverlayGrid"></div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    var FollowersOverlayBaseUrl = '/api/@(Model.ObjectType)/@(Model.ObjectID)/followers';
+    var FollowersOverlayGridSource;
+    var FollowersOverlayGridAdapter;
+
+    function commandExecuted(command) {
+        if (command == 'follow') {
+            $("#FollowersOverlayGrid").jqxGrid('updatebounddata');
+        }
+    }
+
+    function unsubscribe() {
+        FollowersOverlayGridAdapter = null;
+        FollowersOverlayGridSource = null;
+
+        amplify.unsubscribe("CommandExecuted", commandExecuted);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+    }
+
+    $(function () {
+
+        //#region Grid
+
+        FollowersOverlayGridSource = {
+            datatype: "json",
+            type: 'get',
+            datafields: [
+                { name: 'FollowerFirstName' },
+                { name: 'FollowerLastName' },
+                { name: 'FollowerName' },
+                { name: 'FollowerObjectID' },
+                { name: 'FollowerObjectType' },
+                { name: 'FollowerUrl' }
+            ],
+            url: FollowersOverlayBaseUrl
+        };
+
+        FollowersOverlayGridAdapter = new $.jqx.dataAdapter(FollowersOverlayGridSource);
+
+        $('#FollowersOverlayGrid').jqxGrid({
+            altrows: true,
+            source: FollowersOverlayGridAdapter,
+            width: overlay_grid_width,
+            height: '200px',
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            filterable: true,
+            showfilterrow: true,
+            sortable: true,
+            pageable: false,
+            theme: list_theme,
+            columns: [
+                {
+                    datafield: "FollowerLastName", text: "Last Name", cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return previewLinkRenderer(data.FollowerObjectType, data.FollowerObjectID, data.FollowerUrl, data.FollowerLastName);
+                    }
+                },
+                {
+                    datafield: "FollowerFirstName", text: "First Name", cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return previewLinkRenderer(data.FollowerObjectType, data.FollowerObjectID, data.FollowerUrl, data.FollowerFirstName);
+                    }
+                }
+            ]
+        });
+
+        //#endregion
+
+        amplify.subscribe("CommandExecuted", commandExecuted);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

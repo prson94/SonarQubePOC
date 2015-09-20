@@ -1,0 +1,300 @@
+﻿@model d360.web.Models.StatisticTypeEditorModel
+<div class="small-overlay">
+    <div class="ui segment">
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.StatisticType, Description = Model.FormDescription, Name = Model.FormName })
+
+        @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Model.FormUri, OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
+        {
+            <input type="hidden" id="_context" name="_context" value="@(ContextList.StatisticType)" />
+            <input type="hidden" id="ID" name="ID" value="@(Model.StatisticType.ID)" />
+
+            <div class="row">
+                <div class="col s4">
+                    <div class="FieldNameRequired">Name</div>
+                    <input type="text" id="Name" name="Name" value="@(Model.StatisticType.Name)" />
+                </div>
+                <div class="col s5">
+                    <div class="FieldNameRequired">@(d360.core.resources.Fields.CheckType_Name)</div>
+                    <select id="CheckType" name="CheckType" class="browser-default">
+                        <option value="1" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.Existence) ? "selected='selected'" : "")>Existence</option>
+                        <option value="2" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.Count) ? "selected='selected'" : "")>Count</option>
+                        <option value="3" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.PropertyValueCheck) ? "selected='selected'" : "")>Property Value Check</option>
+                        <option value="4" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.PropertyPopulated) ? "selected='selected'" : "")>Property Existence Check</option>
+                        <option value="5" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.Relationship) ? "selected='selected'" : "")>Relationship</option>
+                        <option value="6" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.FusionOwnership) ? "selected='selected'" : "")>Fusion Ownership Check</option>
+                        <option value="7" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.ScoreRollupViaRelationship) ? "selected='selected'" : "")>Relationship Score Rollup</option>
+                        <option value="8" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.ScoreRollupViaOwnership) ? "selected='selected'" : "")>Ownership Score Rollup</option>
+                        <option value="9" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.EventMetric) ? "selected='selected'" : "")>Event Metric</option>
+                    </select>
+                </div>
+                <div class="col s3 input-field">
+                    <input type="checkbox" id="PartOfScore" name="PartOfScore" @(Model.StatisticType.PartOfScore ? "checked='checked'" : "") />
+                    <label id="PartOfScoreTip" for="PartOfScore">@(d360.core.resources.Fields.PartOfScore_Name)</label>
+                </div>
+            </div>
+            <div class="row" id="Statistic9Settings">
+                <div class="col s4">
+                    <div class="FieldName">Valid Field Count Name</div>
+                    @Html.TextBox("ValidFieldName", Model.ValidFieldName)
+                </div>
+                <div class="col s4">
+                    <div class="FieldName">Invalid Field Count Name</div>
+                    @Html.TextBox("InvalidFieldName", Model.InvalidFieldName)
+                </div>
+                <div class="col s4">
+                    <div class="FieldName">Threshold (0.00)</div>
+                    <div id="Threshold" name="Threshold"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s6">
+                    <div class="FieldName">Item To Check For</div>
+                    <select id="ObjectTypeInfo" name="ObjectTypeInfo" class="browser-default">
+                        <option disabled>Select one...</option>
+                    </select>
+                </div>
+                <div class="col s6">
+                    <div class="FieldName">@(d360.core.resources.Fields.CheckType_Value_Name)</div>
+                    <input id="Value" name="Value" type="text" value="@(Model.Value)" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="FieldName">@(d360.core.resources.Fields.Description_Name)</div>
+                    <textarea id="Description" name="Description" class="htmlArea">@(Model.StatisticType.Description)</textarea>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script type="text/javascript">
+    var checkType = "@((int)Model.StatisticType.CheckType)";
+    var objectType = "@(Model.ObjectTypeInfo)";
+
+    var ExistenceCheckItems = [
+    @for (int i = 0; i < Model.ExistenceCheckItems.Count; i++)
+    {
+        <text>{ Text: '@(Model.ExistenceCheckItems[i].Text)', Value: '@(Model.ExistenceCheckItems[i].Value)' }@((i < Model.ExistenceCheckItems.Count - 1) ? "," : "")</text>
+    }
+    ];
+
+    var CountCheckItems = [
+        @for (int i = 0; i < Model.CountCheckItems.Count; i++)
+    {
+        <text>{ Text: '@(Model.CountCheckItems[i].Text)', Value: '@(Model.CountCheckItems[i].Value)' }@((i < Model.CountCheckItems.Count - 1) ? "," : "")</text>
+    }
+    ];
+
+    var PropertyExistenceCheckItems = [
+        @for (int i = 0; i < Model.PropertyExistenceCheckItems.Count; i++)
+    {
+        <text>{ Text: '@(Model.PropertyExistenceCheckItems[i].Text)', Value: '@(Model.PropertyExistenceCheckItems[i].Value)' }@((i < Model.PropertyExistenceCheckItems.Count - 1) ? "," : "")</text>
+    }
+    ];
+
+    var PropertyValueCheckItems = [
+        @for (int i = 0; i < Model.PropertyValueCheckItems.Count; i++)
+    {
+        <text>{ Text: '@(Model.PropertyValueCheckItems[i].Text)', Value: '@(Model.PropertyValueCheckItems[i].Value)' }@((i < Model.PropertyValueCheckItems.Count - 1) ? "," : "")</text>
+    }
+    ];
+
+    var RelationshipCheckItems = [
+    @for (int i = 0; i < Model.RelationshipCheckItems.Count; i++)
+    {
+        <text>{ Text: '@(Model.RelationshipCheckItems[i].Text)', Value: '@(Model.RelationshipCheckItems[i].Value)' }@((i < Model.RelationshipCheckItems.Count - 1) ? "," : "")</text>
+    }
+    ];
+
+    var RollupCheckItems = [
+    @for (int i = 0; i < Model.RollupCheckItems.Count; i++)
+    {
+        <text>{ Text: '@(Model.RollupCheckItems[i].Text)', Value: '@(Model.RollupCheckItems[i].Value)' }@((i < Model.RollupCheckItems.Count - 1) ? "," : "")</text>
+    }
+    ];
+
+    var changeStatisticTypeFormLayout = function (value) {
+        $('#Statistic9Settings').hide();
+
+        var otSource = null;
+        switch (value) {
+            case "1":
+                otSource = ExistenceCheckItems;
+                $('#Value').val('');
+                $('#Value').jqxInput('disabled', true);
+                $('#PartOfScore').prop('disabled', false);
+                break;
+            case "2":
+                otSource = CountCheckItems;
+                $('#Value').val('');
+                $('#Value').jqxInput('disabled', true);
+                $('#PartOfScore').prop('checked', false);
+                $('#PartOfScore').prop('disabled', true);
+                break;
+            case "3":
+                otSource = PropertyValueCheckItems;
+                $('#Value').jqxInput('disabled', false);
+                $('#PartOfScore').prop('disabled', false);
+                break;
+            case "4":
+                otSource = PropertyExistenceCheckItems;
+                $('#Value').val('');
+                $('#Value').jqxInput('disabled', true);
+                $('#PartOfScore').prop('disabled', false);
+                break;
+            case "5":
+                otSource = RelationshipCheckItems;
+                $('#Value').val('');
+                $('#Value').jqxInput('disabled', true);
+                $('#PartOfScore').prop('disabled', false);
+                break;
+            case "6":
+                $('#Value').val('');
+                $('#Value').jqxInput('disabled', true);
+                $('#PartOfScore').prop('disabled', false);
+                break;
+            case "7":
+                otSource = RollupCheckItems;
+                $('#Value').val('');
+                $('#Value').jqxInput('disabled', true);
+                $('#PartOfScore').prop('disabled', false);
+                break;
+            case "8":
+                otSource = RollupCheckItems;
+                $('#Value').val('');
+                $('#Value').jqxInput('disabled', true);
+                $('#PartOfScore').prop('disabled', false);
+                break;
+            case "9":
+                $('#Value').val('');
+                $('#Value').jqxInput('disabled', true);
+                $('#PartOfScore').prop('disabled', false);
+                $('#Statistic9Settings').show();
+                break;
+        }
+
+        if (otSource) {
+            var otDdl = $('#ObjectTypeInfo');
+            //otDdl.jqxDropDownList('clear');
+            //$.each(otSource, function () {
+            //    var selectedAttributeText = (objectType == this.Value);// ? "selected='selected'" : "";
+            //    if (selectedAttributeText) console.log(selectedAttributeText);
+            //    otDdl.jqxDropDownList('addItem', { label: this.Text, value: this.Value, checked: selectedAttributeText });
+            //    //otDdl.append('<option value="' + this.Value + '" ' + selectedAttributeText + '>' + this.Text + '</option>');
+            //});
+            //otDdl.jqxDropDownList({ disabled: false }); //otDdl.removeAttr('disabled');
+            var existingItems = otDdl.jqxDropDownList('getItems');
+            if (existingItems) {
+                if (existingItems.length > 0) {
+                    otDdl.jqxDropDownList('clearSelection');
+                    otDdl.jqxDropDownList('clearFilter');
+                    try {
+                        otDdl.jqxDropDownList('clear');
+                    } catch (e) { }
+                    existingItems = null;
+                }
+            }
+            $("#ObjectTypeInfo_jqxDropDownList").html('');
+            $("#ObjectTypeInfo_jqxDropDownList").append("<option value=''>Select one...</option>");
+            $.each(otSource, function () {
+                var selectedAttributeText = (objectType == this.Value);// ? "selected='selected'" : ""
+                $("#ObjectTypeInfo_jqxDropDownList").append('<option value="' + this.Value + '" ' + selectedAttributeText + '>' + this.Text + '</option>');
+                //ddl.jqxDropDownList('addItem', { label: this.Text, value: this.Value });
+            });
+            otDdl.jqxDropDownList('loadFromSelect', 'ObjectTypeInfo_jqxDropDownList');
+            otDdl.jqxDropDownList({ disabled: false });//, source: pData, displayMember: 'Text', valueMember: 'Value' });
+        }
+        else {
+            otDdl.jqxDropDownList({ disabled: true }); //$('#ObjectTypeInfo').attr('disabled', '');
+        }
+    }
+
+    $(function () {
+        $("#CheckType").jqxDropDownList({ width: field_width, theme: theme });
+        $("#Name").jqxInput({ width: field_width, theme: theme, height: 25 });
+
+        $("#ValidFieldName").jqxInput({ width: field_width, theme: theme, height: 25 });
+        $("#InvalidFieldName").jqxInput({ width: field_width, theme: theme, height: 25 });
+        $("#Threshold").jqxNumberInput({ width: field_width, height: 25, min: 0, max: 1, decimalDigits: 2, inputMode: 'simple', spinButtons: true });
+        $('#Threshold').jqxNumberInput('val', @(Model.Threshold)0);
+
+        $("#ObjectTypeInfo").jqxDropDownList({ width: field_width, theme: theme });
+        $("#Value").jqxInput({ width: field_width, theme: theme, height: 25 });
+
+        $('#PartOfScoreTip').qtip({
+            content: {
+                text: "@(d360.core.resources.Fields.PartOfScore_Description)",
+                position: {
+                    my: 'top right',  // Position my top left...
+                    at: 'bottom left', // at the bottom right of...
+                    target: $('#PartOfScore') // my target
+                }
+            },
+            style: {
+                classes: 'qtip-blue qtip-shadow'
+            }
+        });
+
+        $('#form0').jqxValidator({
+            hintType: 'label',
+            rules: [
+                {
+                    input: "#Name",
+                    rule: 'required',
+                    action: 'blur',
+                    message: 'Name is required.'
+                }
+            ]
+        });
+
+        //#region Events
+
+        $("#CheckType").on('change', function () {
+            try {
+                //var optionSelected = $("option:selected", this);
+                var value = $("#CheckType").val();//this.value;
+                changeStatisticTypeFormLayout(value);
+            } catch (e) {
+                logError("StatisticTypeEditorModel : change", e);
+            }
+        });
+
+        $('#form0').on('validationSuccess', function (event) {
+            // You can submit the form.
+            $('#form0').submit();
+        });
+        $('#EditableFormSaveButton').on('click', function () {
+            $('#form0').jqxValidator('validate');
+        });
+
+        $('#EditableFormCancelButton').on('click', function () {
+            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+        });
+        amplify.subscribe("ErrorOccurredAction", function (data) {
+            $('#EditableFormSaveButton').hide();
+        });
+        amplify.subscribe("StartingAjax", function () {
+            $('#EditableFormSaveButton').attr('disabled', 'disabled');
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+        });
+        amplify.subscribe("EndingAjax", function () {
+            $('#EditableFormSaveButton').removeAttr('disabled');
+            $('#progress').html('');
+        });
+
+        //#endregion
+
+        //#region Set Pre-defined values
+
+        changeStatisticTypeFormLayout(checkType);
+        var objectTypeInfoItem = $("#ObjectTypeInfo").jqxDropDownList('getItemByValue', objectType);
+        if (objectTypeInfoItem) {
+            $("#ObjectTypeInfo").jqxDropDownList('selectItem', objectTypeInfoItem);
+        }
+
+        //#endregion
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

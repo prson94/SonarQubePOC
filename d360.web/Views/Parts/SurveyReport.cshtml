@@ -1,0 +1,26 @@
+﻿<div class="tile tile-detail">
+    <header>Items You Own</header>
+    <div id="SurveyReportPart"></div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var srpType = '@(ViewData["type"])';
+        var srpID = '@(ViewData["id"])';
+        var srpSurveyTypeID = '@(ViewData["surveyTypeID"])';
+
+        $('#SurveyReportPart').SurveyReport({ surveyTypeID: srpSurveyTypeID, objectType: srpType, objectID: srpID });
+
+        //#region Event Subscription
+
+        amplify.subscribe("ToolAction", function (data) {
+            try {
+                $('#SurveyReportPart').SurveyReport('reload', data.customdata.surveytypeid, data.customdata.objecttype, data.customdata.objectid);
+            } catch (e) {
+                logError("SurveyReport", e);
+            }
+        });
+
+        //#endregion
+
+    });
+</script>

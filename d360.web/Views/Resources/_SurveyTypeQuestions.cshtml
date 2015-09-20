@@ -1,0 +1,69 @@
+﻿<script type="text/javascript">
+    $(document).ready(function () {
+        var surveyTypeQuestionsID = @(ViewData["ID"]);
+
+        //#region Grid
+
+        var questionTypesToolsRenderer = function (index, datafield, value, defaultvalue, column, data) {
+
+            var tools = [
+                { icon: 'pencil', urlprefix: '/form/surveys/' + surveyTypeQuestionsID + '/questions/{0}/edit' },
+                { icon: 'trash-o', urlprefix: '/form/surveys/' + surveyTypeQuestionsID + '/questions/{0}/delete' }
+            ];
+
+            return renderToolsHtml(value, tools, '@ContextList.QuestionType');
+        };
+
+        var srcQuestionTypesGrid =
+                    {
+                        datatype: 'json',
+                        url: '/api/surveys/' + surveyTypeQuestionsID + '/questions',
+                        datafields:
+                        [
+                            { name: 'ID', type: 'number' },
+                            { name: 'Name', type: 'string' }
+                        ]
+                    };
+
+        var adapterQuestionTypesGrid = new $.jqx.dataAdapter(srcQuestionTypesGrid);
+
+        $("#SurveyTypeQuestions").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            pageable: true,
+            //columnresize: true,
+            source: adapterQuestionTypesGrid,
+            theme: list_theme,
+            columns: [
+                { datafield: "Name", text: "Name" },
+                { datafield: "ID", text: "", width: 80, cellsrenderer: questionTypesToolsRenderer }
+            ]
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case "@ContextList.QuestionType":
+                        $('#SurveyTypeQuestions').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("SurveyTypeQuestions : SaveAction", e);
+            }
+        });
+
+        //#endregion
+
+    });
+</script>
+<div id="SurveyTypeQuestions"></div>

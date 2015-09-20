@@ -1,0 +1,99 @@
+﻿@model d360.web.Models.ResultsGridViewModel
+@{
+    var statuses = "";
+    foreach (var k in Model.Statuses.Keys)
+    {
+        statuses += "'" + Model.Statuses[k] + "',";
+    }
+    statuses.Substring(0, statuses.Length - 2);
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        var typeID = '@(Model.ID)';
+
+        //#region Grid
+
+        var resultsToolsRenderer = function (index, datafield, value, defaultvalue, column, data) {
+
+            var tools = [
+                { isitemlink: true, urlprefix: '#/monitor/' + data.EventTypeID + '/' + data.EventGroupID, type: 'EventGroup', context: 'Preview' }
+            ];
+
+            return renderToolsHtml(value, tools, 'EventGroup', data);
+        };
+
+        var srcResultsGrid = {
+            datatype: 'json',
+            url: '/Monitor/_Results?type=@(Model.Type.ToString())&id=' + typeID,
+            datafields:
+            [
+                { name: 'ID' },
+                //{ name: 'DateCreated' },
+                { name: 'EventTypeID' },
+                { name: 'EventGroupID' },
+                { name: 'EventName' },
+                { name: 'Status' }
+            ],
+            beforeprocessing: function (data) {
+                srcResultsGrid.totalrecords = data.total;
+            },
+            filter: function () {
+                $("#Results").jqxGrid('updatebounddata');
+            },
+            sort: function () {
+                $("#Results").jqxGrid('updatebounddata');
+            }
+        };
+
+        var adapterResultsGrid = new $.jqx.dataAdapter(srcResultsGrid);
+
+        //var childArtifactGridWidth = $("#ChildArtifacts").parent().width();
+        $("#Results").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            virtualmode: true,
+            rendergridrows: function () {
+                return adapterResultsGrid.records;
+            },
+            pageable: true,
+            groupable: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            columnsresize: true,
+            enabletooltips: true,
+            source: adapterResultsGrid,
+            theme: list_theme,
+            columns: [
+                //{ datafield: "DateCreated", text: "Event Date", filtertype: "date", width: 125, cellsrenderer: shortdaterenderer },
+                { datafield: "EventName", text: "Name" },
+                { datafield: "Status", text: "Status", width: 125, filtertype: 'list', filteritems: [@Html.Raw(statuses)] },
+                { datafield: "ID", text: "", width: 40, filterable: false, cellsrenderer: resultsToolsRenderer }
+            ]
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        $('#Results').on('rowdoubleclick', function (event) {
+            try {
+                var args = event.args;
+                var row = args.rowindex;
+                var data = $("#Results").jqxGrid('getrowdata', row);
+                location.assign('#/monitor/' + data.EventTypeID + '/' + data.EventGroupID);
+            } catch (e) {
+                logError("ResultsGrid", e);
+            }
+        });
+
+        //#endregion
+    });
+</script>
+<div class="tile tile-detail">
+    <header>Events</header>
+    <article id="Results"></article>
+</div>

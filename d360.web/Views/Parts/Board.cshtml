@@ -1,0 +1,8 @@
+﻿<div id="BoardPart" data-bind="template: {name: 'boardTmpl' }"></div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var boardVm = new BoardViewModel();
+        ko.applyBindings(boardVm, document.getElementById('BoardPart'));
+        boardVm.init('@(ViewData["type"])', '@(ViewData["id"])');
+    });
+</script>

@@ -1,0 +1,142 @@
+﻿@model d360.core.entities.ObjectModel
+@{
+    var ChildArtifactTypeID = (int)ViewData["ChildArtifactTypeID"];
+}
+<div class="medium-overlay">
+    <div class="ui segment">
+        <h4><span id="ChildArtifactsOverlayTitle"></span></h4>
+        <div class="form-instructions"></div>
+        <div id="ChildArtifactsOverlayGrid"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var childArtifactTypeID = @(ChildArtifactTypeID);
+
+    var ChildArtifactOverlayBaseUrl = '/Artifacts/ByParent?parentID=@(Model.ObjectID)&childArtifactTypeID=' + childArtifactTypeID;
+    var ChildArtifactOverlayDetailUri = '/artifacts/'+ childArtifactTypeID + '/{0}';
+    var ChildArtifactOverlayDetailData = '/api/ArtifactType/' + childArtifactTypeID;
+
+    var ChildArtifactsOverlayGridSource;
+    var ChildArtifactsOverlayGridAdapter;
+
+    var ChildArtifactsOverlayEventToolRenderer = function (index, datafield, value, defaultvalue, column, data) {
+        var tools = [];
+
+        if (data.AllowRead) tools.push({ isitemlink: true, urlprefix: '#' + ChildArtifactOverlayDetailUri, id: data.ID, type: 'Artifact', context: 'Preview' });
+        if (data.AllowUpdate) tools.push({ icon: 'pencil', urlprefix: 'form' + ChildArtifactOverlayDetailUri + '/edit' });
+        if (data.Promoted) tools.push({ icon: 'external-link-square', urlprefix: '#' });
+        if (data.AllowDelete) tools.push({ icon: 'trash-o', urlprefix: 'form' + ChildArtifactOverlayDetailUri + '/delete' });
+
+        return renderToolsHtml(value, tools, contextList.Artifact, data);
+    };
+
+    //#region Event Handlers
+
+    function childArtifactsOverlayGridRowDoubleClick(event) {
+        try {
+            var args = event.args;
+            var row = args.rowindex;
+            var data = $("#ChildArtifactsOverlayGrid").jqxGrid('getrowdata', row);
+            location.assign('#/artifacts/' + data.ArtifactTypeID + '/' + data.ID);
+        } catch (e) {
+            logError("ChildArtifacts : ChildArtifactsOverlayGrid.rowdoubleclick", e);
+        }
+    }
+    
+    function saveAction(data) {
+        try {
+            switch (data.context) {
+                case 'Artifact':
+                    $('#ChildArtifactsOverlayGrid').jqxGrid('updatebounddata');
+                    break;
+            }
+        } catch (e) {
+            logError("ChildArtifacts : SaveAction", e);
+        }
+
+    }
+    
+    function unsubscribe(data) {
+        ChildArtifactsOverlayGridAdapter = null;
+        ChildArtifactsOverlayGridSource = null;
+
+        $('#ChildArtifactsOverlayGrid').off('rowdoubleclick', childArtifactsOverlayGridRowDoubleClick);
+        amplify.unsubscribe("SaveAction", saveAction);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    //#endregion
+
+    $(function () {
+
+        $.getJSON(ChildArtifactOverlayDetailData, function (data) {
+            $('#ChildArtifactsOverlayTitle').text(data.PluralizedName);
+        });
+
+        $.getJSON('/api/ArtifactType/' + childArtifactTypeID + '/grid/definition', function (gridinfo) {
+            var ChildArtifactsOverlayGridSource = {
+                datatype: 'json',
+                type: 'post',
+                datafields: gridinfo.Fields,
+                url: ChildArtifactOverlayBaseUrl,
+                beforeprocessing: function (data) {
+                    ChildArtifactsOverlayGridSource.totalrecords = data.total;
+                },
+                filter: function () {
+                    $("#ChildArtifactsOverlayGrid").jqxGrid('updatebounddata');
+                },
+                sort: function () {
+                    $("#ChildArtifactsOverlayGrid").jqxGrid('updatebounddata');
+                }
+            };
+
+            ChildArtifactsOverlayGridAdapter = new $.jqx.dataAdapter(ChildArtifactsOverlayGridSource);
+
+            gridinfo.Columns.push({
+                datafield: "ID",
+                sortable: false,
+                filterable: false,
+                text: "ID",
+                width: '10%',
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    var detailUri = '/artifacts/' + childArtifactTypeID + '/{0}';
+                    var tools = [];
+
+                    tools.push({ isitemlink: true, urlprefix: '#' + detailUri, type: 'Artifact', context: 'Preview' });
+                    //tools.push({ icon: 'pencil', urlprefix: 'form' + detailUri + '/edit' });
+                    //tools.push({ icon: 'trash-o', urlprefix: 'form' + detailUri + '/delete' });
+
+                    return renderToolsHtml(value, tools, contextList.Artifact, data);
+                }
+            });
+
+            $('#ChildArtifactsOverlayGrid').jqxGrid({
+                altrows: true,
+                source: ChildArtifactsOverlayGridAdapter,
+                width: overlay_grid_width,
+                pagesizeoptions: ['5', '10', '20'],
+                pagesize: 20,
+                columnsresize: true,
+                autoheight: true,
+                sortable: true,
+                altrows: true,
+                showfilterrow: true,
+                filterable: true,
+                virtualmode: true,
+                rendergridrows: function () {
+                    return ChildArtifactsOverlayGridAdapter.records;
+                },
+                pageable: true,
+                theme: list_theme,
+                columns: gridinfo.Columns
+            });
+
+            $('#ChildArtifactsOverlayGrid').on('rowdoubleclick', childArtifactsOverlayGridRowDoubleClick);
+            amplify.subscribe("SaveAction", saveAction);
+            amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+        });
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

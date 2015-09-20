@@ -1,0 +1,317 @@
+﻿@using d360.web.Models;
+@model d360.web.Models.WorkflowTypeRelationEditorModel
+@{
+    string dateForScheduleCalculation = DateTime.Now.ToShortDateString();
+    string monthsUntilCertification = "12";
+    string daysGivenToCertify = "14";
+
+    if (Model.WorkflowType == d360.workflow.WorkflowType.CertifyArtifact)
+    {
+        var key = "DateForScheduleCalculation";
+        if (Model.WorkflowTypeRelation.Fields.ContainsKey(key))
+        {
+            dateForScheduleCalculation = Model.WorkflowTypeRelation.Fields[key];
+        }
+
+        key = "MonthsUntilCertification";
+        if (Model.WorkflowTypeRelation.Fields.ContainsKey(key))
+        {
+            monthsUntilCertification = Model.WorkflowTypeRelation.Fields[key];
+        }
+
+        key = "DaysGivenToCompleteCertification";
+        if (Model.WorkflowTypeRelation.Fields.ContainsKey(key))
+        {
+            daysGivenToCertify = Model.WorkflowTypeRelation.Fields[key];
+        }
+    }
+}
+<div class="small-overlay">
+    <div class="ui segment">
+        @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Html.Raw(Model.FormUri).ToHtmlString(), OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
+        {
+            <input type="hidden" id="_context" name="_context" value="@(ContextList.WorkflowTypeRelation)" />
+            <input type="hidden" id="ID" name="ID" value="@(Model.WorkflowTypeRelation.ID)" />
+            <input type="hidden" id="WorkflowType" name="WorkflowType" value="@(Model.WorkflowType)" />
+
+            @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.WorkflowTypeRelation, Description = Model.FormDescription, Name = Model.FormName })
+
+            <div class="row tile">
+                <div class="col s6">
+                    <div id='ObjectTypeTip' class="FieldNameRequired">Type</div>
+                    @Html.DropDownList("ObjectType", Model.ObjectTypes, "Select type...", new { @class = "browser-default" })
+                </div>
+                <div class="col s6">
+                    <div id='ParentTypeTip' class="FieldNameRequired">@Resources.FieldInfo.TaxonomyType_Name</div>
+                    @Html.DropDownList("ParentType", Model.ParentTypes, "Select " + Resources.FieldInfo.TaxonomyType_Name + "...", new { @class = "browser-default" })
+                </div>
+            </div>
+            <div class="row tile">
+                <div class="col s6">
+                    <div id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</div>
+                    @Html.DropDownList("ResponsibilityType", Model.ResponsibilityTypes, "Select responsibility...", new { @class = "browser-default" })
+                </div>
+                <div class="col s6 input-field">
+                    <input type="checkbox" id="Enabled" name="Enabled" @(Model.Enabled ? "checked='checked'" : "") />
+                    <label id='EnabledTip' for="Enabled">Enabled?</label>
+                </div>
+            </div>
+            <div class="row tile Workflow-2">
+                <div class="col s6">
+                    <div id='DateForScheduleCalculationTip' class="FieldName">Date For Schedule Calculation</div>
+                    <div id="DateForScheduleCalculation" name="DateForScheduleCalculation"></div>
+                </div>
+                <div class="col s6">
+                    <div id='MonthsUntilCertificationTip' class="FieldName"># Months Until Certification</div>
+                    <div id="MonthsUntilCertification" name="MonthsUntilCertification" value=""></div>
+                </div>
+            </div>
+            <div class="row tile Workflow-2">
+                <div class="col s6 offset-s6">
+                    <div id='DaysGivenToCompleteCertificationTip' class="FieldName"># Days Given To Complete Certification</div>
+                    <div id="DaysGivenToCompleteCertification" name="DaysGivenToCompleteCertification"></div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script type="text/javascript">
+    var workflowType = "@((int)Model.WorkflowType)";
+
+    var parentTypeSource = {
+        datatype: 'json',
+        type: 'get',
+        url: null,
+        datafields: [
+            { name: 'Value' },
+            { name: 'Text' }
+        ],
+    };
+
+    var parentTypeAdapter = new $.jqx.dataAdapter(parentTypeSource);
+
+    $(function () {
+        var w = '100%',
+            h = 25;
+
+        var parentOptionLength = $('#ParentType').children('option').length;
+        var responsibilityOptionLength = $('#ResponsibilityType').children('option').length;
+
+        if (workflowType == 2) {
+            $('#DateForScheduleCalculation').jqxDateTimeInput({ theme: theme, width: field_width, height: h, formatString: 'd', showCalendarButton: true, value: "@(dateForScheduleCalculation)" });
+            $("#MonthsUntilCertification").jqxNumberInput({ width: field_width, height: h, min: 1, max: 24, decimalDigits: 0, inputMode: 'simple', spinButtons: true });
+            $('#MonthsUntilCertification').jqxNumberInput('val', @(monthsUntilCertification));
+            $("#DaysGivenToCompleteCertification").jqxNumberInput({ width: field_width, height: h, min: 1, max: 90, decimalDigits: 0, inputMode: 'simple', spinButtons: true });
+            $('#DaysGivenToCompleteCertification').jqxNumberInput('val', @(daysGivenToCertify));
+        }
+        else {
+            $('.Workflow-2').hide();
+        }
+
+        $("#ObjectType").jqxDropDownList({ width: field_width, theme: theme });
+        $("#ParentType").jqxDropDownList({ width: field_width, theme: theme, displayMember: 'Text', valueMember: 'Value', source: parentTypeAdapter, disabled: (parentOptionLength <= 1) });
+        $("#ResponsibilityType").jqxDropDownList({ width: field_width, theme: theme, disabled: (responsibilityOptionLength <= 1) });
+
+        //#region Validator
+
+        $('#form0').jqxValidator({
+            hintType: 'label',
+            rules: [
+                //{
+                //    input: "#Name",
+                //    rule: 'required',
+                //    action: 'blur',
+                //    message: 'Name is required.'
+                //},
+                {
+                    input: '#ObjectType', message: 'Type is required.', action: 'blur',
+                    rule: function () {
+                        return $('#ObjectType').val() != '';
+                    }
+                },
+                {
+                    input: '#ResponsibilityType', message: 'Responsibility is required.', action: 'blur',
+                    rule: function () {
+                        return $('#ResponsibilityType').val() != '';
+                    }
+                },
+                {
+                    input: '#DateForScheduleCalculation', message: 'Date For Schedule Calculation is required.', action: 'blur',
+                    rule: function () {
+                        if (workflowType == 2) {
+                            return $('#DateForScheduleCalculation').val() != '';
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                },
+                {
+                    input: '#MonthsUntilCertification', message: '# Months Until Certification is required.', action: 'blur',
+                    rule: function () {
+                        if (workflowType == 2) {
+                            return $('#MonthsUntilCertification').val() != '';
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                },
+                {
+                    input: '#DaysGivenToCompleteCertification', message: '# Days Given To Complete Certification is required.', action: 'blur',
+                    rule: function () {
+                        if (workflowType == 2) {
+                            return $('#DaysGivenToCompleteCertification').val() != '';
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                }
+            ]
+        });
+
+        //#endregion
+
+        //#region Help Tooltips
+
+        tipCss = 'qtip-blue qtip-shadow';
+        $('#ObjectTypeTip').qtip({
+            content: {
+                text: "Please provide a name for this attribute type."
+            },
+            style: {
+                classes: tipCss
+            }
+        });
+        $('#ParentTypeTip').qtip({
+            content: {
+                text: "If applicable, choose an subject area to target this workflow to.  If selected, all artifacts owned by this area would adhere to these workflows settings rather than any default workflow settings for the type."
+            },
+            style: {
+                classes: tipCss
+            }
+        });
+        $('#ResponsibilityTypeTip').qtip({
+            content: {
+                text: "Choose the responsibility type, or role, that will need to respond to this particular workflow."
+            },
+            style: {
+                classes: tipCss
+            }
+        });
+        $('#DateForScheduleCalculationTip').qtip({
+            content: {
+                text: "Choose a date to use as a basis to calculate when to trigger a certification from.  All future calculations will use this date as a starting point."
+            },
+            style: {
+                classes: tipCss
+            }
+        });
+        $('#MonthsUntilCertificationTip').qtip({
+            content: {
+                text: "Choose the interval, in months, to trigger a certification."
+            },
+            style: {
+                classes: tipCss
+            }
+        });
+        $('#DaysGivenToCompleteCertificationTip').qtip({
+            content: {
+                text: "Choose how many days the responsible persons will have to respond to the workflow."
+            },
+            style: {
+                classes: tipCss
+            }
+        });
+
+        //#endregion
+
+        //#region Events
+
+        $('#ObjectType').on('change', function () {
+            var ObjectTypeValue = $('#ObjectType').val();
+            var ot = ObjectTypeValue.split('|');
+
+            //$('#ParentType').jqxDropDownList({disabled: false});
+            //parentTypeSource.url = '/workflow/WorkflowParentTypeOptions?workflowType=' + workflowType + '&type=' + ot[0] + '&id=' + ot[1];
+            //parentTypeAdapter.dataBind();
+            
+            $.getJSON('/workflow/WorkflowParentTypeOptions', { workflowType: workflowType, type: ot[0], id: ot[1] }, function (pData) {
+                var ddl = $('#ParentType');
+                var existingItems = ddl.jqxDropDownList('getItems');
+                if (existingItems) {
+                    if (existingItems.length > 0) {
+                        ddl.jqxDropDownList('clearSelection');
+                        ddl.jqxDropDownList('clearFilter');
+                        try {
+                            ddl.jqxDropDownList('clear');
+                        } catch (e) {}
+                        existingItems = null;
+                    }
+                }
+                $("#ParentType_jqxDropDownList").html('');
+                $("#ParentType_jqxDropDownList").append("<option value=''>Select subject area...</option>");
+                $.each(pData, function(){
+                    $("#ParentType_jqxDropDownList").append('<option value="' + this.Value + '">' + this.Text + '</option>');
+                    //ddl.jqxDropDownList('addItem', { label: this.Text, value: this.Value });
+                });
+                ddl.jqxDropDownList('loadFromSelect', 'ParentType_jqxDropDownList');
+                ddl.jqxDropDownList({disabled: false});//, source: pData, displayMember: 'Text', valueMember: 'Value' });
+            });
+
+            $.getJSON('/workflow/WorkflowResponsibilityTypeOptions', { type: ot[0], id: ot[1] }, function (rData) {
+                var ddl = $('#ResponsibilityType');
+                var existingItems = ddl.jqxDropDownList('getItems');
+                if (existingItems) {
+                    if (existingItems.length > 0) {
+                        ddl.jqxDropDownList('clearSelection');
+                        ddl.jqxDropDownList('clearFilter');
+                        try {
+                            ddl.jqxDropDownList('clear');
+                        } catch (e) {}
+                        existingItems = null;
+                    }
+                }
+                $("#ResponsibilityType_jqxDropDownList").html('');
+                $("#ResponsibilityType_jqxDropDownList").append("<option value=''>Select responsibility...</option>");
+                $.each(rData, function(){
+                    $("#ResponsibilityType_jqxDropDownList").append('<option value="' + this.Value + '">' + this.Text + '</option>');
+                    //ddl.jqxDropDownList('addItem', { label: this.Text, value: this.Value });
+                });
+                ddl.jqxDropDownList('loadFromSelect', 'ResponsibilityType_jqxDropDownList');
+                ddl.jqxDropDownList({disabled: false});
+            });
+        });
+
+        $('#form0').on('validationSuccess', function (event) {
+            // You can submit the form.
+            $('#form0').submit();
+        });
+        $('#EditableFormSaveButton').on('click', function () {
+            $('#form0').jqxValidator('validate');
+        });
+
+        $('#EditableFormCancelButton').on('click', function () {
+            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+        });
+        amplify.subscribe("ErrorOccurredAction", function (data) {
+            $('#EditableFormSaveButton').hide();
+        });
+        amplify.subscribe("StartingAjax", function () {
+            $('#EditableFormSaveButton').attr('disabled', 'disabled');
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+        });
+        amplify.subscribe("EndingAjax", function () {
+            $('#EditableFormSaveButton').removeAttr('disabled');
+            $('#progress').html('');
+        });
+
+        //#endregion
+
+        //#region Set Values
+        //#endregion
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

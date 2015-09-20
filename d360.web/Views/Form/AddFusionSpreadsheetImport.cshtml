@@ -1,0 +1,91 @@
+﻿@model List<d360.core.entities.FusionAttributeType>
+@{
+    //var fusionTypeID = (int)ViewData["FusionTypeID"];
+    //var fusionID = (int)ViewData["FusionID"];
+    //var attributeTypeID = (int)ViewData["FusionAttributeTypeID"];
+
+    var fusionTypeID = ViewBag.FusionTypeID;
+    var fusionID = ViewBag.FusionID;
+}
+@helper TypeNode(d360.core.entities.FusionAttributeType t)
+{
+    <li item-expanded='true'>
+        <span class="node" data-oid="@t.ID">@t.Name</span>
+        <ul>
+            @foreach (var s in Model.Where(i => i.ParentID == t.ID).OrderBy(i => i.Name))
+            {
+                @TypeNode(s)
+            }
+        </ul>
+    </li>
+}
+
+
+<div class="small-overlay">
+    <div class="ui segment">
+        <h4>Upload a Fusion Spreadsheet</h4>
+        <div class="form-instructions">Please ensure that you have the original column headers in your spreadsheet.  Choose an appropriate type that you want to load.  Then choose your spreadsheet.  The layout of the spreadsheet should correspond exactly with the template available for download on the Fusion configuration page.</div>
+        <div class="row" style="vertical-align: top">
+            <div class="col s4">
+                <div id="Tree">
+                    <ul>
+                        @foreach (var t in Model.Where(i => !i.ParentID.HasValue).OrderBy(i => i.Name))
+                        {
+                            @TypeNode(t)
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="col s8">
+                <div id="File"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var baseUri = "/fusion/@(fusionTypeID)/configurations/@(fusionID)/template/";
+
+    function treeSelect(evt) {
+        try {
+            var n = $(evt.args.element).find("span.node");
+            var id = null;
+
+
+            if (n.data("oid")) {
+                id = n.data("oid");
+            }
+
+            $('#File').jqxFileUpload('uploadUrl', baseUri + id);
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
+    function unsubscribe(data) {
+        $("#Tree").off("select", treeSelect);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    $(function () {
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        $("#Tree").jqxTree({ width: '100%', height: maxTreeHeight, theme: list_theme, allowDrag: false, allowDrop: false });
+
+        $('#File').jqxFileUpload({ width: 300, uploadUrl: "", fileInputName: 'FusionImport@(fusionID)', accept: '.xls, .xlsx' });
+
+        $('#File').on('uploadEnd', function (event) {
+            var args = event.args;
+            //var fileName = args.file;
+            var serverResponse = args.response;
+            amplify.publish("SaveAction", { context: 'FusionImport', action: 'Add', id: 0, title: 'Success!', message: serverResponse, type: 'confirm' });
+        });
+
+        $("#Tree").on("select", treeSelect);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+
+        $('#Tree').jqxTree('selectItem', $("#Tree").find('li:first')[0]);
+    });
+</script>

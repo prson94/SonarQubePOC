@@ -1,0 +1,25 @@
+﻿@model d360.core.entities.ObjectModel
+<div class="medium-overlay">
+    <div class="ui segment">
+        <h4>Comments</h4>
+        <div class="form-instructions"></div>
+        <div id="CommentsOverlay" data-bind="template: {name: 'boardTmpl' }"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var CommentsOverlaySocial;
+    function unsubscribe() {
+        CommentsOverlaySocial = null;
+    }
+
+    $(function () {
+        CommentsOverlaySocial = new BoardViewModel();
+        ko.applyBindings(CommentsOverlaySocial, document.getElementById('CommentsOverlay'));
+        CommentsOverlaySocial.changeObject('@(Model.ObjectType)', @(Model.ObjectID));
+
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

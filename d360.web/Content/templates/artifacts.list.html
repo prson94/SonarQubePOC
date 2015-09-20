@@ -1,0 +1,36 @@
+﻿<div class="row">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <!--<header>Filter</header>-->
+            <div id="FilterBasic"></div>
+            <div id="FilterAdvanced" style="display:none">
+                <div class="row">
+                    <div class="col s12 form-instructions">
+                        Query by one or more items below to limit the table results to only those items that relate to the selections below.
+                    </div>
+                    <div class="col s12 m4 l3">
+                        <div class="FieldFilter">Type of Relationship</div>
+                        <div id="RelationshipTypeFilter"></div>
+                    </div>
+                    <div class="col s12 m4 l3">
+                        <div class="FieldFilter">Relationship</div>
+                        <div id="RelationshipFilter"></div>
+                    </div>
+                    <div class="col s12 m4 l2">
+                        <div class="FieldFilter">Operator</div>
+                        <div id="FilterInclusion">
+                            <button style="padding:4px 16px;" id="FilterInclusion_Any">Or</button>
+                            <button style="padding:4px 16px;" id="FilterInclusion_All">And</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <a id="RunFilter" class="waves-effect waves-light btn btn-flat"><i class="fa fa-sm fa-filter blue-text lighten-4"></i> Filter</a>
+                <a id="ClearFilter" class="waves-effect waves-light btn btn-flat"><i class="fa fa-ban red-text lighten-4"></i> Clear</a>
+                <a id="ShowFilterAdvanced" class="waves-effect waves-light btn btn-flat"><i class="fa fa-gear brown-text lighten-4"></i> Show Advanced</a>
+            </div>
+        </div>
+        <div id="List"></div>
+    </div>
+</div>

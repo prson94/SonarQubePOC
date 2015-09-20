@@ -1,0 +1,116 @@
+﻿<div id="GovernancePart"></div>
+<script type="text/javascript">
+    var ggpType = '@(ViewData["type"])';
+    var ggpID = '@(ViewData["id"])';
+
+    $(function () {
+
+        //#region Grid
+
+        var governanceAssigningObjectNameRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            return previewLinkRenderer(data.AssigningItemType, data.AssigningItemID, data.AssigningItemUrl, data.AssigningItemName);
+        }
+
+        var governanceNameRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            return previewLinkRenderer(data.ResponsibleObjectType, data.ResponsibleObjectID, data.ResponsibleObjectUrl, data.ResponsibleObjectName);
+        };
+
+        var governanceGroupOwnerNameRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            if (data.PrimaryOwnerResourceName != '')
+                return previewLinkRenderer('Resource', data.PrimaryOwnerResourceID, data.PrimaryOwnerResourceUrl, data.PrimaryOwnerResourceName);
+            else
+                return '';
+        };
+
+        var governanceToolsRenderer = function (index, datafield, value, defaultvalue, column, data) {
+
+            var tools = [];
+
+            if (ggpType == data.AssigningItemType && ggpID == data.AssigningItemID) {
+                tools.push({ icon: 'pencil', urlprefix: '/form/EditResponsibility?id={0}' });
+                tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibility?id={0}' });
+            }
+            //else {
+            //    tools.push({
+            //        isitemlink: true,
+            //        iconBackColor: data.AssigningIconBackColor, iconForeColor: data.AssigningIconForeColor, iconText: data.AssigningIconText,
+            //        context: 'AssigningItemPreview', type: data.AssigningItemType, id: data.AssigningItemID,
+            //        urlprefix: data.AssigningItemUrl
+            //    });
+            //}
+
+            return renderToolsHtml(value, tools, '@ContextList.Responsibility', data);
+        };
+
+        var srcGovernanceGrid = {
+            datatype: 'json',
+            url: '/api/' + ggpType + '/' + ggpID + '/ownership',
+            datafields:
+            [
+                { name: 'ResponsibilityID' },
+                { name: 'AssigningItemType' },
+                { name: 'AssigningItemID' },
+                { name: 'AssigningIconBackColor' },
+                { name: 'AssigningIconForeColor' },
+                { name: 'AssigningIconText' },
+                { name: 'AssigningItemName' },
+                { name: 'AssigningItemUrl' },
+                { name: 'ResponsibleObjectType' },
+                { name: 'ResponsibleObjectID' },
+                { name: 'ResponsibleObjectName' },
+                { name: 'PrimaryOwnerResourceID' },
+                { name: 'PrimaryOwnerResourceName' },
+                { name: 'PrimaryOwnerResourceUrl' },
+                { name: 'Role' },
+                { name: 'ResponsibleObjectUrl' },
+                { name: 'ContextItems' }
+            ]
+        };
+
+        var adapterGovernanceGrid = new $.jqx.dataAdapter(srcGovernanceGrid);
+
+        $("#GovernancePart").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            pageable: true,
+            selectionmode: 'none',
+            autorowheight: true,
+            source: adapterGovernanceGrid,
+            theme: list_theme,
+            columns: [
+                { datafield: "ResponsibleObjectName", text: "Resource", width: '20%', cellsrenderer: governanceNameRenderer },
+                { datafield: "PrimaryOwnerResourceName", text: "Group Owner", width: '20%', cellsrenderer: governanceGroupOwnerNameRenderer },
+                { datafield: "Role", text: "Role", width: '20%' },
+                //{ datafield: "AssigningItemName", text: "Assigning Item", width: '28%', cellsrenderer: governanceAssigningObjectNameRenderer },
+                { datafield: "ContextItems", text: "Context" },
+                { datafield: "ResponsibilityID", text: "", width: '80px', filterable: false, cellsrenderer: governanceToolsRenderer }
+            ]
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case contextList.Artifact:
+                    case contextList.DomainList:
+                    case contextList.Responsibility:
+                    case contextList.Taxonomy:
+                        $('#GovernancePart').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {}
+        });
+
+        //#endregion
+
+    });
+</script>

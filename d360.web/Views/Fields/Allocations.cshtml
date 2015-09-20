@@ -1,0 +1,54 @@
+﻿@using d360.web.Models;
+@{
+    var r = new d360.core.entities.AttributeTypeRelation();
+}
+<div id="Allocations"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        //#region Grid
+
+        var srcAllocationsGrid = {
+            datatype: 'json',
+            url: '/fields/_Allocations?id=@(ViewData["ID"])',
+            datafields:
+            [
+                { name: 'ObjectID' },
+                { name: 'ObjectName' },
+                { name: 'ObjectType' },
+                { name: 'IsListable' },
+                { name: 'IsRequired' }
+            ]
+        };
+
+        var adapterAllocationsGrid = new $.jqx.dataAdapter(srcAllocationsGrid);
+
+        $("#Allocations").jqxGrid(
+        {
+            width: grid_width,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pageable: true,
+            altrows: true,
+            //columnresize: true,
+            source: adapterAllocationsGrid,
+            theme: list_theme,
+            columns: [
+                { text: 'Object Type', dataField: 'ObjectType' },
+                { text: 'Object Name', dataField: 'ObjectName' },
+                { text: 'Listable?', dataField: 'IsListable', width: 100, cellsrenderer: booleanrenderer },
+                { text: 'Required?', dataField: 'IsRequired', width: 100, cellsrenderer: booleanrenderer }
+            ]
+        });
+
+        //#endregion
+    });
+</script>
+@{
+    r = null;
+}

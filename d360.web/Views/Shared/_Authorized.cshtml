@@ -1,0 +1,286 @@
+﻿@{
+    Layout = "~/Views/Shared/_Base.cshtml";
+}
+
+@section CustomCSS {
+    @RenderSection("CustomCSS", false)
+}
+
+@section CustomHeaderLibraries {
+    <script src="~/signalr/hubs"></script>
+    @RenderSection("CustomHeaderLibraries", false)
+}
+
+
+@section SearchBar {
+    <table id="search">
+        <tr>
+            <td><input type="text" id="SearchString" name="SearchString" class="text" /></td>
+            <td>
+                <div id="AdministrationMenu" style="border: none !important;">
+                    <ul>
+                        <li id="AdministrationMenuTopLevel">
+                            <i class="fa-wrench fa-large"></i>
+                            <ul>
+                                <li><a href="#/artifacts/administration">Artifacts</a></li>
+                                <li><a href="#/attributes/administration">Attributes</a></li>
+                                <li><a href="#/fields/administration">Fields</a></li>
+                                <li><a href="#/governance/administration">Governance</a></li>
+                                <li><a href="#/catalogs/administration">Information Catalogs</a></li>
+                                <li><a href="#/domains/administration">Domains</a></li>
+                                <li><a href="#/monitor/administration">Events</a></li>
+                                <li><a href="#/lookups/administration">Lookups</a></li>
+                                <li><a href="#/relations/administration">Relationships</a></li>
+                                <li>
+                                    Security
+                                    <ul>
+                                        <li><a href="#/groups/administration">Groups</a></li>
+                                        <li><a href="#/resources/administration">Resources</a></li>
+                                        <li><a href="#/roles/administration">Roles</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="#/surveys/administration">Surveys</a>
+                                    <ul>
+                                        <li><a href="#/surveyresponsetypes/administration">Response Types</a></li>
+                                    </ul>
+                                </li>
+                                <li><a href="#/templates/administration">Templates</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+    </table>
+}
+
+@section TopNavigation {
+    @Html.Action("Top", "Navigation", new { area = string.Empty })
+    <div id="PageTools" style="position:absolute; top: 1px; z-index: 100; right: 2px; color: black;">
+        @RenderSection("PageTools", false)
+    </div>
+}
+
+@section FooterNavigation {
+    <a href='/Home/Logoff' class='btn'><i class="fa-signout"></i></a>
+}
+
+@section Scripts {
+    @Html.Partial("KnockoutTemplates")
+    <script type="text/javascript">
+        //var social = $.connection.social;
+
+        //social.client.notifyOfNewFollowedComments = function (message) {
+        //    $.gritter.add({
+        //        title: 'Success', text: message, type: 'confirm', class_name: 'status'
+        //    });
+        //}
+
+        function performSearch() {
+            amplify.publish('SearchExecuting', { phrase: $("#SearchString").val() });
+        }
+
+        $(document).ready(function () {
+
+            //$.connection.hub.start().done(function () {
+            //    amplify.publish("SocialHubConnected", { hub: $.connection.social });
+            //});
+
+            $("#AdministrationMenu").jqxMenu({theme: 'metro', width: 75, mode: 'vertical', showTopLevelArrows: false})
+            $("#AdministrationMenu").jqxMenu('setItemOpenDirection', 'AdministrationMenuTopLevel', 'left', 'down');
+
+            $("#SearchString").jqxInput({placeHolder:'search'});
+
+            $("#SearchString").keypress(function (e) {
+                var code = (e.keyCode ? e.keyCode : e.which);
+                if (code == 13) { //Enter key
+                    performSearch();
+                }
+            });
+
+            if (document.location.href.indexOf("/search") == -1) {
+                amplify.subscribe('SearchExecuting', function (data) {
+                    document.location.assign('/search?phrase=' + data.phrase);
+                });
+            }
+
+            $('.action').on('click', function () {
+                var btn = $(this);
+                var targetID = btn.data('target');
+                var target = $(targetID);
+                if (target.data('visible') == true) {
+                    target.fadeOut(500);
+                    target.data('visible', false);
+                    btn.removeClass('overlayOptionSelected');
+                }
+                else {
+                    target.fadeIn(500);
+                    target.data('visible', true);
+                    btn.addClass('overlayOptionSelected');
+                }
+            });
+
+            //#region Event Subscription
+
+            var removeOverlay = function () {
+                var overlay = $('#Overlay');
+                var overlaybg = $('#OverlayBackground');
+                overlay.html('');
+                overlay.fadeOut(250);
+                overlaybg.fadeOut(500);
+                overlay.remove();
+                overlaybg.remove();
+                delete overlay;
+                delete overlaybg;
+            };
+
+            var removeRelationOverlay = function () {
+                var relationOverlay = $('#RelationOverlay');
+                relationOverlay.html('');
+                relationOverlay.fadeOut(250);
+                relationOverlay.remove();
+                delete relationOverlay;
+            };
+
+            amplify.subscribe("CommandAction", function (data) {
+                $.ajax({
+                    type: "POST",
+                    url: data.uri
+                }).always(function (msg) {
+                    amplify.publish("ShowMessage", msg);
+                });
+            });
+
+            amplify.subscribe("CancelAction", function (data) {
+                switch (data.context) {
+                    case "@(ContextList.Intersect)":
+                        removeRelationOverlay();
+                        break;
+                    default:
+                        removeOverlay();
+                        break;
+                }
+            });
+
+            amplify.subscribe("SaveAction", function (data) {
+                removeOverlay();
+            });
+
+            //#endregion
+
+            amplify.subscribe("ToolAction", function (data) {
+
+                switch (data.context) {
+                    case "@(ContextList.ActionCommand)":
+                    case "@(ContextList.ActionExport)":
+                    case "@(ContextList.ActionFilter)":
+                    case "@(ContextList.ActionFollow)":
+                    case "@(ContextList.ActionGeneric)":
+                    case "@(ContextList.ActionLink)":
+                    case "@(ContextList.ActionUnrelate)":
+                        break;
+                    case "@(ContextList.ActionDiagram)":
+                        var overlaybg = $('<div id="OverlayBackground" style="display:none"></div>');
+                        var overlay = $('<div id="Overlay" style="padding-top: 20px; display:none;"></div>');
+                        var ocenter = $('<div style="width: 90%; margin: auto; padding-bottom: 30px; position: relative;"></div>');
+                        var oclose = $('<button style="position: absolute; top: 10px; right: 10px; border:none; background-color: transparent; color: navy; z-index: 10002"><i class="fa-remove fa-4x"></i></button>');
+                        ocenter.load(data.uri);
+
+                        oclose.on('click', function () {
+                            removeOverlay();
+                        });
+
+                        overlay.append(oclose);
+                        overlay.append(ocenter);
+
+                        $('body').append(overlaybg);
+                        $('body').append(overlay);
+                        overlaybg.fadeIn(750);
+                        overlay.fadeIn(750);
+
+                        break;
+                    case "@(ContextList.Intersect)":
+                        var relationOverlay = $('<div id="RelationOverlay" class="SidebarOverlay" style="width: 400px"></div>');
+                        relationOverlay.load(data.uri);
+                        $('body').append(relationOverlay);
+                        relationOverlay.fadeIn(750);
+
+                        //$('#RelationshipDrop').html('Drop relationships here');
+                        //$('#RelationshipDrop').css('border', '5px dashed #ccc').css('font-size', '200%').css('margin', '0px 0px 15px 0px');
+                        //$('#RelationshipDrop').fadeIn(750);
+                        break;
+                    case "@(ContextList.ActionGenericReport)":
+                        var overlaybg = $('<div id="OverlayBackground" style="display:none"></div>');
+                        var overlay = $('<div id="Overlay" style="padding-top: 20px; display:none;"></div>');
+                        var ocenter = $('<div style="width: 90%; margin: auto; padding-bottom: 30px; position: relative;"></div>');
+                        var oclose = $('<button style="position: absolute; top: 10px; right: 10px; border:none; background-color: transparent; color: #666;"><i class="fa-remove fa-4x"></i></button>');
+                        ocenter.load(data.uri);
+
+                        oclose.on('click', function () {
+                            removeOverlay();
+                        });
+
+                        overlay.append(oclose);
+                        overlay.append(ocenter);
+
+                        $('body').append(overlaybg);
+                        $('body').append(overlay);
+                        overlaybg.fadeIn(750);
+                        overlay.fadeIn(750);
+
+                        break;
+                    default:
+                        var overlaybg = $('<div id="OverlayBackground" style="display:none"></div>');
+                        var overlay = $('<div id="Overlay" style="padding-top: 50px; display:none;"></div>');
+                        var ocenter = $('<div style="width: 50%; margin: auto; padding-bottom: 50px;"></div>');
+                        ocenter.load(data.uri);
+                        //overlay.css('height', $(document).height());
+                        overlay.append(ocenter);
+
+                        $('body').append(overlaybg);
+                        $('body').append(overlay);
+                        overlaybg.fadeIn(750);
+                        overlay.fadeIn(750);
+                        break;
+                }
+            });
+        });
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-10205226-4', 'data3sixty.com');
+        var dimensionValue = '@(User.Identity.Name)';
+        ga('set', 'dimension1', dimensionValue);
+        ga('send', 'pageview');
+    </script>
+@RenderSection("Scripts", false)
+}
+
+<div id="RelationshipDrop" style="display:none"></div>
+
+<div class="left" style="text-align: center; min-width: 40px; width: 4%">@RenderSection("SideIcons", false)</div>
+<div class="right" style="width: 96%; border-bottom: 1px solid #ebebeb; border-left: 1px solid #ebebeb; border-bottom-left-radius: 6px; padding-bottom: 20px;">
+    @RenderSection("StatisticsBar", false)
+    <div class="row">
+        <div class="col-lg-6" style="vertical-align: top">
+            <h1>@RenderSection("Title", false)</h1>
+        </div>
+        <div class="col-lg-6" style="text-align: right">
+            @RenderSection("Breadcrumb", false)
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            @RenderSection("Directions", false)
+        </div>
+    </div>
+    @RenderSection("FilterBar", false)
+    @RenderBody()
+</div>
+<div class="clear"></div>
+<div id="Spacer"></div>

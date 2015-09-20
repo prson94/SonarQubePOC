@@ -1,0 +1,31 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
+using d360.core.entities.Contracts;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace d360.core.entities
+{
+    [DataContract(Name = "resourceGroup", Namespace = NAMESPACE)]
+    public class ResourceGroup : BaseObject
+    {
+        #region Properties
+
+        [Key, Column(Order = 1)]
+        public int GroupID { get; set; }
+
+        [Key, Column(Order = 2)]
+        public int ResourceID { get; set; }
+
+        public bool IsOwner { get; set; }
+
+        #endregion
+
+        [ForeignKey("GroupID")]
+        public virtual Group Group { get; set; }
+    }
+}

@@ -1,0 +1,53 @@
+﻿@using d360.core.enums;
+@model d360.web.Models.ClaimsMatrixDisplayModel
+<table class="bordered striped">
+    <thead>
+        <tr>
+            <th></th>
+            <th style="width: 15%">@ClaimObject.Root.ToString()</th>
+            <th style="width: 15%">@ClaimObject.Attribute.ToString()</th>
+            <th style="width: 15%">@ClaimObject.Governance.ToString()</th>
+            <th style="width: 15%">@ClaimObject.Relationship.ToString()</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@Claim.Read.ToString()</td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Root, (int)Claim.Read))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Root, (int)Claim.Read))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Attribute, (int)Claim.Read))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Attribute, (int)Claim.Read))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Governance, (int)Claim.Read))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Governance, (int)Claim.Read))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Relationship, (int)Claim.Read))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Relationship, (int)Claim.Read))" /></td>
+        </tr>
+        <tr>
+            <td>@Claim.Create.ToString()</td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Root, (int)Claim.Create))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Root, (int)Claim.Create))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Attribute, (int)Claim.Create))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Attribute, (int)Claim.Create))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Governance, (int)Claim.Create))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Governance, (int)Claim.Create))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Relationship, (int)Claim.Create))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Relationship, (int)Claim.Create))" /></td>
+        </tr>
+        <tr>
+            <td>@Claim.Update.ToString()</td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Root, (int)Claim.Update))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Root, (int)Claim.Update))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Attribute, (int)Claim.Update))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Attribute, (int)Claim.Update))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Governance, (int)Claim.Update))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Governance, (int)Claim.Update))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Relationship, (int)Claim.Update))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Relationship, (int)Claim.Update))" /></td>
+        </tr>
+        <tr>
+            <td>@Claim.Delete.ToString()</td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Root, (int)Claim.Delete))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Root, (int)Claim.Delete))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Attribute, (int)Claim.Delete))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Attribute, (int)Claim.Delete))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Governance, (int)Claim.Delete))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Governance, (int)Claim.Delete))" /></td>
+            <td><input type="checkbox" disabled="disabled" id="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Relationship, (int)Claim.Delete))" /><label for="D_@(Model.ResponsibilityTypeID)_@(string.Format("{0}_{1}", (int)ClaimObject.Relationship, (int)Claim.Delete))" /></td>
+        </tr>
+    </tbody>
+</table>
+<script type="text/javascript">
+    $(function () {
+        @{
+            foreach (var i in Model.Items)
+            {
+                <text>$('#D_@(Model.ResponsibilityTypeID)_@((int)i.ClaimObject)_@((int)i.Claim)').prop('checked', true);</text>
+            }
+        }
+    });
+</script>

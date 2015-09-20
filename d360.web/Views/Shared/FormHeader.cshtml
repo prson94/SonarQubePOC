@@ -1,0 +1,11 @@
+﻿@model d360.web.Models.FormHeaderEditorModel
+<div class="left form-header-info">
+    <h4>@Model.Name</h4>
+</div>
+<div class="right">
+    <button type="button" id="EditableFormCancelButton" class="btn waves-effect waves-light brown lighten-4" data-context="@(Model.Context)">Cancel</button>
+    <button type="button" id="EditableFormSaveButton" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="@(Model.Context)">@(Model.SaveActionName)</button>
+</div>
+<div class="clear"></div>
+<div class="form-instructions">@Html.Raw(Model.Description)</div>
+<div id="progress"></div>

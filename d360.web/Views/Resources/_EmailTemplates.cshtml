@@ -1,0 +1,87 @@
+﻿<script type="text/javascript">
+    $(document).ready(function () {
+
+        //#region Grid
+
+        var emailTemplatesPagingRenderer = function () {
+            return renderMinimalPagingHtml($("#EmailTemplatesGrid"));
+        }
+
+        var emailTemplatesToolsRenderer = (index, datafield, value, defaultvalue, column, data) {
+            var tools = [
+                { icon: 'pencil', urlprefix: '/form/templates/email/{0}/edit' },
+                { icon: 'trash-o', urlprefix: '/form/templates/email/{0}/delete' }
+            ];
+
+            return renderToolsHtml(value, tools, '@ContextList.EmailTemplate');
+        }
+
+        var srcEmailTemplatesGrid =
+                    {
+                        datatype: 'json',
+                        url: '/api/templates/email',
+                        datafields:
+                        [
+                            { name: 'ID' },
+                            { name: 'Name' },
+                            { name: 'Action' },
+                            { name: 'Description' }
+                        ]
+                    };
+
+        var adapterEmailTemplatesGrid = new $.jqx.dataAdapter(srcEmailTemplatesGrid);
+
+        $("#EmailTemplatesGrid").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pageable: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            //pagerrenderer: emailTemplatesPagingRenderer,
+            //columnresize: true,
+            source: adapterEmailTemplatesGrid,
+            theme: list_theme,
+            columns: [
+                { datafield: "Name", text: "Name", width: 150 },
+                { datafield: "Action", text: "Action", width: 100 },
+                { datafield: "Description", text: "Description" },
+                { text: '', dataField: 'ID', width: 120, cellsrenderer: emailTemplatesToolsRenderer }
+            ]
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        $("#EmailTemplatesGrid").on("rowselect", function (event) {
+            try {
+                var args = event.args;
+                var row = args.rowindex;
+                var data = $("#EmailTemplatesGrid").jqxGrid('getrowdata', row);
+                amplify.publish("RowSelectedAction", { context: '@ContextList.EmailTemplate', id: data.ID, rowdata: data });
+            } catch (e) {
+                logError("EmailTemplates : rowSelect", e);
+            }
+        });
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case "@ContextList.EmailTemplate":
+                        $('#EmailTemplatesGrid').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("EmailTemplates : SaveAction", e);
+            }
+        });
+
+        //#endregion
+
+    });
+</script>
+<div id="EmailTemplatesGrid"></div>

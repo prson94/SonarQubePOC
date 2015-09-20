@@ -1,0 +1,120 @@
+﻿@{
+    var type = ViewData["Type"];
+    var id = ViewData["TypeID"];
+    var attributeID = ViewData["AttributeID"];
+}
+<table style="width:100%">
+    <tr style="vertical-align: top">
+        <td style="width:50%; vertical-align: top;">
+            <div id="FusionAttributeTree" style="border: none !important;">
+                <ul></ul>            
+            </div>
+        </td>
+        <td style="width:50%; position: relative">
+            <div id="FusionAttributeDetail"></div>
+        </td>
+    </tr>
+</table>
+
+<script type="text/javascript">
+    var fusionSelectedNode = null;
+    function addFusionNodeToTree(data, idPrefix, parentNodeID) {
+        var elementByID = $('#FusionAttributeTree').find(idPrefix + parentNodeID)[0];
+        $(data).each(function () {
+            $('#FusionAttributeTree').jqxTree('addTo', { expanded: true, id: 'FusionAttributeNode' + this.FusionIntersectID, html: '<span class="node" data-attributeid="' + this.ID + '" data-attributetypeid="' + this.AttributeTypeID + '" data-objectid="' + this.ObjectID + '" data-object="' + this.ObjectType + '" data-objecttype="FusionAttributeType" data-objecttypeid="' + this.AttributeTypeID + '">' + '<b>' + this.AttributeType + ' : </b>' + this.Text + '</span>' }, elementByID);
+            if (this.Children) {
+                addFusionNodeToTree(this.Children, '#FusionAttributeNode', this.FusionIntersectID);
+            }
+        });
+    }
+    $(document).ready(function () {
+
+        $("#FusionAttributeDetail").FusionAttributeDetail();
+
+        var type = '@(type)';
+        var id = '@(id)';
+
+        //#region Tree Instantiation
+
+        $("#FusionAttributeTree").jqxTree({ theme: theme });
+        $("#FusionAttributeTree").bind("select", function (evt) {
+            try {
+                fusionSelectedNode = $(evt.args.element).find(".node");
+                if (fusionSelectedNode.data("attributeid")) {
+                    amplify.publish("ViewingFusionAttribute", { id: fusionSelectedNode.data("attributeid") });
+                }
+            } catch (e) {
+                logError("Relations", e);
+            }
+        });
+
+        //#endregion
+
+        //#region Base Object Loading
+
+        $('#FusionAttributeTree').jqxTree('addTo', { expanded: true, id: 'FusionNode' + id, html: '<span class="node topNode" data-object="' + type + '" data-objectid="' + id + '">Root</span>' });
+        $.getJSON('/Fusion/_FusionAttributesByObject', { type: type, id: id }, function (json) {
+            try {
+                addFusionNodeToTree(json, "#FusionNode", id);
+            } catch (e) {
+                logError("Relations", e);
+            }
+        });
+
+        //#endregion
+
+        //#region Fusion Intersect Logic
+
+        amplify.subscribe("AddedIntersect", function (data) {
+            try {
+                $('#FusionAttributeTree').jqxTree('addTo', { expanded: true, id: 'FusionIntersectNode' + data.id, html: '<span class="node topNode" data-objecttype="' + data.objecttype + '" data-objecttypeid="' + data.objecttypeid + '" data-object="Intersect" data-objectid="' + data.id + '">' + data.name + '</span>' });
+                $.getJSON('/Fusion/_FusionAttributesByObject', { type: 'Intersect', id: data.id }, function (json) {
+                    addFusionNodeToTree(json, "#FusionIntersectNode", data.id);
+                });
+                var node = $('#FusionAttributeTree').find("#FusionIntersectNode" + data.id)[0];
+                $('#FusionAttributeTree').jqxTree('selectItem', node);
+            } catch (e) {
+                logError("Relations", e);
+            }
+        });
+
+        amplify.subscribe("ClearedSelectedRelationships", function (data) {
+            try {
+                var items = $('#FusionAttributeTree').jqxTree('getItems');
+                for (var i = 1; i < items.length; i++) {
+                    $('#FusionAttributeTree').jqxTree('removeItem', items[i]);
+                }
+                $('#FusionAttributeDetail').FusionAttributeDetail('clearView');
+            } catch (e) {
+                logError("Relations", e);
+            }
+        });
+
+        amplify.subscribe("RemovedIntersect", function (data) {
+            try {
+                var node = $('#FusionAttributeTree').find("#FusionIntersectNode" + data.id)[0];
+                $('#FusionAttributeTree').jqxTree('removeItem', node);
+                $('#FusionAttributeDetail').FusionAttributeDetail('clearView');
+            } catch (e) {
+                logError("Relations", e);
+            }
+        });
+
+        amplify.subscribe("ViewingFusionAttribute", function (data) {
+            //{ id }
+            try {
+                if (data.id) {
+                    $('#FusionAttributeDetail').FusionAttributeDetail("loadView", data.id);
+                }
+                else {
+                    $('#FusionAttributeDetail').FusionAttributeDetail('clearView');
+                }
+            } catch (e) {
+                logError("Relations", e);
+            }
+        });
+
+        //#endregion
+
+    });
+</script>

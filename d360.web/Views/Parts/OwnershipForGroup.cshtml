@@ -1,0 +1,152 @@
+﻿@model d360.core.entities.ObjectModel
+@{
+    var IsAdmin = (bool)ViewData["IsAdmin"];
+}
+<div id="OwnershipPart"></div>
+<script type="text/javascript">
+    var ownershipUrl = '/api/groups/@(Model.ObjectID)/ownership';
+    var IsAdmin = @(IsAdmin ? "true" : "false");
+
+    $(function () {
+
+        //#region Grid
+
+        var ownershipCurrentScoreRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            return currentScoreRenderer(value, data);
+        }
+
+        var ownershipTypeRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            try {
+                var tools = [];
+
+                tools.push({
+                    isitemlink: true,
+                    iconBackColor: data.IconBackColor, iconForeColor: data.IconForeColor, iconText: data.IconText,
+                    context: 'Preview', type: data.ObjectType, id: data.ObjectID,
+                    urlprefix: data.Url
+                });
+
+                return renderToolsHtml(value, tools, contextList.Responsibility, data);
+            } catch (e) {
+                console.log(e);
+            }
+        };
+
+        var assigningObjectNameRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            try {
+                var tools = [];
+
+                tools.push({
+                    isitemlink: true,
+                    iconBackColor: data.AssigningIconBackColor, iconForeColor: data.AssigningIconForeColor, iconText: data.AssigningIconText,
+                    context: 'AssigningItemPreview', type: data.AssigningItemType, id: data.AssigningItemID,
+                    title: 'Assigning Item',
+                    urlprefix: data.AssigningItemUrl
+                });
+
+                return renderToolsHtml(value, tools, contextList.Responsibility, data);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+        
+        var ownershipObjectNameRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            var html = previewLinkRenderer(data.ObjectType, data.ObjectID, data.ObjectUrl, data.ObjectName);
+            data = null;
+            return html;
+        }
+
+        var ownershipRedFlaggedRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            return redFlaggedRenderer(data, true);
+        };
+
+        var source = {
+            datafields: [
+                { name: 'AssigningItemType' },
+                { name: 'AssigningItemID', type: 'number' },
+                { name: 'AssigningItemName' },
+                { name: 'AssigningItemUrl' },
+                { name: 'AssigningTypeName' },
+                { name: 'AssigningIconBackColor' },
+                { name: 'AssigningIconForeColor' },
+                { name: 'AssigningIconText' },
+                { name: 'ObjectType' },
+                { name: 'ObjectTypeName' },
+                { name: 'ObjectID', type: 'number' },
+                { name: 'ObjectName' },
+                { name: 'ObjectUrl' },
+                { name: 'ResponsibleObjectName' },
+                { name: 'ResponsibleObjectUrl' },
+                { name: 'Role' },
+                { name: 'CurrentScore', type: 'number' },
+                { name: 'RedFlagged', type: 'bool' },
+            ],
+            datatype: "json",
+            async: false,
+            url: ownershipUrl
+        };
+
+        var adapter = new $.jqx.dataAdapter(source);
+
+        $('#OwnershipPart').jqxGrid({
+            altrows: true,
+            theme: list_theme,
+            source: adapter,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pageable: false,
+            height: '250px',
+            scrollmode: 'logical',
+            scrollbarsize: 10,
+            width: grid_width,
+            columns: [
+                { datafield: "ObjectTypeName", text: "Type", width: '125px', columntype: 'dropdownlist', filtertype: 'checkedlist' },
+                { datafield: "ObjectName", text: "Name", cellsrenderer: ownershipObjectNameRenderer },
+                { datafield: "Role", text: "Role", columntype: 'dropdownlist', filtertype: 'checkedlist' },
+                { datafield: "CurrentScore", text: "Score", filterable: false, width: '60px', cellsrenderer: ownershipCurrentScoreRenderer, columntype: 'numberinput', filtertype: 'number' },
+                //{ datafield: "AssigningItemID", text: "", width: '40px', filterable: false, cellsrenderer: assigningObjectNameRenderer }
+                { datafield: "RedFlagged", text: "", width: '50px', cellsrenderer: ownershipRedFlaggedRenderer, hidden: !IsAdmin, filtertype: 'bool' }
+            ]
+        });
+
+        $('#OwnershipPart').on('rowselect', function (event) {
+            var args = event.args;
+            var row = args.rowindex;
+
+            var currentSelectedIndexes = $('#OwnershipPart').jqxGrid('getselectedrowindexes');
+            $.each(currentSelectedIndexes, function (p, ix) {
+                if (ix != row) $('#OwnershipPart').jqxGrid('unselectrow', ix);
+            })
+            amplify.publish("ClearOtherBoardFilters", { Origin: 'Ownership' });
+
+            var data = $('#OwnershipPart').jqxGrid('getrowdata', row);
+            amplify.publish("ShowFilteredBoard", { ObjectType: data.ObjectType, ObjectID: data.ObjectID });
+        });
+
+        amplify.subscribe("ClearOtherBoardFilters", function (data) {
+            if (data.Origin != 'Ownership') {
+                var currentSelectedIndexes = $('#OwnershipPart').jqxGrid('getselectedrowindexes');
+                $.each(currentSelectedIndexes, function (p, ix) {
+                    $('#OwnershipPart').jqxGrid('unselectrow', ix);
+                })
+            }
+        });
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case "AlertFlag":
+                        $('#OwnershipPart').jqxGrid('updatebounddata');
+                        break;
+                }
+
+            } catch (e) {
+                logError("Detail", e);
+            }
+        });
+
+        //#endregion
+
+    });
+</script>

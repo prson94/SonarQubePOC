@@ -1,0 +1,129 @@
+﻿@using d360.core.resources
+@model d360.web.Models.SourcingResponsibilityEditorModel
+@*
+    This partial is used by the relationship overlay when adding responsibility overrides.  Do not use this from any other location.
+*@
+<div class="container">
+    <div class="ui segment">
+
+        <div class="ui form message">
+            <div class="pull-left">
+                <div class="ui large header">Add Responsiblity</div>
+                <p>Add a sourcing responsbility for this relationship.  This overrides the ideal sources already defined.</p>
+            </div>
+            <div class="pull-right">
+                <div class="ui buttons">
+                    <button type="button" id="EditableFormCancelButton" class="tiny ui button" data-context="@(ContextList.ActionResponsibility)">Cancel</button>
+                    <div class="or"></div>
+                    <button type="button" id="EditableFormSaveButton" class="tiny ui positive button saveButton" data-context="@(ContextList.ActionResponsibility)">Save</button>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+
+        <div id="progress"></div>
+
+        @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = "POST", Url = "/Form/AddResponsibility_Sourcing", OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
+        {
+            <input type="hidden" id="_context" name="_context" value="@(ContextList.ActionResponsibility)" />
+            <input type="hidden" id="ResponsibilityTypeID" name="ResponsibilityTypeID" value="0" />
+            @Html.HiddenFor(i => i.ObjectType)
+            @Html.HiddenFor(i => i.ObjectID)
+            <div class="ui form">
+                <div class="two fields">
+                    <div class="field">
+                        <label><span id='ArtifactTip'>Artifact to Source From</span></label>
+                        <div class="ui labeled input">
+                            <div id="Artifact"></div>
+                            <div class="ui corner label">
+                                <i class="icon asterisk"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label><span id='ContextTip'>Contexts</span></label>
+                        <div class="ui labeled input">
+                            <div id="Context"></div>
+                            <div class="ui corner label">
+                                <i class="icon asterisk"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script type="text/javascript">
+    var ArtifactSource = [
+    @{
+for (var i = 0; i < Model.Artifacts.Count; i++)
+        {
+            if(i > 0) {<text>,</text>} <text>{ label: "@(Model.Artifacts[i].Text)", value: @(Model.Artifacts[i].Value), group2: @(Model.Artifacts[i].Group2) }</text>
+        }
+    }
+    ];
+
+    var ContextSource = [
+    @{
+        for (var i = 0; i < Model.Contexts.Count; i++)
+        {
+            if(i > 0) {<text>,</text>} <text>{ label: "@(Model.Contexts[i].Text)", value: @(Model.Contexts[i].Value), checked: @(Model.Contexts[i].Selected ? "true" : "false"), group: "@(Model.Contexts[i].Group)" }</text>
+        }
+    }
+    ];
+
+    $(function () {
+
+        $("#Artifact").jqxDropDownList({ theme: theme, source: ArtifactSource, width: '98%' });
+        $("#Context").jqxDropDownList({ theme: theme, source: ContextSource, width: '98%', checkboxes: true });
+
+
+        $('#ArtifactTip').qtip({
+            content: {
+                text: "@(d360.core.resources.Fields.Description_Description)",
+                position: {
+                    my: 'top right',  // Position my top left...
+                    at: 'bottom left', // at the bottom right of...
+                    target: $('#Artifact') // my target
+                }
+            },
+            style: {
+                classes: 'qtip-blue qtip-shadow'
+            }
+        });
+
+        $('#ContextTip').qtip({
+            content: {
+                text: "@(d360.core.resources.Fields.Description_Description)",
+                position: {
+                    my: 'top right',  // Position my top left...
+                    at: 'bottom left', // at the bottom right of...
+                    target: $('#Context') // my target
+                }
+            },
+            style: {
+                classes: 'qtip-blue qtip-shadow'
+            }
+        });
+
+        $('#EditableFormSaveButton').on('click', function () {
+            $('#form0').submit();
+        });
+
+        $('#EditableFormCancelButton').on('click', function () {
+            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+        });
+        amplify.subscribe("ErrorOccurredAction", function (data) {
+            $('#EditableFormSaveButton').hide();
+        });
+        amplify.subscribe("StartingAjax", function () {
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+        });
+        amplify.subscribe("EndingAjax", function () {
+            $('#progress').html('');
+        });
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

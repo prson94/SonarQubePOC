@@ -1,0 +1,52 @@
+﻿@model List<d360.core.entities.FieldTypeWithRelation>
+@{
+    var columns = "";    
+    var dataFields = "";
+    Model.ForEach(i => {
+        if (i.Name != "ID")
+        {
+            columns += "{ datafield: '" + i.Name + "', text: '" + i.FriendlyName + "'},";
+        }
+        dataFields += "{ name: '" + i.Name + "'},";  
+    });
+    columns = columns.Remove(columns.Length - 1, 1);
+    dataFields = dataFields.Remove(dataFields.Length - 1, 1);
+}
+<script type="text/javascript">
+    var eventGroupID = @(ViewData["ID"]);
+    $(function () {
+        //#region Grid
+
+        var srcResultsGrid = {
+            datatype: 'json',
+            url: '/monitor/EventGroup/' + eventGroupID + '/events.json',
+            datafields: [ @Html.Raw(dataFields) ]
+        };
+
+        var adapterResultsGrid = new $.jqx.dataAdapter(srcResultsGrid);
+
+        $("#EventList").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            filterable: true,
+            showfilterrow: true,
+            virtualmode: false,
+            pageable: true,
+            columnsresize: true,
+            enabletooltips: true,
+            source: adapterResultsGrid,
+            theme: list_theme,
+            columns: [ @Html.Raw(columns) ]
+        });
+
+        //#endregion
+    });
+</script>
+<div class="tile tile-detail">
+    <header>Events</header>
+    <article id="EventList"></article>
+</div>

@@ -1,0 +1,518 @@
+﻿@import "_Variables.less";
+
+@import "jquery.gritter.less"; 
+
+@import "jqx.base.less";
+@import "jqx.plain.less";
+@import "jqx.d3s.less"; 
+
+@import "d3s.randomsurveyquestion.less";
+@import "d3s.social.less"; 
+@import "d3s.surveyreport.less";
+
+@import "Tooltip.less";
+@import '../redactor/redactor.less';
+@import "Diagrams.less"; 
+
+a {
+    color: @d3s-blue-2;
+}
+
+img {
+    border: none;
+}
+
+fieldset legend { 
+    font-weight: 600;
+    color: #72A376;
+}
+
+/*#region Headings */
+
+.relation-haschildren {
+    /*font-weight: 600 !important;*/
+    color: @d3s-blue-2 !important; 
+}
+
+.relation-group-heading {
+    color: @d3s-blue-2 !important; 
+    font-family: @body-font-family !important;
+    margin-top: 0px !important;
+    font-weight: 600 !important;
+    padding-bottom: 0px !important;
+    margin-bottom: 0px !important;
+}
+.relation-type-heading {
+    color: @d3s-blue-2 !important;
+    font-family: @body-font-family !important;
+    margin-top: 0px !important;
+    line-height: 15px !important;
+    font-weight: 600 !important;
+    padding-bottom: 0px !important;
+    margin-bottom: 0px !important;
+    margin-top: 10px !important;
+}
+
+/*#endregion */
+
+.error {
+    margin: 10px 0px 10px 0px;
+    color: Red;
+}
+
+.HideUntilLoaded {
+    visibility: hidden;
+}
+
+/*#region Overlays */
+
+.overlayOption {
+    margin: 0px 0px 20px 0px;
+    color: #fff;
+
+    div {
+        line-height: 1em;
+        font-size: 1em;
+    }
+
+    &:hover {
+        color: @d3s-orange;
+        cursor: help;
+    }
+}
+
+.overlayOptionSelected {
+    color: @d3s-orange;
+}
+
+.BoardOverlay {
+    display: none;
+    overflow-y: scroll;
+    position: fixed;
+    width: 600px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    z-index: 9999;
+    padding-left: 10px;
+    background-color: rgba(255,255,255,0.95);
+    border-left: 1px solid #ccc;
+}
+
+#OverlayBackground {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    z-index: 10000;
+    background-color: rgba(66, 66, 66, 0.90);
+    width: 100%;
+}
+
+#Overlay {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    z-index: 10001;
+    margin-bottom: -10px;
+    width: 100%;
+}
+
+.SidebarOverlay {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    width: 260px;
+    z-index: 9999;
+    padding-left: 5px;
+    background-color: rgba(255,255,255,0.95);
+    border-left: 1px solid #ccc;
+
+    .tools {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+
+        a {
+            color: #ccc;
+        }
+    }
+
+    .Content {
+        position: absolute;
+        top: 40px;
+        width: 95%;
+
+        .title {
+            font-size: 125%;
+            font-weight: 600;
+            margin: 5px 0px 5px 0px;
+        }
+    }
+}
+
+/*#endregion */
+
+/*#region Forms */
+
+.form {
+    padding: 5px 0px 20px 5px;
+    width: 99%;
+}
+
+.FormTools {
+    margin-top: 20px;
+}
+
+.IconDisabled,
+.IconDisabled:hover {
+    color: #DDDDDD !important;
+}
+
+/*#endregion */
+
+/*#region Search */
+
+#SearchButton {
+    cursor: pointer;
+}
+
+#CategoryResults {
+    padding-top: 10px;
+
+    .category,
+    .entry {
+        font-size: 110%;
+        margin-bottom: 5px;
+
+        a {
+            font-weight: 600;
+            text-decoration: none;
+        }
+    }
+}
+
+#SearchResults {
+    margin: 10px 10px 20px 10px;
+
+    .entry {
+        margin-bottom: 10px;
+
+        .name {
+            font-size: 110%;
+        }
+
+        .description {
+            color: #999;
+        }
+    }
+}
+
+#search {
+    position: relative;
+    font-family: @body-font-family;
+    font-size: 125%;
+    color: #666;
+    margin: 10px 10px 0px 0px;
+
+    table tr {
+        vertical-align: middle;
+
+        td:first-child {
+            width: 50px;
+        }
+    }
+
+    .text {
+        background-color: #fff;
+        font-weight: 900;
+        font-stretch: extra-expanded;
+        font-size: 15px;
+        line-height: 20px;
+        color: @d3s-blue-2;
+        border: 1px solid #a9a9a9;
+        width: 200px;
+    }
+
+    button {
+        border: none;
+        padding: 0;
+        background-color: Transparent;
+    }
+}
+
+.info {
+    margin: 10px 10px 20px 10px;
+}
+ 
+/*#endregion */
+
+/*#region Login */
+
+#loginForm {
+    position: relative;
+    top: 100px;
+    width: 270px;
+    margin: auto;
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid #666;
+
+    .validation-summary-errors ul {
+        list-style-type: square;
+
+        li {
+            margin: 10px 0px 10px 0px;
+            color: Red;
+            font-weight: 400 !important;
+        }
+    }
+}
+
+/*#endregion */
+
+/*#region Grid Toolbar */
+
+.TreeGridTools {
+    a {
+        color: @d3s-gray-1;
+        text-decoration: none;
+        margin: 0px 0px 0px 10px;
+        &:hover {
+            color: @d3s-blue-2;
+        }
+    }    
+}
+
+.RowTools,
+.tools {
+    width: 100%;
+    color: @d3s-gray-1;
+    font-weight: 400;
+    height: 25px;
+    text-align: right;
+    vertical-align: middle;
+    line-height: 16px;
+    font-size: 16px;
+    a {
+        color: @d3s-gray-1;
+        text-decoration: none;
+        border: 1px solid transparent;
+        margin: 0px 10px 0px 5px;
+        padding: 11px 3px 1px 3px;
+        span {
+            margin-left: 5px;
+            font-size: @font-size-base * .75;
+        }
+        &:hover {
+            color: @d3s-blue-2;
+        }
+    }
+}
+
+.RowTools {
+    margin: 4px;
+    float: right;
+}
+
+/*#endregion */
+
+.d3s-page {
+    position: relative;
+    margin-top: 125px;
+    width: 100%;
+}
+
+.d3s-cell {
+    margin: 4px;
+}
+
+/*#region Statistics Classes*/
+
+.Score {
+    font-weight: 600;
+    vertical-align: middle;
+    height: 100%;
+}
+
+.statistics {
+    background-color: @d3s-gray-4;
+    height: 36px;
+    padding: 3px 20px 3px 0px;
+    text-align: right;
+    border-bottom: 1px solid @d3s-gray-3;
+
+    .statistic {
+        margin-left: 60px;
+        position: relative;
+        display: inline-table;
+        overflow: hidden;
+
+        .score {
+            color: #6D9ECB;
+            font-family: @body-font-family;
+            font-size: 32px;
+            line-height: 32px;
+            font-weight: 400;
+            margin-right: 20px;
+            float: left;
+        }
+
+        .name {
+            color: #525051;
+            font-family: @body-font-family;
+            font-size: 20px;
+            line-height: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            float: right;
+        }
+
+        .slug {
+            color: #525051;
+            font-family: @body-font-family;
+            font-size: 12px;
+            line-height: 12px;
+            float: right;
+            clear: right;
+        }
+    }
+}
+
+/*#endregion*/
+
+/*#region Bootstrap Overrides */
+.row {
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+}
+
+.navbar-default {
+    background-color: #fff;
+    border: none;
+} 
+
+.container-fluid {
+    clear: both;
+}
+
+.panel-heading {
+    .fa {
+        font-size: 1.33333333em;
+        color: @d3s-blue-2;
+        margin-right: 10px;
+    } 
+}
+.container-fluid {
+    padding-left: 0px !important; 
+    padding-right: 0px !important; 
+}
+
+.panel-grid-body {
+    padding: 0px !important;
+}
+
+/*#endregion*/
+
+/*#region JqxWidget Overrides*/
+.jqx-menu-item-top-d3s,
+.jqx-menu-item-top-plain {
+    color: #fff;
+}
+
+.jqx-menu-minimized-d3s {
+    background-color: @d3s-blue-1;
+}
+
+.redactor_box {
+    border: 1px solid @d3s-gray-3;
+}
+
+.jqx-menu-item-top-hover-plain {
+    color: @d3s-orange;
+}
+
+.jqx-grid-groups-header h1,
+.jqx-grid-toolbar h1 {
+    line-height: 18px;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 5px 0px 5px 5px;
+}
+
+.rowgroup {
+    width: 100% !important;
+    height: 0px !important;
+    margin-left: 20px !important;
+}
+
+.badge {
+    background-color: #ebebeb !important;
+    color: #666 !important;
+}
+
+.jqx-input-group-addon-d3s {
+    background-color: #fff !important;
+}
+
+.jqx-validator-error-label {
+    -webkit-transform: translateY(-15%) !important;
+    -moz-transform: translateY(-15%) !important;
+    -ms-transform: translateY(-15%) !important;
+    -o-transform: translateY(-15%) !important;
+    transform: translateY(-15%) !important;
+}
+/*#endregion*/
+
+/*#region Knockout File Bindings*/
+.filedrag {
+    border: 2px dashed #AAA;
+    border-radius: 7px;
+    cursor: default;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.filedrag .drag-label {
+    font-weight: bold;
+    text-align: center;
+    display: block;
+    color: #AAA;
+    margin-top: 10px;
+    margin-bottom: -10px;
+}
+
+.filedrag.hover {
+    border-color: #F00;
+    border-style: solid;
+    box-shadow: inset 0 3px 4px #888;
+}
+
+.filedrag.hover .drag-label {
+    color: #F00;
+}
+
+.custom-file-input-wrapper {
+    position: relative;
+}
+
+.custom-file-input-wrapper .custom-file-input-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.custom-file-input-wrapper .custom-file-input-button * {
+    cursor: pointer;
+}
+
+.custom-file-input-wrapper .custom-file-input-button input[type="file"] {
+    position: absolute;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+    opacity: 0;
+}
+/*#endregion*/

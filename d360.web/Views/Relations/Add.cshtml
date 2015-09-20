@@ -1,0 +1,336 @@
+﻿@{
+    var obj = (d360.core.SystemObjects)ViewData["Object"];
+    var objID = (int)ViewData["ObjectID"];
+    var objType = (d360.core.SystemObjects)ViewData["ObjectType"];
+    var objTypeID = (int)ViewData["ObjectTypeID"];
+}
+<h1>Please choose the type of relation you would like to add below.</h1>
+<div id="AddIntersectLog"></div>
+<div class="row" style="margin: 20px 0px 20px 0px">
+    <div class="col-lg-12">
+        <button id="save-button" type="submit">Add Selected</button>
+        <button id="cancel-button" type="button">Close</button>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-4">
+        <h2>Choose Items To Relate</h2>
+        <div class="form-group">
+            @*<label for="AllowedTypeDropdown">Type Filter</label>*@
+            <div id="AllowedTypeDropdown"></div>
+        </div>
+        <div class="form-group">
+            @*<label for="AllowedRelationGrid">Items to Relate</label>*@
+            <div id="AllowedRelationGrid"></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <h2>Choose a Role</h2>
+        <div class="form-group">
+            @*<label for="AllowedRoleDropdown">Assigned Role</label>*@
+            <div id="AllowedRoleDropdown"></div>
+        </div>
+        <div class="form-group" id="SourceField" style="display: none">
+            <h2>Choose Source</h2>
+            @*<label for="AllowedRoleDropdown">Assigned Role</label>*@
+            <div id="SourceDropdown"></div>
+        </div>
+        <h2>Describe the Context of this Relationship</h2>
+        <div class="form-group">
+            @*<label for="ContextDescription">Context Description</label>*@
+            <div id="ContextDescription" class="htmlArea"></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <h2>Choose a Limiting Context</h2>
+        <div class="form-group">
+            @*<label for="ContextGrid">Currently Chosen Contexts</label>*@
+            <div id="ContextGrid"></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var obj = "@(obj.ToString())";
+    var objID = "@(objID)";
+    var objType = "@(objType.ToString())";
+    var objTypeID = "@(objTypeID)";
+    var formContext = "@(ContextList.Intersect)";
+    var postUri = '/api/' + obj + '/' + objID + '/relationships';
+
+    var TypeDropdownModel = function () {
+        var self = this;
+        var item = $("#AllowedTypeDropdown").jqxComboBox('getSelectedItem');
+        var arr = item.value.split('|');
+        self.IntersectTypeID = arr[0];
+        self.TargetType = arr[1];
+        self.TargetTypeID = arr[2];
+    }
+
+    var getAddIntersectsGridUrl = function () {
+        var model = new TypeDropdownModel();
+        var url = '/relations/PossibleRelationshipsBySource?source=' + obj + '&id=' + objID + '&targetType=' + model.TargetType + '&targetTypeID=' + model.TargetTypeID + '&intersectTypeID=' + model.IntersectTypeID;
+        return url;
+    }
+
+    var determineEnabledRoles = function (intersectTypeID) {
+        try {
+            $.getJSON('/relations/RolesByIntersectType?id=' + intersectTypeID, function (data) {
+                var ddlItems = $("#AllowedRoleDropdown").jqxComboBox('getItems');
+                $.each(ddlItems, function (ix, itm) {
+                    if (data.length == 0) {
+                        if (ix > 0) $("#AllowedRoleDropdown").jqxComboBox('disableAt', ix);
+                    }
+                    else {
+                        $("#AllowedRoleDropdown").jqxComboBox('disableAt', ix);
+                    }
+                });
+                if (data) {
+                    $.each(data, function (ix, itm) {
+                        if (itm) {
+                            var value = itm.ID;
+                            var ddlItem = $("#AllowedRoleDropdown").jqxComboBox('getItemByValue', value);
+                            if (ddlItem) $("#AllowedRoleDropdown").jqxComboBox('enableItem', ddlItem);
+                        }
+                    });
+                }
+            });
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
+    $(function () {
+
+        //#region Type Filter Logic
+
+        var sourceAddIntersects = {
+            datatype: "json",
+            datafields: [
+                { name: 'Name' },
+                { name: 'Value' }
+            ],
+            url: '/relations/RelationshipTypesForAdding?type=' + objType + '&typeID=' + objTypeID,
+            async: false
+        };
+
+        var dataAdapterAddIntersects = new $.jqx.dataAdapter(sourceAddIntersects);
+
+        $("#AllowedTypeDropdown").jqxComboBox({ theme: theme, source: dataAdapterAddIntersects, selectedIndex: 0, width: '80%', height: '25', displayMember: 'Name', valueMember: 'Value' });
+
+        //#endregion
+
+        //#region Source Dropdown Logic
+
+        var sourceSource = {
+            datatype: "json",
+            datafields: [
+                { name: 'Name' },
+                { name: 'ID' }
+            ],
+            url: '/relations/source',
+            async: false
+        };
+
+        var adapterSource = new $.jqx.dataAdapter(sourceSource);
+
+        $("#SourceDropdown").jqxComboBox({ theme: theme, source: adapterSource, selectedIndex: 0, width: '80%', height: '25', displayMember: 'Name', valueMember: 'ID' });
+
+        //#endregion
+
+        //Must stay at this location.
+        var selectedTypeModel = new TypeDropdownModel();
+
+        //#region Role Selection Logic
+
+        var sourceRoles = {
+            datatype: "json",
+            datafields: [
+                { name: 'Name' },
+                { name: 'ID' }
+            ],
+            url: '/relations/Roles',
+            async: false
+        };
+
+        var adapterRoles = new $.jqx.dataAdapter(sourceRoles);
+
+        $("#AllowedRoleDropdown").jqxComboBox({ theme: theme, source: adapterRoles, selectedIndex: 0, width: '80%', height: '25', displayMember: 'Name', valueMember: 'ID' });
+
+        $("#AllowedRoleDropdown").jqxComboBox('insertAt', '', 0);
+
+        determineEnabledRoles(selectedTypeModel.IntersectTypeID);
+
+        //#endregion
+
+        //#region Allowed Relation Grid Logic
+
+        var addRelationsPagingRenderer = function () {
+            return renderMinimalPagingHtml($("#AllowedRelationGrid"));
+        }
+
+        var sourceAddIntersectsGrid = {
+            datafields: [
+                        { name: 'TargetID' },
+                        { name: 'TargetName' },
+                        { name: 'TargetType' },
+                        { name: 'IntersectTypeID' },
+                        { name: 'ConstrainingObjectID' },
+                        { name: 'ConstrainingObjectType' }
+            ],
+            datatype: "json",
+            url: '/relations/PossibleRelationshipsBySource?source=' + obj + '&id=' + objID + '&targetType=' + selectedTypeModel.TargetType + '&targetTypeID=' + selectedTypeModel.TargetTypeID + '&intersectTypeID=' + selectedTypeModel.IntersectTypeID //getAddIntersectsGridUrl()
+        }
+
+        var dataAdapterAddIntersectsGrid = new $.jqx.dataAdapter(sourceAddIntersectsGrid);
+
+        $("#AllowedRelationGrid").jqxGrid({
+            altrows: true,
+            theme: theme,
+            source: dataAdapterAddIntersectsGrid,
+            filterable: true,
+            selectionmode: 'checkbox',
+            showfilterrow: true,
+            keyboardnavigation: true,
+            scrollmode: 'deferred',
+            deferreddatafields: ['TargetName'],
+            scrollfeedback: function (row) {
+                return '<table style="height: 150px;"><tr><td>' + row.TargetName + '</td></tr></table>';
+            },
+            pagesize: 15,
+            sortable: true,
+            theme: theme,
+            width: '80%',
+            height: 325,
+            columns: [
+                { text: 'Name', datafield: 'TargetName' }
+            ]
+        });
+
+        //#endregion
+
+        //#region Context Grid
+
+        var sourceContextGrid = {
+            dataFields: [
+                    { name: 'Code', type: 'string' },
+                    { name: 'ID', type: 'number' },
+                    { name: 'Name', type: 'string' },
+                    { name: 'List', type: 'string' },
+                    { name: 'Type', type: 'string' }
+            ],
+            url: '/relations/contexts',
+            datatype: "json"
+        };
+
+        var adapterContextGrid = new $.jqx.dataAdapter(sourceContextGrid);
+
+        $("#ContextGrid").jqxGrid({
+            source: adapterContextGrid,
+            altrows: true,
+            theme: theme,
+            groupable: true,
+            filterable: true,
+            selectionmode: 'checkbox',
+            showfilterrow: true,
+            keyboardnavigation: true,
+            scrollmode: 'deferred',
+            deferreddatafields: ['Type', 'List', 'Name'],
+            scrollfeedback: function (row) {
+                return '<table style="height: 150px;"><tr><td>' + row.Name + '</td></tr></table>';
+            },
+            sortable: true,
+            theme: theme,
+            width: '100%',
+            height: 400,
+            groupsexpandedbydefault: true,
+            groups: ['Type', 'List'],
+            columns: [
+                { text: 'ID', hidden: true, datafield: 'ID' },
+                { text: 'Type', hidden: true, datafield: 'Type' },
+                { text: 'List', hidden: true, datafield: 'List' },
+                { text: 'Code', datafield: 'Code', width: '25%' },
+                { text: 'Name', datafield: 'Name', width: '65%' }
+            ]
+        });
+
+        //#endregion
+
+        //#region Event Handler Logic
+
+        $('#AllowedRoleDropdown').bind('select', function (event) {
+            var item = $("#AllowedRoleDropdown").jqxComboBox('getSelectedItem');
+            if (item.value == "3") {
+                $("#SourceField").show();
+            }
+            else {
+                $("#SourceField").hide();
+            }
+        });
+
+        $('#AllowedTypeDropdown').bind('select', function (event) {
+            var model = new TypeDropdownModel();
+            sourceAddIntersectsGrid.url = '/relations/PossibleRelationshipsBySource?source=' + obj + '&id=' + objID + '&targetType=' + model.TargetType + '&targetTypeID=' + model.TargetTypeID + '&intersectTypeID=' + model.IntersectTypeID
+            $('#AllowedRelationGrid').jqxGrid('updatebounddata');
+            determineEnabledRoles(model.IntersectTypeID);
+        });
+
+        amplify.subscribe("RemovedIntersect", function (data) {
+            $('#AllowedRelationGrid').jqxGrid('updatebounddata');
+        });
+
+        $('#save-button').jqxButton().click(function () {
+
+            var requestModel = {
+                Targets: [],
+                RoleID: 0,
+                Contexts: [],
+                Description: ''
+            };
+
+            var rowindexes = $('#AllowedRelationGrid').jqxGrid('getselectedrowindexes');
+            $(rowindexes).each(function () {
+                var data = $('#AllowedRelationGrid').jqxGrid('getrowdata', this);
+                requestModel.Targets.push({ Type: data.TargetType, ID: data.TargetID });
+            });
+
+            var contexts = $('#ContextGrid').jqxGrid('getselectedrowindexes');
+            $(contexts).each(function () {
+                var data = $('#ContextGrid').jqxGrid('getrowdata', this);
+                requestModel.Contexts.push({ ID: data.ID });
+            });
+
+            var role = $("#AllowedRoleDropdown").jqxComboBox('getSelectedItem');
+            requestModel.RoleID = role.value;
+
+            requestModel.Description = $("#ContextDescription").redactor('get');
+
+            $.post(postUri, requestModel,
+                function () {
+                    $('#AddIntersectLog').removeClass('FormNotice').addClass('FormStatus').html('<img src="/content/images/ajaxLoader.gif" style="width: 10px;" /> Relating selected items...');
+                })
+                .done(function (data, status, xhr) {
+                    var model = new TypeDropdownModel();
+                    amplify.publish("SaveAction", { intersecttypeid: model.IntersectTypeID, targettype: model.TargetType, targettypeid: model.TargetTypeID, name: '', context: formContext });
+                    $('#AllowedRelationGrid').jqxGrid('clearselection');
+                    $("#AllowedRelationGrid").jqxGrid('updatebounddata');
+                    $('#ContextGrid').jqxGrid('clearselection');
+                })
+                .fail(function (data, status, xhr) {
+                    $('#AddIntersectLog').removeClass('FormStatus').addClass('FormNotice');
+                })
+                .always(function (data, status, xhr) {
+                    $('#AddIntersectLog').html(xhr.statusText);
+                    $('#AddIntersectLog').fadeOut(2000);
+                });
+        });
+
+        $('#cancel-button').jqxButton().click(function () {
+            amplify.publish("RelationsCancelAction");
+            amplify.publish("CancelAction", { context: formContext });
+        });
+
+        //#endregion
+    });
+</script>

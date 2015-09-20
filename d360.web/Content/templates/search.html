@@ -1,0 +1,17 @@
+﻿<div id="SearchArea">
+    <div class="row">
+        <div class="col l3 m3 hide-on-small-only">
+            <div class="tile tile-detail">
+                <h3>Categorized Results</h3>
+                <div class="widget" id="CategoryResults" data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
+            </div>
+        </div>
+        <div class="col l9 m9">
+            <div class="tile tile-detail">
+                <div data-bind="text: elapsedTime"></div>
+                <div data-bind="visible: shouldShowSpinner()"><i class='fa fa-spinner fa-spin fa-4x'></i></div>
+                <div id="SearchResults" data-bind="template: {name: 'searchResultTmpl', foreach: results }"></div>
+            </div>
+        </div>
+    </div>
+</div>

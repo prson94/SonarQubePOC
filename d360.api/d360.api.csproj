@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0F39AEA4-0CFB-4EC7-A44C-3DA871D242DB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>d360.api</RootNamespace>
+    <AssemblyName>d360.api</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.IdentityModel.Services" />
+    <Reference Include="System.IdentityModel.Tokens.Jwt">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.3.0.0\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.1.2\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Http, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.1.2\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.1.2\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Thinktecture.IdentityModel">
+      <HintPath>..\packages\Thinktecture.IdentityModel.3.6.1\lib\net45\Thinktecture.IdentityModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Thinktecture.IdentityModel.Core, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Thinktecture.IdentityModel.Core.1.1.0\lib\net45\Thinktecture.IdentityModel.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Thinktecture.IdentityModel.WebApi">
+      <HintPath>..\packages\Thinktecture.IdentityModel.WebApi.1.1.0\lib\net45\Thinktecture.IdentityModel.WebApi.dll</HintPath>
+    </Reference>
+    <Reference Include="Thinktecture.IdentityServer.Core">
+      <HintPath>..\packages\Thinktecture.IdentityServer.Core.2.4.0\lib\net45\Thinktecture.IdentityServer.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Thinktecture.IdentityServer.Core.Repositories">
+      <HintPath>..\packages\Thinktecture.IdentityServer.Core.2.4.0\lib\net45\Thinktecture.IdentityServer.Core.Repositories.dll</HintPath>
+    </Reference>
+    <Reference Include="Thinktecture.IdentityServer.Protocols">
+      <HintPath>..\packages\Thinktecture.IdentityServer.Core.2.4.0\lib\net45\Thinktecture.IdentityServer.Protocols.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ArtifactsController.cs" />
+    <Compile Include="BaseApiController.cs" />
+    <Compile Include="TaxonomyController.cs" />
+    <Compile Include="PermissionAuthorizationAttribute.cs" />
+    <Compile Include="SecurityController.cs" />
+    <Compile Include="ResourcesController.cs" />
+    <Compile Include="GovernanceController.cs" />
+    <Compile Include="LineageController.cs" />
+    <Compile Include="FusionController.cs" />
+    <Compile Include="DomainsController.cs" />
+    <Compile Include="EventsController.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestPackage.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\d360.core\d360.core.csproj">
+      <Project>{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}</Project>
+      <Name>d360.core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.extensions.cache.memory\d360.extensions.cache.memory.csproj">
+      <Project>{AA5D34E6-CF64-4D7F-90C8-54895A79CF61}</Project>
+      <Name>d360.extensions.cache.memory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.extensions.security.keypair\d360.extensions.security.keypair.csproj">
+      <Project>{DD07D576-2780-471C-ADBE-86B9C740B2AE}</Project>
+      <Name>d360.extensions.security.keypair</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.extensions.storage.azure\d360.extensions.storage.azure.csproj">
+      <Project>{3077f98f-682b-4679-89dd-934f1a7aa1ce}</Project>
+      <Name>d360.extensions.storage.azure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
+      <Project>{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}</Project>
+      <Name>d360.extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.model\d360.model.csproj">
+      <Project>{B12A1078-5835-43B8-AFB2-C3D24C4AA098}</Project>
+      <Name>d360.model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.services.interfaces\d360.services.interfaces.csproj">
+      <Project>{3108F95A-875C-4290-BB51-F3824633BE62}</Project>
+      <Name>d360.services.interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.services\d360.services.csproj">
+      <Project>{DAEF1153-9B68-42E3-9788-B62479A52C1D}</Project>
+      <Name>d360.services</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.utils\d360.utils.csproj">
+      <Project>{9775b4df-0ac8-4524-ba10-4a43bf9cb61e}</Project>
+      <Name>d360.utils</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

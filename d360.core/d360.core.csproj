@@ -1,0 +1,390 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>d360.core</RootNamespace>
+    <AssemblyName>d360.core</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Staging|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Staging\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="attributes\Attributes.cs" />
+    <Compile Include="constants.cs" />
+    <Compile Include="entities\Abstract\BaseObject.cs" />
+    <Compile Include="entities\AlertFlag.cs" />
+    <Compile Include="entities\IntersectFlowType.cs" />
+    <Compile Include="entities\IntersectFlow.cs" />
+    <Compile Include="entities\IntersectFlowItem.cs" />
+    <Compile Include="entities\IntersectTypeRoleRelation.cs" />
+    <Compile Include="entities\IntersectFlowMappingItem.cs" />
+    <Compile Include="entities\IntersectFlowMapping.cs" />
+    <Compile Include="entities\FusionAttributeOwnerRuleItem.cs" />
+    <Compile Include="entities\FusionAttributePromotionRuleItem.cs" />
+    <Compile Include="entities\TagRelation.cs" />
+    <Compile Include="entities\Tag.cs" />
+    <Compile Include="entities\Audit.cs" />
+    <Compile Include="entities\AuditField.cs" />
+    <Compile Include="entities\CompanySetting.cs" />
+    <Compile Include="entities\Contracts\ISearchable.cs" />
+    <Compile Include="entities\Contracts\IUpdatedMetadata.cs" />
+    <Compile Include="entities\FusionAttributePromotionRuleMapping.cs" />
+    <Compile Include="entities\QueueFusionItem.cs" />
+    <Compile Include="entities\Setting.cs" />
+    <Compile Include="entities\FusionExecution.cs" />
+    <Compile Include="entities\ResponsibilityTransformation.cs" />
+    <Compile Include="entities\Rule.cs" />
+    <Compile Include="entities\Policy.cs" />
+    <Compile Include="entities\AttributeTypeCategory.cs" />
+    <Compile Include="entities\ReportTile.cs" />
+    <Compile Include="entities\ReportLayout.cs" />
+    <Compile Include="entities\Views\FusionExecutionResultDetail.cs" />
+    <Compile Include="entities\CompanyDomainSetting.cs" />
+    <Compile Include="entities\DomainSetting.cs" />
+    <Compile Include="entities\DomainCertificate.cs" />
+    <Compile Include="entities\Contracts\IGuidObject.cs" />
+    <Compile Include="entities\DatabaseServer.cs" />
+    <Compile Include="entities\CompanyFeature.cs" />
+    <Compile Include="entities\FusionFilter.cs" />
+    <Compile Include="entities\FusionStatusLog.cs" />
+    <Compile Include="entities\FusionJobHistory.cs" />
+    <Compile Include="entities\FusionJobSchedule.cs" />
+    <Compile Include="entities\LoadItemRuleResult.cs" />
+    <Compile Include="entities\LoadItemField.cs" />
+    <Compile Include="entities\LoadItem.cs" />
+    <Compile Include="entities\Load.cs" />
+    <Compile Include="entities\LoadTypeField.cs" />
+    <Compile Include="entities\LoadType.cs" />
+    <Compile Include="entities\LoadTypeRule.cs" />
+    <Compile Include="entities\LoadTypeRuleItem.cs" />
+    <Compile Include="entities\Plugins\Package.cs" />
+    <Compile Include="entities\Plugins\EventType.cs" />
+    <Compile Include="entities\Plugins\FieldType.cs" />
+    <Compile Include="entities\Plugins\FusionAttributeType.cs" />
+    <Compile Include="entities\Plugins\FusionIntersectType.cs" />
+    <Compile Include="entities\Plugins\FusionType.cs" />
+    <Compile Include="entities\Plugins\PackageContent.cs" />
+    <Compile Include="entities\ResponsibilityTypeSourceType.cs" />
+    <Compile Include="entities\CompanyResource.cs" />
+    <Compile Include="entities\ResponsibilityTypeRelation.cs" />
+    <Compile Include="entities\ResponsibilityContextItem.cs" />
+    <Compile Include="entities\ObjectVersion.cs" />
+    <Compile Include="entities\ObjectStyle.cs" />
+    <Compile Include="entities\Contracts\ICreatedObject.cs" />
+    <Compile Include="entities\Contracts\IUpdatedObject.cs" />
+    <Compile Include="entities\FusionAttributeOwnerRule.cs" />
+    <Compile Include="entities\FusionAttributePromotionRule.cs" />
+    <Compile Include="entities\IntersectNode.cs" />
+    <Compile Include="entities\IntersectTypeRole.cs" />
+    <Compile Include="entities\Transitive\ChildArtifactStatisticsByObject.cs" />
+    <Compile Include="entities\Transitive\CriticalRelationshipsByObject.cs" />
+    <Compile Include="entities\Transitive\FieldNameByObjectType.cs" />
+    <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />
+    <Compile Include="entities\Transitive\RedFlagSummariesByResource.cs" />
+    <Compile Include="entities\Transitive\SocialStatisticsByObject.cs" />
+    <Compile Include="entities\Views\LoadTypeRuleDetail.cs" />
+    <Compile Include="entities\Views\LoadTypeFieldDetail.cs" />
+    <Compile Include="entities\Views\Relationship.cs" />
+    <Compile Include="entities\Views\RelationshipWithContextAggregate.cs" />
+    <Compile Include="entities\Report.cs" />
+    <Compile Include="entities\ResponsibilityTypeObjectClaim.cs" />
+    <Compile Include="entities\ResponsibilityTypeClaim.cs" />
+    <Compile Include="entities\ResponsibilityType.cs" />
+    <Compile Include="entities\Responsibility.cs" />
+    <Compile Include="entities\StatisticTypeRelation.cs" />
+    <Compile Include="entities\Statistic.cs" />
+    <Compile Include="entities\StatisticType.cs" />
+    <Compile Include="entities\Artifact.cs" />
+    <Compile Include="entities\ArtifactType.cs" />
+    <Compile Include="entities\AttributeTypeRelation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="entities\Comment.cs" />
+    <Compile Include="entities\Company.cs" />
+    <Compile Include="entities\AttributeType.cs" />
+    <Compile Include="entities\Attribute.cs" />
+    <Compile Include="entities\CommentRelation.cs" />
+    <Compile Include="entities\Contracts\IIntObject.cs" />
+    <Compile Include="entities\Contracts\IFieldsObject.cs" />
+    <Compile Include="entities\FusionAttributePromotion.cs" />
+    <Compile Include="entities\FusionAttributeTypePromotion.cs" />
+    <Compile Include="entities\JobActivity.cs" />
+    <Compile Include="entities\ObjectSecurity.cs" />
+    <Compile Include="entities\ResolutionRelation.cs" />
+    <Compile Include="entities\EventGroup.cs" />
+    <Compile Include="entities\IntersectTypeNode.cs" />
+    <Compile Include="entities\Event.cs" />
+    <Compile Include="entities\SurveyObjectCache.cs" />
+    <Compile Include="entities\QuestionType.cs" />
+    <Compile Include="entities\Question.cs" />
+    <Compile Include="entities\ResponseTypeOption.cs" />
+    <Compile Include="entities\ResponseType.cs" />
+    <Compile Include="entities\SurveyType.cs" />
+    <Compile Include="entities\Survey.cs" />
+    <Compile Include="entities\Fusion.cs" />
+    <Compile Include="entities\Field.cs" />
+    <Compile Include="entities\FieldType.cs" />
+    <Compile Include="entities\DomainGroup.cs" />
+    <Compile Include="entities\Domain.cs" />
+    <Compile Include="entities\DomainItem.cs" />
+    <Compile Include="entities\DomainType.cs" />
+    <Compile Include="entities\TaxonomyTypeLevel.cs" />
+    <Compile Include="entities\Taxonomy.cs" />
+    <Compile Include="entities\TaxonomyType.cs" />
+    <Compile Include="entities\TooltipTemplate.cs" />
+    <Compile Include="entities\EmailTemplate.cs" />
+    <Compile Include="entities\ResourceGroup.cs" />
+    <Compile Include="entities\ResourceType.cs" />
+    <Compile Include="entities\Follow.cs" />
+    <Compile Include="entities\FusionAttributeType.cs" />
+    <Compile Include="entities\FusionAttribute.cs" />
+    <Compile Include="entities\FusionType.cs" />
+    <Compile Include="entities\Group.cs" />
+    <Compile Include="entities\Intersect.cs" />
+    <Compile Include="entities\IntersectType.cs" />
+    <Compile Include="entities\LookupType.cs" />
+    <Compile Include="entities\Lookup.cs" />
+    <Compile Include="entities\Resolution.cs" />
+    <Compile Include="entities\Resource.cs" />
+    <Compile Include="entities\Role.cs" />
+    <Compile Include="entities\Transitive\AllIntersectPoint.cs" />
+    <Compile Include="entities\Transitive\AllowedIntersectionType.cs" />
+    <Compile Include="entities\Transitive\ArtifactHierarchyItem.cs" />
+    <Compile Include="entities\Transitive\AttributeHierarchyItem.cs" />
+    <Compile Include="entities\Transitive\FusionAttributesByTabItem.cs" />
+    <Compile Include="entities\Transitive\FusionAttributesByTabModel.cs" />
+    <Compile Include="entities\Transitive\FusionOwnerOption.cs" />
+    <Compile Include="entities\Transitive\FusionAttributeItem.cs" />
+    <Compile Include="entities\Transitive\BulkFusionImport.cs" />
+    <Compile Include="entities\Transitive\CommentDetail.cs" />
+    <Compile Include="entities\Transitive\CommentCategory.cs" />
+    <Compile Include="entities\Transitive\FusionPromotionOption.cs" />
+    <Compile Include="entities\Transitive\GetRelationshipModel.cs" />
+    <Compile Include="entities\Transitive\GroupResourceInfo.cs" />
+    <Compile Include="entities\Transitive\CurrentCompanyInfo.cs" />
+    <Compile Include="entities\Transitive\EventByModel.cs" />
+    <Compile Include="entities\Transitive\MostActiveUserReportModel.cs" />
+    <Compile Include="entities\Transitive\AttributeTreeItem.cs" />
+    <Compile Include="entities\Transitive\MicroModels.cs" />
+    <Compile Include="entities\Transitive\ObjectPermissionModel.cs" />
+    <Compile Include="entities\Transitive\RawIntersectContextMap.cs" />
+    <Compile Include="entities\Transitive\RelationNode.cs" />
+    <Compile Include="entities\Transitive\RenderTemplateModel.cs" />
+    <Compile Include="entities\Transitive\ResponsibilityTypeClaimDetail.cs" />
+    <Compile Include="entities\Transitive\StatisticDetail.cs" />
+    <Compile Include="entities\Transitive\UIColumnDefinition.cs" />
+    <Compile Include="entities\Views\DomainAllocationDetail.cs" />
+    <Compile Include="entities\Views\ResponsibilitySummaryDetail.cs" />
+    <Compile Include="entities\Views\ResponsibilityDetailForResource.cs" />
+    <Compile Include="entities\Views\SourcingResponsibilityDetail.cs" />
+    <Compile Include="entities\Views\ResponsibilityDetailBase.cs" />
+    <Compile Include="entities\Views\ResponsibilityTypeObjectClaimDetail.cs" />
+    <Compile Include="entities\Views\SecurityDetail.cs" />
+    <Compile Include="entities\Views\StatisticTypeCheckOption.cs" />
+    <Compile Include="entities\Views\FusionAttributePromotionDetail.cs" />
+    <Compile Include="entities\Views\LeafFusionAttribute.cs" />
+    <Compile Include="entities\Views\FusionAttributeOwnerDetail.cs" />
+    <Compile Include="entities\Views\RelationshipAggregate.cs" />
+    <Compile Include="entities\Views\ResponsibilityDetail.cs" />
+    <Compile Include="entities\Views\AttributeDetail.cs" />
+    <Compile Include="entities\Views\StatisticTypeRelationDetail.cs" />
+    <Compile Include="entities\Views\LookupAllocation.cs" />
+    <Compile Include="entities\Views\FieldTypeLookupValue.cs" />
+    <Compile Include="entities\Views\FieldLookupValue.cs" />
+    <Compile Include="entities\Views\FieldWithRelation.cs" />
+    <Compile Include="entities\Views\FieldTypeWithRelation.cs" />
+    <Compile Include="entities\Transitive\FusionAttributeByIntersect.cs" />
+    <Compile Include="entities\Transitive\FusionIntersectDetail.cs" />
+    <Compile Include="entities\Transitive\IntersectionPoint.cs" />
+    <Compile Include="entities\Transitive\NonIntersectionPoint.cs" />
+    <Compile Include="entities\Transitive\ObjectDetail.cs" />
+    <Compile Include="entities\Transitive\SearchResult.cs" />
+    <Compile Include="entities\Transitive\CurrentUserInfo.cs" />
+    <Compile Include="entities\Views\EventHeader.cs" />
+    <Compile Include="entities\Views\TaxonomyDetail.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="enums\AuthenticationType.cs" />
+    <Compile Include="enums\IntersectFlowConfiguration.cs" />
+    <Compile Include="enums\HashAlgorithmType.cs" />
+    <Compile Include="enums\Feature.cs" />
+    <Compile Include="enums\Claim.cs" />
+    <Compile Include="enums\ClaimObject.cs" />
+    <Compile Include="enums\CommentType.cs" />
+    <Compile Include="enums\CompanyIdentifierType.cs" />
+    <Compile Include="enums\DataType.cs" />
+    <Compile Include="enums\Enums.cs" />
+    <Compile Include="entities\Views\AttributeTypeRelationDetail.cs" />
+    <Compile Include="entities\Views\FollowDetail.cs" />
+    <Compile Include="enums\FusionAttributeIdentifier.cs" />
+    <Compile Include="enums\IntersectClassification.cs" />
+    <Compile Include="enums\JobIntervalType.cs" />
+    <Compile Include="enums\LoadTypeRuleGroup.cs" />
+    <Compile Include="enums\ObjectType.cs" />
+    <Compile Include="enums\ResponsibilityTransformationType.cs" />
+    <Compile Include="enums\RuleType.cs" />
+    <Compile Include="enums\QueueType.cs" />
+    <Compile Include="enums\ReportTileType.cs" />
+    <Compile Include="enums\ResponsibilityTypeGroup.cs" />
+    <Compile Include="enums\StatisticCheckType.cs" />
+    <Compile Include="enums\SystemObjects.cs" />
+    <Compile Include="enums\TaxonomyTypeClass.cs" />
+    <Compile Include="enums\TemplateAction.cs" />
+    <Compile Include="enums\UserIdentifierType.cs" />
+    <Compile Include="exceptions\BaseException.cs" />
+    <Compile Include="exceptions\AttributesExistException.cs" />
+    <Compile Include="exceptions\ConflictException.cs" />
+    <Compile Include="exceptions\InvalidFieldException.cs" />
+    <Compile Include="exceptions\NoFormDataException.cs" />
+    <Compile Include="exceptions\SystemLookupException.cs" />
+    <Compile Include="exceptions\ResourcesExistException.cs" />
+    <Compile Include="exceptions\DuplicateTemplateException.cs" />
+    <Compile Include="exceptions\EventsExistException.cs" />
+    <Compile Include="exceptions\RelationsExistException.cs" />
+    <Compile Include="exceptions\DuplicateNameException.cs" />
+    <Compile Include="exceptions\IntersectTypeConstraintNotValidException.cs" />
+    <Compile Include="exceptions\MissingPropertiesException.cs" />
+    <Compile Include="exceptions\NotFoundException.cs" />
+    <Compile Include="exceptions\UnauthorizedException.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="queue\IndexObjectModel.cs" />
+    <Compile Include="queue\UpdateInIndexModel.cs" />
+    <Compile Include="queue\RemoveFromIndexModel.cs" />
+    <Compile Include="queue\AddToIndexModel.cs" />
+    <Compile Include="queue\QueueAction.cs" />
+    <Compile Include="queue\QueueObject.cs" />
+    <Compile Include="resources\Fields.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Fields.resx</DependentUpon>
+    </Compile>
+    <Compile Include="resources\Messages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Messages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="resources\Types.Designer.cs">
+      <DependentUpon>Types.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="resources\Values.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Values.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="resources\Fields.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Fields.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\Messages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\Types.resx">
+      <SubType>Designer</SubType>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Types.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\Values.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Values.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\d360.utils\d360.utils.csproj">
+      <Project>{9775b4df-0ac8-4524-ba10-4a43bf9cb61e}</Project>
+      <Name>d360.utils</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+</Project>

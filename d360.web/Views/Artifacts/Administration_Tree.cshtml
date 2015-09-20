@@ -1,0 +1,24 @@
+﻿@model List<d360.core.entities.ArtifactType>
+@helper TypeNode(d360.core.entities.ArtifactType t)
+{
+    <li item-expanded='true'>
+        <span class="node" data-id="@t.ID" data-parentid="@t.ParentID" data-objecttype="ArtifactType" data-context="@ContextList.ArtifactType" data-objecttypeid="@t.ID">@t.Name</span>
+        <ul>
+            @foreach (var s in Model.Where(i => i.ParentID == t.ID).OrderBy(i => i.Name))
+            {
+                @TypeNode(s)
+            }
+        </ul>
+    </li>
+}
+<ul>
+    <li item-expanded='true'>
+        <span class="node" data-id="0" data-context="@ContextList.ArtifactType">Root</span>
+        <ul>
+            @foreach (var t in Model.Where(i => !i.ParentID.HasValue).OrderBy(i => i.Name))
+            {
+                @TypeNode(t)
+            }
+        </ul>
+    </li>
+</ul>

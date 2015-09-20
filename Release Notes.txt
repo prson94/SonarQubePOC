@@ -1,0 +1,15 @@
+Following updates to the UI and database.
+
+UI:
+1.	Adding relationships should hopefully work a little better, in that you should be able to at least add them.  Still more cleanup and debugging to do around this, not to mention editing relationships.
+2.	Added logic to assign specific names to certain levels in a taxonomy, based on the taxonomy type.  This addresses ACI’s specific request to assign names to levels 1, 2, 3, and 4 of their data catalog.  You should see an example of this under Investment Management on demo.
+
+Database:
+1.	IntersectClassification new table – this will support the new feature requested by GMO to assign Optional, Required, Critical on the relationship context.
+2.	TaxonomyTypeLevel new table – supports UI point 2 above.
+3.	Taxonomy updated table – added [Level] computed column to support UI point 2 above.
+4.	TaxonomyType updated table – added [MaximumDepth] to optionally restrict how deep a taxonomy can be.
+
+Work items:
+ - 78 Resolved
+ - 91 Associated

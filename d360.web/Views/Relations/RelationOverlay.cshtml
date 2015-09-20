@@ -1,0 +1,837 @@
+﻿@model d360.core.entities.ObjectDetail
+@{
+    var CanCreateRelationships = (bool)ViewData["CanCreateRelationships"];
+}
+
+<div id='TreeGridItemViewer' class="large-overlay">
+    <div class="ui segment">
+
+        <div class="left form-header-info">
+            <h4>Relationships for @Model.Name</h4>
+            <p>All relationships for the @Model.Name @Model.TypeName are displayed below.  To add a new relationship please select a type of relationship to the right.</p>
+        </div>
+        <div class="right">
+            @if (CanCreateRelationships)
+            {
+                <div id="AddRelationshipButton"></div>
+                @*<button type="button" id="AddSourceToTargetButton"><i class="fa fa-plus-square"></i>Source to Target</button>*@
+            }
+        </div>
+        <div class="clear"></div>
+
+        <div class="row">
+            <div class="col l3 m4">
+                <div id="TreeGrid"></div>
+            </div>
+            <div class="col l9 m8">
+                <div class="row">
+                    <div class="col s12">
+                        <ul id="RelationsRibbon" class="tabs">
+                            <li class="tab col s3"><a class="active" href="#lineage" data-index="0">Lineage</a></li>
+                            <li class="tab col s3"><a href="#attributes" data-index="1">Attributes</a></li>
+                            <li class="tab col s3"><a href="#fusion" data-index="2">Fusion</a></li>
+                            <li class="tab col s3"><a href="#sources" data-index="3">Sources</a></li>
+                        </ul>
+                    </div>
+                    <div id="lineage" class="col s12">
+                        <div id="RelationshipLineageTile" class="tile">
+                            <div id="TreeGridLineage"></div>
+                        </div>
+                    </div>
+                    <div id="attributes" class="col s12">
+                        <div id="RelationshipDetailTile" class="tile"></div>
+                        <div id="RelationshipAttributesTile" class="tile"></div>
+                    </div>
+                    <div id="fusion" class="col s12">
+                        <div id="TechnicalRelationshipsTile" class="tile">
+                            <div id="TechnicalRelationshipsGrid"></div>
+                        </div>
+                    </div>
+                    <div id="sources" class="col s12">
+                        <div id="RelationshipContextsTile" class="tile">
+                            <div id="RelationshipContextsGrid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="TreeGridRelationshipEditor"></div>
+
+<script type="text/javascript">
+    var type = "@(Model.ParentType)";
+    var typeID = "@(Model.ID)";
+    var pType = "@(Model.Type)";
+    var pTypeID = "@(Model.TypeID)";
+
+    var RelationshipsSource;
+    var RelationshipsAdapter;
+    var RelationshipContextsGridSource;
+    var RelationshipContextsGridAdapter;
+    var TechnicalRelationshipsGridSource;
+    var TechnicalRelationshipsGridAdapter;
+
+    var relationsModelType = function () {
+        var self = this;
+        self.RibbonIndex = 0;
+        self.IntersectID = -1;
+
+        self.TargetType = 'Intersect';
+        self.TargetID = -1;
+
+        self.DetailTileIntersectID = -1;
+        self.AttributeTileIntersectID = -1;
+        self.TechnicalRelationIntersectID = -1;
+        self.SourcingIntersectID = -1;
+        self.DiagramTargetType = 'Intersect';
+        self.DiagramTargetID = -1;
+
+        self.updateRibbonData = function (selectedIndex) {
+            if (selectedIndex != undefined)
+                self.RibbonIndex = selectedIndex;
+
+            switch (self.RibbonIndex) {
+                case 0:
+                    //#region
+                    if ((self.DiagramTargetType != self.TargetType) || (self.DiagramTargetID != self.TargetID)) {
+                        self.DiagramTargetType = self.TargetType;
+                        self.DiagramTargetID = self.TargetID;
+
+                        if (self.IntersectID) {
+                            if (self.DiagramTargetType == 'TaxonomyType') {
+                                information_catalog_diagram('TreeGridLineage', self.DiagramTargetID);
+                            }
+                            else {
+                                lineage_diagram('TreeGridLineage', self.DiagramTargetID);
+                            }
+                        }
+                        else {
+                            $('#TreeGridLineage').html('');
+                        }
+                    }
+                    //#endregion
+                    break;
+                case 1:
+                    //#region
+                    if (self.DetailTileIntersectID != self.IntersectID) {
+                        self.DetailTileIntersectID = self.IntersectID;
+                        if (self.DetailTileIntersectID) {
+                            DetailTile('RelationshipDetailTile', null, null, 'Intersect', self.DetailTileIntersectID);
+                        }
+                        else {
+                            $('#RelationshipDetailTile').hide();
+                            $('#RelationshipDetailTile').html('');
+                        }
+                    }
+                    if (self.AttributeTileIntersectID != self.IntersectID) {
+                        self.AttributeTileIntersectID = self.IntersectID;
+                        if (self.AttributeTileIntersectID) {
+                            AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", self.AttributeTileIntersectID, 'Business Attributes');
+                        }
+                        else {
+                            $('#RelationshipAttributesTile').html('');
+                        }
+                    }
+                    //#endregion
+                    break;
+                case 2:
+                    //#region
+                    if (self.TechnicalRelationIntersectID != self.IntersectID) {
+                        self.TechnicalRelationIntersectID = self.IntersectID;
+                        if (self.TechnicalRelationIntersectID) {
+                            TechnicalRelationshipsGridSource.url = '/api/Intersect/' + self.TechnicalRelationIntersectID + '/relations';
+                        }
+                        else {
+                            TechnicalRelationshipsGridSource.url = null;
+                        }
+                        $('#TechnicalRelationshipsGrid').jqxGrid('updatebounddata');
+                    }
+                    //#endregion
+                    break;
+                case 3:
+                    //#region
+                    if (self.SourcingIntersectID != self.IntersectID) {
+                        self.SourcingIntersectID = self.IntersectID;
+                        try {
+                            if (self.SourcingIntersectID) {
+                                RelationshipContextsGridSource.url = "/api/Intersect/" + self.SourcingIntersectID + "/sources/actual";
+                            }
+                            else {
+                                RelationshipContextsGridSource.url = null;
+                            }
+                            $('#RelationshipContextsGrid').jqxGrid('updatebounddata');
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    }
+                    //#endregion
+                    break;
+            }
+        }
+    };
+    var relationsModel = new relationsModelType();
+
+
+    //#region Amplify Methods
+
+    function cancelAction(data) {
+        try {
+            switch (data.context) {
+                case contextList.ResponsibilityTransformation:
+                case contextList.IntersectSourcingResponsibility:
+                case contextList.SourceToTarget:
+                    switchToViewer();
+                    break;
+            }
+        } catch (e) {
+            logError("RelationOverlay : CancelAction", e);
+        }
+    }
+
+    function commandExecuted(data) {
+        try {
+            switch (data.context) {
+                case contextList.ActionResponsibility:
+                case contextList.IntersectSourcingResponsibility:
+                case contextList.ResponsibilityTransformation:
+                    switchToViewer();
+                    $('#RelationshipContextsGrid').jqxGrid('updatebounddata');
+                    break;
+                case contextList.ActionUnrelate:
+                    $('#TreeGridAttributesDetail').html('');
+                    $("#TreeGrid").jqxGrid('updatebounddata');
+                    amplify.publish('SaveAction', { context: "intersectform" });
+                    break;
+            }
+        } catch (e) {
+            logError("RelationOverlay : CommandExecuted", e);
+        }
+    }
+
+    function localAction(data) {
+        try {
+            switch (data.context) {
+                case contextList.ActionLink:
+                    location.assign(data.uri);
+                    break;
+                case contextList.IntersectSourcingResponsibility:
+                case contextList.ActionResponsibility:
+                case contextList.ActionEditRelate:
+                case contextList.ActionRelate:
+                case contextList.ResponsibilityTransformation:
+                case contextList.SourceToTarget:
+                    switchToEditor(data.uri);
+                    break;
+            }
+        } catch (e) {
+            logError("RelationOverlay : LocalAction", e);
+        }
+    };
+
+    function relationshipCancel(data) {
+        try {
+            switchToViewer();
+        } catch (e) {
+            logError("RelationOverlay : RelationshipCancel", e);
+        }
+    }
+
+    function relationshipFormStatus(data) {
+        try {
+            amplify.publish("ShowMessage", { type: (data.success ? 'confirm' : 'error'), title: data.title || 'Modifying Relationships', message: data.message });
+        } catch (e) {
+            logError("RelationOverlay : RelationshipFormStatus", e);
+        }
+    }
+
+    function relationshipSave(data) {
+        try {
+            switchToViewer();
+            if (data.action == 'Add') {
+                if (data.technical) {
+                    $("#TechnicalRelationshipsGrid").jqxGrid('updatebounddata');
+                }
+                else {
+                    $("#TreeGrid").jqxGrid('updatebounddata');
+                    TechnicalRelationshipsGridSource.url = null;
+                    $("#TechnicalRelationshipsGrid").jqxGrid('updatebounddata');
+                    $('#TreeGridAttributesDetail').html('');
+                    $('#TreeGridLineage').html('');
+                }
+            }
+            amplify.publish('SaveAction', { context: "intersectform" });
+        } catch (e) {
+            logError("RelationOverlay : RelationshipSave", e);
+        }
+    }
+
+
+    function responsibilityCancel(data) {
+        try {
+            switchToViewer();
+        } catch (e) {
+            logError("RelationOverlay : RelationshipCancel", e);
+        }
+    }
+
+    function responsibilitySave(data) {
+        try {
+            switchToViewer();
+            relationsModel.updateRibbonData(3);
+        } catch (e) {
+            logError("RelationOverlay : RelationshipSave", e);
+        }
+    }
+
+    function saveAction(data) {
+        try {
+            switch (data.context) {
+                case contextList.SourceToTarget:
+                    switchToViewer();
+                    break;
+                case contextList.SourcingResponsibility:
+                case contextList.ActionResponsibility:
+                case contextList.IntersectSourcingResponsibility:
+                    switchToViewer();
+                    $('#RelationshipContextsGrid').jqxGrid('updatebounddata');
+                    lineage_diagram('TreeGridLineage', data.custom.ObjectID);
+                    break;
+                case contextList.ResponsibilityTransformation:
+                    switchToViewer();
+                    $('#RelationshipContextsGrid').jqxGrid('updatebounddata');
+                    break;
+            }
+        } catch (e) {
+            logError("RelationOverlay : SaveAction", e);
+        }
+    }
+
+    //#endregion
+
+    //#region Control Event Methods
+
+    function relationshipContextsGridBindingComplete(event) {
+        if ($("#RelationshipContextsGrid").jqxGrid('getdisplayrows').length > 0) {
+            $("#RelationshipContextsGrid").jqxGrid('selectrow', 0);
+        }
+    };
+
+    function technicalRelationshipsGridBindingComplete(event) {
+        if ($("#TechnicalRelationshipsGrid").jqxGrid('getdisplayrows').length > 0) {
+            $("#TechnicalRelationshipsGrid").jqxGrid('selectrow', 0);
+        }
+    }
+
+    function treeGridRowDoubleClick(event) {
+        var row = $('#TreeGrid').jqxGrid('getrowdata', event.args.rowindex);
+        location.assign(row.TargetUrl);
+    }
+
+    function relationsRibbonSelect() { //(event) {
+        var tab = $(this);
+        var ix = tab.data('index'); //event.args.selectedIndex
+        relationsModel.updateRibbonData(ix);
+    }
+
+    function treeGridRowSelect(event) {
+        var row = event.args.row;
+        try {
+            relationsModel.IntersectID = row.IntersectID;
+            relationsModel.TargetType = row.TargetType;
+            relationsModel.TargetID = (row.TargetType == 'TaxonomyType') ? row.TargetTypeID : row.IntersectID;
+            relationsModel.updateRibbonData();
+        }
+        catch (e) {
+            logError("RelationOverlay : TreeGrid.rowSelect", e);
+            console.log('IDs no longer exist.');
+        }
+    }
+
+    function unsubscribe(data) {
+        TechnicalRelationshipsGridAdapter = null;
+        TechnicalRelationshipsGridSource = null;
+        RelationshipContextsGridAdapter = null;
+        RelationshipContextsGridSource = null;
+        RelationshipsAdapter = null;
+        RelationshipsSource = null;
+
+        amplify.unsubscribe('RelationshipFormStatus', relationshipFormStatus);
+        amplify.unsubscribe('RelationshipCancel', relationshipCancel);
+        amplify.unsubscribe('RelationshipSave', relationshipSave);
+        amplify.unsubscribe("ResponsibilityCancel", responsibilityCancel);
+        amplify.unsubscribe("ResponsibilitySave", responsibilitySave);
+        amplify.unsubscribe('CancelAction', cancelAction);
+        amplify.unsubscribe('SaveAction', saveAction);
+        amplify.unsubscribe('CommandExecuted', commandExecuted);
+        amplify.unsubscribe(AmplifyActions.Local, localAction);
+
+        $('#RelationsRibbon > li > a').off('click', relationsRibbonSelect);
+        $("#RelationshipContextsGrid").off("bindingcomplete", relationshipContextsGridBindingComplete);
+        $("#TechnicalRelationshipsGrid").off("bindingcomplete", technicalRelationshipsGridBindingComplete);
+        $('#TreeGrid').off('rowselect', treeGridRowSelect);
+        $('#TreeGrid').off('rowdoubleclick', treeGridRowDoubleClick);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    //#endregion
+
+    //#region Utility Methods
+
+    var addNodeToTree = function (attTree, data, parentNodeID) {
+        try {
+            var elementByID = null;
+            if (parentNodeID) elementByID = attTree.find(parentNodeID)[0];
+            $(data).each(function () {
+                var html = '<span class="node" data-type="' + this.ObjectType + '" data-typeid="' + this.ObjectID + '" data-owner="' + this.ParentObjectType + '" data-ownerid="' + this.ParentObjectID + '">' + '<b>' + this.ObjectTypeName + ' : </b>' + this.Name + '</span>';
+                if (elementByID)
+                    attTree.jqxTree('addTo', { expanded: true, id: this.ObjectType + this.ObjectID, html: html }, elementByID);
+                else
+                    attTree.jqxTree('addTo', { expanded: true, id: this.ObjectType + this.ObjectID, html: html });
+
+                if (this.Items) {
+                    addNodeToTree(attTree, this.Items, '#' + this.ObjectType + this.ObjectID);
+                }
+            });
+        } catch (e) {
+            logError("RelationOverlay : addNodeToTree", e);
+        }
+    }
+
+    var loadAddRelationDropdown = function (intersectID) {
+        try {
+            var relationUri = '/relations/RelationshipTypesForAdding?type=' + pType + '&typeID=' + pTypeID;
+            //if (intersectID) {
+            //    relationUri += "&intersectID=" + intersectID;
+            //}
+            $.getJSON(relationUri, function (data) {
+
+                var items = new Array();
+                //var childMenu = {
+                //    html: "<span style='width: 350px'><b>Add Child</b></span>",
+                //    items: [],
+                //    id: 'RelationshipTypeChildMenu'
+                //};
+                //var shouldAddChild = false;
+                $.each(data, function (ix, it) {
+                    var menuItem;
+
+                    //if (it.ParentIntersectID) {
+                    //    menuItem = { html: "<span data-parentintersectid='" + it.ParentIntersectID + "' data-value='" + it.Value + "'>" + it.Name + "</span>" };
+                    //    childMenu.items.push(menuItem);
+                    //    shouldAddChild = true;
+                    //}
+                    //else {
+                    menuItem = { html: "<span data-value='" + it.Value + "'>" + it.Name + "</span>" };
+                    items.push(menuItem);
+                    //}
+                });
+
+                //if (shouldAddChild) items.push(childMenu);
+
+                var source = [{
+                    html: "<span><b><i class='fa fa-2x fa-plus'></i></b></span>",
+                    items: items
+                }];
+
+                $('#AddRelationshipButton').jqxMenu({
+                    source: source,
+                    theme: theme,
+                    width: 43
+                });
+
+                $("#AddRelationshipButton").jqxMenu('setItemOpenDirection', 'RelationshipTypeChildMenu', 'left', 'down');
+
+                $('#AddRelationshipButton').on('itemclick', function (event) {
+                    var li = $(event.args);
+                    var span = $(li.find('span'));
+                    var value = span.data('value');
+                    var parentintersectid = span.data('parentintersectid');
+                    if (value) {
+                        $('#TreeGridItemViewer').fadeOut(10);
+                        var url = '/Relations/AddRelationship?';
+                        if (parentintersectid) {
+                            url += "source=Intersect&sourceID=" + parentintersectid;
+                        }
+                        else {
+                            url += "source=" + type + "&sourceID=" + typeID;
+                        }
+                        var arr = value.split('|');
+                        url += "&intersectTypeID=" + arr[0] + "&target=" + arr[1] + "&targetID=" + arr[2];
+
+                        $('#TreeGridRelationshipEditor').fadeIn(10);
+                        $('#TreeGridRelationshipEditor').load(url);
+                    }
+                });
+
+                //$('#AddSourceToTargetButton').on('click', function () {
+                //    amplify.publish(AmplifyActions.Local, { context: contextList.SourceToTarget, uri: '/form/AddSourceToTarget?type=' + type + '&id=' + typeID });
+                //});
+            });
+        } catch (e) {
+            logError("RelationOverlay : loadAddRelationDropdown", e);
+        }
+    }
+
+    var performAttributeSelectNodeAction = function (selectedNode) {
+        try {
+            var owner = null;
+            var ownerid = null;
+            owner = selectedNode.data("owner");
+            ownerid = selectedNode.data("ownerid");
+
+            var type = null;
+            var typeid = null;
+            type = selectedNode.data("type");
+            typeid = selectedNode.data("typeid");
+
+            var attributeID = null;
+            if (type == "Attribute") {
+                attributeID = typeid;
+            }
+
+            $('#TreeGridAttributeToolbar').AttributeToolbar('loadTools', type, typeid, owner, ownerid, attributeID);
+
+            if (type == "Attribute") {
+                $('#TreeGridAttributesDetail').Detail('reload', type, typeid);
+            }
+            else {
+                $('#TreeGridAttributesDetail').Detail('clear');
+            }
+        } catch (e) {
+            logError("RelationOverlay : performAttributeSelectNodeAction", e);
+        }
+    }
+
+    var switchToViewer = function () {
+        $('#TreeGridRelationshipEditor').html('');
+        $('#TreeGridRelationshipEditor').fadeOut(1);
+        $('#TreeGridItemViewer').fadeIn(500);
+    }
+
+    var switchToEditor = function (uri) {
+        try {
+            $('#TreeGridItemViewer').fadeOut(10);
+            $('#TreeGridRelationshipEditor').fadeIn(10);
+            $('#TreeGridRelationshipEditor').load(uri, function (response, status, xhr) {
+                if (status == "error") {
+                    amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.status + ' ' + xhr.statusText, type: 'error' });
+                    switchToViewer();
+                }
+            });
+        } catch (e) {
+
+        }
+    }
+
+    //#endregion
+
+    $(function () {
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        $("#RelationsRibbon").tabs();
+
+        //#region Relations Tree Grid
+
+        RelationshipsSource = {
+            datatype: 'json',
+            url: '/api/' + type + '/' + typeID + '/relations',
+            datafields: [
+                { name: 'IntersectID' },
+                { name: 'Description' },
+                { name: 'TargetName' },
+                { name: 'TargetObjectID' },
+                { name: 'TargetObjectType' },
+                { name: 'TargetTypeID' },
+                { name: 'TargetType' },
+                { name: 'TargetTypeName' },
+                { name: 'Classification' },
+                { name: 'TargetUrl' }
+            ]
+        };
+        RelationshipsAdapter = new $.jqx.dataAdapter(RelationshipsSource);
+
+        $("#TreeGrid").jqxGrid({
+            groupable: false,
+            //groupsrenderer: function (text, group, expanded, data) {
+            //    var style = "background-color: " + data.subItems[0].IconBackColor + "; color: " + data.subItems[0].IconForeColor;
+            //    var html = "";
+            //    html += "<h2>";
+            //    html += group;
+            //    html += "</h2>";
+            //    return html;
+            //},
+            //groupsexpandedbydefault: false,
+            autoheight: true,
+            autorowheight: true,
+            altrows: true,
+            showfilterrow: true,
+            source: RelationshipsAdapter,
+            theme: theme,
+            selectionmode: 'singlerow',
+            height: '500px',
+            width: grid_width,
+            filterable: true,
+            //filtermode: 'excel',
+            sortable: true,
+            pageable: true,
+            //groups: ['TypeName'],
+            columns: [
+                { text: 'Type', groupable: true, datafield: 'TargetTypeName', width: '100px', filtertype: 'checkedlist' }, //, hidden: true
+                { text: 'Name', groupable: false, datafield: 'TargetName' },
+                {
+                    text: '',
+                    groupable: false,
+                    datafield: 'IntersectID',
+                    width: '22px',
+                    filterable: false,
+                    sortable: false,
+                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        if (data.IntersectID) {
+                            return gearsRenderer("Intersect", data.IntersectID);
+                        }
+                        else {
+                            return previewIconRenderer(data.TargetObjectType, data.TargetObjectID, data.TargetUrl);
+                        }
+                    }
+                }
+            ]
+        });
+
+        $("#TreeGrid").on("bindingcomplete", function (event) {
+            if ($("#TreeGrid").jqxGrid('getdisplayrows').length > 0) {
+                $("#TreeGrid").jqxGrid('selectrow', 0);
+            }
+        });
+
+        //#endregion
+
+        //#region Relationship Context Grid Configuration
+
+        var initrowdetails = function (index, parentElement, gridElement, datarecord) {
+            try {
+                var div = $($(parentElement).children()[1]);
+
+                var source = {
+                    datatype: 'json',
+                    url: '/api/Intersect/' + datarecord.ObjectID + '/sources/actual/' + datarecord.ResponsibilityID + '/transformations',
+                    datafields: [
+                        { name: 'ResponsibilityID' },
+                        { name: 'Description' },
+                        { name: 'ID' },
+                        //{ name: 'ResponsibilityTransformationType' },
+                        { name: 'ResponsibilityTransformationTypeName' }
+                    ]
+                };
+
+                var adapter = new $.jqx.dataAdapter(source);
+
+                div.jqxGrid({
+                    width: grid_width,
+                    autoheight: true,
+                    sortable: true,
+                    altrows: true,
+                    filterable: false,
+                    pageable: false,
+                    autorowheight: true,
+                    columnsresize: true,
+                    source: adapter,
+                    theme: list_theme,
+                    columns: [
+                            { datafield: "ResponsibilityTransformationTypeName", text: "Type", width: '20%' },
+                            { datafield: "Description", text: "Description" },
+                            {
+                                datafield: "ID",
+                                text: "",
+                                width: '80px',
+                                filterable: false,
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    try {
+                                        var html = "<div class='RowTools'>";
+                                        html += "<a class='CommandTooltipButton' data-local='' data-context='" + contextList.ResponsibilityTransformation + "' data-uri='/form/EditResponsibilityTransformation?id=" + data.ID + "' data-method=''><i class='fa fa-pencil'></i></a>";
+                                        html += "<a class='CommandTooltipButton' data-local='' data-context='" + contextList.ResponsibilityTransformation + "' data-uri='/form/DeleteResponsibilityTransformation?id=" + data.ID + "' data-method=''><i class='fa fa-trash'></i></a>";
+                                        html += "</div>";
+                                        return html;
+
+                                        //var tools = [];
+
+                                        //tools.push({ icon: 'pencil', urlprefix: '/form/EditResponsibilityTransformation?id=' + data.ID });
+                                        //tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibilityTransformation?id=' + data.ID });
+
+                                        //return renderToolsHtml(value, tools, contextList.ResponsibilityTransformation, data);
+                                    } catch (e) {
+                                        console.log(e);
+                                    }
+                                }
+                            }
+                    ]
+                });
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        RelationshipContextsGridSource = {
+            datatype: 'json',
+            url: null,
+            datafields: [
+                { name: 'ResponsibilityID' },
+                { name: 'AssigningItemType' },
+                { name: 'AssigningIconBackColor' },
+                { name: 'AssigningIconForeColor' },
+                { name: 'AssigningIconText' },
+                { name: 'AssigningItemID' },
+                { name: 'AssigningItemName' },
+                { name: 'AssigningItemUrl' },
+                { name: 'ResponsibleObjectType' },
+                { name: 'ResponsibleObjectID' },
+                { name: 'ResponsibleObjectName' },
+                { name: 'ObjectName' },
+                { name: 'ObjectUrl' },
+                { name: 'ObjectType' },
+                { name: 'ObjectID' },
+                { name: 'Role' },
+                { name: 'ResponsibleObjectUrl' },
+                { name: 'ContextItems' }
+            ]
+        };
+
+        RelationshipContextsGridAdapter = new $.jqx.dataAdapter(RelationshipContextsGridSource);
+
+        $("#RelationshipContextsGrid").jqxGrid({
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            altrows: true,
+            filterable: true,
+            showfilterrow: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            pageable: true,
+            autorowheight: true,
+            columnsresize: true,
+            source: RelationshipContextsGridAdapter,
+            theme: list_theme,
+            rowdetails: true,
+            rowdetailstemplate: {
+                rowdetails: "<h4>Transformations</h4><div></div>"
+            },
+            initrowdetails: initrowdetails,
+            columns: [
+                    {
+                        datafield: "ResponsibleObjectName",
+                        text: "Artifact",
+                        width: '19%',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewLinkRenderer(data.ResponsibleObjectType, data.ResponsibleObjectID, data.ResponsibleObjectUrl, data.ResponsibleObjectName);
+                        }
+                    },
+                    { datafield: "Role", text: "Role", width: '20%' },
+                    { datafield: "ContextItems", text: "Context" },
+                    {
+                        datafield: "ResponsibilityID",
+                        text: "",
+                        width: '30px',
+                        filterable: false,
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            try {
+                                var html = "";
+
+                                if (data.ObjectType == data.AssigningItemType && data.ObjectID == data.AssigningItemID) {
+                                    html = "<div class='hasTooltip' data-tools data-t='Responsibility' data-i='" + data.ResponsibilityID + "'><i class='fa fa-lg fa-gears'></i></div>";
+                                }
+
+                                return html;
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        }
+                    }
+            ]
+        });
+
+        //#endregion
+
+        //#region Technical Relationship Grid Configuration
+
+        TechnicalRelationshipsGridSource = {
+            datatype: 'json',
+            url: null,
+            datafields: [
+                { name: 'IntersectID' },
+                { name: 'Description' },
+                { name: 'TargetName' },
+                { name: 'TargetObjectID' },
+                { name: 'TargetObjectType' },
+                { name: 'TargetTypeID' },
+                { name: 'TargetType' },
+                { name: 'TargetTypeName' },
+                { name: 'Classification' },
+                { name: 'TargetUrl' }
+            ]
+        };
+
+        TechnicalRelationshipsGridAdapter = new $.jqx.dataAdapter(TechnicalRelationshipsGridSource);
+
+        $("#TechnicalRelationshipsGrid").jqxGrid({
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            altrows: true,
+            filterable: true,
+            showfilterrow: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            pageable: true,
+            autorowheight: true,
+            columnsresize: true,
+            source: TechnicalRelationshipsGridAdapter,
+            theme: list_theme,
+            groupable: false,
+            columns: [
+                { text: 'Type', groupable: true, datafield: 'TargetTypeName', width: '100px' }, //, hidden: true
+                { text: 'Name', groupable: false, datafield: 'TargetName', width: '300px' },
+                { text: 'Description', groupable: false, datafield: 'Description' },
+                {
+                    text: '',
+                    groupable: false,
+                    datafield: 'IntersectID',
+                    width: '30px',
+                    filterable: false,
+                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return gearsRenderer("Intersect", data.IntersectID);
+                    }
+                }
+            ]
+        });
+
+        //#endregion
+
+        loadAddRelationDropdown();
+
+        $('#RelationshipDetailTile').Detail();
+
+        //#region Event Registration
+
+        $('#RelationsRibbon > li > a').on('click', relationsRibbonSelect);
+        $("#RelationshipContextsGrid").on("bindingcomplete", relationshipContextsGridBindingComplete);
+        $("#TechnicalRelationshipsGrid").on("bindingcomplete", technicalRelationshipsGridBindingComplete);
+        $('#TreeGrid').on('rowselect', treeGridRowSelect);
+        $('#TreeGrid').on('rowdoubleclick', treeGridRowDoubleClick);
+        amplify.subscribe("RelationshipFormStatus", relationshipFormStatus);
+        amplify.subscribe("RelationshipCancel", relationshipCancel);
+        amplify.subscribe("RelationshipSave", relationshipSave);
+        amplify.subscribe("ResponsibilityCancel", responsibilityCancel);
+        amplify.subscribe("ResponsibilitySave", responsibilitySave);
+        amplify.subscribe("CancelAction", cancelAction);
+        amplify.subscribe("SaveAction", saveAction);
+        amplify.subscribe("CommandExecuted", commandExecuted);
+        amplify.subscribe(AmplifyActions.Local, localAction);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+
+        //#endregion
+    });
+</script>

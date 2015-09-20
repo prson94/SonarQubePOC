@@ -1,0 +1,138 @@
+﻿@model d360.core.entities.ObjectModel
+@{
+    var name = ViewBag.ObjectName;
+}
+<div class="large-overlay">
+    <div class="ui segment">
+        <h4>Audit History for @name</h4>
+        <div class="form-instructions"></div>
+        <div id="AuditGrid"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var auditObject = '@(Model.ObjectType)';
+    var auditObjectID = '@(Model.ObjectID)';
+    var AuditGridSource;
+    var AuditGridAdapter;
+
+    $(function () {
+        var initrowdetails = function (index, parentElement, gridElement, record) {
+
+            var grid = $($(parentElement).children()[0]);
+
+            var src = {
+                datatype: "json",
+                type: 'get',
+                datafields: [
+                    { name: 'AuditID', type: 'number' },
+                    { name: 'FieldTypeID', type: 'number' },
+                    { name: 'FieldName', type: 'string' },
+                    { name: 'Version', type: 'number' },
+                    { name: 'Value', type: 'string' }
+                ],
+                url: '/overlays/' + auditObject + '/' + auditObjectID + '/audit/' + record.ID + '/fields.json'
+            }
+            var adapter = new $.jqx.dataAdapter(src);
+            if (grid != null) {
+                grid.jqxGrid({
+                    source: adapter,
+                    theme: list_theme,
+                    width: '90%',
+                    autoheight: true,
+                    autorowheight: true,
+                    columns: [
+                      { text: 'Field', datafield: 'FieldName', width: '30%' },
+                      { text: 'Value', datafield: 'Value', width: '60%' },
+                      { text: 'Version', datafield: 'Version', width: '10%' }
+                    ]
+                });
+            }
+        }
+
+        //#region Main Grid
+
+        AuditGridSource = {
+            datatype: "json",
+            type: 'get',
+            datafields: [
+                { name: 'ID' },
+                { name: 'ResourceID' },
+                { name: 'ResourceName' },
+                { name: 'Date', type: 'date' },
+                { name: 'Action' },
+                { name: 'ActionObject' },
+                { name: 'ActionObjectID' },
+                { name: 'ActionObjectTypeName' },
+                { name: 'ActionObjectName' },
+                { name: 'ActionDescription' }
+            ],
+            beforeprocessing: function (data) {
+                AuditGridSource.totalrecords = data.total;
+            },
+            filter: function () {
+                $("#AuditGrid").jqxGrid('updatebounddata');
+            },
+            sort: function () {
+                $("#AuditGrid").jqxGrid('updatebounddata');
+            },
+            url: '/overlays/' + auditObject + '/' + auditObjectID + '/audit.json'
+        };
+
+        AuditGridAdapter = new $.jqx.dataAdapter(AuditGridSource);
+
+        $('#AuditGrid').jqxGrid({
+            altrows: true,
+            autoheight: true,
+            autorowheight: true,
+            source: AuditGridAdapter,
+            width: overlay_grid_width,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            filterable: true,
+            showfilterrow: true,
+            sortable: true,
+            pageable: true,
+            rowdetails: true,
+            initrowdetails: initrowdetails,
+            rowdetailstemplate: { rowdetails: "<div style='margin: 10px;'></div>", rowdetailshidden: true }, //rowdetailsheight: 220,
+            virtualmode: true,
+            rendergridrows: function () {
+                return AuditGridAdapter.records;
+            },
+            theme: list_theme,
+            columns: [
+                { datafield: "ResourceName", text: "Resource", filtertype: 'checkedlist' },
+                { datafield: "Date", text: "Date", cellsformat: "f", filtertype: 'range', columntype: 'datetimeinput', width: '15%' },
+                { datafield: "Action", text: "Action", filtertype: 'checkedlist', width: '7%' },
+                { datafield: "ActionObjectTypeName", text: "Type", filtertype: 'checkedlist' },
+                { datafield: "ActionObjectName", text: "Item", width: '18%' },
+                { datafield: "ActionDescription", text: "Audit Description", width: '30%' },
+                {
+                    datafield: "ID",
+                    width: '40px',
+                    text: "",
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        var tools = [];
+
+                        //if (data.AllowRead) tools.push({ isitemlink: true, urlprefix: '#' + ChildArtifactOverlayDetailUri, id: data.ID, type: 'Artifact', context: 'Preview' });
+                        //if (data.AllowUpdate) tools.push({ icon: 'pencil', urlprefix: 'form' + ChildArtifactOverlayDetailUri + '/edit' });
+
+                        return renderToolsHtml(value, tools, contextList.Artifact, data);
+                    }
+                }
+            ]
+        });
+
+        //#endregion
+
+        function unsubscribe() {
+            AuditGridAdapter = null;
+            AuditGridSource = null;
+        }
+
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

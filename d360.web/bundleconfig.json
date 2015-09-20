@@ -1,0 +1,119 @@
+[
+  {
+    "outputFileName": "scripts/all.js",
+    "inputFiles": [
+      "Scripts/jquery-2.1.3.js",
+      "Scripts/jquery.signalR-2.2.0.js",
+      "Scripts/handlebars-1.1.2.js",
+      "Scripts/sammy-0.7.5.js",
+      "Scripts/sammy.title.js",
+      "Scripts/sammy.handlebars.js",
+      "Scripts/amplify.js",
+      "Scripts/moment.js",
+      "Scripts/diagrams/common.js",
+      "Scripts/diagrams/information.catalog.js",
+      "Scripts/diagrams/lineage.js",
+      "Scripts/diagrams/environment.js",
+      "Scripts/knockout-3.3.0.js",
+      "Scripts/materialize/materialize.js",
+      "Scripts/colorpicker-color.js",
+      "Scripts/colorpicker.js",
+      "Scripts/redactor.js",
+      "Scripts/jquery.easing.1.3.js",
+      "Scripts/jquery.gritter.js",
+      "Scripts/jquery.qtip.js",
+      "Scripts/jquery.unobtrusive-ajax.js",
+      "Scripts/jquery.fileDownload.js",
+      "Scripts/jqx/3.7.1/jqx-all.js",
+      "Scripts/ace/ace.js",
+      "Scripts/ace/mode-sql.js",
+      "Scripts/ace/mode-json.js",
+      "Scripts/ace/theme-dawn.js",
+      //"Scripts/knockout-file-bindings.js",
+      "Scripts/knockout.models.js",
+      "Scripts/Common.js",
+      "Scripts/d3s.Detail.js",
+      "Scripts/d3s.Editor.js",
+      "Scripts/d3s.PageTools.js",
+      "Scripts/d3s.SurveyReport.js",
+      "Scripts/d3s.RandomSurveyQuestion.js",
+      "Scripts/parts.js",
+      "Scripts/templates/home.js",
+      "Scripts/templates/search.js",
+      "Scripts/templates/community.home.js",
+      "Scripts/templates/analytics.admin.js",
+      "Scripts/templates/artifacts.admin.js",
+      "Scripts/templates/artifacts.item.js",
+      "Scripts/templates/artifacts.list.js",
+      "Scripts/templates/attributes.admin.js",
+      "Scripts/templates/domains.admin.js",
+      "Scripts/templates/domains.list.js",
+      "Scripts/templates/fusion.admin.js",
+      "Scripts/templates/fusion.item.js",
+      "Scripts/templates/fusion.list.js",
+      "Scripts/templates/governance.admin.js",
+      "Scripts/templates/groups.admin.js",
+      "Scripts/templates/groups.item.js",
+      "Scripts/templates/groups.list.js",
+      "Scripts/templates/load.js",
+      "Scripts/templates/lookups.admin.js",
+      "Scripts/templates/monitor.list.js",
+      "Scripts/templates/relations.admin.js",
+      "Scripts/templates/reporting.admin.js",
+      "Scripts/templates/resources.admin.js",
+      "Scripts/templates/resources.item.js",
+      "Scripts/templates/surveys.admin.js",
+      "Scripts/templates/surveyresponsetypes.admin.js",
+      "Scripts/templates/synonyms.admin.js",
+      "Scripts/templates/taxonomies.admin.js",
+      "Scripts/templates/taxonomies.list.js",
+      "Scripts/templates/templates.admin.js",
+      "Scripts/templates/workflow.item.js",
+      "Scripts/templates/workflow.admin.js",
+      "Scripts/templates/workflow.item.status.js"
+    ],
+    "minify": {
+      "enabled": false
+    }
+  },
+  {
+    "outputFileName": "scripts/angular.js",
+    "inputFiles": [
+      "Scripts/Angular/angular.js",
+      "Scripts/Angular/angular-animate.js",
+      "Scripts/Angular/angular-aria.js",
+      "Scripts/Angular/angular-route.js",
+      "Scripts/Angular/angular-material.js"
+    ]
+  },
+  {
+    "outputFileName": "scripts/apps.js",
+    "inputFiles": [
+      "Scripts/jquery-2.1.3.js",
+      "Scripts/knockout-3.3.0.js"
+    ]
+  },
+  {
+    "outputFileName": "content/styles/all.css",
+    "inputFiles": [
+      "content/font-awesome.css",
+      "Content/materialize/css/materialize.css",
+      "Content/styles/Root.css",
+      "Content/styles/ContentFormatting.css",
+      "Content/styles/navigation.css"
+    ]
+  },
+  {
+    "outputFileName": "content/styles/angular.css",
+    "inputFiles": [
+      "Content/styles/Angular/angular-csp.css",
+      "Content/styles/Angular/angular-material.css"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/all.js",
+    "inputFiles": [
+      "Scripts/all.js"
+    ]
+  }
+]

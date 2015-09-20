@@ -1,0 +1,136 @@
+﻿@model List<d360.core.entities.FlattenedFusionAttributeDefinitionByType>
+@{
+    var id = ViewData["ID"].ToString();
+    var tab = ViewData["Tab"].ToString();
+    var idSuffix = string.Format("{0}{1}", id, tab.Replace(" ", ""));
+            
+    var columns = "";
+    var dataFields = "";
+    var count = 1;
+    Model.ForEach(i =>
+    {
+        columns += "{ datafield: '" + i.Name + "', text: '" + i.FriendlyName + "'";
+        if (count < 4)
+        {
+            columns += ", width: 150";
+        }
+        columns += "},";
+        dataFields += "{ name: '" + i.Name + "'},";
+        count++;
+    });
+    
+    //Account for ID column
+    columns += "{ datafield: 'FusedItems', text: 'Fused?', width: 100, cellsrenderer: fusedItemRenderer" + idSuffix + "}";
+    //columns += "{ datafield: 'ID', text: '', cellsrenderer: fusiontoolsrenderer, filterable: false, sortable: false, width: 50}";
+    dataFields += "{ name: 'FusedItems'},";
+    dataFields += "{ name: 'ID'}";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var fusedItemRenderer@(idSuffix) = function (index, datafield, value, defaultvalue, column, data) {
+            var html = "";
+            if (value > 0) {
+                html = "<div style='background-color: green; text-align: center; color: white; height: 100%; vertical-align: middle; font-weight: 600'>";
+                html += value;
+                html += "</div>";
+            }
+            return html;
+        }
+
+        var srcFusions@(idSuffix) =
+        {
+            datatype: 'json',
+            url: '/fusion/_hierarchy?id=@(id)&tab=@(tab)',
+            datafields:
+            [
+                @Html.Raw(dataFields)
+            ]
+        };
+
+        var adapterFusions@(idSuffix) = new $.jqx.dataAdapter(srcFusions@(idSuffix));
+
+        var width = $("#Objects@(idSuffix)").parent().width();
+        $("#Objects@(idSuffix)").jqxGrid({
+            altrows: true,
+            theme: theme,
+            groupable: true,
+            height: 400,
+            sortable: true,
+            filterable: true,
+            //showfilterrow: true,
+            scrollmode: 'deferred',
+            columnsresize: true,
+            enabletooltips: true,
+            width: grid_width,
+            source: adapterFusions@(idSuffix),
+            columns: [ @Html.Raw(columns)],
+            ready: function () {
+                amplify.publish("TabContentLoaded");
+                //$("#Objects@(idSuffix)").jqxGrid('autoresizecolumns');
+            }
+        });
+
+        $("#Objects@(idSuffix)").on('rowselect', function (event) {
+            try {
+                var row = $("#Objects@(idSuffix)").jqxGrid('getrowdata', event.args.rowindex);
+                amplify.publish("RowSelectedAction", { context: "@ContextList.FusionAttribute", id: row.ID, rowdata: row });
+            } catch (e) {
+                logError("Hierarchy", e);
+            }
+        });
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("IDPreSelected", function (data) {
+            //data.id
+            try {
+                if (data.id) {
+                    var fusionHierarchyRows = $("#Objects@(idSuffix)").jqxGrid('getboundrows');
+                    for (var i in fusionHierarchyRows) {
+                        var rowData = fusionHierarchyRows[i];
+                        if (rowData.ID == data.id) {
+                            var selectedIndex = i;
+                            $("#Objects@(idSuffix)").jqxGrid('ensurerowvisible', selectedIndex);
+                            $("#Objects@(idSuffix)").jqxGrid('selectrow', selectedIndex);
+                        }
+                    }
+                    fusionHierarchyRows = null;
+                }
+            } catch (e) {
+                logError("Hierarchy", e);
+            }
+        });
+
+        amplify.subscribe("PageTabChanged", function (data) {
+            try {
+                $("#Objects@(idSuffix)").jqxGrid('refresh');
+                //$("#Objects@(idSuffix)").jqxGrid('updatebounddata');
+            } catch (e) {
+                logError("Hierarchy", e);
+            }
+        });
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                $("#Objects@(idSuffix)").jqxGrid('updatebounddata');
+            } catch (e) {
+                logError("Hierarchy", e);
+            }
+        });
+        amplify.subscribe("ToolAction", function (data) {
+            try {
+                switch (data.context) {
+                    case "@ContextList.FusionAttribute":
+                        $("#Objects@(idSuffix)").jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("Hierarchy", e);
+            }
+        });
+
+        //#endregion
+    });
+</script>
+
+<div id="Objects@(idSuffix)"></div>

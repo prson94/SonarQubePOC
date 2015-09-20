@@ -1,0 +1,77 @@
+﻿@model int
+
+<script type="text/javascript">
+    $(function () {
+        var typeID = '@(Model)';
+
+        //#region Grid
+
+        var resultRowRenderer = function (index, datafield, value, defaultvalue, column, data) {
+
+            var tools = [
+                { isitemlink: true, urlprefix: '/monitor/results/' + typeID + '/{0}', type: 'EventGroup', context: 'Preview' },
+            ];
+
+            return renderToolsHtml(value, tools, childArtifactContext, data);
+        };
+
+        var srcResultsGrid = {
+            datatype: 'json',
+            url: '/Monitor/_ResultHeaders?typeID=' + typeID,
+            datafields: [
+                { name: 'ID' },
+                { name: 'DateCreated' },
+                { name: 'EventTypeID' },
+                { name: 'EventCount' },
+                { name: 'Name' }
+            ]
+        };
+
+        var adapterResultsGrid = new $.jqx.dataAdapter(srcResultsGrid);
+
+        $("#Results").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            virtualmode: false,
+            pageable: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            columnsresize: true,
+            enabletooltips: true,
+            source: adapterResultsGrid,
+            theme: list_theme,
+            columns: [
+                { datafield: "DateCreated", text: "Event Date", filtertype: "date", width: 125, cellsrenderer: shortdaterenderer },
+                { datafield: "Name", text: "Name" },
+                { datafield: "EventCount", text: "# Events", width: 55 },
+                { datafield: "ID", text: "", width: 40, filterable: false, cellsrenderer: resultRowRenderer }
+            ]
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        $('#Results').on('rowdoubleclick', function (event) {
+            try {
+                var args = event.args;
+                var row = args.rowindex;
+                var data = $("#Results").jqxGrid('getrowdata', row);
+                location.assign('/monitor/results/' + typeID + '/' + data.ID);
+            } catch (e) {
+                logError("ResultHeadersGrid", e);
+            }
+        });
+
+        //#endregion
+
+    });
+</script>
+<div class="tile tile-detail">
+    <header>Events</header>
+    <article id="Results"></article>
+</div>

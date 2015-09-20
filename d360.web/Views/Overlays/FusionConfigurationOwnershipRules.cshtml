@@ -1,0 +1,259 @@
+﻿<div class="small-overlay">
+    <div class="ui segment">
+        <div id="OwnershipViewer">
+            <h4>Ownership Rules</h4>
+            <div class="form-instructions"></div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="root-tile">
+                        <header><div id="OwnershipOverlayGridTools"></div></header>
+                        <div id="OwnershipOverlayGrid"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="root-tile">
+                        <header>
+                            <span id="OwnershipItemsOverlayGridTitle"></span>
+                            <div id="OwnershipItemsOverlayGridTools"></div>
+                        </header>
+                        <div id="OwnershipItemsOverlayGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="OwnershipEditor"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var fusionTypeID = "@(ViewBag.FusionTypeID)";
+    var fusionID = "@(ViewBag.FusionID)";
+    var _overlayContext = "@(ContextList.FusionOwnerRule)";
+    var _itemContext = "@(ContextList.FusionOwnerRuleItem)";
+    var OwnershipOverlayGridSource;
+    var OwnershipOverlayGridAdapter;
+    var OwnershipItemsOverlayGridSource;
+    var OwnershipItemsOverlayGridAdapter;
+    var permissions;
+
+    var switchToViewer = function () {
+        $('#OwnershipEditor').html('');
+        $('#OwnershipEditor').fadeOut(1);
+        $('#OwnershipViewer').fadeIn(500);
+    }
+
+    var switchToEditor = function (uri) {
+        try {
+            $('#OwnershipViewer').fadeOut(10);
+            $('#OwnershipEditor').fadeIn(10);
+            $('#OwnershipEditor').load(uri, function (response, status, xhr) {
+                if (status == "error") {
+                    amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.status + ' ' + xhr.statusText, type: 'error' });
+                    switchToViewer();
+                }
+            });
+        } catch (e) {
+
+        }
+    }
+
+    function cancelAction(data) {
+        try {
+            switch (data.context) {
+                case _overlayContext:
+                case _itemContext:
+                    switchToViewer();
+                    break;
+            }
+        } catch (e) {
+            logError("FusionConfigurationOwnershipOverlay : CancelAction", e);
+        }
+    }
+
+    function localAction(data) {
+        try {
+            switch (data.context) {
+                case _overlayContext:
+                case _itemContext:
+                    switchToEditor(data.uri);
+                    break;
+            }
+        } catch (e) {
+            logError("FusionConfigurationOwnershipOverlay : LocalAction", e);
+        }
+    };
+
+    function overlayBindingComplete(event) {
+        var rowCount = $('#OwnershipOverlayGrid').jqxGrid('getdisplayrows').length;
+        if (rowCount > 0) {
+            $('#OwnershipOverlayGrid').jqxGrid('selectrow', 0);
+        }
+    }
+
+    var overlayRowSelect = function (event) {
+        var args = event.args;              // event arguments.
+        //var rowBoundIndex = args.rowindex;  // row's bound index.
+        var data = args.row;             // row's data.
+
+        if (permissions.HasPermission("Root", "Create")) {
+            var itemTools = [];
+            itemTools.push({ icon: 'plus', uri: '/form/AddFusionAttributeOwnerRuleItem?id=' + data.ID, context: _itemContext, title: 'Add target item' });
+            TileTools('#OwnershipItemsOverlayGridTools', itemTools);
+        }
+
+        $('#OwnershipItemsOverlayGridTitle').text('Target Items for Selected Rule');
+        OwnershipItemsOverlayGridSource.url = '/api/fusion/' + data.ID + '/OwnershipRuleItems';
+        $('#OwnershipItemsOverlayGrid').jqxGrid('updatebounddata');
+    }
+
+    function saveAction(data) {
+        try {
+            switch (data.context) {
+                case _overlayContext:
+                    switchToViewer();
+                    $('#OwnershipOverlayGrid').jqxGrid('updatebounddata');
+                    break;
+                case _itemContext:
+                    switchToViewer();
+                    $('#OwnershipItemsOverlayGrid').jqxGrid('updatebounddata');
+                    break;
+            }
+        } catch (e) {
+            logError("FusionConfigurationOwnershipOverlay : SaveAction", e);
+        }
+    }
+
+    function unsubscribe() {
+        OwnershipOverlayGridAdapter = null;
+        OwnershipOverlayGridSource = null;
+        OwnershipItemsOverlayGridAdapter = null;
+        OwnershipItemsOverlayGridSource = null;
+
+        amplify.unsubscribe('CancelAction', cancelAction);
+        $('#OwnershipOverlayGrid').off('rowselect', overlayRowSelect);
+        $("#OwnershipOverlayGrid").off("bindingcomplete", overlayBindingComplete);
+        amplify.unsubscribe('SaveAction', saveAction);
+        amplify.unsubscribe('ToolAction', localAction);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+    }
+
+    $(function () {
+        permissions = new PermissionsModel();
+
+        var loadAfterPermissionsRetrieved = function () {
+
+            var tools = [];
+            if (permissions.HasPermission("Root", "Create")) {
+                tools.push({ icon: 'plus', uri: "/form/fusion/" + fusionTypeID + "/configurations/" + fusionID + "/owners/add", context: _overlayContext, title: 'Add ownership rule' });
+            }
+            TileTools('#OwnershipOverlayGridTools', tools);
+
+            //#region Grid
+
+            OwnershipOverlayGridSource = {
+                datatype: 'json',
+                url: "/api/fusion/" + fusionTypeID + "/configurations/" + fusionID + "/ownership",
+                datafields: [
+                    { name: "ID", type: "number" },
+                    { name: "FusionID", type: "number" },
+                    { name: "ObjectType", type: "string" },
+                    { name: "ObjectID", type: "number" },
+                    { name: "ObjectName", type: "string" },
+                    { name: "RelationshipOwnerObjectType", type: "string" },
+                    { name: "RelationshipOwnerObjectID", type: "number" },
+                    { name: "RelationshipOwnerName", type: "string" }
+                ]
+            };
+
+            OwnershipOverlayGridAdapter = new $.jqx.dataAdapter(OwnershipOverlayGridSource);
+
+            $('#OwnershipOverlayGrid').jqxGrid({
+                altrows: true,
+                source: OwnershipOverlayGridAdapter,
+                width: grid_width,
+                autoheight: true,
+                autorowheight: true,
+                filterable: true,
+                sortable: true,
+                pageable: true,
+                theme: list_theme,
+                columns: [
+                    { text: 'Type', dataField: 'ObjectName' },
+                    { text: 'Owned By', dataField: 'RelationshipOwnerName' },
+                    {
+                        text: '',
+                        dataField: 'ID',
+                        width: '80px',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            var tools = [
+                                { icon: 'pencil', urlprefix: '/form/EditFusionOwnerRule?id=' + data.ID },
+                                { icon: 'trash-o', urlprefix: '/form/DeleteFusionOwnerRule?id=' + data.ID }
+                            ];
+                            return renderToolsHtml(value, tools, _overlayContext, data);
+                        }
+                    }
+                ]
+            });
+
+            //#endregion
+
+            //#region Items Grid
+
+            OwnershipItemsOverlayGridSource = {
+                datatype: 'json',
+                url: null,
+                datafields: [
+                    { name: "ID", type: "number" },
+                    { name: "FusionAttributeOwnerRuleID", type: "number" },
+                    { name: "FusionAttributeID", type: "number" },
+                    { name: "FusionAttributeName", type: "string" },
+                ]
+            };
+
+            OwnershipItemsOverlayGridAdapter = new $.jqx.dataAdapter(OwnershipItemsOverlayGridSource);
+
+            $('#OwnershipItemsOverlayGrid').jqxGrid({
+                altrows: true,
+                source: OwnershipItemsOverlayGridAdapter,
+                width: grid_width,
+                autoheight: true,
+                autorowheight: true,
+                filterable: false,
+                sortable: true,
+                pageable: false,
+                theme: list_theme,
+                columns: [
+                    { text: 'Limiting Attribute', dataField: 'FusionAttributeName' },
+                    {
+                        text: '',
+                        dataField: 'ID',
+                        width: '40px',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            var tools = [
+                                { icon: 'trash-o', urlprefix: '/form/DeleteFusionAttributeOwnerRuleItem?id=' + data.ID }
+                            ];
+                            return renderToolsHtml(value, tools, _itemContext, data);
+                        }
+                    }
+                ]
+            });
+
+            //#endregion
+
+            amplify.subscribe('CancelAction', cancelAction);
+            amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+            $('#OwnershipOverlayGrid').on('rowselect', overlayRowSelect);
+            $("#OwnershipOverlayGrid").on("bindingcomplete", overlayBindingComplete);
+            amplify.subscribe('SaveAction', saveAction);
+            amplify.subscribe('ToolAction', localAction);
+        }
+
+        permissions.GetPermissionsForObject('Fusion', fusionID).then(loadAfterPermissionsRetrieved);
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

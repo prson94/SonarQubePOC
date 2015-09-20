@@ -1,0 +1,42 @@
+﻿<style type="text/css" media="screen">
+    #Log {
+        width: 100%;
+        height: 400px;
+    }
+</style>
+<div class="medium-overlay">
+    <div class="ui segment">
+        <h4>Raw Agent Log for Execution</h4>
+        <div class="form-instructions"></div>
+        <div id="Log"></div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    //var logFileUrl = "@(ViewBag.LogFileUrl)";
+    var id = "@(ViewBag.ID)";
+    $(function () {
+        var config = ace.require("ace/config");
+        acePath = "/scripts/ace";
+        ["worker", "mode", "theme", "base"].forEach(function (x) { config.set(x + "Path", acePath) })
+        var editor = ace.edit('Log');
+        editor.setTheme('ace/theme/dawn');
+        editor.getSession().setMode('ace/mode/json');
+        //editor.setReadOnly(true);
+
+        $.ajax({
+            url: '/fusion/_FusionExecutionRawLog?id=' + id,
+            type: 'GET',
+            //crossDomain: true,
+            success: function (data, status, xhr) {
+                editor.setValue(JSON.stringify(data, null, '\t'), -1);
+            },
+            error: function (xhr, status, error) {
+            }
+        });
+
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

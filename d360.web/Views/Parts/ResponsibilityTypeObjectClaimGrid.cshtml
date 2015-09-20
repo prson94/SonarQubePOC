@@ -1,0 +1,132 @@
+﻿@{
+    var objectType = ViewData["ObjectType"].ToString();
+    var objectID = (int)ViewData["ObjectID"];
+}
+<div id="ResponsibilityTypeObjectClaimGrid"></div>
+
+<script type="text/javascript">
+    //var ResponsibilityTypeObjectClaimGridUri = '/api/ownership/@(objectType)/@(objectID)/claims';
+    var ResponsibilityTypeObjectClaimGridUri = '/api/ownership/@(objectType)/@(objectID)/responsibilitytypes';
+    var ResponsibilityTypeObjectClaimGridSource;
+    var ResponsibilityTypeObjectClaimGridAdapter;
+
+    $(function () {
+
+        function pageResized() {
+            $("#ResponsibilityTypeObjectClaimGrid").jqxGrid('refresh');
+        }
+
+        function saveAction(data) {
+            try {
+                switch (data.context) {
+                    case contextList.ResponsibilityTypeObjectClaim:
+                        $('#ResponsibilityTypeObjectClaimGrid').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("ResponsibilityTypeObjectClaimGrid : SaveAction", e);
+            }
+        }
+
+        function unsubscribe(data) {
+            ResponsibilityTypeObjectClaimGridSource = null;
+            ResponsibilityTypeObjectClaimGridAdapter = null;
+
+            amplify.unsubscribe("PageResized", pageResized);
+            amplify.unsubscribe("SaveAction", saveAction);
+            amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+            amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        }
+
+        //#region Grid
+
+        var initrowdetails = function (index, parentElement, gridElement, datarecord) {
+            var div = $($(parentElement).children()[0]);
+            div.html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+            div.load('/parts/DisplayClaimsMatrix?type=' + datarecord.ObjectType + '&id=' + datarecord.ObjectID + '&responsibilityTypeID=' + datarecord.ResponsibilityTypeID);
+        }
+
+        ResponsibilityTypeObjectClaimGridSource = {
+            datatype: 'json',
+            url: ResponsibilityTypeObjectClaimGridUri,
+            datafields:
+            [
+                //{ name: 'ID' },
+                //{ name: 'Claim' },
+                //{ name: 'Claim' },
+                //{ name: 'ClaimDescription' },
+                //{ name: 'ClaimObject' },
+                //{ name: 'ClaimObjectDescription' },
+                //{ name: 'ResponsibilityType' },
+                { name: 'ResponsibilityTypeGroup' },
+                { name: 'ResponsibilityTypeID' },
+                { name: 'ObjectType' },
+                { name: 'ObjectID' },
+                { name: 'Name' },
+                { name: 'Description' }
+                //{ name: 'ObjectName' },
+                //{ name: 'ObjectTypeName' }
+            ]
+        };
+
+        ResponsibilityTypeObjectClaimGridAdapter = new $.jqx.dataAdapter(ResponsibilityTypeObjectClaimGridSource);
+
+        $("#ResponsibilityTypeObjectClaimGrid").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            autorowheight: true,
+            sortable: true,
+            filterable: true,
+            rowdetails: true,
+            rowdetailstemplate: {
+                rowdetails: "<div></div>",
+                rowdetailsheight: 175
+            },
+            initrowdetails: initrowdetails,
+            //groupable: true,
+            showfilterrow: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            pageable: true,
+            source: ResponsibilityTypeObjectClaimGridAdapter,
+            theme: list_theme,
+            //groups: ['ResponsibilityType'],
+            //groupsexpandedbydefault: true,
+            columns: [
+                //{ datafield: "ClaimDescription", text: "Claim" },
+                //{ datafield: "ClaimObjectDescription", text: "Claim Object", width: 125 },
+                //{ datafield: "ResponsibilityType", text: "Role" },
+                { datafield: "Name", text: "Name" },
+                { datafield: "Description", text: "Description" },
+                {
+                    text: '', dataField: 'ResponsibilityTypeID', width: 40, filterable: false,
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        var tools = [];
+                        if (data.ResponsibilityTypeGroup == 1) {
+                            tools.push({ icon: 'pencil', urlprefix: '/form/EditResponsibilityTypeClaims?type=' + data.ObjectType + '&id=' + data.ObjectID + '&responsibilityTypeID=' + data.ResponsibilityTypeID });
+                        }
+                        return renderToolsHtml(value, tools, contextList.ResponsibilityTypeObjectClaim);
+                    }
+                }
+            ],
+            ready: function () {
+                if ($('#ResponsibilityTypeObjectClaimGrid').jqxGrid('getdisplayrows').length > 0) {
+                    $("#ResponsibilityTypeObjectClaimGrid").jqxGrid('showrowdetails', 0);
+                }
+            },
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("PageResized", pageResized);
+        amplify.subscribe("SaveAction", saveAction);
+        amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+        //#endregion
+
+    });
+</script>

@@ -1,0 +1,165 @@
+﻿
+@{
+    ViewBag.Title = "Search";
+    Layout = "~/Views/Shared/Apps.cshtml";
+    var phrase = ViewBag.Phrase;
+}
+
+<div id="SearchArea">
+    <div class="row">
+        <div class="col-lg-3 col-md-3 hidden-sm hidden-xs">
+            <div class="tile tile-detail">
+                <h3>Categorized Results</h3>
+                <div class="widget" id="CategoryResults" data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
+            </div>
+        </div>
+        <div class="col-lg-9 col-md-9">
+            <div class="tile tile-detail">
+                <div data-bind="text: elapsedTime"></div>
+                <div data-bind="visible: shouldShowSpinner()"><i class='fa fa-spinner fa-spin fa-4x'></i></div>
+                <div id="SearchResults" data-bind="template: {name: 'searchResultTmpl', foreach: results }"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script id="searchResultTmpl" type="text/html">
+    <div class="entry" data-bind="attr: {'data-category': Type}">
+        <div class="name">
+            <strong data-bind="text: Type"></strong> : <a data-bind="attr: {href: Url}, html: Name" target="D3SApp"></a>
+        </div>
+        <div class="description" data-bind="html: Description"></div>
+    </div>
+</script>
+<script id="searchResultsCategoriesTmpl" type="text/html">
+    <div class="widget" id="CategoryResults">
+        <div class='entry'><a href='#' data-category=''>All item(s)</a></div>
+        <div data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
+    </div>
+</script>
+<script id="searchResultsCategoryTmpl" type="text/html">
+    <div class="entry">
+        <a href="#" data-bind="attr: {'data-category': Name}, html: Name"></a> : <span data-bind="text: ResultCount"></span> item(s)
+    </div>
+</script>
+<script type="text/javascript">
+    var phrase = "@(phrase)";
+
+    function SearchResult(data) {
+        var self = this;
+        data = data || {};
+        self.Name = data.Name;
+        self.Url = "/" + data.Url;
+        self.Description = data.Description;
+        self.Type = data.Type;
+    }
+
+    function SearchResultCategory(data) {
+        var self = this;
+        data = data || {};
+        self.Name = data.Name;
+        self.ResultCount = data.ResultCount;
+    }
+
+    function SearchViewModel() {
+        var self = this;
+        self.categories = ko.observableArray();
+        self.results = ko.observableArray();
+        self.elapsedTime = ko.observable();
+
+        self.shouldShowSpinner = ko.observable(false);
+        //self.shouldShowSpinner = function () {
+        //    return (self.results().length <= 0);
+        //};
+
+        self.getResults = function (phrase) {
+
+            //try {
+            self.categories.removeAll();
+            self.results.removeAll();
+            self.elapsedTime('');
+
+            self.shouldShowSpinner(true);
+
+            $.ajax({
+                data: 'search=' + phrase,
+                url: '/search/results',
+                dataType: 'json',
+                type: 'POST',
+                error: function () {
+                    amplify.publish("ShowMessage", { title: 'Error When Searching', message: 'An error occurred while attempting to get search results.', type: 'error' });
+                    self.shouldShowSpinner(false);
+                },
+                success: function (data) {
+                    try {
+                        if (data.Results.length > 0) {
+                            var results = $.map(data.Results, function (item) { return new SearchResult(item); });
+                            self.results(results);
+                        }
+
+                        if (data.Categories.length > 0) {
+                            var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
+                            self.categories(cats);
+                        }
+                    } catch (e) {
+
+                    }
+
+                    self.shouldShowSpinner(false);
+                    self.elapsedTime(data.ElapsedTime);
+                }
+            });
+            //}
+            //catch (e) {
+            //    console.log(e);
+            //}
+        };
+
+        return self;
+    }
+
+    var showOnlyRelevantCategory = function (category) {
+
+        try {
+            $('#SearchResults .entry').each(function () {
+                if (category == '' || $(this).data("category") == category) {
+                    $(this).show(300);
+                }
+                else {
+                    $(this).hide(300);
+                }
+            });
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
+    $(function () {
+
+        var searchVm = new SearchViewModel();
+        try {
+            ko.applyBindings(searchVm, document.getElementById("SearchArea"));
+        }
+        catch (e) {
+            console.log(e);
+        }
+
+        $(document).ajaxComplete(function () {
+            try {
+                $('#CategoryResults .entry a[data-category]').each(function () {
+                    $(this).click(function () {
+                        var c = $(this).data("category");
+                        showOnlyRelevantCategory(c);
+                    });
+                });
+            }
+            catch (e) {
+                console.log(e);
+            }
+        });
+
+        if (phrase != '') {
+            searchVm.getResults('"' + phrase + '"');
+        }
+    });
+</script>

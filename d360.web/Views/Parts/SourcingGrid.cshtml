@@ -1,0 +1,124 @@
+﻿<div id="SourcingPart"></div>
+<script type="text/javascript">
+    var sourcingUri = '@(ViewData["Uri"])';
+    var ggpType = '@(ViewData["Type"])';
+    var ggpID = '@(ViewData["ID"])';
+
+    $(function () {
+
+        //#region Grid
+
+        var srcSourcingGrid = {
+            datatype: 'json',
+            url: sourcingUri,
+            datafields: [
+                { name: 'ResponsibilityID' },
+                { name: 'AssigningItemType' },
+                { name: 'AssigningIconBackColor' },
+                { name: 'AssigningIconForeColor' },
+                { name: 'AssigningIconText' },
+                { name: 'AssigningItemID' },
+                { name: 'AssigningItemName' },
+                { name: 'AssigningItemUrl' },
+                { name: 'ResponsibleObjectType' },
+                { name: 'ResponsibleObjectID' },
+                { name: 'ResponsibleObjectName' },
+                { name: 'ObjectName' },
+                { name: 'ObjectUrl' },
+                { name: 'ObjectType' },
+                { name: 'ObjectID' },
+                { name: 'Role' },
+                { name: 'ResponsibleObjectUrl' },
+                { name: 'ContextItems' }
+            ]
+        };
+
+        var adapterSourcingGrid = new $.jqx.dataAdapter(srcSourcingGrid);
+
+        $("#SourcingPart").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            pageable: true,
+            autorowheight: true,
+            columnsresize: true,
+            source: adapterSourcingGrid,
+            theme: list_theme,
+            columns: [
+                    { 
+                        datafield: "ResponsibleObjectName", 
+                        text: "Artifact", 
+                        width: '22%', 
+                        cellsrenderer: function (row, column, value) {
+                            try {
+                                var data = $("#SourcingPart").jqxGrid('getrowdata', row);
+                                var html = previewLinkRenderer(data.ResponsibleObjectType, data.ResponsibleObjectID, data.ResponsibleObjectUrl, data.ResponsibleObjectName);
+                                data = null;
+                                return html;
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        }
+                    },
+                    { datafield: "Role", text: "Role", width: '22%' },
+                    { datafield: "ContextItems", text: "Context", width: '40%', },
+                    { 
+                        datafield: "ResponsibilityID", 
+                        text: "", 
+                        width: '16%', 
+                        filterable: false, 
+                        cellsrenderer: function (row, column, value) {
+                            try {
+                                var data = $("#SourcingPart").jqxGrid('getrowdata', row);
+
+                                var tools = [];
+
+                                if (ggpType == data.AssigningItemType && ggpID == data.AssigningItemID) {
+                                    tools.push({ icon: 'pencil', urlprefix: '/form/EditResponsibility?id={0}' });
+                                    tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibility?id={0}' });
+                                }
+                                //else {
+                                //    tools.push({
+                                //        isitemlink: true,
+                                //        title: 'Assigning Item',
+                                //        iconBackColor: data.AssigningIconBackColor, iconForeColor: data.AssigningIconForeColor, iconText: data.AssigningIconText,
+                                //        context: 'AssigningItemPreview', type: data.AssigningItemType, id: data.AssigningItemID,
+                                //        urlprefix: data.AssigningItemUrl
+                                //    });
+                                //}
+
+                                return renderToolsHtml(value, tools, contextList.Responsibility, data);
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        }
+                    }
+            ]
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("SaveAction", function (data) {
+            try {
+                switch (data.context) {
+                    case contextList.Artifact:
+                    case contextList.DomainList:
+                    case contextList.Responsibility:
+                    case contextList.Taxonomy:
+                        $('#SourcingPart').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {}
+        });
+
+        //#endregion
+
+    });
+</script>

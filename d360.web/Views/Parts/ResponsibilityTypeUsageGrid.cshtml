@@ -1,0 +1,68 @@
+﻿@{
+    var id = (int)ViewData["ID"];
+}
+<div class="tile tile-detail">
+    <header>Usage</header>
+    <div id="ResponsibilityTypeUsageGrid"></div>
+</div>
+<script type="text/javascript">
+    var ResponsibilityTypeUsageGridUri = '/api/ownership/types/@(id)/usage';
+
+    $(function () {
+
+        //#region Grid
+
+        var ResponsibilityTypeUsageGridObjectRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            return previewLinkRenderer(data.ObjectType, data.ObjectID, data.ObjectUrl, data.ObjectName);
+        }
+
+        var ResponsibilityTypeUsageGridResponsibleObjectRenderer = function (index, datafield, value, defaultvalue, column, data) {
+            return previewLinkRenderer(data.ResponsibleObjectType, data.ResponsibleObjectID, data.ResponsibleObjectUrl, data.ResponsibleObjectName);
+        }
+
+        var ResponsibilityTypeUsageGridSource = {
+            datatype: 'json',
+            url: ResponsibilityTypeUsageGridUri,
+            datafields:
+            [
+                { name: 'ObjectType' },
+                { name: 'ObjectID' },
+                { name: 'ObjectName' },
+                { name: 'ObjectUrl' },
+                { name: 'ObjectTypeName' },
+
+                { name: 'ResponsibleObjectType' },
+                { name: 'ResponsibleObjectID' },
+                { name: 'ResponsibleObjectName' },
+                { name: 'ResponsibleObjectUrl' },
+                { name: 'ResponsibleObjectTypeName' }
+            ]
+        };
+
+        var ResponsibilityTypeUsageGridAdapter = new $.jqx.dataAdapter(ResponsibilityTypeUsageGridSource);
+
+        $("#ResponsibilityTypeUsageGrid").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            groupable: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            pageable: true,
+            source: ResponsibilityTypeUsageGridAdapter,
+            theme: list_theme,
+            columns: [
+                { text: 'Item', dataField: 'ObjectName', width: '25%', cellsrenderer: ResponsibilityTypeUsageGridObjectRenderer },
+                { text: 'Item Type', dataField: 'ObjectTypeName', width: '25%' },
+                { text: 'Responsible Item', dataField: 'ResponsibleObjectName', width: '35%', cellsrenderer: ResponsibilityTypeUsageGridResponsibleObjectRenderer },
+                { text: 'Responsible Item Type', dataField: 'ResponsibleObjectTypeName', width: '15%' },
+            ]
+        });
+
+        //#endregion
+
+    });
+</script>

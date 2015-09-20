@@ -1,0 +1,218 @@
+﻿@model List<d360.core.entities.AllowedIntersectionType>
+<script type="text/javascript">
+    var source = '@(ViewData["Type"])';
+    var sourceID = '@(ViewData["ID"])';
+
+    $(document).ready(function () {
+
+        //#region Grid Source Data
+
+        var srcRelation = {
+            datafields: [
+                        { name: "IntersectID" },
+                        { name: "IntersectTypeID" },
+                        { name: 'TargetDescription' },
+                        { name: 'TargetID' },
+                        { name: 'TargetName' },
+                        { name: 'TargetType' },
+                        { name: 'TargetUrl' },
+                        { name: 'ReadOnly' },
+                        { name: 'Role' }
+            ],
+            datatype: "json"
+        };
+        var dataAdapterRelation = new $.jqx.dataAdapter(srcRelation);
+
+        var targetLinkRenderer = function (row, column, value) {
+            var data = $('#RelationGrid').jqxGrid('getrowdata', row);
+            var html = "<div class='RowTools'>";
+            html += "<a data-type='Intersect' data-context='Preview' data-id='" + data.IntersectID + "'  href='" + value + "'><i class='fa-info-sign'></i></a>";
+            //html += "<a data-type='" + data.TargetType.replace('Type', '') + "' data-context='Preview' data-id='" + data.TargetID + "'  href='" + value + "'><i class='fa-info-sign'></i></a>";
+            if (data.ReadOnly == false) {
+                html += "<a  onclick='ClickGridTool(event)' data-requiresid='false' data-tabindex='0' data-context='@ContextList.ActionUnrelate' data-id='" + data.IntersectID + "' data-uri='/relations/Delete?id=" + data.IntersectID + "'><i class='fa-trash'></i></a>";
+            }
+            html += "</div>";
+            return html;
+        }
+
+        //#endregion
+
+        //$("#RelationTypeDropdown").jqxDropDownButton({ height: 25, theme: theme });
+
+        //#region Tree Definitions
+
+        $("#RelationTree").jqxTree({ theme: theme });
+
+        $("#RelationTree").bind("select", function (evt) {
+            var args = evt.args;
+            var n = $(args.element); //.find(".node");
+            var intersecttypeid = n.data("intersecttypeid");
+            var typeid = n.data("typeid");
+            var type = n.data("type");
+
+            var rowindexes = $('#RelationGrid').jqxGrid('getselectedrowindexes');
+            for (var i = 0; i < rowindexes.length; i++) {
+                $('#RelationGrid').jqxGrid('unselectrow', rowindexes[i]);
+            }
+            $('#RelationGrid').jqxGrid('clearselection');
+            //amplify.publish("ClearedSelectedRelationships");
+            amplify.publish("RelationTreeNodeSelected", { node: n, intersecttypeid: intersecttypeid, typeid: typeid, type: type });
+
+            
+            var item = $('#RelationTree').jqxTree('getItem', args.element);
+            var dropDownContent = '<div style="position: relative; margin-left: 3px; margin-top: 5px;">' + item.label + '</div>';
+            //$("#RelationTypeDropdown").jqxDropDownButton('setContent', dropDownContent);
+            //$("#RelationTypeDropdown").jqxDropDownButton("close");
+        });
+
+        //#endregion
+
+        //#region Grid Definitions
+
+        var relationsPagingRenderer = function () {
+            return renderMinimalPagingHtml($("#RelationGrid"));
+        }
+
+        $("#RelationGrid").jqxGrid(
+        {
+            width: "100%",
+            altrows: true,
+            theme: theme,
+            source: dataAdapterRelation,
+            filterable: true,
+            showfilterrow: true,
+            keyboardnavigation: false,
+            pageable: true,
+            enabletooltips: true,
+            selectionmode: 'multiplerows',
+            pagesize: 15,
+            pagerrenderer: relationsPagingRenderer,
+            sortable: true,
+            autoheight: true,
+            columns: [
+                { text: 'Name', datafield: 'TargetName' },
+                { text: 'Role', datafield: 'Role' },
+                { datafield: "TargetUrl", width: 70, cellsrenderer: targetLinkRenderer, sortable: false, filterable: false }
+            ]
+        });
+
+        $("#RelationGrid").bind('rowselect', function (event) {
+            var data = $('#RelationGrid').jqxGrid('getrowdata', event.args.rowindex);
+            amplify.publish("AddedIntersect", { id: data.IntersectID, name: data.TargetName, objecttype: "IntersectType", objecttypeid: data.IntersectTypeID, targettype: data.TargetType.replace("Type",""), targetid: data.TargetID });
+        });
+        $("#RelationGrid").bind('rowunselect', function (event) {
+            var data = $('#RelationGrid').jqxGrid('getrowdata', event.args.rowindex);
+            amplify.publish("RemovedIntersect", { id: data.IntersectID, name: data.TargetName, objecttype: "IntersectType", objecttypeid: data.IntersectTypeID });
+        });
+        $("#RelationGrid").bind('bindingcomplete', function (event) {
+            $('a[data-type]').each(function () {
+                addTooltip(this);
+            });
+        });
+
+        //#endregion
+
+        //#region Event Subscriptions
+
+        amplify.subscribe("RelationTreeNodeSelected", function (data) {
+            var url = '/Relations/RelationshipsBySource?source=' + source + '&id=' + sourceID + '&targetType=' + data.type + '&targetTypeID=' + data.typeid;
+            srcRelation.url = url;
+            $("#RelationGrid").jqxGrid('updatebounddata');
+        });
+
+        amplify.subscribe("SaveAction", function (data) {
+            //{ intersecttypeid, name, targettype, targettypeid, context }
+            switch (data.context) {
+                case "@ContextList.Intersect":
+                //var node = $('#RelationTree').jqxTree('getItem');
+                var elem;
+
+                elem = document.getElementById("n" + data.intersecttypeid);
+
+                // Create only if the node does not yet exist.
+                if (!elem) {
+                    if (data.targettype == "TaxonomyType") {
+                        elem = document.getElementById("tNode");
+                    }
+                    else {
+                        elem = document.getElementById("rNode");
+                    }
+                    $('#RelationTree').jqxTree(
+                        'addTo',
+                        { id: 'n' + data.intersecttypeid, label: data.name },
+                        elem
+                    );
+
+                    elem = document.getElementById("n" + data.intersecttypeid);
+                }
+
+                if (elem) {
+                    $(elem).data("intersecttypeid", data.intersecttypeid);
+                    $(elem).data("type", data.targettype);
+                    $(elem).data("typeid", data.targettypeid);
+
+                    $('#RelationTree').jqxTree('selectItem', elem);
+                }
+
+                // Parse the selected type and load that type's url
+                var url = '/Relations/RelationshipsBySource?source=' + source + '&id=' + sourceID + '&targetType=' + data.targettype + '&targetTypeID=' + data.targettypeid;
+                srcRelation.url = url;
+
+                $('#RelationGrid').jqxGrid('updatebounddata');
+                break;
+            }
+        });
+
+        amplify.subscribe("ToolAction", function (data) {
+            // { uri, action, requiresid, tabindex } 
+            switch (data.context)
+            {
+                case '@ContextList.ActionRelate':
+                    amplify.publish('RelationsAddingAction', { uri: data.uri });
+                    break;
+                case '@ContextList.ActionUnrelate':
+                    $.post(data.uri, function (data) {
+                        amplify.publish("ShowMessage", { title: "Success!", message: data.message, type: 'confirm' });
+                    }).done(function () {
+                        $('#RelationGrid').jqxGrid('updatebounddata');
+                        amplify.publish("RemovedIntersect", { id: data.id });
+                    });
+                    break;
+                case '@ContextList.ActionGeneric':
+                    $.post(data.uri, function (data) {
+                        amplify.publish("ShowMessage", { title: "Success!", message: data.message, type: 'confirm' });
+                    });
+                    break;
+            }
+        });
+
+        //#endregion
+
+        $('#RelationTree').jqxTree('selectItem', $($("#RelationTree").find('li:first')[0]).find('li:first')[0]);
+
+    });
+</script>
+
+@*<div id="RelationTypeDropdown" style="margin-bottom: 25px;">*@
+    <div id="RelationTree" style="border: none">
+        <ul>
+            <li id="rNode" item-expanded='true' item-disabled='true'>
+                <h1>Relationships</h1>
+                <ul>
+                    @foreach(var t in Model.Where(i => i.TargetType != "TaxonomyType").OrderBy(i => i.TargetName)) {
+                    <li id="n@(t.IntersectTypeID)" data-intersecttypeid="@(t.IntersectTypeID)" data-type="@(t.TargetType)" data-typeid="@(t.TargetTypeID)">@(t.TargetName)</li>
+                    }
+                </ul>
+            </li>
+            <li id="tNode" item-expanded='true' item-disabled='true'>
+                <h1>Taxonomies</h1>
+                <ul>
+                    @foreach(var t in Model.Where(i => i.TargetType == "TaxonomyType").OrderBy(i => i.TargetName)) {
+                    <li id="n@(t.IntersectTypeID)" data-intersecttypeid="@(t.IntersectTypeID)" data-type="@(t.TargetType)" data-typeid="@(t.TargetTypeID)">@(t.TargetName)</li>
+                    }
+                </ul>
+            </li>
+        </ul>
+    </div>
+@*</div>*@
+<div id="RelationGrid"></div>

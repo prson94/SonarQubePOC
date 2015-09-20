@@ -1,0 +1,12 @@
+﻿<div class="large-overlay">
+    <div class="ui segment">
+        <h4>Hierarchy</h4>
+        <div class="form-instructions"></div>
+        <div id="CatalogDiagram"></div>
+        <script type="text/javascript">
+            information_catalog_diagram('CatalogDiagram', @(ViewData["ID"]));
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+        </script>
+        @*<iframe src="/overlays/TaxonomyTypeDiagram_CatalogIFrame?id=@(ViewData["ID"])" frameborder="0" style="width: 100%; height: 600px"></iframe>*@
+    </div>
+</div>

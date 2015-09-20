@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Devart (www.devart.com), compare document file -->
+<!-- Modifying this generated file will probably render it invalid -->
+<CompareDocument>
+  <Properties>
+    <DatabaseProvider>aa8afe9c-7d62-4564-b477-c12e62e0f440</DatabaseProvider>
+    <ProviderVersion>2.0.945.0</ProviderVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+  </Properties>
+  <Source Type="Database">
+    <DataConnection>D3S.Root.Azure</DataConnection>
+    <ConnectionString>Data Source=a4xhimxzit.database.windows.net;Initial Catalog=D3S;Integrated Security=False;User ID=d3s-user</ConnectionString>
+    <Schema>D3S</Schema>
+  </Source>
+  <Target Type="Database">
+    <DataConnection>D3S.d3s-ssrs.cloudapp.net,57500</DataConnection>
+    <ConnectionString>Data Source=d3s-ssrs.cloudapp.net,57500;Initial Catalog=D3S;Integrated Security=False;User ID=sa;</ConnectionString>
+    <Schema>D3S</Schema>
+  </Target>
+  <Filter Value="0" />
+  <HideUnmodifiedColumns>False</HideUnmodifiedColumns>
+  <Options>
+    <PropertyValue Name="MappingIgnoreSpaces">true</PropertyValue>
+    <PropertyValue Name="IgnoreBlobColumns">false</PropertyValue>
+    <PropertyValue Name="HideSystemSchemas">false</PropertyValue>
+    <PropertyValue Name="IgnoreTimestampColumns">false</PropertyValue>
+    <PropertyValue Name="IgnoreRowguidColumns">false</PropertyValue>
+    <PropertyValue Name="IgnoreIdentityColumns">false</PropertyValue>
+    <PropertyValue Name="CompareClrTypesAsBinary">false</PropertyValue>
+    <PropertyValue Name="MappingIgnoreCase">false</PropertyValue>
+    <PropertyValue Name="MappingIgnoreUnderscores">false</PropertyValue>
+    <PropertyValue Name="IgnoreColumnsByMask">false</PropertyValue>
+    <PropertyValue Name="MappingColumnsMask" xml:space="preserve">*ModifiedDate*,*CreatedOn*,*UpdatedBy*</PropertyValue>
+    <PropertyValue Name="ExcludeObjectsByMask">false</PropertyValue>
+    <PropertyValue Name="ExcludeObjectsMask" xml:space="preserve">*Table*</PropertyValue>
+    <PropertyValue Name="IncludeObjectsByMask">false</PropertyValue>
+    <PropertyValue Name="IncludeObjectsMask" xml:space="preserve">*</PropertyValue>
+    <PropertyValue Name="CompareTables">true</PropertyValue>
+    <PropertyValue Name="CompareViews">false</PropertyValue>
+    <PropertyValue Name="RoundFloatTypes">false</PropertyValue>
+    <PropertyValue Name="RoundFloatTypesUpTo" xml:space="preserve">3</PropertyValue>
+    <PropertyValue Name="IgnoreTrailingSpaces">false</PropertyValue>
+    <PropertyValue Name="IgnoreCase">false</PropertyValue>
+    <PropertyValue Name="IsIgnoreTime">false</PropertyValue>
+    <PropertyValue Name="CheckDifferent">true</PropertyValue>
+    <PropertyValue Name="CheckOnlyInSource">true</PropertyValue>
+    <PropertyValue Name="CheckOnlyInTarget">true</PropertyValue>
+    <PropertyValue Name="CheckIdentical">true</PropertyValue>
+  </Options>
+  <ModifiedObjects />
+  <SynchronizationOptions>
+    <PropertyValue Name="UseSchemaNamePrefix">true</PropertyValue>
+    <PropertyValue Name="DisableForeignKeys">true</PropertyValue>
+    <PropertyValue Name="DisableDmlTriggers">true</PropertyValue>
+    <PropertyValue Name="BulkInsert">false</PropertyValue>
+    <PropertyValue Name="BackupDatabase">false</PropertyValue>
+    <PropertyValue Name="ExecuteAsSingleTransaction">true</PropertyValue>
+    <PropertyValue Name="GenerateScriptHeader">true</PropertyValue>
+    <PropertyValue Name="ReseedIdentityColumns">true</PropertyValue>
+    <PropertyValue Name="UseExec">true</PropertyValue>
+    <PropertyValue Name="RestoreConstraintsWithCheck">false</PropertyValue>
+    <PropertyValue Name="DisableObjectKeys">false</PropertyValue>
+    <PropertyValue Name="DropKeys">false</PropertyValue>
+    <PropertyValue Name="DropCheckConstraints">false</PropertyValue>
+    <PropertyValue Name="DisableDdlTriggers">false</PropertyValue>
+    <PropertyValue Name="ExcludeComments">false</PropertyValue>
+    <PropertyValue Name="SynchronizeViaFiles">false</PropertyValue>
+    <PropertyValue Name="CheckConcurrencyUpdates">false</PropertyValue>
+    <PropertyValue Name="SynchronizeType">0</PropertyValue>
+    <PropertyValue Name="SynchronizationFileName" xml:space="preserve">C:\Users\Michael\Documents\dbForge Data Compare for SQL Server\D3S (a4xhimxzit_database_windows_net vs _)_20130911-1940.sql</PropertyValue>
+    <PropertyValue Name="SynchronizationEditorFileName" xml:space="preserve" />
+    <PropertyValue Name="OpenScriptInEditor">false</PropertyValue>
+    <PropertyValue Name="RefreshAfterSynchronization">true</PropertyValue>
+    <PropertyValue Name="CommitToVersionControl">false</PropertyValue>
+    <PropertyValue Name="CommentString" xml:space="preserve" />
+    <PropertyValue Name="PureScript">false</PropertyValue>
+    <PropertyValue Name="BackupPathName" xml:space="preserve">C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\Backup</PropertyValue>
+    <PropertyValue Name="UseCommitMode">false</PropertyValue>
+    <PropertyValue Name="CommitPageLength" xml:space="preserve">200</PropertyValue>
+  </SynchronizationOptions>
+  <Mapping>
+    <Schemas>
+      <Object SourceName="dbo" TargetName="dbo" State="DefaultMapped" Included="True" />
+      <Object SourceName="guest" TargetName="guest" State="DefaultMapped" Included="True" />
+      <Object SourceName="utility" TargetName="utility" State="DefaultMapped" Included="True" />
+    </Schemas>
+    <ComparedObjects>
+      <Object SourceName="dbo.Company" TargetName="dbo.Company" SourceType="Table" TargetType="Table" />
+      <Object SourceName="dbo.Resource" TargetName="dbo.Resource" SourceType="Table" TargetType="Table" />
+      <Object SourceName="dbo.ResourceType" TargetName="dbo.ResourceType" SourceType="Table" TargetType="Table" />
+      <Object SourceName="dbo.SystemObjectsMap" TargetName="dbo.SystemObjectsMap" SourceType="Table" TargetType="Table">
+        <Key Name="Columns">
+          <Column OrderIndex="0" ColumnIndex="0" />
+          <Column OrderIndex="1" ColumnIndex="1" />
+          <Column OrderIndex="2" ColumnIndex="2" />
+          <Column OrderIndex="3" ColumnIndex="3" />
+        </Key>
+        <ComparedColumns CustomMapped="True">
+          <Column SourceName="dbo.SystemObjectsMap.ObjectType" TargetName="dbo.SystemObjectsMap.ObjectType" />
+          <Column SourceName="dbo.SystemObjectsMap.ObjectTypeName" TargetName="dbo.SystemObjectsMap.ObjectTypeName" />
+          <Column SourceName="dbo.SystemObjectsMap.ParentObjectType" TargetName="dbo.SystemObjectsMap.ParentObjectType" />
+          <Column SourceName="dbo.SystemObjectsMap.ParentObjectTypeName" TargetName="dbo.SystemObjectsMap.ParentObjectTypeName" />
+        </ComparedColumns>
+      </Object>
+      <Object SourceName="utility.JobActivity" TargetName="utility.JobActivity" SourceType="Table" TargetType="Table" />
+    </ComparedObjects>
+  </Mapping>
+</CompareDocument>

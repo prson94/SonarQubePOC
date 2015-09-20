@@ -1,0 +1,167 @@
+﻿
+@{
+    ViewBag.Title = "SearchBeta";
+    Layout = "~/Views/Shared/Angular.cshtml";
+    var phrase = ViewBag.Phrase;
+}
+
+@section AppStyles {
+    <link rel="stylesheet" href="/Content/styles/material/search.css" />
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+}
+
+@section AppScripts {
+    <script src="../Scripts/apps/search/search.main.js"></script>
+    <script src="../Scripts/apps/search/search.controller.js"></script>
+    <script src="../Scripts/apps/search/directives.js"></script>
+}
+
+<body ng-app="d3s.search" ng-controller="SearchCtrl" layout='row' flex>
+    
+    <section flex layout='column'>
+        <md-toolbar layout='row'>
+            <md-button class="menu" hide-gt-sm ng-click="toggleList()" aria-label="Show User List">
+                <md-icon md-svg-icon="menu"></md-icon>
+            </md-button>
+            <div flex class='md-toolbar-tools'>
+                <md-autocomplete md-selected-item="phrase" md-search-text="searchText" md-items="item in getMatches(searchText)" md-item-text="item" md-selected-item-change="search()" placeholder="Search" flex>
+                    <span md-highlight-text="searchText">{{item}}</span>
+                </md-autocomplete>
+            </div>
+
+        </md-toolbar>
+
+        <md-content ng-hide="!isSearching" flex>
+            <section>
+                <div layout="column" layout-align="center center" style="height: 40px;">
+                    <h4>Searching...</h4>
+                    <md-progress-linear md-mode="indeterminate">Loading Results</md-progress-linear>
+                </div>
+            </section>
+        </md-content>
+
+        <md-content flex ng-hide="isSearching">
+            <md-list>
+                <md-subheader class="md-no-sticky" ng-show="results">Returned {{results.length}} results.  {{ellapsedTime}}</md-subheader>
+                <md-list-item class="md-3-line" ng-repeat="result in results | filter:filters">
+                    <div class="md-list-item-text result">
+                        <md-button class="md-primary search" ng-href="{{'/' + result.Url}}" target="D3S">{{ result.Name }}</md-button>
+                        <section layout="row"><h4>{{ result.Type }} &bull; {{ result.Score | number:2 }}  &bull; </h4><div><md-button class="md-icon-button" ng-click="showDetails($event,result)" aria-label="Show Details"><i class="fa fa-puzzle-piece"></i></md-button></div></section>
+                        <p ng-bind-html="result.Description"></p>
+                    </div>
+                    <md-divider ng-if="!$last"></md-divider>
+                </md-list-item>
+            </md-list>
+        </md-content>
+    </section>
+    <md-sidenav md-component-id='left'
+                class='fixed-nav md-sidenav-right md-whiteframe-z2'
+                md-is-locked-open="$mdMedia('gt-sm')">
+        <md-toolbar>
+
+        </md-toolbar>
+        <md-content flex>
+            <h4 class="group-title">Categories</h4>
+            <md-list>
+                <md-list-item ng-show="categories">
+                    <md-button ng-click="filters.Type=''" ng-class="{'selected' : !filters.Type  }">All Results ({{results.length}})</md-button>
+                </md-list-item>
+                <md-list-item ng-repeat="category in categories | orderBy:'Name'">
+                    <md-button ng-click="filters.Type=category.Name" ng-class="{'selected' : category.Name === filters.Type }">{{ category.Name }} ({{category.ResultCount}})</md-button>
+                </md-list-item>
+            </md-list>
+            <md-content>
+    </md-sidenav>
+
+    <script type="text/ng-template" id="detail.dialog.tmpl.html">
+        <md-dialog aria-label="Mango (Fruit)">
+            <form>
+                <md-toolbar>
+                    <div class="md-toolbar-tools">
+                        <h2>{{term.Name}}</h2>
+                        <span flex></span>
+                        <md-button class="md-icon-button" ng-click="answer('not applicable')">
+                            <md-icon md-svg-src="img/icons/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+                <md-dialog-content>
+                    <div>    
+                        <div layout="row" layout-margin ng-repeat="row in info">
+                            <div flex>
+                                {{row.FriendlyName}}
+                            </div>
+                            <div flex>
+                                {{row.Value}}
+                            </div>
+                        </div>                                            
+                        <div layout="row" layout-margin>
+                            <div flex>
+                                Url
+                            </div>
+                            <div flex>
+                                {{term.Url}}
+                            </div>
+                        </div>                          
+                        <div layout="row" layout-margin>
+                            <div flex>
+                                Score
+                            </div>
+                            <div flex>
+                                {{term.Score}}
+                            </div>
+                        </div>                                                
+                        <div layout="row" layout-margin>
+                            <div flex>
+                                Type
+                            </div>
+                            <div flex>
+                                {{term.Type}}
+                            </div>
+                        </div>
+                        <div layout="row" layout-margin>
+                            <div flex>
+                                Group
+                            </div>
+                            <div flex>
+                                {{term.Group}}
+                            </div>
+                        </div>
+                        <div layout="row" layout-margin>
+                            <div flex>
+                                Number of Followers
+                            </div>
+                            <div flex>
+                                {{statistics.FollowerCount}}
+                            </div>
+                        </div>
+                        <div layout="row" layout-margin>
+                            <div flex>
+                                Number of Comments
+                            </div>
+                            <div flex>
+                                {{statistics.CommentCount}}
+                            </div>
+                        </div>
+                        <div layout="row" layout-margin>
+                            <div flex>
+                                Event Count
+                            </div>
+                            <div flex>
+                                {{statistics.EventCount}}
+                            </div>
+                        </div>                        
+                    </div>
+                </md-dialog-content>
+
+                <div class="md-actions" layout="row">
+                    
+                    <span flex></span>                    
+                    <md-button ng-click="answer('useful')" class="md-primary">
+                        Close
+                    </md-button>
+                </div>
+            </form>
+        </md-dialog>
+    </script>
+</body>
