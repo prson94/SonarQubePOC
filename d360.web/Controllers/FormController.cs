@@ -8483,14 +8483,13 @@ order by	D.Name, I.Name";
 
         List<SelectListItem> getSourceResponsibilitiesSelectList(string type, int id, int? selectedID = null)
         {
-            var models = Company.Filter<SourcingResponsibilityDetail>(i => i.ObjectType == type && i.ObjectID == id).OrderBy(i => i.Role).ThenBy(i => i.ResponsibleObjectName).ToList()
-                .Select(i => new SelectListItem
-                {
-                    Text = string.Format("{0} : {1}", i.Role, i.ResponsibleObjectName),
-                    Value = i.ResponsibilityID.ToString(),
-                    Selected = (i.ResponsibilityID == selectedID)
-                })
-                .ToList();
+            var models = Company.Query<SelectListItem>(@"select 
+ResponsibilityType + ' : ' + ResponsibleObjectName as Text, 
+cast(ResponsibilityID as varchar) as Value, 
+case when ResponsibilityID = @s then cast(1 as bit) else cast(0 as bit) end as Selected
+from cache.Responsibilities
+where ResponsibilityTypeGroup = 2 and [Object] = @t and ObjectID = @i
+order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = type, i = id }).ToList();
 
             models.Insert(0, new SelectListItem { Text = "None", Value = "" });
 
