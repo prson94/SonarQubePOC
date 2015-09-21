@@ -74,7 +74,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workflow", "d360.workf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.utils.company", "d360.utils.company\d360.utils.company.csproj", "{88BBA351-DA2A-4551-AF28-5F1568952F7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.test.workflow", "d360.test.workflow\d360.test.workflow.csproj", "{F335D168-DC1D-42A5-BAEB-86945C760F93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.test.workflow", "Tests\d360.test.workflow\d360.test.workflow.csproj", "{F335D168-DC1D-42A5-BAEB-86945C760F93}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Queue", "Queue", "{BA377137-34B5-4D67-86AA-5803B3D1957E}"
 EndProject
@@ -116,7 +116,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.UpdateDatabaseSta
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.workflow", "Jobs\d360.jobs.workflow\d360.jobs.workflow.csproj", "{E4C3657B-41A2-4F71-88A8-C1B50B8ACFCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.test.jobs", "Jobs\d360.test.jobs\d360.test.jobs.csproj", "{BEAEB4B8-82A6-40AD-B4F3-CC5373334A2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.test.jobs", "Tests\d360.test.jobs\d360.test.jobs.csproj", "{BEAEB4B8-82A6-40AD-B4F3-CC5373334A2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
