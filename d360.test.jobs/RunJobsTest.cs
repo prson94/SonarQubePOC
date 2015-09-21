@@ -47,8 +47,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 4;
-            var fusionTypeID = 8;
+            var companyID = 13;
+            var fusionTypeID = 5;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new StaticSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FieldTypes);
@@ -71,11 +71,11 @@ if not exists(select 1 from IntersectTypeNode S inner join IntersectTypeNode T o
 BEGIN 
             declare @intersectTypeID int
 
-			INSERT INTO IntersectType ([ReadOnly], [IsTechnical], [AllowContext], AllowGrouping, AllowSourcing) values (@ro, 1, 0, 0, 0)
+			INSERT INTO IntersectType (AllowSourcing) values (0)
 			set @intersectTypeID = SCOPE_IDENTITY()
 
-			INSERT INTO IntersectTypeNode (IntersectTypeID, ObjectType, ObjectID, IsHierarchical, [Order]) values (@intersectTypeID, @type, @si, 0, 1)
-			INSERT INTO IntersectTypeNode (IntersectTypeID, ObjectType, ObjectID, IsHierarchical, [Order]) values (@intersectTypeID, @type, @ti, 0, 2)
+			INSERT INTO IntersectTypeNode (IntersectTypeID, ObjectType, ObjectID, [Order], IsHierarchical, IsSourcingItem) values (@intersectTypeID, @type, @si, 1, 0, 0)
+			INSERT INTO IntersectTypeNode (IntersectTypeID, ObjectType, ObjectID, [Order], IsHierarchical, IsSourcingItem) values (@intersectTypeID, @type, @ti, 2, 0, 0)
 END", 
                 new { type = "FusionAttributeType", si = t.StartFusionAttributeTypeID, ti = t.EndFusionAttributeTypeID, ro = t.ReadOnly });
             });

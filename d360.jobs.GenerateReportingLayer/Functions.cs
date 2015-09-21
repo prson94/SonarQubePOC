@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using System.Diagnostics;
 using System.Data.Entity.Design.PluralizationServices;
-using Dapper;
 using d360.core.entities;
 using System.Data.SqlClient;
 using d360.core;
+using Dapper;
+
 
 namespace d360.jobs.GenerateReportingLayer
 {
     public class Functions : FunctionsBase
     {
+        #region Utility
+
         static string cleanObjectName(string name)
         {
             return name.Replace("'", "''").Replace(" ", "").Replace("-", "").Replace("&", "And").Replace(":", "").Replace(";", "");
         }
+
         static void getDynamicFieldJoinStatements(List<FieldTypeWithRelation> fields, string type, out string joins, out string columns)
         {
             columns = "";
@@ -35,6 +35,10 @@ namespace d360.jobs.GenerateReportingLayer
             fields = null;
         }
 
+        #endregion
+
+        #region Object Missing Views
+
         static void GenerateMissingAttributeView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
         {
             name = cleanObjectName(name);
@@ -48,10 +52,10 @@ namespace d360.jobs.GenerateReportingLayer
             sql.AppendFormat("VIEW {0} AS ", objectName);
 
             sql.AppendFormat("select A.ID as {0}ID, A.Name as {0}Name, ", name);
-            if (includeOwningModel) sql.Append("A.Status, ");//A.TaxonomyTypeID, V.Name as TaxonomyType, ");
+            if (includeOwningModel) sql.Append("A.Status, V.Name as Domain, ");
             sql.AppendFormat("[dbo].GenerateObjectUrl('{0}', A.{1}, A.ID) as Url, Attr.AttributeType, Attr.Category, Attr.[Count] ", objectType, objectTypeKeyName);
             sql.AppendFormat("from {0} A ", tableName);
-            //if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
+            if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
             sql.AppendFormat(@"cross apply (
 					select		coalesce(C.Name, 'Enterprise-wide') as Category,
 								AT.Name as AttributeType,
@@ -85,8 +89,8 @@ where	A.{2} = {1}", objectType, typeID, objectTypeKeyName);
 
             var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var owningModelColumns = (includeOwningModel) ? "A.Status, " : "";//A.TaxonomyTypeID, V.Name as TaxonomyType, " : "";
-            var owningModelJoins = "";// (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
+            var owningModelColumns = (includeOwningModel) ? "A.Status, V.Name as Domain, " : "";
+            var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
             var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, O.RelationshipType, O.RelationshipTypeID, O.[Count]
 from	{4} A {6}
@@ -124,8 +128,8 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
 
             var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var owningModelColumns = (includeOwningModel) ? "A.Status, " : "";//"A.Status, A.TaxonomyTypeID, V.Name as TaxonomyType, " : "";
-            var owningModelJoins = "";// (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
+            var owningModelColumns = (includeOwningModel) ? "A.Status, V.Name as Domain, " : "";
+            var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
             var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, T.ID as ResponsibilityTypeID, T.Name as ResponsibilityType, coalesce(O.[Count], 0) as [Count]
 from	{4} A {6}
@@ -162,8 +166,8 @@ outer apply (
 
             var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var owningModelColumns = (includeOwningModel) ? "A.Status, " : "";//"A.Status, A.TaxonomyTypeID, V.Name as TaxonomyType, " : "";
-            var owningModelJoins = "";// (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
+            var owningModelColumns = (includeOwningModel) ? "A.Status, V.Name as Domain, " : "";
+            var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
             var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, Att.MissingAttributes, Rel.MissingRelationships, Res.MissingResponsibilities
 from	{4} A {6}
@@ -225,6 +229,41 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
             }
         }
 
+        #endregion
+
+        #region Object Views
+
+        static void GenerateAttributeView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
+        {
+            name = cleanObjectName(name);
+            var objectName = string.Format("{0}.[{1}_{2}Attributes]", schema, prefix, name);
+            viewNames.Add(objectName);
+
+            var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+            var sql = new StringBuilder("");
+            sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
+            sql.AppendFormat("VIEW {0} AS ", objectName);
+
+            sql.AppendFormat("select A.ID as {0}ID, A.Name as {0}Name, ", name);
+            if (includeOwningModel) sql.Append("V.Name as Domain, ");
+            sql.AppendFormat("[dbo].GenerateObjectUrl('{0}', A.{1}, A.ID) as {0}Url, AD.ID as AttributeID, AD.ParentID as ParentAttributeID, AD.Name as Attribute, AD.FormattedValue as AttributeValue ", objectType, objectTypeKeyName);
+            sql.AppendFormat("from {0} A ", tableName);
+            if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
+            sql.AppendFormat(@"inner join AttributeDetail AD on AD.ObjectType = '{0}' and AD.ObjectID = A.ID and A.{2} = {1}", objectType, typeID, objectTypeKeyName);
+
+            try
+            {
+                companyConnection.Execute(sql.ToString());
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                Console.WriteLine(msg);
+                Console.WriteLine("Attempted SQL: " + sql);
+            }
+        }
+
         static void GeneratObjectRelationshipView(List<string> viewNames, SqlConnection companyConnection, string schema, string prefix, string name, string objectTypeKeyName, string tableName, string objectType, int typeID, bool includeOwningModel = false)
         {
             name = cleanObjectName(name);
@@ -238,11 +277,11 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
             sql.AppendFormat("VIEW {0} AS ", objectName);
 
             sql.AppendFormat("select R.IntersectID, A.ID as {0}ID, A.Name as {0}Name, ", name);
-            if (includeOwningModel) sql.Append("A.Status, ");//sql.Append("A.Status, A.TaxonomyTypeID, V.Name as TaxonomyType, ");
+            if (includeOwningModel) sql.Append("A.Status, V.Name as Domain, ");
             sql.Append("R.TargetTypeName as TargetType, R.TargetObjectID as TargetID, R.TargetObjectName as TargetName, dbo.GenerateObjectUrl(R.TargetObject, R.TargetTypeID, R.TargetObjectID) as TargetUrl, case R.Classification when 1 then 'Critical' else 'Normal' end as Classification, R.Description, TR.[Count] as ChildRelationshipCount ");
             sql.Append("from cache.Relationships R ");
             sql.AppendFormat("inner join {0} A on A.{1} = {2} and R.SourceObject = '{3}' and A.ID = R.SourceObjectID ", tableName, objectTypeKeyName, typeID, objectType);
-            //if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
+            if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
             sql.Append("outer apply (select	count(1) as [Count] from cache.Relationships where TargetObject = 'Intersect' and TargetObjectID = R.IntersectID) TR");
 
             try
@@ -300,6 +339,8 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
                 Console.WriteLine("Attempted SQL: " + viewSql);
             }
         }
+
+        #endregion
 
         public static List<Exception> Generate()
         {
@@ -359,7 +400,7 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
                             objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.Name)));
                             viewNames.Add(objectName);
 
-                            selectSql = string.Format(@"select A.ID, A.Name, A.TextPath, A.Description, A.Status, {0} dbo.GenerateObjectUrl('{3}', A.ArtifactTypeID, A.ID) as Url, AC.AttributeCount, Rels.[Count] as RelationshipCount from Artifact A {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.ArtifactTypeID = {1}", columns, o.ID, joins, objectType);
+                            selectSql = string.Format(@"select A.ID, A.Name, A.TextPath, A.Description, A.Status, V.Name as Domain, {0} dbo.GenerateObjectUrl('{3}', A.ArtifactTypeID, A.ID) as Url, AC.AttributeCount, Rels.[Count] as RelationshipCount from Artifact A inner join TaxonomyType V on V.ID = A.TaxonomyTypeID {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.ArtifactTypeID = {1}", columns, o.ID, joins, objectType);
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -379,13 +420,12 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
                             #endregion
 
-                            // Object Relationship Views
+                            // Object Views
+                            GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
                             GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-
-                            // Object Responsibility Views
                             GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
 
-                            // Object Missing Attribute Views
+                            // Object Missing Views
                             GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
                             GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
                             GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
@@ -459,13 +499,12 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
                             #endregion
 
-                            // Object Relationship Views
+                            // Object Views
+                            GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
                             GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-
-                            // Object Responsibility Views
                             GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
 
-                            // Object Missing Attribute Views
+                            // Object Missing Views
                             GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
                             GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
                             GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
@@ -548,13 +587,12 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
                             #endregion
 
-                            // Object Relationship Views
+                            // Object Views
+                            GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
                             GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-
-                            // Object Responsibility Views
                             GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
 
-                            // Object Missing Attribute Views
+                            // Object Missing Views
                             GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
                             GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
                             GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
