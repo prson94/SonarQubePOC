@@ -17,7 +17,7 @@ namespace d360.jobs.GenerateReportingLayer
 
         static string cleanObjectName(string name)
         {
-            return name.Replace("'", "''").Replace(" ", "").Replace("-", "").Replace("&", "And").Replace(":", "").Replace(";", "");
+            return name.Replace("'", "''").Replace(" ", "").Replace("-", "").Replace("&", "And").Replace(":", "").Replace(";", "").Trim();
         }
 
         static void getDynamicFieldJoinStatements(List<FieldTypeWithRelation> fields, string type, out string joins, out string columns)
@@ -28,7 +28,11 @@ namespace d360.jobs.GenerateReportingLayer
             foreach (var f in fields)
             {
                 var name = cleanObjectName(f.Name);
-                columns += string.Format("[{0}].Value as [{0}ID], [{0}].FormattedValue as [{0}], ", name);
+                if (f.Type == "Lookup")
+                    columns += string.Format("[{0}].Value as [{0}ID], [{0}].FormattedValue as [{0}], ", name);
+                else
+                    columns += string.Format("[{0}].FormattedValue as [{0}], ", name);
+
                 joins += string.Format(" left join FieldWithRelation [{0}] on [{0}].ObjectType = '{2}' and [{0}].ObjectID = A.ID and [{0}].FieldTypeID = {1}", name, f.ID, type);
             }
 
@@ -371,6 +375,7 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
                         var prefix = "Glossary";
                         var tableName = "Artifact";
                         string objectID;
+                        List<FieldTypeWithRelation> fieldTypes = null;
 
                         var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
@@ -378,7 +383,6 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
                         var artifactTypes = companyConnection.Query<ArtifactType>("select * from ArtifactType").ToList();
 
-                        List<FieldTypeWithRelation> fieldTypes = null;
                         try
                         {
                             fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'ArtifactType'").ToList();
@@ -436,8 +440,75 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
                         #endregion
 
+                        #region Fusion
+
+                        var fusionAttributeTypes = companyConnection.Query<FusionAttributeType>("select * from FusionAttributeType").ToList();
+                        
+                        try
+                        {
+                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'FusionAttributeType'").ToList();
+                        }
+                        catch (Exception)
+                        {
+                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'FusionAttributeType'").ToList();
+                        }
+
+                        fusionAttributeTypes.ForEach(o =>
+                        {
+                            objectType = "FusionAttribute";
+                            objectTypeKey = "FusionAttributeTypeID";
+                            prefix = "Fusion";
+                            tableName = "FusionAttribute";
+
+                            #region Object Views
+
+                            var joins = "";
+                            var columns = "";
+
+                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "FusionAttribute", out joins, out columns);
+
+                            objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.TextPath.Replace(".", "").Replace("_", ""))));
+                            viewNames.Add(objectName);
+
+                            selectSql = string.Format(@"select FT.Name as FusionType, F.Name as Fusion, A.ID, A.Name as [Attribute], A.TextPath, {0} AC.AttributeCount, Rels.[Count] as RelationshipCount from FusionAttribute A inner join Fusion F on F.ID = A.FusionID and A.FusionAttributeTypeID = {1} inner join FusionType FT on FT.ID = F.FusionTypeID {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.FusionAttributeTypeID = {1}", columns, o.ID, joins, objectType);
+
+                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                            try
+                            {
+                                companyConnection.Execute(viewSql.ToString());
+                            }
+                            catch (Exception ex)
+                            {
+                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                                Console.WriteLine(msg);
+                                Console.WriteLine("Attempted SQL: " + viewSql);
+                            }
+
+                            #endregion
+
+                            // Object Views
+                            //GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.TextPath.Replace(".", "").Replace("_", ""), objectTypeKey, tableName, objectType, o.ID, false);
+                            //GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
+
+                            // Object Missing Views
+                            //GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            //GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            //GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                            //GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                        });
+
+                        fusionAttributeTypes = null;
+
+                        #endregion
+
                         #region Information Model Type
 
+                        prefix = "Glossary";
                         objectType = "Taxonomy";
                         objectTypeKey = "TaxonomyTypeID";
                         prefix = "Model";

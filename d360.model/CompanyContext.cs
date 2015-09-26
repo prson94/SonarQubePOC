@@ -200,21 +200,9 @@ namespace d360.model
 
         public DbSet<LoadItem> LoadItems { get; set; }
 
-        public DbSet<LoadItemField> LoadItemFields { get; set; }
+        public DbSet<LoadItemColumn> LoadItemColumns { get; set; }
 
-        public DbSet<LoadItemRuleResult> LoadItemRuleResults { get; set; }
-
-        public DbSet<LoadType> LoadTypes { get; set; }
-
-        public DbSet<LoadTypeFieldDetail> LoadTypeFieldDetails { get; set; }                                /* VIEW */
-
-        public DbSet<LoadTypeField> LoadTypeFields { get; set; }
-
-        public DbSet<LoadTypeRuleDetail> LoadTypeRuleDetails { get; set; }   
-
-        public DbSet<LoadTypeRule> LoadTypeRules { get; set; }
-
-        public DbSet<LoadTypeRuleItem> LoadTypeRuleItems { get; set; }
+        public DbSet<LoadColumn> LoadColumns { get; set; }
 
         public DbSet<LookupAllocation> LookupAllocations { get; set; }                                      /* VIEW */
 
@@ -979,6 +967,62 @@ from	DomainType
         //    }
         //    //return model;
         //}
+
+        #endregion
+
+        #region Load
+
+        string LoadDetailBaseSql = @"select	L.ID,
+		L.[Object],
+		L.ObjectID,
+		D.TextPath as ObjectName,
+		L.Notes,
+		'MyFile.' + L.Extension as FilePath,
+		L.DateStarted,
+		L.DateCompleted,
+		case L.[Action]
+			when 'P' then 'Promotion'
+			when 'R' then 'Relation'
+			when 'U' then 'Unrelation'
+		end as [Action]
+from	[Load] L
+		inner join cache.ObjectDetails D on D.[Object] = L.[Object] and D.ObjectID = L.ObjectID";
+       
+        public IEnumerable<LoadDetail> GetLoadDetails()
+        {
+            return Query<LoadDetail>(LoadDetailBaseSql + " order by L.ID desc");
+        }
+
+        public LoadDetail GetLoadDetail(int id)
+        {
+            return Query<LoadDetail>(LoadDetailBaseSql + " where ID = " + id).SingleOrDefault();
+        }
+
+        public IEnumerable<dynamic> GetLoadColumnDetails(int id)
+        {
+            return Query<dynamic>(@"
+select		'Column' + cast(ColumnIndex as varchar) as datafield,
+			Name as text
+from		LoadColumn
+where		LoadID = @id
+order by	ColumnIndex", new { id });
+        }
+
+        public IEnumerable<dynamic> GetLoadItemDetails(int id)
+        {
+            var columns = Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
+            var sql = "";
+            var sqlColumns = "select I.LoadID, I.RowIndex";
+            var sqlTables = "from LoadItem I";
+            columns.ForEach(c =>
+            {
+                sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
+                sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
+            });
+            sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Not Processed' end as [Status], I.StatusMessage"; 
+            sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id order by I.RowIndex";
+            return Query<dynamic>(sql, new { id });
+        }
 
         #endregion
 

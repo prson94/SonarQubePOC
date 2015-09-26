@@ -533,7 +533,7 @@ function LoadViewModel(data) {
     self.Action = ko.observable(data.Action1);
     self.TypeIndex = ko.observable(data.TypeIndex || -1);
     self.Type = ko.observable(data.Type);
-    self.Notes = ko.observable(data.Notes + "");
+    self.Notes = ko.observable(data.Notes || "");
 
     self.File = ko.observable({
         file: ko.observable(), // will be filled with a File object
@@ -547,8 +547,6 @@ function LoadViewModel(data) {
         base64String: ko.observable(), // just the base64 string, without mime type or anything else
     });
 
-    //self.ActionSelected = ko.observable(false);
-    //self.ActionAndTypeSelected = ko.observable(false);
     self.InProgress = ko.observable(false);
 
     //#endregion
@@ -577,19 +575,20 @@ function LoadViewModel(data) {
         { title: 'Unrelation', value: 'U' }
     ]);
     self.TypeOptions = ko.observableArray();
+    self.Columns = ko.observableArray();
 
     //#endregion
 
-    self.File().dataURL.subscribe(function (dataURL) {
-        console.log(dataURL);
-    });
+    //self.File().dataURL.subscribe(function (dataURL) {
+    //    console.log(dataURL);
+    //});
 
     self.Action.subscribe(function (value) {
         self.TypeOptions.removeAll();
         if (value) {
             $.getJSON(
                 '/form/Load_TypeOptions',
-                { action: value },
+                { act: value },
                 function (relData) {
                     self.TypeOptions(relData);
 
@@ -607,9 +606,20 @@ function LoadViewModel(data) {
         }
     });
 
+    self.Type.subscribe(function (value) {
+        if (value) {
+            var typeInfo = value.split('|');
+            $.getJSON(
+                '/form/Load_ExpectedColumns',
+                { type: typeInfo[0], id: typeInfo[1] },
+                function (colData) {
+                    self.Columns(colData);
+                }
+            );
+        }
+    });
 
     //#region Methods
-
 
     self.cancel = function () {
         amplify.publish("CancelAction", { context: self.Context() });

@@ -57,6 +57,10 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dapper, Version=1.40.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.1.42\lib\net45\Dapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -83,6 +87,7 @@
     <Compile Include="entities\IntersectFlowMapping.cs" />
     <Compile Include="entities\FusionAttributeOwnerRuleItem.cs" />
     <Compile Include="entities\FusionAttributePromotionRuleItem.cs" />
+    <Compile Include="entities\Queues\BulkLoadQueue.cs" />
     <Compile Include="entities\TagRelation.cs" />
     <Compile Include="entities\Tag.cs" />
     <Compile Include="entities\Audit.cs" />
@@ -111,14 +116,10 @@
     <Compile Include="entities\FusionStatusLog.cs" />
     <Compile Include="entities\FusionJobHistory.cs" />
     <Compile Include="entities\FusionJobSchedule.cs" />
-    <Compile Include="entities\LoadItemRuleResult.cs" />
-    <Compile Include="entities\LoadItemField.cs" />
+    <Compile Include="entities\LoadColumn.cs" />
+    <Compile Include="entities\LoadItemColumn.cs" />
     <Compile Include="entities\LoadItem.cs" />
     <Compile Include="entities\Load.cs" />
-    <Compile Include="entities\LoadTypeField.cs" />
-    <Compile Include="entities\LoadType.cs" />
-    <Compile Include="entities\LoadTypeRule.cs" />
-    <Compile Include="entities\LoadTypeRuleItem.cs" />
     <Compile Include="entities\Plugins\Package.cs" />
     <Compile Include="entities\Plugins\EventType.cs" />
     <Compile Include="entities\Plugins\FieldType.cs" />
@@ -144,8 +145,6 @@
     <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />
     <Compile Include="entities\Transitive\RedFlagSummariesByResource.cs" />
     <Compile Include="entities\Transitive\SocialStatisticsByObject.cs" />
-    <Compile Include="entities\Views\LoadTypeRuleDetail.cs" />
-    <Compile Include="entities\Views\LoadTypeFieldDetail.cs" />
     <Compile Include="entities\Views\Relationship.cs" />
     <Compile Include="entities\Views\RelationshipWithContextAggregate.cs" />
     <Compile Include="entities\Report.cs" />
@@ -384,6 +383,9 @@
       <Project>{9775b4df-0ac8-4524-ba10-4a43bf9cb61e}</Project>
       <Name>d360.utils</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

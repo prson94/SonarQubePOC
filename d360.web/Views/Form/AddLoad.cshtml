@@ -1,8 +1,4 @@
-﻿@{
-    var loadTypeID = (int)ViewData["LoadTypeID"];
-}
-
-<script id="loadTmpl" type="text/html">
+﻿<script id="loadTmpl" type="text/html">
     <div class="left form-header-info">
         <h4>Upload a Spreadsheet Job</h4>
     </div>
@@ -42,12 +38,20 @@
         </div>
         <div class="col s12" data-bind="visible: ActionAndTypeSelected">
             <div class="FieldName">Notes</div>
-            <div data-bind="jqxEditor: { width: field_width, theme: theme, value: Notes}" />
+            <textarea data-bind="value: Notes"></textarea>
+        </div>
+        <div class="col s12" data-bind="visible: ActionAndTypeSelected">
+            <div class="FieldName">Expected columns based on the type you selected</div>
+            <table>
+                <tr data-bind="foreach: Columns">
+                    <td data-bind="text: $data"></td>
+                </tr>
+            </table>
         </div>
         <div class="col s12" data-bind="visible: ActionAndTypeSelected">
             <div class="FieldName">File</div>
             <div data-bind="fileDrag: File">
-                <input type="file" data-bind="fileInput: File, customFileInput: {}">
+                <input type="file" data-bind="fileInput: File, customFileInput: {}" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />
             </div>
         </div>
     </div>
@@ -56,34 +60,14 @@
 
 <div class="small-overlay">
     <div class="ui segment">
-        @*<div id="LoadWrapper" data-bind="template: {name: 'loadTmpl' }"></div>*@
-
-        <div class="row">
-            <div class="col s12">
-                <div class="FieldNameRequired">File</div>
-            </div>
-            <div class="col s12"><div id="File"></div></div>
-        </div>
+        <div id="LoadWrapper" data-bind="template: {name: 'loadTmpl' }"></div>
     </div>
 </div>
 
 <script type="text/javascript">
     $(function () {
-
-        //var model = new LoadViewModel({
-        //});
-        //ko.applyBindings(model, document.getElementById('LoadWrapper'));
-
+        var model = new LoadViewModel({});
+        ko.applyBindings(model, document.getElementById('LoadWrapper'));
         $("html, body").animate({ scrollTop: 0 }, "slow");
-
-
-        $('#File').jqxFileUpload({ width: 300, uploadUrl: "/form/AddLoadFile?id=@(loadTypeID)", fileInputName: 'Load@(loadTypeID)', accept: '.xls, .xlsx', multipleFilesUpload: false });
-
-        $('#File').on('uploadEnd', function (event) {
-            var args = event.args;
-            //var fileName = args.file;
-            var serverResponse = args.response;
-            amplify.publish("SaveAction", { context: '@(ContextList.Load)', action: 'Add', id: 0, title: 'Success!', message: serverResponse, type: 'confirm' });
-        });
     });
 </script>

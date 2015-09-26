@@ -103,6 +103,29 @@ namespace d360.core.entities
         public string Type { get; set; }
     }
 
+    [DataContract(Namespace = NAMESPACE)]
+    public class LoadDetail: BaseObject
+    {
+        [DataMember]
+        public int ID { get; set; }
+        [DataMember]
+        public string Object { get; set; }
+        [DataMember]
+        public int ObjectID { get; set; }
+        [DataMember]
+        public string ObjectName { get; set; }
+        [DataMember]
+        public string Notes { get; set; }
+        [DataMember]
+        public string FilePath { get; set; }
+        [DataMember]
+        public DateTime? DateStarted { get; set; }
+        [DataMember]
+        public DateTime? DateCompleted { get; set; }
+        [DataMember]
+        public string Action { get; set; }
+    }
+
     public class TopNavigation
     {
         public int ResourceID { get; set; }

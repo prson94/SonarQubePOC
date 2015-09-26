@@ -2477,33 +2477,6 @@
         <member name="M:d360.web.Controllers.FormController.Group_EditFields(System.Int32)">
             <param name="id">GroupID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.LoadType_DeleteFields(System.Int32)">
-            <param name="id">LoadTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.LoadType_EditFields(System.Int32)">
-            <param name="id">LoadTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.LoadTypeField_AddFields(System.Int32)">
-            <param name="id">LoadTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.LoadTypeField_DeleteFields(System.Int32)">
-            <param name="id">LoadTypeFieldID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.LoadTypeField_EditFields(System.Int32)">
-            <param name="id">LoadTypeFieldID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.LoadTypeRule_DeleteFields(System.Int32)">
-            <param name="id">LoadTypeRuleID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.LoadTypeRuleItem_AddFields(System.Int32)">
-            <param name="id">LoadTypeRuleID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.LoadTypeRuleItem_DeleteFields(System.Int32)">
-            <param name="id">LoadTypeRuleItemID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.LoadTypeRuleItem_EditFields(System.Int32)">
-            <param name="id">LoadTypeRuleItemID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Lookup_AddFields(System.Int32)">
             <param name="id">LookupTypeID</param>
         </member>

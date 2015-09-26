@@ -1,12 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Xml.Linq;
 using d360.core.entities.Contracts;
 using System;
 using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
-using System.Xml.Serialization;
-using System.Web.Script.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
@@ -17,20 +12,36 @@ namespace d360.core.entities
         #region Properties
 
         [DataMember]
-        public int LoadTypeID { get; set; }
+        public string Action { get; set; }
 
         [DataMember]
-        public DateTime Date { get; set; }
+        public string Extension { get; set; }
+
+        [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
+        public int ObjectID { get; set; }
 
         [DataMember]
         public byte[] File { get; set; }
 
+        [DataMember]
+        public string Notes { get; set; }
+
+        [DataMember]
+        public DateTime DateStarted { get; set; }
+
+        [DataMember]
+        public DateTime? DateCompleted { get; set; }
+
         #endregion
 
-        [IgnoreDataMember, ForeignKey("LoadTypeID")]
-        public virtual LoadType LoadType { get; set; }
 
-        [IgnoreDataMember, ForeignKey("LoadItemID")]
+        [IgnoreDataMember, ForeignKey("LoadID")]
+        public virtual ICollection<LoadColumn> LoadColumns { get; set; }
+
+        [IgnoreDataMember, ForeignKey("LoadID")]
         public virtual ICollection<LoadItem> LoadItems { get; set; }
     }
 }

@@ -914,20 +914,6 @@ namespace d360.web.Controllers
                     }
                     break;
                     #endregion
-                case SystemObjects.LoadType:
-                    #region Actions
-                    if (id > 0)
-                    {
-                        var loadType = Company.GetById<LoadType>(id, i => i.LoadTypeRules);
-                        if (loadType != null)
-                        {
-                            if (loadType.LoadTypeRules.Count > 0)
-                                list.Add(new PageActionItem { Context = ContextList.Load, Icon = Resources.Actions.Upload_Icon, Title = "Upload spreadsheet", Uri = string.Format("/form/AddLoad?id={0}", id) });
-                        }
-                    }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
-                    break;
-                    #endregion
                 case SystemObjects.Policy:
                     #region Actions
                     Policy policy = null;
@@ -1404,6 +1390,54 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region Events
+
+        [Route("{type}/{id:int}/events/headers")]
+        public IQueryable<OverlayEventHeader> GetEventTileHeaders(SystemObjects type, int id)
+        {
+            return Company.GetEventHeadersByObject(type, id);
+        }
+
+        //[Route("{type}/{id:int}/events/headers/{groupID:int}/items")]
+        //public List<Dictionary<string, object>> GetEventHeaderItems(SystemObjects type, int id, int groupID)
+        //{
+        //    return Company.GetEventsByGroupAsDictionary(groupID);
+        //}
+
+        //[Route("{type}/{id:int}/events/headers/{groupID:int}/layout")]
+        //public GridLayout GetEventHeaderLayout(SystemObjects type, int id, int groupID)
+        //{
+        //    var fields = (
+        //                 from g in Company.Filter<EventGroup>(i => i.ID == groupID)
+        //                 join f in Company.Filter<FieldType>(i => i.Object == "Rule") on g.RuleID equals f.ObjectID
+        //                 orderby f.SortOrder
+        //                 orderby f.FriendlyName
+        //                 select f
+        //                 ).ToList();
+
+        //    fields.Insert(0, new FieldType { FriendlyName = "ID", Name = "ID", SortOrder = 0, Type = "Number" });
+        //    fields.Insert(0, new FieldType { FriendlyName = "Source ID", Name = "SourceID", SortOrder = 0, Type = "Text" });
+        //    fields.Insert(0, new FieldType { FriendlyName = "Status", Name = "Status", SortOrder = 0, Type = "Text" });
+        //    fields.Insert(0, new FieldType { FriendlyName = "Date", Name = "Date", SortOrder = 0, Type = "Date" });
+
+        //    var model = new GridLayout(fields);
+        //    return model;
+        //}
+
+        //[Route("resources/{id:int}/assignments")]
+        //public IQueryable<EventHeader> GetAssignmentsByResource(int id)
+        //{
+        //    return Company.GetEventsByAssignedResource(id);
+        //}
+
+        //[Route("Rule/{id:int}/resolutions")]
+        //public IQueryable<Resolution> GetResolutionsByRule(int id)
+        //{
+        //    return Company.Filter<Resolution>(i => i.RuleID == id);
+        //}
+
+        #endregion
+
         #region Fusion
 
         [Route("fusion")]
@@ -1743,107 +1777,30 @@ inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID", new { i
 
         #endregion
 
-        #region Load Methods
+        #region Loads
 
-        [Route("loadtypes")]
-        public IQueryable<LoadType> GetLoadTypes()
+        [HttpGet, Route("loads")]
+        public IEnumerable<LoadDetail> GetLoads()
         {
-            return Company.Table<LoadType>().OrderBy(i => i.Name).AsQueryable();
+            return Company.GetLoadDetails();
         }
 
-        [Route("loadtypes/{id:int}/fields")]
-        public HttpResponseMessage GetFieldsByType(int id) //List<Dictionary<string, object>> LoadsByType(int id)
+        [HttpGet, Route("loads/{id:int}")]
+        public LoadDetail GetLoad(int id)
         {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Filter<LoadTypeFieldDetail>(i => i.LoadTypeID == id).OrderBy(i => i.SortOrder).ThenBy(i => i.Name).ToList()
-            );
+            return Company.GetLoadDetail(id);
         }
 
-        [Route("loadtypes/{id:int}/rules")]
-        public HttpResponseMessage GetRulesByType(int id) //List<Dictionary<string, object>> LoadsByType(int id)
+        [HttpGet, Route("loads/{id:int}/columns")]
+        public IEnumerable<dynamic> GetLoadColumns(int id)
         {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Filter<LoadTypeRuleDetail>(i => i.LoadTypeID == id).OrderBy(i => i.SortOrder).ToList()
-            );
+            return Company.GetLoadColumnDetails(id);
         }
 
-        [Route("loadtypes/{loadTypeID:int}/rules/{id:int}/items")]
-        public HttpResponseMessage GetItemsByRule(int loadTypeID, int id)
+        [HttpGet, Route("loads/{id:int}/items")]
+        public IEnumerable<dynamic> GetLoadItems(int id)
         {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                (
-                from i in Company.Filter<LoadTypeRuleItem>(i => i.LoadTypeRuleID == id)
-                join f in Company.Filter<LoadTypeField>(i => i.LoadTypeID == loadTypeID) on i.SourceLoadTypeFieldID equals f.ID
-                select new { 
-                    i.ID,
-                    i.IsCustomField,
-                    i.LoadTypeRuleID,
-                    i.TargetFieldName,
-                    SourceLoadTypeField = f.Name
-                }
-                ).ToList()
-            );
-        }
-
-        [Route("loadtypes/{id:int}/history")]
-        public HttpResponseMessage GetLoadsByType(int id) //List<Dictionary<string, object>> LoadsByType(int id)
-        {
-            return Request.CreateResponse(
-                HttpStatusCode.OK, 
-                Company.Filter<Load>(i => i.LoadTypeID == id).Select(i => new { ID = i.ID, Date = i.Date, i.LoadTypeID, ItemCount = i.LoadItems.Count }).OrderByDescending(i => i.Date).ToList()
-            );
-        }
-
-        [Route("loadtypes/{loadTypeID:int}/history/{id:int}/results")]
-        public HttpResponseMessage GetResultsByLoad(int loadTypeID, int id)
-        {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                (
-                from i in Company.Filter<LoadItem>(o => o.LoadID == id).Select(o => new { ID = o.ID, RowIndex = o.RowIndex })
-                join r in Company.Table<LoadItemRuleResult>() on i.ID equals r.LoadItemID
-                select new 
-                {
-                    i.ID,
-                    i.RowIndex,
-                    LoadTypeRuleGroup = r.LoadTypeRule.LoadTypeRuleGroup.ToString(),
-                    r.LoadTypeRule.SortOrder,
-                    r.Value,
-                    r.Message
-                }
-                )
-                .OrderBy(i => i.SortOrder)
-                .ToList()
-            );
-        }
-
-        [Route("PromotionRuleIsValid"), HttpGet]
-        public HttpResponseMessage PromotionRuleIsValid(int loadTypeID, string target)
-        {
-            var targetInfo = target.Split('|');
-
-            var sourceFields = Company.Filter<LoadTypeField>(i => i.LoadTypeID == loadTypeID).ToList();
-
-            var ownerFieldIsPresent = (targetInfo[0] != "AttributeType");
-
-            if (!ownerFieldIsPresent)
-            {
-                foreach(var sf in sourceFields)
-                {
-                    if (sf.Name == "Owner" && (sf.LookupObjectType == "ArtifactType" || sf.LookupObjectType == "TaxonomyType" || sf.LookupObjectType == "IntersectType"))
-                    {
-                        ownerFieldIsPresent = true;
-                        break;
-                    }
-                }
-            }
-            if (ownerFieldIsPresent)
-                return Request.CreateResponse(HttpStatusCode.OK);
-            else
-                return Request.CreateErrorResponse(HttpStatusCode.Conflict, "You do not have a field called Owner that is mapped to an Artifact or Model lookup.  Unable to save this rule.");
+            return Company.GetLoadItemDetails(id);
         }
 
         #endregion
@@ -2760,18 +2717,21 @@ from	    ResponsibilityTypeHierarchy H
                     }
                     intersectType = null;
                     break;
-                    #endregion
-                case SystemObjects.LoadType:
+                #endregion
+                case SystemObjects.Load:
                     #region Fields
-                    var loadType = Company.GetById<LoadType>(id);
-                    if (loadType != null)
+                    var load = Company.GetLoadDetail(id);
+                    if (load != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = d360.core.resources.Fields.Name_Name, FieldName = "LoadTypeName", Value = loadType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = loadType.GetName(i => i.ID), FieldName = "LoadTypeID", Value = loadType.ID.ToString() });
+                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = "Action", FieldName = "LoadAction", FieldDescription = "", Value = load.Action });
+                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = "Target", FieldName = "LoadObjectName", FieldDescription = "", Value = load.ObjectName });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Date Started", FieldName = "LoadDateStarted", FieldDescription = "", Value = load.DateStarted.FormatNullableDate() });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "Date Completed", FieldName = "LoadDateCompleted", FieldDescription = "", Value = load.DateCompleted.FormatNullableDate() });
+                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = "Notes", FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" });
                     }
-                    loadType = null;
+                    load = null;
                     break;
-                    #endregion
+                #endregion
                 case SystemObjects.LookupType:
                     #region Fields
                     var lookupType = Company.GetById<LookupType>(id);

@@ -1,18 +1,62 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using d360.core;
 using Dapper;
-using System.Diagnostics;
 using System.IO;
 using d360.core.entities;
 using SpreadsheetLight;
+using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration.Conventions;
+using d360.core.entities.Queues;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Infrastructure;
 
 namespace d360.jobs.queue.ProcessBulkLoad
 {
+    public class LoadContext : DbContext
+    {
+        public LoadContext(string connectionString): base(connectionString)
+        {
+
+        }
+
+        public ObjectContext ObjectContext
+        {
+            get
+            {
+                try
+                {
+                    return ((IObjectContextAdapter)this).ObjectContext;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+
+        public DbSet<BulkLoadQueue> BulkLoadQueues { get; set; }
+
+        public DbSet<Load> Loads { get; set; }
+        public DbSet<LoadItem> LoadItems { get; set; }
+        public DbSet<LoadItemColumn> LoadItemColumns { get; set; }
+        public DbSet<LoadColumn> LoadColumns { get; set; }
+
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
+            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+
+            base.OnModelCreating(modelBuilder);
+
+            base.Configuration.AutoDetectChangesEnabled = false;
+            base.Configuration.ProxyCreationEnabled = false;
+            base.Configuration.LazyLoadingEnabled = false;
+        }
+    }
 
     class Program: FunctionsBase
     {
@@ -24,33 +68,28 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
             try
             {
-                var companies = GetActiveCompanyIDs();
+                var companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
                 var domainPrefixes = GetCompanyDomainPrefixes();
 
                 companies.AsParallel().WithDegreeOfParallelism(4).ForAll(companyID =>
                 {
-                    var companyConnection = GetCompanyConnection(companyID);
-                    companyConnection.Open();
+                    var ctx = new LoadContext(GetCompanyConnectionString(companyID));
 
-                    var queueItems = companyConnection.Query<dynamic>(@"select top 2 * from [queue].BulkLoad where MachineAssigned is null and NumberOfRetries < 3 order by LoadID asc").ToList();
+                    var queueItems = ctx.BulkLoadQueues.Where(i => i.MachineAssigned == null && i.NumberOfRetries < 3).OrderBy(i => i.LoadID).Take(2).ToList();
 
                     queueItems.ForEach(q =>
                     {
-                        companyConnection.Execute("update [queue].BulkLoad set MachineAssigned = @m where ID = @queueID", new { m = Environment.MachineName, queueID = q.ID });
+                        q.MachineAssigned = Environment.MachineName;
                     });
+                    ctx.SaveChanges();
 
                     queueItems.ForEach(q =>
                     {
                         try
                         {
-                            var load = companyConnection.Query<Load>("select * from Load where ID = @id", new { id = q.LoadID }).SingleOrDefault();
+                            var load = ctx.Loads.Include(i => i.LoadColumns).SingleOrDefault(i => i.ID == q.LoadID);
 
                             Console.WriteLine("Company: {0}. Processing Load {1}", companyID, load.ID);
-
-                            var fields = companyConnection.Query<LoadTypeField>(
-                                "select * from LoadTypeField where LoadTypeID = @id order by SortOrder",
-                                new { id = load.LoadTypeID }
-                            ).ToList();
 
                             var memoryStream = new MemoryStream(load.File);
                             var xls = new SLDocument(memoryStream);
@@ -61,48 +100,24 @@ namespace d360.jobs.queue.ProcessBulkLoad
                             var rowIndex = stats.StartRowIndex + 1;
                             while (rowIndex <= stats.EndRowIndex)
                             {
-                                if(string.IsNullOrEmpty(xls.GetCellValueAsString(rowIndex, stats.StartColumnIndex)))
+                                var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>() };
+
+                                foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
                                 {
-                                    numberOfRows--;
+                                    loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = xls.GetCellValueAsString(rowIndex, c.ColumnIndex) });
                                 }
+
+                                ctx.LoadItems.Add(loadItem);
+
                                 rowIndex++;
                             }
 
-                            Console.WriteLine("Company: {0}. Load {1} has {2} rows to process", companyID, load.ID, numberOfRows - 1);
-
-                            rowIndex = stats.StartRowIndex + 1;
-                            while (rowIndex <= stats.EndRowIndex)
-                            {
-                                try
-                                {
-                                    if(!string.IsNullOrEmpty(xls.GetCellValueAsString(rowIndex, stats.StartColumnIndex)))
-                                    {
-                                        var loadItemID = companyConnection.ExecuteScalar<int>("insert into LoadItem (LoadID, RowIndex) values (@l, @r); select SCOPE_IDENTITY()", new { l = load.ID, r = rowIndex });
-                                        var columnIndex = stats.StartColumnIndex;
-
-                                        while (columnIndex <= stats.EndColumnIndex)
-                                        {
-                                            var field = fields[columnIndex - 1];
-                                            if (field != null)
-                                            {
-                                                companyConnection.Execute("insert into LoadItemField (LoadItemID, LoadTypeFieldID, Value) values (@l, @f, @v)", new { l = loadItemID, f = field.ID, v = xls.GetCellValueAsString(rowIndex, columnIndex) });
-                                            }
-                                            columnIndex++;
-                                        }
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine("Company: {0}. Error occurred for Load {1}, Row {2}.  Error is: {3}", companyID, load.ID, rowIndex, ex.GetFullExceptionData());
-                                }
-
-                                rowIndex++;
-                            }
+                            ctx.SaveChanges();  // Save all load items and columns we created.
 
                             Console.WriteLine("Company: {0}. Executing ProcessBulkLoad procedure for Load {1}", companyID, load.ID);
 
                             bool writeStatus = true;
-                            var task = companyConnection.ExecuteAsync("exec ProcessBulkLoad @LoadID", new { LoadID = q.LoadID }, null, 1800);    // 30 minute timeout.
+                            var task = ctx.ObjectContext.Connection.ExecuteAsync("exec ProcessBulkLoad @LoadID", new { LoadID = load.ID }, null, 1800);
                             task.ContinueWith(t =>
                             {
                                 if (t.IsCompleted)
@@ -127,17 +142,20 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                             Console.WriteLine("Company: {0}. Finished executing ProcessBulkLoad procedure for Load {1}", companyID, load.ID);
 
-                            companyConnection.Execute("delete [queue].BulkLoad where ID = @queueID", new { queueID = q.ID }, null, 500);
+                            ctx.BulkLoadQueues.Remove(q);
+                            ctx.SaveChanges();
                         }
                         catch (Exception ex)
                         {
                             mex.Add(ex);
-                            companyConnection.Execute(@"update [queue].BulkLoad set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = ex.GetFullExceptionData() }, null, 500);
+                            q.NumberOfRetries++;
+                            q.HasError = true;
+                            q.ErrorMessage = ex.GetFullExceptionData();
+                            ctx.SaveChanges();
                         }
                     });
 
-                    companyConnection.Close();
-                    companyConnection.Dispose();
+                    ctx.Dispose();
                 });
             }
             catch (Exception ex)

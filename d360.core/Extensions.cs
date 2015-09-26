@@ -33,6 +33,21 @@ namespace d360.core
         {
             return DateTime.UtcNow.Epoch();
         }
+
+        public static string FormatNullableDate(this DateTime? date)
+        {
+            var dateString = "";
+
+            if (date.HasValue)
+            {
+                dateString = date.Value.ToShortDateString();
+            }
+            else {
+                dateString = "";
+            }
+
+            return dateString;
+        }
     }
 
     public static class StringExtensions

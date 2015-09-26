@@ -21,6 +21,42 @@ using d360.workflow.entities;
 
 namespace d360.web.Controllers
 {
+    public class MimeTypeExtensionsMap
+    {
+        internal class MimeTypeExtensionMapItem
+        {
+            public string MimeType { get; set; }
+            public string Extension { get; set; }
+        }
+
+        private static List<MimeTypeExtensionMapItem> items = new List<MimeTypeExtensionMapItem> {
+            new MimeTypeExtensionMapItem { Extension = ".xlam", MimeType = "application/vnd.ms-excel.addin.macroEnabled.12"},
+            new MimeTypeExtensionMapItem { Extension = ".xls", MimeType = "application/vnd.ms-excel"},
+            new MimeTypeExtensionMapItem { Extension = ".xlsb", MimeType = "application/vnd.ms-excel.sheet.binary.macroEnabled.12"},
+            new MimeTypeExtensionMapItem { Extension = ".xlsm", MimeType = "application/vnd.ms-excel.sheet.macroEnabled.12"},
+            new MimeTypeExtensionMapItem { Extension = ".xlsx", MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+            new MimeTypeExtensionMapItem { Extension = ".xltm", MimeType = "application/vnd.ms-excel.template.macroEnabled.12"},
+            new MimeTypeExtensionMapItem { Extension = ".xltx", MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.template"},
+        };
+
+        public static string GetMimeType(string extension)
+        {
+            if (!extension.StartsWith("."))
+            {
+                extension = "." + extension;
+            }
+
+            var item = items.SingleOrDefault(i => i.Extension.ToLower().Equals(extension.Trim().ToLower()));
+            return (item == null) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : item.MimeType;
+        }
+
+        public static string GetExtension(string mimeType)
+        {
+            var item = items.SingleOrDefault(i => i.MimeType.ToLower().Equals(mimeType.Trim().ToLower()));
+            return (item == null) ? ".xlsx" : item.Extension;
+        }
+    }
+
     [RoutePrefix("form"), Authorize]
     public class FormController : BaseController
     {
@@ -5878,17 +5914,79 @@ namespace d360.web.Controllers
 
         #region Load
 
-        class OptionModel
+        public class OptionModel
         {
             public string title { get; set; }
             public string value { get; set; }
         }
 
-        public JsonNetResult Load_TypeOptions(string action)
+        public class LoadFilePostModel
+        {
+            public string Action { get; set; }
+            public string Type { get; set; }
+            public string Notes { get; set; }
+            public string File { get; set; }
+        }
+
+        List<string> getFieldNamesByType(string type, int id)
+        {
+            List<string> fieldTypeNames;
+            
+            switch (type)
+            {
+                case "ArtifactType":
+                case "DomainType":
+                case "TaxonomyType":
+                    fieldTypeNames = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == id).OrderBy(i => i.SortOrder).Select(i => i.Name).ToList();
+                    break;
+                default:
+                    fieldTypeNames = new List<string>();
+                    break;
+            }
+
+            switch (type)
+            {
+                case "ArtifactType":
+                    fieldTypeNames.Insert(0, "Name");
+                    fieldTypeNames.Insert(1, "Description");
+                    fieldTypeNames.Insert(2, "Subject Area");
+                    var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
+                    if (artifactType.ParentID.HasValue)
+                        fieldTypeNames.Insert(3, string.Format("Parent {0}", artifactType.Parent.Name));
+                    break;
+                case "DomainType":
+                    fieldTypeNames.Insert(0, "Name");
+                    fieldTypeNames.Insert(1, "Description");
+                    fieldTypeNames.Insert(2, "Domain Group");
+                    break;
+                case "IntersectType":
+                    var intersectType = Company.Query<dynamic>(@"select	SD.Name as S, TD.Name as T
+                    from	IntersectTypeNode S
+                            inner join IntersectTypeNode T on T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and S.[Order] = 1
+                            inner join cache.ObjectDetails SD on SD.[Object] = S.ObjectType and SD.ObjectID = S.ObjectID
+                            inner join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID
+                    where   S.IntersectTypeID = @id", new { id }).SingleOrDefault();
+                    if (intersectType != null)
+                    {
+                        fieldTypeNames.Add(intersectType.S);
+                        fieldTypeNames.Add(intersectType.T);
+                    }
+                    break;
+                case "TaxonomyType":
+                    fieldTypeNames.Insert(0, "Name");
+                    fieldTypeNames.Insert(1, "Description");
+                    fieldTypeNames.Insert(2, "Parent");
+                    break;
+            }
+
+            return fieldTypeNames;
+        }
+
+        public JsonNetResult Load_TypeOptions(string act)
         {
             IEnumerable<OptionModel> models;
             var sql = "";
-            switch (action) {
+            switch (act) {
                 case "P": // Promotion
                     #region
                     sql = @"
@@ -5907,679 +6005,110 @@ select 'ArtifactType|' + cast(ID as varchar(10)) as value, Name as title from Ar
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-
-        public ActionResult AddLoad(int id)
+        public JsonNetResult Load_ExpectedColumns(string type, int id)
         {
-            ViewData.Add("LoadTypeID", id);
+            return new JsonNetResult { Data = getFieldNamesByType(type, id), Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public ActionResult AddLoad()
+        {
             return PartialView();
         }
 
-        public class LoadFilePostModel
-        {
-            public string Action { get; set; }
-            public string Type { get; set; }
-            public string Notes { get; set; }
-            public string File { get; set; }
-        }
-
         [HttpPost]
-        public HttpStatusCodeResult AddLoadFile(int id)
+        public JsonResult AddLoadFile(LoadFilePostModel model)
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Load, 0, Claim.Create))
-                    return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+                // Perform checks to make sure fields are populated.
+                if (string.IsNullOrEmpty(model.Type)) throw new NoFormDataException("Type");
+                if (string.IsNullOrEmpty(model.Action)) throw new NoFormDataException("Action");
 
-                var a = new Load
-                {
-                    Date = DateTime.UtcNow,
-                    LoadTypeID = id
-                };
+                var regex = new System.Text.RegularExpressions.Regex(@"data:(?<mime>[\w/\-\.]+);(?<encoding>\w+),(?<data>.*)", System.Text.RegularExpressions.RegexOptions.Compiled);
+                var match = regex.Match(model.File);
 
-                var file = Request.Files[0];
-                var fileExt = Path.GetExtension(file.FileName);
-                var target = new MemoryStream();
-                file.InputStream.CopyTo(target);
-                byte[] data = target.ToArray();
+                var mime = match.Groups["mime"].Value;
+                var encoding = match.Groups["encoding"].Value;
+                var data = match.Groups["data"].Value;
+                var extension = MimeTypeExtensionsMap.GetExtension(mime);
+                var byteArray = Convert.FromBase64String(data);
 
-                a.File = data;
-
-                SLDocument xls;
+                JsonResult json;
+                Load load = null;
                 var success = false;
                 var errorMessage = "";
+                SLDocument xls;
 
-                if (fileExt.ToLower() == ".xlsx")
+                using (var stream = new MemoryStream(byteArray))
                 {
-                    xls = new SLDocument(target);
-
-                    var loadType = Company.GetById<LoadType>(id, i => i.LoadTypeFields);
-
-                    var stats = xls.GetWorksheetStatistics();
-                    var columnCount = stats.NumberOfColumns;
-                    if (columnCount == loadType.LoadTypeFields.Count)
+                    if (extension == ".xlsx")
                     {
-                        success = true;
+                        var typeInfo = model.Type.Split('|');
+
+                        load = new Load
+                        {
+                            File = stream.ToArray(),
+                            Action = model.Action,
+                            Extension = extension,
+                            Notes = model.Notes,
+                            Object = typeInfo[0],
+                            ObjectID = int.Parse(typeInfo[1]),
+                            DateStarted = DateTime.UtcNow
+                        };
+
+                        xls = new SLDocument(stream);
+
+                        var fieldTypeNames = getFieldNamesByType(load.Object, load.ObjectID);
+
+                        var stats = xls.GetWorksheetStatistics();
+                        var columnCount = stats.NumberOfColumns;
+                        if (columnCount == fieldTypeNames.Count)
+                        {
+                            var hasError = false;
+                            load.LoadColumns = new List<LoadColumn>();
+                            for (var i = 1; i <= fieldTypeNames.Count; i++)
+                            {
+                                var actualValue = xls.GetCellValueAsString(1, i);
+                                var expectedValue = fieldTypeNames[i-1];
+                                if (actualValue.Equals(expectedValue))
+                                {
+                                    load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = actualValue });
+                                }
+                                else
+                                {
+                                    hasError = true;
+                                    errorMessage += string.Format("{0} did not match the expected value of {1}. ", actualValue, expectedValue);
+                                }
+                            }
+
+                            success = !hasError;
+                        }
+                        else
+                        {
+                            errorMessage = "The number of columns in the spreadsheet does not match the number of defined fields for this load type.";
+                        }
                     }
                     else
                     {
-                        errorMessage = "The number of columns in the spreadsheet does not match the number of defined fields for this load type.";
+                        errorMessage = "Incorrect file type";
                     }
                 }
-                else
-                {
-                    errorMessage = "Incorrect file type";
-                }
-
-                data = null;
-                target = null;
 
                 if (success)
                 {
-                    Company.Add<Load>(a);
-                    return new HttpStatusCodeResult(HttpStatusCode.Created, "File uploaded and queued for processing.");
+                    Company.Add<Load>(load);
+                    json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
                 }
                 else
                 {
-                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest, errorMessage);
-                }
-            }
-            catch (BaseException ex)
-            {
-                return new HttpStatusCodeResult(ex.StatusCode, ex.StatusDescription);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ex.Message);
-            }
-        }
-
-        //[HttpPost]
-        //public JsonResult AddLoadFile(LoadFilePostModel model)
-        //{
-        //    try
-        //    {
-        //        var base64Data = System.Text.RegularExpressions.Regex.Match(model.File, @"data:application/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
-        //        var byteArray = Convert.FromBase64String(base64Data);
-        //        using (var stream = new MemoryStream(byteArray))
-        //        {
-        //            var boo = stream.CanRead;
-        //        }
-
-        //        return jsonSuccess("File uploaded and queued for processing.", "0", ContextList.Load, "A", HttpStatusCode.Created);
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode); //jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex.Message, HttpStatusCode.InternalServerError);//jsonException(ex.Message, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        #endregion
-
-        #region LoadType
-
-        #region Field Generation
-
-        public JsonResult LoadType_AddFields()
-        {
-            if (!Company.HasPermission(SystemObjects.LoadType, 0, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LoadTypeID</param>
-        public JsonResult LoadType_DeleteFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.LoadType, id, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<LoadType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LoadTypeID</param>
-        public JsonResult LoadType_EditFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.LoadType, id, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<LoadType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddLoadType()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadType,
-                FieldUri = "/form/LoadType_AddFields",
-                FormTitle = "Add New Bulk Load Type",
-                FormUri = "/form/AddLoadType",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPost]
-        public JsonResult AddLoadType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.LoadType, 0, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type");
-
-                var a = new LoadType
-                {
-                    Name = parseTextField(form, "Name")
-                };
-
-                Company.SaveOrUpdate<LoadType>(a);
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult DeleteLoadType(int id)
-        {
-            var a = Company.GetById<LoadType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadType,
-                FieldUri = string.Format("/form/LoadType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteLoadType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteLoadType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<LoadType>(id);
-                if (model == null) throw new NotFoundException("bulk load type");
-
-                if (!Company.HasPermission(SystemObjects.LoadType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<LoadType>(model);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult EditLoadType(int id)
-        {
-            var a = Company.GetById<LoadType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadType,
-                FieldUri = string.Format("/form/LoadType_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditLoadType",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut]
-        public JsonResult EditLoadType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<LoadType>(id);
-                if (model == null) throw new NotFoundException("bulk load type");
-
-                if (!Company.HasPermission(SystemObjects.LoadType, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = parseTextField(form, "Name");
-
-                Company.SaveOrUpdate<LoadType>(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusMessage, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region LoadTypeField
-
-        #region Field Generation
-
-        /// <param name="id">LoadTypeID</param>
-        public JsonResult LoadTypeField_AddFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin) //if (!Company.HasPermission(SystemObjects.LoadTypeField, 0, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            var lookups = convertToEditableFieldItems(
-                Company.GetLoadTypeFieldLookupOptions().ToList()
-            );
-            lookups.Insert(0, new SelectListItem { Text = "-None-", Value = "", Selected = true });
-
-            list.Add(new EditableField { FieldName = "LoadTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "LookupObject", Name = "Lookup Type", FieldType = DataType.Lookup.ToString(), Items = lookups });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "LookupFieldName", Name = "Lookup Field", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "LookupFieldName", false, "", 0, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LoadTypeFieldID</param>
-        public JsonResult LoadTypeField_DeleteFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin) return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<LoadTypeField>(id);
-
-            if (a == null) return jsonException("Load type field not found", HttpStatusCode.NotFound);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LoadTypeFieldID</param>
-        public JsonResult LoadTypeField_EditFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin) //if (!Company.HasPermission(SystemObjects.LoadTypeField, id, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<LoadTypeField>(id);
-
-            if (a == null) return jsonException("Load type field not found", HttpStatusCode.NotFound);
-
-            var lookups = convertToEditableFieldItems(
-                Company.GetLoadTypeFieldLookupOptions().ToList()
-            );
-            lookups.Insert(0, new SelectListItem { Text = "-None-", Value = "" });
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "LookupObject", Name = "Lookup Type", FieldType = DataType.Lookup.ToString(), Items = lookups, Value = (a.LookupObjectID.HasValue ? string.Format("{0}|{1}", a.LookupObjectType.ToString(), a.LookupObjectID) : "") });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "LookupFieldName", Name = "Lookup Field", FieldType = DataType.Text.ToString(), Value = a.LookupFieldName, Validations = checkAndAddValidation("Text", "LookupFieldName", false, "", 0, 250) });
-            
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddLoadTypeField(int id)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadTypeField,
-                FieldUri = "/form/LoadTypeField_AddFields?id=" + id,
-                FormTitle = "Add Load Type Field",
-                FormUri = "/form/AddLoadTypeField",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPost]
-        public JsonResult AddLoadTypeField(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin) //if (!Company.HasPermission(SystemObjects.LoadType, 0, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type field");
-
-                var loadTypeID = parseIntField(form, "LoadTypeID");
-                var sortOrder = Company.Filter<LoadTypeField>(i => i.LoadTypeID == loadTypeID).Count() + 1;
-                var lookupObjectValue = form["LookupObject"];
-
-                if (lookupObjectValue.Contains("None")) lookupObjectValue = string.Empty;
-                string[] split = string.IsNullOrEmpty(lookupObjectValue) ? null : lookupObjectValue.Split('|');
-
-                var a = new LoadTypeField
-                {
-                    LoadTypeID = loadTypeID,
-                    LookupObjectType = (split != null) ? split[0] : null,
-                    LookupObjectID = (split != null) ? int.Parse(split[1]) : new Nullable<int>(),
-                    LookupFieldName = form["LookupFieldName"],
-                    Name = parseTextField(form, "Name"),
-                    SortOrder = sortOrder
-                };
-                Company.SaveOrUpdate<LoadTypeField>(a);
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult DeleteLoadTypeField(int id)
-        {
-            var a = Company.GetById<LoadTypeField>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadTypeField,
-                FieldUri = string.Format("/form/LoadTypeField_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteLoadTypeField",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteLoadTypeField(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type field");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<LoadTypeField>(id);
-                if (model == null) throw new NotFoundException("bulk load type field");
-
-                if (!Company.CurrentResourceIsAdmin) //if (!Company.HasPermission(SystemObjects.LoadType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<LoadTypeField>(model);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult EditLoadTypeField(int id)
-        {
-            var a = Company.GetById<LoadTypeField>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadTypeField,
-                FieldUri = string.Format("/form/LoadTypeField_EditFields?id={0}", id),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditLoadTypeField",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut]
-        public JsonResult EditLoadTypeField(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type field");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<LoadTypeField>(id);
-                if (model == null) throw new NotFoundException("bulk load type field");
-
-                if (!Company.CurrentResourceIsAdmin) //if (!Company.HasPermission(SystemObjects.LoadTypeField, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var lookupObjectValue = form["LookupObject"];
-                if (lookupObjectValue.Contains("None")) lookupObjectValue = string.Empty;
-                string[] split = string.IsNullOrEmpty(lookupObjectValue) ? null : lookupObjectValue.Split('|');
-                model.LookupObjectType = (split != null) ? split[0] : null;
-                model.LookupObjectID = (split != null) ? int.Parse(split[1]) : new Nullable<int>();
-                model.LookupFieldName = form["LookupFieldName"];
-                model.Name = parseTextField(form, "Name");
-
-                Company.SaveOrUpdate<LoadTypeField>(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusMessage, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region LoadTypeRule
-
-        #region Field Generation
-
-        /// <param name="id">LoadTypeRuleID</param>
-        public JsonResult LoadTypeRule_DeleteFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.LoadTypeRule, id, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<LoadTypeRule>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddLoadTypeRule(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.LoadType, id, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var model = new LoadTypeRuleEditorModel
-            {
-                LoadTypeID = id,
-                Fields = Company.Filter<LoadTypeField>(i => i.LoadTypeID == id)
-                            .OrderBy(i => i.SortOrder)
-                            .ThenBy(i => i.Name)
-                            .Select(i => new SelectListItem { Value = i.ID.ToString(), Text = i.Name })
-                            .ToList(),
-                LookupTypeRuleGroups = new List<SelectListItem>() {
-                                            new SelectListItem { Text = LoadTypeRuleGroup.Promotion.ToString(), Value = ((int)LoadTypeRuleGroup.Promotion).ToString() },
-                                            new SelectListItem { Text = LoadTypeRuleGroup.Relation.ToString(), Value = ((int)LoadTypeRuleGroup.Relation).ToString() }
-                                        },
-                LookupTypeRuleGroupsEnabled = true,
-                Objects = convertToEditableFieldItems(
-                            Company.GetLoadTypeRulePromotionOptions().ToList()
-                          )
-            };
-
-            return PartialView(model);
-        }
-
-        [HttpPost]
-        public JsonResult AddLoadTypeRule(FormCollection form)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.LoadType, 0, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type rule");
-
-                var loadTypeID = parseIntField(form, "LoadTypeID");
-                var sortOrder = Company.Filter<LoadTypeRule>(i => i.LoadTypeID == loadTypeID).Count() + 1;
-                var loadTypeRuleGroup = (LoadTypeRuleGroup)Enum.Parse(typeof(LoadTypeRuleGroup), form["LookupTypeRuleGroup"]);
-
-                var a = new LoadTypeRule
-                {
-                    LoadTypeID = loadTypeID,
-                    LoadTypeRuleGroup = loadTypeRuleGroup,
-                    SortOrder = sortOrder
-                };
-
-                if (loadTypeRuleGroup == LoadTypeRuleGroup.Promotion)
-                {
-                    var split = form["Object"].Split('|');
-
-                    a.ObjectType = split[0];
-                    a.ObjectID = int.Parse(split[1]);
-                    a.UniqueLoadTypeFieldID = parseIntField(form, "UniqueLoadTypeFieldID");
+                    json = jsonException(errorMessage, HttpStatusCode.BadRequest);
                 }
 
-                Company.SaveOrUpdate<LoadTypeRule>(a);
-
-                if (loadTypeRuleGroup == LoadTypeRuleGroup.Promotion)
-                {
-                    var ruleItemsToAdd = new List<LoadTypeRuleItem>();
-
-                    var ot = (SystemObjects)Enum.Parse(typeof(SystemObjects), a.ObjectType);
-                    var loadType = Company.GetById<LoadType>(loadTypeID, i => i.LoadTypeFields);
-                    var targetFields = Company.GetFieldTypeRelationsByObject(ot, a.ObjectID).ToList();
-
-                    foreach (var s in loadType.LoadTypeFields)
-                    {
-                        switch (ot)
-                        { 
-                            case SystemObjects.ArtifactType:
-                                switch (s.Name)
-                                { 
-                                    case "Name":
-                                    case "Description":
-                                        ruleItemsToAdd.Add(new LoadTypeRuleItem { IsCustomField = false, LoadTypeRuleID = a.ID, SourceLoadTypeFieldID = s.ID, TargetFieldName = s.Name });
-                                        break;
-                                }
-                                break;
-                            case SystemObjects.AttributeType:
-                                switch (s.Name)
-                                {
-                                    case "Owner":
-                                        if (s.LookupObjectType == "ArtifactType" || s.LookupObjectType == "DomainType" || s.LookupObjectType == "TaxonomyType")
-                                            ruleItemsToAdd.Add(new LoadTypeRuleItem { IsCustomField = false, LoadTypeRuleID = a.ID, SourceLoadTypeFieldID = s.ID, TargetFieldName = "ObjectID" });
-                                        break;
-                                }
-                                break;
-                            case SystemObjects.TaxonomyType:
-                                switch (s.Name)
-                                {
-                                    case "Name":
-                                    case "Description":
-                                        ruleItemsToAdd.Add(new LoadTypeRuleItem { IsCustomField = false, LoadTypeRuleID = a.ID, SourceLoadTypeFieldID = s.ID, TargetFieldName = s.Name });
-                                        break;
-                                }
-                                break;
-                        }
-
-                        foreach (var t in targetFields)
-                        {
-                            if (t.Type == "Lookup" && t.LookupObjectType == s.LookupObjectType && t.LookupObjectID == s.LookupObjectID)
-                            {
-                                ruleItemsToAdd.Add(new LoadTypeRuleItem { IsCustomField = true, LoadTypeRuleID = a.ID, SourceLoadTypeFieldID = s.ID, TargetFieldName = t.Name });
-                            }
-                            else
-                            {
-                                if (s.Name.ToLower() == t.Name.ToLower())
-                                {
-                                    ruleItemsToAdd.Add(new LoadTypeRuleItem { IsCustomField = true, LoadTypeRuleID = a.ID, SourceLoadTypeFieldID = s.ID, TargetFieldName = t.Name });
-                                }
-                            }
-                        }
-                    }
-                    ruleItemsToAdd.ForEach(ri => {
-                        Company.Add<LoadTypeRuleItem>(ri);
-                    });
-                    
-                }
-
-                return jsonSuccess("Rule successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return json;
             }
             catch (BaseException ex)
             {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+                return jsonException(ex.StatusDescription, ex.StatusCode);
             }
             catch (Exception ex)
             {
@@ -6587,374 +6116,6 @@ select 'ArtifactType|' + cast(ID as varchar(10)) as value, Name as title from Ar
                 return jsonException(ex.Message, HttpStatusCode.InternalServerError);
             }
         }
-
-        public ActionResult DeleteLoadTypeRule(int id)
-        {
-            var a = Company.GetById<LoadTypeRule>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadTypeRule,
-                FieldUri = string.Format("/form/LoadTypeRule_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Rule"),
-                FormUri = "/form/DeleteLoadTypeRule",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteLoadTypeRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type rule");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<LoadTypeRule>(id);
-                if (model == null) throw new NotFoundException("bulk load type rule");
-
-                if (!Company.HasPermission(SystemObjects.LoadType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<LoadTypeRuleItem>(i => i.LoadTypeRuleID == id);
-                Company.Delete<LoadTypeRule>(model);
-                
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult EditLoadTypeRule(int id)
-        {
-            var a = Company.GetById<LoadTypeRule>(id);
-            if (a == null) return HttpNotFound();
-
-            var model = new LoadTypeRuleEditorModel
-            {
-                ID = a.ID,
-                LoadTypeID = a.LoadTypeID,
-                Fields = Company.Filter<LoadTypeField>(i => i.LoadTypeID == a.LoadTypeID)
-                            .OrderBy(i => i.SortOrder)
-                            .ThenBy(i => i.Name)
-                            .Select(i => new SelectListItem { Value = i.ID.ToString(), Text = i.Name })
-                            .ToList(),
-                LookupTypeRuleGroups = new List<SelectListItem>() {
-                                            new SelectListItem { Text = LoadTypeRuleGroup.Promotion.ToString(), Value = ((int)LoadTypeRuleGroup.Promotion).ToString() },
-                                            new SelectListItem { Text = LoadTypeRuleGroup.Relation.ToString(), Value = ((int)LoadTypeRuleGroup.Relation).ToString() }
-                                        },
-                LookupTypeRuleGroupsEnabled = false,
-                Objects = convertToEditableFieldItems(
-                            Company.GetLoadTypeRulePromotionOptions().ToList()
-                          )
-            };
-
-            foreach (var o in model.Fields)
-            {
-                o.Selected = (o.Value == a.UniqueLoadTypeFieldID.ToString());
-            }
-            foreach (var o in model.LookupTypeRuleGroups)
-            {
-                o.Selected = (o.Value == ((int)a.LoadTypeRuleGroup).ToString());
-            }
-            foreach (var o in model.Objects)
-            {
-                o.Selected = (o.Value == string.Format("{0}|{1}", a.ObjectType, a.ObjectID));
-            }
-
-
-            return PartialView(model);
-        }
-
-        [HttpPut]
-        public JsonResult EditLoadTypeRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type rule");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<LoadTypeRule>(id);
-                if (model == null) throw new NotFoundException("bulk load type rule");
-
-                if (!Company.HasPermission(SystemObjects.LoadTypeRule, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.LoadTypeRuleGroup = (LoadTypeRuleGroup)Enum.Parse(typeof(LoadTypeRuleGroup), form["LookupTypeRuleGroup"]);
-
-                var loadTypeRuleGroup = (LoadTypeRuleGroup)Enum.Parse(typeof(LoadTypeRuleGroup), form["LookupTypeRuleGroup"]);
-                if (loadTypeRuleGroup == LoadTypeRuleGroup.Promotion)
-                {
-                    var split = form["Object"].Split('|');
-                    model.ObjectType = split[0];
-                    model.ObjectID = int.Parse(split[1]);
-                    model.UniqueLoadTypeFieldID = parseIntField(form, "UniqueLoadTypeFieldID");                
-                }
-
-                Company.SaveOrUpdate<LoadTypeRule>(model);
-
-                return jsonSuccess("Rule successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusMessage, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region LoadTypeRuleItem
-
-        #region Field Generation
-
-        /// <param name="id">LoadTypeRuleID</param>
-        public JsonResult LoadTypeRuleItem_AddFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.LoadType, 0, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-            
-            var list = new List<EditableField>();
-
-            var loadTypeRule = Company.GetById<LoadTypeRule>(id);
-
-            list.Add(new EditableField { FieldName = "LoadTypeRuleID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            
-            var sourceFields = Company.Filter<LoadTypeField>(i => i.LoadTypeID == loadTypeRule.LoadTypeID)
-                .OrderBy(i => i.SortOrder)
-                .ThenBy(i => i.Name)
-                .Select(i => new SelectListItem { Value = i.ID.ToString(), Text = i.Name })
-                .ToList();
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceLoadTypeFieldID", Name = "Source Field", FieldType = DataType.Lookup.ToString(), Items = sourceFields });
-
-            if (loadTypeRule.ObjectType != null)
-            {
-                var targetFields = convertToEditableFieldItems(Company.GetFieldNamesByObjectType(loadTypeRule.ObjectType, loadTypeRule.ObjectID).ToList());
-                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "TargetFieldName", Name = "Target Field", FieldType = DataType.Lookup.ToString(), Items = targetFields });            
-            }
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LoadTypeRuleItemID</param>
-        public JsonResult LoadTypeRuleItem_DeleteFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.LoadTypeRule, id, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<LoadTypeRuleItem>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">LoadTypeRuleItemID</param>
-        public JsonResult LoadTypeRuleItem_EditFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.LoadTypeRule, id, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<LoadTypeRuleItem>(id, i => i.LoadTypeRule);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            var sourceFields = Company.Filter<LoadTypeField>(i => i.LoadTypeID == a.LoadTypeRule.LoadTypeID)
-                .OrderBy(i => i.SortOrder)
-                .ThenBy(i => i.Name)
-                .Select(i => new SelectListItem { Value = i.ID.ToString(), Text = i.Name })
-                .ToList();
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceLoadTypeFieldID", Name = "Source Field", FieldType = DataType.Lookup.ToString(), Items = sourceFields, Value = a.SourceLoadTypeFieldID.ToString() });
-
-            if (a.LoadTypeRule.ObjectType != null)
-            {
-                var targetFields = convertToEditableFieldItems(Company.GetFieldNamesByObjectType(a.LoadTypeRule.ObjectType, a.LoadTypeRule.ObjectID).ToList());
-                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "TargetFieldName", Name = "Target Field", FieldType = DataType.Lookup.ToString(), Items = targetFields, Value = string.Format("{0}|{1}", a.TargetFieldName, a.IsCustomField) });
-            }
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddLoadTypeRuleItem(int id)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadTypeRuleItem,
-                FieldUri = "/form/LoadTypeRuleItem_AddFields?id=" + id,
-                FormTitle = "Add Load Type Rule Item",
-                FormUri = "/form/AddLoadTypeRuleItem",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPost]
-        public JsonResult AddLoadTypeRuleItem(FormCollection form)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.LoadType, 0, Claim.Create))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type rule item");
-
-                var loadTypeRuleID = parseIntField(form, "LoadTypeRuleID");
-                var sourceLoadTypeFieldID = parseIntField(form, "SourceLoadTypeFieldID");
-
-                var rule = Company.GetById<LoadTypeRule>(loadTypeRuleID);
-
-                var a = new LoadTypeRuleItem
-                {
-                    LoadTypeRuleID = loadTypeRuleID,
-                    SourceLoadTypeFieldID = sourceLoadTypeFieldID,
-                    TargetFieldName = "Name"
-                };
-
-                if (rule.ObjectType != null)
-                {
-                    var split = form["TargetFieldName"].Split('|');
-                    a.TargetFieldName = split[0];
-                    a.IsCustomField = bool.Parse(split[1]);                
-                }
-
-                Company.SaveOrUpdate<LoadTypeRuleItem>(a);
-
-                return jsonSuccess("Rule Item successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult DeleteLoadTypeRuleItem(int id)
-        {
-            var a = Company.GetById<LoadTypeRuleItem>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadTypeRuleItem,
-                FieldUri = string.Format("/form/LoadTypeRuleItem_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Rule Item"),
-                FormUri = "/form/DeleteLoadTypeRuleItem",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteLoadTypeRuleItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type rule item");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<LoadTypeRuleItem>(id);
-                if (model == null) throw new NotFoundException("bulk load type rule item");
-
-                if (!Company.HasPermission(SystemObjects.LoadType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<LoadTypeRuleItem>(model);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult EditLoadTypeRuleItem(int id)
-        {
-            var a = Company.GetById<LoadTypeRuleItem>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.LoadTypeRuleItem,
-                FieldUri = string.Format("/form/LoadTypeRuleItem_EditFields?id={0}", id),
-                FormTitle = "Edit Rule Item",
-                FormUri = "/form/EditLoadTypeRuleItem",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut]
-        public JsonResult EditLoadTypeRuleItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("bulk load type rule item");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<LoadTypeRuleItem>(id, i => i.LoadTypeRule);
-                if (model == null) throw new NotFoundException("bulk load type rule item");
-
-                if (!Company.HasPermission(SystemObjects.LoadTypeRule, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var sourceLoadTypeFieldID = parseIntField(form, "SourceLoadTypeFieldID");
-                model.SourceLoadTypeFieldID = sourceLoadTypeFieldID;
-
-                if (model.LoadTypeRule.ObjectType != null)
-                {
-                    var split = form["TargetFieldName"].Split('|');
-                    model.TargetFieldName = split[0];
-                    model.IsCustomField = bool.Parse(split[1]);                
-                }
-
-                Company.SaveOrUpdate<LoadTypeRuleItem>(model);
-
-                return jsonSuccess("Rule Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusMessage, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
 
         #endregion
 
