@@ -49,7 +49,7 @@
                             $('#' + this.id).jqxNumberInput('val', '');
                             break;
                         case 'bool':
-                            $('#' + this.id).jqxCheckBox(val, false);
+                            $('#' + this.id).jqxCheckBox('val', false);
                             break;
                         case 'list':
                             $('#' + this.id).jqxDropDownList('clearSelection');

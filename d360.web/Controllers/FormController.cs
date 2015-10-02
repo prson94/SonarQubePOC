@@ -5935,6 +5935,7 @@ namespace d360.web.Controllers
             switch (type)
             {
                 case "ArtifactType":
+                case "AttributeType":
                 case "DomainType":
                 case "TaxonomyType":
                     fieldTypeNames = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == id).OrderBy(i => i.SortOrder).Select(i => i.Name).ToList();
@@ -5954,10 +5955,20 @@ namespace d360.web.Controllers
                     if (artifactType.ParentID.HasValue)
                         fieldTypeNames.Insert(3, string.Format("Parent {0}", artifactType.Parent.Name));
                     break;
+                case "AttributeType":
+                    fieldTypeNames.Insert(0, "Owner Type");
+                    fieldTypeNames.Insert(1, "Owner Type Name");
+                    fieldTypeNames.Insert(2, "Owner Name");
+                    break;
+                case "Domain":
+                    fieldTypeNames.Insert(0, "Code");
+                    fieldTypeNames.Insert(1, "Name");
+                    fieldTypeNames.Insert(2, "Description");
+                    break;
                 case "DomainType":
                     fieldTypeNames.Insert(0, "Name");
                     fieldTypeNames.Insert(1, "Description");
-                    fieldTypeNames.Insert(2, "Domain Group");
+                    fieldTypeNames.Insert(2, "Reference Group");
                     break;
                 case "IntersectType":
                     var intersectType = Company.Query<dynamic>(@"select	SD.Name as S, TD.Name as T
@@ -5990,7 +6001,17 @@ namespace d360.web.Controllers
                 case "P": // Promotion
                     #region
                     sql = @"
-select 'ArtifactType|' + cast(ID as varchar(10)) as value, Name as title from ArtifactType order by Name";
+select * from (
+select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title from AttributeType where ParentID is null
+union
+select 'ArtifactType|' + cast(ID as varchar(10)) as value, 'Glossary: ' + Name as title from ArtifactType
+union
+select 'TaxonomyType|' + cast(ID as varchar(10)) as value, 'Model: ' + Name as title from TaxonomyType
+union
+select 'DomainType|' + cast(ID as varchar(10)) as value, 'Reference List: ' + Name as title from DomainType
+union
+select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' + T.Name  + ' - ' + D.Name as title from Domain D inner join DomainType T on T.ID = D.DomainTypeID
+) O order by title";
                     break;
                     #endregion
                 case "R": // Relation
@@ -6000,7 +6021,7 @@ select 'ArtifactType|' + cast(ID as varchar(10)) as value, Name as title from Ar
                     break;
                     #endregion
             }
-            models = Company.Query<OptionModel>(sql);
+            models = Company.Query<OptionModel>(sql).OrderBy(i => i.title);
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -6429,6 +6450,7 @@ select 'ArtifactType|' + cast(ID as varchar(10)) as value, Name as title from Ar
             }
         }
 
+        [HttpGet]
         public ActionResult DeleteLookupType(int id)
         {
             var a = Company.GetById<LookupType>(id);
@@ -10977,11 +10999,11 @@ order by	C.TextPath,
 
             model.ExistenceCheckItems = Company.GetStatisticTypeExistenceCheckOptions()
                 .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .ToList();
+                .OrderBy(i => i.Text).ToList();
 
             model.CountCheckItems = Company.GetStatisticTypeCountCheckOptions()
                 .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .ToList();
+                .OrderBy(i => i.Text).ToList();
 
             model.PropertyExistenceCheckItems.Add(new SelectListItem { Text = "Description", Value = "Description" });
 
@@ -10989,11 +11011,11 @@ order by	C.TextPath,
 
             model.RelationshipCheckItems = Company.GetStatisticTypeRelationshipCheckOptions()
                 .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .ToList();
+                .OrderBy(i => i.Text).ToList();
 
             model.RollupCheckItems = Company.GetStatisticTypeRollupCheckOptions()
                 .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .ToList();
+                .OrderBy(i => i.Text).ToList();
 
             #endregion
 
@@ -11958,8 +11980,9 @@ order by TextPath
 
             var list = new List<EditableField>();
             var a = new TaxonomyType();
+            var classes = Company.Table<TaxonomyTypeClass>().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.Class), FieldDescription = a.GetDescription(i => i.Class), FieldType = DataType.Lookup.ToString(), Items = Enums.GetEnumValuesAsDictionary<TaxonomyTypeClass>().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList() });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.TaxonomyTypeClassID), FieldDescription = a.GetDescription(i => i.TaxonomyTypeClassID), FieldType = DataType.Lookup.ToString(), Items = classes });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MaximumDepth", Name = a.GetName(i => i.MaximumDepth), RangeMin = 1, RangeMax = 25, FieldDescription = a.GetDescription(i => i.MaximumDepth), FieldType = DataType.Number.ToString() });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
             loadIconFields(list, 4);
@@ -11991,14 +12014,14 @@ order by TextPath
             var list = new List<EditableField>();
             var a = Company.GetById<TaxonomyType>(id);
             var style = Company.GetObjectStyle(SystemObjects.TaxonomyType, id);
-
+            var classes = Company.Table<TaxonomyTypeClass>().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
             var maxLevel = Company.Query<int>("select max([Level]) from Taxonomy where TaxonomyTypeID = @t", new { t = id }).SingleOrDefault();
 
             var maxDepthNotification = (maxLevel > 1) ? string.Format("  The current depth of this model type's hierarchy is {0} levels, so you may not set a Maxiumum Depth less than that.", maxLevel) : "";
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.Class), FieldDescription = a.GetDescription(i => i.Class), FieldType = DataType.Lookup.ToString(), Value = ((int)a.Class).ToString(), Items = Enums.GetEnumValuesAsDictionary<TaxonomyTypeClass>().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList() });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.TaxonomyTypeClassID), FieldDescription = a.GetDescription(i => i.TaxonomyTypeClassID), FieldType = DataType.Lookup.ToString(), Value = a.TaxonomyTypeClassID.ToString(), Items = classes });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MaximumDepth", Name = a.GetName(i => i.MaximumDepth), RangeMin = maxLevel, RangeMax = 25, FieldDescription = a.GetDescription(i => i.MaximumDepth) + maxDepthNotification, FieldType = DataType.Number.ToString(), Value = a.MaximumDepth.HasValue ? a.MaximumDepth.Value.ToString() : "5" });
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
             loadIconFields(list, 4, style);
@@ -12040,7 +12063,7 @@ order by TextPath
                 {
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
-                    Class = (TaxonomyTypeClass)Enum.Parse(typeof(TaxonomyTypeClass), form["Class"]),
+                    TaxonomyTypeClassID = parseIntField(form, "Class"),
                     MaximumDepth = parseIntField(form, "MaximumDepth")
                 };
 
@@ -12154,8 +12177,8 @@ order by TextPath
 
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
-                model.Class = (TaxonomyTypeClass)Enum.Parse(typeof(TaxonomyTypeClass), form["Class"]);
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
+                model.TaxonomyTypeClassID = parseIntField(form, "Class");
 
                 var currentMaxLevel = Company.Query<int>("select max([Level]) from Taxonomy where TaxonomyTypeID = @t", new { t = id }).SingleOrDefault();
 
@@ -12178,6 +12201,201 @@ order by TextPath
                 Company.SaveChanges();
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, model.ID, form, model.Name);
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region TaxonomyTypeClass
+
+        #region Field Generation
+
+        public JsonResult TaxonomyTypeClass_AddFields()
+        {
+            if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = new TaxonomyTypeClass();
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            a = null;
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">TaxonomyTypeClassID</param>
+        public JsonResult TaxonomyTypeClass_DeleteFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<TaxonomyTypeClass>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">TaxonomyTypeClassID</param>
+        public JsonResult TaxonomyTypeClass_EditFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<TaxonomyTypeClass>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddTaxonomyTypeClass()
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.TaxonomyTypeClass,
+                FieldUri = "/form/TaxonomyTypeClass_AddFields",
+                FormTitle = "Add Model Class",
+                FormUri = "/form/AddTaxonomyTypeClass",
+                FormMethod = "POST",
+                FormSize = EditableForm.FormSize_Small
+            };
+
+            return PartialView("OverlayEditableForm", model);
+        }
+
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddTaxonomyTypeClass(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("taxonomy type class");
+
+                var a = new TaxonomyTypeClass
+                {
+                    Name = parseTextField(form, "Name")
+                };
+
+                Company.SaveOrUpdate<TaxonomyTypeClass>(a);
+
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeleteTaxonomyTypeClass(int id)
+        {
+            var a = Company.GetById<TaxonomyTypeClass>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.TaxonomyTypeClass,
+                FieldUri = "/form/TaxonomyTypeClass_DeleteFields?id=" + id,
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
+                FormDescription = Resources.FormInfo.TaxonomyType_Remove,
+                FormUri = "/form/DeleteTaxonomyTypeClass",
+                FormMethod = "DELETE",
+                FormSize = EditableForm.FormSize_Small
+            };
+
+            return PartialView("OverlayDeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteTaxonomyTypeClass(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("taxonomy type class");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<TaxonomyTypeClass>(id);
+                if (model == null) throw new NotFoundException("taxonomy type class");
+
+                if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<TaxonomyTypeClass>(i => i.ID == id);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult EditTaxonomyTypeClass(int id)
+        {
+            var a = Company.GetById<TaxonomyTypeClass>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.TaxonomyTypeClass,
+                FieldUri = "/form/TaxonomyTypeClass_EditFields?id=" + id,
+                FormTitle = "Edit " + a.Name,
+                FormUri = "/form/EditTaxonomyTypeClass",
+                FormMethod = "PUT",
+                FormSize = EditableForm.FormSize_Small
+            };
+
+            return PartialView("OverlayEditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditTaxonomyTypeClass(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("taxonomy type class");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<TaxonomyTypeClass>(id);
+                if (model == null) throw new NotFoundException("taxonomy type class");
+
+                if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name");
+
+                Company.SaveOrUpdate<TaxonomyTypeClass>(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
             }

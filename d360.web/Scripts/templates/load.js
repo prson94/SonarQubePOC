@@ -117,7 +117,7 @@
                     $("#LoadsTile").jqxGrid({
                         altrows: true,
                         width: grid_width,
-                        pagesizeoptions: ['10', '20', '50'],
+                        pagesizeoptions: ['5', '10', '20'],
                         pagesize: 20,
                         autoheight: true,
                         sortable: true,
@@ -127,9 +127,9 @@
                         source: adapterLoads,
                         theme: list_theme,
                         columns: [
-                            { datafield: "Action", text: "Action" },
-                            { datafield: "ObjectName", text: "Target" },
-                            { datafield: "DateCompleted", text: "Date Completed", cellsformat: 'f' }
+                            { datafield: "Action", text: "Action", filtertype: 'checkedlist', width: '25%' },
+                            { datafield: "ObjectName", text: "Target", filtertype: 'checkedlist' },
+                            { datafield: "DateCompleted", text: "Date Completed", cellsformat: 'MM/dd/yy h:mm tt', filtertype: 'range', width: '30%' }
                         ]
                     });
 

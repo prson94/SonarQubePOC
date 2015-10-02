@@ -2607,6 +2607,12 @@
         <member name="M:d360.web.Controllers.FormController.TaxonomyType_EditFields(System.Int32)">
             <param name="id">TaxonomyTypeID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeClass_DeleteFields(System.Int32)">
+            <param name="id">TaxonomyTypeClassID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.TaxonomyTypeClass_EditFields(System.Int32)">
+            <param name="id">TaxonomyTypeClassID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.TaxonomyTypeLevel_DeleteFields(System.Int32,System.Int32)">
             <param name="id">TaxonomyTypeID</param>
         </member>

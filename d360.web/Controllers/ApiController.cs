@@ -1198,6 +1198,11 @@ namespace d360.web.Controllers
                             reportNode = appendReportMenu(type, 0, type, 0);
                             if (reportNode != null) list.Add(reportNode);
                         }
+
+                        if (context == "default")
+                        {
+                            list.Add(new PageActionItem { Context = "TaxonomyTypeClasses", Icon = "tags", Title = "Classes", Uri = "/overlays/TaxonomyTypeClasses" });
+                        }
                     }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
@@ -1831,6 +1836,12 @@ from	    ResponsibilityTypeHierarchy H
         public IQueryable<LookupAllocation> GetAllocationsByLookupType(int id)
         {
             return Company.Filter<LookupAllocation>(i => i.LookupObjectType == "Lookup" && i.LookupTypeID == id);
+        }
+
+        [Route("TaxonomyTypeClasses")]
+        public IQueryable<TaxonomyTypeClass> GetTaxonomyTypeClasses()
+        {
+            return Company.Table<TaxonomyTypeClass>();
         }
 
         #endregion
@@ -2728,6 +2739,11 @@ from	    ResponsibilityTypeHierarchy H
                         list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Date Started", FieldName = "LoadDateStarted", FieldDescription = "", Value = load.DateStarted.FormatNullableDate() });
                         list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "Date Completed", FieldName = "LoadDateCompleted", FieldDescription = "", Value = load.DateCompleted.FormatNullableDate() });
                         list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = "Notes", FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" });
+
+                        list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = "Total", FieldName = "LoadTotal", FieldDescription = "", Value = load.Total.ToString() });
+                        list.Add(new ReadOnlyField { Row = 4, Column = 2, Name = "# Incompletes", FieldName = "LoadIncomplete", FieldDescription = "", Value = load.Incomplete.ToString() });
+                        list.Add(new ReadOnlyField { Row = 5, Column = 1, Name = "# Successes", FieldName = "LoadSuccess", FieldDescription = "", Value = load.Success.ToString() });
+                        list.Add(new ReadOnlyField { Row = 5, Column = 2, Name = "# Errors", FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() });
                     }
                     load = null;
                     break;

@@ -64,6 +64,8 @@
             try {
                 switch (data.context) {
                     case contextList.LookupType:
+                        selectedID = data.id;
+                        $("#List").one("bindingcomplete", listBindingComplete);
                         $('#List').jqxGrid('updatebounddata');
                         break;
                 }

@@ -51142,7 +51142,7 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                             $('#' + this.id).jqxNumberInput('val', '');
                             break;
                         case 'bool':
-                            $('#' + this.id).jqxCheckBox(val, false);
+                            $('#' + this.id).jqxCheckBox('val', false);
                             break;
                         case 'list':
                             $('#' + this.id).jqxDropDownList('clearSelection');
@@ -53573,7 +53573,7 @@ function load(app, pageViewModel, templatePath, contextList) {
                     $("#LoadsTile").jqxGrid({
                         altrows: true,
                         width: grid_width,
-                        pagesizeoptions: ['10', '20', '50'],
+                        pagesizeoptions: ['5', '10', '20'],
                         pagesize: 20,
                         autoheight: true,
                         sortable: true,
@@ -53583,9 +53583,9 @@ function load(app, pageViewModel, templatePath, contextList) {
                         source: adapterLoads,
                         theme: list_theme,
                         columns: [
-                            { datafield: "Action", text: "Action" },
-                            { datafield: "ObjectName", text: "Target" },
-                            { datafield: "DateCompleted", text: "Date Completed", cellsformat: 'f' }
+                            { datafield: "Action", text: "Action", filtertype: 'checkedlist', width: '25%' },
+                            { datafield: "ObjectName", text: "Target", filtertype: 'checkedlist' },
+                            { datafield: "DateCompleted", text: "Date Completed", cellsformat: 'MM/dd/yy h:mm tt', filtertype: 'range', width: '30%' }
                         ]
                     });
 
@@ -53703,6 +53703,8 @@ function lookups_admin(app, pageViewModel, templatePath, contextList) {
             try {
                 switch (data.context) {
                     case contextList.LookupType:
+                        selectedID = data.id;
+                        $("#List").one("bindingcomplete", listBindingComplete);
                         $('#List').jqxGrid('updatebounddata');
                         break;
                 }

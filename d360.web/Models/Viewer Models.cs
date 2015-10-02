@@ -200,6 +200,10 @@ namespace d360.web.Models
 
                 switch (ft.Type)
                 {
+                    case "Boolean":
+                        value = form[ft.Name];
+                        value = (value == "on").ToString();
+                        break;
                     case "Html":
                         value = Server.HtmlDecode(form[ft.Name]);
                         break;

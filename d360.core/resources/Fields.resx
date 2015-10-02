@@ -847,10 +847,10 @@
     <value>Version</value>
   </data>
   <data name="Class_Description" xml:space="preserve">
-    <value>The class of catalog you are configuring, such as Informational or Organizational.</value>
+    <value>The high-level classification of the model you are adding/editing.  You may configure these classes under Model Administration.</value>
   </data>
   <data name="Class_Name" xml:space="preserve">
-    <value>Catalog Class</value>
+    <value>Model Class</value>
   </data>
   <data name="ControlsOwnership_Description" xml:space="preserve">
     <value>All ownership propagates from these models to any related artifacts.  Only one catalog can control ownership.</value>

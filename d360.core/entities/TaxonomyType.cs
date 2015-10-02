@@ -31,7 +31,7 @@ namespace d360.core.entities
 
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Class_Name", Description = "Class_Description")]
-        public TaxonomyTypeClass Class { get; set; }
+        public int TaxonomyTypeClassID { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
@@ -40,12 +40,13 @@ namespace d360.core.entities
 
         #region Collection Properties
 
-        [IgnoreDataMember]
-        [ForeignKey("TaxonomyTypeID")]
+        [IgnoreDataMember, ForeignKey("TaxonomyTypeClassID")]
+        public virtual TaxonomyTypeClass TaxonomyTypeClass { get; set; }
+
+        [IgnoreDataMember, ForeignKey("TaxonomyTypeID")]
         public virtual ICollection<Taxonomy> Taxonomies { get; set; }
 
-        [IgnoreDataMember]
-        [ForeignKey("TaxonomyTypeID")]
+        [IgnoreDataMember, ForeignKey("TaxonomyTypeID")]
         public virtual ICollection<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
 
         #endregion

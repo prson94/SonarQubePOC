@@ -124,6 +124,14 @@ namespace d360.core.entities
         public DateTime? DateCompleted { get; set; }
         [DataMember]
         public string Action { get; set; }
+        [DataMember]
+        public int Success { get; set; }
+        [DataMember]
+        public int Error { get; set; }
+        [DataMember]
+        public int Incomplete { get; set; }
+        [DataMember]
+        public int Total { get; set; }
     }
 
     public class TopNavigation

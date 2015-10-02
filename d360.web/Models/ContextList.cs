@@ -90,6 +90,7 @@ using System.Web;
 
         public const string Taxonomy = "taxonomyform";
         public const string TaxonomyType = "taxonomytypeform";
+        public const string TaxonomyTypeClass = "taxonomytypeclassform";
         public const string TaxonomyTypeLevel = "taxonomytypelevelform";
         public const string TooltipTemplate = "tooltiptemplateform";
 

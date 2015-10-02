@@ -97,14 +97,11 @@ SELECT	'#Models' as MenuID,
 						dbo.GenerateObjectUrl('TaxonomyType', ID, 0)  As url,
 						0 as feature
 				FROM	TaxonomyType
-				WHERE	Class = FT.ID
+				WHERE	TaxonomyTypeClassID = FT.ID
 				FOR XML PATH('nav'), TYPE
 				) AS items	
 		FROM	(
-				select 1 as ID, 'Informational' AS name where exists(select 1 from TaxonomyType where Class = 1) 
-				union select 2 as ID, 'Organizational' AS name where exists(select 1 from TaxonomyType where Class = 2)
-				union select 3 as ID, 'Other' AS name where exists(select 1 from TaxonomyType where Class = 3)
-				union select 4 as ID, 'Vendor' AS name where exists(select 1 from TaxonomyType where Class = 4)
+                select top 100 percent ID, name from TaxonomyTypeClass C where exists(select 1 from TaxonomyType where TaxonomyTypeClassID = C.ID) order by name
 				) FT
 		FOR XML PATH('nav'), TYPE
 		) AS Items

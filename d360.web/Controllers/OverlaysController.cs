@@ -210,5 +210,10 @@ where A.AuditID = {0}", auditID);
         {
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
+
+        public ActionResult TaxonomyTypeClasses()
+        {
+            return PartialView();
+        }
     }
 }

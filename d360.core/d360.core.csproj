@@ -105,6 +105,7 @@
     <Compile Include="entities\AttributeTypeCategory.cs" />
     <Compile Include="entities\ReportTile.cs" />
     <Compile Include="entities\ReportLayout.cs" />
+    <Compile Include="entities\TaxonomyTypeClass.cs" />
     <Compile Include="entities\Views\FusionExecutionResultDetail.cs" />
     <Compile Include="entities\CompanyDomainSetting.cs" />
     <Compile Include="entities\DomainSetting.cs" />
@@ -289,7 +290,6 @@
     <Compile Include="enums\ResponsibilityTypeGroup.cs" />
     <Compile Include="enums\StatisticCheckType.cs" />
     <Compile Include="enums\SystemObjects.cs" />
-    <Compile Include="enums\TaxonomyTypeClass.cs" />
     <Compile Include="enums\TemplateAction.cs" />
     <Compile Include="enums\UserIdentifierType.cs" />
     <Compile Include="exceptions\BaseException.cs" />

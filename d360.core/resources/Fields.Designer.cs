@@ -610,7 +610,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The class of catalog you are configuring, such as Informational or Organizational..
+        ///   Looks up a localized string similar to The high-level classification of the model you are adding/editing.  You may configure these classes under Model Administration..
         /// </summary>
         public static string Class_Description {
             get {
@@ -619,7 +619,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Catalog Class.
+        ///   Looks up a localized string similar to Model Class.
         /// </summary>
         public static string Class_Name {
             get {

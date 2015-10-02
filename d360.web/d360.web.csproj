@@ -1981,6 +1981,7 @@
     <Content Include="Views\Overlays\LookupTypeUsage.cshtml" />
     <Content Include="Views\Form\SourceToTargetEditForm.cshtml" />
     <Content Include="Views\Form\IntersectTypeEditForm.cshtml" />
+    <Content Include="Views\Overlays\TaxonomyTypeClasses.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

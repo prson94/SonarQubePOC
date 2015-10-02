@@ -304,6 +304,8 @@ namespace d360.model
 
         public DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
 
+        public DbSet<TaxonomyTypeClass> TaxonomyTypeClasses { get; set; }
+
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 
         public DbSet<TooltipTemplate> TooltipTemplates { get; set; }
@@ -984,9 +986,18 @@ from	DomainType
 			when 'P' then 'Promotion'
 			when 'R' then 'Relation'
 			when 'U' then 'Unrelation'
-		end as [Action]
+		end as [Action],
+        S.C as Success,
+        E.C as Error,
+        I.C as Incomplete,
+		T.C as Total
 from	[Load] L
-		inner join cache.ObjectDetails D on D.[Object] = L.[Object] and D.ObjectID = L.ObjectID";
+		inner join cache.ObjectDetails D on D.[Object] = L.[Object] and D.ObjectID = L.ObjectID
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T 
+";
        
         public IEnumerable<LoadDetail> GetLoadDetails()
         {
@@ -2745,7 +2756,7 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     { 
                         case EntityState.Added:
-                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
                             var any = (

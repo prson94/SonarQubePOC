@@ -124,11 +124,10 @@
         self.SurveyType = "@(ContextList.SurveyType)";
 
         self.Synonym = "@(ContextList.Synonym)";
-        self.SynonymType = "@(ContextList.SynonymType)";
-        self.SynonymTypeRelation = "@(ContextList.SynonymTypeRelation)";
 
         self.Taxonomy = "@(ContextList.Taxonomy)";
         self.TaxonomyType = "@(ContextList.TaxonomyType)";
+        self.TaxonomyTypeClass = "@(ContextList.TaxonomyTypeClass)";
         self.TaxonomyTypeLevel = "@(ContextList.TaxonomyTypeLevel)";
         self.TooltipTemplate = "@(ContextList.TooltipTemplate)";
 
@@ -453,6 +452,7 @@
                         case contextList.AttributeTypeCategory:
                         case contextList.ResponsibilityTypeHierarchy:
                         case contextList.SourceToTarget:
+                        case contextList.TaxonomyTypeClass:
                             break;
                         default:
                             removeOverlay();
@@ -482,6 +482,7 @@
                         case contextList.AttributeTypeCategory:
                         case contextList.ResponsibilityTypeHierarchy:
                         case contextList.SourceToTarget:
+                        case contextList.TaxonomyTypeClass:
                             break;
                         default:
                             removeOverlay();
@@ -564,6 +565,7 @@
                             case contextList.ResponsibilityTransformation:
                             case contextList.ResponsibilityTypeHierarchy:
                             case contextList.SourceToTarget:
+                            case contextList.TaxonomyTypeClass:
                                 break;
                             default:
                                 var overlaybg = $('<div id="OverlayBackground" style="display:none"></div>');

@@ -121,7 +121,9 @@ namespace d360.core
         [Description("Fusion Execution"), AllowSurvey(false)]
         FusionExecution = 55,
         [Description("Workflow Relation"), AllowSurvey(false)]
-        WorkflowTypeRelation = 56
+        WorkflowTypeRelation = 56,
+        [Description("Taxonomy Type Class"), AllowSurvey(false)]
+        TaxonomyTypeClass = 57
     }
 
     public class SystemObjectInfo
