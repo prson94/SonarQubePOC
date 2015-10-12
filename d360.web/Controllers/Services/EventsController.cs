@@ -135,16 +135,12 @@ namespace d360.web.Controllers.Services
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add a rule.");
 
-            if (Company.GetById<Policy>(model.PolicyID) == null)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format("The Policy does not exist for ID: {0}.", model.PolicyID));
-
             try
             {
                 var rule = new Rule
                 {
                     Description = model.Description,
                     Name = model.Name,
-                    PolicyID = model.PolicyID,
                     RuleType = model.RuleType
                 };
 

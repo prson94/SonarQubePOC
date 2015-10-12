@@ -5,7 +5,7 @@
     var diagramControlID = controlID + "_diagram";
     controlID = '#' + controlID;
 
-    html = '<header>Environment Details<div id="' + toolsControlID + '"></div></header>';
+    html = '<header>Lifecycle<div id="' + toolsControlID + '"></div></header>';
     html += '<div id="' + diagramControlID + '"></div>';
     $(controlID).html(html);
     diagramControlID = '#' + diagramControlID;

@@ -919,7 +919,7 @@ namespace d360.web.Controllers
                     Policy policy = null;
                     if (id > 0) 
                     {
-                        policy = Company.GetById<Policy>(id, i => i.Children, i => i.Rules);
+                        policy = Company.GetById<Policy>(id, i => i.Children);
                     }
 
                     if (hasPermission(permissions, Claim.Create, ClaimObject.Root) || hasPermission(permissions, Claim.Create, ClaimObject.Governance))
@@ -947,18 +947,51 @@ namespace d360.web.Controllers
                         {
                             list.Add(new PageActionItem { Context = ContextList.Policy, Icon = Resources.Actions.Edit_Icon, Title = Resources.Actions.Edit, Uri = string.Format("/form/EditPolicy?id={0}", id) });
                         }
-                        if (policy.Children.Count == 0 && policy.Rules.Count == 0)
+                        if (hasPermission(permissions, Claim.Delete, ClaimObject.Root))
                         {
-                            if (hasPermission(permissions, Claim.Delete, ClaimObject.Root))
-                            {
-                                list.Add(new PageActionItem { Context = ContextList.Policy, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/DeletePolicy?id={0}", id) });
-                            }                        
+                            list.Add(new PageActionItem { Context = ContextList.Policy, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/DeletePolicy?id={0}", id) });
                         }
                         list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
                     }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
-                    #endregion
+                #endregion
+                case SystemObjects.PolicyType:
+                    #region Actions
+                    if (hasPermission(permissions, Claim.Create, ClaimObject.Root) || hasPermission(permissions, Claim.Create, ClaimObject.Governance))
+                    {
+                        //addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
+                        // if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
+                        //     list.Add(new PageActionItem { Context = ContextList.TaxonomyType, Icon = Resources.Actions.Add_Icon, Uri = "/form/catalogs/add" });
+
+                        //if (id > 0)
+                        //{
+                        //    //if (hasPermission(permissions, Claim.Create, ClaimObject.Governance))
+                        //    //{
+                        //    //    //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityTypeClaim, Icon = "key", Title = Resources.Actions.AddClaim_Text, Uri = string.Format("/form/AddResponsibilityTypeObjectClaim?type={0}&id={1}", type.ToString(), id) });
+                        //    //    loadResponsiblityTypeAddMenu(type, id, addItem, true);
+                        //    //}
+
+                        //    //list.Add(addItem);
+
+                        //    reportNode = appendReportMenu(type, id, SystemObjects.TaxonomyType, id);
+                        //    if (reportNode != null) list.Add(reportNode);
+                        //}
+                        //else
+                        //{
+                        //    //list.Add(addItem);
+                        //    reportNode = appendReportMenu(type, 0, type, 0);
+                        //    if (reportNode != null) list.Add(reportNode);
+                        //}
+
+                        if (context == "default")
+                        {
+                            list.Add(new PageActionItem { Context = "PolicyTypeClasses", Icon = "tags", Title = "Classes", Uri = "/overlays/PolicyTypeClasses" });
+                        }
+                    }
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    break;
+                #endregion
                 case SystemObjects.Report:
                     #region Actions
                     //if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
@@ -1838,6 +1871,12 @@ from	    ResponsibilityTypeHierarchy H
             return Company.Filter<LookupAllocation>(i => i.LookupObjectType == "Lookup" && i.LookupTypeID == id);
         }
 
+        [Route("PolicyTypeClasses")]
+        public IQueryable<PolicyTypeClass> GetPolicyTypeClasses()
+        {
+            return Company.Table<PolicyTypeClass>();
+        }
+
         [Route("TaxonomyTypeClasses")]
         public IQueryable<TaxonomyTypeClass> GetTaxonomyTypeClasses()
         {
@@ -1847,6 +1886,24 @@ from	    ResponsibilityTypeHierarchy H
         #endregion
 
         #region Relationships
+
+        [HttpGet, Route("relationshiptypes/{id}/roles")]
+        public HttpResponseMessage GetRolesByIntersectType(int id)
+        {
+            return Request.CreateResponse(HttpStatusCode.OK, (from o in Company.IntersectTypeRoles
+                    join r in Company.IntersectTypeRoleRelations
+                    on o.ID equals r.IntersectTypeRoleID
+                    where r.IntersectTypeID == id
+                    orderby o.Name
+                    select new
+                    {
+                        o.ID,
+                        r.IntersectTypeID,
+                        o.Name,
+                        r.Side1Label,
+                        r.Side2Label
+                    }));
+        }
 
         [HttpGet, Route("RelationshipObjectsByType")]
         public List<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id)//, SystemObjects targetObject)
@@ -2134,6 +2191,28 @@ from	    ResponsibilityTypeHierarchy H
 
         #endregion
 
+        #region Policies
+
+        [Route("policytypes")]
+        public IQueryable<PolicyType> GetPolicyTypes()
+        {
+            return Company.Table<PolicyType>();
+        }
+
+        [Route("policytypes/{id:int}")]
+        public PolicyType GetPolicyType(int id)
+        {
+            return Company.GetById<PolicyType>(id);
+        }
+
+        [Route("policytypes/{id:int}/policies")]
+        public IQueryable<Policy> GetPoliciesByType(int id)
+        {
+            return Company.Filter<Policy>(i => i.PolicyTypeID == id);
+        }
+
+        #endregion
+
         #region Reports
 
         [Route("reports/mostactiveusers")]
@@ -2209,6 +2288,16 @@ from	    ResponsibilityTypeHierarchy H
         public IEnumerable<RedFlagSummariesByResource> GetResource()
         {
             return Company.GetRedFlagSummariesByCurrentResource();
+        }
+
+        #endregion
+
+        #region Rules
+
+        [Route("rules")]
+        public IQueryable<Rule> GetRules()
+        {
+            return Company.Table<Rule>();
         }
 
         #endregion
@@ -2367,13 +2456,12 @@ from	    ResponsibilityTypeHierarchy H
                     #endregion
                 case SystemObjects.Rule:
                     #region Fields
-                    var rule = Company.GetById<Rule>(id, i => i.Policy);
+                    var rule = Company.GetById<Rule>(id);
                     if (rule != null)
                     {
                         list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = rule.ID.ToString() });
                         list.Add(new DisplayField { FriendlyName = rule.GetName(i => i.Name), Name = "Name", Value = rule.Name });
                         list.Add(new DisplayField { FriendlyName = rule.GetName(i => i.Description), Name = "Description", Value = rule.Description });
-                        list.Add(new DisplayField { FriendlyName = rule.GetName(i => i.TextPath), Name = "TextPath", Value = rule.TextPath });
                         list.Add(new DisplayField { FriendlyName = rule.GetName(i => i.RuleType), Name = "RuleType", Value = rule.RuleType.ToString() });
                     }
                     rule = null;
@@ -2761,12 +2849,11 @@ from	    ResponsibilityTypeHierarchy H
                     #endregion
                 case SystemObjects.Policy:
                     #region Fields
-                    var policy = Company.GetById<Policy>(id, i => i.Children, i => i.Rules);
+                    var policy = Company.GetById<Policy>(id, i => i.Children);
                     if (policy != null)
                     {
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = policy.GetName(i => i.Name), FieldName = "PolicyName", FieldDescription = policy.GetDescription(i => i.Description), Value = policy.Name });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = "# Sub-policies", FieldName = "PolicySubPolicyCount", Value = policy.Children.Count.ToString() });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 3, Name = "# Rules", FieldName = "PolicyRuleCount", Value = policy.Rules.Count.ToString() });
 
                         list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = policy.GetName(i => i.TextPath), FieldName = "PolicyTextPath", FieldDescription = policy.GetDescription(i => i.TextPath), Value = policy.TextPath });
 
@@ -2778,16 +2865,14 @@ from	    ResponsibilityTypeHierarchy H
                     #endregion
                 case SystemObjects.Rule:
                     #region Fields
-                    var rule = Company.GetById<Rule>(id, i => i.Policy);
+                    var rule = Company.GetById<Rule>(id);
                     if (rule != null)
                     {
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = rule.GetName(i => i.Name), FieldName = "RuleName", FieldDescription = rule.GetDescription(i => i.Description), Value = rule.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = rule.GetName(i => i.PolicyID), FieldName = "RulePolicy", FieldDescription = rule.GetDescription(i => i.PolicyID), Value = rule.Policy.Name });
-
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = rule.GetName(i => i.TextPath), FieldName = "PolicyTextPath", FieldDescription = rule.GetDescription(i => i.TextPath), Value = rule.TextPath });
+                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = rule.GetName(i => i.RuleType), FieldName = "RuleRuleType", FieldDescription = rule.GetDescription(i => i.RuleType), Value = rule.RuleType.GetRuleTypeDisplayName() });
 
                         if (!string.IsNullOrEmpty(rule.Description))
-                            list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = rule.GetName(i => i.Description), FieldName = "RuleDescription", FieldDescription = rule.GetDescription(i => i.Description), Value = rule.Description });
+                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = rule.GetName(i => i.Description), FieldName = "RuleDescription", FieldDescription = rule.GetDescription(i => i.Description), Value = rule.Description });
                     }
                     policy = null;
                     break;
@@ -2812,7 +2897,7 @@ from	    ResponsibilityTypeHierarchy H
 
                         var comparer = new AllocationPossibilityComparer();
                         var allocationPossibilities = 
-                            Company.Query<AllocationPossibility>("EXEC GetAllocationOptions").ToList()
+                            Company.GetAllocationOptions()
                             .Intersect(Company.ResponsibilityTypeRelations
                             .Where(i => i.ResponsibilityTypeID == responsibilityType.ID)
                             .Select(i => new AllocationPossibility { ObjectType = i.ObjectType, ObjectTypeID = i.ObjectID })
@@ -2908,7 +2993,21 @@ from	    ResponsibilityTypeHierarchy H
                     }
                     evtgrp = null;
                     break;
-                    #endregion
+                #endregion
+                case SystemObjects.PolicyType:
+                    #region Fields
+                    var policyType = Company.GetById<PolicyType>(id);
+                    if (policyType != null)
+                    {
+                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = policyType.GetName(i => i.Name), FieldName = "PolicyTypeName", FieldDescription = policyType.GetDescription(i => i.Name), Value = policyType.Name });
+                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = policyType.GetName(i => i.ID), FieldName = "PolicyTypeID", FieldDescription = policyType.GetDescription(i => i.ID), Value = policyType.ID.ToString() });
+
+                        if (!string.IsNullOrEmpty(policyType.Description))
+                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = policyType.GetName(i => i.Description), FieldName = "PolicyTypeDescription", FieldDescription = policyType.GetDescription(i => i.Description), Value = policyType.Description });
+                    }
+                    policyType = null;
+                    break;
+                #endregion
                 case SystemObjects.Report:
                     #region Fields
                     var report = Company.GetById<Report>(id, i => i.ReportLayout);
@@ -3590,7 +3689,7 @@ from	A
         [Route("catalogs")]
         public IQueryable<TaxonomyType> GetTaxonomyTypes()
         {
-            return Company.TaxonomyTypes.AsQueryable();
+            return Company.Table<TaxonomyType>();
         }
 
         [Route("TaxonomyType/{id:int}/levels")]

@@ -283,15 +283,33 @@
     <value>Community</value>
   </data>
   <data name="Administration_Reporting_Description" xml:space="preserve">
-    <value>Manage your report overlays and tiles.</value>
+    <value>Manage your dashboard overlays and tiles.</value>
   </data>
   <data name="Administration_Reporting_Title" xml:space="preserve">
-    <value>Reporting</value>
+    <value>Dashboards</value>
   </data>
   <data name="Administration_Workflow_Description" xml:space="preserve">
     <value>Manage all workflow settings for types within your environment.</value>
   </data>
   <data name="Administration_Workflow_Title" xml:space="preserve">
     <value>Workflow</value>
+  </data>
+  <data name="Administration_PolicyType_Description" xml:space="preserve">
+    <value>Organize various sets of policies across your organization.</value>
+  </data>
+  <data name="Administration_PolicyType_Title" xml:space="preserve">
+    <value>Policy Types</value>
+  </data>
+  <data name="Policies_Description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Policies_Title" xml:space="preserve">
+    <value>Policies</value>
+  </data>
+  <data name="Rules_Description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Rules_Title" xml:space="preserve">
+    <value>Rules</value>
   </data>
 </root>

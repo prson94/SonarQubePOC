@@ -4,6 +4,7 @@
         context.title(pageViewModel.Title);
 
         var type = 'IntersectType';
+        var intersectTypeID = null;
 
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: 'Administration' });
@@ -29,16 +30,20 @@
             var row = args.rowindex;
             var data = $("#List").jqxGrid('getrowdata', row);
             amplify.publish(AmplifyActions.TileUnsubscribe, {});
-            $('#SideIcons').PageTools("reload", type, data.ID);
-            //DetailTile('DetailTile', contextList, permissions, type, data.ID);
+            intersectTypeID = data.ID;
+            $('#SideIcons').PageTools("reload", type, intersectTypeID);
+            IntersectTypeRolesGrid('RolesTile', contextList, permissions, intersectTypeID);
+            //DetailTile('DetailTile', contextList, permissions, type, intersectTypeID);
         }
 
         function saveAction(data) {
             try {
                 switch (data.context) {
                     case contextList.IntersectType:
-                        //DetailTile('DetailTile', contextList, permissions, type, data.id);
                         $('#List').jqxGrid('updatebounddata');
+                        break;
+                    case contextList.IntersectTypeRole:
+                        IntersectTypeRolesGrid('RolesTile', contextList, permissions, intersectTypeID);
                         break;
                 }
             } catch (e) { }

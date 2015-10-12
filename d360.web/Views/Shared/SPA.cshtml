@@ -87,6 +87,7 @@
         self.Group = "@(ContextList.Group)";
         self.Intersect = "@(ContextList.Intersect)";
         self.IntersectType = "@(ContextList.IntersectType)";
+        self.IntersectTypeRole = "@(ContextList.IntersectTypeRole)";
         self.Load = "@(ContextList.Load)";
         self.LoadType = "@(ContextList.LoadType)";
         self.LoadTypeField = "@(ContextList.LoadTypeField)";
@@ -97,6 +98,8 @@
         self.Ownership = "@(ContextList.Ownership)";
         self.OwnershipType = "@(ContextList.OwnershipType)";
         self.Policy = "@(ContextList.Policy)";
+        self.PolicyType = "@(ContextList.PolicyType)";
+        self.PolicyTypeClass = "@(ContextList.PolicyTypeClass)";
         self.QuestionType = "@(ContextList.QuestionType)";
         self.Report = "@(ContextList.Report)";
         self.ReportTile = "@(ContextList.ReportTile)";
@@ -122,8 +125,6 @@
         self.StatisticType = "@(ContextList.StatisticType)";
         self.StatisticTypeRelation = "@(ContextList.StatisticTypeRelation)";
         self.SurveyType = "@(ContextList.SurveyType)";
-
-        self.Synonym = "@(ContextList.Synonym)";
 
         self.Taxonomy = "@(ContextList.Taxonomy)";
         self.TaxonomyType = "@(ContextList.TaxonomyType)";
@@ -184,13 +185,13 @@
             governance_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Governance_Title)", "@(Resources.PageInfo.Administration_Governance_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Governance_Title)", Active: true }]), templatePath, contextList);
             groups_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Group_Title)", "@(Resources.PageInfo.Administration_Group_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Group_Title)", Active: true }]), templatePath, contextList);
             lookups_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Lookup_Title)", "@(Resources.PageInfo.Administration_Lookup_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Lookup_Title)", Active: true }]), templatePath, contextList);
+            policies_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_PolicyType_Title)", "@(Resources.PageInfo.Administration_PolicyType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_PolicyType_Title)", Active: true }]), templatePath, contextList);
             relations_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Intersect_Title)", "@(Resources.PageInfo.Administration_Intersect_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Intersect_Title)", Active: true }]), templatePath, contextList);
             reporting_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Reporting_Title)", "@(Resources.PageInfo.Administration_Reporting_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Reporting_Title)", Active: true }]), templatePath, contextList);
             resources_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Resource_Title)", "@(Resources.PageInfo.Administration_Resource_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Resource_Title)", Active: true }]), templatePath, contextList);
             surveys_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_SurveyType_Title)", "@(Resources.PageInfo.Administration_SurveyType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SurveyType_Title)", Active: true }]), templatePath, contextList);
             surveyresponsetypes_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_ResponseType_Title)", "@(Resources.PageInfo.Administration_ResponseType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SurveyType_Title)" }, { Name: "@(Resources.PageInfo.Administration_ResponseType_Title)", Active: true }]), templatePath, contextList);
             taxonomies_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_TaxonomyType_Title)", "@(Resources.PageInfo.Administration_TaxonomyType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_TaxonomyType_Title)", Active: true }]), templatePath, contextList);
-            synonyms_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_SynonymType_Title)", "@(Resources.PageInfo.Administration_SynonymType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SynonymType_Title)", Active: true }]), templatePath, contextList);
             templates_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Template_Title)", "@(Resources.PageInfo.Administration_Template_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Template_Title)", Active: true }]), templatePath, contextList);
             workflow_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Workflow_Title)", "@(Resources.PageInfo.Administration_Workflow_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Workflow_Title)", Active: true }]), templatePath, contextList);
 
@@ -206,6 +207,8 @@
             groups_list(this, new PageViewModel("@(Resources.PageInfo.People_Title)", "@(Resources.PageInfo.People_Description)", [{ Name: '@(Resources.PageInfo.People_Title)', Active: true }]), templatePath, contextList);
             groups_item(this, new PageViewModel("@(Resources.PageInfo.Groups_Title)", "@(Resources.PageInfo.Groups_Description)", [{ Name: '@(Resources.PageInfo.Groups_Title)' }]), templatePath, contextList);
             monitor_list(this, new PageViewModel("@(Resources.PageInfo.Monitor_Title)", "@(Resources.PageInfo.Monitor_Description)", [{ Name: '@(Resources.PageInfo.Monitor_Title)', Active: true }]), templatePath, contextList);
+            policies_list(this, new PageViewModel("@(Resources.PageInfo.Policies_Title)", "@(Resources.PageInfo.Policies_Description)", [{ Name: "@(Resources.PageInfo.Policies_Title)" }]), templatePath, contextList);
+            rules_list(this, new PageViewModel("@(Resources.PageInfo.Rules_Title)", "@(Resources.PageInfo.Rules_Description)", [{ Name: "@(Resources.PageInfo.Rules_Title)" }]), templatePath, contextList);
             resources_item(this, new ResourcePageViewModel("", "", [{ Name: "@(Resources.PageInfo.People_Title)" }]), templatePath, contextList);
             taxonomies_list(this, new PageViewModel("", "@(Resources.PageInfo.Taxonomies_Description)", [{ Name: "Models" }]), templatePath, contextList);
 
@@ -448,6 +451,7 @@
                         case contextList.ActionEditRelate:
                         case contextList.ActionResponsibility:
                         case contextList.IntersectSourcingResponsibility:
+                        case contextList.PolicyTypeClass:
                         case contextList.ResponsibilityTransformation:
                         case contextList.AttributeTypeCategory:
                         case contextList.ResponsibilityTypeHierarchy:
@@ -480,6 +484,7 @@
                         case contextList.IntersectSourcingResponsibility:
                         case contextList.ResponsibilityTransformation:
                         case contextList.AttributeTypeCategory:
+                        case contextList.PolicyTypeClass:
                         case contextList.ResponsibilityTypeHierarchy:
                         case contextList.SourceToTarget:
                         case contextList.TaxonomyTypeClass:
@@ -562,6 +567,7 @@
                             case contextList.FusionPromotionRuleMapping:
                             case contextList.Responsibility_Embedded:
                             case contextList.IntersectSourcingResponsibility:
+                            case contextList.PolicyTypeClass:
                             case contextList.ResponsibilityTransformation:
                             case contextList.ResponsibilityTypeHierarchy:
                             case contextList.SourceToTarget:

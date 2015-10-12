@@ -24,7 +24,7 @@ namespace d360.workflow
         Name("Certify Artifact"), 
         Description("The workflow that is triggered when an owner must certify an artifact to validate that all data is correct."), 
         EnumMember(Value = "2"), 
-        AssignableTypesAttribute(SystemObjects.ArtifactType, SystemObjects.Vocabulary)
+        AssignableTypesAttribute(SystemObjects.ArtifactType)
         ]
         CertifyArtifact = 2
     }

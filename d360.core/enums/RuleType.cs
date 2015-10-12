@@ -31,7 +31,7 @@ namespace d360.core.enums
     {
         public static string GetRuleTypeDisplayName(this RuleType type)
         {
-            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DisplayNameAttribute>().DisplayName;
+            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
         }
 
         public static string GetRuleTypeDescription(this RuleType type)

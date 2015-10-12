@@ -29,10 +29,5 @@ namespace d360.core.entities
 
         [ForeignKey("IntersectTypeID")]
         public virtual ICollection<IntersectTypeNode> Nodes { get; set; }
-
-        [ForeignKey("IntersectTypeID")]
-        public virtual ICollection<IntersectTypeRoleRelation> RoleRelations { get; set; }
-
-
     }
 }

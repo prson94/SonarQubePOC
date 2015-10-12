@@ -194,6 +194,11 @@ where A.AuditID = {0}", auditID);
             }
         }
 
+        public ActionResult PolicyTypeClasses()
+        {
+            return PartialView();
+        }
+
         [Route("{type}/{id:int}/redflags")]
         public ActionResult RedFlags(SystemObjects type, int id)
         {

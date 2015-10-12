@@ -456,9 +456,9 @@ namespace d360.web.Controllers
             return form.AllKeys.Any(i => i == fieldName) ? int.Parse(form[fieldName]) : 0;
         }
 
-        string parseTextField(FormCollection form, string fieldName, string defaultValue = null)
+        string parseTextField(FormCollection form, string fieldName, string defaultValue = null, bool htmlEncode = false)
         {
-            return form.AllKeys.Any(i => i == fieldName) ? form[fieldName] : defaultValue;
+            return form.AllKeys.Any(i => i == fieldName) ? ((htmlEncode) ? Server.HtmlEncode(form[fieldName]) : form[fieldName]) : defaultValue;
         }
 
         #endregion
@@ -544,7 +544,7 @@ namespace d360.web.Controllers
                 currentParent = null;
             }
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Value = a.TaxonomyTypeID.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
 
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
@@ -649,7 +649,7 @@ namespace d360.web.Controllers
                 // Static fields
                 model.ArtifactTypeID = typeID;
                 model.TaxonomyTypeID = taxonomyTypeID;
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.Status = (workflowEnabled) ? "Draft" : form["Status"];
 
@@ -766,7 +766,7 @@ namespace d360.web.Controllers
 
 
                 // Static fields
-                if (!isPromoted) model.Name = parseTextField(form, "Name");
+                if (!isPromoted) model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.TaxonomyTypeID = parseIntField(form, "TaxonomyTypeID");
                 if (!workflowEnabled) model.Status = form["Status"];
@@ -896,7 +896,7 @@ namespace d360.web.Controllers
                 // Static fields
                 model.ArtifactTypeID = typeID;
                 model.TaxonomyTypeID = parseIntField(form, "TaxonomyTypeID");
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 if (!string.IsNullOrEmpty(form["ParentID"]))
                 {
@@ -987,7 +987,7 @@ namespace d360.web.Controllers
 
                 var a = new ArtifactType
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     CanOwnFusion = parseBooleanField(form, "CanOwnFusion"),
                     AllowRelatedArtifacts = parseBooleanField(form, "AllowRelatedArtifacts")
@@ -1116,7 +1116,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 //model.AllowHierarchy = parseBooleanField(form, "AllowHierarchy");
                 model.AllowRelatedArtifacts = parseBooleanField(form, "AllowRelatedArtifacts");
@@ -1427,7 +1427,7 @@ namespace d360.web.Controllers
 
                 var a = new AttributeType
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     TextFormatString = parseTextField(form, "TextFormatString")
                 };
@@ -1554,7 +1554,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.AttributeType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.TextFormatString = parseTextField(form, "TextFormatString");
 
@@ -1664,7 +1664,7 @@ namespace d360.web.Controllers
 
                 var a = new AttributeTypeCategory
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description")
                 };
 
@@ -1772,7 +1772,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.AttributeTypeCategory, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<AttributeTypeCategory>(model);
@@ -2115,7 +2115,7 @@ namespace d360.web.Controllers
                 var a = new Domain
                 {
                     DomainTypeID = typeID,
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     EnforceParentItemSelection = false,
                     DomainGroupID = parseIntField(form, "DomainGroupID")
@@ -2214,7 +2214,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.Domain, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.DomainGroupID = parseIntField(form, "DomainGroupID");
 
@@ -2323,7 +2323,7 @@ namespace d360.web.Controllers
                 var a = new DomainGroup
                 {
                     DomainTypeID = typeID,
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description")
                 };
 
@@ -2417,7 +2417,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.DomainType, model.DomainTypeID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 if (form["MasterListID"] != "")
                 {
@@ -2530,7 +2530,7 @@ namespace d360.web.Controllers
                 var a = new DomainItem
                 {
                     DomainID = listID,
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     Code = parseTextField(form, "Code")
                 };
@@ -2625,7 +2625,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.Domain, model.DomainID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.Code = parseTextField(form, "Code");
 
@@ -2729,7 +2729,7 @@ namespace d360.web.Controllers
 
                 var a = new DomainType
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description")
                 };
 
@@ -2830,7 +2830,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.DomainType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<DomainType>(model);
@@ -2936,7 +2936,7 @@ namespace d360.web.Controllers
                 {
                     Action = parseTextField(form, "Action"),
                     Description = parseTextField(form, "Description"),
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     TemplateBody = parseTextField(form, "TemplateBody"),
                     TemplateSubject = parseTextField(form, "TemplateSubject")
                 };
@@ -3028,7 +3028,7 @@ namespace d360.web.Controllers
 
                 model.Action = parseTextField(form, "Action");
                 model.Description = parseTextField(form, "Description");
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.TemplateBody = parseTextField(form, "TemplateBody");
                 model.TemplateSubject = parseTextField(form, "TemplateSubject");
 
@@ -3114,7 +3114,7 @@ namespace d360.web.Controllers
                 // Static fields
                 model.Object = type.ToString();
                 model.ObjectID = id;
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.FriendlyName = string.IsNullOrEmpty(form["FriendlyName"]) ? form["Name"] : form["FriendlyName"];
                 model.DisplayDescription = parseTextField(form, "DisplayDescription", "");
                 model.FormDescription = parseTextField(form, "FormDescription", "");
@@ -3262,7 +3262,7 @@ namespace d360.web.Controllers
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
 
                 // Static fields
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.FriendlyName = string.IsNullOrEmpty(form["FriendlyName"]) ? form["Name"] : form["FriendlyName"];
                 model.DisplayDescription = parseTextField(form, "DisplayDescription", "");
                 model.FormDescription = parseTextField(form, "FormDescription", "");
@@ -3430,7 +3430,7 @@ namespace d360.web.Controllers
                     IntervalType = (JobIntervalType)Enum.Parse(typeof(JobIntervalType), form["IntervalType"]),
                     Interval = parseIntField(form, "Interval"),
                     Manual = parseBooleanField(form, "Manual"),
-                    Name = parseTextField(form, "Name")//,
+                    Name = parseTextField(form, "Name", null, true)//,
                 };
 
                 // Dynamic fields
@@ -3533,7 +3533,7 @@ namespace d360.web.Controllers
                 model.Enabled = parseBooleanField(form, "Enabled");
                 model.LockPromotedItems = parseBooleanField(form, "LockPromotedItems");
                 model.Manual = parseBooleanField(form, "Manual");
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.IntervalType = (JobIntervalType)Enum.Parse(typeof(JobIntervalType), form["IntervalType"]);
                 model.Interval = parseIntField(form, "Interval");
                 model.ForceRefresh = parseBooleanField(form, "ForceRefresh");
@@ -4755,7 +4755,7 @@ namespace d360.web.Controllers
                 var model = new FusionType
                 {
                     Description = parseTextField(form, "Description"),
-                    Name = parseTextField(form, "Name")
+                    Name = parseTextField(form, "Name", null, true)
                 };
 
                 Company.Add<FusionType>(model);
@@ -4856,7 +4856,7 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Description = parseTextField(form, "Description");
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
 
                 Company.Update<FusionType>(model);
 
@@ -4982,7 +4982,7 @@ namespace d360.web.Controllers
                     FusionTypeID = typeID,
                     ParentID = parentID,
                     Assignable = true,//bool.Parse(form["Assignable"]),
-                    Name = parseTextField(form, "Name")
+                    Name = parseTextField(form, "Name", null, true)
                 };
 
                 Company.Add<FusionAttributeType>(model);
@@ -5074,7 +5074,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.FusionType, model.FusionTypeID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
 
                 Company.Update<FusionAttributeType>(model);
 
@@ -5369,8 +5369,6 @@ namespace d360.web.Controllers
                 Company.Add<IntersectType>(model);
                 formModel.ID = model.ID;
 
-                //saveIntersectTypeRoles(formModel);
-
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), ContextList.IntersectType, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -5451,7 +5449,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.IntersectType, formModel.ID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
                 
-                var model = Company.GetById<IntersectType>(formModel.ID, i => i.Nodes, i => i.RoleRelations);
+                var model = Company.GetById<IntersectType>(formModel.ID, i => i.Nodes);
                 if (model == null) throw new NotFoundException("relationship type");
 
                 var nodes = new List<IntersectTypeNode>();
@@ -5495,9 +5493,287 @@ namespace d360.web.Controllers
                 Company.Update<IntersectTypeNode>(existingSide1Node);
                 Company.Update<IntersectTypeNode>(existingSide2Node);
 
-                //saveIntersectTypeRoles(formModel, model.RoleRelations.ToList());
-
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region IntersectTypeRole
+
+        #region Field Generation
+
+        /// <param name="intersectTypeID">The ID of the Intersect Type</param>
+        public JsonResult IntersectTypeRole_AddFields(int intersectTypeID)
+        {
+            if (!Company.HasPermission(SystemObjects.IntersectType, intersectTypeID, Claim.Update, ClaimObject.Root))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            var type = Company.GetById<IntersectType>(intersectTypeID);
+            var roles = Company.Table<IntersectTypeRole>().OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            roles.Insert(0, new SelectListItem { Text = "-New Role-", Value = "" });
+
+            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = intersectTypeID.ToString() });
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ExistingRole", Name = "Existing Role", FieldDescription = Resources.FieldInfo.IntersectTypeRole_ExistingRole_Description, FieldType = DataType.Lookup.ToString(), Items = roles });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "NewRole", Name = "New Role", FieldDescription = Resources.FieldInfo.IntersectTypeRole_NewRole_Description, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", false, "", 0, 250) });
+
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Side1Label", Name = "Side 1 Label", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Side2Label", Name = "Side 2 Label", FieldType = DataType.Text.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">The ID of the Role</param>
+        /// <param name="intersectTypeID">The ID of the Intersect Type</param>
+        public JsonResult IntersectTypeRole_DeleteFields(int id, int intersectTypeID)
+        {
+            if (!Company.HasPermission(SystemObjects.IntersectType, intersectTypeID, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            if (Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && i.IntersectTypeRoleID == id).Count() > 0)
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = intersectTypeID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">The ID of the Role</param>
+        /// <param name="intersectTypeID">The ID of the Intersect Type</param>
+        public JsonResult IntersectTypeRole_EditFields(int id, int intersectTypeID)
+        {
+            if (!Company.HasPermission(SystemObjects.IntersectType, intersectTypeID, Claim.Update, ClaimObject.Root))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            var relation = Company.Filter<IntersectTypeRoleRelation>(i => i.IntersectTypeID == intersectTypeID && i.IntersectTypeRoleID == id, i => i.IntersectTypeRole).SingleOrDefault();
+
+            if (relation == null)
+                return jsonException("Role not found", HttpStatusCode.NotFound);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = intersectTypeID.ToString() });
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ExistingRole", Name = "Existing Role Name", FieldDescription = Resources.FieldInfo.IntersectTypeRole_ExistingRole_ChangeWarning, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = relation.IntersectTypeRole.Name });
+
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Side1Label", Name = "Side 1 Label", FieldType = DataType.Text.ToString(), Value = relation.Side1Label });
+            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Side2Label", Name = "Side 2 Label", FieldType = DataType.Text.ToString(), Value = relation.Side2Label });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddIntersectTypeRole(int intersectTypeID)
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.IntersectTypeRole,
+                FieldUri = string.Format("/form/IntersectTypeRole_AddFields?intersectTypeID={0}", intersectTypeID),
+                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Role"),
+                FormUri = "/form/AddIntersectTypeRole",
+                FormMethod = "POST"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPost]
+        public JsonResult AddIntersectTypeRole(FormCollection form)
+        {
+            try
+            {
+                if (form == null) throw new NoFormDataException("Role");
+
+                var intersectTypeID = parseIntField(form, "IntersectTypeID");
+                var existingRoleID = parseNullableIntField(form, "ExistingRole");
+                var newRole = parseTextField(form, "NewRole");
+                var side1Label = parseTextField(form, "Side1Label");
+                var side2Label = parseTextField(form, "Side2Label");
+
+                IntersectTypeRole role = null;
+                if (!string.IsNullOrEmpty(newRole))
+                {
+                    var lowerName = newRole.ToLower();
+                    role = Company.Filter<IntersectTypeRole>(i => i.Name.ToLower() == lowerName).SingleOrDefault();
+                    if (role == null)
+                    {
+                        role = new IntersectTypeRole { Name = newRole };
+                        Company.Add<IntersectTypeRole>(role);
+                    }
+                }
+                else
+                {
+                    if (existingRoleID.HasValue)
+                    {
+                        role = Company.GetById<IntersectTypeRole>(existingRoleID.Value, i => i.RoleRelations);
+                        if (role == null)
+                            throw new NotFoundException("Role");
+
+                        if (role.RoleRelations.Any(i => i.IntersectTypeID == intersectTypeID))
+                            throw new ConflictException("Conflict Found", "The relationship type is already using this role");
+                    }
+                    else
+                    {
+                        throw new NoFormDataException("Role");
+                    }
+                }
+
+                if (role == null) throw new NotFoundException("Role");
+
+                Company.Add<IntersectTypeRoleRelation>(new IntersectTypeRoleRelation { IntersectTypeID = intersectTypeID, IntersectTypeRoleID = role.ID, Side1Label = side1Label, Side2Label = side2Label });
+
+                return jsonSuccess("Role successfully created.", "0", form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeleteIntersectTypeRole(int id, int intersectTypeID)
+        {
+            var role = Company.GetById<IntersectTypeRole>(id, i => i.RoleRelations);
+            if (role == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.IntersectTypeRole,
+                FieldUri = string.Format("/form/IntersectTypeRole_DeleteFields?id={0}&intersectTypeID={1}", id, intersectTypeID),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Role"),
+                FormUri = "/form/DeleteIntersectTypeRole",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteIntersectTypeRole(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("relationship type role");
+
+                var id = parseIntField(form, "ID");
+                var intersectTypeID = parseIntField(form, "IntersectTypeID");
+                
+                if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                if (Company.Filter<Intersect>(i => i.IntersectTypeRoleID == id && i.IntersectTypeID ==  intersectTypeID).Count() > 0)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
+
+                var model = Company.GetById<IntersectTypeRole>(id, i => i.RoleRelations);
+                if (model == null) throw new NotFoundException("relationship type role");
+
+                if (model.RoleRelations.Count >= 1)
+                {
+                    var relation = model.RoleRelations.SingleOrDefault(i => i.IntersectTypeID == intersectTypeID);
+                    if (relation != null)
+                    {
+                        Company.Delete<IntersectTypeRoleRelation>(relation);
+                    }
+                    else
+                    {
+                        throw new NotFoundException("relationship type role");
+                    }
+                }
+                else
+                {
+                    Company.Delete<IntersectTypeRole>(model);
+                }
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult EditIntersectTypeRole(int id, int intersectTypeID)
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.IntersectTypeRole,
+                FieldUri = string.Format("/form/IntersectTypeRole_EditFields?id={0}&intersectTypeID={1}", id, intersectTypeID),
+                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Role"),
+                FormUri = "/form/EditIntersectTypeRole",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPut]
+        public JsonResult EditIntersectTypeRole(FormCollection form)
+        {
+            try
+            {
+                if (form == null) throw new NoFormDataException("relationship type role");
+
+                var intersectTypeID = parseIntField(form, "IntersectTypeID");
+                var roleID = parseIntField(form, "ID");
+                var existingRole = parseTextField(form, "ExistingRole");
+                var side1Label = parseTextField(form, "Side1Label");
+                var side2Label = parseTextField(form, "Side2Label");
+
+                IntersectTypeRole role = null;
+                role = Company.GetById<IntersectTypeRole>(roleID, i => i.RoleRelations);
+                if (role == null)
+                    throw new NotFoundException("Role");
+
+                var relation = role.RoleRelations.SingleOrDefault(i => i.IntersectTypeID == intersectTypeID);
+
+                if (relation == null)
+                    throw new NotFoundException("Role Relation");
+
+                if (!role.Name.Equals(existingRole))
+                {
+                    role.Name = existingRole;
+                    Company.Update<IntersectTypeRole>(role);
+                }
+
+                if (!relation.Side1Label.Equals(side1Label) || !relation.Side2Label.Equals(side2Label))
+                {
+                    relation.Side1Label = side1Label;
+                    relation.Side2Label = side2Label;
+                    Company.Update<IntersectTypeRoleRelation>(relation);
+                }
+
+                return jsonSuccess("Role successfully updated.", "0", form["_context"], "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -5658,7 +5934,7 @@ namespace d360.web.Controllers
 
                 var a = new Group
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     PrimaryOwnerResourceID = primaryOwnerResourceID,
                     SecondaryOwnerResourceID = secondaryOwnerResourceID
@@ -5872,7 +6148,7 @@ namespace d360.web.Controllers
                 var primaryOwnerResourceID = parseIntField(form, "PrimaryOwnerResourceID");
                 var secondaryOwnerResourceID = parseNullableIntField(form, "SecondaryOwnerResourceID");
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.PrimaryOwnerResourceID = primaryOwnerResourceID;
                 model.SecondaryOwnerResourceID = secondaryOwnerResourceID;
@@ -6415,7 +6691,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 var a = new LookupType
                 {
-                    Name = parseTextField(form, "Name")
+                    Name = parseTextField(form, "Name", null, true)
                 };
 
                 Company.Add<LookupType>(a);
@@ -6526,7 +6802,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
 
                 Company.Update<LookupType>(model);
 
@@ -6570,9 +6846,6 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         {
             if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Delete))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            if (Company.Table<Rule>().Any(i => i.PolicyID == id))
-                return jsonException(FormInfo.Policy_Error_Delete_ExistingRulesPresent, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
@@ -6627,7 +6900,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 var model = new Policy
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description")
                 };
 
@@ -6742,7 +7015,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 
                 Company.Update<Policy>(model);
@@ -6755,6 +7028,417 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 };
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region PolicyType
+
+        #region Field Generation
+
+        public JsonResult PolicyType_AddFields()
+        {
+            if (!Company.HasPermission(SystemObjects.PolicyType, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = new PolicyType();
+            var classes = Company.Table<PolicyTypeClass>().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.PolicyTypeClassID), FieldDescription = a.GetDescription(i => i.PolicyTypeClassID), FieldType = DataType.Lookup.ToString(), Items = classes });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
+            loadIconFields(list, 3);
+
+            a = null;
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PolicyTypeID</param>
+        public JsonResult PolicyType_DeleteFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<PolicyType>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PolicyTypeID</param>
+        public JsonResult PolicyType_EditFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<PolicyType>(id);
+            var style = Company.GetObjectStyle(SystemObjects.PolicyType, id);
+            var classes = Company.Table<PolicyTypeClass>().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.PolicyTypeClassID), FieldDescription = a.GetDescription(i => i.PolicyTypeClassID), FieldType = DataType.Lookup.ToString(), Value = a.PolicyTypeClassID.ToString(), Items = classes });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
+            loadIconFields(list, 3, style);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+        
+        public ActionResult AddPolicyType()
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.PolicyType,
+                FieldUri = "/form/PolicyType_AddFields",
+                FormTitle = "Add Policy Type",
+                FormUri = "/form/AddPolicyType",
+                FormMethod = "POST",
+                FormSize = EditableForm.FormSize_Small
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddPolicyType(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.PolicyType, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("policy type");
+
+                var a = new PolicyType
+                {
+                    Name = parseTextField(form, "Name", null, true),
+                    Description = parseTextField(form, "Description"),
+                    PolicyTypeClassID = parseIntField(form, "Class")
+                };
+
+                Company.Add<PolicyType>(a);
+
+                upsertObjectStyle(SystemObjects.PolicyType, a.ID, form, a.Name);
+
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeletePolicyType(int id)
+        {
+            var a = Company.GetById<PolicyType>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.PolicyType,
+                FieldUri = "/form/PolicyType_DeleteFields?id=" + id,
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
+                FormDescription = Resources.FormInfo.PolicyType_Remove,
+                FormUri = "/form/DeletePolicyType",
+                FormMethod = "DELETE",
+                FormSize = EditableForm.FormSize_Small
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeletePolicyType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("policy type");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<PolicyType>(id);
+                if (model == null) throw new NotFoundException("policy type");
+
+                if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<PolicyType>(i => i.ID == id);
+                deleteObjectStyle(SystemObjects.PolicyType, id);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult EditPolicyType(int id)
+        {
+            var a = Company.GetById<PolicyType>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.PolicyType,
+                FieldUri = "/form/PolicyType_EditFields?id=" + id,
+                FormTitle = "Edit " + a.Name,
+                FormUri = "/form/EditPolicyType",
+                FormMethod = "PUT",
+                FormSize = EditableForm.FormSize_Small
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditPolicyType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("policy type");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<PolicyType>(id);
+                if (model == null) throw new NotFoundException("policy type");
+
+                var style = Company.GetObjectStyle(SystemObjects.PolicyType, id);
+
+                if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name", null, true);
+                model.Description = parseTextField(form, "Description");
+                model.PolicyTypeClassID = parseIntField(form, "Class");
+
+                Company.Update<PolicyType>(model);
+
+                upsertObjectStyle(SystemObjects.PolicyType, model.ID, form, model.Name);
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region PolicyTypeClass
+
+        #region Field Generation
+
+        public JsonResult PolicyTypeClass_AddFields()
+        {
+            if (!Company.HasPermission(SystemObjects.PolicyTypeClass, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = new PolicyTypeClass();
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            a = null;
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PolicyTypeClassID</param>
+        public JsonResult PolicyTypeClass_DeleteFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.PolicyTypeClass, id, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<PolicyTypeClass>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PolicyTypeClassID</param>
+        public JsonResult PolicyTypeClass_EditFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.PolicyTypeClass, id, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<PolicyTypeClass>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddPolicyTypeClass()
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.PolicyTypeClass,
+                FieldUri = "/form/PolicyTypeClass_AddFields",
+                FormTitle = "Add Policy Class",
+                FormUri = "/form/AddPolicyTypeClass",
+                FormMethod = "POST",
+                FormSize = EditableForm.FormSize_Small
+            };
+
+            return PartialView("OverlayEditableForm", model);
+        }
+
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddPolicyTypeClass(FormCollection form)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.PolicyTypeClass, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("policy class");
+
+                var a = new PolicyTypeClass
+                {
+                    Name = parseTextField(form, "Name", null, true)
+                };
+
+                Company.Add<PolicyTypeClass>(a);
+
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeletePolicyTypeClass(int id)
+        {
+            var a = Company.GetById<PolicyTypeClass>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.PolicyTypeClass,
+                FieldUri = "/form/PolicyTypeClass_DeleteFields?id=" + id,
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
+                FormDescription = Resources.FormInfo.PolicyType_Remove,
+                FormUri = "/form/DeletePolicyTypeClass",
+                FormMethod = "DELETE",
+                FormSize = EditableForm.FormSize_Small
+            };
+
+            return PartialView("OverlayDeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeletePolicyTypeClass(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("policy class");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<PolicyTypeClass>(id);
+                if (model == null) throw new NotFoundException("policy class");
+
+                if (!Company.HasPermission(SystemObjects.PolicyTypeClass, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<PolicyTypeClass>(i => i.ID == id);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult EditPolicyTypeClass(int id)
+        {
+            var a = Company.GetById<PolicyTypeClass>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.PolicyTypeClass,
+                FieldUri = "/form/PolicyTypeClass_EditFields?id=" + id,
+                FormTitle = "Edit " + a.Name,
+                FormUri = "/form/EditPolicyTypeClass",
+                FormMethod = "PUT",
+                FormSize = EditableForm.FormSize_Small
+            };
+
+            return PartialView("OverlayEditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditPolicyTypeClass(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("policy class");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<PolicyTypeClass>(id);
+                if (model == null) throw new NotFoundException("policy class");
+
+                if (!Company.HasPermission(SystemObjects.PolicyTypeClass, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name", null, true);
+
+                Company.Update<PolicyTypeClass>(model);
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -6864,7 +7548,7 @@ order by    Name
                 {
                     var model = new Report
                     {
-                        Name = parseTextField(form, "Name"),
+                        Name = parseTextField(form, "Name", null, true),
                         Description = parseTextField(form, "Description"),
                         ObjectType = objectType[0],
                         ObjectID = int.Parse(objectType[1]),
@@ -6974,7 +7658,7 @@ order by    Name
 
                 if (objectType.Length == 2)
                 {
-                    model.Name = parseTextField(form, "Name");
+                    model.Name = parseTextField(form, "Name", null, true);
                     model.Description = parseTextField(form, "Description");
                     model.ObjectType = objectType[0];
                     model.ObjectID = int.Parse(objectType[1]);
@@ -7096,7 +7780,7 @@ order by    Name
 
                 var model = new ReportTile 
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     CommandText = parseTextField(form, "SqlStatement"),
                     ReportID = parseIntField(form, "ReportID"),
                     ContentAreaNumber = parseIntField(form, "ContentAreaNumber"),
@@ -7229,7 +7913,7 @@ order by    Name
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
 
                 // Static fields
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.CommandText = parseTextField(form, "SqlStatement");
                 model.ContentAreaNumber = parseIntField(form, "ContentAreaNumber");
                 model.ReportTileType = (ReportTileType)Enum.Parse(typeof(ReportTileType), form["ReportTileType"]);
@@ -8465,7 +9149,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
                 var a = new ResponsibilityType
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     ResponsibilityTypeGroup = (ResponsibilityTypeGroup)Enum.Parse(typeof(ResponsibilityTypeGroup), form["ResponsibilityTypeGroup"]),
                     Description = parseTextField(form, "Description")
                 };
@@ -8577,7 +9261,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 var model = Company.GetById<ResponsibilityType>(id);
                 if (model == null) throw new NotFoundException("ownership type");
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<ResponsibilityType>(model);
@@ -9230,7 +9914,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 var model = new QuestionType
                 {
                     SurveyTypeID = typeID,
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     ResponseTypeID = parseIntField(form, "ResponseTypeID")
                 };
@@ -9320,7 +10004,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 var model = Company.GetById<QuestionType>(id);
                 if (model == null) throw new NotFoundException("question");
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.ResponseTypeID = parseIntField(form, "ResponseTypeID");
 
@@ -9490,7 +10174,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                     a = new Resolution();
 
                     // Static fields
-                    a.Name = parseTextField(form, "Name");
+                    a.Name = parseTextField(form, "Name", null, true);
                     a.Body = parseTextField(form, "Body");
                     a.RuleID = 0;
 
@@ -9552,7 +10236,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 if (model == null) throw new NotFoundException("resolution");
 
                 // Static fields
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Body = parseTextField(form, "Body");
 
                 Company.Update<Resolution>(model);
@@ -10106,7 +10790,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
                 var a = new ResourceType
                 {
-                    Name = parseTextField(form, "Name")
+                    Name = parseTextField(form, "Name", null, true)
                 };
 
                 Community.Add<ResourceType>(a);
@@ -10196,7 +10880,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 var model = Community.GetById<ResourceType>(id);
                 if (model == null) throw new NotFoundException("resource type");
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
 
                 Community.Update<ResourceType>(model);
 
@@ -10276,7 +10960,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
                 var model = new ResponseType
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     AllowOptions = true,
                     AllowValueOverride = false
                 };
@@ -10365,7 +11049,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 var a = Company.GetById<ResponseType>(id);
                 if (a == null) throw new NotFoundException("response type");
 
-                a.Name = parseTextField(form, "Name");
+                a.Name = parseTextField(form, "Name", null, true);
 
                 Company.Update<ResponseType>(a);
 
@@ -10458,7 +11142,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
                 var model = new ResponseTypeOption
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Value = parseIntField(form, "Value"),
                     ResponseTypeID = typeID
                 };
@@ -10547,7 +11231,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 var a = Company.GetById<ResponseTypeOption>(id);
                 if (a == null) throw new NotFoundException("response type option");
 
-                a.Name = parseTextField(form, "Name");
+                a.Name = parseTextField(form, "Name", null, true);
                 a.Value = parseIntField(form, "Value");
 
                 Company.Update<ResponseTypeOption>(a);
@@ -10652,9 +11336,8 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
                 var model = new Rule
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
-                    PolicyID = parseIntField(form, "PolicyID"),
                     RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"])
                 };
 
@@ -10763,7 +11446,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"]);
 
@@ -11034,7 +11717,7 @@ order by	C.TextPath,
 
                 var a = new StatisticType
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     CheckType = (StatisticCheckType)Enum.Parse(typeof(StatisticCheckType), form["CheckType"]),
                     PartOfScore = parseBooleanField(form, "PartOfScore")
@@ -11215,7 +11898,7 @@ order by	C.TextPath,
                 if (!Company.HasPermission(SystemObjects.StatisticType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.PartOfScore = parseBooleanField(form, "PartOfScore");
                 model.CheckType = (StatisticCheckType)Enum.Parse(typeof(StatisticCheckType), form["CheckType"]);
@@ -11570,7 +12253,7 @@ order by	C.TextPath,
 
                 var model = new SurveyType
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     ObjectType = ot.ToString(),
                     ObjectID = oid
                 };
@@ -11659,7 +12342,7 @@ order by	C.TextPath,
                 var model = Company.GetById<SurveyType>(id);
                 if (model == null) throw new NotFoundException("survey type");
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
 
                 Company.Update<SurveyType>(model);
 
@@ -11816,7 +12499,7 @@ order by TextPath
 
                 // Static fields
                 a.TaxonomyTypeID = typeID;
-                a.Name = parseTextField(form, "Name");
+                a.Name = parseTextField(form, "Name", null, true);
                 a.Description = parseTextField(form, "Description");
 
                 if (!string.IsNullOrEmpty(form["ParentID"]))
@@ -11936,7 +12619,7 @@ order by TextPath
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 // Static fields
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.ParentID = parseIntField(form, "ParentID");
                 if (model.ParentID == 0) model.ParentID = null;
@@ -12015,7 +12698,7 @@ order by TextPath
             var a = Company.GetById<TaxonomyType>(id);
             var style = Company.GetObjectStyle(SystemObjects.TaxonomyType, id);
             var classes = Company.Table<TaxonomyTypeClass>().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-            var maxLevel = Company.Query<int>("select max([Level]) from Taxonomy where TaxonomyTypeID = @t", new { t = id }).SingleOrDefault();
+            var maxLevel = Company.Query<int>("select coalesce(max([Level]), 1) from Taxonomy where TaxonomyTypeID = @t", new { t = id }).SingleOrDefault();
 
             var maxDepthNotification = (maxLevel > 1) ? string.Format("  The current depth of this model type's hierarchy is {0} levels, so you may not set a Maxiumum Depth less than that.", maxLevel) : "";
 
@@ -12061,7 +12744,7 @@ order by TextPath
 
                 var a = new TaxonomyType
                 {
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     TaxonomyTypeClassID = parseIntField(form, "Class"),
                     MaximumDepth = parseIntField(form, "MaximumDepth")
@@ -12175,7 +12858,7 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.TaxonomyTypeClassID = parseIntField(form, "Class");
@@ -12295,7 +12978,7 @@ order by TextPath
 
                 var a = new TaxonomyTypeClass
                 {
-                    Name = parseTextField(form, "Name")
+                    Name = parseTextField(form, "Name", null, true)
                 };
 
                 Company.SaveOrUpdate<TaxonomyTypeClass>(a);
@@ -12393,7 +13076,7 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
 
                 Company.SaveOrUpdate<TaxonomyTypeClass>(model);
 
@@ -12526,7 +13209,7 @@ order by TextPath
                 {
                     TaxonomyTypeID = id,
                     Level = level,
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                 };
 
@@ -12620,7 +13303,7 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<TaxonomyTypeLevel>(model);
@@ -12729,7 +13412,7 @@ order by TextPath
                 {
                     Action = parseTextField(form, "Action"),
                     Description = parseTextField(form, "Description"),
-                    Name = parseTextField(form, "Name"),
+                    Name = parseTextField(form, "Name", null, true),
                     TemplateBody = parseTextField(form, "TemplateBody")
                 };
 
@@ -12820,7 +13503,7 @@ order by TextPath
 
                 model.Action = parseTextField(form, "Action");
                 model.Description = parseTextField(form, "Description");
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.TemplateBody = parseTextField(form, "TemplateBody");
 
                 Company.Update<TooltipTemplate>(model);

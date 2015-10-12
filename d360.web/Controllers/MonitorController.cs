@@ -113,52 +113,52 @@ inner join [Rule] T on T.ID = G.RuleID and A.EventGroupID = @id {1}", columns, j
 
         #region Policy/Rule Tree Hierarchy
 
-        class PolicyRuleHierarchyItem
-        {
-            public PolicyRuleHierarchyItem()
-            {
-                expanded = true;
-            }
-            public string MergedID { get; set; }
-            public string Type { get; set; }
-            public int? ID { get; set; }
-            public string Name { get; set; }
-            public List<PolicyRuleHierarchyItem> Items { get; set; }
-            public bool expanded { get; set; }
-        }
+        //class PolicyRuleHierarchyItem
+        //{
+        //    public PolicyRuleHierarchyItem()
+        //    {
+        //        expanded = true;
+        //    }
+        //    public string MergedID { get; set; }
+        //    public string Type { get; set; }
+        //    public int? ID { get; set; }
+        //    public string Name { get; set; }
+        //    public List<PolicyRuleHierarchyItem> Items { get; set; }
+        //    public bool expanded { get; set; }
+        //}
 
-        [Route("hierarchy")]
-        public JsonResult PolicyRuleHierarchy()
-        {
-            var policies = Company.Table<Policy>().ToList();
-            var rules = Company.Table<Rule>().ToList();
+        //[Route("hierarchy")]
+        //public JsonResult PolicyRuleHierarchy()
+        //{
+        //    var policies = Company.Table<Policy>().ToList();
+        //    var rules = Company.Table<Rule>().ToList();
 
-            var root = new PolicyRuleHierarchyItem { MergedID = "Policy|0", ID = null, Name = "Events", Type = SystemObjects.Policy.ToString() };
-            root.Items = nestHierarchyNode(policies, rules, root);
+        //    var root = new PolicyRuleHierarchyItem { MergedID = "Policy|0", ID = null, Name = "Events", Type = SystemObjects.Policy.ToString() };
+        //    root.Items = nestHierarchyNode(policies, rules, root);
 
-            var list = new List<PolicyRuleHierarchyItem>() { root };
+        //    var list = new List<PolicyRuleHierarchyItem>() { root };
 
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-        List<PolicyRuleHierarchyItem> nestHierarchyNode(List<Policy> policies, List<Rule> rules, PolicyRuleHierarchyItem parent)
-        {
-            var list = new List<PolicyRuleHierarchyItem>();
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
+        //List<PolicyRuleHierarchyItem> nestHierarchyNode(List<Policy> policies, List<Rule> rules, PolicyRuleHierarchyItem parent)
+        //{
+        //    var list = new List<PolicyRuleHierarchyItem>();
 
-            foreach (var p in policies.Where(i => i.ParentID == parent.ID).OrderBy(i => i.Name))
-            {
-                var child = new PolicyRuleHierarchyItem { MergedID = "Policy|" + p.ID, ID = p.ID, Name = p.Name, Type = SystemObjects.Policy.ToString() };
-                child.Items = nestHierarchyNode(policies, rules, child);
-                list.Add(child);
-            }
-            foreach (var r in rules.Where(i => i.PolicyID == parent.ID).OrderBy(i => i.Name))
-            {
-                list.Add(
-                    new PolicyRuleHierarchyItem { MergedID = "Rule|" + r.ID, ID = r.ID, Name = r.Name, Type = SystemObjects.Rule.ToString() }
-                );
-            }
+        //    foreach (var p in policies.Where(i => i.ParentID == parent.ID).OrderBy(i => i.Name))
+        //    {
+        //        var child = new PolicyRuleHierarchyItem { MergedID = "Policy|" + p.ID, ID = p.ID, Name = p.Name, Type = SystemObjects.Policy.ToString() };
+        //        child.Items = nestHierarchyNode(policies, rules, child);
+        //        list.Add(child);
+        //    }
+        //    foreach (var r in rules.Where(i => i.PolicyID == parent.ID).OrderBy(i => i.Name))
+        //    {
+        //        list.Add(
+        //            new PolicyRuleHierarchyItem { MergedID = "Rule|" + r.ID, ID = r.ID, Name = r.Name, Type = SystemObjects.Rule.ToString() }
+        //        );
+        //    }
 
-            return list;
-        }
+        //    return list;
+        //}
 
         #endregion
 

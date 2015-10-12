@@ -117,7 +117,31 @@ UNION ALL
 		
 SELECT	'#Monitor' as MenuID,
 		1 as Feature, 
-		NULL AS Items
+		(
+        select  *
+        from    (
+		        SELECT	name, 
+				        '#/' As url,
+				        0 as feature,
+				        (
+				        SELECT	name, 
+						        dbo.GenerateObjectUrl('PolicyType', ID, 0)  As url,
+						        0 as feature
+				        FROM	PolicyType
+				        WHERE	PolicyTypeClassID = FT.ID
+				        FOR XML PATH('nav'), TYPE
+				        ) AS items	
+		        FROM	(
+                        select top 100 percent ID, name from PolicyTypeClass C where exists(select 1 from PolicyType where PolicyTypeClassID = C.ID) order by name
+				        ) FT
+				union all
+				SELECT	'Rules' AS name, 
+						'#/rules' AS url, 
+						0 as feature,
+						NULL AS items
+                ) as mo
+		FOR XML PATH('nav'), TYPE
+		) AS Items
 
 UNION ALL
 
@@ -221,6 +245,11 @@ SELECT	'#Admin' as MenuID,
 											0 as feature,
 											NULL AS items
                                     union all
+									SELECT	'Policies' AS name, 
+											'#/policies/administration' AS url, 
+											1 as feature,
+											NULL AS items
+                                    union all
 									SELECT	'Relationships' AS name, 
 											'#/relations/administration' AS url, 
 											0 as feature,
@@ -242,7 +271,7 @@ SELECT	'#Admin' as MenuID,
 											5 as feature,
 											NULL AS items
 									union all
-					                SELECT	'Reporting' AS name, 
+					                SELECT	'Dashboards' AS name, 
 							                '#/reporting/administration' AS url, 
 							                0 as feature,
 							                NULL AS items
@@ -324,11 +353,7 @@ SELECT	'#Admin' as MenuID,
                     parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)), features);
             });
 
-//var items = parseXmlNavigationDocument(
-//                xml,
-//                Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList()
-//            );
-            return nodes;//items;
+            return nodes;
         }
 
         List<NavigationItem> parseXmlNavigationDocument(XElement xml, List<CompanyFeature> features)
@@ -356,31 +381,5 @@ SELECT	'#Admin' as MenuID,
 
             return items;
         }
-
-        //List<NavigationItem> parseXmlNavigationDocument(XElement xml, List<CompanyFeature> features)
-        //{
-        //    var items = new List<NavigationItem>();
-
-        //    foreach (var el in xml.Elements("nav"))
-        //    {
-        //        bool shouldParse = (el.Element("feature").Value == "0");
-        //        if (!shouldParse)   //further check is required.
-        //        {
-        //            var feature = (Feature)System.Enum.Parse(typeof(Feature), el.Element("feature").Value);
-        //            shouldParse = features.Any(i => i.Feature == feature);
-        //        }
-        //        if (shouldParse)
-        //        {
-        //            var item = new NavigationItem { MenuID = el.Element("menuID").Value, Name = el.Element("name").Value, Url = el.Element("url").Value };
-        //            if (el.Element("items") != null)
-        //            {
-        //                item.Items = parseXmlNavigationDocument(el.Element("items"), features);
-        //            }
-        //            items.Add(item);
-        //        }
-        //    }
-
-        //    return items;
-        //}
     }
 }

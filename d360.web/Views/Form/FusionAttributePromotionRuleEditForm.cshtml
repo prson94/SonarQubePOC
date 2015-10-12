@@ -67,7 +67,9 @@
                 var values = value.split('|');
                 if (values[2] > 0) {
                     $('#PromotionParent').show();
-                    PrOptionsParentSource.url = '/api/' + values[0] + '/' + values[2] + '/fieldlookup';
+                    var ot = values[0];
+                    if (ot == 'ArtifactType') ot = 'Artifact';
+                    PrOptionsParentSource.url = '/api/' + ot + '/' + values[2] + '/fieldlookup';
                     PrOptionsParentAdapter.dataBind();
                 }
                 else {

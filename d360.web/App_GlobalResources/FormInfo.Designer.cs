@@ -700,6 +700,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Removing this top-level policy type will permanently remove all policies under it, as well as any relationships that these policies participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
+        /// </summary>
+        internal static string PolicyType_Remove {
+            get {
+                return ResourceManager.GetString("PolicyType_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may not remove this policy as there are existing rules assigned to it..
         /// </summary>
         internal static string Policy_Error_Delete_ExistingRulesPresent {

@@ -169,6 +169,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Changing the name of the role will also change other relationship types that use this role..
+        /// </summary>
+        internal static string IntersectTypeRole_ExistingRole_ChangeWarning {
+            get {
+                return ResourceManager.GetString("IntersectTypeRole_ExistingRole_ChangeWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Re-use an existing role..
+        /// </summary>
+        internal static string IntersectTypeRole_ExistingRole_Description {
+            get {
+                return ResourceManager.GetString("IntersectTypeRole_ExistingRole_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If you do not want to re-use an existing role, please provide a name of the role you would like to create..
+        /// </summary>
+        internal static string IntersectTypeRole_NewRole_Description {
+            get {
+                return ResourceManager.GetString("IntersectTypeRole_NewRole_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Since list themselves can also contain dynamic fields, you must choose at least one field from the list to use as the display value.  You can also choose more than one field.  For example: {Name} : {Description}..
         /// </summary>
         internal static string ListDisplayFormat_Description {

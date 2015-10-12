@@ -437,6 +437,9 @@
     <Content Include="App_Data\Documentation.XML" />
     <Content Include="Areas\HelpPage\HelpPage.css" />
     <Content Include="Content\materialize\css\materialize.css" />
+    <Content Include="Content\templates\rules.list.html" />
+    <Content Include="Content\templates\policies.list.html" />
+    <Content Include="Content\templates\policies.admin.html" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
     <Content Include="Content\styles\all.css" />
@@ -1865,12 +1868,14 @@
     <None Include="Scripts\templates\lookups.admin.js" />
     <None Include="Scripts\templates\surveyresponsetypes.admin.js" />
     <None Include="Scripts\templates\groups.admin.js" />
-    <None Include="Scripts\templates\synonyms.admin.js" />
     <None Include="Scripts\templates\reporting.admin.js" />
     <None Include="Scripts\templates\taxonomies.list.js" />
     <None Include="Scripts\templates\taxonomies.admin.js" />
     <None Include="Scripts\templates\templates.admin.js" />
     <None Include="Scripts\templates\surveys.admin.js" />
+    <Content Include="Scripts\templates\rules.list.js" />
+    <Content Include="Scripts\templates\policies.list.js" />
+    <Content Include="Scripts\templates\policies.admin.js" />
     <Content Include="Scripts\version.json" />
     <None Include="Scripts\_references.js" />
     <Content Include="Web.config">
@@ -1982,6 +1987,7 @@
     <Content Include="Views\Form\SourceToTargetEditForm.cshtml" />
     <Content Include="Views\Form\IntersectTypeEditForm.cshtml" />
     <Content Include="Views\Overlays\TaxonomyTypeClasses.cshtml" />
+    <Content Include="Views\Overlays\PolicyTypeClasses.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

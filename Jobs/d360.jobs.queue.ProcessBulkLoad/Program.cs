@@ -68,7 +68,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
             try
             {
-                var companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
+                var companies = GetActiveCompanyIDs();//.Where(i => i == 4).ToList();
                 var domainPrefixes = GetCompanyDomainPrefixes();
 
                 companies.AsParallel().WithDegreeOfParallelism(4).ForAll(companyID =>

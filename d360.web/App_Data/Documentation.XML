@@ -331,6 +331,21 @@
               Looks up a localized string similar to Input Type.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.IntersectTypeRole_ExistingRole_ChangeWarning">
+            <summary>
+              Looks up a localized string similar to Changing the name of the role will also change other relationship types that use this role..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.IntersectTypeRole_ExistingRole_Description">
+            <summary>
+              Looks up a localized string similar to Re-use an existing role..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.IntersectTypeRole_NewRole_Description">
+            <summary>
+              Looks up a localized string similar to If you do not want to re-use an existing role, please provide a name of the role you would like to create..
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.ListDisplayFormat_Description">
             <summary>
               Looks up a localized string similar to Since list themselves can also contain dynamic fields, you must choose at least one field from the list to use as the display value.  You can also choose more than one field.  For example: {Name} : {Description}..
@@ -817,6 +832,11 @@
               Looks up a localized string similar to You do not have permissions to update this..
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.PolicyType_Remove">
+            <summary>
+              Looks up a localized string similar to Removing this top-level policy type will permanently remove all policies under it, as well as any relationships that these policies participate in.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.Policy_Error_Delete_ExistingRulesPresent">
             <summary>
               Looks up a localized string similar to You may not remove this policy as there are existing rules assigned to it..
@@ -958,14 +978,24 @@
               Looks up a localized string similar to Lookup Types.
             </summary>
         </member>
+        <member name="P:Resources.PageInfo.Administration_PolicyType_Description">
+            <summary>
+              Looks up a localized string similar to Organize various sets of policies across your organization..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_PolicyType_Title">
+            <summary>
+              Looks up a localized string similar to Policy Types.
+            </summary>
+        </member>
         <member name="P:Resources.PageInfo.Administration_Reporting_Description">
             <summary>
-              Looks up a localized string similar to Manage your report overlays and tiles..
+              Looks up a localized string similar to Manage your dashboard overlays and tiles..
             </summary>
         </member>
         <member name="P:Resources.PageInfo.Administration_Reporting_Title">
             <summary>
-              Looks up a localized string similar to Reporting.
+              Looks up a localized string similar to Dashboards.
             </summary>
         </member>
         <member name="P:Resources.PageInfo.Administration_Resource_Description">
@@ -1131,6 +1161,26 @@
         <member name="P:Resources.PageInfo.People_Title">
             <summary>
               Looks up a localized string similar to People.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Policies_Description">
+            <summary>
+              Looks up a localized string similar to .
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Policies_Title">
+            <summary>
+              Looks up a localized string similar to Policies.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Rules_Description">
+            <summary>
+              Looks up a localized string similar to .
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Rules_Title">
+            <summary>
+              Looks up a localized string similar to Rules.
             </summary>
         </member>
         <member name="P:Resources.PageInfo.Search_Description">
@@ -2471,6 +2521,17 @@
         <member name="M:d360.web.Controllers.FormController.IntersectType_DeleteFields(System.Int32)">
             <param name="id">IntersectTypeID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.IntersectTypeRole_AddFields(System.Int32)">
+            <param name="intersectTypeID">The ID of the Intersect Type</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.IntersectTypeRole_DeleteFields(System.Int32,System.Int32)">
+            <param name="id">The ID of the Role</param>
+            <param name="intersectTypeID">The ID of the Intersect Type</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.IntersectTypeRole_EditFields(System.Int32,System.Int32)">
+            <param name="id">The ID of the Role</param>
+            <param name="intersectTypeID">The ID of the Intersect Type</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Group_DeleteFields(System.Int32)">
             <param name="id">GroupID</param>
         </member>
@@ -2497,6 +2558,18 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.Policy_EditFields(System.Int32)">
             <param name="id">PolicyID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.PolicyType_DeleteFields(System.Int32)">
+            <param name="id">PolicyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.PolicyType_EditFields(System.Int32)">
+            <param name="id">PolicyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.PolicyTypeClass_DeleteFields(System.Int32)">
+            <param name="id">PolicyTypeClassID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.PolicyTypeClass_EditFields(System.Int32)">
+            <param name="id">PolicyTypeClassID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Report_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>

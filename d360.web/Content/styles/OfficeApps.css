@@ -1,5 +1,4 @@
 ﻿/* Common app styling */
-
 /* Main Primary color */
 /* Main Secondary color (1) */
 /* Main Secondary color (2) */
@@ -10,7 +9,7 @@ body {
 }
 #content-header {
   background: #3979a2;
-  color: white;
+  color: #fff;
   position: absolute;
   top: 0;
   left: 0;
@@ -23,10 +22,9 @@ body {
   /* Fixed header height */
   overflow: hidden;
   /* Disable scrollbars for header */
-
 }
 #content-main {
-  background: white;
+  background: #fff;
   position: fixed;
   top: 50px;
   /* Same value as #content-header's height */
@@ -35,14 +33,13 @@ body {
   bottom: 0;
   overflow: auto;
   /* Enable scrollbars within main content section */
-
 }
 .padding {
   padding: 15px;
 }
 #notification-message {
   background-color: #818285;
-  color: white;
+  color: #fff;
   position: absolute;
   width: 100%;
   min-height: 80px;
@@ -51,7 +48,6 @@ body {
   bottom: 0;
   display: none;
   /* Hidden until invoked */
-
 }
 #notification-message #notification-message-header {
   font-size: medium;

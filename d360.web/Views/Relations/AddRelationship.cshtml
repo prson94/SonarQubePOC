@@ -2,19 +2,20 @@
     <div class="ui segment">
         @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.Intersect, Description = "Please provide as much detail as possible in the form below.  You may select one or more relationships by clicking/highlighting the items in the list below.", Name = "Add Relationship" })
 
-        <div class="FieldNameRequired"><span>1.</span>What Items Are You Relating?</div>
+        <div class="FieldNameRequired">What Items Are You Relating?</div>
         <div id="ItemsDropdown">
             <div id="ItemsGrid"></div>
         </div>
-        <div style="display:none">
-            <div class="FieldNameRequired"><span>2.</span>What Role Is This Relationship?</div>
+
+        <div id="RoleDropdownWrapper">
+            <div class="FieldNameRequired">What Role Is This Relationship?</div>
             <div id="RoleDropdown"></div>
         </div>
 
-        <div class="FieldNameRequired"><span>2.</span>How Important Is This Relationship?</div>
+        <div class="FieldNameRequired">How Important Is This Relationship?</div>
         <div id="ImportanceDropdown"></div>
 
-        <div class="FieldNameRequired"><span>3.</span>Is There Anything Else We Should Know?</div>
+        <div class="FieldNameRequired">Is There Anything Else We Should Know?</div>
         <textarea id="Description"></textarea>
     </div>
 </div>
@@ -109,7 +110,13 @@
             async: false
         };
 
-        var RoleAdapter = new $.jqx.dataAdapter(RoleSource);
+        var RoleAdapter = new $.jqx.dataAdapter(RoleSource, {
+            loadComplete: function (records) {
+                if (records.length == 0) {
+                    $('#RoleDropdownWrapper').hide();
+                }
+            }
+        });
 
         $('#RoleDropdown').jqxDropDownList({ theme: theme, placeHolder: 'Choose Role...', source: RoleAdapter, displayMember: 'Name', valueMember: 'ID', width: field_width, height: field_height, dropDownWidth: 250 });
 

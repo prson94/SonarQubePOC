@@ -41,8 +41,9 @@ namespace d360.jobs.queue.ProcessFusion
                     {
                         try
                         {
+                            //int? fusionExecutionID = null;
                             bool processFusionWriteStatus = true;
-                            var processFusionTask = companyConnection.ExecuteAsync("exec fusion.ProcessFusionInQueue @queueID", new { queueID = q.ID }, null, 7200);    // 120 minute timeout.
+                            var processFusionTask = companyConnection.ExecuteAsync("exec fusion.ProcessFusionInQueue @queueID", new { queueID = q.ID }, null, 10800);    // 180 minute timeout.
                             processFusionTask.ContinueWith(t =>
                             {
                                 if (t.IsCompleted)
@@ -52,16 +53,22 @@ namespace d360.jobs.queue.ProcessFusion
 
                                 if (t.Exception != null)
                                 {
+                                    string exceptionData = t.Exception.GetFullExceptionData();
                                     if (t.Exception.InnerExceptions != null)
                                     {
-                                        mex.AddRange(t.Exception.InnerExceptions);
+                                        foreach (var ex in t.Exception.InnerExceptions)
+                                        {
+                                            exceptionData += ex.GetFullExceptionData();
+                                        }
                                     }
+                                    mex.Add(t.Exception);//companyConnection.Execute("insert into [fusion].[Error] values()", new { m = Environment.MachineName, queueID = q.ID });
                                 }
                                 processFusionWriteStatus = false;
                             });
 
                             while (processFusionWriteStatus)
                             {
+                                
                                 Console.WriteLine("Process fusion procedure executing...");
                                 System.Threading.Thread.Sleep(15000);
                             }
@@ -73,7 +80,7 @@ namespace d360.jobs.queue.ProcessFusion
                             mex.Add(ex);
                             companyConnection.Execute(@"update [queue].Fusion set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = ex.GetFullExceptionData() }, null, 500);
                         }
-                    });                    
+                    });
 
                     companyConnection.Close();
                     companyConnection.Dispose();

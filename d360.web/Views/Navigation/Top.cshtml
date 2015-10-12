@@ -71,7 +71,15 @@
                 navItem = Model.NavigationItems.Single(i => i.MenuID == "#Monitor");
                 if (navItem.ShouldDisplay)
                 {
-                    <li><a href="#/monitor">@(Resources.PageInfo.Monitor_Title)</a></li>
+                    <li>
+                        <a href="#/monitor">@(Resources.PageInfo.Monitor_Title)</a>
+                        <ul>
+                            @foreach (var n in navItem.NavigationItems)
+                            {
+                                @MenuLink(n)
+                            }
+                        </ul>
+                    </li>
                 }
 
                 navItem = Model.NavigationItems.Single(i => i.MenuID == "#Fusion");
@@ -80,11 +88,11 @@
                     <li>
                         <a href="#/fusion">Fusion</a>
                         @*<ul>
-                                @foreach (var n in navItem.NavigationItems)
-                                        {
-                                        @MenuLink(n)
-                                        }
-                            </ul>*@
+                            @foreach (var n in navItem.NavigationItems)
+                                    {
+                                    @MenuLink(n)
+                                    }
+                        </ul>*@
                     </li>
                 }
 
@@ -105,7 +113,7 @@
                 navItem = Model.NavigationItems.Single(i => i.MenuID == "#Community");
                 if (navItem.ShouldDisplay)
                 {
-                    <li><a href="#">Community</a></li>
+                    <li><a href="#/community">Community</a></li>
                 }
 
                 navItem = Model.NavigationItems.SingleOrDefault(i => i.MenuID == "#Admin");

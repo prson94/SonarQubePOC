@@ -218,6 +218,10 @@ namespace d360.model
 
         public DbSet<Policy> Policies { get; set; }
 
+        public DbSet<PolicyType> PolicyTypes { get; set; }
+
+        public DbSet<PolicyTypeClass> PolicyTypeClasses { get; set; }
+
         public DbSet<QueueFusionItem> QueueFusionItems { get; set; }
 
         public DbSet<Question> Questions { get; set; }
@@ -573,33 +577,41 @@ end", new { ss = source, tt = target });
 
         public List<AllocationPossibility> GetAllocationOptions()
         {
-            //EXEC GetAllocationOptions
-            return Database.Connection.Query<AllocationPossibility>(@"
+            var list = Database.Connection.Query<AllocationPossibility>(@"
 			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
 			union
-			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Domains :: ' + Name as Name from DomainType
+			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Reference :: ' + Name as Name from DomainType
 			union
-			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Information Models :: ' + Name as Name from TaxonomyType
+			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Models :: ' + Name as Name from TaxonomyType
 			union
-			select	'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + Name as Name from IntersectType
+			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
+			union
+            select	'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + Name as Name from IntersectType
 			union
 			select	'FusionType' as ObjectType, ID as ObjectTypeID, 'Fusion Types :: ' + Name as Name from FusionType
 			union
 			select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
-			union
-			select	'PolicyType' as ObjectType, 0 as ObjectTypeID, 'Policies and Rules' as Name
-").ToList(); 
+").ToList();
+            RuleType ruleType = RuleType.Informational;
+            foreach (var rt in ruleType.GetRuleTypeEnumList())
+            {
+                list.Add(new AllocationPossibility { ObjectType = "RuleType", Name = string.Format("Rules :: {0}", rt.Name), ObjectTypeID = (int)rt.ID });
+            }
+
+            list = list.OrderBy(i => i.Name).ToList();
+
+            return list;
         }
 
         public List<AllocationPossibility> GetAvailableAllocationOptions(int attributeTypeID)
         {
-            return Database.Connection.Query<AllocationPossibility>(@"
+            var list = Database.Connection.Query<AllocationPossibility>(@"
 select A.* from (
 			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
 			union
-			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Domains :: ' + Name as Name from DomainType
+			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Reference :: ' + Name as Name from DomainType
 			union
-			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Information Models :: ' + Name as Name from TaxonomyType
+			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Models :: ' + Name as Name from TaxonomyType
 			union
 			select	'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + Name as Name from IntersectType
 			union
@@ -607,11 +619,19 @@ select A.* from (
 			union
 			select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
 			union
-			select	'Policy' as ObjectType, 0 as ObjectTypeID, 'Policy' as Name
-			union
-			select	'Rule' as ObjectType, 0 as ObjectTypeID, 'Rule' as Name
+			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
 ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
-where R.ObjectID is null", new { id = attributeTypeID }).ToList(); 
+where R.ObjectID is null", new { id = attributeTypeID }).ToList();
+
+            RuleType ruleType = RuleType.Informational;
+            foreach (var rt in ruleType.GetRuleTypeEnumList())
+            {
+                list.Add(new AllocationPossibility { ObjectType = "RuleType", Name = string.Format("Rules :: {0}", rt.Name), ObjectTypeID = (int)rt.ID });
+            }
+
+            list = list.OrderBy(i => i.Name).ToList();
+
+            return list;
         }
 
         public List<AllocationPossibility> GetAvailableAllocationPossibilities()
@@ -2053,17 +2073,17 @@ where	R.SourceObject = 'FusionAttribute'
 				I.Type
 	FROM		(
 				SELECT	ID,
-						'Artifact - ' + Name AS Name,
+						'Artifacts :: ' + Name AS Name,
 						'ArtifactType' AS Type
 				FROM	ArtifactType
 				UNION
 				SELECT	ID,
-						'Reference - ' + Name AS Name,
+						'Reference :: ' + Name AS Name,
 						'DomainType' AS Type
 				FROM	DomainType
 				UNION
 				SELECT	A.ID,
-						'Fusion Attribute - ' + A.TextPath AS Name,
+						'Fusion Attributes :: ' + A.TextPath AS Name,
 						'FusionAttributeType' AS Type
 				FROM	FusionAttributeType A
 						INNER JOIN FusionType T ON A.FusionTypeID = T.ID
@@ -2073,16 +2093,17 @@ where	R.SourceObject = 'FusionAttribute'
 						'GroupType' as Type
 				UNION
 				SELECT	ID,
-						'Model - ' + Name AS Name,
+						'Models :: ' + Name AS Name,
 						'TaxonomyType' AS Type
 				FROM	TaxonomyType
 				UNION
-				SELECT	0 as ID,
-						'Policy' as Name,
-						'Policy' as Type
+				SELECT	ID,
+						'Policies :: ' + Name AS Name,
+						'PolicyType' AS Type
+				FROM	PolicyType
 				UNION
 				SELECT	CAST(ID as int) ID,
-						'Relationship Type - ' + Name AS Name,
+						'Relationships :: ' + Name AS Name,
 						'IntersectType' AS Type
 				FROM	IntersectType
 				UNION
@@ -2090,10 +2111,22 @@ where	R.SourceObject = 'FusionAttribute'
 						'Resource' as Name,
 						'ResourceType' as Type
 				UNION
-				SELECT	0 as ID,
-						'Rule' as Name,
-						'Rule' as Type
-				) I";
+				SELECT	1 as ID,
+						'Rules :: Informational' as Name,
+						'RuleType' as Type
+				UNION
+				SELECT	2 as ID,
+						'Rules :: Quality Check' as Name,
+						'RuleType' as Type
+				UNION
+				SELECT	3 as ID,
+						'Rules :: Metric' as Name,
+						'RuleType' as Type
+				UNION
+				SELECT	4 as ID,
+						'Rules :: Profile' as Name,
+						'RuleType' as Type
+) I";
 
             if (startType.HasValue && startID.HasValue)
             {
@@ -2108,7 +2141,6 @@ where	R.SourceObject = 'FusionAttribute'
                     sql += " where T.IntersectTypeID is null";
                 }
             }
-
 
             sql += " ORDER BY I.Name";
 
@@ -2698,6 +2730,8 @@ order by Name", new { workflowType, type, id });
             {
                 i.MapLeftKey("IntersectFlowMappingID").MapRightKey("DomainItemID").ToTable("IntersectFlowMappingContextItem");
             });
+            modelBuilder.Entity<IntersectTypeRoleRelation>().HasRequired(t => t.IntersectTypeRole).WithMany(t => t.RoleRelations).HasForeignKey(k => k.IntersectTypeRoleID).WillCascadeOnDelete(true);
+
             base.OnModelCreating(modelBuilder);
         }
 

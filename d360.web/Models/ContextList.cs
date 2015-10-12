@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-//namespace d360.web.Models
+﻿//namespace d360.web.Models
 //{
-    public static class ContextList
+public static class ContextList
     {
         public const string Artifact = "artifactform";
         public const string ArtifactType = "artifacttypeform";
@@ -37,6 +32,7 @@ using System.Web;
         public const string Group = "groupform";
         public const string Intersect = "intersectform";
         public const string IntersectType = "intersecttypeform";
+        public const string IntersectTypeRole = "intersecttyperoleform";
         public const string Load = "loadform";
         public const string LoadType = "loadtypeform";
         public const string LoadTypeField = "loadtypefieldform";
@@ -49,6 +45,8 @@ using System.Web;
         public const string OwnershipType = "ownershiptypeform";
         
         public const string Policy = "policyform";
+        public const string PolicyType = "policytypeform";
+        public const string PolicyTypeClass = "policytypeclassform";
 
         public const string QuestionType = "questiontypeform";
 

@@ -218,7 +218,7 @@ namespace d360.web.Models
                         value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
                         break;
                     default:
-                        value = form[ft.Name];
+                        value = Server.HtmlEncode(form[ft.Name]);
                         break;
                 }
 

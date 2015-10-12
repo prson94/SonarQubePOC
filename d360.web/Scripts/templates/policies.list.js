@@ -1,0 +1,176 @@
+﻿function policies_list(app, pageViewModel, templatePath, contextList) {
+
+    var getPolicyRoute = function (context) {
+        context.app.swap('');
+        context.title(pageViewModel.Title);
+
+        var type = 'Policy';
+        var policyTypeID = context.params['policytypeid'];
+        var policyID = context.params['policyid'];
+        var permissions = new PermissionsModel();
+
+        $.getJSON('/api/policytypes/' + policyTypeID, function (json) {
+
+            pageViewModel.Title = json.Name;
+            pageViewModel.Directions = json.Description;
+
+            context.title(pageViewModel.Title);
+
+            pageViewModel.breadcrumbs = [];
+            pageViewModel.breadcrumbs.push({ Name: 'Policies' });
+            pageViewModel.breadcrumbs.push({ Name: pageViewModel.Title, Active: true });
+
+            var statisticsTileVm;
+            var PolicyGridSource;
+            var PolicyGridAdapter;
+
+            //#region Event Handlers
+
+            function policyGridRowSelect(evt) {
+                try {
+                    var args = evt.args;    // event args.
+                    var row = args.row;     // row data.
+                    //var key = args.key;   // row key.
+
+                    policyID = row.ID;
+
+                    if (!policyID) policyID = 0;
+
+
+                    amplify.publish(AmplifyActions.TileUnsubscribe, {});
+                    $('#SideIcons').PageTools('reload', type, policyID, "");
+
+                    var loadPermissionsDependentTiles = function () {
+                        DetailTile('DetailTile', contextList, permissions, type, policyID);
+
+                        statisticsTileVm.ChangeObject(type, policyID);
+                        statisticsTileVm.GetStatistics();
+
+                        PeopleResponsibilityTile('Responsibilities', contextList, permissions, type, policyID, '');
+                        AttributesTile('AttributesTile', contextList, permissions, type, policyID, 'Business Attributes');
+                        RelationshipAggregatesTile('AggregatesTileContainer', type, policyID, permissions);
+                    }
+                    permissions.GetPermissionsForObject(type, policyID).then(loadPermissionsDependentTiles);
+
+                } catch (e) {
+                    logError("Monitor : PolicyGrid.select", e);
+                }
+            }
+
+            function saveAction(data) {
+                try {
+                    switch (data.context) {
+                        case contextList.Intersect:
+                            RelationshipAggregatesTile('AggregatesTileContainer', type, policyID, permissions);
+                            break;
+                        case contextList.Policy:
+                            $("#PolicyGrid").jqxTreeGrid('updateBoundData');
+                            switch (data.action) {
+                                case "add":
+                                    //load child items under selected tree node.
+                                    if (data.id) {
+                                        policyID = data.id;
+                                        $("#PolicyGrid").jqxTreeGrid('selectRow', policyID);
+                                    }
+                                    break;
+                                case "edit":
+                                    policyID = data.id;
+                                    $("#PolicyGrid").jqxTreeGrid('selectRow', policyID);
+                                    break;
+                            }
+                            break;
+                    }
+                } catch (e) {
+                    logError("Children : SaveAction", e);
+                }
+            }
+
+            function unsubscribe(data) {
+                PolicyGridAdapter = null;
+                PolicyGridSource = null;
+                statisticsTileVm = null;
+
+                $("#PolicyGrid").off("rowSelect", policyGridRowSelect);
+                amplify.unsubscribe("SaveAction", saveAction);
+                amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            }
+
+            //#endregion
+
+            context
+                .render(templatePath + 'policies.list.html', pageViewModel)
+                .appendTo(context.$element())
+                .then(function (content) {
+                    context.contentHeader(pageViewModel);
+
+                    $('#SideIcons').PageTools({ type: type, id: 0 });
+                    statisticsTileVm = new PolicyRuleStatisticsTileModel(type, 0);
+                    ko.applyBindings(statisticsTileVm, document.getElementById('StatisticsTile'));
+
+                    //#region PolicyGrid
+
+                    PolicyGridSource = {
+                        dataType: "json",
+                        url: '/api/policytypes/' + policyTypeID + '/policies',
+                        dataFields: [
+                            { name: 'ID' },
+                            { name: 'ParentID' },
+                            { name: 'Name', type: 'string' }
+                        ],
+                        hierarchy:
+                        {
+                            keyDataField: { name: 'ID' },
+                            parentDataField: { name: 'ParentID' }
+                        },
+                        id: 'ID'
+                    };
+
+                    PolicyGridAdapter = new $.jqx.dataAdapter(PolicyGridSource);
+
+                    $("#PolicyGrid").jqxTreeGrid({
+                        width: '99.5%',
+                        height: '500px',
+                        theme: list_theme,
+                        //showHeader: false,
+                        selectionMode: 'singleRow',
+                        source: PolicyGridAdapter,
+                        filterable: true,
+                        filterMode: 'simple',
+                        sortable: true,
+                        icons: true,
+                        columns: [
+                          { text: 'Name', dataField: 'Name', width: '90%' }
+                        ],
+                        ready: function () {
+                            try {
+                                if (policyID) {
+                                    $('#PolicyGrid').jqxTreeGrid('selectRow', policyID);
+                                }
+                                else {
+                                    var firstRow = $('#PolicyGrid').jqxTreeGrid('getRows')[0];
+                                    var key = $("#PolicyGrid").jqxTreeGrid('getKey', firstRow);
+                                    $('#PolicyGrid').jqxTreeGrid('selectRow', key);
+                                }
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        }
+                    });
+
+                    //#endregion
+
+                    //#region Event Subscriptions
+
+                    $("#PolicyGrid").on("rowSelect", policyGridRowSelect);
+                    amplify.subscribe("SaveAction", saveAction);
+                    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+                    //#endregion
+                });
+
+        });
+    }
+
+    app.get('#/policies/:policytypeid', getPolicyRoute);
+    app.get('#/policies/:policytypeid/:policyid', getPolicyRoute);
+}

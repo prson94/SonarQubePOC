@@ -27,6 +27,9 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Parent_Name", Description = "Parent_Description")]
         public int? ParentID { get; set; }
 
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description")]
+        public int PolicyTypeID { get; set; }
+
         #endregion
     }
 
@@ -40,6 +43,7 @@ namespace d360.core.entities
         public string TextPath { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
+
         public int? UpdatedBy { get; set; }
 
         #endregion
@@ -47,13 +51,13 @@ namespace d360.core.entities
         #region Navigation Properties
 
         [IgnoreDataMember]
-        public virtual Artifact Parent { get; set; }
+        public virtual Policy Parent { get; set; }
+
+        [ForeignKey("PolicyTypeID"), IgnoreDataMember]
+        public virtual PolicyType PolicyType { get; set; }
 
         [ForeignKey("ParentID"), IgnoreDataMember]
-        public virtual ICollection<Artifact> Children { get; set; }
-
-        [IgnoreDataMember]
-        public virtual ICollection<Rule> Rules { get; set; }
+        public virtual ICollection<Policy> Children { get; set; }
 
         #endregion
     }

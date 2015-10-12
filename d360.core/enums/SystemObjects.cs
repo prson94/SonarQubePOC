@@ -102,28 +102,26 @@ namespace d360.core
         Claim = 45,
         [Description("Bulk Load"), AllowSurvey(false)]
         Load = 46,
-        [Description("Bulk Load Type"), AllowSurvey(false)]
-        LoadType = 47,
-        [Description("Bulk Load Type Field"), AllowSurvey(false)]
-        LoadTypeField = 48,
-        [Description("Bulk Load Type Rule"), AllowSurvey(false)]
-        LoadTypeRule = 49,
-        [Description("Vocabulary"), AllowSurvey(false)]
-        Vocabulary = 50,
         [Description("Report"), AllowSurvey(false)]
-        Report = 51,
+        Report = 47,
         [Description("Attribute Type Category"), AllowSurvey(false)]
-        AttributeTypeCategory = 52,
+        AttributeTypeCategory = 48,
         [Description("Policy"), AllowSurvey(false)]
-        Policy = 53,
+        Policy = 49,
+        [Description("Policy Type"), AllowSurvey(false)]
+        PolicyType = 50,
+        [Description("Policy Type Class"), AllowSurvey(false)]
+        PolicyTypeClass = 51,
         [Description("Rule"), AllowSurvey(false)]
-        Rule = 54,
+        Rule = 52,
+        [Description("Rule Type"), AllowSurvey(false)]
+        RuleType = 53,
         [Description("Fusion Execution"), AllowSurvey(false)]
-        FusionExecution = 55,
+        FusionExecution = 54,
         [Description("Workflow Relation"), AllowSurvey(false)]
-        WorkflowTypeRelation = 56,
+        WorkflowTypeRelation = 55,
         [Description("Taxonomy Type Class"), AllowSurvey(false)]
-        TaxonomyTypeClass = 57
+        TaxonomyTypeClass = 56
     }
 
     public class SystemObjectInfo
@@ -131,8 +129,8 @@ namespace d360.core
         public SystemObjects ID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public bool AllowOwnership { get; set; }
-        public bool AllowSurvey { get; set; }
+        //public bool AllowOwnership { get; set; }
+        //public bool AllowSurvey { get; set; }
     }
 
     public static class SystemObjectExtensions
@@ -143,12 +141,12 @@ namespace d360.core
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
-                var aAttrOwnership = ((AllowOwnershipAttribute)tm.GetCustomAttribute(typeof(AllowOwnershipAttribute)));
-                var aAttrSurvey = ((AllowSurveyAttribute)tm.GetCustomAttribute(typeof(AllowSurveyAttribute)));
+                //var aAttrOwnership = ((AllowOwnershipAttribute)tm.GetCustomAttribute(typeof(AllowOwnershipAttribute)));
+                //var aAttrSurvey = ((AllowSurveyAttribute)tm.GetCustomAttribute(typeof(AllowSurveyAttribute)));
                 list.Add(new SystemObjectInfo
                 {
-                    AllowOwnership = (aAttrOwnership != null) ? aAttrOwnership.Allowed : true,
-                    AllowSurvey = (aAttrSurvey != null) ? aAttrSurvey.Allowed : false,
+                    //AllowOwnership = (aAttrOwnership != null) ? aAttrOwnership.Allowed : true,
+                    //AllowSurvey = (aAttrSurvey != null) ? aAttrSurvey.Allowed : false,
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                     ID = (SystemObjects)Enum.Parse(typeof(SystemObjects), tm.Name),
                     Name = tm.Name

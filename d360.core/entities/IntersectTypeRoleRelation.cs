@@ -19,10 +19,10 @@ namespace d360.core.entities
         [DataMember]
         public string Side2Label { get; set; }
 
-        [IgnoreDataMember]
+        [IgnoreDataMember, ForeignKey("IntersectTypeID")]
         public virtual IntersectType IntersectType { get; set; }
 
-        [IgnoreDataMember]
+        [IgnoreDataMember, ForeignKey("IntersectTypeRoleID")]
         public virtual IntersectTypeRole IntersectTypeRole { get; set; }
     }
 }
