@@ -850,7 +850,7 @@
     <value>The high-level classification of the model you are adding/editing.  You may configure these classes under Model Administration.</value>
   </data>
   <data name="Class_Name" xml:space="preserve">
-    <value>Model Class</value>
+    <value>Classification</value>
   </data>
   <data name="ControlsOwnership_Description" xml:space="preserve">
     <value>All ownership propagates from these models to any related artifacts.  Only one catalog can control ownership.</value>

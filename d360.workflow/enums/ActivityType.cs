@@ -5,8 +5,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.workflow
 {
@@ -16,7 +14,11 @@ namespace d360.workflow
         [Name("Approval by Owner"), Description("The assigned owner must complete this activity in order to continue the approval process."), EnumMember]
         OwnerApproval = 1,
         [Name("Certification by Owner"), Description("The assigned owner must certify that all data on the specified item is correct to complete the certification process."), EnumMember]
-        OwnerCertification = 2
+        OwnerCertification = 2,
+        [Name("Assign Issue To Pool"), Description("The owner is assigned as a potential resource to work on the issue.  They must still choose to work the issue."), EnumMember]
+        AssignIssueToPool = 3,
+        [Name("Assign Issue To Self"), Description("The owner has chosen to work the issue."), EnumMember]
+        AssignIssueToSelf = 4
     }
 
     public class ActivityTypeInfo

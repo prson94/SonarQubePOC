@@ -47,6 +47,7 @@ public static class ContextList
         public const string Policy = "policyform";
         public const string PolicyType = "policytypeform";
         public const string PolicyTypeClass = "policytypeclassform";
+        public const string PolicyTypeLevel = "policytypelevelform";
 
         public const string QuestionType = "questiontypeform";
 

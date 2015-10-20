@@ -49,8 +49,13 @@
       <HintPath>..\packages\Mandrill.net.1.0.2\lib\net45\Mandrill.net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Activities.Extensions">
-      <HintPath>..\External Dlls\Microsoft.Activities.Extensions.dll</HintPath>
+    <Reference Include="Microsoft.Activities.Extensions, Version=2.0.6.9, Culture=neutral, PublicKeyToken=23b0c89d0d5ad43f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Activities.UnitTesting.2.0.6.9\lib\Net45\Microsoft.Activities.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Activities.UnitTesting, Version=2.0.6.9, Culture=neutral, PublicKeyToken=30c1df11edd2bb96, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Activities.UnitTesting.2.0.6.9\lib\Net45\Microsoft.Activities.UnitTesting.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -61,6 +66,7 @@
     <Reference Include="System.Activities" />
     <Reference Include="System.Activities.DurableInstancing" />
     <Reference Include="System.Runtime.DurableInstancing" />
+    <Reference Include="System.ServiceModel.Activities" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">

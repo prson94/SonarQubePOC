@@ -25,6 +25,9 @@ namespace d360.core.entities
         public string Description { get; set; }
 
         [DataMember]
+        public string Role { get; set; }
+
+        [DataMember]
         public int SourceIntersectTypeNodeID { get; set; }
         
         [DataMember, Key, Column(Order = 2)]

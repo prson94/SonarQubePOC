@@ -4,6 +4,7 @@
         context.title(pageViewModel.Title);
 
         var type = 'PolicyType';
+        var policyTypeID = 0;
 
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: 'Administration' });
@@ -33,11 +34,14 @@
             if (data) {
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
-                $('#SideIcons').PageTools("reload", type, data.ID);
-                DetailTile('DetailTile', contextList, permissions, type, data.ID);
-                FieldsGrid("FieldsTile", contextList, permissions, type, data.ID, 'Policy Type Definition');
-                $('#ClaimsTile').load('/parts/ResponsibilityTypeObjectClaimGrid?type=' + type + '&id=' + data.ID);
-                PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, data.ID, 'Default Responsibilities', true);
+                policyTypeID = data.ID;
+
+                $('#SideIcons').PageTools("reload", type, policyTypeID);
+                DetailTile('DetailTile', contextList, permissions, type, policyTypeID);
+                PolicyTypeLevelsGrid('LevelsTile', contextList, permissions, policyTypeID);
+                FieldsGrid("FieldsTile", contextList, permissions, type, policyTypeID, 'Policy Type Definition');
+                $('#ClaimsTile').load('/parts/ResponsibilityTypeObjectClaimGrid?type=' + type + '&id=' + policyTypeID);
+                PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, policyTypeID, 'Default Responsibilities', true);
             }
         }
 
@@ -47,6 +51,9 @@
                     case contextList.PolicyType:
                         $('#List').jqxGrid('updatebounddata');
                         amplify.publish("RefreshNavigation");
+                        break;
+                    case contextList.PolicyTypeLevel:
+                        PolicyTypeLevelsGrid('LevelsTile', contextList, permissions, policyTypeID);
                         break;
                 }
             } catch (e) { }

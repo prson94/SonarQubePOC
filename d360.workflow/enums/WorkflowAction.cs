@@ -9,6 +9,7 @@ namespace d360.workflow
     public enum WorkflowAction
     {
         SuggestNewArtifact = 1,
-        CertifyArtifact = 2
+        CertifyArtifact = 2,
+        WorkIssue = 3
     }
 }

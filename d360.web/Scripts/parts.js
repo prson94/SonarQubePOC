@@ -107,10 +107,14 @@ function drawKpi(controlID, title, total, available, isPercentage) {
 function TileTools(toolsControlID, tools) {
     $(toolsControlID).addClass('TileTools');
     $(toolsControlID).html('');
-    
-    var toolClick = function () {
-        amplify.publish("ToolAction", { uri: $(this).data("uri"), context: $(this).data("context") });
+
+    var internalToolClick = function () {
+        amplify.publish(AmplifyActions.InternalTool, { action: $(this).data("action") });
     }
+    var toolClick = function () {
+        amplify.publish(AmplifyActions.Tool, { uri: $(this).data("uri"), context: $(this).data("context") });
+    }
+
     var unsubscribe = function() {
         $.each($(toolsControlID).find('i'), function () {
             $(this).off('click', toolClick);
@@ -118,10 +122,16 @@ function TileTools(toolsControlID, tools) {
     }
 
     $.each(tools, function () {
-        var tool = $("<a class='btn-floating waves-effect waves-light brown lighten-1'><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>");//$("<i class='fa fa-" + this.icon + "' title='" + this.title + "'></i>");
-        tool.data('uri', this.uri);
-        tool.data('context', this.context);
-        tool.on('click', toolClick);
+        var tool = $("<a class='btn-floating waves-effect waves-light brown lighten-1'><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>");
+        if (this.action) {
+            tool.data('action', this.action);
+            tool.on('click', internalToolClick);
+        }
+        else {
+            tool.data('uri', this.uri);
+            tool.data('context', this.context);
+            tool.on('click', toolClick);
+        }
         $(toolsControlID).append(tool);
     });
 
@@ -720,13 +730,14 @@ function CriticalRelationshipsTile(controlID, type, id) {
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 }
 
-function DetailsTile(controlID, contextList, permissions, type, id, context) {
+function DetailsTile(controlID, contextList, permissions, type, id, context, shouldHideSynonyms) {
     controlID = '#' + controlID;
     var _DetailSubTile = '#DetailSubTile';
     var _SynonymsSubTile = '#SynonymsSubTile';
     var _AttributesSubTile = '#AttributesSubTile';
 
-    var source = $("#detailTileTmpl").html();
+    var source;
+    var source = shouldHideSynonyms ? $("#detailTileNoSynonymsTmpl").html() : $("#detailTileTmpl").html();
     var template = Handlebars.compile(source);
     $(controlID).html(template({}));
 
@@ -790,39 +801,41 @@ function DetailsTile(controlID, contextList, permissions, type, id, context) {
 
     //#region Synonyms Grid
 
-    var srcSynonym = {
-        datatype: 'json',
-        url: '/api/' + type + '/' + id + '/synonyms',
-        datafields:
-        [
-            { name: 'ID' },
-            { name: 'Name' },
-            { name: 'Description' },
-            { name: 'Source' }
-        ]
-    };
+    if (!shouldHideSynonyms) {
+        var srcSynonym = {
+            datatype: 'json',
+            url: '/api/' + type + '/' + id + '/synonyms',
+            datafields:
+            [
+                { name: 'ID' },
+                { name: 'Name' },
+                { name: 'Description' },
+                { name: 'Source' }
+            ]
+        };
 
-    var adapterSynonym = new $.jqx.dataAdapter(srcSynonym);
+        var adapterSynonym = new $.jqx.dataAdapter(srcSynonym);
 
-    $(_SynonymsSubTile).jqxGrid({
-        source: adapterSynonym,
-        width: grid_width,
-        pagesizeoptions: ['5', '10', '20'],
-        pagesize: 5,
-        autoheight: true,
-        autorowheight: true,
-        sortable: true,
-        altrows: true,
-        showfilterrow: true,
-        filterable: true,
-        pageable: false,
-        theme: list_theme,
-        columns: [
-            { datafield: "Source", text: "Source", width: '250px', filtertype: 'checkedlist' },
-            { datafield: "Name", text: "Name", width: '250px' },
-            { datafield: "Description", text: "Description" }
-        ]
-    });
+        $(_SynonymsSubTile).jqxGrid({
+            source: adapterSynonym,
+            width: grid_width,
+            pagesizeoptions: ['5', '10', '20'],
+            pagesize: 5,
+            autoheight: true,
+            autorowheight: true,
+            sortable: true,
+            altrows: true,
+            showfilterrow: true,
+            filterable: true,
+            pageable: false,
+            theme: list_theme,
+            columns: [
+                { datafield: "Source", text: "Source", width: '250px', filtertype: 'checkedlist' },
+                { datafield: "Name", text: "Name", width: '250px' },
+                { datafield: "Description", text: "Description" }
+            ]
+        });
+    }
 
     //#endregion
 
@@ -832,7 +845,9 @@ function DetailsTile(controlID, contextList, permissions, type, id, context) {
 
     function pageResized() {
         try {
-            $(_SynonymsSubTile).jqxGrid('refresh');
+            if (!shouldHideSynonyms) {
+                $(_SynonymsSubTile).jqxGrid('refresh');
+            }
         } catch (e) {
         }
     }
@@ -856,7 +871,9 @@ function DetailsTile(controlID, contextList, permissions, type, id, context) {
                         }
                     }
                 case contextList.Synonym:
-                    $(_SynonymsSubTile).jqxGrid('updatebounddata');
+                    if (!shouldHideSynonyms) {
+                        $(_SynonymsSubTile).jqxGrid('updatebounddata');
+                    }
                     break;
             }
         } catch (e) {
@@ -883,23 +900,27 @@ function DetailsTile(controlID, contextList, permissions, type, id, context) {
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
     $('#DetailTileTabs > li > a').on('click', ribbonSelect);
-    $(_SynonymsSubTile).on('bindingcomplete', function (event) {
-        var badge = $('#DetailsTile_SynonymBadge');
-        var count = 0;
-        try {
-            count = $(_SynonymsSubTile).jqxGrid('getrows').length;
-        } catch (e) {
-            count = 0;
-        }
-        if (count > 0) {
-            badge.show();
-            badge.text(count);
-        }
-        else {
-            badge.text('');
-            badge.hide();
-        }
-    });
+
+    if (!shouldHideSynonyms) {
+        $(_SynonymsSubTile).on('bindingcomplete', function (event) {
+            var badge = $('#DetailsTile_SynonymBadge');
+            var count = 0;
+            try {
+                count = $(_SynonymsSubTile).jqxGrid('getrows').length;
+            } catch (e) {
+                count = 0;
+            }
+            if (count > 0) {
+                badge.show();
+                badge.text(count);
+            }
+            else {
+                badge.text('');
+                badge.hide();
+            }
+        });
+    }
+
     //#endregion
 }
 
@@ -2949,6 +2970,121 @@ function PeopleResponsibilityTile(controlID, contextList, permissions, type, id,
     //#endregion
 }
 
+function PolicyTypeLevelsGrid(controlID, contextList, permissions, id) {
+
+    var toolsControlID = controlID + "_tools";
+    var gridControlID = controlID + "_grid";
+    controlID = '#' + controlID;
+
+    var source;
+    var adapter;
+
+    //#region Grid
+
+    try {
+        $(controlID).html('<header>Levels<div id="' + toolsControlID + '"></div></header><div id="' + gridControlID + '"></div>');
+        gridControlID = '#' + gridControlID;
+        toolsControlID = '#' + toolsControlID;
+
+        source = {
+            datatype: 'json',
+            url: '/api/PolicyType/' + id + '/levels',
+            datafields:
+            [
+                { name: 'PolicyTypeID' },
+                { name: 'Name' },
+                { name: 'Level' },
+                { name: 'Description' }
+            ]
+        };
+
+        adapter = new $.jqx.dataAdapter(source);
+
+        if (permissions.HasPermission("Root", "Update")) {
+            TileTools(toolsControlID, [
+                { icon: 'plus', uri: "/form/AddPolicyTypeLevel?id=" + id, context: contextList.PolicyTypeLevel, title: 'Add level' }
+            ]);
+        }
+
+        $(gridControlID).jqxGrid({
+            width: grid_width,
+            autoheight: true,
+            autorowheight: true,
+            sortable: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 20,
+            filterable: true,
+            showfilterrow: true,
+            pageable: true,
+            altrows: true,
+            source: adapter,
+            theme: list_theme,
+            columns: [
+                { datafield: "Level", text: "Level", width: '10%' },
+                { datafield: "Name", text: "Name", width: '30%' },
+                { datafield: "Description", text: "Description" },
+                {
+                    text: '',
+                    dataField: 'PolicyTypeID',
+                    width: 80,
+                    filterable: false,
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+
+                        var tools = [];
+
+                        if (permissions.HasPermission("Root", "Update")) {
+                            tools.push({ icon: 'pencil', urlprefix: '/form/EditPolicyTypeLevel?id=' + data.PolicyTypeID + '&level=' + data.Level });
+                            tools.push({ icon: 'trash-o', urlprefix: '/form/DeletePolicyTypeLevel?id=' + data.PolicyTypeID + '&level=' + data.Level });
+                        }
+
+                        return renderToolsHtml(value, tools, contextList.PolicyTypeLevel);
+                    }
+                }
+            ]
+        });
+    } catch (e) {
+        console.log(e);
+    }
+
+    //#endregion
+
+    //#region Event Subscriptions
+
+    function pageResized() {
+        $(gridControlID).jqxGrid('refresh');
+    }
+
+    function saveAction(data) {
+        try {
+            switch (data.context) {
+                case contextList.PolicyTypeLevel:
+                    $(gridControlID).jqxGrid('updatebounddata');
+                    break;
+            }
+        } catch (e) {
+            logError("Parts.js : PolicyTypeLevelsGrid", e);
+        }
+    }
+
+    function unsubscribe(data) {
+        source = null;
+        adapter = null;
+
+        amplify.unsubscribe("PageResized", pageResized);
+        amplify.unsubscribe("SaveAction", saveAction);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    amplify.subscribe("PageResized", pageResized);
+    amplify.subscribe("SaveAction", saveAction);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+}
+
+
 function RelatedArtifactsGrid(controlID, permissions, typeName, typeID, id) {
 
     controlID = '#' + controlID;
@@ -4258,19 +4394,25 @@ function YourWorkflowTasks(controlID, title, showTitle) {
     labelControlID = '#' + labelControlID;
 
     var chart = $(chartControlID);
-    var parentWidth = chart.parent().innerWidth();
+    var chartSource;
+    var chartAdapter;
+    var gridSource;
+    var gridAdapter;
 
-    chart.css('width', '100%');
-    chart.css('height', '400px');
+    //#region Event Subscriptions
 
-    try {
-        chart.jqxChart('destroy');
-    } catch (e) { }
+    var bindComplete = function (event) {
+        $(chart).jqxGrid('selectrow', 0);
+    };
 
-    var loadGridFromChartClick = function (data) {
+    var rowSelect = function (event) {
+        var args = event.args;
+        var rowBoundIndex = args.rowindex;
+
+        var data = args.row;
         switch (data.WorkflowTypeID) {
-            case 1: // Suggest
-                //#region
+            case 1:
+                //#region Suggest
                 gridSource.datafields = [
                     { name: 'WorkflowID' },
                     { name: 'ID', type: 'number' },
@@ -4319,8 +4461,8 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                 ]);
                 //#endregion
                 break;
-            case 2: // Certify
-                //#region
+            case 2:
+                //#region Certify
                 gridSource.datafields = [
                     { name: 'WorkflowID' },
                     { name: 'ID', type: 'number' },
@@ -4358,8 +4500,44 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                 ]);
                 //#endregion
                 break;
+            case 3:
+                //#region WorkIssue
+                gridSource.datafields = [
+                    { name: 'WorkflowID' },
+                    { name: 'Issue', type: 'string' },
+                    { name: 'ResourceID', type: 'number' },
+                    { name: 'ResourceName', type: 'string' },
+                    { name: 'ResourceUrl', type: 'string' },
+                    { name: 'DateStarted', type: 'date' },
+                    { name: 'Activity', type: 'string' }
+                ];
+                $(gridControlID).jqxGrid('columns', [
+                    { datafield: "Issue", text: "Issue" },
+                    { filtertype: 'checkedlist', datafield: "ResourceName", text: "Reporting User", width: '20%',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewLinkRenderer('Resource', data.ResourceID, data.ResourceUrl, data.ResourceName);
+                        }
+                    },
+                    { datafield: "DateStarted", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy", width: '20%' }, // hh:mm:ss tt },
+                    {
+                        datafield: "WorkflowID",
+                        text: "",
+                        sortable: false,
+                        filterable: false,
+                        width: '40px',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            var tools = [];
+
+                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
+
+                            return renderToolsHtml(value, tools, contextList.Workflow, data);
+                        }
+                    }
+                ]);
+                //#endregion
+                break;
             default:
-                //#region
+                //#region Not known
                 gridSource.datafields = [
                     { name: 'Activity' },
                     { name: 'ActivityDescription', type: 'string' },
@@ -4427,25 +4605,57 @@ function YourWorkflowTasks(controlID, title, showTitle) {
 
         gridSource.url = '/services/workflow/tasks/types/' + data.WorkflowTypeID + '?$orderby=DateStarted%20asc';
         $(gridControlID).jqxGrid('updatebounddata');
+    };
+
+    function pageResized() {
+        chart.jqxGrid('refresh');
+        $(gridControlID).jqxGrid('refresh');
     }
 
-    //$(controlID + "_HelpTip").qtip({
-    //    content: {
-    //        text: 'Click on a pie slice in the chart to get a list of your tasks by type.',
-    //        position: {
-    //            my: 'top right',  // Position my top left...
-    //            at: 'bottom left', // at the bottom right of...
-    //            viewport: $(window),
-    //            effect: false
-    //        }
-    //    },
-    //    style: {
-    //        classes: 'qtip-blue qtip-shadow'
-    //    }
-    //});
+    function saveAction(data) {
+        try {
+            switch (data.context) {
+                case "Workflow":
+                    var reloadChartData = function () {
+                        var pr = new $.Deferred();
+                        chartAdapter.dataBind();
+                        return pr.promise();
+                    }
+                    reloadChartData().then(function () {
+                        chart.jqxGrid('updatebounddata');
+                        $(gridControlID).jqxGrid('updatebounddata');
+                    });
+                    break;
+            }
+        } catch (e) { }
+    }
+
+    function unsubscribe(data) {
+        chartSource = null;
+        chartAdapter = null;
+        gridSource = null;
+        gridAdapter = null;
+
+        amplify.unsubscribe("PageResized", pageResized);
+        amplify.unsubscribe("SaveAction", saveAction);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        $(chart).off('rowselect', rowSelect);
+        $(chart).off("bindingcomplete", bindComplete);
+        chart = null;
+    }
+
+    $(chart).on("bindingcomplete", bindComplete);
+    $(chart).on('rowselect', rowSelect);
+    amplify.subscribe("PageResized", pageResized);
+    amplify.subscribe("SaveAction", saveAction);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
 
     try {
-        var chartSource = {
+        chartSource = {
             datatype: 'json',
             url: '/services/workflow/tasks/types/breakdown',
             datafields:
@@ -4457,45 +4667,26 @@ function YourWorkflowTasks(controlID, title, showTitle) {
             ]
         };
 
-        var chartAdapter = new $.jqx.dataAdapter(chartSource, { async: false });
+        chartAdapter = new $.jqx.dataAdapter(chartSource, { async: false });
 
-        chart.jqxChart({
-            title: '',
-            description: "",
-            enableAnimations: true,
-            showLegend: true,
-            showToolTips: false,
-            showBorderLine: false,
+        $(chart).jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 10,
+            pageable: true,
+            autorowheight: true,
             source: chartAdapter,
-            colorScheme: chartDefaultTheme,
-            legendLayout: { left: 60, top: 250, width: parentWidth - 25, height: 150, flow: 'vertical' },
-            padding: { left: 0, right: 0, top: 0, bottom: 150 },
-            seriesGroups: [{
-                useGradientColors: false,
-                type: 'pie',
-                series: [
-                    {
-                        showLabels: true,
-                        useGradient: false,
-                        dataField: 'Count',
-                        displayText: 'WorkflowTypeName',
-                        labelRadius: 50,
-                        initialAngle: 15,
-                        radius: 100,
-                        centerOffset: 0
-                    }
-                ],
-                click: function (e) {
-                    var data = chartAdapter.records[e.elementIndex];
-                    if (data) {
-                        loadGridFromChartClick(data);
-                    }
-                }
-            }]
+            theme: list_theme,
+            columns: [
+                    { datafield: "WorkflowTypeName", text: "Workflow" },
+                    { datafield: "Count", text: "# Assignments", width: '30%' }
+            ]
         });
-        //chart.jqxChart('addColorScheme', 'myScheme', colorScheme);
-        //chart.jqxChart('colorScheme', 'myScheme');
-        //chart.jqxChart('refresh');
     } catch (e) {
         console.log(e);
     }
@@ -4505,7 +4696,7 @@ function YourWorkflowTasks(controlID, title, showTitle) {
     var gridSource = {
         datatype: 'json',
         url: null,
-        datafields: []
+        datafields: [{ name: 'WorkflowID' } ]
     };
 
     var gridAdapter = new $.jqx.dataAdapter(gridSource);
@@ -4531,64 +4722,6 @@ function YourWorkflowTasks(controlID, title, showTitle) {
     }
 
     //#endregion
-
-    //#endregion
-
-    //#region Event Subscriptions
-
-    function pageResized() {
-        chart.jqxChart('refresh');
-        $(gridControlID).jqxGrid('refresh');
-    }
-
-    function saveAction(data) {
-        try {
-            switch (data.context) {
-                case "Workflow":
-                    var reloadChartData = function () {
-                        var pr = new $.Deferred();
-                        chartAdapter.dataBind();
-                        return pr.promise();
-                    }
-                    reloadChartData().then(function () {
-                        chart.jqxChart('update');
-                        $(gridControlID).jqxGrid('updatebounddata');
-                    });
-                    break;
-            }
-        } catch (e) { }
-    }
-
-    function chartRefreshEnd() {
-        var data = chartAdapter.records[0];
-        if (data) {
-            loadGridFromChartClick(data);
-        }
-        else {
-            $(controlID).hide();
-        }
-    }
-
-    function unsubscribe(data) {
-        chartSource = null;
-        chartAdapter = null;
-        gridSource = null;
-        gridAdapter = null;
-
-        amplify.unsubscribe("PageResized", pageResized);
-        amplify.unsubscribe("SaveAction", saveAction);
-        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
-        chart.off('refreshEnd', chartRefreshEnd);
-
-        chart = null;
-    }
-
-    amplify.subscribe("PageResized", pageResized);
-    chart.on('refreshEnd', chartRefreshEnd);
-    amplify.subscribe("SaveAction", saveAction);
-    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
     //#endregion
 }

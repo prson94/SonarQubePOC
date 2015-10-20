@@ -35,7 +35,7 @@
 
                 $('#SideIcons').PageTools("reload", type, data.ID);
                 DetailTile('DetailTile', contextList, permissions, type, data.ID);
-                TaxonomyTypeLevelsGrid('LevelsTile', contextList, permissions, data.ID); //$('#LevelsTile').load('/taxonomy/' + data.ID + '/levels');
+                TaxonomyTypeLevelsGrid('LevelsTile', contextList, permissions, data.ID);
                 FieldsGrid("FieldsTile", contextList, permissions, type, data.ID, 'Model Definition');
                 $('#ClaimsTile').load('/parts/ResponsibilityTypeObjectClaimGrid?type=' + type + '&id=' + data.ID);
                 PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, data.ID, 'Default Responsibilities', true);

@@ -57,8 +57,9 @@ namespace d360.web.Controllers
         [Route("{id}/overlay")]
         public ActionResult WorkflowActionOverlay(Guid id)
         {
+            var workflow = Company.GetById<Workflow>(id);
             ViewBag.WorkflowID = id;
-            return PartialView();
+            return PartialView(string.Format("WorkflowActionOverlay_{0}", (int)workflow.WorkflowType));
         }
 
         public ActionResult ArtifactTypeWorkflowStatusOverlay(int id)

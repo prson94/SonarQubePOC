@@ -104,12 +104,16 @@ namespace d360.web.Controllers
                 {
                     var detail = Company.GetObjectDetail(type, id);
                     var sType = type.ToString();
+                    var _id = sType.EndsWith("Type") ? detail.ID : detail.TypeID;
+
                     var usedIDs = Company.Filter<d360.core.entities.Attribute>(i => i.ObjectType == sType && i.ObjectID == id).Select(i => i.AttributeTypeID).ToList();
+
+                    if (!sType.EndsWith("Type")) sType += "Type";
                     types = (
                             from t in Company.AttributeTypes
                             join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID
-                            where r.ObjectType == detail.Type
-                            where r.ObjectID == detail.TypeID
+                            where r.ObjectType == sType
+                            where r.ObjectID == _id
                             where (r.AllowMultipleEntries || !usedIDs.Contains(t.ID))
                             select t
                             ).OrderBy(i => i.Name).AsQueryable();

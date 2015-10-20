@@ -237,15 +237,38 @@ namespace d360.web.Controllers.Services
         #region Fields
 
         string CurrentUserWorkflowCountSql =
-@"select		W.WorkflowType as Workflow,
+@"select	W.WorkflowType as Workflow,
 			count(1) as [Count]
-			--WR.Activity
 from		Workflow W
 			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
 											    and W.DateCompleted is null
 											    and WR.ResourceID = @r
 				                                and WR.IsComplete = 0
 group by	W.WorkflowType";
+
+        public class WorkflowTaskBaseModel
+        {
+            public string WorkflowName { get; set; }
+            public string WorkflowDescription { get; set; }
+            public string ActivityName { get; set; }
+            public string ActivityDescription { get; set; }
+            public Guid WorkflowID { get; set; }
+            public ActivityType Activity { get; set; }
+        }
+
+        public class WorkflowTask1Model: WorkflowTaskBaseModel
+        {
+            public int ID { get; set; }
+            public string Name { get; set; }
+            public string Url { get; set; }
+            public DateTime StartDate { get; set; }
+            public string ProposedName { get; set; }
+            public string PropsoedDescription { get; set; }
+            public int RequestingResourceID { get; set; }
+            public string RequestingResourceName { get; set; }
+            public int TaxonomyTypeID { get; set; }
+            public string TaxonomyTypeName { get; set; }
+        }
 
         string CurrentUserWorkflow1TaskSql =
 @"select    W.ID as WorkflowID,
@@ -268,8 +291,19 @@ from	    Workflow W
 											    and W.DateCompleted is null
 											    and WR.ResourceID = @r
 												and W.WorkflowType = 1
-                                                and WR.IsComplete = 0
+                                                and WR.IsComplete = 0 
+{0} 
 order by    A.Name, W.Data.value('(fields/Name)[1]', 'nvarchar(250)')";
+
+        public class WorkflowTask2Model : WorkflowTaskBaseModel
+        {
+            public int ID { get; set; }
+            public string Name { get; set; }
+            public string Url { get; set; }
+            public string TypeName { get; set; }
+            public DateTime StartDate { get; set; }
+            public DateTime DueDate { get; set; }
+        }
 
         string CurrentUserWorkflow2TaskSql =
 @"select    W.ID as WorkflowID,
@@ -286,8 +320,37 @@ from	    Workflow W
 											    and W.DateCompleted is null
 											    and WR.ResourceID = @r
 												and W.WorkflowType = 2
-                                                and WR.IsComplete = 0
+                                                and WR.IsComplete = 0 
+{0} 
 order by    A.ObjectTypeName, A.Name";
+
+        public class WorkflowTask3Model : WorkflowTaskBaseModel
+        {
+            public string Issue { get; set; }
+            public int ResourceID { get; set; }
+            public string ResourceName { get; set; }
+            public string ResourceUrl { get; set; }
+            public DateTime DateStarted { get; set; }
+        }
+
+        string CurrentUserWorkflow3TaskSql =
+@"select		W.ID as WorkflowID,
+		    C.Body as Issue,
+			R.ResourceID,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
+			W.DateStarted,
+		    WR.Activity
+from	    Workflow W
+		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
+			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
+			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
+											    and W.DateCompleted is null
+											    and WR.ResourceID = @r
+												and W.WorkflowType = 3
+                                                and WR.IsComplete = 0 
+{0} 
+order by    W.DateStarted";
 
         #endregion
 
@@ -474,11 +537,13 @@ order by    A.ObjectTypeName, A.Name";
             switch (workflowType)
             {
                 case WorkflowType.SuggestNewArtifact:
-                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(CurrentUserWorkflow1TaskSql, new { r = Company.CurrentResourceID }));
-                //case WorkflowType.CertifyArtifact:
-                //    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(CurrentUserWorkflow2TaskSql, new { r = Company.CurrentResourceID }));
+                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(string.Format(CurrentUserWorkflow1TaskSql, ""), new { r = Company.CurrentResourceID }));
+                case WorkflowType.CertifyArtifact:
+                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(string.Format(CurrentUserWorkflow2TaskSql, ""), new { r = Company.CurrentResourceID }));
+                case WorkflowType.WorkIssue:
+                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(string.Format(CurrentUserWorkflow3TaskSql, ""), new { r = Company.CurrentResourceID }));
                 default:
-                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(CurrentUserWorkflow2TaskSql, new { r = Company.CurrentResourceID }));
+                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(string.Format(CurrentUserWorkflow2TaskSql, ""), new { r = Company.CurrentResourceID }));
             }
             //var list = Company.Query<WorkflowTask>(CurrentUserWorkflow1TaskSql, new { r = Company.CurrentResourceID }).ToList();
             //hydrateTasks(list);
@@ -490,35 +555,82 @@ order by    A.ObjectTypeName, A.Name";
         /// </summary>
         /// <returns>A list of workflow tasks.</returns>
         [Route("tasks/{id}"), HttpGet]
-        public WorkflowTask GetTaskByIDForCurrentUser(Guid id)
+        public HttpResponseMessage GetTaskByIDForCurrentUser(Guid id) //WorkflowTask 
         {
-            string sql = @"select	W.ID as WorkflowID,
-		W.WorkflowType as Workflow,
-		W.Data,
-		W.DateStarted,
-		WR.Activity,
-		R.ResourceID as RequestingResourceID,
-		R.FirstName + ' ' + R.LastName as RequestingResourceName,
-		dbo.GenerateObjectUrl('Resource', 1, R.ResourceID) as RequestingResourceUrl,
-		TT.Name as TaxonomyTypeName,
-		AT.Name as ArtifactTypeName
-from	Workflow W
-		inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-											and W.DateCompleted is null
-											and WR.ResourceID = @r
-                                            and WR.IsComplete = 0
-		left join reporting.Global_Resource R on R.ResourceID = W.Data.value('(/fields/RequestingResourceID)[1]', 'int' )
-		left join TaxonomyType TT on TT.ID = W.Data.value('(/fields/TaxonomyTypeID)[1]', 'int' )
-		left join ArtifactType AT on AT.ID = W.Data.value('(/fields/ArtifactTypeID)[1]', 'int' )
-where W.ID = @w";            
-            var models = Company.Query<WorkflowTask>(sql, new { r = Company.CurrentResourceID, w = id }).ToList();
+            var workflow = Company.GetById<Workflow>(id);
+            var whereSuffix = string.Format("where W.ID = '{0}'", id.ToString());
+            var sql = "";
+            switch (workflow.WorkflowType)
+            {
+                case WorkflowType.SuggestNewArtifact:
+                    sql = string.Format(CurrentUserWorkflow1TaskSql, whereSuffix);
+                    var model1 = Company.Query<WorkflowTask1Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
+                    if (model1 != null)
+                    {
+                        model1.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
+                        model1.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
+                        model1.ActivityName = model1.Activity.GetActivityTypeDisplayName();
+                        model1.ActivityDescription = model1.Activity.GetReportTileTypeDescription();
 
-            hydrateTasks(models);
+                        return Request.CreateResponse(HttpStatusCode.OK, model1);
+                    }
+                    break;
+                case WorkflowType.CertifyArtifact:
+                    sql = string.Format(CurrentUserWorkflow2TaskSql, whereSuffix);
+                    var model2 = Company.Query<WorkflowTask2Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
+                    if (model2 != null)
+                    {
+                        model2.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
+                        model2.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
+                        model2.ActivityName = model2.Activity.GetActivityTypeDisplayName();
+                        model2.ActivityDescription = model2.Activity.GetReportTileTypeDescription();
 
-            if (models.Count > 0)
-                return models[0];
-            else
-                return null;
+                        return Request.CreateResponse(HttpStatusCode.OK, model2);
+                    }
+                    break;
+                case WorkflowType.WorkIssue:
+                    sql = string.Format(CurrentUserWorkflow3TaskSql, whereSuffix);
+                    var model3 = Company.Query<WorkflowTask3Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
+                    if (model3 != null)
+                    {
+                        model3.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
+                        model3.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
+                        model3.ActivityName = model3.Activity.GetActivityTypeDisplayName();
+                        model3.ActivityDescription = model3.Activity.GetReportTileTypeDescription();
+
+                        return Request.CreateResponse(HttpStatusCode.OK, model3);
+                    }
+                    break;
+            }
+
+            return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow not found");
+//            string sql = @"select	W.ID as WorkflowID,
+//		W.WorkflowType as Workflow,
+//		W.Data,
+//		W.DateStarted,
+//		WR.Activity,
+//		R.ResourceID as RequestingResourceID,
+//		R.FirstName + ' ' + R.LastName as RequestingResourceName,
+//		dbo.GenerateObjectUrl('Resource', 1, R.ResourceID) as RequestingResourceUrl,
+//		TT.Name as TaxonomyTypeName,
+//		AT.Name as ArtifactTypeName
+//from	Workflow W
+//		inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
+//											and W.DateCompleted is null
+//											and WR.ResourceID = @r
+//                                            and WR.IsComplete = 0
+//		left join reporting.Global_Resource R on R.ResourceID = W.Data.value('(/fields/RequestingResourceID)[1]', 'int' )
+//		left join TaxonomyType TT on TT.ID = W.Data.value('(/fields/TaxonomyTypeID)[1]', 'int' )
+//		left join ArtifactType AT on AT.ID = W.Data.value('(/fields/ArtifactTypeID)[1]', 'int' )
+//where W.ID = @w";            
+//            var models = Company.Query<WorkflowTask>(sql, new { r = Company.CurrentResourceID, w = id }).ToList();
+
+//            hydrateTasks(models);
+
+//            if (models.Count > 0)
+//                return models[0];
+//            else
+//                return null;
         }
 
         /// <summary>
@@ -549,6 +661,8 @@ from	    Workflow W
             Object obj = null;
             if (task != null)
             {
+                var processor = new Processor();
+
                 switch (task.Activity)
                 {
                     case ActivityType.OwnerApproval:
@@ -560,6 +674,15 @@ from	    Workflow W
                             Note = model["Notes"],
                             ResourceID = Company.CurrentResourceID
                         };
+                        try
+                        {
+                            processor.ResumeWorkflowInstance(id, bookmarkName, obj);
+                            response = Request.CreateResponse(HttpStatusCode.Accepted, "Workflow task successfully completed.");
+                        }
+                        catch (Exception ex)
+                        {
+                            response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData());
+                        }
                         break;
                     case ActivityType.OwnerCertification:
                         bookmarkName = "CertificationFromOwner";
@@ -567,18 +690,53 @@ from	    Workflow W
                         {
                             ResourceID = Company.CurrentResourceID
                         };
+                        try
+                        {
+                            processor.ResumeWorkflowInstance(id, bookmarkName, obj);
+                            response = Request.CreateResponse(HttpStatusCode.Accepted, "Workflow task successfully completed.");
+                        }
+                        catch (Exception ex)
+                        {
+                            response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData());
+                        }
                         break;
-                }
-                var processor = new Processor();
+                    case ActivityType.AssignIssueToPool:
+                    case ActivityType.AssignIssueToSelf:
+                        var action = model["WorkflowAction"];
 
-                try
-                {
-                    processor.ResumeWorkflowInstance(id, bookmarkName, obj);
-                    response = Request.CreateResponse(HttpStatusCode.Accepted, "Workflow task successfully completed.");
-                }
-                catch (Exception ex)
-                {
-                    response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData());
+                        obj = new IssueBookmarkModel
+                        {
+                            ResourceID = Company.CurrentResourceID,
+                            Action = action,
+                            Comment = model["Comment"],
+                            ReAssignToResourceObject = "Resource",
+                            ReAssignToResourceObjectID = Company.CurrentResourceID
+                        };
+
+                        switch (action) {
+                            case "assign":
+                                bookmarkName = "Open";
+                                break;
+                            case "reassign":
+                                bookmarkName = "Assigned";
+                                (obj as IssueBookmarkModel).ReAssignToResourceObjectID = 3;
+                                break;
+                            default://case "close":
+                                bookmarkName = "Assigned";
+                                break;
+                        }
+
+                        try
+                        {
+                            processor.ResumeWorkflowInstance(id, bookmarkName, obj);
+                            response = Request.CreateResponse(HttpStatusCode.Accepted, "Workflow task successfully completed.");
+                        }
+                        catch (Exception ex)
+                        {
+                            response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData());
+                        }
+
+                        break;
                 }
             }
             else 

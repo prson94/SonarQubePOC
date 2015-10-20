@@ -222,6 +222,8 @@ namespace d360.model
 
         public DbSet<PolicyTypeClass> PolicyTypeClasses { get; set; }
 
+        public DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
+
         public DbSet<QueueFusionItem> QueueFusionItems { get; set; }
 
         public DbSet<Question> Questions { get; set; }

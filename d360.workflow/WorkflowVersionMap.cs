@@ -1,10 +1,6 @@
-﻿using d360.workflow;
-using System;
+﻿using System;
 using System.Activities;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.workflow
 {
@@ -18,6 +14,8 @@ namespace d360.workflow
 
         public static WorkflowIdentity SuggestNewArtifactIdentity_vCurrent;
         public static WorkflowIdentity CertifyArtifactIdentity_vCurrent;
+
+        public static WorkflowIdentity WorkIssue_vCurrent;
 
         static WorkflowVersionMap()
         {
@@ -33,6 +31,10 @@ namespace d360.workflow
             //map.Add(SuggestNewArtifactIdentity_v1000, new SuggestNewArtifact());
             SuggestNewArtifactIdentity_vCurrent = new WorkflowIdentity { Name = "SuggestNewArtifactWorkflow v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(SuggestNewArtifactIdentity_vCurrent, new SuggestNewArtifact_v1000());
+
+
+            WorkIssue_vCurrent = new WorkflowIdentity { Name = "WorkIssue v1.0.0.0", Version = new Version(1, 0, 0, 0) };
+            map.Add(WorkIssue_vCurrent, new WorkIssue_v1000());
         }
 
         public static Activity GetWorkflowDefinition(WorkflowIdentity identity)

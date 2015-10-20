@@ -619,7 +619,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Model Class.
+        ///   Looks up a localized string similar to Classification.
         /// </summary>
         public static string Class_Name {
             get {

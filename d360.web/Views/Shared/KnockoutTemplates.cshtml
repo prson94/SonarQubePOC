@@ -1,4 +1,4 @@
-﻿3<script id="reportTmpl" type="text/html">
+﻿<script id="reportTmpl" type="text/html">
     <div class="report" data-bind="foreach: Rows">
         <div class="row" data-bind="foreach: Cells">
             <div data-bind="css: BootstrapClass, foreach: Areas">
@@ -48,16 +48,29 @@
             </ul>
         </div>
         <div id="D_SubTile" class="col s12 active" style="background-color: #fff;">
-            @*<div class="root-tile">
-                <header><div id="DetailSubTileTools"></div></header>*@
-                <div id="DetailSubTile" style="margin-top: 20px"></div>
-            @*</div>*@
+            <div id="DetailSubTile" style="margin-top: 20px"></div>
         </div>
         <div id="S_SubTile" class="col s12" style="background-color: #fff;">
             <div class="root-tile">
                 <header><div id="SynonymsSubTileTools"></div></header>
                 <div id="SynonymsSubTile" style="margin-top: 20px"></div>
             </div>
+        </div>
+        <div id="A_SubTile" class="col s12" style="background-color: #fff;"><div id="AttributesSubTile" style="margin-top: 20px"></div></div>
+    </div>
+</script>
+
+<script id="detailTileNoSynonymsTmpl" type="text/x-handlebars-template">
+    <header>Definition</header>
+    <div class="row">
+        <div class="col s12">
+            <ul id="DetailTileTabs" class="tabs">
+                <li class="tab col s4"><a class="active" href="#D_SubTile" data-index="0" style="position: relative">Details</a></li>
+                <li class="tab col s4"><a href="#A_SubTile" data-index="2" style="position: relative">Attributes<span id="DetailsTile_AttributeBadge" class="badge"></span></a></li>
+            </ul>
+        </div>
+        <div id="D_SubTile" class="col s12 active" style="background-color: #fff;">
+            <div id="DetailSubTile" style="margin-top: 20px"></div>
         </div>
         <div id="A_SubTile" class="col s12" style="background-color: #fff;"><div id="AttributesSubTile" style="margin-top: 20px"></div></div>
     </div>
@@ -407,16 +420,35 @@
 
 <script id="boardTmpl" type="text/html">
     <div class="social">
-        <table class="CommentForm" data-bind="visible: ShowAddCommentControls">
+
+        <table class="CommentForm" style="background-color: #efefef; border-radius: 2px;" data-bind="visible: ShowAddCommentControls">
             <tr>
-                <td class="input-field" colspan="2">
+                <td class="input-field" colspan="2" style="padding: 5px">
                     <div class="FieldName">What's on your mind?</div>
-                    <textarea data-bind="value: newMessage, htmlarea: {}"></textarea> @*class="htmlArea"*@
+                    <textarea class="grey lighten-5" style="border: 1px solid #999" data-bind="textInput: newMessage, htmlarea: {}"></textarea> @*, event: { keyup: checkForTags } class="htmlArea"*@ 
                 </td>
-            <tr>
-                <td class="type-field"><select data-bind="options: typeEntryOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageType" class="browser-default" /></td>
-                <td><button class="btn waves-effect waves-light brown lighten-1" type="button" data-bind="click: addComment">Share</button></td>
             </tr>
+            <tr>
+                <td colspan="2" style="position: relative; padding: 10px 5px 10px 5px;">
+                    <i class="fa fa-2x fa-tags" style="color: #5B401F; position: absolute; top: 5px; left: 5px"></i>
+                    <div style="margin-left: 30px;">
+                        <!-- ko template: {name: 'commentTagTmpl', foreach: tags } -->
+                        <!-- /ko -->
+                        <div style="display:inline-block; position: relative">
+                            <input data-bind="textInput: newTag" placeholder="Add tag" style="border: none; border-bottom: 1px solid #adacac" />
+                            <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px">
+                                <div style="padding:4px; border-top:solid 1px #dedede; font-size:12px; ">
+                                    <!-- ko template: {name: 'commentTagSuggestionTmpl', foreach: tagSuggestions } -->
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="type-field" style="padding: 5px"><select data-bind="options: typeEntryOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageType" class="browser-default" /></td>
+                <td style="padding: 5px"><button class="btn waves-effect grey-text grey lighten-5" type="button" data-bind="click: addComment">Share</button></td>
             </tr>
         </table>
 
@@ -445,8 +477,26 @@
         <div class="notification" data-bind="visible: newComments().length > 0"><a data-bind="    click: loadNewComments"> <span data-bind="    text: newComments().length"></span> new post(s)</a></div>
         <!-- ko template: {name: 'commentTmpl', foreach: comments } -->
         <!-- /ko -->
-
-        <button class="btn waves-effect waves-light" type="button" data-bind="visible: moreComments(), click: getMoreComments">Load More</button>
+        <button class="btn waves-effect grey-text grey lighten-5" style="width: 90%; margin: auto" type="button" data-bind="visible: moreComments(), click: getMoreComments">Load More</button>
+    </div>
+</script>
+<script id="commentTagSuggestionTmpl" type="text/html">
+    <div data-bind="click: addTag, css: { 'entry-alt': $index()%2 }">
+        <div data-bind="text: TextPath" style="font-weight: 600"></div>
+        <div data-bind="text: ObjectTypeName" style="font-size: 75%"></div>
+    </div>
+</script>
+<script id="commentTagTmpl" type="text/html">
+    <div style="display: inline-block; margin-right: 10px; padding: 3px; border: 1px solid #999; border-radius: 2px">
+        <div style="display:inline-block">
+            <i class="fa fa-tag"></i>
+        </div>
+        <div style="display:inline-block">
+            <div>
+                <a data-bind="attr: {href: Url, 'data-type': Object, 'data-context': 'Preview', 'data-id': ObjectID}, text: TextPath" style="font-size: 75%; font-weight: 600"></a>
+            </div>
+            <div data-bind="text: ObjectTypeName" style="font-size: 60%"></div>
+        </div>
     </div>
 </script>
 <script id="commentTmpl" type="text/html">
@@ -454,12 +504,7 @@
         <table>
             <tr>
                 <td rowspan="3" class="profile">
-                    <!-- ko if: CommentTypeID == 7 -->
-                    <i class="fa fa-flag active-flag fa-3x"></i>
-                    <!-- /ko -->
-                    <!-- ko if: CommentTypeID != 7 -->
-                    <img data-bind="attr: { src: getResourceImage() }" class="img-rounded" />
-                    <!-- /ko -->
+                    <i data-bind="css: getCommentTypeCss()"></i>
                 </td>
                 <td>
                     <div>
@@ -477,6 +522,13 @@
             <tr>
                 <td colspan="2">
                     <div class="message" data-bind="html: Body"></div>
+                    <div style="display:inline-block" data-bind="fadeVisible: tagsAreDisplayed">
+                        <!-- ko template: {name: 'commentTagTmpl', foreach: CurrentTags } -->
+                        <!-- /ko -->
+                    </div>
+                    <span data-bind="visible: tagsAreHidden, text: CurrentTagCountText"></span>
+                    <button style="width: 40px" data-bind="visible: tagsAreHidden, click: displayTags" class="waves-effect waves-green btn-flat" title="Show tags">&gt;&gt;</button>
+                    <button style="width: 40px" data-bind="visible: tagsAreDisplayed, click: hideTags" class="waves-effect waves-red btn-flat" title="Hide tags">&lt;&lt;</button>
                 </td>
             </tr>
             <tr>
@@ -485,7 +537,7 @@
                     <div data-bind="template: {name: 'subCommentTmpl', foreach: Comments }"></div>
                     <table class="ChildComment" data-bind="visible: ShowAddCommentControls">
                         <tr>
-                            <td class="input-field"><textarea data-bind="value: newCommentMessage, htmlarea: {}"></textarea></td>   @*class="replyHtmlArea"*@
+                            <td class="input-field"><textarea data-bind="value: newCommentMessage, htmlarea: {}"></textarea></td>
                             <td><button class="btn-flat waves-effect waves-light" type="button" data-bind="click: addComment"><i class="fa fa-reply" title="Reply"></i></button></td>
                         </tr>
                     </table>

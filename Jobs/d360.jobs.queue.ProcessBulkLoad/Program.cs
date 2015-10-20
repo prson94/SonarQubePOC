@@ -12,9 +12,19 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 using d360.core.entities.Queues;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.SqlServer;
 
 namespace d360.jobs.queue.ProcessBulkLoad
 {
+    public class AzureConfiguration : DbConfiguration
+    {
+        public AzureConfiguration()
+        {
+            SetExecutionStrategy("System.Data.SqlClient", () => new SqlAzureExecutionStrategy(3, TimeSpan.FromSeconds(5)));
+        }
+    }
+
+    [DbConfigurationType(typeof(AzureConfiguration))]
     public class LoadContext : DbContext
     {
         public LoadContext(string connectionString): base(connectionString)
@@ -74,6 +84,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 companies.AsParallel().WithDegreeOfParallelism(4).ForAll(companyID =>
                 {
                     var ctx = new LoadContext(GetCompanyConnectionString(companyID));
+                    var companyConnection = GetCompanyConnection(companyID);
+                    companyConnection.Open();
+
 
                     var queueItems = ctx.BulkLoadQueues.Where(i => i.MachineAssigned == null && i.NumberOfRetries < 3).OrderBy(i => i.LoadID).Take(2).ToList();
 
@@ -117,7 +130,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                             Console.WriteLine("Company: {0}. Executing ProcessBulkLoad procedure for Load {1}", companyID, load.ID);
 
                             bool writeStatus = true;
-                            var task = ctx.ObjectContext.Connection.ExecuteAsync("exec ProcessBulkLoad @LoadID", new { LoadID = load.ID }, null, 1800);
+                            var task = companyConnection.ExecuteAsync("exec ProcessBulkLoad @LoadID", new { LoadID = load.ID }, null, 1800);
                             task.ContinueWith(t =>
                             {
                                 if (t.IsCompleted)
@@ -155,6 +168,8 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         }
                     });
 
+                    companyConnection.Close();
+                    companyConnection.Dispose();
                     ctx.Dispose();
                 });
             }

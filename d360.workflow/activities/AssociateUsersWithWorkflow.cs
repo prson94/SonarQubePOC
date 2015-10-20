@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Activities;
 using d360.core.entities;
-using System.Data.SqlClient;
 using d360.core;
 using d360.utils.company;
 using Dapper;
-using d360.workflow;
 using System.Activities.Tracking;
-using d360.core.enums;
-using System.Xml.Linq;
 
 namespace d360.workflow
 {
@@ -37,7 +31,7 @@ namespace d360.workflow
                     foreach (var user in users)
                     {
                         cnn.Execute(
-                            @"insert into WorkflowResource values (@WorkflowID, @Activity, @ResourceID, 0)",
+                            @"insert into WorkflowResource values (@WorkflowID, @Activity, @ResourceID, 0, newid())",
                             new { WorkflowID = context.WorkflowInstanceId, Activity = (int)activity, ResourceID = user.ID }
                         );
                     }

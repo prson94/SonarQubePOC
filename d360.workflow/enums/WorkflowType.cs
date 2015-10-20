@@ -26,7 +26,14 @@ namespace d360.workflow
         EnumMember(Value = "2"), 
         AssignableTypesAttribute(SystemObjects.ArtifactType)
         ]
-        CertifyArtifact = 2
+        CertifyArtifact = 2,
+
+        [
+        Name("Work Issue"),
+        Description("The workflow that is triggered when an issue is reported."),
+        EnumMember(Value = "3")
+        ]
+        WorkIssue = 3
     }
 
     [Flags]
@@ -63,6 +70,19 @@ namespace d360.workflow
         ArtifactCertified = 5,
         [Name("Workflow Complete"), EnumMember(Value = "6")]
         WorkflowComplete = 6
+    }
+
+    [Flags]
+    public enum WorkIssueSteps
+    {
+        [Name("New"), EnumMember(Value = "1")]
+        New = 1,
+        [Name("Open"), EnumMember(Value = "2")]
+        Open = 2,
+        [Name("Assigned"), EnumMember(Value = "3")]
+        Assigned = 3,
+        [Name("Closed"), EnumMember(Value = "4")]
+        Closed = 4
     }
 
     public class WorkflowTypeInfo

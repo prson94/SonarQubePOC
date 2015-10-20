@@ -38,11 +38,19 @@ namespace d360.web.Models
         public List<ClaimsMatrixEditorItemModel> Items { get; set; }
     }
 
+    public class CommentTag
+    {
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+    }
+
     public class CommentData
     {
         public string ObjectType { get; set; }
         public int? ObjectID { get; set; }
         public Comment Comment { get; set; }
+
+        public List<CommentTag> Tags { get; set; }
     }
 
     public class CommentRequestData

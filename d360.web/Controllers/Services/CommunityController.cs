@@ -6,6 +6,8 @@ using d360.model;
 using d360.core;
 using System.Collections.Generic;
 using d360.web.Models;
+using System.Xml.Linq;
+using d360.workflow;
 
 namespace d360.web.Controllers.Services
 {
@@ -53,7 +55,26 @@ namespace d360.web.Controllers.Services
 
             relations.Add(resourceRelation);
 
+            foreach (var tag in comment.Tags)
+            {
+                relations.Add(new CommentRelation { ObjectType = tag.Object, ObjectID = tag.ObjectID });
+            }
+
             var dtl = Company.AddComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
+
+            if (!string.IsNullOrEmpty(dtl.TagsXml))
+            {
+                dtl.ParseTagXml();
+            }
+
+            if (dtl.CommentTypeID == core.enums.CommentType.Issue)
+            {
+                var processor = new Processor();
+                var dictionary = new Dictionary<string, object>();
+                dictionary.Add("CompanyID", Company.CurrentCompanyID);
+                dictionary.Add("CommentID", dtl.ID);
+                processor.CreateNewWorkflowInstance(WorkflowVersionMap.WorkIssue_vCurrent, dictionary);
+            }
 
             //if (comment.ParentID.HasValue) Clients.Others.newComment(dtl, comment.ParentID);
 
@@ -107,6 +128,10 @@ namespace d360.web.Controllers.Services
                 }
                 thisLevel.ForEach(c =>
                 {
+                    if (!string.IsNullOrEmpty(c.TagsXml))
+                    {
+                        c.ParseTagXml();
+                    }
                     listToLoad.Add(c);
                     if (fullList.Any(i => i.ParentID == c.ID))
                     {

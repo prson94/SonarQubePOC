@@ -1955,7 +1955,7 @@
     <Content Include="Views\Fusion\FusionExecutionRawLog.cshtml" />
     <Content Include="Views\Fusion\FusionExecution.cshtml" />
     <Content Include="Views\Fusion\RelationshipAggregatesOverlay.cshtml" />
-    <Content Include="Views\Workflow\WorkflowActionOverlay.cshtml" />
+    <Content Include="Views\Workflow\WorkflowActionOverlay_1.cshtml" />
     <Content Include="Views\Shared\RowCommandTooltip.cshtml" />
     <Content Include="Views\Apps\Search.cshtml" />
     <Content Include="Views\Workflow\ArtifactTypeWorkflowStatusOverlay.cshtml" />
@@ -1988,6 +1988,8 @@
     <Content Include="Views\Form\IntersectTypeEditForm.cshtml" />
     <Content Include="Views\Overlays\TaxonomyTypeClasses.cshtml" />
     <Content Include="Views\Overlays\PolicyTypeClasses.cshtml" />
+    <Content Include="Views\Workflow\WorkflowActionOverlay_3.cshtml" />
+    <Content Include="Views\Workflow\WorkflowActionOverlay_2.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

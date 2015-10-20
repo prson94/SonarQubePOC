@@ -48,6 +48,22 @@ namespace d360.core
 
             return dateString;
         }
+
+        public static string FormatNullableDateTime(this DateTime? date)
+        {
+            var dateString = "";
+
+            if (date.HasValue)
+            {
+                dateString = date.Value.ToShortDateString() + " " + date.Value.ToShortTimeString();
+            }
+            else
+            {
+                dateString = "";
+            }
+
+            return dateString;
+        }
     }
 
     public static class StringExtensions

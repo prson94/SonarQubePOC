@@ -5531,8 +5531,8 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ExistingRole", Name = "Existing Role", FieldDescription = Resources.FieldInfo.IntersectTypeRole_ExistingRole_Description, FieldType = DataType.Lookup.ToString(), Items = roles });
             list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "NewRole", Name = "New Role", FieldDescription = Resources.FieldInfo.IntersectTypeRole_NewRole_Description, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", false, "", 0, 250) });
 
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Side1Label", Name = "Side 1 Label", FieldType = DataType.Text.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Side2Label", Name = "Side 2 Label", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Side1Label", Name = "Side 1 Label", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Side 1 Label", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Side2Label", Name = "Side 2 Label", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Side 2 Label", true, "", 1, 250) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -5574,8 +5574,8 @@ namespace d360.web.Controllers
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ExistingRole", Name = "Existing Role Name", FieldDescription = Resources.FieldInfo.IntersectTypeRole_ExistingRole_ChangeWarning, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = relation.IntersectTypeRole.Name });
 
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Side1Label", Name = "Side 1 Label", FieldType = DataType.Text.ToString(), Value = relation.Side1Label });
-            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Side2Label", Name = "Side 2 Label", FieldType = DataType.Text.ToString(), Value = relation.Side2Label });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Side1Label", Name = "Side 1 Label", FieldType = DataType.Text.ToString(), Value = relation.Side1Label, Validations = checkAndAddValidation("Text", "Side 1 Label", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Side2Label", Name = "Side 2 Label", FieldType = DataType.Text.ToString(), Value = relation.Side2Label, Validations = checkAndAddValidation("Text", "Side 2 Label", true, "", 1, 250) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -6827,13 +6827,14 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
         #region Field Generation
 
-        public JsonResult Policy_AddFields(int? parentID)
+        public JsonResult Policy_AddFields(int typeID, int? parentID)
         {
             var model = new Policy();
             if (!Company.HasPermission(SystemObjects.Policy, 0, Claim.Create, ClaimObject.Root))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "PolicyTypeID", FieldType = DataType.Hidden.ToString(), Value = typeID.ToString() });
             if (parentID.HasValue) list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = parentID.Value.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
@@ -6873,14 +6874,16 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
         #region Form Get/Post
 
-        public ActionResult AddPolicy(int? parentID)
+        public ActionResult AddPolicy(int typeID, int? parentID)
         {
+            var type = Company.GetById<PolicyType>(typeID);
+            if (type == null) return HttpNotFound();
             var model = new EditableForm
             {
                 Context = ContextList.Policy,
-                FieldUri = "/form/Policy_AddFields" + ((parentID.HasValue) ? "?parentID=" + parentID.Value : ""),
-                FormTitle = Resources.FormInfo.Add_Policy_Title,
-                FormDescription = Resources.FormInfo.Add_Policy_Directions,
+                FieldUri = "/form/Policy_AddFields?typeID=" + typeID + ((parentID.HasValue) ? "&parentID=" + parentID.Value : ""),
+                FormTitle = string.Format(Resources.FormInfo.Add_Policy_Title, type.Name),
+                FormDescription = string.Format(Resources.FormInfo.Add_Policy_Directions, type.Name),
                 FormUri = "/form/AddPolicy",
                 FormMethod = "POST"
             };
@@ -6901,7 +6904,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 var model = new Policy
                 {
                     Name = parseTextField(form, "Name", null, true),
-                    Description = parseTextField(form, "Description")
+                    Description = parseTextField(form, "Description"),
+                    PolicyTypeID = parseIntField(form, "PolicyTypeID")
                 };
 
                 if (!string.IsNullOrEmpty(form["ParentID"]))
@@ -7058,8 +7062,9 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             var classes = Company.Table<PolicyTypeClass>().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.PolicyTypeClassID), FieldDescription = a.GetDescription(i => i.PolicyTypeClassID), FieldType = DataType.Lookup.ToString(), Items = classes });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
-            loadIconFields(list, 3);
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MaximumDepth", Name = a.GetName(i => i.MaximumDepth), RangeMin = 1, RangeMax = 25, FieldDescription = a.GetDescription(i => i.MaximumDepth), FieldType = DataType.Number.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
+            loadIconFields(list, 4);
 
             a = null;
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -7093,8 +7098,9 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Class", Name = a.GetName(i => i.PolicyTypeClassID), FieldDescription = a.GetDescription(i => i.PolicyTypeClassID), FieldType = DataType.Lookup.ToString(), Value = a.PolicyTypeClassID.ToString(), Items = classes });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
-            loadIconFields(list, 3, style);
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MaximumDepth", Name = a.GetName(i => i.MaximumDepth), RangeMin = 1, RangeMax = 25, FieldDescription = a.GetDescription(i => i.MaximumDepth), FieldType = DataType.Number.ToString(), Value = ((a.MaximumDepth.HasValue) ? a.MaximumDepth.Value.ToString() : "1") });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
+            loadIconFields(list, 4, style);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -7132,10 +7138,17 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 {
                     Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
+                    MaximumDepth = parseIntField(form, "MaximumDepth"),
                     PolicyTypeClassID = parseIntField(form, "Class")
                 };
 
                 Company.Add<PolicyType>(a);
+
+                for (int i = 1; i <= a.MaximumDepth; i++)
+                {
+                    Company.PolicyTypeLevels.Add(new PolicyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), PolicyTypeID = a.ID });
+                }
+                Company.SaveChanges();
 
                 upsertObjectStyle(SystemObjects.PolicyType, a.ID, form, a.Name);
 
@@ -7237,9 +7250,26 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
+                model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.PolicyTypeClassID = parseIntField(form, "Class");
 
+                var currentMaxLevel = Company.Query<int>("select max([Level]) from Policy where PolicyTypeID = @t", new { t = id }).SingleOrDefault();
+
+                if (currentMaxLevel > model.MaximumDepth)
+                    throw new InvalidFieldException(d360.core.resources.Fields.MaximumDepth_Name, "less than the current maximum depth of " + currentMaxLevel);
+
                 Company.Update<PolicyType>(model);
+
+                for (int i = 1; i <= model.MaximumDepth; i++)
+                {
+                    var level = model.PolicyTypeLevels.SingleOrDefault(l => l.Level == i);
+                    if (level == null)
+                    {
+                        Company.PolicyTypeLevels.Add(new PolicyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), PolicyTypeID = model.ID });
+                    }
+                }
+                Company.PolicyTypeLevels.RemoveRange(model.PolicyTypeLevels.Where(l => l.Level > model.MaximumDepth));
+                Company.SaveChanges();
 
                 upsertObjectStyle(SystemObjects.PolicyType, model.ID, form, model.Name);
 
@@ -7437,6 +7467,234 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 model.Name = parseTextField(form, "Name", null, true);
 
                 Company.Update<PolicyTypeClass>(model);
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region PolicyTypeLevel
+
+        #region Field Generation
+
+        public JsonResult PolicyTypeLevel_AddFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var type = Company.GetById<PolicyType>(id);
+            if (type == null) return jsonException("Type not found.", HttpStatusCode.NotFound);
+            var existingLevels = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id).Select(i => i.Level).ToList();
+
+            var levels = new List<SelectListItem>();
+            for (int i = 1; i <= type.MaximumDepth; i++)
+            {
+                if (!existingLevels.Contains(i)) levels.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString() });
+            }
+
+            var list = new List<EditableField>();
+            var a = new PolicyTypeLevel();
+
+            list.Add(new EditableField { Required = true, FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField
+            {
+                Group = "",
+                Row = 1,
+                Column = 2,
+                Required = true,
+                FieldName = "Level",
+                Name = a.GetName(i => i.Level),
+                Items = levels,
+                FieldDescription = a.GetDescription(i => i.Level),
+                FieldType = DataType.Lookup.ToString(),
+                Validations = checkAndAddValidation("Text", "Level", true, "", 1, 250)
+            });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
+
+            a = null;
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PolicyTypeID</param>
+        public JsonResult PolicyTypeLevel_DeleteFields(int id, int level)
+        {
+            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { FieldName = "Level", FieldType = DataType.Hidden.ToString(), Value = level.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PolicyTypeID</param>
+        public JsonResult PolicyTypeLevel_EditFields(int id, int level)
+        {
+            if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.PolicyTypeID.ToString() });
+            list.Add(new EditableField { ReadOnly = true, FieldName = "Level", FieldType = DataType.Hidden.ToString(), Value = a.Level.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddPolicyTypeLevel(int id)
+        {
+            var type = Company.GetById<PolicyType>(id);
+            if (type == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.PolicyTypeLevel,
+                FieldUri = string.Format("/form/PolicyTypeLevel_AddFields?id={0}", id),
+                FormTitle = string.Format("Add {0} Level", type.Name),
+                FormUri = "/form/AddPolicyTypeLevel",
+                FormMethod = "POST"
+            };
+            type = null;
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddPolicyTypeLevel(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+                var level = parseIntField(form, "Level");
+
+                if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("policy type level");
+
+                var a = new PolicyTypeLevel
+                {
+                    PolicyTypeID = id,
+                    Level = level,
+                    Name = parseTextField(form, "Name", null, true),
+                    Description = parseTextField(form, "Description"),
+                };
+
+                Company.Add<PolicyTypeLevel>(a);
+
+                return jsonSuccess(a.Name + " successfully created.", a.PolicyTypeID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult DeletePolicyTypeLevel(int id, int level)
+        {
+            var a = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.PolicyTypeLevel,
+                FieldUri = string.Format("/form/PolicyTypeLevel_DeleteFields?id={0}&level={1}", id, level),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
+                FormDescription = Resources.FormInfo.PolicyTypeLevel_Remove,
+                FormUri = "/form/DeletePolicyTypeLevel",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeletePolicyTypeLevel(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("policy type");
+
+                var id = parseIntField(form, "ID");
+                var level = parseIntField(form, "Level");
+
+                if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level);
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult EditPolicyTypeLevel(int id, int level)
+        {
+            var a = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.PolicyTypeLevel,
+                FieldUri = string.Format("/form/PolicyTypeLevel_EditFields?id={0}&level={1}", id, level),
+                FormTitle = "Edit " + a.Name,
+                FormUri = "/form/EditPolicyTypeLevel",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditPolicyTypeLevel(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("policy type");
+
+                var id = parseIntField(form, "ID");
+                var level = parseIntField(form, "Level");
+                var model = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
+                if (model == null) throw new NotFoundException("policy type level");
+
+                if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name", null, true);
+                model.Description = parseTextField(form, "Description");
+
+                Company.Update<PolicyTypeLevel>(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
             }
@@ -11257,7 +11515,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
         #region Field Generation
 
-        public JsonResult Rule_AddFields(int policyID)
+        public JsonResult Rule_AddFields()
         {
             var model = new Rule();
             if (!Company.HasPermission(SystemObjects.Rule, 0, Claim.Create, ClaimObject.Root))
@@ -11265,8 +11523,6 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldName = "PolicyID", FieldType = DataType.Hidden.ToString(), Value = policyID.ToString() });
-            
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "RuleType", Name = model.GetName(i => i.RuleType), FieldDescription = model.GetDescription(i => i.RuleType), Items = RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString()}).ToList(), FieldType = DataType.Lookup.ToString() });
 
@@ -11309,12 +11565,12 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
         #region Form Get/Post
 
-        public ActionResult AddRule(int policyID)
+        public ActionResult AddRule()
         {
             var model = new EditableForm
             {
                 Context = ContextList.Rule,
-                FieldUri = "/form/Rule_AddFields?policyID=" + policyID,
+                FieldUri = "/form/Rule_AddFields",
                 FormTitle = Resources.FormInfo.Add_Rule_Title,
                 FormDescription = Resources.FormInfo.Add_Rule_Directions,
                 FormUri = "/form/AddRule",
@@ -12870,14 +13126,12 @@ order by TextPath
 
                 Company.SaveOrUpdate<TaxonomyType>(model);
 
-                bool addedLevel = false;
                 for (int i = 1; i <= model.MaximumDepth; i++)
                 {
                     var level = model.TaxonomyTypeLevels.SingleOrDefault(l => l.Level == i);
                     if (level == null)
                     {
                         Company.TaxonomyTypeLevels.Add(new TaxonomyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), TaxonomyTypeID = model.ID });
-                        addedLevel = true;
                     }
                 }
                 Company.TaxonomyTypeLevels.RemoveRange(model.TaxonomyTypeLevels.Where(l => l.Level > model.MaximumDepth));

@@ -48,7 +48,10 @@ namespace d360.workflow
                 var ctr = record as CustomTrackingRecord;
                 if ((ctr != null) && (ctr.Data.Count > 0))
                 {
-                    companyID = (int)ctr.Data["CompanyID"];
+                    if (ctr.Data.ContainsKey("CompanyID"))
+                    {
+                        companyID = (int)ctr.Data["CompanyID"];
+                    }
                     activityName = ctr.Activity.Name;
                     date = ctr.EventTime;
 

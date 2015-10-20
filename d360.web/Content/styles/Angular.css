@@ -1,4 +1,4 @@
-/* Include this file in your html if you are using the CSP mode. */
+﻿/* Include this file in your html if you are using the CSP mode. */
 
 @charset "UTF-8";
 
@@ -7203,3 +7203,4 @@ md-tooltip {
 @media screen and (-ms-high-contrast: active) {
   md-whiteframe {
     border: 1px solid #fff; } }
+

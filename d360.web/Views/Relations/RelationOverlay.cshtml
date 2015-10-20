@@ -540,6 +540,7 @@
             datafields: [
                 { name: 'IntersectID' },
                 { name: 'Description' },
+                { name: 'Role' },
                 { name: 'TargetName' },
                 { name: 'TargetObjectID' },
                 { name: 'TargetObjectType' },
@@ -580,6 +581,7 @@
             columns: [
                 { text: 'Type', groupable: true, datafield: 'TargetTypeName', width: '100px', filtertype: 'checkedlist' }, //, hidden: true
                 { text: 'Name', groupable: false, datafield: 'TargetName' },
+                { text: 'Role', groupable: false, datafield: 'Role', width: '100px', filtertype: 'checkedlist' },
                 {
                     text: '',
                     groupable: false,

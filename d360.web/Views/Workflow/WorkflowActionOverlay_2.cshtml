@@ -1,0 +1,120 @@
+﻿@{
+    var id = ViewBag.WorkflowID;
+}
+<div class="medium-overlay">
+    <div class="ui segment">
+        <div class="left form-header-info">
+            <h4 id="FormTitle"></h4>
+        </div>
+        <div class="right">
+            <button type="button" id="CertifyButton" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="Workflow">Certify</button>
+        </div>
+        <div class="clear"></div>
+        <div id="FormDescription" class="form-instructions"></div>
+        <div id="progress"></div>
+        <div class="row">
+            <div class="col s6">
+                <div id="RequestDetail">
+                    <div class="FieldName">Type</div>
+                    <div id="TypeValue"></div>
+                    <div class="FieldName">Name</div>
+                    <div id="NameValue"></div>
+                    <div class="FieldName">Start Date</div>
+                    <div id="StartDateValue"></div>
+                    <div class="FieldName">Due Date</div>
+                    <div id="DueDateValue"></div>
+                </div>
+            </div>
+            <div class="col s6">
+                <div id="CertificationMessage">
+                    By clicking the Certify button above, I certify that all data on this item is correct.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var workflowID = "@(id)";
+    $(function () {
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+
+        var postApprovalForm = function () {
+            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+
+            $.ajax('/services/workflow/tasks/' + workflowID, {
+                dataType: 'json',
+                contentType: "application/json; charset=utf-8",
+                type: 'POST',
+                data: JSON.stringify({})
+            }).fail(function (xhr, status, error) {
+                var response = {
+                    type: 'error',
+                    title: 'Error occured',
+                    message: error,
+                    context: 'Workflow'
+                };
+                OnFailed(response, status, xhr);
+            })
+              .done(function (data, status, xhr) {
+                  var response = {
+                      type: 'confirm',
+                      title: 'Successfully completed',
+                      message: xhr.responseText, //status,
+                      context: 'Workflow'
+                  };
+                  OnSuccess(response, status, xhr);
+              }).always(function () {
+                  $('#progress').html('');
+              });
+        }
+
+        $.getJSON('/services/workflow/tasks/' + workflowID, function (data) {
+
+            $('#progress').html('');
+
+            if (data) {
+                var title = "";
+                var description = "";
+                var requestor = "";
+                var detailHtml = "";
+
+                title = data.WorkflowName;// + ' : ' + data.ActivityName;
+                description = data.WorkflowDescription;// + '<br/>' + data.ActivityDescription;
+
+
+                //var detailHtml = "";
+                //for (var key in data.Properties) {
+                //    if (data.Properties.hasOwnProperty(key)) {
+                //        detailHtml += '<div class="form-group">';
+                //        detailHtml += '<label for="fld' + key + '">' + key + '</label>';
+                //        detailHtml += '<div id="fld' + key + '">' + data.Properties[key] + '</div>';
+                //        detailHtml += '</div>';
+                //    }
+                //}
+
+                $('#FormTitle').text(title);
+                $('#FormDescription').html(description);
+                //$('#RequestDetail').html(detailHtml); //requestor +
+
+                $('#TypeValue').html(data.TypeName);
+                $('#NameValue').html('<a href="' + data.Url + '">' + data.Name + '</a>');
+                $('#StartDateValue').html(data.StartDate);
+                $('#DueDateValue').html(data.DueDate);
+
+                $('#CertifyButton').on('click', function () {
+                    postApprovalForm();
+                });
+            }
+            else {
+                $('#CertifyButton').hide();
+
+                $('#FormTitle').text('No permissions to this workflow');
+                $('#FormDescription').text('You have either completed your required task or you do not have access to this workflow.');
+                $('#RequestDetail').html('');
+            }
+        });
+    });
+</script>

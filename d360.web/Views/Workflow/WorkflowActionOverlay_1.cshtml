@@ -15,12 +15,20 @@
         <div id="progress"></div>
         <div class="row">
             <div class="col s6">
-                <div id="RequestDetail"></div>
+                <div id="RequestDetail">
+                    <div class="FieldName">Type</div>
+                    <div id="TypeValue"></div>
+                    <div class="FieldName">Proposed Name</div>
+                    <div id="ProposedNameValue"></div>
+                    <div class="FieldName">Proposed Description</div>
+                    <div id="ProposedDescriptionValue"></div>
+                    <div class="FieldName">Requestor</div>
+                    <div id="RequestorValue"></div>
+                    <div class="FieldName">Subject Area</div>
+                    <div id="SubjectAreaValue"></div>
+                </div>
             </div>
             <div class="col s6">
-                <div id="CertificationMessage" style="display:none">
-                    By clicking the Certify button above, I certify that all data on this item is correct.
-                </div>
                 <div id="ApproverCommentArea">
                     <div class="FieldName">Comment</div>
                     <textarea id="ApproverComment"></textarea>
@@ -32,7 +40,6 @@
 
 <script type="text/javascript">
     var workflowID = "@(id)";
-    var task;
     $(function () {
         $("html, body").animate({ scrollTop: 0 }, "slow");
 
@@ -41,28 +48,14 @@
         var postApprovalForm = function (approved) {
             $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
 
-            var getData = function () {
-                switch (task.Activity) {
-                    case 1:
-                        return JSON.stringify({
-                            Approved: approved,
-                            Notes: $('#ApproverComment').val()
-                        });
-                        break;
-                    case 2:
-                        return JSON.stringify({});
-                        break;
-                    default:
-                        return JSON.stringify({});
-                        break;
-                }
-            }
-
             $.ajax('/services/workflow/tasks/' + workflowID, {
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 type: 'POST',
-                data: getData()
+                data: JSON.stringify({
+                    Approved: approved,
+                    Notes: $('#ApproverComment').val()
+                })
             }).fail(function (xhr, status, error) {
                 var response = {
                     type: 'error',
@@ -95,43 +88,28 @@
                 var requestor = "";
                 var detailHtml = "";
 
-                title = data.WorkflowName + ' : ' + data.ActivityName;
-                description = data.WorkflowDescription + '<br/>' + data.ActivityDescription;
+                title = data.WorkflowName;// + ' : ' + data.ActivityName;
+                description = data.WorkflowDescription;// + '<br/>' + data.ActivityDescription;
 
-                task = data;
-
-                switch (data.Activity) {
-                    case 1: // OwnerApproval
-                        break;
-                    case 2: // OwnerCertification
-                        $('#RejectButton').hide();
-                        $('#OrSeparator').hide();
-                        $('#ApproverCommentArea').hide();
-                        $('#ApproveButton').text('Certify');
-                        $('#CertificationMessage').fadeIn(250);
-                        break;
-                }
-
-                //switch (data.Workflow) {
-                //    case 1: // SuggestNewArtifact
-                //        break;
-                //    case 2: // CertifyArtifact
-                //        break;
+                //var detailHtml = "";
+                //for (var key in data.Properties) {
+                //    if (data.Properties.hasOwnProperty(key)) {
+                //        detailHtml += '<div class="form-group">';
+                //        detailHtml += '<label for="fld' + key + '">' + key + '</label>';
+                //        detailHtml += '<div id="fld' + key + '">' + data.Properties[key] + '</div>';
+                //        detailHtml += '</div>';
+                //    }
                 //}
 
-                var detailHtml = "";
-                for (var key in data.Properties) {
-                    if (data.Properties.hasOwnProperty(key)) {
-                        detailHtml += '<div class="form-group">';
-                        detailHtml += '<label for="fld' + key + '">' + key + '</label>';
-                        detailHtml += '<div id="fld' + key + '">' + data.Properties[key] + '</div>';
-                        detailHtml += '</div>';
-                    }
-                }
+                ////$('#FormTitle').text(title);
+                //$('#FormDescription').html(description);
+                //$('#RequestDetail').html(detailHtml); //requestor +
 
-                $('#FormTitle').text(title);
-                $('#FormDescription').html(description);
-                $('#RequestDetail').html(detailHtml); //requestor +
+                $('#TypeValue').html('<a href="' + data.Url + '">' + data.Name + '</a>');
+                $('#ProposedNameValue').html(data.ProposedName);
+                $('#ProposedDescriptionValue').html(data.ProposedDescription);
+                $('#RequestorValue').html('<a data-context="Preview" data-type="Resource" data-id="' + data.RequestingResourceID + '" href="#/resources/' + data.RequestingResourceID + '">' + data.RequestingResourceName + '</a>');
+                $('#SubjectAreaValue').html(data.TaxonomyTypeName);
 
                 $('#RejectButton').on('click', function () {
                     postApprovalForm(false);

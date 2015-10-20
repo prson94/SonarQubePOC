@@ -18,17 +18,10 @@
 
         //#region Event Handlers
 
-        function historyRefreshButtonClick() {
-            $('#LoadsTile').jqxGrid('clearselection');
-            $("#LoadsTile").jqxGrid('updatebounddata');
-            sourceLoadItems.url = null;
-            $("#LoadItemsTile").jqxGrid('updatebounddata');
-        }
-
         function listBindingComplete(event) {
-            var rowCount = $('#List').jqxGrid('getdisplayrows').length;
+            var rowCount = $('#LoadsTile').jqxGrid('getdisplayrows').length;
             if (rowCount > 0) {
-                $('#List').jqxGrid('selectrow', 0);
+                $('#LoadsTile').jqxGrid('selectrow', 0);
             }
         }
 
@@ -58,11 +51,31 @@
             });
         }
 
+        function internalToolAction(data) {
+            try {
+                switch (data.action) {
+                    case 'RefreshItems':
+                        $("#LoadItemsTile").jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) { }
+        }
+
         function saveAction(data) {
             try {
                 switch (data.context) {
                     case contextList.Load:
-                        $('#LoadsTile').jqxGrid('updatebounddata');
+                        var def = function () {
+                            var deferred = $.Deferred();
+                            $('#LoadsTile').jqxGrid('updatebounddata');
+                            return deferred.promise();
+                        }
+                        def().done(function () {
+                            //console.log(data.id);
+                            //var ix = $('#LoadsTile').jqxGrid('getrowboundindexbyid', data.id);
+                            //console.log(ix);
+                            //$("#LoadsTile").jqxGrid('selectrow', ix);
+                        });
                         break;
                 }
             } catch (e) { }
@@ -75,7 +88,9 @@
             adapterLoadItems = null;
 
             $("#LoadsTile").off("rowselect", loadsTileRowSelect);
-            amplify.unsubscribe("SaveAction", saveAction);
+            $("#LoadsTile").off("bindingcomplete", listBindingComplete);
+            amplify.unsubscribe(AmplifyActions.Save, saveAction);
+            amplify.unsubscribe(AmplifyActions.InternalTool, internalToolAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
@@ -109,7 +124,8 @@
                             { name: 'DateCompleted', type: 'date' },
                             { name: 'Action', type: 'string' },
                             { name: 'Notes', type: 'string' }
-                        ]
+                        ],
+                        id: 'ID'
                     };
 
                     adapterLoads = new $.jqx.dataAdapter(sourceLoads);
@@ -136,6 +152,11 @@
                     //#endregion
 
                     //#region LoadItems Grid
+
+                    var itemtools = [
+                        { icon: 'refresh', action: 'RefreshItems', title: 'Refresh this list' }
+                    ];
+                    TileTools('#ItemTools', itemtools);
 
                     sourceLoadItems = {
                         datatype: 'json',
@@ -171,7 +192,9 @@
                     //#region Event Subscriptions
 
                     $("#LoadsTile").on("rowselect", loadsTileRowSelect);
-                    amplify.subscribe("SaveAction", saveAction);
+                    $("#LoadsTile").on("bindingcomplete", listBindingComplete);
+                    amplify.subscribe(AmplifyActions.Save, saveAction);
+                    amplify.subscribe(AmplifyActions.InternalTool, internalToolAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //#endregion

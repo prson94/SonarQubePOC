@@ -70,6 +70,9 @@
                         case contextList.Artifact:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;
+                        case contextList.SourcingResponsibility:
+                            environment_diagram('SourcingTile', permissions, type, id);
+                            break;
                         case contextList.Synonym:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;

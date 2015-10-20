@@ -178,7 +178,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add a type to associate rules to..
+        ///   Looks up a localized string similar to Add a policy to the {0} hierarchy..
         /// </summary>
         internal static string Add_Policy_Directions {
             get {
@@ -187,7 +187,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add Type.
+        ///   Looks up a localized string similar to Add Policy to {0}.
         /// </summary>
         internal static string Add_Policy_Title {
             get {
@@ -696,6 +696,15 @@ namespace Resources {
         internal static string Permisions_Error_Edit {
             get {
                 return ResourceManager.GetString("Permisions_Error_Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Removing this level will alter the level name of all policies at this level..
+        /// </summary>
+        internal static string PolicyTypeLevel_Remove {
+            get {
+                return ResourceManager.GetString("PolicyTypeLevel_Remove", resourceCulture);
             }
         }
         

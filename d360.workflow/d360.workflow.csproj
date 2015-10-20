@@ -47,8 +47,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Activities.Extensions, Version=2.0.6.9, Culture=neutral, PublicKeyToken=23b0c89d0d5ad43f, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.Activities.Extensions.2.0.6.9\lib\Net45\Microsoft.Activities.Extensions.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -70,7 +70,15 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="activities\AddIssueBookmark.cs" />
+    <Compile Include="activities\BuildIssueRequestXml.cs" />
+    <Compile Include="activities\GetResourceByID.cs" />
+    <Compile Include="activities\MarkPreviousUserAssignmentsAsCompleted.cs" />
+    <Compile Include="activities\UpdateIssue.cs" />
+    <Compile Include="activities\ReAssignIssue.cs" />
+    <Compile Include="activities\AddReplyToComment.cs" />
     <Compile Include="activities\CompleteWorkflowInDatabase.cs" />
+    <Compile Include="activities\GetCommentInfoFromRequest.cs" />
     <Compile Include="activities\GetArtifactInfoFromRequest.cs" />
     <Compile Include="activities\GetWorkflowOwners.cs" />
     <Compile Include="activities\UpdateWorkflowStep.cs" />
@@ -97,6 +105,7 @@
     <Compile Include="models\CertifyArtifactRequest.cs" />
     <Compile Include="models\NewArtifactRequest.cs" />
     <Compile Include="models\CertificationApproval.cs" />
+    <Compile Include="models\IssueBookmarkModel.cs" />
     <Compile Include="models\RequestApproval.cs" />
     <Compile Include="models\WorkflowRelationResponsibilityModel.cs" />
     <Compile Include="Processor.cs" />
@@ -142,6 +151,12 @@
   </ItemGroup>
   <ItemGroup>
     <XamlAppDef Include="workflows\SuggestNewArtifact\SuggestNewArtifact_v1001.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </XamlAppDef>
+  </ItemGroup>
+  <ItemGroup>
+    <XamlAppDef Include="workflows\WorkIssue\WorkIssue_v1000.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </XamlAppDef>

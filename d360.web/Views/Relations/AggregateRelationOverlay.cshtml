@@ -234,6 +234,7 @@
             [
                 { name: 'IntersectID' },
                 { name: 'Description' },
+                { name: 'Role' },
                 { name: 'TargetName' },
                 { name: 'TargetObjectID' },
                 { name: 'TargetParent' },
@@ -282,6 +283,11 @@
                         cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return "<div class='d3s-cell'>" + data.TargetParentName + "</div>";
                         }
+                    },
+                    {
+                        datafield: "Role",
+                        text: "Role",
+                        filtertype: 'checkedlist'
                     },
                     {
                         text: '',

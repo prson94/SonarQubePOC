@@ -544,12 +544,12 @@
         </member>
         <member name="P:Resources.FormInfo.Add_Policy_Directions">
             <summary>
-              Looks up a localized string similar to Add a type to associate rules to..
+              Looks up a localized string similar to Add a policy to the {0} hierarchy..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Add_Policy_Title">
             <summary>
-              Looks up a localized string similar to Add Type.
+              Looks up a localized string similar to Add Policy to {0}.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Add_RelationshipType_Directions">
@@ -830,6 +830,11 @@
         <member name="P:Resources.FormInfo.Permisions_Error_Edit">
             <summary>
               Looks up a localized string similar to You do not have permissions to update this..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.PolicyTypeLevel_Remove">
+            <summary>
+              Looks up a localized string similar to Removing this level will alter the level name of all policies at this level..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.PolicyType_Remove">
@@ -2570,6 +2575,12 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.PolicyTypeClass_EditFields(System.Int32)">
             <param name="id">PolicyTypeClassID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.PolicyTypeLevel_DeleteFields(System.Int32,System.Int32)">
+            <param name="id">PolicyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.PolicyTypeLevel_EditFields(System.Int32,System.Int32)">
+            <param name="id">PolicyTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Report_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>

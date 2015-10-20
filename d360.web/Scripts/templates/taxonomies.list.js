@@ -82,6 +82,9 @@
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTileContainer', type, id, permissions);
                             break;
+                        case contextList.SourcingResponsibility:
+                            environment_diagram('SourcingTile', permissions, type, selectedID);
+                            break;
                         case contextList.Synonym:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;

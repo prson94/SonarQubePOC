@@ -1,4 +1,17 @@
 ﻿//#region    BINDINGS
+ko.bindingHandlers.fadeVisible = {
+    init: function (element, valueAccessor) {
+        // Initially set the element to be instantly visible/hidden depending on the value
+        var value = valueAccessor();
+        $(element).toggle(ko.unwrap(value)); // Use "unwrapObservable" so we can handle values that may or may not be observable
+    },
+    update: function (element, valueAccessor) {
+        // Whenever the value subsequently changes, slowly fade the element in or out
+        var value = valueAccessor();
+        ko.unwrap(value) ? $(element).slideDown(300) : $(element).slideUp(300);
+    }
+};
+
 ko.bindingHandlers.htmlarea = {
     init: function (element, valueAccessor) {
         var value = valueAccessor();
@@ -17,7 +30,7 @@ ko.bindingHandlers.htmlarea = {
         // New value, note that Redactor expects the argument passed to 'set'
         // to have toString method, which is why we disjoin with ''.
 
-//        var value = ko.utils.unwrapObservable(valueAccessor()) || '';
+        //var value = ko.utils.unwrapObservable(valueAccessor()) || '';
 
         // We only call 'set' if the content has changed, as we only need to
         // to do so then, and 'set' also resets the cursor position, which
@@ -25,7 +38,7 @@ ko.bindingHandlers.htmlarea = {
 
         // This code would work with Redactor 9, but no longer works with Redactor 10
         //if (value !== $(element).redactor('get')) {
-        //    $(element).redactor('set', value);
+        //    $(element).redactor('code.set', value);
         //}
 
         // The API method has become 'code.get', and it behaves a bit differently: it
@@ -368,6 +381,15 @@ ko.bindingHandlers.customFileInput = {
 //#endregion
 
 //#region    BASE MODELS
+function CommentTagItem(data) {
+    var self = this;
+    data = data || {};
+    self.Object = ko.observable(data.Object);
+    self.ObjectID = ko.observable(data.ObjectID);
+    self.TextPath = ko.observable(data.TextPath);
+    self.Url = ko.observable(data.Url);
+    self.ObjectTypeName = ko.observable(data.ObjectTypeName);
+}
 function CommentItem(data) {//, hub) {
     var self = this;
     data = data || {};
@@ -385,6 +407,16 @@ function CommentItem(data) {//, hub) {
     self.ObjectUrl = ko.observable(data.ObjectUrl || "");
     self.CommentType = ko.observable(data.CommentType || "");
 
+    var _currenTags = $.map(data.Tags, function (item) { return new CommentTagItem(item); });
+    self.CurrentTags = ko.observableArray(_currenTags);
+    self.CurrentTagCount = ko.computed(function () {
+        return self.CurrentTags().length;
+    }, self);
+    self.CurrentTagCountText = ko.computed(function () {
+        return self.CurrentTagCount() + ' tag(s)';
+    }, self);
+
+
     self.isVisible = ko.observable(true);
     self.error = ko.observable();
     self.Comments = ko.observableArray();
@@ -393,12 +425,41 @@ function CommentItem(data) {//, hub) {
 
     self.ShowAddCommentControls = ko.observable(CompanySettings.DisableCommunityPosting == 'false');
 
+
+    self.tagsAreDisplayed = ko.observable(false);
+    self.tagsAreHidden = ko.computed(function () {
+        return !self.tagsAreDisplayed();
+    }, self);
+
+    self.tagSuggestions = ko.observableArray();
+    self.tagSuggestionsPresent = ko.computed(function () {
+        return (self.tagSuggestions().length > 0);
+    }, self);
+    self.newTag = ko.observable();
+    self.tags = ko.observableArray();
+    self.newTag.subscribe(function (value) {
+        if (value) {
+            $.getJSON('/api/tagsuggestions', { phrase: value }, function (suggestions) {
+                // Object, ObjectID, TextPath, Url, ObjectTypeName
+                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagSuggestionItem(item); }); //, self.hub
+                self.tagSuggestions(mappedSuggestions);
+            });
+        }
+    });
+
     //self.hub = hub;
+
+    self.displayTags = function () {
+        self.tagsAreDisplayed(true);
+    };
+    self.hideTags = function () {
+        self.tagsAreDisplayed(false);
+    };
 
     self.getCommentType = function () {
         var commentType = "";
 
-        switch (self.CommentTypeID) {
+        switch (self.CommentTypeID()) {
             case 1:
                 commentType = "System Notifications";
                 break;
@@ -429,6 +490,42 @@ function CommentItem(data) {//, hub) {
         }
 
         return commentType;
+    };
+
+    self.getCommentTypeCss = function () {
+        var css = "fa ";
+
+        switch (self.CommentTypeID()) {
+            case 1:
+                css += "fa-gear grey-text text-accent-2";
+                break;
+            case 2:
+                css += "fa-comment blue-text text-accent-2";
+                break;
+            case 3:
+                css += "fa-gavel green-text text-accent-2";
+                break;
+            case 4:
+                css += "fa-link teal-text text-accent-2";
+                break;
+            case 5:
+                css += "fa-exclamation-triangle orange-text text-accent-2";
+                break;
+            case 6:
+                css += "fa-tasks deep-purple-text text-accent-2";
+                break;
+            case 7:
+                css += "fa-flag red-text text-accent-2";
+                break;
+            case 8:
+                css += "fa-info-circle cyan-text text-accent-2";
+                break;
+            case 9:
+                css += "fa-question-circle purple-text text-accent-2";
+                break;
+        }
+
+        return css;
     };
 
     self.isNonResourceComment = function () {
@@ -501,7 +598,21 @@ function CommentItem(data) {//, hub) {
     }
 
 }
+function CommentTagSuggestionItem(data, parent) {
+    var self = this;
+    data = data || {};
+    self.Object = ko.observable(data.Object);
+    self.ObjectID = ko.observable(data.ObjectID);
+    self.TextPath = ko.observable(data.TextPath);
+    self.Url = ko.observable(data.Url);
+    self.ObjectTypeName = ko.observable(data.ObjectTypeName);
 
+    self.addTag = function () {
+        parent.tags(parent.tags().concat(self));
+        parent.newTag('');
+        parent.tagSuggestions([]);
+    }
+}
 var ChildArtifactsMicroTileItem = function (parentID, name, id, count) {
     var self = this;
     self.ParentID = ko.observable(parentID);
@@ -640,8 +751,8 @@ function LoadViewModel(data) {
             dataType: 'json',
             method: 'post'
         }).done(function (data, status, xhr) {
-            amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
-            amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Mappings successfully created.' });
+            amplify.publish("SaveAction", { context: data.context, action: 'add', id: data.id, custom: data.custom });
+            amplify.publish("ShowMessage", data);
         }).fail(function (xhr, status, error) {
             amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
         }).always(function (data, status, error) {
@@ -2504,6 +2615,8 @@ var BoardViewModel = function () {
     self.moreComments = ko.observable();
 
     self.pageSize = 25;
+    self.startMatch = /@/ig; //new RegExp("@");
+    self.wordMatch = /@(\w+)/ig; //new RegExp("@(\w+)");
 
     self.newComments = ko.observableArray();
 
@@ -2525,7 +2638,7 @@ var BoardViewModel = function () {
     self.typeEntryOptions = ko.observableArray([
         //{ Text: 'Data Event', Value: 8 },
         { Text: 'Discussion', Value: 2 },
-        //{ Text: 'Issue', Value: 5 },
+        { Text: 'Issue', Value: 5 },
         //{ Text: 'Task', Value: 6 },
         { Text: 'Question', Value: 9 }
     ]);
@@ -2535,7 +2648,7 @@ var BoardViewModel = function () {
         { Text: 'Data Events', Value: 8 },
         { Text: 'Discussions', Value: 2 },
         //{ Text: 'Governance', Value: 3 },
-        //{ Text: 'Issues', Value: 5 },
+        { Text: 'Issues', Value: 5 },
         //{ Text: 'System Notifications', Value: 1 },
         { Text: 'Red Flag Alerts', Value: 7 },
         //{ Text: 'Relationships', Value: 4 },
@@ -2545,6 +2658,44 @@ var BoardViewModel = function () {
 
     self.selectedDateFilterOption = ko.observable();
     self.selectedTypeFilterOption = ko.observable();
+
+    self.tagSuggestions = ko.observableArray();
+    self.tagSuggestionsPresent = ko.computed(function () {
+        return (self.tagSuggestions().length > 0);
+    }, self);
+
+    self.newTag = ko.observable();
+    self.tags = ko.observableArray();
+    self.newTag.subscribe(function (value) {
+        if (value) {
+            $.getJSON('/api/tagsuggestions', { phrase: value }, function (suggestions) {
+                // Object, ObjectID, TextPath, Url, ObjectTypeName
+                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagSuggestionItem(item, self); });
+                self.tagSuggestions(mappedSuggestions);
+            });
+        }
+        else {
+            self.tagSuggestions([]);
+        }
+    });
+
+    //self.checkForTags = function () {
+    //    var message = self.newMessage() + "";
+    //    try {
+    //        var name = message.match(self.wordMatch);
+    //        if (name.length > 0) {
+    //            var phrase = name[name.length - 1];
+    //            phrase = phrase.replace('@', '');
+    //            $.getJSON('/api/tagsuggestions', { phrase: phrase }, function (suggestions) {
+    //                // Object, ObjectID, TextPath, Url, ObjectTypeName
+    //                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagSuggestionItem(item); }); //, self.hub
+    //                self.tagSuggestions(mappedSuggestions);
+    //            });
+    //        }
+    //    } catch (e) {
+
+    //    }
+    //}
 
     self.clearFields = function () {
         self.newMessage('');
@@ -2608,15 +2759,23 @@ var BoardViewModel = function () {
     self.addComment = function () {
         self.error(null);
         if (self.newMessage() != '') {
+
+            var commentModel = {
+                ObjectType: self.ObjectType,
+                ObjectID: self.ObjectID,
+                Tags: [],
+                Comment: {
+                    Body: self.newMessage(),
+                    CommentTypeID: self.newMessageType()
+                }
+            };
+
+            self.tags().forEach(function (tag) {
+                commentModel.Tags.push({ Object: tag.Object(), ObjectID: tag.ObjectID() });
+            });
+
             $.ajax({
-                data: {
-                    ObjectType: self.ObjectType,
-                    ObjectID: self.ObjectID,
-                    Comment: {
-                        Body: self.newMessage(),
-                        CommentTypeID: self.newMessageType()
-                    }
-                },
+                data: commentModel,
                 dataType: 'json',
                 method: 'POST',
                 url: '/services/community/comment'

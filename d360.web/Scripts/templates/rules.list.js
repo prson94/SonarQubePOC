@@ -21,6 +21,10 @@
 
         //#region Event Handlers
 
+        function eventHeaderSelected(data) {
+            EventsGrid('EventsTile', contextList, data.GroupID, null, true);
+        }
+
         function ruleGridRowSelect(evt) {
             try {
                 var args = evt.args;    // event args.
@@ -36,15 +40,26 @@
                 $('#SideIcons').PageTools('reload', type, ruleID, "");
 
                 var loadPermissionsDependentTiles = function () {
-                    DetailTile('DetailTile', contextList, permissions, type, ruleID);
-
+                    DetailsTile('DetailTile', contextList, permissions, type, ruleID, contextList.Rule, true);
                     statisticsTileVm.ChangeObject(type, ruleID);
                     statisticsTileVm.GetStatistics();
 
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, ruleID, '');
                     environment_diagram('SourcingTile', permissions, type, ruleID);
-                    AttributesTile('AttributesTile', contextList, permissions, type, ruleID, 'Business Attributes');
                     RelationshipAggregatesTile('AggregatesTileContainer', type, ruleID, permissions);
+
+                    $('#EventsTile').html('');
+                    if (permissions.HasPermission("Root", "Update")) {
+                        $("#Fields").fadeIn(250);
+                        FieldsGrid('Fields', contextList, permissions, type, ruleID, false);
+                    }
+                    else {
+                        $("#Fields").fadeOut(250);
+                    }
+
+                    $('#EventHeadersTile').fadeIn(250);
+                    EventHeadersGrid('EventHeadersTile', contextList, type, ruleID, null);
+                    $('#EventsTile').fadeIn(250);
                 }
                 permissions.GetPermissionsForObject(type, ruleID).then(loadPermissionsDependentTiles);
 
@@ -75,7 +90,13 @@
                                 var ix = $('#RuleGrid').jqxGrid('getrowboundindexbyid', ruleID);
                                 $("#RuleGrid").jqxGrid('selectrow', ix);
                                 break;
+                            case "delete":
+                                $("#RuleGrid").jqxGrid('selectrow', 0);
+                                break;
                         }
+                        break;
+                    case contextList.SourcingResponsibility:
+                        environment_diagram('SourcingTile', permissions, type, ruleID);
                         break;
                 }
             } catch (e) {
@@ -88,6 +109,7 @@
             RuleGridSource = null;
             statisticsTileVm = null;
 
+            amplify.unsubscribe('EventHeaderSelected', eventHeaderSelected);
             $("#RuleGrid").off("rowselect", ruleGridRowSelect);
             amplify.unsubscribe("SaveAction", saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
@@ -153,6 +175,7 @@
 
                 //#region Event Subscriptions
 
+                amplify.subscribe('EventHeaderSelected', eventHeaderSelected);
                 $("#RuleGrid").on("rowselect", ruleGridRowSelect);
                 amplify.subscribe("SaveAction", saveAction);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);

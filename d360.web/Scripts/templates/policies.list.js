@@ -36,21 +36,47 @@
 
                     if (!policyID) policyID = 0;
 
+                    var iType = type;
+                    var iID = policyID;
+
+                    if (iID == 0) {
+                        iType = 'PolicyType';
+                        iID = policyTypeID;
+
+                        $('#SideIcons').PageTools('reload', type, policyTypeID, "root");
+                    }
+                    else
+                    {
+                        $('#SideIcons').PageTools('reload', type, policyID, "");
+                    }
 
                     amplify.publish(AmplifyActions.TileUnsubscribe, {});
-                    $('#SideIcons').PageTools('reload', type, policyID, "");
+                    
 
                     var loadPermissionsDependentTiles = function () {
-                        DetailTile('DetailTile', contextList, permissions, type, policyID);
+                        DetailsTile('DetailTile', contextList, permissions, iType, iID, contextList.Policy, true);
 
-                        statisticsTileVm.ChangeObject(type, policyID);
-                        statisticsTileVm.GetStatistics();
+                        if (iType == 'Policy') {
+                            statisticsTileVm.ChangeObject(iType, iID);
+                            statisticsTileVm.GetStatistics();
 
-                        PeopleResponsibilityTile('Responsibilities', contextList, permissions, type, policyID, '');
-                        AttributesTile('AttributesTile', contextList, permissions, type, policyID, 'Business Attributes');
-                        RelationshipAggregatesTile('AggregatesTileContainer', type, policyID, permissions);
+                            $('#Responsibilities').show();
+                            $('#SourcingTile').show();
+                            $('#AggregatesTileContainer').show();
+                            PeopleResponsibilityTile('Responsibilities', contextList, permissions, iType, iID, '');
+                            environment_diagram('SourcingTile', permissions, iType, iID);
+                            RelationshipAggregatesTile('AggregatesTileContainer', iType, iID, permissions);
+                        }
+                        else {
+                            statisticsTileVm.ChangeObject(iType, iID);
+                            statisticsTileVm.GetStatistics();
+
+                            $('#Responsibilities').hide();
+                            $('#SourcingTile').hide();
+                            $('#AggregatesTileContainer').hide();
+                        }
                     }
-                    permissions.GetPermissionsForObject(type, policyID).then(loadPermissionsDependentTiles);
+                    permissions.GetPermissionsForObject(iType, iID).then(loadPermissionsDependentTiles);
 
                 } catch (e) {
                     logError("Monitor : PolicyGrid.select", e);
@@ -62,6 +88,9 @@
                     switch (data.context) {
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTileContainer', type, policyID, permissions);
+                            break;
+                        case contextList.SourcingResponsibility:
+                            environment_diagram('SourcingTile', permissions, type, policyID);
                             break;
                         case contextList.Policy:
                             $("#PolicyGrid").jqxTreeGrid('updateBoundData');
@@ -103,7 +132,7 @@
                 .then(function (content) {
                     context.contentHeader(pageViewModel);
 
-                    $('#SideIcons').PageTools({ type: type, id: 0 });
+                    $('#SideIcons').PageTools({ type: 'PolicyType', id: policyTypeID, context: 'root' });
                     statisticsTileVm = new PolicyRuleStatisticsTileModel(type, 0);
                     ko.applyBindings(statisticsTileVm, document.getElementById('StatisticsTile'));
 
@@ -125,7 +154,14 @@
                         id: 'ID'
                     };
 
-                    PolicyGridAdapter = new $.jqx.dataAdapter(PolicyGridSource);
+                    PolicyGridAdapter = new $.jqx.dataAdapter(PolicyGridSource, {
+                        beforeLoadComplete: function (records) {
+                            $.each(records, function () {
+                                this.expanded = "true";
+                            });
+                            return records;
+                        }
+                    });
 
                     $("#PolicyGrid").jqxTreeGrid({
                         width: '99.5%',

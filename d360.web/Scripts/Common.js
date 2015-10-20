@@ -15,6 +15,7 @@ var progressIndicatorHtml = "<i class='fa fa-spinner fa-spin fa-4x'></i>";
 
 var AmplifyActions = {
     Cancel: 'CancelAction',
+    InternalTool: 'InternalToolAction',
     Local: 'LocalAction',
     Unsubscribe: 'UnsubscribeEventsAction',
     OverlayUnsubscribe: 'OverlayUnsubscribeEventsAction',

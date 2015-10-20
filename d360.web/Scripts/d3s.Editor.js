@@ -578,7 +578,7 @@
                                 }
 
                                 fld = $('<div id="' + v.FieldName + '" name="' + v.FieldName + '"></div>');
-                                fld.jqxNumberInput({ disabled: v.ReadOnly, theme: theme, min: minValue, max: maxValue, height: field_height, width: field_width, inputMode: 'simple', decimalDigits: '3', groupSeparator: ',', decimal: cleanedValue });
+                                fld.jqxNumberInput({ disabled: v.ReadOnly, theme: theme, min: minValue, max: maxValue, height: field_height, width: field_width, inputMode: 'simple', decimalDigits: 3, groupSeparator: ',', decimal: cleanedValue });
                                 //addValidator(v, validatorRules);
 
                                 amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {
@@ -642,7 +642,7 @@
 
                                 fld = $('<div id="' + v.FieldName + '" name="' + v.FieldName + '"></div>');
 
-                                fld.jqxNumberInput({ disabled: v.ReadOnly, theme: theme, min: minValue, max: maxValue, height: field_height, width: field_width, inputMode: 'simple', decimalDigits: '0', groupSeparator: ',', decimal: cleanedValue });
+                                fld.jqxNumberInput({ disabled: v.ReadOnly, theme: theme, min: minValue, max: maxValue, height: field_height, width: field_width, promptChar: '', spinButtons: true, decimalDigits: 0, groupSeparator: '', decimal: cleanedValue });
                                 //addValidator(v, validatorRules);
 
                                 amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {

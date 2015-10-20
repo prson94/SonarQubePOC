@@ -20,6 +20,7 @@ using System.Data.Entity.Design.PluralizationServices;
 using System.Web.Http.Description;
 using d360.workflow.entities;
 using d360.workflow;
+using System.Runtime.Serialization;
 
 namespace d360.web.Controllers
 {
@@ -411,7 +412,7 @@ namespace d360.web.Controllers
             
             bool addReportMenu = false;
 
-            var reportActionMenu = new PageActionItem { Title = "Reports", Icon = Resources.Actions.Report_Icon };
+            var reportActionMenu = new PageActionItem { Title = "Dashboards", Icon = Resources.Actions.Report_Icon };
             
             //surveys.Count > 0 || 
             if (reports.Count > 0) //|| definitions.Count > 0
@@ -917,29 +918,50 @@ namespace d360.web.Controllers
                 case SystemObjects.Policy:
                     #region Actions
                     Policy policy = null;
-                    if (id > 0) 
-                    {
-                        policy = Company.GetById<Policy>(id, i => i.Children);
-                    }
 
-                    if (hasPermission(permissions, Claim.Create, ClaimObject.Root) || hasPermission(permissions, Claim.Create, ClaimObject.Governance))
+                    string nextPolicyLevelName = "policy";
+                    PolicyTypeLevel policyLevel = null;
+                    if (context == "root")
                     {
-                        addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
-                        if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
+                        var policyType = Company.GetById<PolicyType>(id);
+                        if (policyType != null)
                         {
-                            addItem.Items.Add(new PageActionItem { Context = ContextList.Policy, Icon = "cube", Title = "Type", Uri = "/form/AddPolicy" + ((policy != null) ? "?parentID=" + id : "") });
-                            if (policy != null)
+                            policyLevel = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == 1).SingleOrDefault();
+                            nextPolicyLevelName = (policyLevel != null) ? policyLevel.Name : string.Format("{0} {1}", policyType.Name.ToLower(), nextPolicyLevelName);
+                            if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
                             {
-                                addItem.Items.Add(new PageActionItem { Context = ContextList.Rule, Icon = "cube", Title = "Rule", Uri = "/form/AddRule?policyID=" + id });
-                                if (hasPermission(permissions, Claim.Create, ClaimObject.Governance))
-                                {
-                                    loadResponsiblityTypeAddMenu(type, id, addItem);
-                                }
+                                addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
+                                addItem.Items.Add(new PageActionItem { Context = ContextList.Policy, Icon = Resources.Actions.Add_Icon, Title = string.Format("Add {0}", nextPolicyLevelName), Uri = string.Format("/form/AddPolicy?typeID={0}", id) });
+                                list.Add(addItem);
                             }
-                            list.Add(addItem);
+
+                            reportNode = appendReportMenu(SystemObjects.PolicyType, id, SystemObjects.PolicyType, id);
+                            if (reportNode != null) list.Add(reportNode);
                         }
                     }
-                    if (policy != null)
+                    else
+                    {
+                        if (id > 0)
+                        {
+                            policy = Company.GetById<Policy>(id, i => i.PolicyType.PolicyTypeLevels);
+                            var levels = policy.PolicyType.PolicyTypeLevels.ToList(); //Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == policy.PolicyTypeID).ToList();
+                            nextPolicyLevelName = (levels.Any(i => i.Level == policy.Level + 1)) ? levels.Single(i => i.Level == policy.Level + 1).Name : string.Format("{0} {1}", policy.PolicyType.Name.ToLower(), "model");
+                            var rootLevelName = (levels.Any(i => i.Level == 1)) ? levels.Single(i => i.Level == 1).Name : string.Format("{0} {1}", policy.PolicyType.Name.ToLower(), "root model");
+                            //list.Add(new PageActionItem { Context = ContextList.Intersect, Icon = Resources.Actions.ViewRelationships_Icon, Title = Resources.Actions.ViewRelationships, Uri = string.Format("/relations/RelationOverlay?type={0}&id={1}", type.ToString(), id) });
+                            if (hasPermission(permissions, Claim.Create, ClaimObject.Root) || hasPermission(permissions, Claim.Create, ClaimObject.Governance))
+                            {
+                                addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
+                                if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
+                                {
+                                    addItem.Items.Add(new PageActionItem { Context = ContextList.Policy, Icon = "cube", Title = string.Format("{0}", nextPolicyLevelName), Uri = string.Format("/form/AddPolicy?typeID={0}&parentID={1}", policy.PolicyTypeID, id) });
+                                    addItem.Items.Add(new PageActionItem { Context = ContextList.Policy, Icon = "cube", Title = string.Format("{0}", rootLevelName), Uri = string.Format("/form/AddPolicy?typeID={0}", policy.PolicyTypeID) });
+                                }
+                                list.Add(addItem);
+                            }
+                        }
+                    }
+
+                    if (policy != null && context != "root")
                     {
                         following = Company.IsUserFollowing(type, id, null);
 
@@ -951,42 +973,29 @@ namespace d360.web.Controllers
                         {
                             list.Add(new PageActionItem { Context = ContextList.Policy, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/DeletePolicy?id={0}", id) });
                         }
-                        list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
+                        reportNode = appendReportMenu(type, id, SystemObjects.TaxonomyType, policy.PolicyTypeID, true);
+                        if (reportNode != null) list.Add(reportNode);
+                        list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
                     }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                 #endregion
                 case SystemObjects.PolicyType:
                     #region Actions
-                    if (hasPermission(permissions, Claim.Create, ClaimObject.Root) || hasPermission(permissions, Claim.Create, ClaimObject.Governance))
+                    if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
                     {
-                        //addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
-                        // if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
-                        //     list.Add(new PageActionItem { Context = ContextList.TaxonomyType, Icon = Resources.Actions.Add_Icon, Uri = "/form/catalogs/add" });
-
-                        //if (id > 0)
-                        //{
-                        //    //if (hasPermission(permissions, Claim.Create, ClaimObject.Governance))
-                        //    //{
-                        //    //    //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityTypeClaim, Icon = "key", Title = Resources.Actions.AddClaim_Text, Uri = string.Format("/form/AddResponsibilityTypeObjectClaim?type={0}&id={1}", type.ToString(), id) });
-                        //    //    loadResponsiblityTypeAddMenu(type, id, addItem, true);
-                        //    //}
-
-                        //    //list.Add(addItem);
-
-                        //    reportNode = appendReportMenu(type, id, SystemObjects.TaxonomyType, id);
-                        //    if (reportNode != null) list.Add(reportNode);
-                        //}
-                        //else
-                        //{
-                        //    //list.Add(addItem);
-                        //    reportNode = appendReportMenu(type, 0, type, 0);
-                        //    if (reportNode != null) list.Add(reportNode);
-                        //}
-
                         if (context == "default")
                         {
-                            list.Add(new PageActionItem { Context = "PolicyTypeClasses", Icon = "tags", Title = "Classes", Uri = "/overlays/PolicyTypeClasses" });
+                            list.Add(new PageActionItem { Context = "PolicyTypeClasses", Icon = "tags", Title = "Classifications", Uri = "/overlays/PolicyTypeClasses" });
+                        }
+                        else
+                        {
+                            addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
+                            if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
+                            {
+                                addItem.Items.Add(new PageActionItem { Context = ContextList.Policy, Icon = "cube", Title = "Top-level policy", Uri = string.Format("/form/AddPolicy?typeID={0}", id) });
+                                list.Add(addItem);
+                            }
                         }
                     }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
@@ -1083,23 +1092,14 @@ namespace d360.web.Controllers
                     #endregion
                 case SystemObjects.Rule:
                     #region Actions
+                    if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
+                        list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Add_Icon, Title = "Rule", Uri = "/form/AddRule" });
+
                     if (id > 0)
                     {
-
                         if (hasPermission(permissions, Claim.Update, ClaimObject.Root))
-                        {
-                            addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
-                            addItem.Items.Add(new PageActionItem { Context = ContextList.FieldType, Icon = Resources.Actions.Fields_Icon, Title = Resources.Actions.AddField_Text, Uri = "/form/AddFieldType?type=Rule&id=" + id });
-
-                            if (hasPermission(permissions, Claim.Create, ClaimObject.Governance))
-                            {
-                                loadResponsiblityTypeAddMenu(type, id, addItem);
-                            }
-                            
-                            list.Add(addItem);
-
                             list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Edit_Icon, Title = Resources.Actions.Edit, Uri = string.Format("/form/EditRule?id={0}", id) });
-                        }
+
                         if (hasPermission(permissions, Claim.Delete, ClaimObject.Root))
                             list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/DeleteRule?id={0}", id) });
 
@@ -1234,7 +1234,7 @@ namespace d360.web.Controllers
 
                         if (context == "default")
                         {
-                            list.Add(new PageActionItem { Context = "TaxonomyTypeClasses", Icon = "tags", Title = "Classes", Uri = "/overlays/TaxonomyTypeClasses" });
+                            list.Add(new PageActionItem { Context = "TaxonomyTypeClasses", Icon = "tags", Title = "Classifications", Uri = "/overlays/TaxonomyTypeClasses" });
                         }
                     }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
@@ -2206,10 +2206,25 @@ from	    ResponsibilityTypeHierarchy H
         }
 
         [Route("policytypes/{id:int}/policies")]
-        public IQueryable<Policy> GetPoliciesByType(int id)
+        public List<Policy> GetPoliciesByType(int id)
         {
-            return Company.Filter<Policy>(i => i.PolicyTypeID == id);
+            var list = Company.Filter<Policy>(i => i.PolicyTypeID == id).OrderBy(i => i.TextPath).ToList();
+           // var type = Company.GetById<PolicyType>(id);
+            //foreach (var p in list.Where(i => !i.ParentID.HasValue))
+            //{
+            //    p.ParentID = 0;
+            //}
+            //list.Add(new Policy { PolicyTypeID = id, ID = 0, Name = ((type != null) ? type.Name : "Root") });
+
+            return list;
         }
+
+        [Route("PolicyType/{id:int}/levels")]
+        public IQueryable<PolicyTypeLevel> GetPolicyTypeLevels(int id)
+        {
+            return Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id).OrderBy(i => i.Level);
+        }
+
 
         #endregion
 
@@ -2303,6 +2318,35 @@ from	    ResponsibilityTypeHierarchy H
         #endregion
 
         #region Tags
+
+        [DataContract]
+        public class TagSuggestionModel
+        {
+            [DataMember]
+            public string Object { get; set; }
+
+            [DataMember]
+            public int ObjectID { get; set; }
+
+            [DataMember]
+            public string TextPath { get; set; }
+
+            [DataMember]
+            public string Url { get; set; }
+
+            [DataMember]
+            public string ObjectTypeName { get; set; }
+        }
+
+        [HttpGet, Route("tagsuggestions")]
+        public List<TagSuggestionModel> TagSuggestions(string phrase)
+        {
+            var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and Name like '{0}%'", phrase.Replace("'", "''").Replace("--", ""));
+
+            var list = Company.Query<TagSuggestionModel>(sql).ToList();
+
+            return list;
+        }
 
         [Route("tags")]
         public IQueryable<Tag> GetTags()
@@ -2824,14 +2868,14 @@ from	    ResponsibilityTypeHierarchy H
                     {
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = "Action", FieldName = "LoadAction", FieldDescription = "", Value = load.Action });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = "Target", FieldName = "LoadObjectName", FieldDescription = "", Value = load.ObjectName });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Date Started", FieldName = "LoadDateStarted", FieldDescription = "", Value = load.DateStarted.FormatNullableDate() });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "Date Completed", FieldName = "LoadDateCompleted", FieldDescription = "", Value = load.DateCompleted.FormatNullableDate() });
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = "Notes", FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" });
+                        //list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Date Started", FieldName = "LoadDateStarted", FieldDescription = "", Value = load.DateStarted.FormatNullableDateTime() });
+                        //list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "Date Completed", FieldName = "LoadDateCompleted", FieldDescription = "", Value = load.DateCompleted.FormatNullableDateTime() });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Notes", FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" });
 
-                        list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = "Total", FieldName = "LoadTotal", FieldDescription = "", Value = load.Total.ToString() });
-                        list.Add(new ReadOnlyField { Row = 4, Column = 2, Name = "# Incompletes", FieldName = "LoadIncomplete", FieldDescription = "", Value = load.Incomplete.ToString() });
-                        list.Add(new ReadOnlyField { Row = 5, Column = 1, Name = "# Successes", FieldName = "LoadSuccess", FieldDescription = "", Value = load.Success.ToString() });
-                        list.Add(new ReadOnlyField { Row = 5, Column = 2, Name = "# Errors", FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() });
+                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = "Total", FieldName = "LoadTotal", FieldDescription = "", Value = load.Total.ToString() });
+                        list.Add(new ReadOnlyField { Row = 3, Column = 2, Name = "# Incompletes", FieldName = "LoadIncomplete", FieldDescription = "", Value = load.Incomplete.ToString() });
+                        list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = "# Successes", FieldName = "LoadSuccess", FieldDescription = "", Value = load.Success.ToString() });
+                        list.Add(new ReadOnlyField { Row = 4, Column = 2, Name = "# Errors", FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() });
                     }
                     load = null;
                     break;
@@ -2853,12 +2897,19 @@ from	    ResponsibilityTypeHierarchy H
                     if (policy != null)
                     {
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = policy.GetName(i => i.Name), FieldName = "PolicyName", FieldDescription = policy.GetDescription(i => i.Description), Value = policy.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = "# Sub-policies", FieldName = "PolicySubPolicyCount", Value = policy.Children.Count.ToString() });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = policy.GetName(i => i.TextPath), FieldName = "PolicyTextPath", FieldDescription = policy.GetDescription(i => i.TextPath), Value = policy.TextPath });
+                        var policyLevelInfo = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == policy.PolicyTypeID && i.Level == policy.Level).SingleOrDefault();
+
+                        if (policyLevelInfo != null)
+                        {
+                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Level Name", Value = policyLevelInfo.Name });
+                            list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "Level Number", Value = policy.Level.ToString() });
+                        }
+
+                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = policy.GetName(i => i.TextPath), FieldName = "PolicyTextPath", FieldDescription = policy.GetDescription(i => i.TextPath), Value = policy.TextPath });
 
                         if (!string.IsNullOrEmpty(policy.Description))
-                            list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = policy.GetName(i => i.Description), FieldName = "PolicyDescription", FieldDescription = policy.GetDescription(i => i.Description), Value = policy.Description });
+                            list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = policy.GetName(i => i.Description), FieldName = "PolicyDescription", FieldDescription = policy.GetDescription(i => i.Description), Value = policy.Description });
                     }
                     policy = null;
                     break;

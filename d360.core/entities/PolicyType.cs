@@ -26,6 +26,10 @@ namespace d360.core.entities
         public string Description { get; set; }
 
         [DataMember]
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "MaximumDepth_Name", Description = "MaximumDepth_Description")]
+        public int? MaximumDepth { get; set; }
+
+        [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Class_Name", Description = "Class_Description")]
         public int PolicyTypeClassID { get; set; }
 
@@ -41,6 +45,9 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("PolicyTypeID")]
         public virtual ICollection<Policy> Policies { get; set; }
+
+        [IgnoreDataMember, ForeignKey("PolicyTypeID")]
+        public virtual ICollection<PolicyTypeLevel> PolicyTypeLevels { get; set; }
 
         #endregion
     }
