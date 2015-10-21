@@ -23,8 +23,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{3EC039C4-C48E-44F4-8C75-04C5A048F7C4}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
-		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D627328F-6E6B-497D-B588-8450B61DBD33}"
@@ -1494,7 +1492,7 @@ Global
 		{BEAEB4B8-82A6-40AD-B4F3-CC5373334A2A} = {313B4C9B-F3D7-4718-97A5-2F04A3B12589}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 29
+		SccNumberOfProjects = 31
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -1610,6 +1608,14 @@ Global
 		SccProjectTopLevelParentUniqueName28 = D360.sln
 		SccProjectName28 = Jobs/d360.test.jobs
 		SccLocalPath28 = Jobs\\d360.test.jobs
+		SccProjectUniqueName29 = Tests\\d360.test.workflow\\d360.test.workflow.csproj
+		SccProjectTopLevelParentUniqueName29 = D360.sln
+		SccProjectName29 = Tests/d360.test.workflow
+		SccLocalPath29 = Tests\\d360.test.workflow
+		SccProjectUniqueName30 = Tests\\d360.test.jobs\\d360.test.jobs.csproj
+		SccProjectTopLevelParentUniqueName30 = D360.sln
+		SccProjectName30 = Tests/d360.test.jobs
+		SccLocalPath30 = Tests\\d360.test.jobs
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi
