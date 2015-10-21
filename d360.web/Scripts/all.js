@@ -38879,6 +38879,10 @@ var HomeSocialMicroTileModel = function (resourceID) {
     self.FollowerCount = ko.observable();
     self.GroupCount = ko.observable();
     self.CurrentResourceID = ko.observable(resourceID);
+    //self.Score = ko.observable();
+    self.ScoreUri = ko.computed(function () {
+        return '/overlays/Resource/' + self.CurrentResourceID() + '/score';
+    }, self);
 
     self.GetStatistics = function () {
         $.getJSON(
@@ -38886,6 +38890,10 @@ var HomeSocialMicroTileModel = function (resourceID) {
             function (data) {
                 self.FollowerCount(data.FollowerCount);
                 self.GroupCount(data.GroupCount);
+                //self.Score(data.Score);
+
+
+                drawKpi('#ScoreKpi', 'Governance score', data.Score, 100 - data.Score, true);
             }
         );
     }
@@ -41741,16 +41749,17 @@ function ClickGridTool(event) {
                                 var fldColorHidden = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="hidden" value="' + cleanedValue + '" />');
                                 cpnl.append(fldColorHidden);
 
-                                if (cleanedValue != '') cleanedValue = cleanedValue.replace('#', '');
+                                //if (cleanedValue != '') cleanedValue = cleanedValue.replace('#', '');
 
                                 
                                 fld = $('<div id="' + v.FieldName + "_Picker" + '"></div>');
-                                fld.jqxColorPicker({ color: cleanedValue, colorMode: 'hue', width: field_width, height: 225 });                               
+                                fld.jqxColorPicker({ colorMode: 'hue', width: field_width, height: 225 });
+                                fld.jqxColorPicker('setColor', cleanedValue);
                                 addValidator(v, validatorRules);
 
-                                $('#' + v.FieldName + "_Picker").on('colorchange', function (event) {
-                                    var color = '#' + $('#' + v.FieldName + "_Picker").jqxColorPicker('getColor').hex;//event.args;
-                                    $('#' + v.FieldName).val(color);
+                                fld.on('colorchange', function (event) {
+                                    var color = '#' + fld.jqxColorPicker('getColor').hex;//event.args;
+                                    fldColorHidden.val(color);
                                 });
 
                                 amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {
@@ -43845,21 +43854,23 @@ function DomainItemsTile(controlID, contextList, permissions, typeID, domainID) 
     //#endregion
 }
 
-function EventAgeBreakdownChart(controlID, contextList, type, id) {
+function EventAgeBreakdownChart(controlID, contextList, type, id, timescale) {
 
     var chartControlID = controlID + "_chart";
 
     controlID = '#' + controlID;
-    $(controlID).html('<header>Event Breakdown by Age</header><div id="' + chartControlID + '" style="width: 100%; height: 225px;"></div>')
+    $(controlID).html('<div id="' + chartControlID + '" style="width: 100%; height: 225px;"></div>')
     chartControlID = '#' + chartControlID;
+
+    var sUrl = '/queries/' + type + '/' + id + '/EventAgeBreakdown';
 
     var src = {
         datatype: 'json',
         type: 'get',
-        url: '/queries/' + type + '/' + id + '/EventAgeBreakdown',
+        url: '/queries/' + type + '/' + id + '/EventAgeBreakdown' + ((timescale != '' && timescale) ? "?maxHistoryDays=" + timescale : ""),
         datafields:
         [
-            { name: 'Status', type: 'string' },
+            { name: 'Date', type: 'date' },//{ name: 'Status', type: 'string' },
             { name: 'Count', type: 'number' }
         ]
     };
@@ -43867,7 +43878,7 @@ function EventAgeBreakdownChart(controlID, contextList, type, id) {
     var adapter = new $.jqx.dataAdapter(src);
 
     $(chartControlID).jqxChart({
-        title: "",
+        title: "By Age",
         description: "",
         enableAnimations: true,
         showLegend: true,
@@ -43878,38 +43889,80 @@ function EventAgeBreakdownChart(controlID, contextList, type, id) {
         source: adapter,
         colorScheme: chartDefaultTheme,
         xAxis: {
-            dataField: 'Status',
-            showGridLines: true
-        },
-        seriesGroups: [{
-            useGradientColors: false,
-            type: 'column',
-            columnsGapPercent: 50,
-            valueAxis:
-            {
-                unitInterval: 10,
-                displayValueAxis: true,
-                description: '# Events'
+            dataField: 'Date',
+            type: 'date',
+            baseUnit: 'day',
+            visible: false,
+            valuesOnTicks: false,
+            tickMarks: {
+                visible: false,
+                interval: 1,
+                color: '#BCBCBC'
             },
-            series: [
-                    { dataField: 'Count', displayText: 'Age In Days'}
+            unitInterval: 1,
+            gridLines: {
+                visible: false,
+                interval: 3,
+                color: '#BCBCBC'
+            },
+            labels: {
+                angle: -45,
+                rotationPoint: 'topright',
+                offset: { x: 0, y: -25 }
+            }
+        },
+        valueAxis:
+        {
+            visible: true,
+            minValue: 0,
+            //unitInterval: 1,
+            title: { text: 'Total Events By Day<br>' },
+            tickMarks: { color: '#BCBCBC' }
+        },
+        colorScheme: 'scheme04',
+        seriesGroups:
+            [
+                {
+                    type: 'line',
+                    series: [
+                            { dataField: 'Count', displayText: '# Events' }
+                    ]
+                }
             ]
-        }]
+
+        //xAxis: {
+        //    dataField: 'Status',
+        //    showGridLines: true
+        //},
+        //seriesGroups: [{
+        //    useGradientColors: false,
+        //    type: 'column',
+        //    columnsGapPercent: 50,
+        //    valueAxis:
+        //    {
+        //        unitInterval: 10,
+        //        displayValueAxis: true,
+        //        description: '# Events'
+        //    },
+        //    series: [
+        //            { dataField: 'Count', displayText: 'Age In Days'}
+        //    ]
+        //}]
     });
 }
 
-function EventCriticalityBreakdownChart(controlID, contextList, type, id) {
+function EventCriticalityBreakdownChart(controlID, contextList, type, id, timescale) {
 
     var chartControlID = controlID + "_chart";
 
     controlID = '#' + controlID;
-    $(controlID).html('<header>Event Breakdown by Criticality</header><div id="' + chartControlID + '" style="width: 100%; height: 225px;"></div>')
+    $(controlID).html('<div id="' + chartControlID + '" style="width: 100%; height: 225px;"></div>')
     chartControlID = '#' + chartControlID;
 
     var src = {
         datatype: 'json',
         type: 'get',
-        url: '/queries/' + type + '/' + id + '/EventCriticalityBreakdown',
+        url: '/queries/' + type + '/' + id + '/EventCriticalityBreakdown' + ((timescale != '' && timescale) ? "?maxHistoryDays=" + timescale : ""),
         datafields:
         [
             { name: 'Criticality', type: 'string' },
@@ -43920,7 +43973,7 @@ function EventCriticalityBreakdownChart(controlID, contextList, type, id) {
     var adapter = new $.jqx.dataAdapter(src);
 
     $(chartControlID).jqxChart({
-        title: "",
+        title: "By Criticality",
         description: "",
         enableAnimations: true,
         showLegend: true,
@@ -43986,13 +44039,15 @@ function EventsGrid(controlID, contextList, id, selectedEventID, showCommands, h
             gridinfo.Columns.push({
                 datafield: "ID",
                 text: "",
+                sortable: false,
                 filterable: false,
-                width: '10%',
+                width: '80px',
+                resizable: false,
                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                     var tools = [];
 
                     tools.push({ icon: 'info', urlprefix: '/overlays/Event/' + data.ID + '/detail' });
-                    //tools.push({ icon: 'trash-o', urlprefix: 'form' + detailUri + '/delete' });
+                    tools.push({ icon: 'pencil', urlprefix: '/form/EditEvent?id=' + data.ID });
 
                     return renderToolsHtml(value, tools, contextList.Event, data);
                 }
@@ -44131,12 +44186,12 @@ function EventHeadersGrid(controlID, contextList, type, id, selectedGroupID) {
                 {
                     text: '',
                     dataField: 'ID',
-                    width: '40px',
+                    width: '80px',
                     filterable: false,
                     cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                         var tools = [
-                            { icon: 'info', urlprefix: '/overlays/EventGroup/' + data.ID + '/detail' }//,
-                            //{ icon: 'trash-o', urlprefix: '/form/fields/' + data.ObjectType + '/' + data.ObjectID + '/' + data.ID + '/delete' }
+                            { icon: 'info', urlprefix: '/overlays/EventGroup/' + data.ID + '/detail' },
+                            { icon: 'pencil', urlprefix: '/form/EditEventGroup?id=' + data.ID }
                         ];
                         return renderToolsHtml(value, tools, contextList.EventGroup);
                     }
@@ -44202,18 +44257,18 @@ function EventHeadersGrid(controlID, contextList, type, id, selectedGroupID) {
     //#endregion
 }
 
-function EventStatusBreakdownChart(controlID, contextList, type, id) {
+function EventStatusBreakdownChart(controlID, contextList, type, id, timescale) {
 
     var chartControlID = controlID + "_chart";
 
     controlID = '#' + controlID;
-    $(controlID).html('<header>Event Breakdown by Status</header><div id="' + chartControlID + '" style="width: 100%; height: 225px;"></div>')
+    $(controlID).html('<div id="' + chartControlID + '" style="width: 100%; height: 225px;"></div>')
     chartControlID = '#' + chartControlID;
 
     var src = {
         datatype: 'json',
         type: 'get',
-        url: '/queries/' + type + '/' + id + '/EventStatusBreakdown',
+        url: '/queries/' + type + '/' + id + '/EventStatusBreakdown' + ((timescale != '' && timescale) ? "?maxHistoryDays=" + timescale : ""),
         datafields:
         [
             { name: 'Status', type: 'string' },
@@ -44224,7 +44279,7 @@ function EventStatusBreakdownChart(controlID, contextList, type, id) {
     var adapter = new $.jqx.dataAdapter(src);
 
     $(chartControlID).jqxChart({
-        title: "",
+        title: "By Status",
         description: "",
         enableAnimations: true,
         showLegend: true,
@@ -45542,6 +45597,65 @@ function PeopleResponsibilityTile(controlID, contextList, permissions, type, id,
     //#endregion
 }
 
+function PolicyStatusKpi(controlID, contextList, permissions, id) {
+
+    var calendarControlID = controlID + "_calendar";
+    var graphicControlID = controlID + "_graphic";
+    controlID = '#' + controlID;
+
+    var date = '10-20-2015';
+
+    //#region Grid
+
+    var calendarChange = function (event) {
+        var dt = moment(event.args.date);
+        date = dt.toISOString();
+        loadStatus();
+    }
+
+    var loadStatus = function () {
+        $.getJSON('/monitor/PolicyStatusForDate', { id: id, date: date }, function (data) {
+            var html = '';
+
+            if (data.status) {
+                html = "<i class='fa fa-thumbs-o-up' style='font-size: 40px; color: green' title='All good'></i>";
+            }
+            else {
+                html = "<i class='fa fa-thumbs-o-down' style='font-size: 40px; color: red' title='Not so good'></i>";
+            }
+
+            $(graphicControlID).html(html);
+        });
+    }
+
+    try {
+        $(controlID).html('<header>Health Status</header><div style="padding: 10px"><table><tr style="vertical-align: middle"><td><div id="' + calendarControlID + '"></div></td><td><div id="' + graphicControlID + '"></div></td></tr></table></div>');
+        calendarControlID = '#' + calendarControlID;
+        graphicControlID = '#' + graphicControlID;
+
+        $(calendarControlID).jqxDateTimeInput({ width: '220px', height: '25px', theme: theme, formatString: "MM-dd-yy" });
+        loadStatus();
+    } catch (e) {
+        console.log(e);
+    }
+
+    //#endregion
+
+    //#region Event Subscriptions
+
+    function unsubscribe(data) {
+        $(calendarControlID).off('change', calendarChange);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    $(calendarControlID).on('change', calendarChange);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+}
+
 function PolicyTypeLevelsGrid(controlID, contextList, permissions, id) {
 
     var toolsControlID = controlID + "_tools";
@@ -45655,7 +45769,6 @@ function PolicyTypeLevelsGrid(controlID, contextList, permissions, id) {
 
     //#endregion
 }
-
 
 function RelatedArtifactsGrid(controlID, permissions, typeName, typeID, id) {
 
@@ -46973,6 +47086,10 @@ function YourWorkflowTasks(controlID, title, showTitle) {
 
     //#region Event Subscriptions
 
+    var itemsBindComplete = function (event) {
+        $(gridControlID).jqxGrid('autoresizecolumns');
+    };
+
     var bindComplete = function (event) {
         $(chart).jqxGrid('selectrow', 0);
     };
@@ -46997,11 +47114,13 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                     { name: 'RequestingResourceName', type: 'string' },
                     { name: 'TaxonomyTypeID', type: 'number' },
                     { name: 'TaxonomyTypeName', type: 'string' },
-                    { name: 'Activity', type: 'string' }
+                    { name: 'Activity', type: 'string' },
+                    { name: 'ActivityDescription', type: 'string' },
+                    { name: 'ActivityName', type: 'string' }
                 ];
                 $(gridControlID).jqxGrid('columns', [
                     {
-                        datafield: "Name", text: "Type", filtertype: 'checkedlist', width: '20%',
+                        datafield: "Name", text: "Type", filtertype: 'checkedlist', 
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return previewLinkRenderer('ArtifactType', data.ID, data.Url, data.Name);
                         }
@@ -47012,10 +47131,11 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                             return previewLinkRenderer('Resource', data.RequestingResourceID, '#/resources/' + data.RequestingResourceID, data.RequestingResourceName);
                         }
                     },
-                    { datafield: "StartDate", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy", width: '15%' }, // hh:mm:ss tt },
-                    { datafield: "ProposedName", text: "Proposed Name", width: '20%' },
+                    { datafield: "StartDate", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
+                    { datafield: "ProposedName", text: "Proposed Name" },
                     //{ datafield: "ProposedDescription", text: "Proposed Description" },
-                    { datafield: "TaxonomyTypeName", text: "Subject Area", filtertype: 'checkedlist', width: '20%' },
+                    { datafield: "TaxonomyTypeName", text: "Subject Area", filtertype: 'checkedlist' },
+                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
                     {
                         datafield: "WorkflowID",
                         text: "",
@@ -47043,18 +47163,21 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                     { name: 'Url', type: 'string' },
                     { name: 'StartDate', type: 'date' },
                     { name: 'DueDate', type: 'date' },
-                    { name: 'Activity', type: 'string' }
+                    { name: 'Activity', type: 'string' },
+                    { name: 'ActivityDescription', type: 'string' },
+                    { name: 'ActivityName', type: 'string' }
                 ];
                 $(gridControlID).jqxGrid('columns', [
-                    { datafield: "TypeName", text: "Type", filtertype: 'checkedlist', width: '20%' },
+                    { datafield: "TypeName", text: "Type", filtertype: 'checkedlist' },
                     {
                         filtertype: 'checkedlist', datafield: "Name", text: "Name",
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return previewLinkRenderer('Artifact', data.ID, data.Url, data.Name);
                         }
                     },
-                    { datafield: "StartDate", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy", width: '20%' }, // hh:mm:ss tt },
-                    { datafield: "DueDate", text: "Date Due", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy", width: '20%' }, // hh:mm:ss tt },
+                    { datafield: "StartDate", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
+                    { datafield: "DueDate", text: "Date Due", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
+                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
                     {
                         datafield: "WorkflowID",
                         text: "",
@@ -47081,16 +47204,19 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                     { name: 'ResourceName', type: 'string' },
                     { name: 'ResourceUrl', type: 'string' },
                     { name: 'DateStarted', type: 'date' },
-                    { name: 'Activity', type: 'string' }
+                    { name: 'Activity', type: 'string' },
+                    { name: 'ActivityDescription', type: 'string' },
+                    { name: 'ActivityName', type: 'string' }
                 ];
                 $(gridControlID).jqxGrid('columns', [
                     { datafield: "Issue", text: "Issue" },
-                    { filtertype: 'checkedlist', datafield: "ResourceName", text: "Reporting User", width: '20%',
+                    { filtertype: 'checkedlist', datafield: "ResourceName", text: "Reporting User",
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return previewLinkRenderer('Resource', data.ResourceID, data.ResourceUrl, data.ResourceName);
                         }
                     },
-                    { datafield: "DateStarted", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy", width: '20%' }, // hh:mm:ss tt },
+                    { datafield: "DateStarted", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
+                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
                     {
                         datafield: "WorkflowID",
                         text: "",
@@ -47127,7 +47253,6 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                         filtertype: 'checkedlist',
                         datafield: "WorkflowName",
                         text: "Workflow",
-                        width: '30%',
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return quickTipRenderer(data.WorkflowName, data.WorkflowDescription);
                         }
@@ -47137,13 +47262,12 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                         filtertype: 'checkedlist',
                         datafield: "ActivityName",
                         text: "Activity",
-                        width: '20%',
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return quickTipRenderer(data.ActivityName, data.ActivityDescription);
                         }
                     },
                     {
-                        datafield: "Properties", text: "Properties", width: '30%',
+                        datafield: "Properties", text: "Properties",
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             var html = "";
                             for (var key in data.Properties) {
@@ -47214,9 +47338,11 @@ function YourWorkflowTasks(controlID, title, showTitle) {
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         $(chart).off('rowselect', rowSelect);
         $(chart).off("bindingcomplete", bindComplete);
+        $(gridControlID).off("bindingcomplete", itemsBindComplete);
         chart = null;
     }
 
+    $(gridControlID).on("bindingcomplete", itemsBindComplete);
     $(chart).on("bindingcomplete", bindComplete);
     $(chart).on('rowselect', rowSelect);
     amplify.subscribe("PageResized", pageResized);
@@ -47225,6 +47351,47 @@ function YourWorkflowTasks(controlID, title, showTitle) {
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
     //#endregion
+
+    //#region Item Grid
+
+    var gridSource = {
+        datatype: 'json',
+        url: null,
+        datafields: [{ name: 'WorkflowID' } ]
+    };
+
+    var gridAdapter = new $.jqx.dataAdapter(gridSource);
+
+    try {
+        $(gridControlID).jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pagesizeoptions: ['10', '20', '50'],
+            pagesize: 10,
+            pageable: true,
+            selectionmode: 'none',
+            autorowheight: true,
+            source: gridAdapter,
+            theme: list_theme,
+            columns: [
+                {
+                    datafield: "WorkflowID",
+                    text: "",
+                    sortable: false,
+                    filterable: false
+                }
+            ]
+        });
+    } catch (e) {
+    }
+
+    //#endregion
+
+    //#region Type Grid
 
     try {
         chartSource = {
@@ -47261,36 +47428,6 @@ function YourWorkflowTasks(controlID, title, showTitle) {
         });
     } catch (e) {
         console.log(e);
-    }
-
-    //#region Grid
-
-    var gridSource = {
-        datatype: 'json',
-        url: null,
-        datafields: [{ name: 'WorkflowID' } ]
-    };
-
-    var gridAdapter = new $.jqx.dataAdapter(gridSource);
-
-    try {
-        $(gridControlID).jqxGrid({
-            altrows: true,
-            width: grid_width,
-            autoheight: true,
-            sortable: true,
-            filterable: true,
-            showfilterrow: true,
-            pagesizeoptions: ['10', '20', '50'],
-            pagesize: 10,
-            pageable: true,
-            selectionmode: 'none',
-            autorowheight: true,
-            source: gridAdapter,
-            theme: list_theme,
-            columns: []
-        });
-    } catch (e) {
     }
 
     //#endregion
@@ -47336,87 +47473,6 @@ function home(app, pageViewModel, templatePath, contextList, currentResourceID) 
                 $('#SideIcons').PageTools({ type: 'Resource', id: currentResourceID });
                 $('#SideIcons').PageTools("clear");
 
-                //#region Red Flag Summary Chart
-
-                var rf = $("#RedFlagChartTile");
-
-                ResponsibilitySource = {
-                    datatype: 'json',
-                    type: 'get',
-                    url: '/Queries/CriticalNonCriticalRedFlagAggregates',
-                    datafields:
-                    [
-                        { name: 'Type', type: 'string' },
-                        { name: 'TypeName', type: 'string' },
-                        { name: 'TypeID', type: 'number' },
-                        { name: 'Count', type: 'number' },
-                        { name: 'CriticalCount', type: 'number' }
-                    ]
-                };
-
-                ResponsibilityAdapter = new $.jqx.dataAdapter(ResponsibilitySource);
-
-                rf.jqxChart({
-                    title: "",
-                    description: "Total vs. critical red-flagged items",
-                    enableAnimations: true,
-                    showLegend: true,
-                    borderLineWidth: 0,
-                    showBorderLine: false,
-                    colorScheme: chartDefaultTheme,
-                    padding: { left: 5, top: 5, right: 5, bottom: 5 },
-                    titlePadding: { left: 90, top: 0, right: 0, bottom: 10 },
-                    xAxis: {
-                        dataField: 'TypeName',
-                        showTickMarks: true,
-                        tickMarksInterval: 1,
-                        tickMarksColor: '#bababa',
-                        unitInterval: 1,
-                        showGridLines: false,
-                        gridLinesInterval: 1,
-                        gridLinesColor: '#bababa',
-                        textRotationAngle: 15,
-                        textRotationPoint: 'center',
-                        axisSize: 'auto'
-                    },
-                    source: ResponsibilityAdapter,
-                    seriesGroups:
-                    [
-                        {
-                            useGradientColors: false,
-                            type: 'stackedcolumn',
-                            columnsGapPercent: 100,
-                            seriesGapPercent: 5,
-                            valueAxis:
-                            {
-                                displayValueAxis: true,
-                                description: '# Items',
-                                tickMarksColor: '#bababa'
-                            },
-                            series: [
-                                    { dataField: 'Count', displayText: 'Total' },
-                                    { dataField: 'CriticalCount', displayText: 'Critical' }
-                            ],
-                            click: function (e) {
-                                var data = ResponsibilityAdapter.records[e.elementIndex];
-                                var uri = '/overlays/' + data.Type + '/' + data.TypeID + '/RedFlags';
-                                openTileOverlay(uri);
-                                //$('#PersonGridTitle').text('People Assigned as ' + data.ResponsibilityType);
-                                //$('#OwnedItemGridTitle').text('');
-                                //pgSrc.url = '/queries/' + data.ResponsibilityTypeID + '/ResourcesByResponsibilityType';
-                                //pg.jqxGrid('updatebounddata');
-                                //oigSrc.url = null;
-                                //oig.jqxGrid('updatebounddata');
-                            }
-                        }
-                    ]
-                });
-                rf.jqxChart('addColorScheme', 'myScheme', chartYesNoColorScheme);
-                rf.jqxChart('colorScheme', 'myScheme');
-                rf.jqxChart('refresh');
-
-                //#endregion
-
                 //#region Tiles
 
                 HomeSocial = new BoardViewModel();
@@ -47426,9 +47482,9 @@ function home(app, pageViewModel, templatePath, contextList, currentResourceID) 
                 YourFollowedItemsTile('#FollowingTile', id, 'Items You Follow');
                 YourOwnedItemsTile('#OwnedTile', id, 'Items You Own');
 
-                //homeSocialTile = new HomeSocialMicroTileModel(id);
-                //ko.applyBindings(homeSocialTile, document.getElementById('HomeSocialTile'));
-                //homeSocialTile.GetStatistics();
+                homeSocialTile = new HomeSocialMicroTileModel(id);
+                ko.applyBindings(homeSocialTile, document.getElementById('HomeSocialTile'));
+                homeSocialTile.GetStatistics();
 
                 YourWorkflowTasks('WorkflowTasksTile', 'Your Assigned Tasks', true);
 
@@ -51774,25 +51830,13 @@ function policies_list(app, pageViewModel, templatePath, contextList) {
                     var loadPermissionsDependentTiles = function () {
                         DetailsTile('DetailTile', contextList, permissions, iType, iID, contextList.Policy, true);
 
-                        if (iType == 'Policy') {
-                            statisticsTileVm.ChangeObject(iType, iID);
-                            statisticsTileVm.GetStatistics();
+                        statisticsTileVm.ChangeObject(iType, iID);
+                        statisticsTileVm.GetStatistics();
 
-                            $('#Responsibilities').show();
-                            $('#SourcingTile').show();
-                            $('#AggregatesTileContainer').show();
-                            PeopleResponsibilityTile('Responsibilities', contextList, permissions, iType, iID, '');
-                            environment_diagram('SourcingTile', permissions, iType, iID);
-                            RelationshipAggregatesTile('AggregatesTileContainer', iType, iID, permissions);
-                        }
-                        else {
-                            statisticsTileVm.ChangeObject(iType, iID);
-                            statisticsTileVm.GetStatistics();
-
-                            $('#Responsibilities').hide();
-                            $('#SourcingTile').hide();
-                            $('#AggregatesTileContainer').hide();
-                        }
+                        PolicyStatusKpi('StatusTile', contextList, permissions, iID);
+                        PeopleResponsibilityTile('Responsibilities', contextList, permissions, iType, iID, '');
+                        environment_diagram('SourcingTile', permissions, iType, iID);
+                        RelationshipAggregatesTile('AggregatesTileContainer', iType, iID, permissions);
                     }
                     permissions.GetPermissionsForObject(iType, iID).then(loadPermissionsDependentTiles);
 
@@ -52564,6 +52608,7 @@ function rules_list(app, pageViewModel, templatePath, contextList) {
         var ruleID = context.params['ruleid'];
         var permissions = new PermissionsModel();
         var type = 'Rule';
+        var timescale;
         pageViewModel.Title = 'Rules';
         pageViewModel.Directions = '';
 
@@ -52580,6 +52625,13 @@ function rules_list(app, pageViewModel, templatePath, contextList) {
 
         function eventHeaderSelected(data) {
             EventsGrid('EventsTile', contextList, data.GroupID, null, true);
+        }
+
+        function timeScaleChanged() {
+            timescale = $('#EventBreakdownTimeScale').val();
+            EventStatusBreakdownChart('EventStatusChart', contextList, type, ruleID, timescale);
+            EventAgeBreakdownChart('EventAgeChart', contextList, type, ruleID, timescale);
+            EventCriticalityBreakdownChart('EventCriticalityChart', contextList, type, ruleID, timescale);
         }
 
         function ruleGridRowSelect(evt) {
@@ -52604,6 +52656,10 @@ function rules_list(app, pageViewModel, templatePath, contextList) {
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, ruleID, '');
                     environment_diagram('SourcingTile', permissions, type, ruleID);
                     RelationshipAggregatesTile('AggregatesTileContainer', type, ruleID, permissions);
+
+                    EventStatusBreakdownChart('EventStatusChart', contextList, type, ruleID, timescale);
+                    EventAgeBreakdownChart('EventAgeChart', contextList, type, ruleID, timescale);
+                    EventCriticalityBreakdownChart('EventCriticalityChart', contextList, type, ruleID, timescale);
 
                     $('#EventsTile').html('');
                     if (permissions.HasPermission("Root", "Update")) {
@@ -52668,6 +52724,7 @@ function rules_list(app, pageViewModel, templatePath, contextList) {
 
             amplify.unsubscribe('EventHeaderSelected', eventHeaderSelected);
             $("#RuleGrid").off("rowselect", ruleGridRowSelect);
+            $('#EventBreakdownTimeScale').off('change', timeScaleChanged);
             amplify.unsubscribe("SaveAction", saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
@@ -52736,7 +52793,7 @@ function rules_list(app, pageViewModel, templatePath, contextList) {
                 $("#RuleGrid").on("rowselect", ruleGridRowSelect);
                 amplify.subscribe("SaveAction", saveAction);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
+                $('#EventBreakdownTimeScale').on('change', timeScaleChanged);
                 //#endregion
             });
     }
@@ -53237,7 +53294,7 @@ function taxonomies_list(app, pageViewModel, templatePath, contextList) {
                             ObjectStatisticsTile('StatisticsTile', type, item.ID);
                             break;
                         case contextList.Intersect:
-                            RelationshipAggregatesTile('AggregatesTileContainer', type, id, permissions);
+                            RelationshipAggregatesTile('AggregatesTileContainer', type, selectedID, permissions);
                             break;
                         case contextList.SourcingResponsibility:
                             environment_diagram('SourcingTile', permissions, type, selectedID);

@@ -973,7 +973,7 @@ namespace d360.web.Controllers
                         {
                             list.Add(new PageActionItem { Context = ContextList.Policy, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/DeletePolicy?id={0}", id) });
                         }
-                        reportNode = appendReportMenu(type, id, SystemObjects.TaxonomyType, policy.PolicyTypeID, true);
+                        reportNode = appendReportMenu(type, id, SystemObjects.PolicyType, policy.PolicyTypeID, true);
                         if (reportNode != null) list.Add(reportNode);
                         list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
                     }
@@ -998,6 +998,8 @@ namespace d360.web.Controllers
                             }
                         }
                     }
+                    reportNode = appendReportMenu(type, id, SystemObjects.PolicyType, id);
+                    if (reportNode != null) list.Add(reportNode);
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                 #endregion
@@ -1097,11 +1099,16 @@ namespace d360.web.Controllers
 
                     if (id > 0)
                     {
+                        var rule = Company.GetById<Rule>(id);
+
                         if (hasPermission(permissions, Claim.Update, ClaimObject.Root))
                             list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Edit_Icon, Title = Resources.Actions.Edit, Uri = string.Format("/form/EditRule?id={0}", id) });
 
                         if (hasPermission(permissions, Claim.Delete, ClaimObject.Root))
                             list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/DeleteRule?id={0}", id) });
+
+                        reportNode = appendReportMenu(type, id, SystemObjects.RuleType, (int)rule.RuleType, true);
+                        if (reportNode != null) list.Add(reportNode);
 
                         following = Company.IsUserFollowing(type, id, null);
                         list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
@@ -2247,16 +2254,9 @@ from	    ResponsibilityTypeHierarchy H
         }
 
         [Route("resources/{typeID:int}")]
-        public List<Dictionary<string, object>> GetResourcesByType(int typeID)
+        public IQueryable<GlobalReportingResource> GetResourcesByType(int typeID)
         {
-            var resources = Community
-                .Filter<Resource>(i => i.ResourceTypeID == typeID && i.CompanyResources.Any(c => c.CompanyID == Company.CurrentCompanyID))
-                .OrderBy(i => i.LastName)
-                .ThenBy(i => i.FirstName)
-                .ToList();
-            var list = Company.GetResourcesAsDictionaries(resources);
-            resources = null;
-            return list;
+            return Company.Table<GlobalReportingResource>();
         }
 
         [Route("resources/{typeID:int}/{id:int}")]
@@ -3089,6 +3089,16 @@ from	    ResponsibilityTypeHierarchy H
                                 break;
                             case "Resource":
                                 sql = "select 'Resource Instance'";
+                                break;
+                            case "Policy":
+                                sql = "select 'Policy Instance : ' + Name from PolicyType where ID = @id";
+                                break;
+                            case "PolicyType":
+                                sql = "select 'Policy Type : ' + Name from PolicyType where ID = @id";
+                                break;
+                            case "Rule":
+                                var ruleEnum = (RuleType)report.ObjectID;
+                                sql = string.Format("select 'Rule Instance : {0}'", ruleEnum.GetRuleTypeDisplayName());
                                 break;
                             case "Taxonomy":
                                 sql = "select 'Model Instance : ' + Name from TaxonomyType where ID = @id";

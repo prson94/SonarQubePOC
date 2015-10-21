@@ -80,7 +80,7 @@
                             ObjectStatisticsTile('StatisticsTile', type, item.ID);
                             break;
                         case contextList.Intersect:
-                            RelationshipAggregatesTile('AggregatesTileContainer', type, id, permissions);
+                            RelationshipAggregatesTile('AggregatesTileContainer', type, selectedID, permissions);
                             break;
                         case contextList.SourcingResponsibility:
                             environment_diagram('SourcingTile', permissions, type, selectedID);

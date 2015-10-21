@@ -274,13 +274,12 @@
                               <State x:Name="__ReferenceID3" DisplayName="Closed" sap2010:WorkflowViewState.IdRef="State_2" IsFinal="True">
                                 <State.Entry>
                                   <Sequence sap2010:WorkflowViewState.IdRef="Sequence_5">
-                                    <local:MarkPreviousUserAssignmentsAsCompleted>
+                                    <local:MarkPreviousUserAssignmentsAsCompleted sap2010:WorkflowViewState.IdRef="MarkPreviousUserAssignmentsAsCompleted_3">
                                       <local:MarkPreviousUserAssignmentsAsCompleted.CompanyID>
                                         <InArgument x:TypeArguments="x:Int32">
                                           <mca:CSharpValue x:TypeArguments="x:Int32">CompanyID</mca:CSharpValue>
                                         </InArgument>
                                       </local:MarkPreviousUserAssignmentsAsCompleted.CompanyID>
-                                      <sap2010:WorkflowViewState.IdRef>MarkPreviousUserAssignmentsAsCompleted_3</sap2010:WorkflowViewState.IdRef>
                                     </local:MarkPreviousUserAssignmentsAsCompleted>
                                     <local:UpdateWorkflowStep DisplayName="Set Workflow Step to Closed" sap2010:WorkflowViewState.IdRef="UpdateWorkflowStep_2">
                                       <local:UpdateWorkflowStep.CompanyID>
@@ -387,6 +386,24 @@
                                     </InArgument>
                                   </local:AssociateUsersWithWorkflow.Users>
                                 </local:AssociateUsersWithWorkflow>
+                                <local:TagUserOnCommentThread>
+                                  <local:TagUserOnCommentThread.CommentID>
+                                    <InArgument x:TypeArguments="x:Int32">
+                                      <mca:CSharpValue x:TypeArguments="x:Int32">CommentID</mca:CSharpValue>
+                                    </InArgument>
+                                  </local:TagUserOnCommentThread.CommentID>
+                                  <local:TagUserOnCommentThread.CompanyID>
+                                    <InArgument x:TypeArguments="x:Int32">
+                                      <mca:CSharpValue x:TypeArguments="x:Int32">CompanyID</mca:CSharpValue>
+                                    </InArgument>
+                                  </local:TagUserOnCommentThread.CompanyID>
+                                  <local:TagUserOnCommentThread.Users>
+                                    <InArgument x:TypeArguments="scg:List(dce:Resource)">
+                                      <mca:CSharpValue x:TypeArguments="scg:List(dce:Resource)">users</mca:CSharpValue>
+                                    </InArgument>
+                                  </local:TagUserOnCommentThread.Users>
+                                  <sap2010:WorkflowViewState.IdRef>TagUserOnCommentThread_1</sap2010:WorkflowViewState.IdRef>
+                                </local:TagUserOnCommentThread>
                                 <local:AddReplyToComment CommentTypeID="2" DisplayName="Reply toThread" sap2010:WorkflowViewState.IdRef="AddReplyToComment_2">
                                   <local:AddReplyToComment.Comment>
                                     <InArgument x:TypeArguments="x:String">
@@ -545,7 +562,7 @@
     <StateMachine.Variables>
       <Variable x:TypeArguments="x:String" Name="Action" />
     </StateMachine.Variables>
-    <sads:DebugSymbol.Symbol>d1lDOlxQcm9qZWN0c1xEM1NcRGV2ZWxvcG1lbnQgQnJhbmNoXGQzNjAud29ya2Zsb3dcd29ya2Zsb3dzXFdvcmtJc3N1ZVxXb3JrSXNzdWVfdjEwMDAueGFtbGw7A6UEEgIBAT0HmwQPAwHyA+cBF6oDHwMB+AGSAh+yAicDAeIBugEPjwQXAgECPwuRARYDAa8ElAELtQEWAwH1A+sBH48COAMBsQPPAh/PAm8DAagDtQIfzAIqAwGBA58DH58DcgMB+ALUAh+cAyoDAfoBlAIjsAIuAwHkAb4BF+QBIgMBoAGEBBeEBGgDAZcBrQMXgQQiAgEEQA1kLwMBggVlDX8qAwHPBIABDZABMAMBsASYAQ2jAScDAZgEpAENtAEwAwH2A4ICJYICkAEDAekD6wFc6wFmAwHoA/0BJf0BgwEDAd8D8wEl8wFyAwHWA+4BJe4BcQMBzQOHAiWHAnQDAcQDjAIljAJwAwG7A/gBJfgBawMBsgO2AiHLAjsDAYID2AIh7QI5AwHPAu4CIfQCUAMBxAL1AiGFA0QDAaUChgMhmwM7AwH7AZUCJZwCVAMB8wGdAiWoAkADAeoBqQIlrwJIAwHlAb8BGeMBMgMBoQGxAxnGAzECAW7HAxnNA0gCAWPOAxneAzwCAUTfAxnqAzQCAS/rAxmABDMCAQVNE01zAwG/BUgTSHADAbUFXBNcZgMBqwVSE1JZAwGhBWETYWsDAZcFQxNDZAMBjQVXE1dZAwGDBW0TbV4DAfgEaBNoaAMB7gR8E3xqAwHkBHITclkDAdoEdxN3WQMB0ASNARONAXEDAcUEgwETgwFZAwG7BIgBE4gBYgMBsQSgAROgAWwDAaQEmwETmwFZAwGZBKcBE6cBeQMBjQSxAROxAWQDAYIErAETrAFZAwH3A7kCJ7kCbAMBnwPIAifIAm4DAZYDtgJItgJLAwGVA74CJ74CbQMBjAPDAifDAm0DAYMD4AIn4AKEAQMB7gLqAifqAoABAwHkAtsCJ9sCfQMB2gLlAiflAm0DAdAC8QIn8QJtAwHFAvgCJ/gCjQEDAboCggMnggN4AwGwAv0CJ/0CbQMBpgKJAyeJA2wDAZsCmAMnmANuAwGRAoYDSIYDSwMBkAKOAyeOA20DAYYCkwMnkwNtAwH8AZgCK5gCcQMB9AGlAiulAoIBAwHvAaACK6ACcQMB6wGsAiusAnEDAeYB1gEf1gGKAQMB2QG/AT6/AUQDAdgB0QEf0QF9AwHPAccBH8cBbAMBxgHCAR/CAWsDAb0B2wEf2wFuAwG0AeABH+ABagMBqwHMAR/MAWUDAaIBuQMfuQN8AwGNAcMDH8MDeAMBgwG0Ax+0A3UCAXm+Ax++A2UCAW/KAx/KA2UCAWTRAx/RA4UBAgFZ2wMf2wNwAgFP1gMf1gNlAgFF5wMf5wN4AgE64gMf4gNlAgEw7gMf7gNkAgEl/QMf/QNmAgEb6wNA6wNDAgEa8wMf8wNlAgEQ+AMf+ANlAgEG</sads:DebugSymbol.Symbol>
+    <sads:DebugSymbol.Symbol>d1lDOlxQcm9qZWN0c1xEM1NcRGV2ZWxvcG1lbnQgQnJhbmNoXGQzNjAud29ya2Zsb3dcd29ya2Zsb3dzXFdvcmtJc3N1ZVxXb3JrSXNzdWVfdjEwMDAueGFtbHA7A7YEEgIBAT0HrAQPAwGRBOcBF7sDHwMB+AGSAh+xAicDAeIBugEPoAQXAgECPwuRARYDAc4ElAELtQEWAwGUBOsBH48COAMB0APOAh/OAm8DAccDtAIfywIqAwGgA7ADH7ADcgMBlwPTAh+tAyoDAfoBlAIjrwIuAwHkAb4BF+QBIgMBoAGVBBeVBGgDAZcBvgMXkgQiAgEEQA1kLwMBoQVlDX8qAwHuBIABDZABMAMBzwSYAQ2jAScDAbcEpAENtAEwAwGVBIICJYICkAEDAYgE6wFc6wFmAwGHBP0BJf0BgwEDAf4D8wEl8wFyAwH1A+4BJe4BcQMB7AOHAiWHAnQDAeMDjAIljAJwAwHaA/gBJfgBawMB0QO1AiHKAjsDAaED1wIh7AI5AwHuAu0CIfMCUAMB4wL0AiGEA0QDAcQChQMhlgNAAwGlApcDIawDOwMB+wGVAiWbAlQDAfMBnAIlpwJAAwHqAagCJa4CSAMB5QG/ARnjATIDAaEBwgMZ1wMxAgFu2AMZ3gNIAgFj3wMZ7wM8AgFE8AMZ+wM0AgEv/AMZkQQzAgEFTRNNcwMB3gVIE0hwAwHUBVwTXGYDAcoFUhNSWQMBwAVhE2FrAwG2BUMTQ2QDAawFVxNXWQMBogVtE21eAwGXBWgTaGgDAY0FfBN8agMBgwVyE3JZAwH5BHcTd1kDAe8EjQETjQFxAwHkBIMBE4MBWQMB2gSIAROIAWIDAdAEoAEToAFsAwHDBJsBE5sBWQMBuASnAROnAXkDAawEsQETsQFkAwGhBKwBE6wBWQMBlgS4Aie4AmwDAb4DxwInxwJuAwG1A7UCSLUCSwMBtAO9Aie9Am0DAasDwgInwgJtAwGiA98CJ98ChAEDAY0D6QIn6QKAAQMBgwPaAifaAn0DAfkC5AIn5AJtAwHvAvACJ/ACbQMB5AL3Aif3Ao0BAwHZAoEDJ4EDeAMBzwL8Aif8Am0DAcUCkgMnkgN4AwG6AogDJ4gDbQMBsAKNAyeNA20DAaYCmgMnmgNsAwGbAqkDJ6kDbgMBkQKXA0iXA0sDAZACnwMnnwNtAwGGAqQDJ6QDbQMB/AGYAiuYAnEDAfQBpAIrpAKCAQMB7wGfAiufAnEDAesBqwIrqwJxAwHmAdYBH9YBigEDAdkBvwE+vwFEAwHYAdEBH9EBfQMBzwHHAR/HAWwDAcYBwgEfwgFrAwG9AdsBH9sBbgMBtAHgAR/gAWoDAasBzAEfzAFlAwGiAcoDH8oDfAMBjQHUAx/UA3gDAYMBxQMfxQN1AgF5zwMfzwNlAgFv2wMf2wNlAgFk4gMf4gOFAQIBWewDH+wDcAIBT+cDH+cDZQIBRfgDH/gDeAIBOvMDH/MDZQIBMP8DH/8DZAIBJY4EH44EZgIBG/wDQPwDQwIBGoQEH4QEZQIBEIkEH4kEZQIBBg==</sads:DebugSymbol.Symbol>
   </StateMachine>
   <sap2010:WorkflowViewState.ViewStateManager>
     <sap2010:ViewStateManager>
@@ -619,15 +636,16 @@
       <sap2010:ViewStateData Id="GetResourceByID_1" sap:VirtualizedContainerService.HintSize="200,22" />
       <sap2010:ViewStateData Id="MarkPreviousUserAssignmentsAsCompleted_2" sap:VirtualizedContainerService.HintSize="200,22" />
       <sap2010:ViewStateData Id="AssociateUsersWithWorkflow_2" sap:VirtualizedContainerService.HintSize="200,22" />
+      <sap2010:ViewStateData Id="TagUserOnCommentThread_1" sap:VirtualizedContainerService.HintSize="200,22" />
       <sap2010:ViewStateData Id="AddReplyToComment_2" sap:VirtualizedContainerService.HintSize="200,22" />
-      <sap2010:ViewStateData Id="Sequence_3" sap:VirtualizedContainerService.HintSize="222,332">
+      <sap2010:ViewStateData Id="Sequence_3" sap:VirtualizedContainerService.HintSize="222,394">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">True</x:Boolean>
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="Transition_2" sap:VirtualizedContainerService.HintSize="430,1058">
+      <sap2010:ViewStateData Id="Transition_2" sap:VirtualizedContainerService.HintSize="430,1120">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <av:PointCollection x:Key="ConnectorLocation">201.3,374 201.3,437.52 22,437.52 22,281.52 110.9,281.52 110.9,306</av:PointCollection>

@@ -91,16 +91,18 @@
                     var reassignSource = {
                         datatype: "json",
                         datafields: [
-                            { name: 'CompanyName' },
-                            { name: 'ContactName' }
+                            { name: 'FullName' },
+                            { name: 'ResourceID' }
                         ],
-                        url: url
+                        url: '/api/resources/1'
                     };
                     var reassignAdapter = new $.jqx.dataAdapter(reassignSource);
                     $('#ReassignTo').jqxDropDownList({
                         enableBrowserBoundsDetection: true,
                         filterable: true,
                         searchMode: 'containsignorecase',
+                        displayMember: 'FullName',
+                        valueMember: 'ResourceID',
                         width: '100%',
                         source: reassignAdapter,
                         theme: theme

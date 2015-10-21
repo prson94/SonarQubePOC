@@ -357,15 +357,19 @@
 </script>
 
 <script id="homeSocialMicroTileTmpl" type="text/html">
-    <header>Community</header>
     <table>
-        <tr id="HomeSocialFollowerCount" class="tile-clickable" data-bind="click: OpenFollowers">
-            <td class="tile-stat-name"># Following You</td>
-            <td class="tile-stat-value" data-bind="text: FollowerCount"></td>
-        </tr>
-        <tr id="HomeSocialGroupCount" class="tile-clickable" data-bind="click: OpenGroups">
-            <td class="tile-stat-name"># Groups You Belong To</td>
-            <td class="tile-stat-value" data-bind="text: GroupCount"></td>
+        <tr>
+            <td id="HomeSocialFollowerCount" class="tile-clickable" data-bind="event: { mouseover: OpenFollowers }">
+                <div class="tile-clickable StatisticValue SocialStatisticValue" data-bind="text: FollowerCount"></div>
+                <div class="StatisticName SocialStatisticName">followers</div>
+            </td>
+            <td id="HomeSocialGroupCount" class="tile-clickable" data-bind="event: { mouseover: OpenGroups }">
+                <div class="tile-clickable StatisticValue SocialStatisticValue" data-bind="text: GroupCount"></div>
+                <div class="StatisticName SocialStatisticName">groups</div>
+            </td>
+            <td style="width: 160px; vertical-align: top; text-align: right" align="right" class="tile-clickable" data-tile data-bind="attr: { 'data-uri': ScoreUri }" data-context="TileOverlay">
+                <div id="ScoreKpi" style="width: 150px; height: 150px;"></div>
+            </td>
         </tr>
     </table>
 </script>

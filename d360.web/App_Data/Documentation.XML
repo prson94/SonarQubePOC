@@ -2488,6 +2488,12 @@
         <member name="M:d360.web.Controllers.FormController.EmailTemplate_EditFields(System.Int32)">
             <param name="id">EmailTemplateID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.Event_EditFields(System.Int32)">
+            <param name="id">EventID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.EventGroup_EditFields(System.Int32)">
+            <param name="id">EventGroupID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.FieldType_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>
         </member>

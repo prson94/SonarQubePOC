@@ -1487,6 +1487,10 @@ var HomeSocialMicroTileModel = function (resourceID) {
     self.FollowerCount = ko.observable();
     self.GroupCount = ko.observable();
     self.CurrentResourceID = ko.observable(resourceID);
+    //self.Score = ko.observable();
+    self.ScoreUri = ko.computed(function () {
+        return '/overlays/Resource/' + self.CurrentResourceID() + '/score';
+    }, self);
 
     self.GetStatistics = function () {
         $.getJSON(
@@ -1494,6 +1498,10 @@ var HomeSocialMicroTileModel = function (resourceID) {
             function (data) {
                 self.FollowerCount(data.FollowerCount);
                 self.GroupCount(data.GroupCount);
+                //self.Score(data.Score);
+
+
+                drawKpi('#ScoreKpi', 'Governance score', data.Score, 100 - data.Score, true);
             }
         );
     }

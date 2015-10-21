@@ -25,7 +25,7 @@ namespace d360.web.Controllers.Services
         {
             var relations = new List<CommentRelation>();
 
-            var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString() };
+            var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
 
             if (comment.Comment.ParentID.HasValue)
             {
@@ -42,7 +42,7 @@ namespace d360.web.Controllers.Services
             {
                 if (comment.ObjectID.HasValue)
                 {
-                    relations.Add(new CommentRelation { ObjectID = comment.ObjectID.Value, ObjectType = comment.ObjectType.ToString() });
+                    relations.Add(new CommentRelation { ObjectID = comment.ObjectID.Value, ObjectType = comment.ObjectType.ToString(), Date = DateTime.UtcNow });
                     comment.Comment.OwnerObjectType = comment.ObjectType.ToString();
                     comment.Comment.OwnerObjectID = comment.ObjectID.Value;
                 }
@@ -57,7 +57,7 @@ namespace d360.web.Controllers.Services
 
             foreach (var tag in comment.Tags)
             {
-                relations.Add(new CommentRelation { ObjectType = tag.Object, ObjectID = tag.ObjectID });
+                relations.Add(new CommentRelation { ObjectType = tag.Object, ObjectID = tag.ObjectID, Date = DateTime.UtcNow });
             }
 
             var dtl = Company.AddComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);

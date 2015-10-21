@@ -71,11 +71,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="activities\AddIssueBookmark.cs" />
+    <Compile Include="activities\TagUserOnCommentThread.cs" />
     <Compile Include="activities\BuildIssueRequestXml.cs" />
     <Compile Include="activities\GetResourceByID.cs" />
     <Compile Include="activities\MarkPreviousUserAssignmentsAsCompleted.cs" />
-    <Compile Include="activities\UpdateIssue.cs" />
-    <Compile Include="activities\ReAssignIssue.cs" />
     <Compile Include="activities\AddReplyToComment.cs" />
     <Compile Include="activities\CompleteWorkflowInDatabase.cs" />
     <Compile Include="activities\GetCommentInfoFromRequest.cs" />

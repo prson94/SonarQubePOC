@@ -600,16 +600,17 @@
                                 var fldColorHidden = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="hidden" value="' + cleanedValue + '" />');
                                 cpnl.append(fldColorHidden);
 
-                                if (cleanedValue != '') cleanedValue = cleanedValue.replace('#', '');
+                                //if (cleanedValue != '') cleanedValue = cleanedValue.replace('#', '');
 
                                 
                                 fld = $('<div id="' + v.FieldName + "_Picker" + '"></div>');
-                                fld.jqxColorPicker({ color: cleanedValue, colorMode: 'hue', width: field_width, height: 225 });                               
+                                fld.jqxColorPicker({ colorMode: 'hue', width: field_width, height: 225 });
+                                fld.jqxColorPicker('setColor', cleanedValue);
                                 addValidator(v, validatorRules);
 
-                                $('#' + v.FieldName + "_Picker").on('colorchange', function (event) {
-                                    var color = '#' + $('#' + v.FieldName + "_Picker").jqxColorPicker('getColor').hex;//event.args;
-                                    $('#' + v.FieldName).val(color);
+                                fld.on('colorchange', function (event) {
+                                    var color = '#' + fld.jqxColorPicker('getColor').hex;//event.args;
+                                    fldColorHidden.val(color);
                                 });
 
                                 amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {

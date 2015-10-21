@@ -141,8 +141,8 @@ namespace d360.web.Controllers
                 t = style.IconText;
             }
 
-            list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "IconBackColor", Name = "Icon Back Color", FieldDescription = "The icon's background color", FieldType = DataType.Color.ToString(), Value = b });
-            list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "IconForeColor", Name = "Icon Fore Color", FieldDescription = "The icon's text color", FieldType = DataType.Color.ToString(), Value = f });
+            list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "IconBackColor", Name = "Background Color", FieldDescription = "The icon's background color", FieldType = DataType.Color.ToString(), Value = b });
+            list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "IconForeColor", Name = "Text Color", FieldDescription = "The icon's text color", FieldType = DataType.Color.ToString(), Value = f });
         }
 
         void upsertObjectStyle(SystemObjects type, int id, FormCollection form, string objectName = "Tx")
@@ -338,6 +338,11 @@ namespace d360.web.Controllers
                     statusList.Add(new SelectListItem { Text = "Under Review", Value = "Under Review" });
                     statusList.Add(new SelectListItem { Text = "Certified", Value = "Certified" });
                     statusList.Add(new SelectListItem { Text = "Archived", Value = "Archived" });
+                    break;
+                case SystemObjects.Event:
+                    statusList.Add(new SelectListItem { Text = "Open", Value = "Open" });
+                    statusList.Add(new SelectListItem { Text = "Assigned", Value = "Assigned" });
+                    statusList.Add(new SelectListItem { Text = "Closed", Value = "Closed" });
                     break;
             }
             f.Items.AddRange(statusList);
@@ -3051,6 +3056,173 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region Event
+
+        #region Field Generation
+
+        /// <param name="id">EventID</param>
+        public JsonResult Event_EditFields(int id)
+        {
+            var a = Company.GetById<Event>(id, i => i.EventGroup);
+
+            if (a == null)
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.NotFound);
+
+            if (!Company.HasPermission(SystemObjects.Rule, a.EventGroup.RuleID.Value, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            var criticalities = EventCriticality.Critical.GetAsList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Criticality", Name = "Name", FieldType = DataType.Lookup.ToString(), Value = ((int)a.Criticality).ToString(), Items = criticalities });
+            list = loadStatusField(list, SystemObjects.Event, a.Status, 1, 2);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult EditEvent(int id)
+        {
+            var a = Company.GetById<Event>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.Event,
+                FieldUri = string.Format("/form/Event_EditFields?id={0}", id),
+                FormTitle = "Edit Event",
+                FormUri = "/form/EditEvent",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditEvent(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("event");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<Event>(id);
+                if (model == null) throw new NotFoundException("event");
+
+                if (!Company.HasPermission(SystemObjects.Domain, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Criticality = (EventCriticality)Enum.Parse(typeof(EventCriticality), form["Criticality"]);
+                model.Status = parseTextField(form, "Status");
+
+                Company.Update<Event>(model);
+
+                return jsonSuccess("Event successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region EventGroup
+
+        #region Field Generation
+
+        /// <param name="id">EventGroupID</param>
+        public JsonResult EventGroup_EditFields(int id)
+        {
+            var a = Company.GetById<EventGroup>(id);
+
+            if (a == null)
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.NotFound);
+
+            if (!Company.HasPermission(SystemObjects.Rule, a.RuleID.Value, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            var criticalities = EventCriticality.Critical.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList();
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Criticality", Name = "Name", FieldType = DataType.Lookup.ToString(), Items = criticalities });
+            list = loadStatusField(list, SystemObjects.Event, "", 1, 2);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult EditEventGroup(int id)
+        {
+            var a = Company.GetById<Event>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.Event,
+                FieldUri = string.Format("/form/EventGroup_EditFields?id={0}", id),
+                FormTitle = "Edit Event Group",
+                FormDescription = "You can set properties for all events under this group, including updating the status.",
+                FormUri = "/form/EditEventGroup",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditEventGroup(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("event group");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<EventGroup>(id, i => i.Events);
+                if (model == null) throw new NotFoundException("event group");
+
+                if (!Company.HasPermission(SystemObjects.Rule, model.RuleID.Value, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                var criticality = (EventCriticality)Enum.Parse(typeof(EventCriticality), form["Criticality"]);
+                var status = parseTextField(form, "Status");
+                foreach (var e in model.Events)
+                {
+                    e.Criticality = criticality;
+                    e.Status = status;
+                }
+                Company.SaveChanges();
+
+                return jsonSuccess("Event group successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
         #region FieldType
 
         #region Field Generation
@@ -3084,7 +3256,7 @@ namespace d360.web.Controllers
                 FormUri = "/Form/AddFieldType",
                 FormMethod = "POST",
                 FormName = Resources.FormInfo.Add_FieldType_Title,
-                FieldType = new FieldType { Object = type.ToString(), ObjectID = id, Pattern = "", Type = DataType.Text.ToString(), IsListable = true, IsRequired = true }
+                FieldType = new FieldType { Object = type.ToString(), ObjectID = id, Pattern = "", Type = DataType.Text.ToString(), MinimumLength = 0, MaximumLength = 1000, IsListable = true, IsRequired = true }
             };
 
             for (var i = 0; i < model.DataTypes.Count; i++)
@@ -7253,7 +7425,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.PolicyTypeClassID = parseIntField(form, "Class");
 
-                var currentMaxLevel = Company.Query<int>("select max([Level]) from Policy where PolicyTypeID = @t", new { t = id }).SingleOrDefault();
+                var currentMaxLevel = Company.Query<int>("select coalesce(max([Level]), 0) from Policy where PolicyTypeID = @t", new { t = id }).SingleOrDefault();
 
                 if (currentMaxLevel > model.MaximumDepth)
                     throw new InvalidFieldException(d360.core.resources.Fields.MaximumDepth_Name, "less than the current maximum depth of " + currentMaxLevel);
@@ -7766,10 +7938,22 @@ from        (
             select      'TaxonomyType|' + cast(ID as varchar(15)) as Value,
                         'Model Type : ' + Name as Text
             from        TaxonomyType
-            ) O
+            union
+            select      'Policy|' + cast(ID as varchar(15)) as Value,
+                        'Policy Instance : ' + Name as Text
+            from        PolicyType
+            union
+            select      'PolicyType|' + cast(ID as varchar(15)) as Value,
+                        'Policy Type : ' + Name as Text
+            from        PolicyType
+) O
 order by    Text
 
 ").ToList();
+
+            model.ObjectTypes.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = string.Format("Rule Instance : {0}", i.Name), Value = string.Format("Rule|{0}", (int)i.ID) }));
+            //model.ObjectTypes.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = string.Format("Rule Type : {0}", i.Name), Value = string.Format("RuleType|{0}", (int)i.ID) }));
+
             model.ReportLayouts = Company.Query<SelectListItem>(@"
 select      cast(ID as varchar(15)) as Value,
             Name as Text

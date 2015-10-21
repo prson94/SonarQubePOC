@@ -56,25 +56,13 @@
                     var loadPermissionsDependentTiles = function () {
                         DetailsTile('DetailTile', contextList, permissions, iType, iID, contextList.Policy, true);
 
-                        if (iType == 'Policy') {
-                            statisticsTileVm.ChangeObject(iType, iID);
-                            statisticsTileVm.GetStatistics();
+                        statisticsTileVm.ChangeObject(iType, iID);
+                        statisticsTileVm.GetStatistics();
 
-                            $('#Responsibilities').show();
-                            $('#SourcingTile').show();
-                            $('#AggregatesTileContainer').show();
-                            PeopleResponsibilityTile('Responsibilities', contextList, permissions, iType, iID, '');
-                            environment_diagram('SourcingTile', permissions, iType, iID);
-                            RelationshipAggregatesTile('AggregatesTileContainer', iType, iID, permissions);
-                        }
-                        else {
-                            statisticsTileVm.ChangeObject(iType, iID);
-                            statisticsTileVm.GetStatistics();
-
-                            $('#Responsibilities').hide();
-                            $('#SourcingTile').hide();
-                            $('#AggregatesTileContainer').hide();
-                        }
+                        PolicyStatusKpi('StatusTile', contextList, permissions, iID);
+                        PeopleResponsibilityTile('Responsibilities', contextList, permissions, iType, iID, '');
+                        environment_diagram('SourcingTile', permissions, iType, iID);
+                        RelationshipAggregatesTile('AggregatesTileContainer', iType, iID, permissions);
                     }
                     permissions.GetPermissionsForObject(iType, iID).then(loadPermissionsDependentTiles);
 

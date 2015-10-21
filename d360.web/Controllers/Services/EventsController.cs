@@ -288,11 +288,11 @@ namespace d360.web.Controllers.Services
 
                         var dateCreated = DateTime.UtcNow;
                         var criticality = EventCriticality.Negligible;
-                        var status = EventStatus.Open;
+                        var status = "Open";
 
                         if (log.ContainsKey("Criticality")) Enum.TryParse(log["Criticality"], out criticality);
                         if (log.ContainsKey("DateCreated")) DateTime.TryParse(log["DateCreated"], out dateCreated);
-                        if (log.ContainsKey("Status")) Enum.TryParse(log["Status"], out status);
+                        if (log.ContainsKey("Status")) status = log["Status"];
 
                         if (evt == null)
                         {

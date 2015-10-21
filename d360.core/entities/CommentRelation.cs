@@ -22,7 +22,10 @@ namespace d360.core.entities
 
         [Column(Order = 3), DataMember, Key]
         public int ObjectID { get; set; }
-        
+
+        [DataMember]
+        public DateTime Date { get; set; }
+
         public virtual Comment Parent { get; set; }
     }
 }

@@ -2420,7 +2420,8 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                         ObjectUrl = c.ObjectUrl,
                         ParentID = c.ParentID,
                         ResourceEmail = r.Email,
-                        ResourceName = r.FormatDisplayName()
+                        ResourceName = r.FormatDisplayName(),
+                        TagsXml = c.TagsXml
                     }
                    ).AsQueryable();
         }
@@ -2522,9 +2523,17 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
 
         public dynamic GetSocialDataForCurrentResource()
         {
-            return Query<dynamic>(@"select	* from 
-(select	count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id) FC
-full join (select count(1) as GroupCount from ResourceGroup where ResourceID = @id) G on 1=1", new { id = CurrentResourceID }).SingleOrDefault();
+            return Query<dynamic>(@"
+select	* 
+from	(
+		select		count(1) as FollowerCount from Follow where ObjectType = 'Resource' and ObjectID = @id
+		) FC
+		full join	(
+					select count(1) as GroupCount from ResourceGroup where ResourceID = @id
+					) G on 1=1
+		full join	(
+					select dbo.[GetObjectStatisticScore]('Resource', @id) * 100 as Score
+					) S on 1=1", new { id = CurrentResourceID }).SingleOrDefault();
         }
 
         public dynamic GetSocialDataForGroup(int id)

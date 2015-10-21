@@ -1,56 +1,63 @@
-﻿using System.Xml.Linq;
-using d360.core.entities.Contracts;
+﻿using d360.core.entities.Contracts;
 using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Xml.Serialization;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
+using System.Linq;
+using System.ComponentModel;
 
 namespace d360.core
 {
-    public static partial class Enums
+    public enum EventCriticality
     {
-        public static Dictionary<string, string> AsDictionary(this EventStatus s)
-        {
-            var list = new Dictionary<string, string>();
+        [Description("This event is purely information and has no impact on systems or processes."), Name("Negligible")]
+        Negligible = 1,
+        [Description(""), Name("Low")]
+        Low = 2,
+        [Description(""), Name("Medium")]
+        Medium = 3,
+        [Description(""), Name("High")]
+        High = 4,
+        [Description(""), Name("Critical")]
+        Critical = 5
+    }
 
-            foreach (MemberInfo tm in s.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
+    public class EventCriticalityInfo
+    {
+        public EventCriticality ID { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+    }
+
+    public static class EventCriticalityExtensions
+    {
+        public static string GetWorkflowTypeDisplayName(this EventCriticality type)
+        {
+            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
+        }
+
+        public static string GetWorkflowTypeDescription(this EventCriticality type)
+        {
+            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DescriptionAttribute>().Description;
+        }
+
+        public static List<EventCriticalityInfo> GetAsList(this EventCriticality type)
+        {
+            var list = new List<EventCriticalityInfo>();
+
+            foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
-                list.Add(tm.Name, ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description);
+                list.Add(new EventCriticalityInfo
+                {
+                    Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                    ID = (EventCriticality)Enum.Parse(typeof(EventCriticality), tm.Name)
+                });
             }
 
             return list;
         }
-
-        public static string ToDescriptionString(this EventStatus s)
-        {
-            DescriptionAttribute[] attributes = (DescriptionAttribute[])s.GetType().GetField(s.ToString()).GetCustomAttributes(typeof(DescriptionAttribute), false);
-            return attributes.Length > 0 ? attributes[0].Description : string.Empty;
-        }
-    }
-
-    public enum EventStatus
-    {
-        [Description("Open")]
-        Open,
-        [Description("In Process")]
-        InProcess,
-        [Description("Assigned")]
-        Assigned,
-        [Description("Closed")]
-        Closed
-    }
-
-    public enum EventCriticality
-    {
-        Negligible = 1,
-        Low = 2,
-        Medium = 3,
-        High = 4,
-        Critical = 5
     }
 }
 

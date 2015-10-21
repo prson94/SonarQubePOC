@@ -537,17 +537,35 @@ order by    W.DateStarted";
             switch (workflowType)
             {
                 case WorkflowType.SuggestNewArtifact:
-                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(string.Format(CurrentUserWorkflow1TaskSql, ""), new { r = Company.CurrentResourceID }));
+                    var list1 = Company.Query<WorkflowTask1Model>(string.Format(CurrentUserWorkflow1TaskSql, ""), new { r = Company.CurrentResourceID }).ToList();
+                    list1.ForEach(i => {
+                        i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
+                        i.ActivityName = i.Activity.GetActivityTypeDisplayName();
+                        i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
+                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
+                    });
+                    return Request.CreateResponse(HttpStatusCode.OK, list1);
                 case WorkflowType.CertifyArtifact:
-                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(string.Format(CurrentUserWorkflow2TaskSql, ""), new { r = Company.CurrentResourceID }));
+                    var list2 = Company.Query<WorkflowTask2Model>(string.Format(CurrentUserWorkflow2TaskSql, ""), new { r = Company.CurrentResourceID }).ToList();
+                    list2.ForEach(i => {
+                        i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
+                        i.ActivityName = i.Activity.GetActivityTypeDisplayName();
+                        i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
+                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
+                    });
+                    return Request.CreateResponse(HttpStatusCode.OK, list2);
                 case WorkflowType.WorkIssue:
-                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(string.Format(CurrentUserWorkflow3TaskSql, ""), new { r = Company.CurrentResourceID }));
-                default:
-                    return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(string.Format(CurrentUserWorkflow2TaskSql, ""), new { r = Company.CurrentResourceID }));
+                    var list3 = Company.Query<WorkflowTask3Model>(string.Format(CurrentUserWorkflow3TaskSql, ""), new { r = Company.CurrentResourceID }).ToList();
+                    list3.ForEach(i => {
+                        i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
+                        i.ActivityName = i.Activity.GetActivityTypeDisplayName();
+                        i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
+                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
+                    });
+                    return Request.CreateResponse(HttpStatusCode.OK, list3);
             }
-            //var list = Company.Query<WorkflowTask>(CurrentUserWorkflow1TaskSql, new { r = Company.CurrentResourceID }).ToList();
-            //hydrateTasks(list);
-            //return list;
+
+            return Request.CreateErrorResponse(HttpStatusCode.NotFound, "The Workflow Type you provided is not valid.  No workflows can be found of this type.");
         }
 
         /// <summary>
@@ -713,23 +731,37 @@ from	    Workflow W
                             ReAssignToResourceObjectID = Company.CurrentResourceID
                         };
 
+                        bool okToProceed = false;
                         switch (action) {
                             case "assign":
                                 bookmarkName = "Open";
+                                okToProceed = true;
                                 break;
                             case "reassign":
                                 bookmarkName = "Assigned";
-                                (obj as IssueBookmarkModel).ReAssignToResourceObjectID = 3;
+                                if (model.ContainsKey("AssignTo"))
+                                {
+                                    (obj as IssueBookmarkModel).ReAssignToResourceObjectID = int.Parse(model["AssignTo"]);
+                                    okToProceed = true;
+                                }
                                 break;
                             default://case "close":
                                 bookmarkName = "Assigned";
+                                okToProceed = true;
                                 break;
                         }
 
                         try
                         {
-                            processor.ResumeWorkflowInstance(id, bookmarkName, obj);
-                            response = Request.CreateResponse(HttpStatusCode.Accepted, "Workflow task successfully completed.");
+                            if (okToProceed)
+                            {
+                                processor.ResumeWorkflowInstance(id, bookmarkName, obj);
+                                response = Request.CreateResponse(HttpStatusCode.Accepted, "Workflow task successfully completed.");
+                            }
+                            else
+                            {
+                                response = Request.CreateResponse(HttpStatusCode.NoContent, "Workflow task not processed as there was no data available to work with.  Please check your request.");
+                            }
                         }
                         catch (Exception ex)
                         {

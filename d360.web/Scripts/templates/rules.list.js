@@ -7,6 +7,7 @@
         var ruleID = context.params['ruleid'];
         var permissions = new PermissionsModel();
         var type = 'Rule';
+        var timescale;
         pageViewModel.Title = 'Rules';
         pageViewModel.Directions = '';
 
@@ -23,6 +24,13 @@
 
         function eventHeaderSelected(data) {
             EventsGrid('EventsTile', contextList, data.GroupID, null, true);
+        }
+
+        function timeScaleChanged() {
+            timescale = $('#EventBreakdownTimeScale').val();
+            EventStatusBreakdownChart('EventStatusChart', contextList, type, ruleID, timescale);
+            EventAgeBreakdownChart('EventAgeChart', contextList, type, ruleID, timescale);
+            EventCriticalityBreakdownChart('EventCriticalityChart', contextList, type, ruleID, timescale);
         }
 
         function ruleGridRowSelect(evt) {
@@ -47,6 +55,10 @@
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, ruleID, '');
                     environment_diagram('SourcingTile', permissions, type, ruleID);
                     RelationshipAggregatesTile('AggregatesTileContainer', type, ruleID, permissions);
+
+                    EventStatusBreakdownChart('EventStatusChart', contextList, type, ruleID, timescale);
+                    EventAgeBreakdownChart('EventAgeChart', contextList, type, ruleID, timescale);
+                    EventCriticalityBreakdownChart('EventCriticalityChart', contextList, type, ruleID, timescale);
 
                     $('#EventsTile').html('');
                     if (permissions.HasPermission("Root", "Update")) {
@@ -111,6 +123,7 @@
 
             amplify.unsubscribe('EventHeaderSelected', eventHeaderSelected);
             $("#RuleGrid").off("rowselect", ruleGridRowSelect);
+            $('#EventBreakdownTimeScale').off('change', timeScaleChanged);
             amplify.unsubscribe("SaveAction", saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
@@ -179,7 +192,7 @@
                 $("#RuleGrid").on("rowselect", ruleGridRowSelect);
                 amplify.subscribe("SaveAction", saveAction);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
+                $('#EventBreakdownTimeScale').on('change', timeScaleChanged);
                 //#endregion
             });
     }

@@ -265,177 +265,204 @@ order by	T.Name", new { type = type.ToString(), id = id });
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("Policy/{id:int}/EventStatusBreakdown")]
-        public JsonNetResult GetEventStatusBreakdownByPolicy(int id)
-        {
-            var query = Company.Query<dynamic>(@"
-with r as	(
-            select	P.ID as PolicyID,
-                    R.ID as RuleID
-            from	Policy P
-                    left join [Rule] R on R.PolicyID = P.ID 
-            where	P.ID = @id
-            union all
-            select	CP.ID as PolicyID,
-                    CR.ID as RuleID
-            from	r 
-                    inner join Policy CP on CP.ParentID = r.PolicyID
-                    outer apply (
-                                select ID from [Rule] where PolicyID = CP.ID
-                                ) CR
-            )
-select	Status,
-		count(1) as [Count]
-from	Event E
-		inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID in (select RuleID from r where RuleID is not null)
-group by Status", new { id = id });
+//        [Route("Policy/{id:int}/EventStatusBreakdown")]
+//        public JsonNetResult GetEventStatusBreakdownByPolicy(int id)
+//        {
+//            var query = Company.Query<dynamic>(@"
+//with r as	(
+//            select	P.ID as PolicyID,
+//                    R.ID as RuleID
+//            from	Policy P
+//                    left join [Rule] R on R.PolicyID = P.ID 
+//            where	P.ID = @id
+//            union all
+//            select	CP.ID as PolicyID,
+//                    CR.ID as RuleID
+//            from	r 
+//                    inner join Policy CP on CP.ParentID = r.PolicyID
+//                    outer apply (
+//                                select ID from [Rule] where PolicyID = CP.ID
+//                                ) CR
+//            )
+//select	Status,
+//		count(1) as [Count]
+//from	Event E
+//		inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID in (select RuleID from r where RuleID is not null)
+//group by Status", new { id = id });
 
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
         [Route("Rule/{id:int}/EventStatusBreakdown")]
-        public JsonNetResult GetEventStatusBreakdownByRule(int id)
+        public JsonNetResult GetEventStatusBreakdownByRule(int id, int? maxHistoryDays)
         {
-            var query = Company.Query<dynamic>(@"
-select	Status,
-		count(1) as [Count]
-from	Event E
-		inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id
-group by Status", new { id = id });
+            var sql = "";
+
+            if (maxHistoryDays.HasValue)
+            {
+                sql = @"select	Status, count(1) as [Count] from Event E inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id where DATEDIFF(dd, E.[Date], getutcdate()) <= @m group by Status";
+            }
+            else
+            {
+                sql = @"select	Status, count(1) as [Count] from Event E inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id group by Status";
+            }
+
+            var query = Company.Query<dynamic>(sql, new { id = id, m = maxHistoryDays });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("Policy/{id:int}/EventAgeBreakdown")]
-        public JsonNetResult GetEventAgeBreakdownByPolicy(int id)
-        {
-            var query = Company.Query<dynamic>(@"
-with r as	(
-            select	P.ID as PolicyID,
-                    R.ID as RuleID
-            from	Policy P
-                    left join [Rule] R on R.PolicyID = P.ID 
-            where	P.ID = @id
-            union all
-            select	CP.ID as PolicyID,
-                    CR.ID as RuleID
-            from	r 
-                    inner join Policy CP on CP.ParentID = r.PolicyID
-                    outer apply (
-                                select ID from [Rule] where PolicyID = CP.ID
-                                ) CR
-            )
-select		Status,
-			count(1) as [Count]
-from		(
-			select	case 
-						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 'Under 24 Hours'
-						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 'Under 72 Hours'
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 'Under 7 Days'
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 'Under 30 Days'
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 'Under 60 Days'
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 'Under 90 Days'
-						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 'Under 1 Year'
-						else 'Over 1 Year'
-					end as Status,
-					case 
-						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 1
-						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 3
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 7
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 30
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 60
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 90
-						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 365
-						else 366
-					end as NumDays
-			from	Event E
-					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID in (select RuleID from r where RuleID is not null)
-			) o
-group by	Status, NumDays
-order by	NumDays", new { id = id });
+//        [Route("Policy/{id:int}/EventAgeBreakdown")]
+//        public JsonNetResult GetEventAgeBreakdownByPolicy(int id)
+//        {
+//            var query = Company.Query<dynamic>(@"
+//with r as	(
+//            select	P.ID as PolicyID,
+//                    R.ID as RuleID
+//            from	Policy P
+//                    left join [Rule] R on R.PolicyID = P.ID 
+//            where	P.ID = @id
+//            union all
+//            select	CP.ID as PolicyID,
+//                    CR.ID as RuleID
+//            from	r 
+//                    inner join Policy CP on CP.ParentID = r.PolicyID
+//                    outer apply (
+//                                select ID from [Rule] where PolicyID = CP.ID
+//                                ) CR
+//            )
+//select		Status,
+//			count(1) as [Count]
+//from		(
+//			select	case 
+//						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 'Under 24 Hours'
+//						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 'Under 72 Hours'
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 'Under 7 Days'
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 'Under 30 Days'
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 'Under 60 Days'
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 'Under 90 Days'
+//						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 'Under 1 Year'
+//						else 'Over 1 Year'
+//					end as Status,
+//					case 
+//						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 1
+//						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 3
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 7
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 30
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 60
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 90
+//						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 365
+//						else 366
+//					end as NumDays
+//			from	Event E
+//					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID in (select RuleID from r where RuleID is not null)
+//			) o
+//group by	Status, NumDays
+//order by	NumDays", new { id = id });
 
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
         [Route("Rule/{id:int}/EventAgeBreakdown")]
-        public JsonNetResult GetEventAgeBreakdownByRule(int id)
+        public JsonNetResult GetEventAgeBreakdownByRule(int id, int? maxHistoryDays)
         {
-            var query = Company.Query<dynamic>(@"
-select		Status,
-			count(1) as [Count]
-from		(
-			select	case 
-						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 'Under 24 Hours'
-						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 'Under 72 Hours'
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 'Under 7 Days'
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 'Under 30 Days'
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 'Under 60 Days'
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 'Under 90 Days'
-						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 'Under 1 Year'
-						else 'Over 1 Year'
-					end as Status,
-					case 
-						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 1
-						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 3
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 7
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 30
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 60
-						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 90
-						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 365
-						else 366
-					end as NumDays
-			from	Event E
-					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id
-			) o
-group by	Status, NumDays
-order by	NumDays", new { id = id });
+            var whereClause = "";
 
+            if (maxHistoryDays.HasValue)
+            {
+                whereClause = @" where DATEDIFF(dd, E.[Date], getutcdate()) <= @m ";
+            }
+            var query = Company.Query<dynamic>(string.Format(@"select	cast(E.[Date] as Date) as [Date],
+					count(1) as [Count]
+			from	Event E
+					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id 
+            {0}
+            group by cast(E.[Date] as Date)
+			order by cast(E.[Date] as Date)", whereClause), new { id = id, m = maxHistoryDays });
+//            var query = Company.Query<dynamic>(string.Format(@"
+//select		Status,
+//			count(1) as [Count]
+//from		(
+//			select	case 
+//						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 'Under 24 Hours'
+//						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 'Under 72 Hours'
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 'Under 7 Days'
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 'Under 30 Days'
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 'Under 60 Days'
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 'Under 90 Days'
+//						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 'Under 1 Year'
+//						else 'Over 1 Year'
+//					end as Status,
+//					case 
+//						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 1
+//						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 3
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 7
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 30
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 60
+//						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 90
+//						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 365
+//						else 366
+//					end as NumDays
+//			from	Event E
+//					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id
+//            {0}
+//			) o
+//group by	Status, NumDays
+//order by	NumDays", whereClause), new { id = id, m = maxHistoryDays });
+            
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("Policy/{id:int}/EventCriticalityBreakdown")]
-        public JsonNetResult GetEventCriticalityBreakdownByPolicy(int id)
-        {
-            var query = Company.Query<dynamic>(@"
-with r as	(
-            select	P.ID as PolicyID,
-                    R.ID as RuleID
-            from	Policy P
-                    left join [Rule] R on R.PolicyID = P.ID 
-            where	P.ID = @id
-            union all
-            select	CP.ID as PolicyID,
-                    CR.ID as RuleID
-            from	r 
-                    inner join Policy CP on CP.ParentID = r.PolicyID
-                    outer apply (
-                                select ID from [Rule] where PolicyID = CP.ID
-                                ) CR
-            )
-select		Criticality,
-			count(1) as [Count]
-from		(
-			select	case E.Criticality
-						when 5 then 'Critical'
-						when 4 then 'High'
-						when 3 then 'Medium'
-						when 2 then 'Low'
-						else 'Negligible'
-					end as Criticality,
-					E.Criticality as SortOrder
-			from	Event E
-					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID in (select RuleID from r where RuleID is not null)
-			) o
-group by	Criticality, SortOrder
-order by	SortOrder desc", new { id = id });
+//        [Route("Policy/{id:int}/EventCriticalityBreakdown")]
+//        public JsonNetResult GetEventCriticalityBreakdownByPolicy(int id)
+//        {
+//            var query = Company.Query<dynamic>(@"
+//with r as	(
+//            select	P.ID as PolicyID,
+//                    R.ID as RuleID
+//            from	Policy P
+//                    left join [Rule] R on R.PolicyID = P.ID 
+//            where	P.ID = @id
+//            union all
+//            select	CP.ID as PolicyID,
+//                    CR.ID as RuleID
+//            from	r 
+//                    inner join Policy CP on CP.ParentID = r.PolicyID
+//                    outer apply (
+//                                select ID from [Rule] where PolicyID = CP.ID
+//                                ) CR
+//            )
+//select		Criticality,
+//			count(1) as [Count]
+//from		(
+//			select	case E.Criticality
+//						when 5 then 'Critical'
+//						when 4 then 'High'
+//						when 3 then 'Medium'
+//						when 2 then 'Low'
+//						else 'Negligible'
+//					end as Criticality,
+//					E.Criticality as SortOrder
+//			from	Event E
+//					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID in (select RuleID from r where RuleID is not null)
+//			) o
+//group by	Criticality, SortOrder
+//order by	SortOrder desc", new { id = id });
 
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
         [Route("Rule/{id:int}/EventCriticalityBreakdown")]
-        public JsonNetResult GetEventCriticalityBreakdownByRule(int id)
+        public JsonNetResult GetEventCriticalityBreakdownByRule(int id, int? maxHistoryDays)
         {
-            var query = Company.Query<dynamic>(@"
+            var whereClause = "";
+
+            if (maxHistoryDays.HasValue)
+            {
+                whereClause = @" where DATEDIFF(dd, E.[Date], getutcdate()) <= @m ";
+            }
+
+            var query = Company.Query<dynamic>(string.Format(@"
 select		Criticality,
 			count(1) as [Count]
 from		(
@@ -448,10 +475,11 @@ from		(
 					end as Criticality,
 					E.Criticality as SortOrder
 			from	Event E
-					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id
+					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id 
+            {0}
 			) o
 group by	Criticality, SortOrder
-order by	SortOrder desc", new { id = id });
+order by	SortOrder desc", whereClause), new { id = id, m = maxHistoryDays });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
