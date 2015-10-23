@@ -133,13 +133,13 @@
     <value>Add Attribute Category</value>
   </data>
   <data name="Add_AttributeType_Confirmation" xml:space="preserve">
-    <value>Attribute type successfully added.</value>
+    <value>Attribute group successfully added.</value>
   </data>
   <data name="Add_AttributeType_Directions" xml:space="preserve">
-    <value>Add an attribute type using the form below.</value>
+    <value>Add an attribute group using the form below.</value>
   </data>
   <data name="Add_AttributeType_Title" xml:space="preserve">
-    <value>Add Attribute Type</value>
+    <value>Add Attribute Group</value>
   </data>
   <data name="Add_FieldType_Confirmation" xml:space="preserve">
     <value>Field type successfully added.</value>
@@ -244,10 +244,10 @@
     <value>Attribute type successfully updated.</value>
   </data>
   <data name="Edit_AttributeType_Directions" xml:space="preserve">
-    <value>Modify your attribute type using the form below.</value>
+    <value>Modify your attribute group using the form below.</value>
   </data>
   <data name="Edit_AttributeType_Title" xml:space="preserve">
-    <value>Edit Attribute Type</value>
+    <value>Edit Attribute Group</value>
   </data>
   <data name="Edit_Attribute_Description" xml:space="preserve">
     <value>Updating this attribute may affect the score of the item it is tagged to.</value>
@@ -316,7 +316,7 @@
     <value>You may not remove this fusion type as there are existing attribute types based on it.</value>
   </data>
   <data name="NoFormData_AttributeType" xml:space="preserve">
-    <value>attribute type</value>
+    <value>attribute group</value>
   </data>
   <data name="NoFormData_FieldType" xml:space="preserve">
     <value>field type</value>

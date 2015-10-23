@@ -207,6 +207,10 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
                     //$this.jqxMenu('setItemOpenDirection', 'TopMenu', 'left', 'down');
                     menu.bind('itemclick', function (event) {
                         var li = event.args;
+
+                        if ($(li).data("uri") == null)
+                            return;
+
                         attributeSwitchToEditor($(li).data("uri"));
                         //amplify.publish('AttributeToolAction', { uri: $(li).data("uri") });
                     });

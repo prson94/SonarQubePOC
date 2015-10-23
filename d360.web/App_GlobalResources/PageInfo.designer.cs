@@ -124,7 +124,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attribute  Types.
+        ///   Looks up a localized string similar to Attribute  Groups.
         /// </summary>
         internal static string Administration_Fact_Title {
             get {

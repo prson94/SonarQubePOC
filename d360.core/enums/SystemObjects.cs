@@ -20,7 +20,7 @@ namespace d360.core
         ArtifactType = 4,
         [Description("Attribute"), AllowOwnership(false)]
         Attribute = 5,
-        [Description("Attribute Type")]
+        [Description("Attribute Group")]
         AttributeType = 6,
         [Description("Domain List")]
         Domain = 7,

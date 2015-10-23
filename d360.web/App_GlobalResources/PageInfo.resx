@@ -139,7 +139,7 @@
     <value>Here you will find all metadata that can be assigned to various objects and relationships</value>
   </data>
   <data name="Administration_Fact_Title" xml:space="preserve">
-    <value>Attribute  Types</value>
+    <value>Attribute  Groups</value>
   </data>
   <data name="Administration_Fusion_Description" xml:space="preserve">
     <value>Here you will find all Fusion sources and synchronization settings</value>

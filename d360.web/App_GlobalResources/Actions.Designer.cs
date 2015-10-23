@@ -151,7 +151,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attribute Type.
+        ///   Looks up a localized string similar to Attribute Group.
         /// </summary>
         internal static string AttributeType_Text {
             get {

@@ -2394,7 +2394,9 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                     SaveChanges();
                 }
                 catch
-                { }
+                {
+                    CommentRelations.Remove(r);
+                }
             }
 
 

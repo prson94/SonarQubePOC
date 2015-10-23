@@ -98,7 +98,7 @@
 				var loadAfterPermissionsRetrieved = function () {
 				    var tools = [];
 				    if (permissions.HasPermission("Root", "Create")) {
-				        tools.push({ icon: 'plus', uri: '/form/AddAttributeType', context: contextList.AttributeType, title: 'Add attribute type' });
+				        tools.push({ icon: 'plus', uri: '/form/AddAttributeType', context: contextList.AttributeType, title: 'Add attribute group' });
 				    }
 				    TileTools('#TreeTools', tools);
 
@@ -142,13 +142,13 @@
 
                                     if (data.ID >= 50000) {
                                         if (permissions.HasPermission("Root", "Create")) {
-                                            tools.push({ icon: 'plus', urlprefix: '/form/AddAttributeType?parentID=' + data.ID, title: 'Add sub-attribute type' });
+                                            tools.push({ icon: 'plus', urlprefix: '/form/AddAttributeType?parentID=' + data.ID, title: 'Add sub-attribute group' });
                                         }
                                         if (permissions.HasPermission("Root", "Update")) {
-                                            tools.push({ icon: 'pencil', urlprefix: '/form/EditAttributeType?id=' + data.ID, title: 'Edit attribute type' });
+                                            tools.push({ icon: 'pencil', urlprefix: '/form/EditAttributeType?id=' + data.ID, title: 'Edit attribute group' });
                                         }
                                         if (permissions.HasPermission("Root", "Delete")) {
-                                            tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteAttributeType?id=' + data.ID, title: 'Remove attribute type' });
+                                            tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteAttributeType?id=' + data.ID, title: 'Remove attribute group' });
                                         }
                                     }
 

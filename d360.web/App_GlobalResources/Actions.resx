@@ -148,7 +148,7 @@
     <value>Artifact Type</value>
   </data>
   <data name="AttributeType_Text" xml:space="preserve">
-    <value>Attribute Type</value>
+    <value>Attribute Group</value>
   </data>
   <data name="Audit" xml:space="preserve">
     <value>Audit</value>

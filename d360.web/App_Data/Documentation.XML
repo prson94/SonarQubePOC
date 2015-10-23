@@ -72,7 +72,7 @@
         </member>
         <member name="P:Resources.Actions.AttributeType_Text">
             <summary>
-              Looks up a localized string similar to Attribute Type.
+              Looks up a localized string similar to Attribute Group.
             </summary>
         </member>
         <member name="P:Resources.Actions.Audit">
@@ -504,17 +504,17 @@
         </member>
         <member name="P:Resources.FormInfo.Add_AttributeType_Confirmation">
             <summary>
-              Looks up a localized string similar to Attribute type successfully added..
+              Looks up a localized string similar to Attribute group successfully added..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Add_AttributeType_Directions">
             <summary>
-              Looks up a localized string similar to Add an attribute type using the form below..
+              Looks up a localized string similar to Add an attribute group using the form below..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Add_AttributeType_Title">
             <summary>
-              Looks up a localized string similar to Add Attribute Type.
+              Looks up a localized string similar to Add Attribute Group.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Add_FieldType_Confirmation">
@@ -689,12 +689,12 @@
         </member>
         <member name="P:Resources.FormInfo.Edit_AttributeType_Directions">
             <summary>
-              Looks up a localized string similar to Modify your attribute type using the form below..
+              Looks up a localized string similar to Modify your attribute group using the form below..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Edit_AttributeType_Title">
             <summary>
-              Looks up a localized string similar to Edit Attribute Type.
+              Looks up a localized string similar to Edit Attribute Group.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Edit_Attribute_Description">
@@ -809,7 +809,7 @@
         </member>
         <member name="P:Resources.FormInfo.NoFormData_AttributeType">
             <summary>
-              Looks up a localized string similar to attribute type.
+              Looks up a localized string similar to attribute group.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.NoFormData_FieldType">
@@ -920,7 +920,7 @@
         </member>
         <member name="P:Resources.PageInfo.Administration_Fact_Title">
             <summary>
-              Looks up a localized string similar to Attribute  Types.
+              Looks up a localized string similar to Attribute  Groups.
             </summary>
         </member>
         <member name="P:Resources.PageInfo.Administration_Fields_Description">

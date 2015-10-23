@@ -106,7 +106,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attribute type successfully added..
+        ///   Looks up a localized string similar to Attribute group successfully added..
         /// </summary>
         internal static string Add_AttributeType_Confirmation {
             get {
@@ -115,7 +115,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add an attribute type using the form below..
+        ///   Looks up a localized string similar to Add an attribute group using the form below..
         /// </summary>
         internal static string Add_AttributeType_Directions {
             get {
@@ -124,7 +124,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add Attribute Type.
+        ///   Looks up a localized string similar to Add Attribute Group.
         /// </summary>
         internal static string Add_AttributeType_Title {
             get {
@@ -439,7 +439,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Modify your attribute type using the form below..
+        ///   Looks up a localized string similar to Modify your attribute group using the form below..
         /// </summary>
         internal static string Edit_AttributeType_Directions {
             get {
@@ -448,7 +448,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit Attribute Type.
+        ///   Looks up a localized string similar to Edit Attribute Group.
         /// </summary>
         internal static string Edit_AttributeType_Title {
             get {
@@ -655,7 +655,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to attribute type.
+        ///   Looks up a localized string similar to attribute group.
         /// </summary>
         internal static string NoFormData_AttributeType {
             get {

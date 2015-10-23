@@ -23,7 +23,7 @@ namespace d360.core
         [Description("Attribute")]
         public const int Attribute = 3;
 
-        [Description("Attribute Type")]
+        [Description("Attribute Group")]
         public const int AttributeType = 4;
 
         [Description("Claim")]

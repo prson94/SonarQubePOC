@@ -55,6 +55,9 @@ namespace d360.web.Controllers.Services
 
             relations.Add(resourceRelation);
 
+            if (comment.Tags == null)
+                comment.Tags = new List<CommentTag>();
+
             foreach (var tag in comment.Tags)
             {
                 relations.Add(new CommentRelation { ObjectType = tag.Object, ObjectID = tag.ObjectID, Date = DateTime.UtcNow });
