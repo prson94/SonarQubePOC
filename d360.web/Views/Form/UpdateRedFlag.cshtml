@@ -1,13 +1,16 @@
 ﻿@model d360.core.entities.AlertFlag
 @{
+    var comment = ViewData["comment"];
     var type = (d360.core.SystemObjects)ViewData["Type"];
     var id = (int)ViewData["ID"];
-    var saveButtonText = (Model != null) ? "Close flag" : "Issue flag";
+    var saveButtonText = (Model != null) ? "Update Note" : "Add Note";
 }
 
 @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = "POST", Url = string.Format("/form/{0}/{1}/redflag", type.ToString(), id), OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
 {
     <input type="hidden" id="_context" name="_context" value="AlertFlag" />
+    @(Html.Raw(comment))
+    <br/>
     <div id="Comment" class="htmlArea" style="width:100%; height: 150px"></div>
     <button id="EditableFormSaveButton" data-context="AlertFlag" type="button" class="btn btn-default">@(saveButtonText)</button>
     <button id="EditableFormCancelButton" data-context="AlertFlag" type="button" class="btn btn-default">Cancel</button>

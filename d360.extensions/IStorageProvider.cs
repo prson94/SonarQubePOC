@@ -21,6 +21,8 @@ namespace d360.extensions
         byte[] GetFileAsBytes(string folderName, string fileName);
         string GetFileSecureUrl(string folderName, string fileName);
 
+        string GetFileContentsAsString(string folderName, string fileName);
+
         bool ReleaseLockOnBlobFile(string folderName, string fileName);
     }
 }

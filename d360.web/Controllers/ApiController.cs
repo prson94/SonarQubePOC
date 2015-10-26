@@ -2805,7 +2805,7 @@ from	    ResponsibilityTypeHierarchy H
                     var fusionExecution = Company.GetById<FusionExecution>(id);
                     if (fusionExecution != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = "Date Started", FieldName = "DateStarted", Value = fusionExecution.DateStarted.ToString("MM/dd/yyyy HH:mm:ss") });
+                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = "Date Started", FieldName = "DateStarted", Value = ((fusionExecution.DateStarted.HasValue) ? fusionExecution.DateStarted.Value.ToString("MM/dd/yyyy HH:mm:ss") : "Not started") });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = "Date Completed", FieldName = "DateCompleted", Value = fusionExecution.DateCompleted.HasValue ? fusionExecution.DateCompleted.Value.ToString("MM/dd/yyyy HH:mm:ss") : "Not completed" });
 
                         list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "# Added", FieldName = "Adds", Value = fusionExecution.Adds.HasValue ? fusionExecution.Adds.Value.ToString() : ""});

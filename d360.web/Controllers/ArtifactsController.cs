@@ -40,7 +40,7 @@ select	A.ID,
 		A.Description,
 		A.TextPath,
 		A.Status,
-		V.Name as OwningMadel,
+		V.Name as SubjectArea,
         {0}
 		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A inner join TaxonomyType V on V.ID = A.TaxonomyTypeID and A.ArtifactTypeID = {2} {1}) A", columns, joins, id);

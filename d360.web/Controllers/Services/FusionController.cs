@@ -518,12 +518,13 @@ where   ExecutionID = {0}", id);
             var import = JsonConvert.DeserializeObject<BulkFusionImport>(json);
 
             var date = DateTime.UtcNow;
-
+            var fileName = "";
             try
             {
                 var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
                 Storage.CreateFolder(folder);
-                Storage.CreateFile(folder, string.Format("{0}.{1}.{2}.json", typeID, fusionID, date.ToString("yyyy-MM-dd_hh.mm.ss")), json);
+                fileName = string.Format("{0}.{1}.{2}.json", typeID, fusionID, date.ToString("yyyy-MM-dd_hh.mm.ss"));
+                Storage.CreateFile(folder, fileName, json);
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
             }
             catch (Exception ex)
@@ -612,7 +613,20 @@ where   ExecutionID = {0}", id);
 
                 Trace.TraceInformation("{0}{1}", prefix, "Now saving queue item to database.");
 
-                Company.AddFusionQueueItem(new QueueFusionItem { FusionID = fusionID, Data = doc.ToString() }); 
+                var log = Company.Filter<FusionStatusLog>(i => i.FusionID == fusionID && i.DateCompleted.HasValue && i.Success).OrderByDescending(i => i.DateCompleted).Take(1).FirstOrDefault();
+
+                var queueItem = new QueueFusionItem { ID = ((log != null) ? log.ID : Guid.NewGuid()), FusionID = fusionID, Data = doc.ToString() };
+                Company.AddFusionQueueItem(queueItem);
+
+                try
+                {
+                    var execution = new FusionExecution { DateToUseForHistory = date, FusionID = fusionID, QueueID = queueItem.ID, RawLogFileName = fileName };
+                    Company.Add<FusionExecution>(execution);
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError(ex.GetFullExceptionData());
+                }
 
                 Trace.TraceInformation("{0}{1}", prefix, "Finished saving queue item to database.");
 

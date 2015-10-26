@@ -40512,7 +40512,7 @@ var redFlaggedRenderer = function (data, isOwner) {
     var html = "";
 
     try {
-        var flagMessage = data.RedFlagged ? "This item has been red flagged!" : "";
+        var flagMessage = data.RedFlagged ? "This item has notes!" : "";
         var flagCss = data.RedFlagged ? "active-flag" : "inactive-flag";
         if (isOwner) {
             flagCss += " flag-clickable";
@@ -40823,9 +40823,9 @@ function SetAlertFlag(event) {
     var elem = $(event.currentTarget);
     elem.qtip({
         content: {
-            title: elem.data('active') ? 'Action: Close Red Flag Item' : 'Action: Red Flag Item',
+            title: elem.data('active') ? 'Action: Notes' : 'Action: Notes',
             // Set the text to an image HTML string with the correct src URL to the loading image you want to use
-            text: 'Setting flag status...<i class="fa fa-spinner fa-spin"></i>',
+            text: 'Setting notes...<i class="fa fa-spinner fa-spin"></i>',
             ajax: {
                 url: "/form/" + elem.data('objecttype') + "/" + elem.data('objectid') + "/redflag"
             }
@@ -50217,22 +50217,22 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                     columns: [
                         { text: 'Type', datafield: 'FusionType', filtertype: 'checkedlist', width: '20%' },
                         { text: 'Configuration', datafield: 'Fusion', filtertype: 'checkedlist', width: '20%' },
-                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '15%' },
-                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '15%' },
+                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '17%' },
+                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '18%' },
                         { text: '# Errors', datafield: 'ErrorCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         { text: '# Results', datafield: 'ResultCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         {
                             text: '',
                             dataField: 'ID',
-                            width: '10%',
+                            width: '5%',
                             filterable: false,
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                                 var tools = [];
                                 tools.push({ title: 'More info on this execution', icon: 'info', urlprefix: '/fusion/FusionExecution?id=' + data.ID });
-                                if (data.RawLogFileName.length > 0) {
-                                    tools.push({ title: 'View raw agent submission log', icon: 'file-code-o', urlprefix: '/fusion/FusionExecutionRawLog?id=' + data.ID });
-                                }
-                                return renderToolsHtml(value, tools, contextList.FusionFilter, data);
+                                //if (data.RawLogFileName.length > 0) {
+                                //    tools.push({ title: 'View raw agent submission log', icon: 'file-code-o', urlprefix: '/fusion/FusionExecutionRawLog?id=' + data.ID });
+                                //}
+                                return renderToolsHtml(value, tools, "FusionExecution", data);//contextList.FusionFilter
                             }
                         }
                     ]

@@ -170,8 +170,8 @@ inner join FusionType FT on FT.ID = F.FusionTypeID and F.ID = @id", new { id = e
                                             tags.Add("deletes", execution.Deletes.HasValue ? execution.Deletes.Value.ToString() : "None");
                                             tags.Add("fusionUrl", string.Format("https://{0}.data3sixty.com/#/fusion/{1}/{2}", domainPrefix, fusionInfo.FusionTypeID, fusionInfo.FusionID));
                                             tags.Add("executionUrl", string.Format("https://{0}.data3sixty.com/#/fusion/{1}/{2}/executions/{3}", domainPrefix, fusionInfo.FusionTypeID, fusionInfo.FusionID, execution.ID));
-                                            tags.Add("startDate", execution.DateStarted.ToShortDateString());
-                                            tags.Add("startTime", execution.DateStarted.ToShortTimeString());
+                                            tags.Add("startDate", execution.DateStarted.Value.ToShortDateString());
+                                            tags.Add("startTime", execution.DateStarted.Value.ToShortTimeString());
                                             SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");  
                                         });
                                     }

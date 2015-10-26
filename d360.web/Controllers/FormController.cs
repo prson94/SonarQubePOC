@@ -10475,6 +10475,21 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
         public ActionResult UpdateRedFlag(SystemObjects type, int id)
         {
             var flag = Company.GetActiveAlertFlagByObject(type, id);
+            var comment = "";
+            if (flag != null)
+            {
+                try
+                {
+                    var c = Company.GetCommentDetail(flag.CommentID).SingleOrDefault();
+                    if (c != null)
+                    {
+                        comment = c.Body;
+                    }
+                }
+                catch
+                { }
+            }
+            ViewData.Add("Comment", comment);
             ViewData.Add("Type", type);
             ViewData.Add("ID", id);
             return PartialView(flag);
@@ -10494,7 +10509,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 else
                     Company.AddActiveAlertFlag(type, id, form["Comment"]);
 
-                return jsonSuccess("Red flag successfully set.", "0", form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess("Note successfully set.", "0", form["_context"], "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {

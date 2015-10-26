@@ -373,11 +373,11 @@ namespace d360.model
                 comment = "This item has been red flagged due to a critical issue.";
             }
 
-            var c = new Comment { Body = comment, CommentTypeID = core.enums.CommentType.RedFlag, CreatingResourceID = CurrentResourceID, DateCreated = DateTime.UtcNow };
+            var c = new Comment { Body = comment, OwnerObjectID = id, OwnerObjectType = sType, CommentTypeID = core.enums.CommentType.RedFlag, CreatingResourceID = CurrentResourceID, DateCreated = DateTime.UtcNow };
             Comments.Add(c);
             SaveChanges();
 
-            CommentRelations.Add(new CommentRelation { CommentID = c.ID, ObjectID = id, ObjectType = sType });
+            CommentRelations.Add(new CommentRelation { CommentID = c.ID, ObjectID = id, ObjectType = sType, Date = DateTime.UtcNow });
             AlertFlags.Add(new AlertFlag { Date = DateTime.UtcNow, Active = true, ObjectID = id, ObjectType = sType, CommentID = c.ID });
             SaveChanges();
         }
@@ -395,7 +395,7 @@ namespace d360.model
                     comment = "The critical issue is resolved.  Closing red flag.";
                 }
 
-                Comments.Add(new Comment { Body = comment, CommentTypeID = core.enums.CommentType.RedFlag, DateCreated = DateTime.UtcNow, CreatingResourceID = CurrentResourceID, ParentID = active.CommentID });
+                Comments.Add(new Comment { Body = comment, OwnerObjectID = id, OwnerObjectType = sType, CommentTypeID = core.enums.CommentType.RedFlag, DateCreated = DateTime.UtcNow, CreatingResourceID = CurrentResourceID, ParentID = active.CommentID });
                 SaveChanges();
             }
         }
@@ -407,7 +407,7 @@ namespace d360.model
 
             if (active != null)
             {
-                Comments.Add(new Comment { Body = comment, CommentTypeID = core.enums.CommentType.RedFlag, DateCreated = DateTime.UtcNow, CreatingResourceID = CurrentResourceID, ParentID = active.CommentID });
+                Comments.Add(new Comment { Body = comment, OwnerObjectID = id, OwnerObjectType = sType, CommentTypeID = core.enums.CommentType.RedFlag, DateCreated = DateTime.UtcNow, CreatingResourceID = CurrentResourceID, ParentID = active.CommentID });
                 SaveChanges();
             }
         }
@@ -1866,7 +1866,6 @@ order by Name");
         {
             try
             {
-                model.ID = Guid.NewGuid();
                 Database.CommandTimeout = 1500;
                 return Add<QueueFusionItem>(model);
             }
@@ -2389,6 +2388,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             {
                 try
                 {
+                    r.Date = comment.DateCreated;
                     if (r.CommentID == 0) r.CommentID = comment.ID; //If comment ID is not 0, then a parent comment ID has already been assigned.
                     CommentRelations.Add(r);
                     SaveChanges();

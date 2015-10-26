@@ -196,22 +196,22 @@
                     columns: [
                         { text: 'Type', datafield: 'FusionType', filtertype: 'checkedlist', width: '20%' },
                         { text: 'Configuration', datafield: 'Fusion', filtertype: 'checkedlist', width: '20%' },
-                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '15%' },
-                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '15%' },
+                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '17%' },
+                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '18%' },
                         { text: '# Errors', datafield: 'ErrorCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         { text: '# Results', datafield: 'ResultCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         {
                             text: '',
                             dataField: 'ID',
-                            width: '10%',
+                            width: '5%',
                             filterable: false,
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                                 var tools = [];
                                 tools.push({ title: 'More info on this execution', icon: 'info', urlprefix: '/fusion/FusionExecution?id=' + data.ID });
-                                if (data.RawLogFileName.length > 0) {
-                                    tools.push({ title: 'View raw agent submission log', icon: 'file-code-o', urlprefix: '/fusion/FusionExecutionRawLog?id=' + data.ID });
-                                }
-                                return renderToolsHtml(value, tools, contextList.FusionFilter, data);
+                                //if (data.RawLogFileName.length > 0) {
+                                //    tools.push({ title: 'View raw agent submission log', icon: 'file-code-o', urlprefix: '/fusion/FusionExecutionRawLog?id=' + data.ID });
+                                //}
+                                return renderToolsHtml(value, tools, "FusionExecution", data);//contextList.FusionFilter
                             }
                         }
                     ]

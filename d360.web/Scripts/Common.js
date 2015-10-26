@@ -198,7 +198,7 @@ var redFlaggedRenderer = function (data, isOwner) {
     var html = "";
 
     try {
-        var flagMessage = data.RedFlagged ? "This item has been red flagged!" : "";
+        var flagMessage = data.RedFlagged ? "This item has notes!" : "";
         var flagCss = data.RedFlagged ? "active-flag" : "inactive-flag";
         if (isOwner) {
             flagCss += " flag-clickable";
@@ -509,9 +509,9 @@ function SetAlertFlag(event) {
     var elem = $(event.currentTarget);
     elem.qtip({
         content: {
-            title: elem.data('active') ? 'Action: Close Red Flag Item' : 'Action: Red Flag Item',
+            title: elem.data('active') ? 'Action: Notes' : 'Action: Notes',
             // Set the text to an image HTML string with the correct src URL to the loading image you want to use
-            text: 'Setting flag status...<i class="fa fa-spinner fa-spin"></i>',
+            text: 'Setting notes...<i class="fa fa-spinner fa-spin"></i>',
             ajax: {
                 url: "/form/" + elem.data('objecttype') + "/" + elem.data('objectid') + "/redflag"
             }

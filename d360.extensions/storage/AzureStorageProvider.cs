@@ -87,6 +87,18 @@ namespace d360.extensions.storage
             return bytes;
         }
 
+        public string GetFileContentsAsString(string folderName, string fileName)
+        {
+            string str = null;
+            using (var stream = new MemoryStream())
+            {
+                var c = getContainer(folderName);
+                CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
+                str = blockBlob.DownloadText(Encoding.Default);
+            }
+            return str;
+        }
+
         public string GetFileSecureUrl(string folderName, string fileName)
         {
             var c = getContainer(folderName);
