@@ -38,6 +38,7 @@
       "Scripts/d3s.SurveyReport.js",
       "Scripts/d3s.RandomSurveyQuestion.js",
       "Scripts/parts.js",
+      "Scripts/md5.js",
       "Scripts/templates/home.js",
       "Scripts/templates/search.js",
       "Scripts/templates/community.home.js",
@@ -74,6 +75,7 @@
       "Scripts/templates/workflow.item.js",
       "Scripts/templates/workflow.admin.js",
       "Scripts/templates/workflow.item.status.js"
+
     ],
     "minify": {
       "enabled": false

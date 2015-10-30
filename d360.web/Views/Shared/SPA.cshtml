@@ -9,6 +9,7 @@
         settingsJson += (string.IsNullOrEmpty(settingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, settings[k]);
     }
     settingsJson = "{" + settingsJson + "}";
+    settingsJson = settingsJson.Replace("\n", "").Replace("\r","");
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
 }
 <!DOCTYPE html>

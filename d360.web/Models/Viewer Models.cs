@@ -66,6 +66,8 @@ namespace d360.web.Models
         public int DateFilter { get; set; }
 
         public int TypeFilter { get; set; }
+
+        public string SearchFilter { get; set; }
     }
 
     public class DomainHierarchyItem

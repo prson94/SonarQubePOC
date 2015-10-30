@@ -1,4 +1,47 @@
-﻿.social {
+﻿/* Main Primary color */
+/* Main Secondary color (1) */
+/* Main Secondary color (2) */
+/* Main Complement color */
+.fa-thumbs-o-up:hover {
+  color: #2c77ba;
+}
+.fa-thumbs-o-down:hover {
+  color: #2c77ba;
+}
+.social-count-box {
+  border: 2px solid #bbbbbb;
+  border-radius: 2px;
+  background-color: #eeeeee;
+  display: inline-block;
+  margin: 2px;
+  padding: 3px;
+  vertical-align: top;
+  *display: inline;
+  zoom: 1;
+  min-width: 64px;
+  text-align: center;
+  cursor: pointer;
+}
+.social-count-box:hover {
+  background-color: #aaaaaa;
+}
+.socialCountBoxSelected {
+  background-color: #78c1dd;
+}
+.socialDropDown {
+  background-color: transparent;
+  color: #999999;
+  font-size: 10pt;
+  font-weight: 600;
+  height: 100%;
+  width: auto;
+  border: none;
+  outline: none;
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+}
+.social {
   padding: 0px 5px 20px 5px;
 }
 .social .CommentForm {
@@ -55,7 +98,7 @@
   vertical-align: top;
   width: 3%;
   margin-right: 5px;
-  min-width: 40px;
+  min-width: 30px;
 }
 .social .entry .type {
   font-weight: 800;
@@ -78,7 +121,7 @@
 .social .entry .ChildComments .commentNotification {
   margin: 5px;
   font-weight: bold;
-  border: 1px solid #ccc;
+  border: 1px solid #cccccc;
   border-radius: 2px;
 }
 .social .entry .ChildComments .commentNotification a {
@@ -94,7 +137,7 @@
   width: 92%;
 }
 .social .entry .ChildComments table.ChildComment tr td:first-child textarea {
-  padding: .5rem;
+  padding: 0.5rem;
   width: 96%;
 }
 .social .entry .ChildComments table.ChildComment tr td:last-child {
@@ -116,4 +159,3 @@
 .social .notification a {
   color: #750000;
 }
-/*# sourceMappingURL=d3s.social.css.map */

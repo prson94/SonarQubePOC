@@ -2423,12 +2423,13 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                         ParentID = c.ParentID,
                         ResourceEmail = r.Email,
                         ResourceName = r.FormatDisplayName(),
-                        TagsXml = c.TagsXml
+                        TagsXml = c.TagsXml,
+                        VotesXml = c.VotesXml
                     }
                    ).AsQueryable();
         }
 
-        public IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0)
+        public IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "")
         {
 
             DateTime dateStart;
@@ -2442,20 +2443,38 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                 dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
             }
 
+            if (searchPhrase == null)
+                searchPhrase = "";
+
             return
-                Query<CommentDetail>("GetCommentDetailsByFollower @resourceID, @skip, @take, @dateStart, @dateEnd, @commentTypeID",
+                Query<CommentDetail>("GetCommentDetailsByFollower @resourceID, @skip, @take, @dateStart, @dateEnd, @commentTypeID, @searchPhrase",
                 new {
                     resourceID = resourceID,
                     skip = skip,
                     take = take,
                     dateStart = dateStart,
                     dateEnd = dateEnd, 
-                    commentTypeID = commentType
+                    commentTypeID = commentType,
+                    searchPhrase = searchPhrase.Replace("'","''").Replace("--","")
                 }).AsQueryable();
 
         }
 
-        public IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0)
+        public IQueryable<CommentCount> GetCommentCountByFollower(int id)
+        {
+            return Query<CommentCount>("GetCommentCountByFollower @id", new { id }).AsQueryable();
+        }
+        public IQueryable<CommentCount> GetCommentCountByType(SystemObjects type,int id)
+        {
+            return Query<CommentCount>("GetCommentCountByType @type, @id", new { type = type.ToString(), id }).AsQueryable();
+        }
+
+        public IQueryable<CommentVote> VoteComment(int CommentID, int ResourceID, int Vote)
+        {
+            return Query<CommentVote>("VoteComment @CommentID, @ResourceID, @Vote",new { CommentID, ResourceID, Vote }).AsQueryable();
+        }
+
+        public IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "")
         {
 
             DateTime dateStart;
@@ -2468,8 +2487,12 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             {
                 dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
             }
+
+            if (searchPhrase == null)
+                searchPhrase = "";
+
             return
-                Query<CommentDetail>("GetCommentDetailsByType @type, @id, @skip, @take, @dateStart, @dateEnd, @commentTypeID",
+                Query<CommentDetail>("GetCommentDetailsByType @type, @id, @skip, @take, @dateStart, @dateEnd, @commentTypeID, @searchPhrase",
                 new {
                     type = type.ToString(),
                     id = id,
@@ -2477,7 +2500,8 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                     take = take,
                     dateStart = dateStart,
                     dateEnd = dateEnd, 
-                    commentTypeID = commentType
+                    commentTypeID = commentType,
+                    searchPhrase = searchPhrase.Replace("'", "''").Replace("--", "")
                 }).AsQueryable();
         }
 

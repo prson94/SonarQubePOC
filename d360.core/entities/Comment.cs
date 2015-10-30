@@ -29,6 +29,9 @@ namespace d360.core.entities
         public CommentType CommentTypeID { get; set; }
 
         [DataMember]
+        public CommentVisibility VisibilityID { get; set; }
+
+        [DataMember]
         public DateTime DateCreated { get; set; }
 
         [DataMember]

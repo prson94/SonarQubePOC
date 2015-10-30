@@ -428,18 +428,31 @@
         <table class="CommentForm" style="background-color: #efefef; border-radius: 2px;" data-bind="visible: ShowAddCommentControls">
             <tr>
                 <td class="input-field" colspan="2" style="padding: 5px">
-                    <div class="FieldName">What's on your mind?</div>
-                    <textarea class="grey lighten-5" style="border: 1px solid #999" data-bind="textInput: newMessage, htmlarea: {}"></textarea> @*, event: { keyup: checkForTags } class="htmlArea"*@ 
+                    <!--<div class="FieldName">What's on your mind?</div>-->
+                    <textarea placeholder="What's on your mind?" class="grey lighten-5" style="font-size: larger; border: 1px solid #999; height:70px;" data-bind="textInput: newMessage, htmlarea: {}"></textarea> @*, event: { keyup: checkForTags } class="htmlArea"*@
                 </td>
             </tr>
             <tr>
-                <td colspan="2" style="position: relative; padding: 10px 5px 10px 5px;">
-                    <i class="fa fa-2x fa-tags" style="color: #5B401F; position: absolute; top: 5px; left: 5px"></i>
-                    <div style="margin-left: 30px;">
-                        <!-- ko template: {name: 'commentTagTmpl', foreach: tags } -->
-                        <!-- /ko -->
-                        <div style="display:inline-block; position: relative">
-                            <input data-bind="textInput: newTag" placeholder="Add tag" style="border: none; border-bottom: 1px solid #adacac" />
+                <td>
+
+
+                    <select style="background-color:transparent; color:#999; font-size:10pt; font-weight:600; height:100%; width:auto; border:none; outline:none; margin:0; padding:0; display:inline-block;" data-bind="options: typeEntryOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageType" class="browser-default" />
+
+                    <span style="float:right; color:#000; font-size:10pt; font-weight:600;">
+                        Visible to<select style="background-color:transparent; color:#999; font-size:10pt; font-weight:600; height:auto; width:auto; border:none; outline:none; margin:0; padding:0; display:inline-block;" data-bind="options: visibilityOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageVisibility" class="browser-default" />
+                    </span>
+                </td>
+            </tr>
+            <!-- <span style="font-weight:600; color:#999; font-size:10pt">Discussion &#9660;</span> -->
+
+
+            <tr>
+                <td colspan="2" style="position: relative; padding: 6px 3px 0 3px;">
+                    <!--<i class="fa fa-2x fa-tags" style="color: #5B401F; position: absolute; top: 5px; left: 5px"></i>-->
+                    <div style="white-space: nowrap;">
+                        <div style="display:inline-block; position: relative; width:100%;">
+                            <input data-bind="textInput: newTag" placeholder="Add a tag" style="border: none; border: 1px solid #adacac; width:100%; line-height:1.5; padding:2px;" />
+                            <i class="fa fa-tags" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
                             <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px">
                                 <div style="padding:4px; border-top:solid 1px #dedede; font-size:12px; ">
                                     <!-- ko template: {name: 'commentTagSuggestionTmpl', foreach: tagSuggestions } -->
@@ -448,40 +461,61 @@
                             </div>
                         </div>
                     </div>
+                    <div style="padding:5px">
+                        <!-- ko template: {name: 'commentTagTmpl', foreach: tags } -->
+                        <!-- /ko -->
+                    </div>
                 </td>
             </tr>
             <tr>
-                <td class="type-field" style="padding: 5px"><select data-bind="options: typeEntryOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageType" class="browser-default" /></td>
-                <td style="padding: 5px"><button class="btn waves-effect grey-text grey lighten-5" type="button" data-bind="click: addComment">Share</button></td>
+                <td colspan="2">
+                    <button style="display:inline; float:right;  width:auto; margin: 0 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: addComment">Share</button>
+                </td>
+                <!-- <td class="type-field" style="padding: 5px"><select data-bind="options: typeEntryOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageType" class="browser-default" /></td> -->
+                <!-- <td style="padding: 5px"><button class="btn waves-effect grey-text grey lighten-5" type="button" data-bind="click: addComment">Share</button></td> -->
             </tr>
         </table>
 
         <div class="Board-Spacer" data-bind="visible: ShowAddCommentControls"></div>
 
-        <div class="FieldName">Filter Board</div>
+
         <div class="FilterForm">
-            <table>
-                <tr>
-                    <td class="date-filter">
-                        <select id="BoardDateFilter" data-bind="options: dateFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedDateFilterOption" class="browser-default" />
-                    </td>
-                    <td class="type-filter">
-                        <select id="BoardTypeFilter" data-bind="options: typeFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedTypeFilterOption" class="browser-default" />
-                    </td>
-                    <td>
-                        <button class="btn waves-effect waves-light brown lighten-1" id="BoardFilter" data-bind="click: filterComments"><i class="fa fa-search" title="Filter Comments"></i></button>
-                    </td>
-                </tr>
-            </table>
-        </div>
+            <div>
+                <span style="color:#000; font-size:10pt; font-weight:600;">
+                    Threads
+                </span>
+                <select id="BoardDateFilter" data-bind="options: dateFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedDateFilterOption, event: {change: filterComments}" class="browser-default socialDropDown" style="display:inline-block;" />
+                <!--<span style="color:#000; font-size:10pt; font-weight:600;">
+                Threads of
+            </span>
+            <select id="BoardTypeFilter" data-bind="options: typeFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedTypeFilterOption, event: {change: filterComments}" class="browser-default socialDropDown" style="display:inline-block;" />-->
+            </div>
+            <div style="display: block; /*text-align: justify; -ms-text-justify: distribute-all-lines; text-justify: distribute-all-lines;*/">
+                <!-- ko template: {name: 'commentCountTmpl', foreach: commentCounts } -->
+                <!-- /ko -->
+                <span style="width:100%;display:inline-block;font-size:0;line-height:0;"></span>
+            </div>
+            <div style="white-space: nowrap;">
+                    <div style="width:100%;position:relative;display:inline-block;">
+                        <input data-bind="value: searchFilter,valueUpdate:'afterkeydown'" type="text" placeholder="Search for keyword" style="display:inline-block;width:100%;line-height:1.5;padding:2px;" />
+                        <i class="fa fa-search" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
+                        <!-- <button style="display:inline; float:right;  width:auto; margin: 8px 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: filterComments">Search</button>-->
+                    </div>
+                </div>
+            </div>
+                <div class="Board-Spacer"></div>
 
-        <div class="Board-Spacer"></div>
-
-        <p class="error" style="color:red" data-bind="text: error"></p>
-        <div class="notification" data-bind="visible: newComments().length > 0"><a data-bind="    click: loadNewComments"> <span data-bind="    text: newComments().length"></span> new post(s)</a></div>
-        <!-- ko template: {name: 'commentTmpl', foreach: comments } -->
-        <!-- /ko -->
-        <button class="btn waves-effect grey-text grey lighten-5" style="width: 90%; margin: auto" type="button" data-bind="visible: moreComments(), click: getMoreComments">Load More</button>
+                <p class="error" style="color:red" data-bind="text: error"></p>
+                <div class="notification" data-bind="visible: newComments().length > 0"><a data-bind="    click: loadNewComments"> <span data-bind="text: newComments().length"></span> new post(s)</a></div>
+                <!-- ko template: {name: 'commentTmpl', foreach: comments } -->
+                <!-- /ko -->
+                <button class="btn waves-effect grey-text grey lighten-5" style="width: 90%; margin: auto" type="button" data-bind="visible: moreComments(), click: getMoreComments">Load More</button>
+            </div>
+</script>
+<script id="commentCountTmpl" type="text/html">
+    <div class="social-count-box" data-bind="css: IsSelected, click: function() {  $parent.filterCommentsByID(CommentTypeValue)}">
+        <span data-bind="html: Count" style="font-weight:800;font-size:18pt;text-align:center;display:block;"></span>
+        <span data-bind="html: CommentTypeName" style="text-transform:lowercase;"></span>
     </div>
 </script>
 <script id="commentTagSuggestionTmpl" type="text/html">
@@ -491,34 +525,31 @@
     </div>
 </script>
 <script id="commentTagTmpl" type="text/html">
-    <div style="display: inline-block; margin-right: 10px; padding: 3px; border: 1px solid #999; border-radius: 2px">
+    <div style="display: inline-block; margin-top:5px; padding: 0 3px 3px 1px; border: 1px solid #999; border-radius: 2px;" data-bind="style: {'backgroundColor': getTagBackgroundColor() }">
+        <i class="fa fa-tag" style="display:inline; font-size:10pt; color:rgba(0,0,0,.15); z-index:1; position:relative; top:1px; left:2px;"></i>
         <div style="display:inline-block">
-            <i class="fa fa-tag"></i>
-        </div>
-        <div style="display:inline-block">
-            <div>
-                <a data-bind="attr: {href: Url, 'data-type': Object, 'data-context': 'Preview', 'data-id': ObjectID}, text: TextPath" style="font-size: 75%; font-weight: 600"></a>
-            </div>
-            <div data-bind="text: ObjectTypeName" style="font-size: 60%"></div>
+            <a data-bind="attr: {href: Url, 'data-type': Object, 'data-context': 'Preview', 'data-id': ObjectID}, text: TextPath" style="font-size: 75%; font-weight: 600; color:black;"></a>
+            <i data-bind="visible: ShowRemove, click: ShowRemove() ?  removeTag : ''" class="fa fa-remove" style="font-size:10pt; color:rgba(0,0,0,.35);float:right;margin-left:2px; margin-top:5px; cursor:pointer;"></i>
         </div>
     </div>
 </script>
+
 <script id="commentTmpl" type="text/html">
     <div class="entry top-entry" data-bind="css: { 'entry-alt': $index()%2 }, visible: isVisible, attr: { id: ID }">
         <table>
             <tr>
                 <td rowspan="3" class="profile">
-                    <i data-bind="css: getCommentTypeCss()"></i>
+                    <i data-bind="css: getCommentTypeCss()" style="font-size:large;margin-top:11px;"></i>
                 </td>
                 <td>
                     <div>
-                        <a data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind="    text: ObjectName"></span></a>
+                        <a style="font-weight:bold" data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind="text: ObjectName"></span></a>
                     </div>
-                    <div class="type" data-bind="text: getCommentType()"></div>
+                    <!--<div class="type" data-bind="text: getCommentType()"></div>-->
                 </td>
                 <td class="author">
                     <div data-bind="if: isNonResourceComment">
-                        <a data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: ResourceName"></a>
+                        <a  data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: ResourceName"></a>
                     </div>
                     <div data-bind="text: formatDate(DateCreated)"></div>
                 </td>
@@ -526,29 +557,70 @@
             <tr>
                 <td colspan="2">
                     <div class="message" data-bind="html: Body"></div>
-                    <div style="display:inline-block" data-bind="fadeVisible: tagsAreDisplayed">
+                    <div style="display:inline-block; width:100%">
+                        <span>
+                            <span style="cursor:pointer" data-bind="click: CastUpVote"><i class="fa fa-thumbs-o-up"></i></span> <span data-bind="html: UpVoteCount"></span>
+                            <span style="cursor:pointer" data-bind="click: CastDownVote"><i class="fa fa-thumbs-o-down"></i></span> <span data-bind="html: DownVoteCount"></span>
+                        </span>
+                        <span style="margin-left:10px">
+                            <a style="color:#272727;" href="#" data-bind="click: showReply, style: {display: ReplyHidden() ? 'none' : 'inline-block' }"><i class="fa fa-reply"></i>Reply</a>
+                        </span>
+                        <span style="float:right">
+                            <button data-bind="style: {display: tagsAreHidden() ? 'inline-block' : 'none' }, click: displayTags" class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" style="height:auto;padding:1px 5px;line-height:1.4;text-transform:none;font-size:90%">
+                                <span data-bind="visible: tagsAreHidden, text: CurrentTagCountText"></span>
+                                <i class="fa fa-arrow-down" style="font-size:80%"></i>
+                            </button>
+                            <button data-bind="style: {display: tagsAreHidden() ? 'none' : 'inline-block' }, click: hideTags" class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" style="height:auto;padding:1px 5px;line-height:1.4;text-transform:none;font-size:90%">
+                                <span data-bind="visible: tagsAreDisplayed">hide tags</span>
+                                <i class="fa fa-arrow-up" style="font-size:80%"></i>
+                            </button>
+                        </span>
+                    </div>
+                    <div style="display:inline-block;" data-bind="fadeVisible: tagsAreDisplayed">
                         <!-- ko template: {name: 'commentTagTmpl', foreach: CurrentTags } -->
                         <!-- /ko -->
+                        <!--<input data-bind="textInput: newTag" placeholder="Add another tag" style="border: none; border: 1px solid #adacac; line-height:1.5; padding:2px;margin:5px 0;" />-->
+                        @*<i class="fa fa-tags" style="position:relative; z-index:1; left: 0; top: 0; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>*@
+
+                        <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px">
+
+                        </div>
                     </div>
-                    <span data-bind="visible: tagsAreHidden, text: CurrentTagCountText"></span>
-                    <button style="width: 40px" data-bind="visible: tagsAreHidden, click: displayTags" class="waves-effect waves-green btn-flat" title="Show tags">&gt;&gt;</button>
-                    <button style="width: 40px" data-bind="visible: tagsAreDisplayed, click: hideTags" class="waves-effect waves-red btn-flat" title="Hide tags">&lt;&lt;</button>
+
+
+
+
+                    <!--
+                            <div data-bind="style: {display: tagsAreHidden() ? 'inline-block' : 'none' }, click: displayTags" style="display: inline-block; margin-top: 5px; padding: 0 5px;  border-radius: 2px; background-color:#ddd; cursor:pointer; font-size:90%">
+                                <span data-bind="visible: tagsAreHidden, text: CurrentTagCountText"></span>
+                                <i class="fa fa-arrow-down" style="font-size:80%"></i>
+
+                            </div>
+                            <div data-bind="style: {display: tagsAreHidden() ? 'none' : 'inline-block' }, click: hideTags" style="display: inline-block; margin-top: 5px; padding: 0 5px;  border-radius: 2px; background-color:#ddd; cursor:pointer; font-size:90%">
+                                <span data-bind="visible: tagsAreDisplayed">hide tags</span>
+                                <i class="fa fa-arrow-up" style="font-size:80%"></i>
+
+                            </div>
+
+                           <button style="width: 40px" data-bind="visible: tagsAreHidden, click: displayTags" class="waves-effect waves-green btn-flat" title="Show tags">&gt;&gt;</button>
+                            <button style="width: 40px" data-bind="visible: tagsAreDisplayed, click: hideTags" class="waves-effect waves-red btn-flat" title="Hide tags">&lt;&lt;</button> -->
                 </td>
             </tr>
             <tr>
                 <td colspan="2" class="ChildComments">
                     <a class="commentNotification" data-bind="click: loadNewComments, visible: NewComments().length > 0"> <span data-bind="    text: NewComments().length"></span> new comment(s)</a>
-                    <div data-bind="template: {name: 'subCommentTmpl', foreach: Comments }"></div>
-                    <table class="ChildComment" data-bind="visible: ShowAddCommentControls">
+                    <table class="ChildComment" data-bind="visible: ReplyHidden">
                         <tr>
                             <td class="input-field"><textarea data-bind="value: newCommentMessage, htmlarea: {}"></textarea></td>
-                            <td><button class="btn-flat waves-effect waves-light" type="button" data-bind="click: addComment"><i class="fa fa-reply" title="Reply"></i></button></td>
+                            <td><button class="btn btn-flat waves-effect waves-light" type="button" data-bind="click: addComment"><i class="fa fa-reply" title="Reply"></i></button></td>
                         </tr>
                     </table>
+                    <div data-bind="template: {name: 'subCommentTmpl', foreach: Comments }"></div>
                 </td>
             </tr>
         </table>
     </div>
+
 </script>
 <script id="subCommentTmpl" type="text/html">
     <div class="entry sub-entry" data-bind="attr: { id: ID }">

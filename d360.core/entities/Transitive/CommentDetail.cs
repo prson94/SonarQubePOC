@@ -34,6 +34,7 @@ namespace d360.core.entities
         public CommentDetail()
         {
             Tags = new List<CommentDetailTag>();
+            Votes = new List<CommentVote>();
         }
 
         [DataMember]
@@ -72,8 +73,14 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public string TagsXml { get; set; }
 
+        [IgnoreDataMember]
+        public string VotesXml { get; set; }
+
         [DataMember]
         public List<CommentDetailTag> Tags { get; set; }
+
+        [DataMember]
+        public List<CommentVote> Votes { get; set; }
 
         [DataMember, NotMapped]
         public ICollection<CommentDetail> Comments { get; set; }
@@ -84,6 +91,16 @@ namespace d360.core.entities
             {
                 Tags.AddRange(
                     XElement.Parse(TagsXml).Elements("tag").Select(i => new CommentDetailTag { Object = i.Element("Object").Value, ObjectID = int.Parse(i.Element("ObjectID").Value), ObjectTypeName = i.Element("ObjectTypeName").Value, TextPath = i.Element("TextPath").Value, Url = i.Element("Url").Value })
+                );
+            }
+        }
+
+        public void ParseVoteXml()
+        {
+            if (!string.IsNullOrEmpty(VotesXml))
+            {
+                Votes.AddRange(
+                    XElement.Parse(VotesXml).Elements("vote").Select(i => new CommentVote { CommentID = int.Parse(i.Element("CommentID").Value), ResourceID = int.Parse(i.Element("ResourceID").Value), Vote = int.Parse(i.Element("VoteValue").Value) })
                 );
             }
         }

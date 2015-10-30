@@ -69,6 +69,10 @@ namespace d360.web.Controllers.Services
             {
                 dtl.ParseTagXml();
             }
+            if (!string.IsNullOrEmpty(dtl.VotesXml))
+            {
+                dtl.ParseVoteXml();
+            }
 
             if (dtl.CommentTypeID == core.enums.CommentType.Issue)
             {
@@ -84,6 +88,38 @@ namespace d360.web.Controllers.Services
             return dtl;
         }
 
+
+        [HttpPost, Route("counts")]
+        public List<CommentCount> GetCommentCounts(CommentRequestData pageData)
+        {
+            List<CommentCount> counts = new List<CommentCount>();
+            if (!string.IsNullOrEmpty(pageData.ObjectType) && pageData.ObjectID.HasValue)
+            {
+                counts = Company.GetCommentCountByType((SystemObjects)Enum.Parse(typeof(SystemObjects), pageData.ObjectType), pageData.ObjectID.Value).ToList();
+            }
+            else
+            {
+                counts = Company.GetCommentCountByFollower(Company.CurrentResourceID).ToList();
+            }
+                
+            return counts;
+        }
+
+        [HttpPost,Route("vote")]
+        public List<CommentVote> VoteComment(CommentVote vote)
+        {
+            // should only be +/- 1
+            if (vote.Vote < 0)
+                vote.Vote = -1;
+            else
+                vote.Vote = 1;
+
+            vote.ResourceID = Company.CurrentResourceID;
+
+            var commentVotes = Company.VoteComment(vote.CommentID, vote.ResourceID, vote.Vote);
+            return commentVotes.ToList();
+
+        }
         [HttpPost, Route("comments")]
         public List<CommentDetail> GetComments(CommentRequestData pageData)
         {
@@ -96,7 +132,8 @@ namespace d360.web.Controllers.Services
                     pageData.Skip,
                     pageData.Take,
                     pageData.DateFilter,
-                    pageData.TypeFilter
+                    pageData.TypeFilter,
+                    pageData.SearchFilter
                     ).ToList();
             }
             else
@@ -106,7 +143,8 @@ namespace d360.web.Controllers.Services
                     pageData.Skip,
                     pageData.Take,
                     pageData.DateFilter,
-                    pageData.TypeFilter
+                    pageData.TypeFilter,
+                    pageData.SearchFilter
                     ).ToList();
             }
 
@@ -134,6 +172,10 @@ namespace d360.web.Controllers.Services
                     if (!string.IsNullOrEmpty(c.TagsXml))
                     {
                         c.ParseTagXml();
+                    }
+                    if (!string.IsNullOrEmpty(c.VotesXml))
+                    {
+                        c.ParseVoteXml();
                     }
                     listToLoad.Add(c);
                     if (fullList.Any(i => i.ParentID == c.ID))

@@ -38,6 +38,7 @@ namespace d360.workflow
                     context.SetValue<DateTime>(this.DateCreated, o.DateCreated);
                     context.SetValue<string>(this.CommentCreatorResourceName, o.ResourceName);
                     o.ParseTagXml();
+                    o.ParseVoteXml();
                     context.SetValue<CommentDetailTag[]>(this.Tags, o.Tags.ToArray());
                 }
             }

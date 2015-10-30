@@ -641,6 +641,9 @@
     <Content Include="fonts\material-design-icons\Material-Design-Icons.eot" />
     <None Include="bundleconfig.json" />
     <None Include="compilerconfig.json" />
+    <Content Include="compilerconfig.json.defaults">
+      <DependentUpon>compilerconfig.json</DependentUpon>
+    </Content>
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>
@@ -1828,6 +1831,7 @@
     <None Include="Scripts\moment.js" />
     <Content Include="Scripts\knockout-file-bindings.js" />
     <Content Include="Scripts\materialize\materialize.js" />
+    <Content Include="Scripts\md5.js" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
     <None Include="Scripts\templates\analytics.admin.js" />

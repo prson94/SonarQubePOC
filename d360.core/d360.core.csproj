@@ -78,6 +78,8 @@
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
     <Compile Include="entities\AlertFlag.cs" />
+    <Compile Include="entities\CommentVote.cs" />
+    <Compile Include="entities\CommentCount.cs" />
     <Compile Include="entities\IntersectFlowType.cs" />
     <Compile Include="entities\IntersectFlow.cs" />
     <Compile Include="entities\IntersectFlowItem.cs" />
@@ -269,6 +271,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="enums\AuthenticationType.cs" />
+    <Compile Include="enums\CommentVisibility.cs" />
     <Compile Include="enums\IntersectFlowConfiguration.cs" />
     <Compile Include="enums\HashAlgorithmType.cs" />
     <Compile Include="enums\Feature.cs" />
@@ -391,4 +394,3 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
-

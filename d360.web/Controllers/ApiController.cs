@@ -2341,7 +2341,10 @@ from	    ResponsibilityTypeHierarchy H
         [HttpGet, Route("tagsuggestions")]
         public List<TagSuggestionModel> TagSuggestions(string phrase)
         {
-            var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and Name like '{0}%'", phrase.Replace("'", "''").Replace("--", ""));
+            if (string.IsNullOrWhiteSpace(phrase))
+                return new List<TagSuggestionModel>();
+
+            var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and (lower(Name) like lower('{0}%') or (len('{0}') > 2 and lower(Name) like lower('%{0}%')))", phrase.Replace("'", "''").Replace("--", ""));
 
             var list = Company.Query<TagSuggestionModel>(sql).ToList();
 
