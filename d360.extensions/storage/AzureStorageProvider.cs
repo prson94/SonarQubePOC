@@ -122,6 +122,11 @@ namespace d360.extensions.storage
             return uri;
         }
 
+        public List<string> ListFilenamesByPrefix(string folderName, string prefix)
+        {
+            var c = getContainer(folderName);
+            return c.ListBlobs(prefix, true, BlobListingDetails.Metadata).Select(i => i.Uri.LocalPath.Replace(folderName, "").Replace("/", "")).ToList();
+        }
 
         public bool ReleaseLockOnBlobFile(string folderName, string fileName)
         {

@@ -45,16 +45,16 @@ namespace d360.web.Models
     /// <summary>
     /// Serves as the base editor model for all forms.
     /// </summary>
-    public class EditorModel
-    {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Uri { get; set; }
-        public string Method { get; set; }
-        public string Context { get; set; }
+    //public class EditorModel
+    //{
+    //    public string Title { get; set; }
+    //    public string Description { get; set; }
+    //    public string Uri { get; set; }
+    //    public string Method { get; set; }
+    //    public string Context { get; set; }
 
-        public bool HasPermission { get; set; }
-    }
+    //    public bool HasPermission { get; set; }
+    //}
 
     #endregion
 
@@ -110,6 +110,33 @@ namespace d360.web.Models
         public int ObjectID { get; set; }
         public int? ResponsibilityTypeID { get; set; }
         public List<ClaimsMatrixEditorItemModel> Items { get; set; }
+    }
+
+    public class CompanySettingsIpRestrictionEditorModel
+    {
+        public string Name { get; set; }
+        public string Start { get; set; }
+        public string End { get; set; }
+    }
+
+    public class CompanySettingsEditorModel
+    {
+        public CompanySettingsEditorModel()
+        {
+            IpRestrictions = new List<CompanySettingsIpRestrictionEditorModel>();
+            SetIconToDefault = false;
+            SetLogoToDefault = false;
+        }
+
+        public bool DisableCommunityPosting { get; set; }
+        public string CompanyLogo { get; set; }
+        public bool SetLogoToDefault { get; set; }
+        public string CurrentCompanyLogoPath { get; set; }
+        public string CompanyIcon { get; set; }
+        public bool SetIconToDefault { get; set; }
+        public string CurrentCompanyIconPath { get; set; }
+
+        public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
@@ -293,34 +320,34 @@ namespace d360.web.Models
         public string SaveActionName { get; set; }
     }
 
-    public class FusionAttributeTypeEditorControl
-    {
-        public string Title { get; set; }
-        public List<FusionAttributeType> Types { get; set; }
-        public int? SelectedID { get; set; }
-    }
+    //public class FusionAttributeTypeEditorControl
+    //{
+    //    public string Title { get; set; }
+    //    public List<FusionAttributeType> Types { get; set; }
+    //    public int? SelectedID { get; set; }
+    //}
 
-    public class FusionOwnerEditModel
-    {
-        public string ObjectType { get; set; }
+    //public class FusionOwnerEditModel
+    //{
+    //    public string ObjectType { get; set; }
 
-        public int? ObjectID { get; set; }
+    //    public int? ObjectID { get; set; }
 
-        public string ParentObjectType { get; set; }
+    //    public string ParentObjectType { get; set; }
 
-        public int? ParentObjectID { get; set; }
-    }
+    //    public int? ParentObjectID { get; set; }
+    //}
 
-    public class FusionOwnerEditListModel
-    {
-        public string RelationshipOwnerObjectType { get; set; }
+    //public class FusionOwnerEditListModel
+    //{
+    //    public string RelationshipOwnerObjectType { get; set; }
 
-        public int RelationshipOwnerObjectID { get; set; }
+    //    public int RelationshipOwnerObjectID { get; set; }
 
-        public int FusionID { get; set; }
+    //    public int FusionID { get; set; }
 
-        public List<FusionOwnerEditModel> Items { get; set; }
-    }
+    //    public List<FusionOwnerEditModel> Items { get; set; }
+    //}
 
     public class FusionOwnerRuleEditorModel
     {
@@ -367,22 +394,22 @@ namespace d360.web.Models
         public int? ParentObjectID { get; set; }
     }
 
-    public class FusionPromotionEditListModel
-    {
-        public int FusionID { get; set; }
+    //public class FusionPromotionEditListModel
+    //{
+    //    public int FusionID { get; set; }
 
-        public string PromotionObjectType { get; set; }
+    //    public string PromotionObjectType { get; set; }
 
-        public int PromotionObjectID { get; set; }
+    //    public int PromotionObjectID { get; set; }
 
-        public string PromotionParentObjectType { get; set; }
+    //    public string PromotionParentObjectType { get; set; }
 
-        public int PromotionParentObjectID { get; set; }
+    //    public int PromotionParentObjectID { get; set; }
 
-        public bool Enabled { get; set; }
+    //    public bool Enabled { get; set; }
 
-        public List<FusionPromotionEditModel> Items { get; set; }
-    }
+    //    public List<FusionPromotionEditModel> Items { get; set; }
+    //}
 
     public class FusionPromotionRuleEditorModel
     {
@@ -463,18 +490,18 @@ namespace d360.web.Models
         public bool LimitedChangesOnly { get; set; }
     }
     
-    public class LoadTypeRuleEditorModel
-    {
-        public int? ID { get; set; }
-        public int LoadTypeID { get; set; }
+    //public class LoadTypeRuleEditorModel
+    //{
+    //    public int? ID { get; set; }
+    //    public int LoadTypeID { get; set; }
 
-        public bool LookupTypeRuleGroupsEnabled { get; set; }
-        public List<SelectListItem> LookupTypeRuleGroups { get; set; }
+    //    public bool LookupTypeRuleGroupsEnabled { get; set; }
+    //    public List<SelectListItem> LookupTypeRuleGroups { get; set; }
 
-        public List<SelectListItem> Objects { get; set; }
+    //    public List<SelectListItem> Objects { get; set; }
 
-        public List<SelectListItem> Fields { get; set; }
-    }
+    //    public List<SelectListItem> Fields { get; set; }
+    //}
 
     public class LoginModel
     {
@@ -565,18 +592,18 @@ namespace d360.web.Models
         public string TechnicalTransformation { get; set; }
     }
 
-    public class SourcingResponsibilityTypeEditorModel
-    {
-        public int ID { get; set; }
+    //public class SourcingResponsibilityTypeEditorModel
+    //{
+    //    public int ID { get; set; }
 
-        public string Name { get; set; }
+    //    public string Name { get; set; }
 
-        public string Description { get; set; }
+    //    public string Description { get; set; }
 
-        public ResponsibilityTypeGroup ResponsibilityTypeGroup { get; set; }
+    //    public ResponsibilityTypeGroup ResponsibilityTypeGroup { get; set; }
 
-        public List<EditableFieldItem> ArtifactTypes { get; set; }
-    }
+    //    public List<EditableFieldItem> ArtifactTypes { get; set; }
+    //}
 
     public class SourceToTargetEditForm : EditableForm
     {

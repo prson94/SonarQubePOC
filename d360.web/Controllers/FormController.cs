@@ -23,6 +23,11 @@ namespace d360.web.Controllers
 {
     public class MimeTypeExtensionsMap
     {
+        static System.Text.RegularExpressions.Regex fileRegex = new System.Text.RegularExpressions.Regex(@"data:(?<mime>[\w/\-\.]+);(?<encoding>\w+),(?<data>.*)", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        public static System.Text.RegularExpressions.Regex RegEx { get { return fileRegex; } }
+
+
         internal class MimeTypeExtensionMapItem
         {
             public string MimeType { get; set; }
@@ -30,6 +35,11 @@ namespace d360.web.Controllers
         }
 
         private static List<MimeTypeExtensionMapItem> items = new List<MimeTypeExtensionMapItem> {
+            new MimeTypeExtensionMapItem { Extension = ".gif", MimeType = "image/gif"},
+            new MimeTypeExtensionMapItem { Extension = ".ico", MimeType = "image/vnd.microsoft.icon"},
+            new MimeTypeExtensionMapItem { Extension = ".ico", MimeType = "image/x-icon"},
+            new MimeTypeExtensionMapItem { Extension = ".jpg", MimeType = "image/jpeg"},
+            new MimeTypeExtensionMapItem { Extension = ".png", MimeType = "image/png"},
             new MimeTypeExtensionMapItem { Extension = ".xlam", MimeType = "application/vnd.ms-excel.addin.macroEnabled.12"},
             new MimeTypeExtensionMapItem { Extension = ".xls", MimeType = "application/vnd.ms-excel"},
             new MimeTypeExtensionMapItem { Extension = ".xlsb", MimeType = "application/vnd.ms-excel.sheet.binary.macroEnabled.12"},
@@ -63,11 +73,13 @@ namespace d360.web.Controllers
         #region DI
 
         ISecurityContextProvider SecProvider;
+        IStorageProvider Storage;
 
-        public FormController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider)
+        public FormController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
             : base(community, company)
         {
             SecProvider = secProvider;
+            Storage = storage;
         }
 
         #endregion
@@ -381,6 +393,13 @@ namespace d360.web.Controllers
 
         #region Json Message Handling
 
+        JsonResult jsonException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
+        {
+            Response.StatusCode = (int)statusCode;
+            Response.StatusDescription = ex.GetFullExceptionData().Replace("\n", "  ").Replace("\r", " ");
+            return Json(new { type = "error", title = title, message = Response.StatusDescription }, JsonRequestBehavior.AllowGet);
+        }
+
         JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
             Response.StatusCode = (int)statusCode;
@@ -676,7 +695,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -723,7 +742,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -792,7 +811,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -864,7 +883,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -936,7 +955,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1025,7 +1044,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1082,7 +1101,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1148,7 +1167,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1271,7 +1290,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1311,7 +1330,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1368,7 +1387,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1463,7 +1482,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1499,7 +1518,7 @@ namespace d360.web.Controllers
 
                 if (model.ParentID.HasValue) id = model.ParentID.Value;
 
-                Company.Delete<AttributeType>(model);
+                Company.Delete("AttributeType", id);//Company.Delete<AttributeType>(model);
 
                 return jsonSuccess(Resources.FormInfo.Delete_AttributeType_Confirmation, id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }
@@ -1510,7 +1529,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1583,7 +1602,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1691,7 +1710,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1743,7 +1762,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1798,7 +1817,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1929,7 +1948,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -1970,7 +1989,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2018,11 +2037,220 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
         #endregion
+
+        #endregion
+
+        #region Company Settings
+
+        public JsonNetResult CompanySettings()
+        {
+            var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+            var model = new CompanySettingsEditorModel();
+            model.DisableCommunityPosting = (settings.Any(i => i.SettingID == 1) ? bool.Parse(settings.Single(i => i.SettingID == 1).Value) : false);
+            model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
+            model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
+            if (settings.Any(i => i.SettingID == 4))
+            {
+                var ipRaw = settings.Single(i => i.SettingID == 4).Value;
+                if (!string.IsNullOrEmpty(ipRaw))
+                {
+                    var ipXml = XElement.Parse(ipRaw);
+                    var ips = ipXml.Elements("ip").Select(i => new CompanySettingsIpRestrictionEditorModel { Name = i.Element("name").Value, Start = i.Element("start").Value, End = i.Element("end").Value });
+                    model.IpRestrictions.AddRange(ips);
+                }
+            }
+
+            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult UpdateCompanySettings(CompanySettingsEditorModel formModel)
+        {
+            try
+            {
+                if (formModel == null) throw new NoFormDataException("company settings");
+
+                // Permisisons validation.
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+
+                #region icon
+
+                var iconSetting = settings.SingleOrDefault(i => i.SettingID == 3);
+                if (formModel.SetIconToDefault)
+                {
+                    if (iconSetting != null)
+                    {
+                        Community.Delete<CompanySetting>(iconSetting);
+                    }
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(formModel.CompanyIcon))
+                    {
+                        var iconMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.CompanyIcon);
+
+                        var iconMime = iconMatch.Groups["mime"].Value;
+                        var iconEncoding = iconMatch.Groups["encoding"].Value;
+                        var iconData = iconMatch.Groups["data"].Value;
+                        var iconExtension = MimeTypeExtensionsMap.GetExtension(iconMime);
+                        var iconByteArray = Convert.FromBase64String(iconData);
+                        using (var iconStream = new MemoryStream(iconByteArray))
+                        {
+                            var iconFileName = string.Format("{0}{1}", Company.CurrentCompanyID, iconExtension);
+                            Storage.CreateFile(constants.COMPANY_ICON_FOLDER, iconFileName, iconStream);
+                            if (iconSetting == null)
+                            {
+                                iconSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 3, Value = string.Format("{0}{1}", constants.COMPANY_ICON_URL, iconFileName) };
+                                Community.Add<CompanySetting>(iconSetting);
+                            }
+                            else
+                            {
+                                iconSetting.Value = string.Format("{0}{1}", constants.COMPANY_ICON_URL, iconFileName);
+                                Community.SaveChanges();
+                            }
+                        }
+                    }
+                }
+
+
+
+                #endregion
+
+                #region logo
+
+                var logoSetting = settings.SingleOrDefault(i => i.SettingID == 2);
+                if (formModel.SetLogoToDefault)
+                {
+                    if (logoSetting != null)
+                    {
+                        Community.Delete<CompanySetting>(logoSetting);
+                    }
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(formModel.CompanyLogo))
+                    {
+                        var logoMatch = MimeTypeExtensionsMap.RegEx.Match(formModel.CompanyLogo);
+
+                        var logoMime = logoMatch.Groups["mime"].Value;
+                        var logoEncoding = logoMatch.Groups["encoding"].Value;
+                        var logoData = logoMatch.Groups["data"].Value;
+                        var logoExtension = MimeTypeExtensionsMap.GetExtension(logoMime);
+                        var logoByteArray = Convert.FromBase64String(logoData);
+                        using (var logoStream = new MemoryStream(logoByteArray))
+                        {
+                            var filesToDelete = Storage.ListFilenamesByPrefix(constants.COMPANY_LOGO_FOLDER, Company.CurrentCompanyID.ToString());
+                            filesToDelete.ForEach(f =>
+                            {
+                                Storage.DeleteFile(constants.COMPANY_LOGO_FOLDER, f);
+                            });
+
+                            var logoFileName = string.Format("{0}{1}", Company.CurrentCompanyID, logoExtension);
+                            Storage.CreateFile(constants.COMPANY_LOGO_FOLDER, logoFileName, logoStream);
+
+                            if (logoSetting == null)
+                            {
+                                logoSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 2, Value = string.Format("{0}{1}", constants.COMPANY_LOGO_URL, logoFileName) };
+                                Community.Add<CompanySetting>(logoSetting);
+                            }
+                            else
+                            {
+                                logoSetting.Value = string.Format("{0}{1}", constants.COMPANY_LOGO_URL, logoFileName);
+                                Community.SaveChanges();
+                            }
+                        }
+                    }
+                }
+
+                #endregion
+
+                #region social
+
+                var socialSetting = settings.SingleOrDefault(i => i.SettingID == 1);
+                if (socialSetting == null)
+                {
+                    socialSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 1, Value = formModel.DisableCommunityPosting.ToString().ToLower() };
+                    Community.Add<CompanySetting>(socialSetting);
+                }
+                else
+                {
+                    socialSetting.Value = formModel.DisableCommunityPosting.ToString().ToLower();
+                    Community.SaveChanges();
+                }
+
+                #endregion
+
+                #region ip
+
+                var ipValidationCheckPassed = true;
+                var ipSetting = settings.SingleOrDefault(i => i.SettingID == 4);
+                if (formModel.IpRestrictions != null)
+                {
+                    var xml = new XElement("ips");
+                    foreach (var ip in formModel.IpRestrictions)
+                    {
+                        if (string.IsNullOrEmpty(ip.Name) || string.IsNullOrEmpty(ip.Start) || string.IsNullOrEmpty(ip.End))
+                        {
+                            ipValidationCheckPassed = false;
+                            break;
+                        }
+                        else
+                        {
+                            xml.Add(new XElement("ip",
+                                new XElement("name", ip.Name),
+                                new XElement("start", ip.Start),
+                                new XElement("end", ip.End)
+                            ));
+                        }
+                    }
+                    if (ipValidationCheckPassed)
+                    {
+                        if (ipSetting == null)
+                        {
+                            ipSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 4, Value = xml.ToString() };
+                            Community.Add<CompanySetting>(ipSetting);
+                        }
+                        else
+                        {
+                            ipSetting.Value = xml.ToString();
+                            Community.SaveChanges();
+                        }
+                    }
+                    else
+                    {
+                        throw new MissingPropertiesException("IP Restrictions");
+                    }
+                }
+                else
+                {
+                    if (ipSetting != null)
+                    {
+                        Community.Delete<CompanySetting>(ipSetting);
+                    }
+                }
+
+                #endregion
+
+                return jsonSuccess("Settings successfully updated.", "0", "CompanySettings", "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex.GetFullExceptionData(), HttpStatusCode.InternalServerError);
+            }
+        }
 
         #endregion
 
@@ -2138,7 +2366,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2185,7 +2413,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2234,7 +2462,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2344,7 +2572,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2388,7 +2616,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2439,7 +2667,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2552,7 +2780,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2596,7 +2824,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2645,7 +2873,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2752,7 +2980,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2800,7 +3028,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2851,7 +3079,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2957,7 +3185,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -2998,7 +3226,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3048,7 +3276,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3129,7 +3357,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3215,7 +3443,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3233,8 +3461,8 @@ namespace d360.web.Controllers
             if (!Company.HasPermission(SystemObjects.FieldType, id, Claim.Delete))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-            if (Company.Table<FieldWithRelation>().Any(i => i.FieldTypeID == id))
-                return jsonException(FormInfo.FieldType_Error_Used, HttpStatusCode.Forbidden);
+            //if (Company.Table<FieldWithRelation>().Any(i => i.FieldTypeID == id))
+            //    return jsonException(FormInfo.FieldType_Error_Used, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
             var a = Company.GetById<FieldType>(id);
@@ -3341,7 +3569,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3372,7 +3600,7 @@ namespace d360.web.Controllers
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<FieldType>(id);
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
-                Company.Delete<FieldType>(model);
+                Company.Delete("FieldType", id);//Company.Delete<FieldType>(model);
 
                 return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }
@@ -3383,7 +3611,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3483,7 +3711,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3619,7 +3847,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3671,7 +3899,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3725,7 +3953,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3831,7 +4059,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3875,7 +4103,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3924,7 +4152,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -3991,7 +4219,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4029,7 +4257,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4087,7 +4315,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4172,7 +4400,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4211,7 +4439,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4292,7 +4520,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4331,7 +4559,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4390,7 +4618,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4475,7 +4703,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4514,7 +4742,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4734,7 +4962,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4773,7 +5001,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4836,7 +5064,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4943,7 +5171,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -4992,7 +5220,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5043,7 +5271,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5167,7 +5395,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5213,7 +5441,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5259,7 +5487,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5550,7 +5778,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5599,7 +5827,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5674,7 +5902,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5824,7 +6052,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5890,7 +6118,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5954,7 +6182,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6136,7 +6364,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6182,7 +6410,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6234,7 +6462,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6281,7 +6509,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6350,7 +6578,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6493,8 +6721,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (string.IsNullOrEmpty(model.Type)) throw new NoFormDataException("Type");
                 if (string.IsNullOrEmpty(model.Action)) throw new NoFormDataException("Action");
 
-                var regex = new System.Text.RegularExpressions.Regex(@"data:(?<mime>[\w/\-\.]+);(?<encoding>\w+),(?<data>.*)", System.Text.RegularExpressions.RegexOptions.Compiled);
-                var match = regex.Match(model.File);
+                var match = MimeTypeExtensionsMap.RegEx.Match(model.File);
 
                 var mime = match.Groups["mime"].Value;
                 var encoding = match.Groups["encoding"].Value;
@@ -6530,7 +6757,21 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                         var fieldTypeNames = getFieldNamesByType(load.Object, load.ObjectID);
 
                         var stats = xls.GetWorksheetStatistics();
-                        var columnCount = stats.NumberOfColumns;
+                        int columnCount = 0;
+
+                        for (int i = 1; i <= stats.NumberOfColumns; i++)
+                        {
+                            var testValue = xls.GetCellValueAsString(1, i);
+                            if (string.IsNullOrEmpty(testValue))
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                columnCount++;
+                            }
+                        }
+
                         if (columnCount == fieldTypeNames.Count)
                         {
                             var hasError = false;
@@ -6582,7 +6823,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6688,7 +6929,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6733,7 +6974,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6780,7 +7021,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6894,7 +7135,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6939,7 +7180,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -6987,7 +7228,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7104,7 +7345,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7157,7 +7398,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7212,7 +7453,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7333,7 +7574,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7382,7 +7623,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7454,7 +7695,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7552,7 +7793,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7600,7 +7841,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7649,7 +7890,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7784,7 +8025,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7828,7 +8069,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -7877,7 +8118,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -8013,7 +8254,7 @@ order by    Name
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -8054,7 +8295,7 @@ order by    Name
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -8122,7 +8363,7 @@ order by    Name
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -8195,7 +8436,7 @@ order by    Name
                 FormMethod = "POST",
                 FormName = "Add Tile to Report",//Resources.FormInfo.Add_Report_Title,
                 FormDirections = Resources.FormInfo.Add_Report_Directions,
-                ReportBaseUri = SecProvider.RawCompanyID,
+                ReportBaseUri = SecProvider.CompanyPrefix,
                 ReportTile = new ReportTile { Report = report, ReportID = reportID },
                 ReportTileTypes = ReportTileType.Area.GetReportTileTypeEnumList().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(),
                 ContentAreaNumbers = new List<SelectListItem>(),
@@ -8265,7 +8506,7 @@ order by    Name
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -8306,7 +8547,7 @@ order by    Name
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -8320,7 +8561,7 @@ order by    Name
                 FormMethod = "PUT",
                 FormName = string.Format("Edit {0}", o.Name),
                 FormDirections = Resources.FormInfo.Edit_Report_Directions,
-                ReportBaseUri = SecProvider.RawCompanyID,
+                ReportBaseUri = SecProvider.CompanyPrefix,
                 ReportTile = o,
                 ReportTileTypes = ReportTileType.Area.GetReportTileTypeEnumList().OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(),
                 ContentAreaNumbers = new List<SelectListItem>(),
@@ -8396,7 +8637,7 @@ order by    Name
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -8897,7 +9138,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9029,7 +9270,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9073,7 +9314,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9127,7 +9368,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9250,7 +9491,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9358,7 +9599,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9410,7 +9651,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9464,7 +9705,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9627,7 +9868,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9670,7 +9911,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9739,7 +9980,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -9834,7 +10075,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
         //    }
         //    catch (Exception ex)
         //    {
-        //        return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
         //    }
         //}
 
@@ -9874,7 +10115,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
         //    }
         //    catch (Exception ex)
         //    {
-        //        return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
         //    }
         //}
 
@@ -9918,7 +10159,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
         //    }
         //    catch (Exception ex)
         //    {
-        //        return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
         //    }
         //}
 
@@ -10012,7 +10253,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10059,7 +10300,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10190,7 +10431,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10271,7 +10512,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10372,7 +10613,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10413,7 +10654,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10461,7 +10702,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10518,7 +10759,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10650,7 +10891,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10676,7 +10917,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10707,7 +10948,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10898,7 +11139,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10942,7 +11183,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11011,7 +11252,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11064,7 +11305,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11120,7 +11361,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11175,7 +11416,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11261,7 +11502,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11304,7 +11545,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11350,7 +11591,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11432,7 +11673,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11473,7 +11714,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11519,7 +11760,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11614,7 +11855,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11655,7 +11896,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11702,7 +11943,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11814,7 +12055,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11867,7 +12108,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -11923,7 +12164,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12094,7 +12335,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12217,7 +12458,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12262,7 +12503,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12398,7 +12639,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12540,7 +12781,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12581,7 +12822,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12630,7 +12871,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12723,7 +12964,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12764,7 +13005,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12810,7 +13051,7 @@ order by	C.TextPath,
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -12983,7 +13224,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13037,7 +13278,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13099,7 +13340,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13224,7 +13465,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13274,7 +13515,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13347,7 +13588,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13445,7 +13686,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13493,7 +13734,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13542,7 +13783,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13677,7 +13918,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13721,7 +13962,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13770,7 +14011,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13880,7 +14121,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13921,7 +14162,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -13970,7 +14211,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -14119,7 +14360,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -14163,7 +14404,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
@@ -14268,7 +14509,7 @@ order by TextPath
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message, HttpStatusCode.InternalServerError);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 

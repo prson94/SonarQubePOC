@@ -1,18 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
 using Owin;
-using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using System.Diagnostics;
-using System.Configuration;
-using d360.core;
 using System.Web.Http;
 using System.Web.Mvc;
-//using System.Web.Optimization;
 using System.Web.Routing;
-using System.Web.Http.OData.Extensions;
-using d360.media.formatters;
 using d360.web.Models.Attributes;
 
 [assembly: OwinStartup(typeof(d360.web.Startup))]
@@ -96,6 +88,10 @@ namespace d360.web
             );
 
             #endregion
+
+            app.Use<CompanyIDCheckMiddleware>();
+            app.Use<CompanyIDCheckMiddleware>();
+            app.Use<UserIDCheckMiddleware>();
         }
     }
 }

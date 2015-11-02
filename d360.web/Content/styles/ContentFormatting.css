@@ -96,8 +96,8 @@ h6 {
   clear: both;
   display: table;
   margin-bottom: 1px;
-  margin-top: 15px;
-  font-size: 125%;
+  margin-top: 10px;
+  font-size: 115%;
   font-weight: 600;
 }
 .FieldNameRequired {
@@ -107,7 +107,7 @@ h6 {
   color: #9e9e9e;
 }
 .FieldDisplayName {
-  font-size: 125%;
+  font-size: 115%;
   font-weight: 600;
 }
 /*input[type=checkbox][disabled]{
@@ -422,7 +422,7 @@ ul.hierarchy :last-child {
 .tile .directions {
   padding: 3px 0px 5px 5px !important;
   color: #818385;
-  font-size: 1em;
+  font-size: 0.8em;
 }
 .tile .tile-tabs {
   margin-top: 15px;
@@ -445,6 +445,7 @@ ul.hierarchy :last-child {
   background-color: white;
   border: 1px solid #818385;
   border-radius: 5px;
+  padding-bottom: 10px;
 }
 .tile-micro {
   background-color: #5c5e60;

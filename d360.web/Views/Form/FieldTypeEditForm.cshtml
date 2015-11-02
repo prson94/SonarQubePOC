@@ -141,7 +141,8 @@
                     if (values.length == 2) {
                         var t = values[0];
                         var i = values[1];
-                        $.getJSON("/api/" + t + "Type/" + i + "/fields", function(tokenData) {
+                        if (t != "DomainItem") t += 'Type';
+                        $.getJSON("/api/" + t + "/" + i + "/fields", function(tokenData) {
                             var tokensDdl = $('#Tokens');
                             //tokensDdl.html('');
                             //tokensDdl.append('<option value="" disabled selected>Select token</option>');
@@ -163,7 +164,7 @@
         $("#Name").jqxInput({ width: field_width, theme: theme, height: h });
         $("#FriendlyName").jqxInput({ width: field_width, theme: theme, height: h });
         $("#Type").jqxDropDownList({ width: field_width, theme: theme });
-        $("#LookupObject").jqxDropDownList({ width: field_width, theme: theme });
+        $("#LookupObject").jqxDropDownList({ width: field_width, theme: theme, filterable:true, searchMode: 'containsignorecase' });
         $("#LookupDisplayFormat").jqxInput({ width: field_width, theme: theme, height: h });
         $("#Tokens").jqxDropDownList({ width: field_width, theme: theme });
         $("#Pattern").jqxInput({ width: field_width, theme: theme, height: h });

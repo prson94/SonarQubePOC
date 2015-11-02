@@ -1023,6 +1023,16 @@
               Looks up a localized string similar to Response Types.
             </summary>
         </member>
+        <member name="P:Resources.PageInfo.Administration_Settings_Description">
+            <summary>
+              Looks up a localized string similar to Manage system-wide settings for your environment..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_Settings_Title">
+            <summary>
+              Looks up a localized string similar to Settings.
+            </summary>
+        </member>
         <member name="P:Resources.PageInfo.Administration_SurveyType_Description">
             <summary>
               Looks up a localized string similar to Manage surveys throughout the system, targeting them to different types of objects..
@@ -2752,7 +2762,7 @@
             </summary>
             <param name="filterContext"></param>
         </member>
-        <member name="T:d360.web.Models.EditorModel">
+        <member name="T:d360.web.Models.AddRelationshipsModel">
             <summary>
             Serves as the base editor model for all forms.
             </summary>

@@ -336,6 +336,13 @@ SELECT	'#Admin' as MenuID,
 									) bg
 							FOR XML PATH('nav'), TYPE
 							) AS items
+
+                    union all
+
+                    SELECT	'Settings' AS name, 
+							'#/settings' AS url, 
+							0 as feature,
+							NULL AS items
             ) bg
 			for xml path('nav'), type
 		) as Items

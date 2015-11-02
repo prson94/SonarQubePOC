@@ -133,7 +133,7 @@
                         altRows: true,
                         showHeader: false,
                         columns: [
-                            { text: 'ID', dataField: 'ID', width: '100px' },
+                            { text: 'ID', dataField: 'ID', width: '100px', filterable: false },
                             { text: 'Name', dataField: 'Name' },
                             {
                                 text: '', dataField: 'ParentID', width: '120px',

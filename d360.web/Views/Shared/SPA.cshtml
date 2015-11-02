@@ -9,7 +9,8 @@
         settingsJson += (string.IsNullOrEmpty(settingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, settings[k]);
     }
     settingsJson = "{" + settingsJson + "}";
-    settingsJson = settingsJson.Replace("\n", "").Replace("\r","");
+    var companyLogo = settings["CompanyLogo"];
+    var companyIcon = settings["CompanyIcon"];
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
 }
 <!DOCTYPE html>
@@ -20,10 +21,21 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="description" content="Data3Sixty: Data Collaboration Suite" />
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    <link rel="Shortcut Icon" href="/favicon.ico" />
-    @*<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet" type="text/css">*@
+    <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
+    <link rel="Shortcut Icon" href="@(companyIcon)" />
     <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
+    <style type="text/css">
+        .nav-top .logo {
+        position: absolute;
+        top: 1px;
+        left: 25px;
+        background-image: url(@(companyLogo));
+        background-repeat: no-repeat;
+        background-position: left top;
+        height: 75px;
+        width: 150px;
+    }
+    </style>
     <script type="text/javascript">
         var appInsights=window.appInsights||function(config){
             function s(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},r=document,f=window,e="script",o=r.createElement(e),i,u;for(o.src=config.url||"//az416426.vo.msecnd.net/scripts/a/ai.0.js",r.getElementsByTagName(e)[0].parentNode.appendChild(o),t.cookie=r.cookie,t.queue=[],i=["Event","Exception","Metric","PageView","Trace"];i.length;)s("track"+i.pop());return config.disableExceptionTracking||(i="onerror",s("_"+i),u=f[i],f[i]=function(config,r,f,e,o){var s=u&&u(config,r,f,e,o);return s!==!0&&t["_"+i](config,r,f,e,o),s}),t
@@ -37,8 +49,6 @@
     </script>
     <script src="/Scripts/d3/d3.js"></script>
     <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
-
-    @*<script src="~/signalr/hubs"></script>*@
     @Html.Partial("KnockoutTemplates")
 </head>
 <body>
@@ -192,6 +202,7 @@
             relations_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Intersect_Title)", "@(Resources.PageInfo.Administration_Intersect_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Intersect_Title)", Active: true }]), templatePath, contextList);
             reporting_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Reporting_Title)", "@(Resources.PageInfo.Administration_Reporting_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Reporting_Title)", Active: true }]), templatePath, contextList);
             resources_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Resource_Title)", "@(Resources.PageInfo.Administration_Resource_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Resource_Title)", Active: true }]), templatePath, contextList);
+            settings_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Settings_Title)", "@(Resources.PageInfo.Administration_Settings_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Settings_Title)", Active: true }]), templatePath, contextList);
             surveys_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_SurveyType_Title)", "@(Resources.PageInfo.Administration_SurveyType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SurveyType_Title)", Active: true }]), templatePath, contextList);
             surveyresponsetypes_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_ResponseType_Title)", "@(Resources.PageInfo.Administration_ResponseType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SurveyType_Title)" }, { Name: "@(Resources.PageInfo.Administration_ResponseType_Title)", Active: true }]), templatePath, contextList);
             taxonomies_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_TaxonomyType_Title)", "@(Resources.PageInfo.Administration_TaxonomyType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_TaxonomyType_Title)", Active: true }]), templatePath, contextList);

@@ -38916,6 +38916,152 @@ function IntersectTypeViewModel(data) {
     return self;
 }
 
+
+function CompanySettingIpRestiction(data) {
+    var self = this;
+    data = data || {};
+
+    self.Name = ko.observable(data.Name || "");
+    self.Start = ko.observable(data.Start || "");
+    self.End = ko.observable(data.End || "");
+
+    return self;
+}
+
+
+function CompanySettingsViewModel(data) {
+    var self = this;
+    data = data || {};
+
+    //Simple Properties
+    self.DisableCommunityPosting = ko.observable(data.DisableCommunityPosting);
+    self.SetIconToDefault = ko.observable(data.SetLogoToDefault);
+    self.SetLogoToDefault = ko.observable(data.SetLogoToDefault);
+
+    self.CompanyLogo = ko.observable({
+        file: ko.observable(), // will be filled with a File object
+        // Read the files (all are optional, e.g: if you're certain that it is a text file, use only text:
+        binaryString: ko.observable(), // FileReader.readAsBinaryString(Blob|File) - The result property will contain the file/blob's data as a binary string. Every byte is represented by an integer in the range [0..255].
+        text: ko.observable(), // FileReader.readAsText(Blob|File, opt_encoding) - The result property will contain the file/blob's data as a text string. By default the string is decoded as 'UTF-8'. Use the optional encoding parameter can specify a different format.
+        dataURL: ko.observable(), // FileReader.readAsDataURL(Blob|File) - The result property will contain the file/blob's data encoded as a data URL.
+        arrayBuffer: ko.observable(), // FileReader.readAsArrayBuffer(Blob|File) - The result property will contain the file/blob's data as an ArrayBuffer object.
+
+        // a special observable (optional)
+        base64String: ko.observable(), // just the base64 string, without mime type or anything else
+    });
+    self.CurrentCompanyLogoPath = ko.observable(data.CurrentCompanyLogoPath || '');
+
+    self.CompanyIcon = ko.observable({
+        file: ko.observable(), // will be filled with a File object
+        // Read the files (all are optional, e.g: if you're certain that it is a text file, use only text:
+        binaryString: ko.observable(), // FileReader.readAsBinaryString(Blob|File) - The result property will contain the file/blob's data as a binary string. Every byte is represented by an integer in the range [0..255].
+        text: ko.observable(), // FileReader.readAsText(Blob|File, opt_encoding) - The result property will contain the file/blob's data as a text string. By default the string is decoded as 'UTF-8'. Use the optional encoding parameter can specify a different format.
+        dataURL: ko.observable(), // FileReader.readAsDataURL(Blob|File) - The result property will contain the file/blob's data encoded as a data URL.
+        arrayBuffer: ko.observable(), // FileReader.readAsArrayBuffer(Blob|File) - The result property will contain the file/blob's data as an ArrayBuffer object.
+
+        // a special observable (optional)
+        base64String: ko.observable(), // just the base64 string, without mime type or anything else
+    });
+    self.CurrentCompanyIconPath = ko.observable(data.CurrentCompanyIconPath || '');
+
+    self.InProgress = ko.observable(false);
+
+    //List Properties
+    self.IpRestrictions = ko.observableArray();
+
+    //Computed Properties
+    self.CurrentCompanyLogoPathPresent = ko.pureComputed(function () {
+        return (self.CurrentCompanyLogoPath().length > 0 && !self.SetLogoToDefault());
+    }, self);
+    self.CurrentCompanyIconPathPresent = ko.pureComputed(function () {
+        return (self.CurrentCompanyIconPath().length > 0 && !self.SetIconToDefault());
+    }, self);
+
+    self.CurrentCompanyGraphicsPresent = ko.pureComputed(function () {
+        return (self.CurrentCompanyIconPath().length > 0 || self.CurrentCompanyLogoPath().length > 0);
+    }, self);
+
+    //Subscriptions
+    self.DisableCommunityPosting.subscribe(function (value) {
+    });
+
+
+    //#region Methods
+
+    self.addIpRestriction = function () {
+        self.IpRestrictions.push(new CompanySettingIpRestiction({}));
+    };
+
+    self.deleteIpRestriction = function () {
+        self.IpRestrictions.remove(this);
+    };
+
+    self.loadCurrentSettings = function () {
+        $.getJSON('/form/CompanySettings', function (relData) {
+            self.CurrentCompanyIconPath(relData.CurrentCompanyIconPath);
+            self.CurrentCompanyLogoPath(relData.CurrentCompanyLogoPath);
+            self.DisableCommunityPosting(relData.DisableCommunityPosting);
+
+            console.log(self.CurrentCompanyLogoPath());
+
+            $.each(relData.IpRestrictions, function (roIx, roItem) {
+                self.IpRestrictions.push(
+                        new CompanySettingIpRestiction({
+                            Name: roItem.Name,
+                            Start: roItem.Start,
+                            End: roItem.End
+                        })
+                    );
+
+            });
+        });
+    };
+
+    self.save = function () {
+        self.InProgress(true);
+
+        var postModel = {
+            DisableCommunityPosting: self.DisableCommunityPosting(),
+            SetLogoToDefault: self.SetLogoToDefault(),
+            CompanyLogo: self.CompanyLogo().dataURL(),
+            SetIconToDefault: self.SetIconToDefault(),
+            CompanyIcon: self.CompanyIcon().dataURL(),
+            IpRestrictions: []
+        }
+
+        for (var r = 0; r < self.IpRestrictions().length; r++) {
+            var restriction = {
+                Name: self.IpRestrictions()[r].Name(),
+                Start: self.IpRestrictions()[r].Start(),
+                End: self.IpRestrictions()[r].End()
+            };
+            postModel.IpRestrictions.push(restriction);
+        }
+
+        $.ajax('/form/UpdateCompanySettings', {
+            data: postModel,
+            dataType: 'json',
+            method: 'put'
+        }).done(function (data, status, xhr) {
+            amplify.publish("SaveAction", { context: 'CompanySettings', action: 'update', id: 0, custom: {} });
+            data.message += " Refreshing page momentarily.";
+            amplify.publish("ShowMessage", data);
+        }).fail(function (xhr, status, error) {
+            amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
+        }).always(function (data, status, error) {
+            self.InProgress(false);
+            console.log(status);
+            if (error.status == "200") {
+                setTimeout(function () { document.location.reload(); }, 3000);
+            }
+        });
+    };
+
+    //#endregion
+
+    return self;
+}
+
 function Statistic(data) {
     var self = this;
     data = data || {};
@@ -41602,7 +41748,7 @@ function ClickGridTool(event) {
 
                         currentColumn = 1;
                         while (currentColumn <= m.ColumnCount) {
-                            layoutHtml += "<div id='col_" + m.Row + "_" + currentColumn + "' class='col " + fieldCountClass + "' style='margin-bottom: 15px'></div>";
+                            layoutHtml += "<div id='col_" + m.Row + "_" + currentColumn + "' class='col " + fieldCountClass + "' style='margin-bottom: 0px'></div>";
                             currentColumn++;
                         }
 
@@ -49502,7 +49648,7 @@ function attributes_admin(app, pageViewModel, templatePath, contextList) {
                         altRows: true,
                         showHeader: false,
                         columns: [
-                            { text: 'ID', dataField: 'ID', width: '100px' },
+                            { text: 'ID', dataField: 'ID', width: '100px', filterable: false },
                             { text: 'Name', dataField: 'Name' },
                             {
                                 text: '', dataField: 'ParentID', width: '120px',
@@ -50118,18 +50264,19 @@ function fusion_admin(app, pageViewModel, templatePath, contextList) {
                         sortable: false,
                         source: FusionAttributeTypesAdapter,
                         columns: [
-                          { text: 'Name', dataField: 'Name' },
+                            { text: 'Name', dataField: 'Name' },
+                            { text: 'ID', dataField: 'ID', width: '10%' },
                           {
                               text: '',
-                              dataField: 'ID',
+                              dataField: 'FusionTypeID',
                               width: '200px',
                               cellsRenderer: function (row, column, value, rowData) {
                                   var tools = [];
                                   if (value != 0) {
                                       var tools = [
-                                          { icon: 'pencil', urlprefix: '/form/EditFusionAttributeType?id={0}', title: 'Edit this attribute type' },
-                                          { icon: 'trash-o', urlprefix: '/form/DeleteFusionAttributeType?id={0}', title: 'Remove this attribute type' },
-                                          { icon: 'plus', urlprefix: '/form/AddFusionAttributeType?typeID=' + rowData.FusionTypeID + '&parentID={0}', title: 'Add attribute sub-type', text: 'Sub-type' }//,
+                                          { icon: 'pencil', urlprefix: '/form/EditFusionAttributeType?id=' + rowData.ID, title: 'Edit this attribute type' },
+                                          { icon: 'trash-o', urlprefix: '/form/DeleteFusionAttributeType?id=' + rowData.ID, title: 'Remove this attribute type' },
+                                          { icon: 'plus', urlprefix: '/form/AddFusionAttributeType?typeID=' + rowData.FusionTypeID + '&parentID=' + rowData.ID, title: 'Add attribute sub-type', text: 'Sub-type' }//,
                                           //{ icon: 'plus', urlprefix: '/form/fields/FusionAttributeType/' + rowData.ID + '/add', title: 'Add field', text: 'Field' }
                                       ];
                                   }
@@ -53025,6 +53172,50 @@ function rules_list(app, pageViewModel, templatePath, contextList) {
     app.get('#/rules', getRuleRoute);
     app.get('#/rules/:ruleid', getRuleRoute);
 }
+function settings_admin(app, pageViewModel, templatePath, contextList) {
+    app.get('#/settings', function (context) {
+        context.app.swap('');
+        context.title(pageViewModel.Title);
+
+        //#region Event Handlers
+
+        function saveAction(data) {
+            try {
+                switch (data.context) {
+                    case contextList.Role:
+                        break;
+                }
+            } catch (e) { }
+        }
+
+        function unsubscribe(data) {
+
+            amplify.unsubscribe("SaveAction", saveAction);
+            amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        }
+
+        //#endregion
+
+        context
+            .render(templatePath + 'settings.admin.html', pageViewModel)
+            .appendTo(context.$element())
+            .then(function (content) {
+                context.contentHeader(pageViewModel);
+
+                var model = new CompanySettingsViewModel();
+                ko.applyBindings(model, document.getElementById('SettingsModel'));
+                model.loadCurrentSettings();
+
+
+                //#region Event Subscriptions
+
+                amplify.subscribe("SaveAction", saveAction);
+                amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+                //#endregion
+            });
+    });
+}
 function surveys_admin(app, pageViewModel, templatePath, contextList) {
     app.get('#/surveys/administration', function (context) {
         context.app.swap('');
@@ -53640,7 +53831,14 @@ function taxonomies_list(app, pageViewModel, templatePath, contextList) {
                         id: 'ID'
                     };
 
-                    var TreeGridAdapter = new $.jqx.dataAdapter(TreeGridSource);
+                    var TreeGridAdapter = new $.jqx.dataAdapter(TreeGridSource, {
+                        beforeLoadComplete: function (records) {
+                            $.each(records, function () {
+                                this.expanded = "true";
+                            });
+                            return records;
+                        }
+                    });
 
                     $("#Tree").jqxTreeGrid(
                     {

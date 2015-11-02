@@ -1,0 +1,73 @@
+﻿using d360.core;
+using Microsoft.Owin;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Threading.Tasks;
+using Dapper;
+using System.Linq;
+using System.Web.Caching;
+using d360.extensions.caching;
+
+namespace d360.web
+{
+    public class CompanyIDCheckMiddleware
+    {
+        public class cd
+        {
+            public int CompanyID { get; set; }
+            public string UrlPrefix { get; set; }
+        }
+
+        Func<IDictionary<string, object>, Task> _next;
+        public CompanyIDCheckMiddleware(Func<IDictionary<string, object>, Task> next)
+        {
+            _next = next;
+        }
+
+        Dictionary<string, int> loadCache()
+        {
+            var key = "CompanyPrefixes";
+            var cache = new MemoryCachingProvider();//RedisCachingProvider();
+            var dict = cache.GetItem<Dictionary<string, int>>(key);
+
+            if (dict == null)
+            {
+                var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+                cnn.Open();
+                dict = cnn.Query<cd>("select CompanyID, UrlPrefix from CompanyDomainSetting")
+                    .ToDictionary(k => k.UrlPrefix, v => v.CompanyID);
+                cnn.Close();
+                cnn.Dispose();
+                cache.SetItem(key, dict, true, 5);
+            }
+            return dict;
+        }
+
+        public async Task Invoke(IDictionary<string, object> environment)
+        {
+            IOwinContext context = new OwinContext(environment);
+            var host = context.Request.Headers["Host"];
+            if (host.Contains(".data3sixty"))
+            {
+                host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
+            }
+            else
+            {
+                host = "demo.dev";
+            }
+
+            var dict = loadCache();
+
+            if (dict.ContainsKey(host))
+            {
+                context.Request.Set("CompanyDomain", host);
+                context.Request.Set("CompanyID", dict[host]);
+            }
+            else
+            {
+            }
+            await _next.Invoke(environment);
+        }
+    }
+}

@@ -313,6 +313,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Manage system-wide settings for your environment..
+        /// </summary>
+        internal static string Administration_Settings_Description {
+            get {
+                return ResourceManager.GetString("Administration_Settings_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        internal static string Administration_Settings_Title {
+            get {
+                return ResourceManager.GetString("Administration_Settings_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Manage surveys throughout the system, targeting them to different types of objects..
         /// </summary>
         internal static string Administration_SurveyType_Description {

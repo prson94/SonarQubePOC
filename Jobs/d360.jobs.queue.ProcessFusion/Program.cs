@@ -22,178 +22,178 @@ using System.Data;
 
 namespace d360.jobs.queue.ProcessFusion
 {
-    public class AzureConfiguration : DbConfiguration
-    {
-        public AzureConfiguration()
-        {
-            SetExecutionStrategy("System.Data.SqlClient", () => new SqlAzureExecutionStrategy(3, TimeSpan.FromSeconds(5)));
-        }
-    }
+    //public class AzureConfiguration : DbConfiguration
+    //{
+    //    public AzureConfiguration()
+    //    {
+    //        SetExecutionStrategy("System.Data.SqlClient", () => new SqlAzureExecutionStrategy(3, TimeSpan.FromSeconds(5)));
+    //    }
+    //}
 
-    [DbConfigurationType(typeof(AzureConfiguration))]
-    public class FusionContext : DbContext
-    {
-        public FusionContext(string connectionString): base(connectionString)
-        {
+    //[DbConfigurationType(typeof(AzureConfiguration))]
+    //public class FusionContext : DbContext
+    //{
+    //    public FusionContext(string connectionString): base(connectionString)
+    //    {
 
-        }
+    //    }
 
-        public ObjectContext ObjectContext
-        {
-            get
-            {
-                try
-                {
-                    return ((IObjectContextAdapter)this).ObjectContext;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-        }
+    //    public ObjectContext ObjectContext
+    //    {
+    //        get
+    //        {
+    //            try
+    //            {
+    //                return ((IObjectContextAdapter)this).ObjectContext;
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                throw ex;
+    //            }
+    //        }
+    //    }
 
-        public DbSet<Field> Fields { get; set; }
-        public DbSet<FieldType> FieldTypes { get; set; }
-        public DbSet<Fusion> Fusions { get; set; }
-        public DbSet<FusionAttribute> FusionAttributes { get; set; }
-        public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
-        public DbSet<FusionType> FusionTypes { get; set; }
+    //    public DbSet<Field> Fields { get; set; }
+    //    public DbSet<FieldType> FieldTypes { get; set; }
+    //    public DbSet<Fusion> Fusions { get; set; }
+    //    public DbSet<FusionAttribute> FusionAttributes { get; set; }
+    //    public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
+    //    public DbSet<FusionType> FusionTypes { get; set; }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
-        {
-            modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
-            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+    //    protected override void OnModelCreating(DbModelBuilder modelBuilder)
+    //    {
+    //        modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
+    //        modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-            base.OnModelCreating(modelBuilder);
+    //        base.OnModelCreating(modelBuilder);
 
-            base.Configuration.AutoDetectChangesEnabled = true;
-            base.Configuration.ProxyCreationEnabled = false;
-            base.Configuration.LazyLoadingEnabled = false;
-        }
-    }
+    //        base.Configuration.AutoDetectChangesEnabled = true;
+    //        base.Configuration.ProxyCreationEnabled = false;
+    //        base.Configuration.LazyLoadingEnabled = false;
+    //    }
+    //}
 
-    public class Processor
-    {
-        int CompanyID { get; set; }
-        int FusionID { get; set; }
-        int FusionTypeID { get; set; }
+    //public class Processor
+    //{
+    //    int CompanyID { get; set; }
+    //    int FusionID { get; set; }
+    //    int FusionTypeID { get; set; }
 
-        SqlConnection companyConnection { get; set; }
-        FusionContext companyContext { get; set; }
+    //    SqlConnection companyConnection { get; set; }
+    //    FusionContext companyContext { get; set; }
 
-        BulkFusionImport model;
-        List<FusionAttributeType> attributeTypes;
-        List<FusionAttribute> currentAttributes;
-        List<Field> currentAttributeFields;
+    //    BulkFusionImport model;
+    //    List<FusionAttributeType> attributeTypes;
+    //    List<FusionAttribute> currentAttributes;
+    //    List<Field> currentAttributeFields;
 
-        public Processor(int companyID, int fusionID, SqlConnection cnn, FusionContext ctx)
-        {
-            CompanyID = companyID;
-            FusionID = fusionID;
-            companyConnection = cnn;
-            companyContext = ctx;
+    //    public Processor(int companyID, int fusionID, SqlConnection cnn, FusionContext ctx)
+    //    {
+    //        CompanyID = companyID;
+    //        FusionID = fusionID;
+    //        companyConnection = cnn;
+    //        companyContext = ctx;
 
-            var fusion = ctx.Fusions.SingleOrDefault(i => i.ID == fusionID); //companyConnection.Query<Fusion>("select * from Fusion where ID = @id", new { id = FusionID }).SingleOrDefault();
-            FusionTypeID = fusion.FusionTypeID;
-            fusion = null;
+    //        var fusion = ctx.Fusions.SingleOrDefault(i => i.ID == fusionID); //companyConnection.Query<Fusion>("select * from Fusion where ID = @id", new { id = FusionID }).SingleOrDefault();
+    //        FusionTypeID = fusion.FusionTypeID;
+    //        fusion = null;
 
-            var storage = new AzureStorageProvider();
-            var folder = string.Format("bulk-fusion-{0}", companyID);
-            string json = storage.GetFileContentsAsString(folder, string.Format("{0}.{1}.2015-10-23_08.13.23.json", FusionTypeID, FusionID));
-            model = JsonConvert.DeserializeObject<BulkFusionImport>(json);
-            json = null;
-            storage = null;
+    //        var storage = new AzureStorageProvider();
+    //        var folder = string.Format("bulk-fusion-{0}", companyID);
+    //        string json = storage.GetFileContentsAsString(folder, string.Format("{0}.{1}.2015-10-23_08.13.23.json", FusionTypeID, FusionID));
+    //        model = JsonConvert.DeserializeObject<BulkFusionImport>(json);
+    //        json = null;
+    //        storage = null;
 
-            attributeTypes = ctx.FusionAttributeTypes.Where(i => i.FusionTypeID == FusionTypeID).ToList(); //companyConnection.Query<FusionAttributeType>("select * from FusionAttributeType where FusionTypeID = @id", new { id = FusionTypeID }).ToList(); //
-            currentAttributes = ctx.FusionAttributes.Where(i => i.FusionID == FusionID).ToList(); //companyConnection.Query<FusionAttribute>("select * from FusionAttribute where FusionID = @id", new { id = FusionID }).ToList();
-            //currentAttributeFields = (
-            //                         from f in ctx.Fields
-            //                         join a in ctx.FusionAttributes on f.ObjectID equals a.ID
-            //                         where f.ObjectType == "FusionAttribute"
-            //                         where a.FusionID == FusionID
-            //                         select f
-            //                         ).ToList();
-        }
+    //        attributeTypes = ctx.FusionAttributeTypes.Where(i => i.FusionTypeID == FusionTypeID).ToList(); //companyConnection.Query<FusionAttributeType>("select * from FusionAttributeType where FusionTypeID = @id", new { id = FusionTypeID }).ToList(); //
+    //        currentAttributes = ctx.FusionAttributes.Where(i => i.FusionID == FusionID).ToList(); //companyConnection.Query<FusionAttribute>("select * from FusionAttribute where FusionID = @id", new { id = FusionID }).ToList();
+    //        //currentAttributeFields = (
+    //        //                         from f in ctx.Fields
+    //        //                         join a in ctx.FusionAttributes on f.ObjectID equals a.ID
+    //        //                         where f.ObjectType == "FusionAttribute"
+    //        //                         where a.FusionID == FusionID
+    //        //                         select f
+    //        //                         ).ToList();
+    //    }
 
-        public void LoadByParent(int? parentAttributeTypeID)
-        {
-            //var transaction = companyConnection.BeginTransaction();
-            //var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, transaction);
-            //bulkCopy.DestinationTableName = "dbo.FusionAttribute";
-            //try
-            //{
-            //    var dt = new DataTable();
-            //    dt.Columns.Add(new DataColumn("ParentID", typeof(int)));
-            //    dt.Columns.Add(new DataColumn("Name", typeof(string)));
-            //    dt.Columns.Add(new DataColumn("FusionID", typeof(int)));
-            //    dt.Columns.Add(new DataColumn("FusionAttributeTypeID", typeof(int)));
-            //    dt.Columns.Add(new DataColumn("SourceID", typeof(string)));
-            //    dt.Columns.Add(new DataColumn("Deleted", typeof(bool)));
+    //    public void LoadByParent(int? parentAttributeTypeID)
+    //    {
+    //        //var transaction = companyConnection.BeginTransaction();
+    //        //var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, transaction);
+    //        //bulkCopy.DestinationTableName = "dbo.FusionAttribute";
+    //        //try
+    //        //{
+    //        //    var dt = new DataTable();
+    //        //    dt.Columns.Add(new DataColumn("ParentID", typeof(int)));
+    //        //    dt.Columns.Add(new DataColumn("Name", typeof(string)));
+    //        //    dt.Columns.Add(new DataColumn("FusionID", typeof(int)));
+    //        //    dt.Columns.Add(new DataColumn("FusionAttributeTypeID", typeof(int)));
+    //        //    dt.Columns.Add(new DataColumn("SourceID", typeof(string)));
+    //        //    dt.Columns.Add(new DataColumn("Deleted", typeof(bool)));
 
-            //    bulkCopy.WriteToServer(dt);
-            //}
-            //catch (Exception ex)
-            //{
-            //    transaction.Rollback();
-            //}
+    //        //    bulkCopy.WriteToServer(dt);
+    //        //}
+    //        //catch (Exception ex)
+    //        //{
+    //        //    transaction.Rollback();
+    //        //}
 
-            attributeTypes.Where(at => at.ParentID == parentAttributeTypeID).ToList().ForEach(at =>
-            {
-                var attributeChangeCount = 0;
+    //        attributeTypes.Where(at => at.ParentID == parentAttributeTypeID).ToList().ForEach(at =>
+    //        {
+    //            var attributeChangeCount = 0;
 
-                //var attributesToSave = new List<FusionAttribute>();
-                foreach (var m in model.Models.Where(m => m["FusionAttributeTypeID"] == at.ID.ToString()))
-                {
-                    var currentAttribute = currentAttributes.FirstOrDefault(i => i.FusionAttributeTypeID == at.ID && i.FusionID == FusionID && i.SourceID == m["SourceID"]);
+    //            //var attributesToSave = new List<FusionAttribute>();
+    //            foreach (var m in model.Models.Where(m => m["FusionAttributeTypeID"] == at.ID.ToString()))
+    //            {
+    //                var currentAttribute = currentAttributes.FirstOrDefault(i => i.FusionAttributeTypeID == at.ID && i.FusionID == FusionID && i.SourceID == m["SourceID"]);
 
-                    #region Find parent
-                    int? parentAttributeID = null;
-                    if (m.ContainsKey("ParentSourceID") && parentAttributeTypeID.HasValue)
-                    {
-                        var currentParentAttribute = model.Models.Where(i => i["FusionAttributeTypeID"] == parentAttributeTypeID.Value.ToString() && i["SourceID"] == m["ParentSourceID"]).FirstOrDefault();
-                        if (currentParentAttribute != null)
-                        {
-                            parentAttributeID = int.Parse(currentParentAttribute["FusionAttributeID"]);
-                        }
-                    }
-                    #endregion
+    //                #region Find parent
+    //                int? parentAttributeID = null;
+    //                if (m.ContainsKey("ParentSourceID") && parentAttributeTypeID.HasValue)
+    //                {
+    //                    var currentParentAttribute = model.Models.Where(i => i["FusionAttributeTypeID"] == parentAttributeTypeID.Value.ToString() && i["SourceID"] == m["ParentSourceID"]).FirstOrDefault();
+    //                    if (currentParentAttribute != null)
+    //                    {
+    //                        parentAttributeID = int.Parse(currentParentAttribute["FusionAttributeID"]);
+    //                    }
+    //                }
+    //                #endregion
 
-                    if (currentAttribute == null)
-                    {
-                        currentAttribute = new FusionAttribute { FusionAttributeTypeID = at.ID, FusionID = FusionID, Name = m["Name"], SourceID = m["SourceID"], ParentID = parentAttributeID };
-                        companyContext.FusionAttributes.Add(currentAttribute);
-                        attributeChangeCount++;
-                    }
-                    else
-                    {
-                        if (currentAttribute.ParentID != parentAttributeID || currentAttribute.Name != m["Name"])
-                        {
-                            currentAttribute.Name = m["Name"];
-                            currentAttribute.ParentID = parentAttributeID;
-                            attributeChangeCount++;
-                        }
-                    }
+    //                if (currentAttribute == null)
+    //                {
+    //                    currentAttribute = new FusionAttribute { FusionAttributeTypeID = at.ID, FusionID = FusionID, Name = m["Name"], SourceID = m["SourceID"], ParentID = parentAttributeID };
+    //                    companyContext.FusionAttributes.Add(currentAttribute);
+    //                    attributeChangeCount++;
+    //                }
+    //                else
+    //                {
+    //                    if (currentAttribute.ParentID != parentAttributeID || currentAttribute.Name != m["Name"])
+    //                    {
+    //                        currentAttribute.Name = m["Name"];
+    //                        currentAttribute.ParentID = parentAttributeID;
+    //                        attributeChangeCount++;
+    //                    }
+    //                }
 
-                    m.Add("FusionAttributeID", currentAttribute.ID.ToString());
+    //                m.Add("FusionAttributeID", currentAttribute.ID.ToString());
 
-                    if (attributeChangeCount >= 250)
-                    {
-                        companyContext.SaveChanges();
-                        attributeChangeCount = 0;
-                    }
-                }
+    //                if (attributeChangeCount >= 250)
+    //                {
+    //                    companyContext.SaveChanges();
+    //                    attributeChangeCount = 0;
+    //                }
+    //            }
 
-                if (attributeChangeCount > 0)
-                {
-                    companyContext.SaveChanges();
-                    attributeChangeCount = 0;
-                }
+    //            if (attributeChangeCount > 0)
+    //            {
+    //                companyContext.SaveChanges();
+    //                attributeChangeCount = 0;
+    //            }
 
-                LoadByParent(at.ID);
-            });
-        }
-    }
+    //            LoadByParent(at.ID);
+    //        });
+    //    }
+    //}
 
     class Program: FunctionsBase
     {
@@ -205,7 +205,7 @@ namespace d360.jobs.queue.ProcessFusion
 
             try
             {
-                var companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
+                var companies = GetActiveCompanyIDs();//.Where(i => i == 4).ToList();
                 var domainPrefixes = GetCompanyDomainPrefixes();
 
                 companies.AsParallel().WithDegreeOfParallelism(4).ForAll(companyID =>

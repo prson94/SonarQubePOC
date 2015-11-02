@@ -3409,14 +3409,23 @@ from	    ResponsibilityTypeHierarchy H
         [Route("{type}/{id:int}/fields")]
         public List<EditableFieldItem> GetFieldTypesByObject(SystemObjects type, int id)
         {
-            var list = Company
-                .GetFieldTypeRelationsByObject(type, id)
-                .Select(i => new EditableFieldItem
-                {
-                    Text = i.FriendlyName,
-                    Value = "{" + i.Name + "}"
-                })
-                .ToList();
+            List<EditableFieldItem> list;
+
+            if (type != SystemObjects.DomainItem)
+            {
+                list = Company
+                    .GetFieldTypeRelationsByObject(type, id)
+                    .Select(i => new EditableFieldItem
+                    {
+                        Text = i.FriendlyName,
+                        Value = "{" + i.Name + "}"
+                    })
+                    .ToList();
+            }
+            else
+            {
+                list = new List<EditableFieldItem>();
+            }
 
             switch (type)
             {
@@ -3425,10 +3434,17 @@ from	    ResponsibilityTypeHierarchy H
                     list.Add(new EditableFieldItem { Text = "Status", Value = "{Status}" });
                     list.Add(new EditableFieldItem { Text = "Description", Value = "{Description}" });
                     break;
+                case SystemObjects.DomainItem:
                 case SystemObjects.DomainType:
                     list.Add(new EditableFieldItem { Text = "Name", Value = "{Name}" });
                     list.Add(new EditableFieldItem { Text = "Code", Value = "{Code}" });
                     list.Add(new EditableFieldItem { Text = "Description", Value = "{Description}" });
+                    break;
+                case SystemObjects.Resource:
+                case SystemObjects.ResourceType:
+                    list.Add(new EditableFieldItem { Text = "First Name", Value = "{FirstName}" });
+                    list.Add(new EditableFieldItem { Text = "Last Name", Value = "{LastName}" });
+                    list.Add(new EditableFieldItem { Text = "Email", Value = "{Email}" });
                     break;
             }
 

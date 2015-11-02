@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.extensions
 {
@@ -22,6 +18,8 @@ namespace d360.extensions
         string GetFileSecureUrl(string folderName, string fileName);
 
         string GetFileContentsAsString(string folderName, string fileName);
+
+        List<string> ListFilenamesByPrefix(string folderName, string prefix);
 
         bool ReleaseLockOnBlobFile(string folderName, string fileName);
     }

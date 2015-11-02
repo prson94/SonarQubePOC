@@ -491,7 +491,19 @@ namespace d360.web.Controllers
                     #region Save to queue for processing
 
                     var doc = new XElement("import", mXml, new XElement("rs"));
-                    Company.AddFusionQueueItem(new QueueFusionItem { FusionID = id, Data = doc.ToString() });
+
+                    var queueItem = new QueueFusionItem { ID = Guid.NewGuid(), FusionID = id, Data = doc.ToString() };
+                    Company.AddFusionQueueItem(queueItem);
+
+                    try
+                    {
+                        var execution = new FusionExecution { DateToUseForHistory = DateTime.UtcNow, FusionID = id, QueueID = queueItem.ID };
+                        Company.Add<FusionExecution>(execution);
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceError(ex.GetFullExceptionData());
+                    }
 
                     #endregion                
                 }

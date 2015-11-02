@@ -10,9 +10,13 @@ namespace d360.extensions
 {
     public interface ISecurityContextProvider
     {
-        string RawCompanyID { get; set; }
-        CompanyIdentifierType CompanyIDType { get; }
-        string RawUserID { get; set; }
-        UserIdentifierType UserIDType { get; }
+        string CompanyPrefix { get; set; }
+        int CompanyID { get; set; }
+        int ResourceID { get; set; }
+        bool IsAdministrator { get; set; }
+        //string RawCompanyID { get; set; }
+        //CompanyIdentifierType CompanyIDType { get; }
+        //string RawUserID { get; set; }
+        //UserIdentifierType UserIDType { get; }
     }
 }

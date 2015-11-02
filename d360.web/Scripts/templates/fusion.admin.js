@@ -153,18 +153,19 @@
                         sortable: false,
                         source: FusionAttributeTypesAdapter,
                         columns: [
-                          { text: 'Name', dataField: 'Name' },
+                            { text: 'Name', dataField: 'Name' },
+                            { text: 'ID', dataField: 'ID', width: '10%' },
                           {
                               text: '',
-                              dataField: 'ID',
+                              dataField: 'FusionTypeID',
                               width: '200px',
                               cellsRenderer: function (row, column, value, rowData) {
                                   var tools = [];
                                   if (value != 0) {
                                       var tools = [
-                                          { icon: 'pencil', urlprefix: '/form/EditFusionAttributeType?id={0}', title: 'Edit this attribute type' },
-                                          { icon: 'trash-o', urlprefix: '/form/DeleteFusionAttributeType?id={0}', title: 'Remove this attribute type' },
-                                          { icon: 'plus', urlprefix: '/form/AddFusionAttributeType?typeID=' + rowData.FusionTypeID + '&parentID={0}', title: 'Add attribute sub-type', text: 'Sub-type' }//,
+                                          { icon: 'pencil', urlprefix: '/form/EditFusionAttributeType?id=' + rowData.ID, title: 'Edit this attribute type' },
+                                          { icon: 'trash-o', urlprefix: '/form/DeleteFusionAttributeType?id=' + rowData.ID, title: 'Remove this attribute type' },
+                                          { icon: 'plus', urlprefix: '/form/AddFusionAttributeType?typeID=' + rowData.FusionTypeID + '&parentID=' + rowData.ID, title: 'Add attribute sub-type', text: 'Sub-type' }//,
                                           //{ icon: 'plus', urlprefix: '/form/fields/FusionAttributeType/' + rowData.ID + '/add', title: 'Add field', text: 'Field' }
                                       ];
                                   }

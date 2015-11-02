@@ -49,7 +49,7 @@ namespace d360.test.jobs
         {
             var companyID = 15;
             var fusionTypeID = 8;
-            var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new StaticSecurityContextProvider());
+            var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FieldTypes);
             var fusionAttributeTypes = community.Filter<d360.core.entities.Plugins.FusionAttributeType>(i => i.FusionTypeID == fusionTypeID, i => i.FieldTypes).ToList();
@@ -144,7 +144,7 @@ END
         public void SaveCertificate_Success()
         {
             var companyID = 6;
-            var sec = new StaticSecurityContextProvider() { RawCompanyID = companyID.ToString(), RawUserID = "mike@data3sixty.com" };
+            var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
             
             var bytes = File.ReadAllBytes("SecAuth3Pubcert.cer");

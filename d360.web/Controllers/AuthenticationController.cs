@@ -293,6 +293,7 @@ namespace d360.web.Controllers
                             };
                             Community.Add<Resource>(resource);
                             Community.Add<CompanyResource>(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
+                            
                             Trace.TraceInformation("AssertionConsumerService => Finished creating resource account for Username: {0}.", userName);
                         }
                     }

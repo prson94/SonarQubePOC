@@ -253,7 +253,7 @@
 
                         currentColumn = 1;
                         while (currentColumn <= m.ColumnCount) {
-                            layoutHtml += "<div id='col_" + m.Row + "_" + currentColumn + "' class='col " + fieldCountClass + "' style='margin-bottom: 15px'></div>";
+                            layoutHtml += "<div id='col_" + m.Row + "_" + currentColumn + "' class='col " + fieldCountClass + "' style='margin-bottom: 0px'></div>";
                             currentColumn++;
                         }
 

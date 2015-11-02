@@ -19,6 +19,11 @@ namespace d360.core
         public const string AZURE_STORAGE_KEY = "akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==";
         public const string WEBJOBS_STORAGE_CONNECTION = "DefaultEndpointsProtocol=https;AccountName=data3sixty;AccountKey=akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==";
 
+        public const string COMPANY_ICON_FOLDER = "company-icons";
+        public const string COMPANY_ICON_URL = "https://data3sixty.blob.core.windows.net/company-icons/";
+        public const string COMPANY_LOGO_FOLDER = "company-logos";
+        public const string COMPANY_LOGO_URL = "https://data3sixty.blob.core.windows.net/company-logos/";
+
         public const string ARTIFACT_STATUS_DRAFT = "Draft";
         public const string ARTIFACT_STATUS_REVIEW = "Under Review";
         public const string ARTIFACT_STATUS_CERTIFIED = "Certified";

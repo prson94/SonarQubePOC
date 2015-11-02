@@ -132,7 +132,27 @@ namespace d360.extensions.caching
 
         public void SetItemInListByID<T, TIdentifier>(string name, TIdentifier id, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
         {
-            //_Cache.SetAdd(name, )
+            var dictionary = getOrCreateDictionary<T, TIdentifier>(name);
+
+//           _Cache.get
+
+            if (dictionary.ContainsKey(id))
+                dictionary[id] = item;
+            else
+                dictionary.Add(id, item);
+
+            SetItem(name, dictionary, isAbsoluteExpiration, expirationMinutes);
+        }
+
+        private SortedDictionary<TIdentifier, T> getOrCreateDictionary<T, TIdentifier>(string name)
+        {
+            var list = GetItem< SortedDictionary<TIdentifier, T>>(name);
+            if (list == null)
+            {
+                list = new SortedDictionary<TIdentifier, T>();
+            }
+
+            return list;
         }
     }
 }

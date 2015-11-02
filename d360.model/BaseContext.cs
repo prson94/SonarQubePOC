@@ -65,6 +65,7 @@ namespace d360.model
     {
         public int CurrentResourceID { get; set; }
         public int CurrentCompanyID { get; set; }
+        public string CurrentCompanyDomain { get; set; }
         public bool CurrentResourceIsAdmin { get; set; }
 
         internal ISecurityContextProvider Context;
@@ -358,87 +359,87 @@ namespace d360.model
 
         #endregion
 
-        internal abstract Company GetCompany();
+        //internal abstract Company GetCompany();
 
-        internal abstract Resource GetResource();
+        //internal abstract Resource GetResource();
 
-        internal abstract bool GetResourceAdminFlag();
+        //internal abstract bool GetResourceAdminFlag();
 
-        internal int GetCompanyID()
-        {
-            int id = 0;
-            string cacheKey = "";
+        //internal int GetCompanyID()
+        //{
+        //    int id = 0;
+        //    string cacheKey = "";
 
-            switch (Context.CompanyIDType)
-            {
-                case CompanyIdentifierType.ID:
-                    cacheKey = CACHE_KEY_COMPANY_ID;
-                    break;
-                case CompanyIdentifierType.PublicID:
-                    cacheKey = CACHE_KEY_COMPANY_PUBLICID;
-                    break;
-                case CompanyIdentifierType.Uri:
-                    cacheKey = CACHE_KEY_COMPANY_URI;
-                    break;
-            }
+        //    switch (Context.CompanyIDType)
+        //    {
+        //        case CompanyIdentifierType.ID:
+        //            cacheKey = CACHE_KEY_COMPANY_ID;
+        //            break;
+        //        case CompanyIdentifierType.PublicID:
+        //            cacheKey = CACHE_KEY_COMPANY_PUBLICID;
+        //            break;
+        //        case CompanyIdentifierType.Uri:
+        //            cacheKey = CACHE_KEY_COMPANY_URI;
+        //            break;
+        //    }
 
-            if (Caching.ListItemExists<int, string>(cacheKey, Context.RawCompanyID))
-            {
-                id = Caching.GetItemInListByID<int, string>(cacheKey, Context.RawCompanyID);
-            }
-            else
-            {
-                var c = GetCompany();
-                if (c != null) id = c.ID;
-                c = null;
-                Caching.SetItemInListByID<int, string>(cacheKey, Context.RawCompanyID, id, true, 5);
-            }
+        //    if (Caching.ListItemExists<int, string>(cacheKey, Context.RawCompanyID))
+        //    {
+        //        id = Caching.GetItemInListByID<int, string>(cacheKey, Context.RawCompanyID);
+        //    }
+        //    else
+        //    {
+        //        var c = GetCompany();
+        //        if (c != null) id = c.ID;
+        //        c = null;
+        //        Caching.SetItemInListByID<int, string>(cacheKey, Context.RawCompanyID, id, true, 5);
+        //    }
 
-            return id;
-        }
+        //    return id;
+        //}
 
-        internal int GetResourceID()
-        {
-            int id;
-            string cacheKey = "";
+        //internal int GetResourceID()
+        //{
+        //    int id;
+        //    string cacheKey = "";
 
-            switch (Context.UserIDType)
-            {
-                case UserIdentifierType.ApiKey:
-                    cacheKey = CACHE_KEY_RESOURCE_APIKEY;
-                    break;
-                case UserIdentifierType.Email:
-                    cacheKey = CACHE_KEY_RESOURCE_EMAIL;
-                    break;
-                case UserIdentifierType.ID:
-                    cacheKey = CACHE_KEY_RESOURCE_ID;
-                    break;
-                case UserIdentifierType.Username:
-                    cacheKey = CACHE_KEY_RESOURCE_USERNAME;
-                    break;
-                case UserIdentifierType.AccessToken:
-                    cacheKey = CACHE_KEY_RESOURCE_ACCESSTOKEN;
-                    break;
-            }
+        //    switch (Context.UserIDType)
+        //    {
+        //        case UserIdentifierType.ApiKey:
+        //            cacheKey = CACHE_KEY_RESOURCE_APIKEY;
+        //            break;
+        //        case UserIdentifierType.Email:
+        //            cacheKey = CACHE_KEY_RESOURCE_EMAIL;
+        //            break;
+        //        case UserIdentifierType.ID:
+        //            cacheKey = CACHE_KEY_RESOURCE_ID;
+        //            break;
+        //        case UserIdentifierType.Username:
+        //            cacheKey = CACHE_KEY_RESOURCE_USERNAME;
+        //            break;
+        //        case UserIdentifierType.AccessToken:
+        //            cacheKey = CACHE_KEY_RESOURCE_ACCESSTOKEN;
+        //            break;
+        //    }
 
-            if (Caching.ListItemExists<int, string>(cacheKey, Context.RawUserID))
-            {
-                id = Caching.GetItemInListByID<int, string>(cacheKey, Context.RawUserID);
-            }
-            else
-            {
-                var r = GetResource();
-                id = 0;
-                if (r != null)
-                {
-                    id = r.ID;
-                    r = null;
-                }
-                Caching.SetItemInListByID<int, string>(cacheKey, Context.RawUserID, id);
-            }
+        //    if (Caching.ListItemExists<int, string>(cacheKey, Context.RawUserID))
+        //    {
+        //        id = Caching.GetItemInListByID<int, string>(cacheKey, Context.RawUserID);
+        //    }
+        //    else
+        //    {
+        //        var r = GetResource();
+        //        id = 0;
+        //        if (r != null)
+        //        {
+        //            id = r.ID;
+        //            r = null;
+        //        }
+        //        Caching.SetItemInListByID<int, string>(cacheKey, Context.RawUserID, id);
+        //    }
 
-            return id;
-        }
+        //    return id;
+        //}
 
         #endregion
     }

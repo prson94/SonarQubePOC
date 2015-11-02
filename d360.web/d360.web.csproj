@@ -309,6 +309,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Validation.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_Start\UserIDCheckMiddleware.cs" />
+    <Compile Include="App_Start\CompanyIDCheckMiddleware.cs" />
+    <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\HelpPage\ApiDescriptionExtensions.cs" />
@@ -400,17 +403,12 @@
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Controllers\TooltipsController.cs" />
     <Compile Include="Controllers\TilesController.cs" />
-    <Compile Include="Filters\BasicAuthenticationAttribute.cs" />
-    <Compile Include="Filters\HttpAuthenticationChallengeContextExtensions.cs" />
-    <Compile Include="Filters\AccessTokenAuthenticationAttribute.cs" />
-    <Compile Include="Filters\OrgAuthenticationAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
-    <Compile Include="Models\Attributes\AuthorizeServiceAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
@@ -421,8 +419,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\ModelMetadataExtensions.cs" />
-    <Compile Include="Models\Modules\EnvironmentModule.cs" />
-    <Compile Include="Models\HttpModules\SslRedirectModule.cs" />
     <Compile Include="Models\Action Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -641,9 +637,6 @@
     <Content Include="fonts\material-design-icons\Material-Design-Icons.eot" />
     <None Include="bundleconfig.json" />
     <None Include="compilerconfig.json" />
-    <Content Include="compilerconfig.json.defaults">
-      <DependentUpon>compilerconfig.json</DependentUpon>
-    </Content>
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>
@@ -868,7 +861,7 @@
     <Content Include="Content\templates\groups.list.html" />
     <Content Include="Content\templates\groups.item.html" />
     <Content Include="Content\templates\resources.item.html" />
-    <Content Include="Content\templates\roles.admin.html" />
+    <Content Include="Content\templates\settings.admin.html" />
     <Content Include="Content\templates\resources.admin.html" />
     <Content Include="Content\templates\groups.admin.html" />
     <Content Include="Content\templates\lookups.admin.html" />
@@ -1859,7 +1852,7 @@
     <None Include="Scripts\templates\groups.list.js" />
     <None Include="Scripts\templates\groups.item.js" />
     <None Include="Scripts\templates\resources.item.js" />
-    <None Include="Scripts\templates\roles.admin.js" />
+    <None Include="Scripts\templates\settings.admin.js" />
     <None Include="Scripts\templates\resources.admin.js" />
     <None Include="Scripts\templates\relations.admin.js" />
     <None Include="Scripts\templates\lookups.admin.js" />
@@ -1875,6 +1868,7 @@
     <Content Include="Scripts\templates\policies.admin.js" />
     <Content Include="Scripts\version.json" />
     <None Include="Scripts\_references.js" />
+    <Content Include="Scripts\zoomcharts.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

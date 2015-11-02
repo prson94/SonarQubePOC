@@ -24,13 +24,13 @@ namespace d360.model
         public CommunityContext(ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
             : base(constants.COMMUNITY_DATABASE_CONNECTION)
         {
-            Context = context;
             Caching = caching;
             QueueSource = queueSource;
 
-            CurrentCompanyID = GetCompanyID();
-            CurrentResourceID = GetResourceID();
-            CurrentResourceIsAdmin = GetResourceAdminFlag();
+            CurrentCompanyID = context.CompanyID;
+            CurrentResourceID = context.ResourceID;
+            CurrentResourceIsAdmin = context.IsAdministrator;
+            CurrentCompanyDomain = context.CompanyPrefix;
             GetCompanySsoModel();
         }
 
@@ -120,6 +120,7 @@ namespace d360.model
 
             if (item is Resource || item is CompanyResource)
             {
+                Caching.RemoveItem("Users");
                 Caching.RemoveItem("RESOURCES");
             }
 
@@ -148,6 +149,7 @@ namespace d360.model
 
             if (clearCache)
             {
+                Caching.RemoveItem("Users");
                 Caching.RemoveItem("RESOURCES");  
             }
 
@@ -163,6 +165,7 @@ namespace d360.model
 
                 if (entity is Resource || entity is CompanyResource)
                 {
+                    Caching.RemoveItem("Users");
                     Caching.RemoveItem("RESOURCES");
                 }
 
@@ -205,6 +208,7 @@ namespace d360.model
         {
             if (item is Resource || item is CompanyResource)
             {
+                Caching.RemoveItem("Users");
                 Caching.RemoveItem("RESOURCES");
             }
 
@@ -213,64 +217,54 @@ namespace d360.model
 
         #endregion
 
-        #region For Deriving company and resource records based on incoming raw values
-
         void GetCompanySsoModel()
         {
-            if (Caching.ListItemExists<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, Context.RawCompanyID))
+            if (Caching.ListItemExists<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain))
             {
-                CurrentCompanySsoModel = Caching.GetItemInListByID<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, 
-                    Context.RawCompanyID);
+                CurrentCompanySsoModel = Caching.GetItemInListByID<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS,
+                    CurrentCompanyDomain);
             }
             else
             {
                 CurrentCompanySsoModel = new CompanySsoModel();
 
-                switch (Context.CompanyIDType)
+                var model = (
+                            from c in Companies
+                            from cds in c.CompanyDomainSettings
+                            where c.ID == CurrentCompanyID
+                            where cds.UrlPrefix == CurrentCompanyDomain
+                            select new
+                            {
+                                cds.AllowNewUserLogin,
+                                cds.AuthenticationType,
+                                cds.DomainSetting.HashAlgorithmType,
+                                cds.DomainSetting.IdpSloEndpoint,
+                                cds.DomainSetting.IdpSsoEndpoint,
+                                cds.DomainSetting.IdpDomainCertificate,
+                                cds.DomainSetting.SpDomainCertificate
+                            }
+                            ).SingleOrDefault();
+                if (model != null)
                 {
-                    case CompanyIdentifierType.Uri:
-                        var model = (
-                                    from c in Companies
-                                    from cds in c.CompanyDomainSettings
-                                    where c.ID == CurrentCompanyID
-                                    where cds.UrlPrefix == Context.RawCompanyID
-                                    select new
-                                    {
-                                        cds.AllowNewUserLogin,
-                                        cds.AuthenticationType,
-                                        cds.DomainSetting.HashAlgorithmType,
-                                        cds.DomainSetting.IdpSloEndpoint,
-                                        cds.DomainSetting.IdpSsoEndpoint,
-                                        cds.DomainSetting.IdpDomainCertificate,
-                                        cds.DomainSetting.SpDomainCertificate
-                                    }
-                                    ).SingleOrDefault();
-                        if (model != null)
-                        {
-                            CurrentCompanySsoModel.AllowNewUserLogin = model.AllowNewUserLogin;
-                            CurrentCompanySsoModel.AuthenticationType = model.AuthenticationType;
-                            CurrentCompanySsoModel.IdpSloEndpoint = model.IdpSloEndpoint;
-                            CurrentCompanySsoModel.IdpSsoEndpoint = model.IdpSsoEndpoint;
-                            CurrentCompanySsoModel.HashAlgorithmType = model.HashAlgorithmType;
+                    CurrentCompanySsoModel.AllowNewUserLogin = model.AllowNewUserLogin;
+                    CurrentCompanySsoModel.AuthenticationType = model.AuthenticationType;
+                    CurrentCompanySsoModel.IdpSloEndpoint = model.IdpSloEndpoint;
+                    CurrentCompanySsoModel.IdpSsoEndpoint = model.IdpSsoEndpoint;
+                    CurrentCompanySsoModel.HashAlgorithmType = model.HashAlgorithmType;
 
-                            if (model.IdpDomainCertificate != null)
-                            {
-                                CurrentCompanySsoModel.IdpCertificateFile = model.IdpDomainCertificate.File;
-                                CurrentCompanySsoModel.IdpCertificatePassword = model.IdpDomainCertificate.Password;
-                            }
-                            if (model.SpDomainCertificate != null)
-                            {
-                                CurrentCompanySsoModel.SpCertificateFile = model.SpDomainCertificate.File;
-                                CurrentCompanySsoModel.SpCertificatePassword = model.SpDomainCertificate.Password;
-                            }
-                        }
-                        break;
-                    default:
-                        // do nothing.
-                        break;
+                    if (model.IdpDomainCertificate != null)
+                    {
+                        CurrentCompanySsoModel.IdpCertificateFile = model.IdpDomainCertificate.File;
+                        CurrentCompanySsoModel.IdpCertificatePassword = model.IdpDomainCertificate.Password;
+                    }
+                    if (model.SpDomainCertificate != null)
+                    {
+                        CurrentCompanySsoModel.SpCertificateFile = model.SpDomainCertificate.File;
+                        CurrentCompanySsoModel.SpCertificatePassword = model.SpDomainCertificate.Password;
+                    }
                 }
 
-                Caching.SetItemInListByID<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, Context.RawCompanyID, CurrentCompanySsoModel);
+                Caching.SetItemInListByID<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain, CurrentCompanySsoModel);
             }
         }
 
@@ -285,7 +279,7 @@ namespace d360.model
             }
             else
             {
-                var c = GetCompany();
+                var c = Filter<Company>(i => i.ID == CurrentCompanyID, i => i.DatabaseServer).Single();
                 cs = string.Format(
                     "server={0};Database=D3S_{1};User ID={2};Password={3}",
                     c.DatabaseServer.Server,
@@ -301,102 +295,6 @@ namespace d360.model
             }
         }
 
-        internal override Company GetCompany()
-        {
-            Company c = null;
-
-            switch (Context.CompanyIDType)
-            {
-                case CompanyIdentifierType.ID:
-                    int iID;
-                    if (int.TryParse(Context.RawCompanyID, out iID))
-                    {
-                        c = GetById<Company>(iID, i => i.DatabaseServer);
-                    }
-                    break;
-                //case CompanyIdentifierType.PublicID:
-                //    Guid gID;
-                //    if (Guid.TryParse(Context.RawCompanyID, out gID))
-                //    {
-                //        c = Filter<Company>(i => i.PublicID == gID, i => i.DatabaseServer).SingleOrDefault();
-                //    }
-                //    break;
-                case CompanyIdentifierType.Uri:
-                    c = Filter<Company>(i => i.CompanyDomainSettings.Any(u => u.UrlPrefix == Context.RawCompanyID), i => i.DatabaseServer).SingleOrDefault();
-                    break;
-            }
-
-            return c;
-        }
-
-        internal override Resource GetResource()
-        {
-            Resource r = null;
-
-            switch (Context.UserIDType)
-            {
-                case UserIdentifierType.ApiKey:
-                    r = Resources.SingleOrDefault(i => i.APIPublicKey == Context.RawUserID);
-                    break;
-                case UserIdentifierType.Email:
-                    r = Resources.SingleOrDefault(i => i.Email == Context.RawUserID);
-                    break;
-                case UserIdentifierType.ID:
-                    r = Resources.SingleOrDefault(i => i.ID == int.Parse(Context.RawUserID));
-                    break;
-                case UserIdentifierType.Username:
-                    r = Resources.SingleOrDefault(i => i.Username == Context.RawUserID);
-                    break;
-            }
-
-            return r;
-        }
-
-        internal override bool GetResourceAdminFlag()
-        {
-            bool isAdmin;
-            int companyID = GetCompanyID();
-            int resourceID = GetResourceID();
-            string cacheKey = "";
-
-            switch (Context.UserIDType)
-            {
-                case UserIdentifierType.ApiKey:
-                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_APIKEY, companyID);
-                    break;
-                case UserIdentifierType.Email:
-                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_EMAIL, companyID);
-                    break;
-                case UserIdentifierType.ID:
-                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_ID, companyID);
-                    break;
-                case UserIdentifierType.Username:
-                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_USERNAME, companyID);
-                    break;
-            }
-
-            if (Caching.ListItemExists<bool, string>(cacheKey, Context.RawUserID))
-            {
-                isAdmin = Caching.GetItemInListByID<bool, string>(cacheKey, Context.RawUserID);
-            }
-            else
-            {
-                var r = Filter<CompanyResource>(i => i.CompanyID == companyID && i.ResourceID == resourceID).SingleOrDefault();
-                if (r != null)
-                {
-                    isAdmin = r.IsAdministrator;
-                    r = null;
-
-                    Caching.SetItemInListByID<bool, string>(cacheKey, Context.RawUserID, isAdmin);
-                }
-                else
-                {
-                    isAdmin = false;
-                }
-            }
-
-            return isAdmin;
-        }
 
         public string createRandomPassword()
         {
@@ -476,32 +374,32 @@ namespace d360.model
             public List<int> Companies { get; set; }
         }
 
-        public AccessTokenResourceCacheModel ValidateAccessTokenResource(string token)
-        {
-            string cacheKey = "AccessTokenResource";
-            AccessTokenResourceCacheModel model = null;
+        //public AccessTokenResourceCacheModel ValidateAccessTokenResource(string token)
+        //{
+        //    string cacheKey = "AccessTokenResource";
+        //    AccessTokenResourceCacheModel model = null;
 
-            if (Caching.ListItemExists<AccessTokenResourceCacheModel, string>(cacheKey, token))
-            {
-                model = Caching.GetItemInListByID<AccessTokenResourceCacheModel, string>(cacheKey, token);
-            }
-            else
-            {
-                var resource = Filter<Resource>(i => i.ApiReadOnlyAccessToken == token, i => i.CompanyResources).SingleOrDefault();
-                if (resource != null)
-                {
-                    model = new AccessTokenResourceCacheModel
-                    {
-                        Token = resource.APIPrivateKey,
-                        Username = resource.Username,
-                        Companies = resource.CompanyResources.Select(i => i.CompanyID).ToList()
-                    };
-                    Caching.SetItemInListByID<AccessTokenResourceCacheModel, string>(cacheKey, token, model);
-                }
-            }
+        //    if (Caching.ListItemExists<AccessTokenResourceCacheModel, string>(cacheKey, token))
+        //    {
+        //        model = Caching.GetItemInListByID<AccessTokenResourceCacheModel, string>(cacheKey, token);
+        //    }
+        //    else
+        //    {
+        //        var resource = Filter<Resource>(i => i.ApiReadOnlyAccessToken == token, i => i.CompanyResources).SingleOrDefault();
+        //        if (resource != null)
+        //        {
+        //            model = new AccessTokenResourceCacheModel
+        //            {
+        //                Token = resource.APIPrivateKey,
+        //                Username = resource.Username,
+        //                Companies = resource.CompanyResources.Select(i => i.CompanyID).ToList()
+        //            };
+        //            Caching.SetItemInListByID<AccessTokenResourceCacheModel, string>(cacheKey, token, model);
+        //        }
+        //    }
 
-            return model;
-        }
+        //    return model;
+        //}
 
         public class ApiResourceCacheModel
         {
@@ -517,97 +415,97 @@ namespace d360.model
             public List<int> Companies { get; set; }
         }
 
-        public ApiResourceCacheModel ValidateApiResource(string key, string secret)
-        {
-            string cacheKey = "ApiResource";
-            ApiResourceCacheModel model = null;
+        //public ApiResourceCacheModel ValidateApiResource(string key, string secret)
+        //{
+        //    string cacheKey = "ApiResource";
+        //    ApiResourceCacheModel model = null;
 
-            if (Caching.ListItemExists<ApiResourceCacheModel, string>(cacheKey, key))
-            {
-                model = Caching.GetItemInListByID<ApiResourceCacheModel, string>(cacheKey, key);
-                if (model.Secret != secret)
-                {
-                    model = null;
-                }
-            }
-            else
-            {
-                var resource = Filter<Resource>(i => i.APIPublicKey == key, i => i.CompanyResources).SingleOrDefault();
-                if (resource != null)
-                {
-                    if (resource.APIPrivateKey == secret)
-                    {
-                        model = new ApiResourceCacheModel
-                        {
-                            Key = resource.APIPublicKey,
-                            Secret = resource.APIPrivateKey,
-                            Username = resource.Username,
-                            Companies = resource.CompanyResources.Select(i => i.CompanyID).ToList()
-                        };
-                        Caching.SetItemInListByID<ApiResourceCacheModel, string>(cacheKey, key, model);                    
-                    }
-                }
-            }
+        //    if (Caching.ListItemExists<ApiResourceCacheModel, string>(cacheKey, key))
+        //    {
+        //        model = Caching.GetItemInListByID<ApiResourceCacheModel, string>(cacheKey, key);
+        //        if (model.Secret != secret)
+        //        {
+        //            model = null;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var resource = Filter<Resource>(i => i.APIPublicKey == key, i => i.CompanyResources).SingleOrDefault();
+        //        if (resource != null)
+        //        {
+        //            if (resource.APIPrivateKey == secret)
+        //            {
+        //                model = new ApiResourceCacheModel
+        //                {
+        //                    Key = resource.APIPublicKey,
+        //                    Secret = resource.APIPrivateKey,
+        //                    Username = resource.Username,
+        //                    Companies = resource.CompanyResources.Select(i => i.CompanyID).ToList()
+        //                };
+        //                Caching.SetItemInListByID<ApiResourceCacheModel, string>(cacheKey, key, model);                    
+        //            }
+        //        }
+        //    }
 
-            return model;
-        }
+        //    return model;
+        //}
 
         public Resource ValidateResource(string username, string password)
         {
             Resource r = null;
 
-            switch(Context.UserIDType)
-            {
-                case UserIdentifierType.ApiKey:
-                    #region
-                    r = Filter<Resource>(i => i.APIPublicKey == username, i => i.ResourceType).SingleOrDefault();
+            //switch(Context.UserIDType)
+            //{
+            //    case UserIdentifierType.ApiKey:
+            //        #region
+            //        r = Filter<Resource>(i => i.APIPublicKey == username, i => i.ResourceType).SingleOrDefault();
 
-                    if (r != null)
-                    {
-                        //int minSeconds = -10;
-                        //int maxSeconds = 10;
-                        //long secondsSinceEpoch = DateTime.UtcNow.Date.Epoch();
-                        string secretKey = r.APIPrivateKey;
+            //        if (r != null)
+            //        {
+            //            //int minSeconds = -10;
+            //            //int maxSeconds = 10;
+            //            //long secondsSinceEpoch = DateTime.UtcNow.Date.Epoch();
+            //            string secretKey = r.APIPrivateKey;
 
-                        //var hash = new SHA256Managed();
+            //            //var hash = new SHA256Managed();
 
-                        bool isAuthorized = false;
+            //            bool isAuthorized = false;
 
-                        //for (long i = (secondsSinceEpoch + minSeconds); i <= (secondsSinceEpoch + maxSeconds); i++)
-                        //{
-                        //string correctHash = secretKey + secondsSinceEpoch.ToString();
-                        //byte[] unhashedBytes = Encoding.ASCII.GetBytes(correctHash); //encoding.GetBytes(correctHash);
-                        //byte[] hashedBytes = hash.ComputeHash(unhashedBytes);
-                        //correctHash = Convert.ToBase64String(hashedBytes);
+            //            //for (long i = (secondsSinceEpoch + minSeconds); i <= (secondsSinceEpoch + maxSeconds); i++)
+            //            //{
+            //            //string correctHash = secretKey + secondsSinceEpoch.ToString();
+            //            //byte[] unhashedBytes = Encoding.ASCII.GetBytes(correctHash); //encoding.GetBytes(correctHash);
+            //            //byte[] hashedBytes = hash.ComputeHash(unhashedBytes);
+            //            //correctHash = Convert.ToBase64String(hashedBytes);
 
-                        //if (correctHash.Equals(password))
-                        //{
-                        //    isAuthorized = true;
-                        //break;
-                        //}
-                        ///}
+            //            //if (correctHash.Equals(password))
+            //            //{
+            //            //    isAuthorized = true;
+            //            //break;
+            //            //}
+            //            ///}
 
-                        isAuthorized = secretKey.Equals(password);
+            //            isAuthorized = secretKey.Equals(password);
 
-                        if (!isAuthorized)
-                        {
-                            r = null;
-                        }
-                    }
-                    break;
-                    #endregion
-                case UserIdentifierType.Email:
-                case UserIdentifierType.Username:
+            //            if (!isAuthorized)
+            //            {
+            //                r = null;
+            //            }
+            //        }
+            //        break;
+            //        #endregion
+            //    case UserIdentifierType.Email:
+            //    case UserIdentifierType.Username:
                     #region
                     password = hashPassword(password);//System.Web.Security.FormsAuthentication.HashPasswordForStoringInConfigFile(password, System.Web.Configuration.FormsAuthPasswordFormat.SHA1.ToString());
                     r = Filter<Resource>(i => i.Username == username && i.Password == password).SingleOrDefault();
-                    break;
-                    #endregion
-                case UserIdentifierType.ID:
-                    #region
-                    break;
-                    #endregion
-            }
+            //        break;
+            //        #endregion
+            //    case UserIdentifierType.ID:
+            //        #region
+            //        break;
+            //        #endregion
+            //}
 
             // Check that resource has access to this company.
             if (r != null)
@@ -633,14 +531,31 @@ namespace d360.model
 
         #endregion
 
-        public string GetCompanySetting(string settingFieldName)
+        //public string GetCompanySetting(string settingFieldName)
+        //{
+        //    return CompanySettings.Single(i => i.CompanyID == CurrentCompanyID && i.Setting.FieldName == settingFieldName).Value;
+        //}
+
+        public class SettingModel
         {
-            return CompanySettings.Single(i => i.CompanyID == CurrentCompanyID && i.Setting.FieldName == settingFieldName).Value;
+            public int SettingID { get; set; }
+
+            public string Name { get; set; }
+
+            public string FieldName { get; set; }
+
+            public string Description { get; set; }
+
+            public string Value { get; set; }
         }
 
         public Dictionary<string, string> GetCompanySettings()
         {
-            return Filter<CompanySetting>(i => i.CompanyID == CurrentCompanyID, i => i.Setting).ToDictionary(k => k.Setting.FieldName, v => v.Value);
+            return Query<SettingModel>(
+@"select S.ID as SettingID, S.Name, S.FieldName, S.Description, coalesce(C.Value, S.DefaultValue) as Value
+from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @c
+where S.ID <> 4", new {c = CurrentCompanyID })
+.ToDictionary(k => k.FieldName, v => v.Value);
         }
 
     }

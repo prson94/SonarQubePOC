@@ -62,16 +62,14 @@ namespace d360.model
         public CompanyContext(CommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
             : base(community.GetCompanyConnectionString())
         {
-            Context = context;
-
             Community = community;
-
             Caching = caching;
             QueueSource = queueSource;
 
-            CurrentCompanyID = GetCompanyID();
-            CurrentResourceID = GetResourceID();
-            CurrentResourceIsAdmin = GetResourceAdminFlag();
+            CurrentCompanyID = context.CompanyID;
+            CurrentResourceID = context.ResourceID;
+            CurrentResourceIsAdmin = context.IsAdministrator;
+            CurrentCompanyDomain = context.CompanyPrefix;
         }
 
         #endregion
@@ -328,30 +326,30 @@ namespace d360.model
 
         #region Internal Models
 
-        class ChildrenByFusionAndAttribute
-        {
-            public string ID { get; set; }
-            public string ParentID { get; set; }
-            public string Name { get; set; }
-        }
+        //class ChildrenByFusionAndAttribute
+        //{
+        //    public string ID { get; set; }
+        //    public string ParentID { get; set; }
+        //    public string Name { get; set; }
+        //}
 
         class RedFlagByTypeAndCurrentResource : ObjectDetail
         {
             public int CriticalRelationshipCount { get; set; }
         }
 
-        class AllocationPossibilityComparer : IEqualityComparer<AllocationPossibility>
-        {
-            public bool Equals(AllocationPossibility x, AllocationPossibility y)
-            {
-                return (x.ObjectType == y.ObjectType && x.ObjectTypeID == y.ObjectTypeID);
-            }
+        //class AllocationPossibilityComparer : IEqualityComparer<AllocationPossibility>
+        //{
+        //    public bool Equals(AllocationPossibility x, AllocationPossibility y)
+        //    {
+        //        return (x.ObjectType == y.ObjectType && x.ObjectTypeID == y.ObjectTypeID);
+        //    }
 
-            public int GetHashCode(AllocationPossibility obj)
-            {
-                return obj.ObjectType.GetHashCode() ^ obj.ObjectTypeID.GetHashCode();
-            }
-        }
+        //    public int GetHashCode(AllocationPossibility obj)
+        //    {
+        //        return obj.ObjectType.GetHashCode() ^ obj.ObjectTypeID.GetHashCode();
+        //    }
+        //}
 
         #endregion
 
@@ -400,17 +398,17 @@ namespace d360.model
             }
         }
 
-        public void UpdateActiveAlertFlag(SystemObjects type, int id, string comment)
-        {
-            var sType = type.ToString();
-            var active = AlertFlags.Where(i => i.ObjectType == sType && i.ObjectID == id && i.Active).FirstOrDefault();
+        //public void UpdateActiveAlertFlag(SystemObjects type, int id, string comment)
+        //{
+        //    var sType = type.ToString();
+        //    var active = AlertFlags.Where(i => i.ObjectType == sType && i.ObjectID == id && i.Active).FirstOrDefault();
 
-            if (active != null)
-            {
-                Comments.Add(new Comment { Body = comment, OwnerObjectID = id, OwnerObjectType = sType, CommentTypeID = core.enums.CommentType.RedFlag, DateCreated = DateTime.UtcNow, CreatingResourceID = CurrentResourceID, ParentID = active.CommentID });
-                SaveChanges();
-            }
-        }
+        //    if (active != null)
+        //    {
+        //        Comments.Add(new Comment { Body = comment, OwnerObjectID = id, OwnerObjectType = sType, CommentTypeID = core.enums.CommentType.RedFlag, DateCreated = DateTime.UtcNow, CreatingResourceID = CurrentResourceID, ParentID = active.CommentID });
+        //        SaveChanges();
+        //    }
+        //}
 
         public AlertFlag GetActiveAlertFlagByObject(SystemObjects type, int id)
         {
@@ -641,25 +639,25 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
             return GetAllocationOptions();
         }
 
-        public IQueryable<ResponsibilityType> GetAllowedAndUnallocatedResponsibilityTypesByObject(SystemObjects type, int id)
-        {
-            try
-            {
-                return Database.Connection.Query<ResponsibilityType>("EXEC GetAllowedAndUnallocatedResponsibilityTypesByObject @type, @id", new
-                {
-                    type = type.ToString(),
-                    id = id
-                }).AsQueryable();
-            }
-            catch (SqlException ex)
-            {
-                throw CheckAndTranslateSqlException(ex, "Responsibility Type");
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        //public IQueryable<ResponsibilityType> GetAllowedAndUnallocatedResponsibilityTypesByObject(SystemObjects type, int id)
+        //{
+        //    try
+        //    {
+        //        return Database.Connection.Query<ResponsibilityType>("EXEC GetAllowedAndUnallocatedResponsibilityTypesByObject @type, @id", new
+        //        {
+        //            type = type.ToString(),
+        //            id = id
+        //        }).AsQueryable();
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        throw CheckAndTranslateSqlException(ex, "Responsibility Type");
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+        //}
 
         public List<AllowedIntersectionType> GetAllowedIntersectionTypes(string type, int id, int intersectID = 0)
         {
@@ -757,21 +755,21 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
             return list;
         }
 
-        public List<KeyValuePair<int, string>> GetClaimObjects()
-        {
-            var array = (ClaimObject[])(Enum.GetValues(typeof(ClaimObject)).Cast<ClaimObject>());
-            return array
-                .Select(a => new KeyValuePair<int, string>(Convert.ToInt32(a), a.ToString()))
-                .ToList();
-        }
+        //public List<KeyValuePair<int, string>> GetClaimObjects()
+        //{
+        //    var array = (ClaimObject[])(Enum.GetValues(typeof(ClaimObject)).Cast<ClaimObject>());
+        //    return array
+        //        .Select(a => new KeyValuePair<int, string>(Convert.ToInt32(a), a.ToString()))
+        //        .ToList();
+        //}
 
-        public List<KeyValuePair<int, string>> GetClaims()
-        {
-            var array = (Claim[])(Enum.GetValues(typeof(Claim)).Cast<Claim>());
-            return array
-                .Select(a => new KeyValuePair<int, string>(Convert.ToInt32(a), a.ToString()))
-                .ToList();
-        }
+        //public List<KeyValuePair<int, string>> GetClaims()
+        //{
+        //    var array = (Claim[])(Enum.GetValues(typeof(Claim)).Cast<Claim>());
+        //    return array
+        //        .Select(a => new KeyValuePair<int, string>(Convert.ToInt32(a), a.ToString()))
+        //        .ToList();
+        //}
 
         public List<KeyValuePair<int, string>> GetClassifications()
         {
@@ -781,15 +779,15 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
                 .ToList();
         }
 
-        public List<CommentDetail> GetCommentDetailsByID(int id)
-        {
-            return Database.Connection.Query<CommentDetail>("EXEC GetCommentDetailByID", new { id = id }).ToList();
-        }
+        //public List<CommentDetail> GetCommentDetailsByID(int id)
+        //{
+        //    return Database.Connection.Query<CommentDetail>("EXEC GetCommentDetailByID", new { id = id }).ToList();
+        //}
 
-        public IQueryable<FieldNameByObjectType> GetFieldNamesByObjectType(string type, int id)
-        {
-            return GetFieldNamesByObjectType((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id);
-        }
+        //public IQueryable<FieldNameByObjectType> GetFieldNamesByObjectType(string type, int id)
+        //{
+        //    return GetFieldNamesByObjectType((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id);
+        //}
 
         public IQueryable<FieldNameByObjectType> GetFieldNamesByObjectType(SystemObjects type, int id)
         {
@@ -847,10 +845,10 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
             return model;
         }
         
-        public List<Dictionary<string, object>> GetFusionsAsDictionary(bool enabledOnly = false)
-        {
-            return GetFusionsAsDictionary(null, enabledOnly);
-        }
+        //public List<Dictionary<string, object>> GetFusionsAsDictionary(bool enabledOnly = false)
+        //{
+        //    return GetFusionsAsDictionary(null, enabledOnly);
+        //}
 
         public List<Dictionary<string, object>> GetFusionsAsDictionary(int? id = null, bool enabledOnly = false)
         {
@@ -1127,11 +1125,11 @@ order by	ColumnIndex", new { id });
                 );
         }
 
-        public IQueryable<ObjectModel> GetRelatedObjectsByEventType(int id)
-        {
-            string query = string.Format("EXEC GetRelatedObjectsByEventTypeWrapper {0}", id);
-            return Database.SqlQuery<ObjectModel>(query).AsQueryable();
-        }
+        //public IQueryable<ObjectModel> GetRelatedObjectsByEventType(int id)
+        //{
+        //    string query = string.Format("EXEC GetRelatedObjectsByEventTypeWrapper {0}", id);
+        //    return Database.SqlQuery<ObjectModel>(query).AsQueryable();
+        //}
         
         public XElement GetRandomSurveyQuestionForUser(SystemObjects type, int id)
         {
@@ -1163,30 +1161,30 @@ order by	ColumnIndex", new { id });
                 );
         }
 
-        public List<Dictionary<string, object>> GetResourcesAsDictionaries(List<Resource> companyResources)
-        {
-            var sType = SystemObjects.Resource.ToString();
-            var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && i.IsListable).ToList();
+        //public List<Dictionary<string, object>> GetResourcesAsDictionaries(List<Resource> companyResources)
+        //{
+        //    var sType = SystemObjects.Resource.ToString();
+        //    var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && i.IsListable).ToList();
 
-            var list = new List<Dictionary<string, object>>();
+        //    var list = new List<Dictionary<string, object>>();
 
-            companyResources.ForEach(r => {
-                var model = new Dictionary<string, object>();
-                model.Add("ID", r.ID);
-                model.Add("Email", r.Email);
-                model.Add("FirstName", r.FirstName);
-                model.Add("LastName", r.LastName);
-                model.Add("Status", r.Status);
-                model.Add("DateLastLoggedIn", r.DateLastLoggedIn);
-                foreach (var n in fields.Where(f => f.ObjectID == r.ID).OrderBy(f => f.SortOrder))
-                {
-                    model.Add(n.Name, n.FormattedValue);
-                }
-                list.Add(model);
-            });
+        //    companyResources.ForEach(r => {
+        //        var model = new Dictionary<string, object>();
+        //        model.Add("ID", r.ID);
+        //        model.Add("Email", r.Email);
+        //        model.Add("FirstName", r.FirstName);
+        //        model.Add("LastName", r.LastName);
+        //        model.Add("Status", r.Status);
+        //        model.Add("DateLastLoggedIn", r.DateLastLoggedIn);
+        //        foreach (var n in fields.Where(f => f.ObjectID == r.ID).OrderBy(f => f.SortOrder))
+        //        {
+        //            model.Add(n.Name, n.FormattedValue);
+        //        }
+        //        list.Add(model);
+        //    });
 
-            return list;
-        }
+        //    return list;
+        //}
 
         public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id, bool showHidden = true)
         {
@@ -1238,39 +1236,39 @@ order by	ColumnIndex", new { id });
             }
         }
 
-        private IQueryable<ResponsibilitySummaryDetail> loadResponsibilitySummaryResourceData(List<ResponsibilitySummaryDetail> responsibilities)
-        {
-            var IDs = responsibilities.Where(i => i.ResponsibleObjectType == SystemObjects.Resource.ToString()).Select(i => i.ResponsibleObjectID).ToList();
-            var resources = Community.Filter<Resource>(i => IDs.Contains(i.ID)).ToList();
-            responsibilities.Where(i => i.ResponsibleObjectType == SystemObjects.Resource.ToString()).ToList().ForEach(f =>
-            {
-                var r = resources.SingleOrDefault(i => i.ID == f.ResponsibleObjectID);
-                if (r != null)
-                {
-                    f.ResponsibleObjectName = r.FormatDisplayName();
-                    f.ResponsibleObjectUrl = string.Format("#/resources/{0}", r.ID);
-                    f.ResponsibleObjectTypeName = "Resource";
-                }
-            });
+        //private IQueryable<ResponsibilitySummaryDetail> loadResponsibilitySummaryResourceData(List<ResponsibilitySummaryDetail> responsibilities)
+        //{
+        //    var IDs = responsibilities.Where(i => i.ResponsibleObjectType == SystemObjects.Resource.ToString()).Select(i => i.ResponsibleObjectID).ToList();
+        //    var resources = Community.Filter<Resource>(i => IDs.Contains(i.ID)).ToList();
+        //    responsibilities.Where(i => i.ResponsibleObjectType == SystemObjects.Resource.ToString()).ToList().ForEach(f =>
+        //    {
+        //        var r = resources.SingleOrDefault(i => i.ID == f.ResponsibleObjectID);
+        //        if (r != null)
+        //        {
+        //            f.ResponsibleObjectName = r.FormatDisplayName();
+        //            f.ResponsibleObjectUrl = string.Format("#/resources/{0}", r.ID);
+        //            f.ResponsibleObjectTypeName = "Resource";
+        //        }
+        //    });
 
-            return responsibilities.AsQueryable();
-        }
+        //    return responsibilities.AsQueryable();
+        //}
 
-        public IQueryable<int> GetTargetObjectIDsBySourceIDsAndType(SystemObjects sourceType, List<int> sourceIDs, SystemObjects targetType)
-        {
-            var sSourceType = sourceType.ToString();
-            var sTargetType = targetType.ToString();
+        //public IQueryable<int> GetTargetObjectIDsBySourceIDsAndType(SystemObjects sourceType, List<int> sourceIDs, SystemObjects targetType)
+        //{
+        //    var sSourceType = sourceType.ToString();
+        //    var sTargetType = targetType.ToString();
 
-            return (
-                    from i in Intersects
-                    from sn in i.Nodes
-                    from tn in i.Nodes
-                    where sn.ObjectType == sSourceType
-                    where sourceIDs.Contains(sn.ObjectID)
-                    where tn.ObjectType == sTargetType
-                    select tn.ObjectID
-                    ).AsQueryable();
-        }
+        //    return (
+        //            from i in Intersects
+        //            from sn in i.Nodes
+        //            from tn in i.Nodes
+        //            where sn.ObjectType == sSourceType
+        //            where sourceIDs.Contains(sn.ObjectID)
+        //            where tn.ObjectType == sTargetType
+        //            select tn.ObjectID
+        //            ).AsQueryable();
+        //}
 
         public List<StatisticDetail> GetStatisticDetailsByType(SystemObjects type, int id)
         {
@@ -1311,14 +1309,14 @@ order by	ColumnIndex", new { id });
             return Query<dynamic>(sql).ToList();
         }
 
-        public List<StatisticTypeCheckOption> GetAvailableObjectsToCheck()
-        {
+        //public List<StatisticTypeCheckOption> GetAvailableObjectsToCheck()
+        //{
 
-            var list = StatisticTypeCheckOptions.ToList();
-            list.Add(new StatisticTypeCheckOption { Name = "All", NamePrefix = "Artifact", ObjectID = 0, ObjectType = "ArtifactType" });
-            list.Add(new StatisticTypeCheckOption { Name = "All", NamePrefix = "Information Model", ObjectID = 0, ObjectType = "TaxonomyType" });
-            return list.OrderBy(i => i.NamePrefix).ThenBy(i => i.Name).ToList();
-        }
+        //    var list = StatisticTypeCheckOptions.ToList();
+        //    list.Add(new StatisticTypeCheckOption { Name = "All", NamePrefix = "Artifact", ObjectID = 0, ObjectType = "ArtifactType" });
+        //    list.Add(new StatisticTypeCheckOption { Name = "All", NamePrefix = "Information Model", ObjectID = 0, ObjectType = "TaxonomyType" });
+        //    return list.OrderBy(i => i.NamePrefix).ThenBy(i => i.Name).ToList();
+        //}
 
         public bool HasClaimInCurrentPermissionList(List<SecurityDetail> list, Claim claim, ClaimObject claimObject = ClaimObject.Root)
         {
@@ -1337,192 +1335,210 @@ order by	ColumnIndex", new { id });
             return Follows.Any(i => i.ResourceID == resourceID && i.ObjectType == sType && i.ObjectID == objectID);
         }
 
-        public NameValueCollection LoadLookupList(FieldType field)
-        {
-            var values = new NameValueCollection();
+        //public NameValueCollection LoadLookupList(FieldType field)
+        //{
+        //    var values = new NameValueCollection();
 
-            if (field.LookupObjectID > 0)
-            {
-                switch (field.LookupObjectType)
-                {
-                    case "Artifact":
-                        #region Parse
+        //    if (field.LookupObjectID > 0)
+        //    {
+        //        switch (field.LookupObjectType)
+        //        {
+        //            case "Artifact":
+        //                #region Parse
 
-                        var a = Artifacts.Where(t => t.ArtifactTypeID == field.LookupObjectID).ToList();
+        //                var a = Artifacts.Where(t => t.ArtifactTypeID == field.LookupObjectID).ToList();
 
-                        //var idTokens = field.Lookup.IDFormatString.ParseTokens();
-                        //var textTokens = field.Lookup.TextFormatString.ParseTokens();
+        //                //var idTokens = field.Lookup.IDFormatString.ParseTokens();
+        //                //var textTokens = field.Lookup.TextFormatString.ParseTokens();
 
-                        foreach (var value in a)
-                        {
-                            // Copy instance of the text and ID format strings and replace with values.
-                            string txt = value.Name; //field.Lookup.TextFormatString.ReplaceTokenWithValues(textTokens, element);
-                            string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
+        //                foreach (var value in a)
+        //                {
+        //                    // Copy instance of the text and ID format strings and replace with values.
+        //                    string txt = value.Name; //field.Lookup.TextFormatString.ReplaceTokenWithValues(textTokens, element);
+        //                    string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
 
-                            // Add the item to the list of displayed values.
-                            values.Add(txt, val);
-                        }
+        //                    // Add the item to the list of displayed values.
+        //                    values.Add(txt, val);
+        //                }
 
-                        #endregion
-                        break;
-                    case "Domain":
-                        #region Parse
+        //                #endregion
+        //                break;
+        //            case "Domain":
+        //                #region Parse
 
-                        var d = Domains.Where(t => t.DomainTypeID == field.LookupObjectID).ToList();
+        //                var d = Domains.Where(t => t.DomainTypeID == field.LookupObjectID).ToList();
 
-                        //var idTokens = field.Lookup.IDFormatString.ParseTokens();
-                        //var textTokens = field.Lookup.TextFormatString.ParseTokens();
+        //                //var idTokens = field.Lookup.IDFormatString.ParseTokens();
+        //                //var textTokens = field.Lookup.TextFormatString.ParseTokens();
 
-                        foreach (var value in d)
-                        {
-                            // Copy instance of the text and ID format strings and replace with values.
-                            string txt = value.Name; //field.Lookup.TextFormatString.ReplaceTokenWithValues(textTokens, element);
-                            string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
+        //                foreach (var value in d)
+        //                {
+        //                    // Copy instance of the text and ID format strings and replace with values.
+        //                    string txt = value.Name; //field.Lookup.TextFormatString.ReplaceTokenWithValues(textTokens, element);
+        //                    string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
 
-                            // Add the item to the list of displayed values.
-                            values.Add(txt, val);
-                        }
+        //                    // Add the item to the list of displayed values.
+        //                    values.Add(txt, val);
+        //                }
 
 
-                        #endregion
-                        break;
-                    case "Intersect":
-                        #region Parse
+        //                #endregion
+        //                break;
+        //            case "DomainItem":
+        //                #region Parse
 
-                        var i = Intersects.Where(t => t.IntersectTypeID == field.LookupObjectID).ToList();
+        //                var di = DomainItems.Where(t => t.DomainID == field.LookupObjectID).ToList();
+                        
+        //                foreach (var value in di)
+        //                {
+        //                    // Copy instance of the text and ID format strings and replace with values.
+        //                    string txt = string.Format("{0}:{1}", value.Code, value.Name);
+        //                    string val = value.ID.ToString();
 
-                        //var idTokens = field.Lookup.IDFormatString.ParseTokens();
-                        //var textTokens = field.Lookup.TextFormatString.ParseTokens();
+        //                    // Add the item to the list of displayed values.
+        //                    values.Add(txt, val);
+        //                }
 
-                        foreach (var value in i)
-                        {
-                            // Copy instance of the text and ID format strings and replace with values.
-                            string txt = value.Name; //field.Lookup.TextFormatString.ReplaceTokenWithValues(textTokens, element);
-                            string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
 
-                            // Add the item to the list of displayed values.
-                            values.Add(txt, val);
-                        }
+        //                #endregion
+        //                break;
+        //            case "Intersect":
+        //                #region Parse
 
-                        #endregion
-                        break;
-                    default:    //default = Standard
-                        #region Parse
+        //                var i = Intersects.Where(t => t.IntersectTypeID == field.LookupObjectID).ToList();
 
-                        var l = Lookups.Where(t => t.LookupTypeID == field.LookupObjectID).ToList();
-                        var lIDs = l.Select(t => t.ID).ToList();
-                        var sType = SystemObjects.Lookup.ToString();
-                        var lFields = Fields.Include(t => t.FieldType).Where(t => t.ObjectType == sType && lIDs.Contains(t.ObjectID)).ToList();
-                        var textTokens = field.LookupDisplayFormat.ParseTokens();
+        //                //var idTokens = field.Lookup.IDFormatString.ParseTokens();
+        //                //var textTokens = field.Lookup.TextFormatString.ParseTokens();
 
-                        foreach (var value in l)
-                        {
-                            var fields = lFields.Where(t => t.ObjectID == value.ID).ToList();
-                            // Copy instance of the text and ID format strings and replace with values.
-                            string txt = field.LookupDisplayFormat.ReplaceTokenWithValues(textTokens, fields);
-                            string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
+        //                foreach (var value in i)
+        //                {
+        //                    // Copy instance of the text and ID format strings and replace with values.
+        //                    string txt = value.Name; //field.Lookup.TextFormatString.ReplaceTokenWithValues(textTokens, element);
+        //                    string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
 
-                            // Immediately replace the ID in the value format string, if present.
-                            val = val.Replace("{ID}", value.ID.ToString());
+        //                    // Add the item to the list of displayed values.
+        //                    values.Add(txt, val);
+        //                }
 
-                            // Add the item to the list of displayed values.
-                            values.Add(txt, val);
-                        }
+        //                #endregion
+        //                break;
+        //            default:    //default = Standard
+        //                #region Parse
 
-                        #endregion
-                        break;
-                }
-            }
+        //                var l = Lookups.Where(t => t.LookupTypeID == field.LookupObjectID).ToList();
+        //                var lIDs = l.Select(t => t.ID).ToList();
+        //                var sType = SystemObjects.Lookup.ToString();
+        //                var lFields = Fields.Include(t => t.FieldType).Where(t => t.ObjectType == sType && lIDs.Contains(t.ObjectID)).ToList();
+        //                var textTokens = field.LookupDisplayFormat.ParseTokens();
 
-            return values;
-        }
+        //                foreach (var value in l)
+        //                {
+        //                    var fields = lFields.Where(t => t.ObjectID == value.ID).ToList();
+        //                    // Copy instance of the text and ID format strings and replace with values.
+        //                    string txt = field.LookupDisplayFormat.ReplaceTokenWithValues(textTokens, fields);
+        //                    string val = value.ID.ToString();// field.Lookup.IDFormatString.ReplaceTokenWithValues(idTokens, element);
 
-        public void MergeCommonFieldTypesToMaster(int fieldTypeID)
-        {
-            string query = string.Format("MergeCommonFieldTypesToMaster {0}", fieldTypeID);
-            Database.ExecuteSqlCommand(query);
-        }
+        //                    // Immediately replace the ID in the value format string, if present.
+        //                    val = val.Replace("{ID}", value.ID.ToString());
+
+        //                    // Add the item to the list of displayed values.
+        //                    values.Add(txt, val);
+        //                }
+
+        //                #endregion
+        //                break;
+        //        }
+        //    }
+
+        //    return values;
+        //}
+
+        //public void MergeCommonFieldTypesToMaster(int fieldTypeID)
+        //{
+        //    string query = string.Format("MergeCommonFieldTypesToMaster {0}", fieldTypeID);
+        //    Database.ExecuteSqlCommand(query);
+        //}
 
         public IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90)
         {
             return Database.Connection.Query<T>(sql, param, null, true, timeout);
         }
 
-        public NameValueCollection Render(ICollection<Field> fields, List<Lookup> list = null, List<Field> lookupFields = null)
-        {
-            var values = new NameValueCollection();
+        //public NameValueCollection Render(ICollection<Field> fields, List<Lookup> list = null, List<Field> lookupFields = null)
+        //{
+        //    var values = new NameValueCollection();
 
-            foreach (var field in fields)
-            {
-                string key = field.FieldType.FriendlyName;
-                string value = "";
+        //    foreach (var field in fields)
+        //    {
+        //        string key = field.FieldType.FriendlyName;
+        //        string value = "";
 
-                if (field.FieldType.LookupObjectID > 0)
-                {
-                    int id;
-                    if (int.TryParse(field.Value, out id))
-                    {
-                        switch (field.FieldType.LookupObjectType)
-                        {
-                            case "Artifact":
-                                var ar = Artifacts.Include(i => i.ArtifactType).SingleOrDefault(i => i.ID == id);
-                                if (ar != null)
-                                {
-                                    value = string.Format("<a data-type='Artifact' data-action='Preview' data-id='{0}' href='/artifacts/item/{0}'>{1}</a>", ar.ID, ar.Name);
-                                }
-                                break;
-                            case "Domain":
-                                var dl = Domains.Include(i => i.DomainType).SingleOrDefault(i => i.ID == id);
-                                if (dl != null)
-                                {
-                                    value = string.Format("<a data-type='Domain' data-action='Preview' data-id='{1}' href='/domains/{0}#{1}'>{2}</a>", dl.DomainTypeID, dl.ID, dl.Name);
-                                }
-                                break;
-                            default:
-                                var lv = (list != null) ?
-                                                        list.SingleOrDefault(i => i.ID == id) :
-                                                        Lookups.SingleOrDefault(i => i.ID == id);
-                                if (lv != null)
-                                {
-                                    var theseLookupFields = (lookupFields == null) ?
-                                        Fields.Where(i => i.ObjectType == SystemObjects.Lookup.ToString() && i.ObjectID == id).ToList() :              //load from database if missing from parameters
-                                        lookupFields.Where(i => i.ObjectType == SystemObjects.Lookup.ToString() && i.ObjectID == id).ToList();
+        //        if (field.FieldType.LookupObjectID > 0)
+        //        {
+        //            int id;
+        //            if (int.TryParse(field.Value, out id))
+        //            {
+        //                switch (field.FieldType.LookupObjectType)
+        //                {
+        //                    case "Artifact":
+        //                        var ar = Artifacts.Include(i => i.ArtifactType).SingleOrDefault(i => i.ID == id);
+        //                        if (ar != null)
+        //                        {
+        //                            value = string.Format("<a data-type='Artifact' data-action='Preview' data-id='{0}' href='/artifacts/item/{0}'>{1}</a>", ar.ID, ar.Name);
+        //                        }
+        //                        break;
+        //                    case "Domain":
+        //                        var dl = Domains.Include(i => i.DomainType).SingleOrDefault(i => i.ID == id);
+        //                        if (dl != null)
+        //                        {
+        //                            value = string.Format("<a data-type='Domain' data-action='Preview' data-id='{1}' href='/domains/{0}#{1}'>{2}</a>", dl.DomainTypeID, dl.ID, dl.Name);
+        //                        }
+        //                        break;
+        //                    default:
+        //                        var lv = (list != null) ?
+        //                                                list.SingleOrDefault(i => i.ID == id) :
+        //                                                Lookups.SingleOrDefault(i => i.ID == id);
+        //                        if (lv != null)
+        //                        {
+        //                            var theseLookupFields = (lookupFields == null) ?
+        //                                Fields.Where(i => i.ObjectType == SystemObjects.Lookup.ToString() && i.ObjectID == id).ToList() :              //load from database if missing from parameters
+        //                                lookupFields.Where(i => i.ObjectType == SystemObjects.Lookup.ToString() && i.ObjectID == id).ToList();
 
-                                    value = field.FieldType.LookupDisplayFormat.ReplaceTokenWithValues(theseLookupFields);
-                                }
-                                break;
-                        }
-                    }
-                }
-                else
-                {
-                    value = "";
+        //                            value = field.FieldType.LookupDisplayFormat.ReplaceTokenWithValues(theseLookupFields);
+        //                        }
+        //                        break;
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            value = "";
 
-                    switch (field.FieldType.Type)
-                    {
-                        case "Boolean":
-                            bool bVal = false;
-                            value = bool.TryParse(field.Value, out bVal) ? (bVal ? "Yes" : "No") : "No";
-                            break;
-                        case "Date":
-                            DateTime d;
-                            value = DateTime.TryParse(field.Value, out d) ? d.ToShortDateString() : "No date specified.";
-                            break;
-                        case "DateTime":
-                            DateTime dt;
-                            value = DateTime.TryParse(field.Value, out dt) ? dt.ToString() : "No date specified.";
-                            break;
-                        default:
-                            value = field.Value;
-                            break;
-                    }
-                }
+        //            switch (field.FieldType.Type)
+        //            {
+        //                case "Boolean":
+        //                    bool bVal = false;
+        //                    value = bool.TryParse(field.Value, out bVal) ? (bVal ? "Yes" : "No") : "No";
+        //                    break;
+        //                case "Date":
+        //                    DateTime d;
+        //                    value = DateTime.TryParse(field.Value, out d) ? d.ToShortDateString() : "No date specified.";
+        //                    break;
+        //                case "DateTime":
+        //                    DateTime dt;
+        //                    value = DateTime.TryParse(field.Value, out dt) ? dt.ToString() : "No date specified.";
+        //                    break;
+        //                default:
+        //                    value = field.Value;
+        //                    break;
+        //            }
+        //        }
 
-                values.Add(key, value);
-            }
+        //        values.Add(key, value);
+        //    }
 
-            return values;
-        }
+        //    return values;
+        //}
 
         public bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID)
         {
@@ -1603,51 +1619,6 @@ order by	Date desc",
                 new { t = type.ToString(), i = id }
             ).AsQueryable();
         }
-
-        //public IQueryable<EventHeader> GetEventsByAssignedResource(int id)
-        //{
-        //    return Database.Connection.Query<EventHeader>(string.Format("GetEventsByAssignedResource 'R', {0}", id)).AsQueryable();
-        //}
-
-        //public List<Dictionary<string, object>> GetEventsByGroupAsDictionary(int id)
-        //{
-        //    var items = new List<Dictionary<string, object>>();
-
-        //    var events = Events.Where(i => i.EventGroupID == id).Select(e => new { e.ID, e.Date, e.SourceID, e.Status }).ToList();
-        //    var eventIDs = events.Select(i => i.ID).ToList();
-        //    var sType = SystemObjects.Event.ToString();
-        //    var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && eventIDs.Contains(i.ObjectID)).ToList();
-
-        //    events.ForEach(e =>
-        //    {
-        //        var item = new Dictionary<string, object>();
-
-        //        item.Add("ID", e.ID);
-        //        item.Add("SourceID", e.SourceID);
-        //        item.Add("Status", e.Status);
-        //        item.Add("Date", e.Date);
-        //        foreach (var field in fields.Where(i => i.ObjectID == e.ID).OrderBy(i => i.SortOrder))
-        //        {
-        //            item.Add(field.Name, field.FormattedValue);
-        //        }
-        //        items.Add(item);
-        //    });
-
-        //    return items;
-        //}
-
-        //public IQueryable<EventByModel> GetEventsByObject(SystemObjects type, int id)
-        //{
-        //    return Database.Connection.Query<EventByModel>(string.Format("GetEventsByObject '{0}', {1}", type.ToString(), id)).AsQueryable();
-        //}
-
-        //public IQueryable<StatusCount> GetEventStatisticsByObject(SystemObjects type, int id)
-        //{
-        //    return Database.Connection.Query<StatusCount>(
-        //        "select Status, [Count] from overlay.EventStatistic where ObjectType = @t and ObjectID = @i", 
-        //        new { t = type.ToString(), i = id}
-        //    ).AsQueryable();
-        //}
 
         #endregion
 
@@ -1742,7 +1713,17 @@ from	(
 				'Reference : ' + Name as Name
 		FROM	DomainType
 		UNION
-		SELECT	'Taxonomy' as LookupObjectType,
+		SELECT	'DomainItem' as LookupObjectType,
+				O.ID as LookupObjectID,
+				'Reference Items : ' + T.Name + ' : ' + O.Name as Name
+		FROM	Domain O
+                inner join DomainType T on T.ID = O.DomainTypeID
+        UNION
+		SELECT	'Resource' as LookupObjectType,
+				1 as LookupObjectID,
+				'Resource : User' as Name
+		UNION
+        SELECT	'Taxonomy' as LookupObjectType,
 				ID as LookupObjectID,
 				'Information Model : ' + Name as Name
 		FROM	TaxonomyType
@@ -1757,73 +1738,73 @@ order by Name");
 
         #region Bulk Load
 
-        public IEnumerable<FieldTypeLookupValue> GetLoadTypeFieldLookupOptions()
-        {
-            return Query<FieldTypeLookupValue>(
-@"
-select	*
-from	(
-		SELECT	'ArtifactType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Artifact : ' + Name as Name
-		FROM	ArtifactType
-		UNION
-		SELECT	'DomainType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Reference : ' + Name as Name
-		FROM	DomainType
-		UNION
-		SELECT	'FusionAttributeType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Fusion : ' + TextPath as Name
-		FROM	FusionAttributeType
-		UNION
-		SELECT	'LookupType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Lookup : ' + Name as Name
-		FROM	LookupType
-        UNION
-		SELECT	'TaxonomyType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Model : ' + Name as Name
-		FROM	TaxonomyType
-        UNION
-		SELECT	'OwningModel' as LookupObjectType,
-				0 as LookupObjectID,
-				'Subject Area' as Name
-        UNION
-		SELECT	'IntersectType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Relationship : ' + Name as Name
-		FROM	IntersectType
-) O
-order by Name");
-        }
+//        public IEnumerable<FieldTypeLookupValue> GetLoadTypeFieldLookupOptions()
+//        {
+//            return Query<FieldTypeLookupValue>(
+//@"
+//select	*
+//from	(
+//		SELECT	'ArtifactType' as LookupObjectType,
+//				ID as LookupObjectID,
+//				'Artifact : ' + Name as Name
+//		FROM	ArtifactType
+//		UNION
+//		SELECT	'DomainType' as LookupObjectType,
+//				ID as LookupObjectID,
+//				'Reference : ' + Name as Name
+//		FROM	DomainType
+//		UNION
+//		SELECT	'FusionAttributeType' as LookupObjectType,
+//				ID as LookupObjectID,
+//				'Fusion : ' + TextPath as Name
+//		FROM	FusionAttributeType
+//		UNION
+//		SELECT	'LookupType' as LookupObjectType,
+//				ID as LookupObjectID,
+//				'Lookup : ' + Name as Name
+//		FROM	LookupType
+//        UNION
+//		SELECT	'TaxonomyType' as LookupObjectType,
+//				ID as LookupObjectID,
+//				'Model : ' + Name as Name
+//		FROM	TaxonomyType
+//        UNION
+//		SELECT	'OwningModel' as LookupObjectType,
+//				0 as LookupObjectID,
+//				'Subject Area' as Name
+//        UNION
+//		SELECT	'IntersectType' as LookupObjectType,
+//				ID as LookupObjectID,
+//				'Relationship : ' + Name as Name
+//		FROM	IntersectType
+//) O
+//order by Name");
+//        }
 
-        public IEnumerable<FieldTypeLookupValue> GetLoadTypeRulePromotionOptions()
-        {
-            return Query<FieldTypeLookupValue>(
-@"
-select	*
-from	(
-		SELECT	'ArtifactType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Artifact : ' + Name as Name
-		FROM	ArtifactType
-        UNION
-		SELECT	'AttributeType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Attribute : ' + Name as Name
-		FROM	AttributeType
-        WHERE   ParentID is null
-		UNION
-		SELECT	'TaxonomyType' as LookupObjectType,
-				ID as LookupObjectID,
-				'Information Model : ' + Name as Name
-		FROM	TaxonomyType
-		) O
-order by Name");
-        }
+//        public IEnumerable<FieldTypeLookupValue> GetLoadTypeRulePromotionOptions()
+//        {
+//            return Query<FieldTypeLookupValue>(
+//@"
+//select	*
+//from	(
+//		SELECT	'ArtifactType' as LookupObjectType,
+//				ID as LookupObjectID,
+//				'Artifact : ' + Name as Name
+//		FROM	ArtifactType
+//        UNION
+//		SELECT	'AttributeType' as LookupObjectType,
+//				ID as LookupObjectID,
+//				'Attribute : ' + Name as Name
+//		FROM	AttributeType
+//        WHERE   ParentID is null
+//		UNION
+//		SELECT	'TaxonomyType' as LookupObjectType,
+//				ID as LookupObjectID,
+//				'Information Model : ' + Name as Name
+//		FROM	TaxonomyType
+//		) O
+//order by Name");
+//        }
 
         #endregion
 
@@ -1835,17 +1816,17 @@ order by Name");
             return SecurityDetails.Where(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
         }
 
-        public IQueryable<SecurityDetail> GetPermissionsByType(SystemObjects type)
-        {
-            var sType = type.ToString();
-            return (
-                   from s in SecurityDetails
-                   where s.ObjectType == sType
-                   where s.ResponsibleObjectID == CurrentResourceID
-                   where s.ClaimObject == ClaimObject.Root
-                   select s
-                   ).AsQueryable();
-        }
+        //public IQueryable<SecurityDetail> GetPermissionsByType(SystemObjects type)
+        //{
+        //    var sType = type.ToString();
+        //    return (
+        //           from s in SecurityDetails
+        //           where s.ObjectType == sType
+        //           where s.ResponsibleObjectID == CurrentResourceID
+        //           where s.ClaimObject == ClaimObject.Root
+        //           select s
+        //           ).AsQueryable();
+        //}
         public bool HasPermission(SystemObjects type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
         {
             bool hasPermission = CurrentResourceIsAdmin;
@@ -1875,51 +1856,51 @@ order by Name");
             }
         }
 
-        public void CalculateStatistics(string objectType, int objectID)
-        {
-            ExecuteNonQueryCommand("utility.CalculateStatistics @ObjectType, @ObjectID", 
-                new List<SqlParameter> {
-                new SqlParameter("ObjectType", objectType),
-                new SqlParameter("ObjectID", objectID)
-                }
-           );
-        }
+        //public void CalculateStatistics(string objectType, int objectID)
+        //{
+        //    ExecuteNonQueryCommand("utility.CalculateStatistics @ObjectType, @ObjectID", 
+        //        new List<SqlParameter> {
+        //        new SqlParameter("ObjectType", objectType),
+        //        new SqlParameter("ObjectID", objectID)
+        //        }
+        //   );
+        //}
 
-        public void IncrementFieldVersion(string objectType, int objectID, int fieldTypeID, string value)
-        {
-            ExecuteNonQueryCommand(
-                "utility.IncrementFieldVersionAction @ObjectType, @ObjectID, @FieldTypeID, @Value",
-                new List<SqlParameter> {
-                    new SqlParameter("ObjectType", objectType),
-                    new SqlParameter("ObjectID", objectID),
-                    new SqlParameter("FieldTypeID", fieldTypeID),
-                    new SqlParameter("Value", value)
-                }
-            );
-        }
+        //public void IncrementFieldVersion(string objectType, int objectID, int fieldTypeID, string value)
+        //{
+        //    ExecuteNonQueryCommand(
+        //        "utility.IncrementFieldVersionAction @ObjectType, @ObjectID, @FieldTypeID, @Value",
+        //        new List<SqlParameter> {
+        //            new SqlParameter("ObjectType", objectType),
+        //            new SqlParameter("ObjectID", objectID),
+        //            new SqlParameter("FieldTypeID", fieldTypeID),
+        //            new SqlParameter("Value", value)
+        //        }
+        //    );
+        //}
 
-        public void ProcessFusionInQueue(Guid queueID)
-        {
-            ExecuteNonQueryCommand("EXEC fusion.ProcessFusionInQueue @queueID", new List<SqlParameter>{
-                new SqlParameter("queueID", SqlDbType.UniqueIdentifier) { Value = queueID }
-            });
-        }
+        //public void ProcessFusionInQueue(Guid queueID)
+        //{
+        //    ExecuteNonQueryCommand("EXEC fusion.ProcessFusionInQueue @queueID", new List<SqlParameter>{
+        //        new SqlParameter("queueID", SqlDbType.UniqueIdentifier) { Value = queueID }
+        //    });
+        //}
 
-        public void ProcessFusionInQueue(int fusionTypeID, int fusionID, BulkFusionImport import)
-        {
-            import.Models.ForEach(o =>
-            {
-                foreach (var k in o.Keys)
-                {
-                    var value = (o[k] == null) ? "" : o[k];
-                }
-            });
+        //public void ProcessFusionInQueue(int fusionTypeID, int fusionID, BulkFusionImport import)
+        //{
+        //    import.Models.ForEach(o =>
+        //    {
+        //        foreach (var k in o.Keys)
+        //        {
+        //            var value = (o[k] == null) ? "" : o[k];
+        //        }
+        //    });
 
-            import.Relationships.ForEach(o =>
-            {
-                //rXml.Add(new XElement("r", new XAttribute("s", o.StartID), new XAttribute("e", o.EndID)));
-            });
-        }
+        //    import.Relationships.ForEach(o =>
+        //    {
+        //        //rXml.Add(new XElement("r", new XAttribute("s", o.StartID), new XAttribute("e", o.EndID)));
+        //    });
+        //}
 
         //public void UpdateEventTypesByObject()
         //{
@@ -2258,29 +2239,29 @@ exec sp_executesql @commandText", new { id = reportTileID, t = type.ToString(), 
             public string ErrorMessage { get; set; }
         }
 
-        public SqlStatementValidityTest IsValidSqlStatement(string statement)
-        {
-            var model = new SqlStatementValidityTest();
+        //public SqlStatementValidityTest IsValidSqlStatement(string statement)
+        //{
+        //    var model = new SqlStatementValidityTest();
 
-            var dbv = TDbVendor.DbVMssql;
-            var parser = new TGSqlParser(dbv);
-            parser.SqlText.Text = statement;
-            var result = parser.Parse();
+        //    var dbv = TDbVendor.DbVMssql;
+        //    var parser = new TGSqlParser(dbv);
+        //    parser.SqlText.Text = statement;
+        //    var result = parser.Parse();
 
-            if (result == 0)
-            {
-                model.IsValid = true;
-            }
-            else
-            { 
-                foreach(var error in parser.SyntaxErrors)
-                {
-                    model.Results.Add(new SqlStatementValidityTestResult { ErrorMessage = error.Hint, ErrorToken = error.Token, XPosition = error.XPosition, YPosition = error.YPosition });
-                }
-            }
+        //    if (result == 0)
+        //    {
+        //        model.IsValid = true;
+        //    }
+        //    else
+        //    { 
+        //        foreach(var error in parser.SyntaxErrors)
+        //        {
+        //            model.Results.Add(new SqlStatementValidityTestResult { ErrorMessage = error.Hint, ErrorToken = error.Token, XPosition = error.XPosition, YPosition = error.YPosition });
+        //        }
+        //    }
 
-            return model;
-        }
+        //    return model;
+        //}
 
         public bool IsValidReportingQuery(string statement)
         {
@@ -2368,10 +2349,10 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
 
         #region Scheduled Job Methods
 
-        public void CalculateStatistics()
-        {
-            ExecuteNonQueryCommand("EXEC utility.CalculateStatistics @CompanyID", new List<SqlParameter>());
-        }
+        //public void CalculateStatistics()
+        //{
+        //    ExecuteNonQueryCommand("EXEC utility.CalculateStatistics @CompanyID", new List<SqlParameter>());
+        //}
 
         #endregion
 
@@ -2505,14 +2486,14 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                 }).AsQueryable();
         }
 
-        public IQueryable<CommentCategory> GetCategoriesForComments()
-        {
-            return
-            Database.SqlQuery<CommentCategory>(
-                                                    "GetCommentCategoriesByFollower @FollowingResourceID",
-                                                    new SqlParameter("FollowingResourceID", CurrentResourceID)
-                                                   ).AsQueryable();
-        }
+        //public IQueryable<CommentCategory> GetCategoriesForComments()
+        //{
+        //    return
+        //    Database.SqlQuery<CommentCategory>(
+        //                                            "GetCommentCategoriesByFollower @FollowingResourceID",
+        //                                            new SqlParameter("FollowingResourceID", CurrentResourceID)
+        //                                           ).AsQueryable();
+        //}
 
         /// <summary>
         /// Get a list of those following the current object.
@@ -2526,10 +2507,10 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
         /// <summary>
         /// Get a list of those followed by the current object.  Right now, just resources can follow.
         /// </summary>
-        public IQueryable<FollowDetail> GetFollowingByObject(SystemObjects type, int id)
-        {
-            return FollowDetails.Where(i => i.ResourceID == id);
-        }
+        //public IQueryable<FollowDetail> GetFollowingByObject(SystemObjects type, int id)
+        //{
+        //    return FollowDetails.Where(i => i.ResourceID == id);
+        //}
 
         public IQueryable<MostActiveUserReportModel> GetMostActiveUsersReport()
         {
@@ -2760,6 +2741,22 @@ order by Name", new { workflowType, type, id });
             }
         }
 
+        /// <summary>
+        /// Removes the item from the system, as well as any dynamic fields associated with this item, if any.
+        /// </summary>
+        public bool Delete(string type, int id)
+        {
+            try
+            {
+                Database.Connection.Execute("DeleteObject @Obj, @ObjectID, @ResourceID", new { Obj = type, ObjectID = id, ResourceID = CurrentResourceID });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<IntersectTypeNode>().HasRequired(t => t.IntersectType).WithMany(t => t.Nodes).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
@@ -2830,17 +2827,7 @@ order by Name", new { workflowType, type, id });
                             if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            var any = (
-                                        from f in Fields
-                                        join t in FieldTypes on f.FieldTypeID equals t.ID
-                                        where t.LookupObjectType == "Artifact"
-                                        where t.LookupObjectID == o.ArtifactTypeID
-                                        where f.Value == id
-                                        select f
-                                      ).Any();
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_List_FieldReferences);
-                            any = Attributes.Any(i => i.ObjectType == "Artifact" && i.ObjectID == o.ID);
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_AttributesReferences);
+                            var any = false;
                             any = IntersectNodes.Any(i => i.ObjectType == "Artifact" && i.ObjectID == o.ID);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
                             break;
@@ -3482,107 +3469,6 @@ order by Name", new { workflowType, type, id });
         protected override DbEntityValidationResult ValidateEntity(DbEntityEntry entityEntry, IDictionary<object, object> items)
         {
             return base.ValidateEntity(entityEntry, items);
-        }
-
-        #endregion
-
-        #region For Deriving company and resource records based on incoming raw values
-
-        internal override Company GetCompany()
-        {
-            Company c = null;
-
-            switch (Context.CompanyIDType)
-            {
-                case CompanyIdentifierType.ID:
-                    int iID;
-                    if (int.TryParse(Context.RawCompanyID, out iID))
-                    {
-                        c = Community.GetById<Company>(iID, i => i.DatabaseServer);
-                    }
-                    break;
-                //case CompanyIdentifierType.PublicID:
-                //    Guid gID;
-                //    if (Guid.TryParse(Context.RawCompanyID, out gID))
-                //    {
-                //        c = Community.Filter<Company>(i => i.PublicID == gID, i => i.DatabaseServer).SingleOrDefault();
-                //    }
-                //    break;
-                case CompanyIdentifierType.Uri:
-                    c = Community.Companies.Include(i => i.DatabaseServer).Where(i => i.CompanyDomainSettings.Any(d => d.UrlPrefix == Context.RawCompanyID)).SingleOrDefault();
-                    break;
-            }
-
-            return c;
-        }
-
-        internal override Resource GetResource()
-        {
-            Resource r = null;
-
-            switch (Context.UserIDType)
-            {
-                case UserIdentifierType.ApiKey:
-                    r = Community.Filter<Resource>(i => i.APIPublicKey == Context.RawUserID).SingleOrDefault();
-                    break;
-                case UserIdentifierType.Email:
-                    r = Community.Filter<Resource>(i => i.Email == Context.RawUserID).SingleOrDefault();
-                    break;
-                case UserIdentifierType.ID:
-                    r = Community.GetById<Resource>(int.Parse(Context.RawUserID));
-                    break;
-                case UserIdentifierType.Username:
-                    r = Community.Filter<Resource>(i => i.Username == Context.RawUserID).SingleOrDefault();
-                    break;
-            }
-
-            return r;
-        }
-
-        internal override bool GetResourceAdminFlag()
-        {
-            bool isAdmin;
-            int companyID = GetCompanyID();
-            int resourceID = GetResourceID();
-            string cacheKey = "";
-
-            switch (Context.UserIDType)
-            {
-                case UserIdentifierType.ApiKey:
-                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_APIKEY, companyID);
-                    break;
-                case UserIdentifierType.Email:
-                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_EMAIL, companyID);
-                    break;
-                case UserIdentifierType.ID:
-                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_ID, companyID);
-                    break;
-                case UserIdentifierType.Username:
-                    cacheKey = string.Format(CACHE_KEY_RESOURCE_ADMIN_USERNAME, companyID);
-                    break;
-            }
-
-            if (Caching.ListItemExists<bool, string>(cacheKey, Context.RawUserID))
-            {
-                isAdmin = Caching.GetItemInListByID<bool, string>(cacheKey, Context.RawUserID);
-            }
-            else
-            {
-                var r = Community.Filter<CompanyResource>(i => i.CompanyID == companyID && i.ResourceID == resourceID).SingleOrDefault();
-                if (r != null)
-                {
-                    isAdmin = r.IsAdministrator;
-                    r = null;
-
-                    Caching.SetItemInListByID<bool, string>(cacheKey, Context.RawUserID, isAdmin);
-                }
-                else
-                {
-                    isAdmin = false;
-                }
-            }
-
-            return isAdmin;
         }
 
         #endregion

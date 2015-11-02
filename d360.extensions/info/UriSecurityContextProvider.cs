@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 using d360.core;
-using d360.core.entities;
 
 
 namespace d360.extensions.info
@@ -14,12 +8,34 @@ namespace d360.extensions.info
     {
         public UriSecurityContextProvider()
         {
-            UserIDType = UserIdentifierType.Username;
+            //UserIDType = UserIdentifierType.ID;
         }
 
-        public string RawCompanyID { get; set; }
-        public CompanyIdentifierType CompanyIDType { get { return CompanyIdentifierType.Uri; } }
-        public string RawUserID { get; set; }
-        public UserIdentifierType UserIDType { get; set; }
+        //public string RawCompanyID { get; set; }
+        //public CompanyIdentifierType CompanyIDType { get { return CompanyIdentifierType.ID; } }
+        //public string RawUserID { get; set; }
+        //public UserIdentifierType UserIDType { get; set; }
+
+        public int CompanyID
+        {
+            get; set;
+        }
+
+        public int ResourceID
+        {
+            get; set;
+        }
+
+        public bool IsAdministrator
+        {
+            get; set;
+        }
+
+        public string CompanyPrefix
+        {
+            get;
+
+            set;
+        }
     }
 }

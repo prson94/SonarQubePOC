@@ -202,7 +202,14 @@
                         id: 'ID'
                     };
 
-                    var TreeGridAdapter = new $.jqx.dataAdapter(TreeGridSource);
+                    var TreeGridAdapter = new $.jqx.dataAdapter(TreeGridSource, {
+                        beforeLoadComplete: function (records) {
+                            $.each(records, function () {
+                                this.expanded = "true";
+                            });
+                            return records;
+                        }
+                    });
 
                     $("#Tree").jqxTreeGrid(
                     {

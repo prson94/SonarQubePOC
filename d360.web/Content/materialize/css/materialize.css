@@ -4810,7 +4810,7 @@ span.badge {
 .row {
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: 20px; }
+  /*margin-bottom: 20px;*/ }
   .row:after {
     content: "";
     display: table;
