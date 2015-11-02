@@ -779,10 +779,10 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
                 .ToList();
         }
 
-        //public List<CommentDetail> GetCommentDetailsByID(int id)
-        //{
-        //    return Database.Connection.Query<CommentDetail>("EXEC GetCommentDetailByID", new { id = id }).ToList();
-        //}
+        public List<CommentDetail> GetCommentDetailsByID(int id)
+        {
+            return Database.Connection.Query<CommentDetail>("EXEC GetCommentDetailByID @id", new { id }).ToList();
+        }
 
         //public IQueryable<FieldNameByObjectType> GetFieldNamesByObjectType(string type, int id)
         //{
@@ -1388,7 +1388,7 @@ order by	ColumnIndex", new { id });
         //                #region Parse
 
         //                var di = DomainItems.Where(t => t.DomainID == field.LookupObjectID).ToList();
-                        
+
         //                foreach (var value in di)
         //                {
         //                    // Copy instance of the text and ID format strings and replace with values.
@@ -1723,7 +1723,7 @@ from	(
 				1 as LookupObjectID,
 				'Resource : User' as Name
 		UNION
-        SELECT	'Taxonomy' as LookupObjectType,
+		SELECT	'Taxonomy' as LookupObjectType,
 				ID as LookupObjectID,
 				'Information Model : ' + Name as Name
 		FROM	TaxonomyType
@@ -2358,6 +2358,31 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
 
         #region Social
 
+        public IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations)
+        {
+            //comment.DateCreated = DateTime.UtcNow;
+            //comment.CreatingResourceID = CurrentResourceID;
+            var now = DateTime.UtcNow;
+            //SaveOrUpdate<Comment>(comment);
+
+            foreach (var r in relations)
+            {
+                try
+                {
+                    r.Date = now;
+                    if (r.CommentID == 0) r.CommentID = comment.ID; //If comment ID is not 0, then a parent comment ID has already been assigned.
+                    CommentRelations.Add(r);
+                    SaveChanges();
+                }
+                catch
+                {
+                    CommentRelations.Remove(r);
+                }
+            }
+
+            return GetCommentDetailsByID(comment.ID).AsQueryable();
+        }
+
         public IQueryable<CommentDetail> AddComment(Comment comment, ICollection<CommentRelation> relations)
         {
 
@@ -2441,13 +2466,33 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
 
         }
 
-        public IQueryable<CommentCount> GetCommentCountByFollower(int id)
+        public IQueryable<CommentCount> GetCommentCountByFollower(int resourceID, int daysToGet = 0, string searchPhrase = "")
         {
-            return Query<CommentCount>("GetCommentCountByFollower @id", new { id }).AsQueryable();
+            DateTime dateStart;
+            DateTime dateEnd = DateTime.UtcNow;
+            if (daysToGet == 0)
+            {
+                dateStart = new DateTime(2000, 1, 1);
+            }
+            else
+            {
+                dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
+            }
+            return Query<CommentCount>("GetCommentCountByFollower @resourceID, @dateStart, @dateEnd, @searchPhrase", new { resourceID, dateStart, dateEnd, searchPhrase}).AsQueryable();
         }
-        public IQueryable<CommentCount> GetCommentCountByType(SystemObjects type,int id)
+        public IQueryable<CommentCount> GetCommentCountByType(SystemObjects type,int id, int daysToGet = 0, string searchPhrase = "")
         {
-            return Query<CommentCount>("GetCommentCountByType @type, @id", new { type = type.ToString(), id }).AsQueryable();
+            DateTime dateStart;
+            DateTime dateEnd = DateTime.UtcNow;
+            if (daysToGet == 0)
+        {
+                dateStart = new DateTime(2000, 1, 1);
+        }
+            else
+        {
+                dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
+            }
+            return Query<CommentCount>("GetCommentCountByType @type, @id, @dateStart, @dateEnd, @searchPhrase", new { type = type.ToString(), id, dateStart, dateEnd, searchPhrase }).AsQueryable();
         }
 
         public IQueryable<CommentVote> VoteComment(int CommentID, int ResourceID, int Vote)

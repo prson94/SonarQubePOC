@@ -2336,6 +2336,12 @@ from	    ResponsibilityTypeHierarchy H
 
             [DataMember]
             public string ObjectTypeName { get; set; }
+
+            [DataMember]
+            public string IconForeColor { get; set; }
+
+            [DataMember]
+            public string IconBackColor { get; set; }
         }
 
         [HttpGet, Route("tagsuggestions")]
@@ -2344,7 +2350,7 @@ from	    ResponsibilityTypeHierarchy H
             if (string.IsNullOrWhiteSpace(phrase))
                 return new List<TagSuggestionModel>();
 
-            var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and (lower(Name) like lower('{0}%') or (len('{0}') > 2 and lower(Name) like lower('%{0}%')))", phrase.Replace("'", "''").Replace("--", ""));
+            var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName, IconForeColor, IconBackColor from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and (lower(Name) like lower('{0}%') or (len('{0}') > 2 and lower(Name) like lower('%{0}%')))", phrase.Replace("'", "''").Replace("--", ""));
 
             var list = Company.Query<TagSuggestionModel>(sql).ToList();
 

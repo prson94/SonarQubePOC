@@ -26,6 +26,11 @@ namespace d360.core.entities
         public string ObjectTypeName { get; set; }
         [DataMember]
         public string Url { get; set; }
+
+        [DataMember]
+        public string IconBackColor { get; set; }
+        [DataMember]
+        public string IconForeColor { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]
@@ -48,6 +53,9 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime DateCreated { get; set; }
+
+        [DataMember]
+        public string DateCreatedUTCString { get { return DateCreated.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"); } }
 
         [DataMember]
         public string ObjectType { get; set; }
@@ -90,7 +98,7 @@ namespace d360.core.entities
             if (!string.IsNullOrEmpty(TagsXml))
             {
                 Tags.AddRange(
-                    XElement.Parse(TagsXml).Elements("tag").Select(i => new CommentDetailTag { Object = i.Element("Object").Value, ObjectID = int.Parse(i.Element("ObjectID").Value), ObjectTypeName = i.Element("ObjectTypeName").Value, TextPath = i.Element("TextPath").Value, Url = i.Element("Url").Value })
+                    XElement.Parse(TagsXml).Elements("tag").Select(i => new CommentDetailTag { Object = i.Element("Object").Value, ObjectID = int.Parse(i.Element("ObjectID").Value), ObjectTypeName = i.Element("ObjectTypeName").Value, TextPath = i.Element("TextPath").Value, Url = i.Element("Url").Value, IconBackColor = i.Element("IconBackColor").Value, IconForeColor = i.Element("IconForeColor").Value })
                 );
             }
         }

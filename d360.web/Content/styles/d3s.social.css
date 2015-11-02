@@ -13,8 +13,8 @@
   border-radius: 2px;
   background-color: #eeeeee;
   display: inline-block;
-  margin: 2px;
-  padding: 3px;
+  margin-bottom: 2px;
+  padding: 1px;
   vertical-align: top;
   *display: inline;
   zoom: 1;

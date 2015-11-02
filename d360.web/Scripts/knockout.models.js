@@ -390,22 +390,24 @@ function CommentTagItem(data) {
     self.Url = ko.observable(data.Url);
     self.ObjectTypeName = ko.observable(data.ObjectTypeName);
     self.ShowRemove = ko.observable(false);
+    self.IconBackColor = ko.observable(data.IconBackColor);
+    self.IconForeColor = ko.observable(data.IconForeColor);
 
-    self.getTagBackgroundColor = function () {
+    //self.getTagBackgroundColor = function () {
 
-        var hash = CryptoJS.MD5(data.ObjectTypeName).toString();
+    //    var hash = CryptoJS.MD5(data.ObjectTypeName).toString();
         
-        var r = parseInt(hash.substring(0, 2), 16);
-        var g = parseInt(hash.substring(2, 4), 16);
-        var b = parseInt(hash.substring(4, 6), 16);
+    //    var r = parseInt(hash.substring(0, 2), 16);
+    //    var g = parseInt(hash.substring(2, 4), 16);
+    //    var b = parseInt(hash.substring(4, 6), 16);
         
-        //lighten color
-        r = (((r + 127) / 2.0) + 255) / 2.0;
-        g = (((g + 255) / 2.0) + 255) / 2.0;
-        b = (((b + 255) / 2.0) + 255) / 2.0;
+    //    //lighten color
+    //    r = (((r + 127) / 2.0) + 255) / 2.0;
+    //    g = (((g + 255) / 2.0) + 255) / 2.0;
+    //    b = (((b + 255) / 2.0) + 255) / 2.0;
 
-        return "rgb(" + Math.floor(r)+ "," +  Math.floor(g) +"," +  Math.floor(b) + ")";
-    };
+    //    return "rgb(" + Math.floor(r)+ "," +  Math.floor(g) +"," +  Math.floor(b) + ")";
+    //};
 }
 
 function CommentCountItem(data) {
@@ -448,7 +450,7 @@ function CommentItem(data) {//, hub) {
     self.Body = ko.observable(data.Body);
     self.CreatingResourceID = ko.observable(data.CreatingResourceID || 0);
     self.CommentTypeID = ko.observable(data.CommentTypeID || 0);
-    self.DateCreated = data.DateCreated;
+    self.DateCreated = data.DateCreatedUTCString;
     self.ObjectID = ko.observable(data.ObjectID || 0);
     self.ObjectType = ko.observable(data.ObjectType || "");
     self.ParentID = ko.observable(data.ParentID || null);
@@ -460,6 +462,28 @@ function CommentItem(data) {//, hub) {
     self.VisibilityID = ko.observable(data.VisibilityID || "");
     //self.UpVotes = ko.observable(data.UpVotes || 0);
     //self.DownVotes = ko.observable(data.DownVotes || 0);
+
+    self.DateCreatedLocal = ko.computed(function () {
+        //convert date to local timezone and format
+        var dateCreated = new Date(self.DateCreated);
+        var hours = dateCreated.getHours();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        var minutes = dateCreated.getMinutes();
+        var seconds = dateCreated.getSeconds();
+        var day = dateCreated.getDate();
+
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        day = day < 10 ? '0' + day : day;
+        var timeString = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+        
+
+        var yearString = dateCreated.getFullYear().toString().substr(2, 2);
+        return (dateCreated.getMonth() + 1) + "/" + day + "/" + yearString + " " + timeString;
+    });
+   
 
     var _currentVotes = $.map(data.Votes, function (item) { return new CommentVoteItem(item); });
     self.CurrentVotes = ko.observableArray(_currentVotes);
@@ -521,7 +545,6 @@ function CommentItem(data) {//, hub) {
         return self.CurrentTagCount() == 1 ? "1 tag" : self.CurrentTagCount() + " tags" + ' ';
     }, self);
 
-
     self.isVisible = ko.observable(true);
     self.error = ko.observable();
     self.Comments = ko.observableArray();
@@ -541,16 +564,30 @@ function CommentItem(data) {//, hub) {
         return (self.tagSuggestions().length > 0);
     }, self);
     self.newTag = ko.observable();
-    self.tags = ko.observableArray();
+    self.tags = ko.observableArray([]);
     self.newTag.subscribe(function (value) {
         if (value) {
             $.getJSON('/api/tagsuggestions', { phrase: value }, function (suggestions) {
                 // Object, ObjectID, TextPath, Url, ObjectTypeName
-                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagSuggestionItem(item); }); //, self.hub
+                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagSuggestionItem(item, self); }); //, self.hub
                 self.tagSuggestions(mappedSuggestions);
             });
         }
     });
+
+
+    self.NewTagCount = ko.computed(function () {
+        return self.tags().length;
+    });
+
+    self.NewTagCountText = ko.computed(function () {
+        return self.NewTagCount() == 1 ? "add 1 tag" : "add " + self.NewTagCount() + " tags";
+    });
+
+    self.HasNewTags = ko.computed(function () {
+        return (self.NewTagCount() > 0);
+    });
+
 
     //self.hub = hub;
     
@@ -664,7 +701,55 @@ function CommentItem(data) {//, hub) {
         return (self.ObjectType != 'Resource');
     };
 
+
+    self.updateComment = function () {
+        self.error(null);
+        if (self.ParentID() != null)
+        {
+            var commentModel = {
+                Tags: self.tags(),
+                Comment: {
+                    ID: self.ParentID()
+                }
+            };
+        }
+        else
+        {
+            var commentModel = {
+                ObjectType: self.ObjectType,
+                ObjectID: self.ObjectID,
+                Tags: self.tags(),
+                Comment: {
+                    ID: self.ID,
+                    Body: self.Body,
+                    CommentTypeID: self.CommentTypeID(),
+                    VisibilityID: self.VisibilityID()
+                }
+            };
+        }
+
+            $.ajax({
+                data: commentModel,
+                dataType: 'json',
+                method: 'POST',
+                url: '/services/community/edit'
+            }).done(function (newCommentData, status, xhr) {
+                self.tags([]);
+                var _currentTags = $.map(newCommentData.Tags, function (item) { return new CommentTagItem(item); });
+                self.CurrentTags([]);
+                self.CurrentTags(_currentTags);
+                amplify.publish("SaveAction", { context: 'commentform', action: "add", id: newCommentData.ID, custom: {} })
+            }).fail(function (xhr, status, error) {
+                self.error(status);
+            });
+    };
+
     self.addComment = function () {
+
+        if (self.HasNewTags()) {
+            self.updateComment();
+        }
+        
         if (self.newCommentMessage() != '') {
             $.ajax({
                 data: {
@@ -683,6 +768,7 @@ function CommentItem(data) {//, hub) {
             }).done(function (data, status, xhr) {
                 self.Comments.push(new CommentItem(data));
                 self.newCommentMessage('');
+                self.hideReply();
             }).fail(function (xhr, status, error) {
                 self.error(status);
             });
@@ -740,31 +826,33 @@ function CommentTagSuggestionItem(data, parent) {
     self.Url = ko.observable(data.Url);
     self.ObjectTypeName = ko.observable(data.ObjectTypeName);
     self.ShowRemove = ko.observable(true);
+    self.IconForeColor = ko.observable(data.IconForeColor);
+    self.IconBackColor = ko.observable(data.IconBackColor);
 
     self.removeTag = function () {
         parent.tags.remove(self);
     }
 
-    self.getTagBackgroundColor = function () {
+    //self.getTagBackgroundColor = function () {
 
-        var hash = CryptoJS.MD5(data.ObjectTypeName).toString();
+    //    var hash = CryptoJS.MD5(data.ObjectTypeName).toString();
 
-        var r = parseInt(hash.substring(0, 2), 16);
-        var g = parseInt(hash.substring(2, 4), 16);
-        var b = parseInt(hash.substring(4, 6), 16);
+    //    var r = parseInt(hash.substring(0, 2), 16);
+    //    var g = parseInt(hash.substring(2, 4), 16);
+    //    var b = parseInt(hash.substring(4, 6), 16);
 
-        //lighten color
-        r = (((r + 127) / 2.0) + 255) / 2.0;
-        g = (((g + 255) / 2.0) + 255) / 2.0;
-        b = (((b + 255) / 2.0) + 255) / 2.0;
+    //    //lighten color
+    //    r = (((r + 127) / 2.0) + 255) / 2.0;
+    //    g = (((g + 255) / 2.0) + 255) / 2.0;
+    //    b = (((b + 255) / 2.0) + 255) / 2.0;
 
-        return "rgb(" + Math.floor(r) + "," + Math.floor(g) + "," + Math.floor(b) + ")";
-    };
+    //    return "rgb(" + Math.floor(r) + "," + Math.floor(g) + "," + Math.floor(b) + ")";
+    //};
 
     self.addTag = function () {
-        parent.tags(parent.tags().concat(self));
-        parent.newTag('');
-        parent.tagSuggestions([]);
+            parent.tags(parent.tags().concat(self));
+            parent.newTag('');
+            parent.tagSuggestions([]);
     }
 }
 var ChildArtifactsMicroTileItem = function (parentID, name, id, count) {
@@ -3089,7 +3177,10 @@ var BoardViewModel = function () {
         $.ajax({
             data: {
                 "ObjectType": self.ObjectType,
-                "ObjectID": self.ObjectID
+                "ObjectID": self.ObjectID,
+                "DateFilter": self.selectedDateFilterOption(),
+                "TypeFilter": self.selectedTypeFilterOption(),
+                "SearchFilter": self.searchFilter
             },
             dataType: 'json',
             method: 'POST',

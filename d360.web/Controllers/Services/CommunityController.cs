@@ -20,12 +20,38 @@ namespace d360.web.Controllers.Services
 
         #endregion
 
+        [HttpPost, Route("edit")]
+        public dynamic EditComment(CommentData comment)
+        {
+            var relations = new List<CommentRelation>();
+            if (comment.Comment.ID != 0)
+            {
+                var comm = Company.GetCommentDetailsByID(comment.Comment.ID).SingleOrDefault(c => c.ParentID == null);
+                foreach (var tag in comment.Tags)
+                {
+                    relations.Add(new CommentRelation { ObjectType = tag.Object, ObjectID = tag.ObjectID, Date = DateTime.UtcNow });
+                }
+            }
+            var dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
+
+            if (!string.IsNullOrEmpty(dtl.TagsXml))
+            {
+                dtl.ParseTagXml();
+            }
+            if (!string.IsNullOrEmpty(dtl.VotesXml))
+            {
+                dtl.ParseVoteXml();
+            }
+
+            return dtl;
+        }
         [HttpPost, Route("comment")]
         public dynamic AddComment(CommentData comment)
         {
             var relations = new List<CommentRelation>();
 
             var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
+
 
             if (comment.Comment.ParentID.HasValue)
             {
@@ -62,9 +88,9 @@ namespace d360.web.Controllers.Services
             {
                 relations.Add(new CommentRelation { ObjectType = tag.Object, ObjectID = tag.ObjectID, Date = DateTime.UtcNow });
             }
-
+            
             var dtl = Company.AddComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
-
+            
             if (!string.IsNullOrEmpty(dtl.TagsXml))
             {
                 dtl.ParseTagXml();
@@ -92,14 +118,14 @@ namespace d360.web.Controllers.Services
         [HttpPost, Route("counts")]
         public List<CommentCount> GetCommentCounts(CommentRequestData pageData)
         {
-            List<CommentCount> counts = new List<CommentCount>();
+          List<CommentCount> counts = new List<CommentCount>();
             if (!string.IsNullOrEmpty(pageData.ObjectType) && pageData.ObjectID.HasValue)
             {
-                counts = Company.GetCommentCountByType((SystemObjects)Enum.Parse(typeof(SystemObjects), pageData.ObjectType), pageData.ObjectID.Value).ToList();
+                counts = Company.GetCommentCountByType((SystemObjects)Enum.Parse(typeof(SystemObjects), pageData.ObjectType), pageData.ObjectID.Value, pageData.DateFilter, pageData.SearchFilter).ToList();
             }
             else
             {
-                counts = Company.GetCommentCountByFollower(Company.CurrentResourceID).ToList();
+                counts = Company.GetCommentCountByFollower(Company.CurrentResourceID,pageData.DateFilter,pageData.SearchFilter).ToList();
             }
                 
             return counts;
