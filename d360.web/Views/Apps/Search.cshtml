@@ -7,13 +7,13 @@
 
 <div id="SearchArea">
     <div class="row">
-        <div class="col-lg-3 col-md-3 hidden-sm hidden-xs">
+        <div class="col l3 m3 hide-on-small-and-down">
             <div class="tile tile-detail">
                 <h3>Categorized Results</h3>
                 <div class="widget" id="CategoryResults" data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
             </div>
         </div>
-        <div class="col-lg-9 col-md-9">
+        <div class="col l9 m9">
             <div class="tile tile-detail">
                 <div data-bind="text: elapsedTime"></div>
                 <div data-bind="visible: shouldShowSpinner()"><i class='fa fa-spinner fa-spin fa-4x'></i></div>
