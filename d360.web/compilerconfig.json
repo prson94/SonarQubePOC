@@ -14,13 +14,6 @@
     }
   },
   {
-    "outputFile": "Content/styles/OfficeApps.css",
-    "inputFile": "Content/styles/OfficeApps.less", 
-    "minify": {
-      "enabled": true
-    }
-  },
-  {
     "outputFile": "Content/styles/d3s.social.css",
     "inputFile": "Content/styles/d3s.social.less"
   }
