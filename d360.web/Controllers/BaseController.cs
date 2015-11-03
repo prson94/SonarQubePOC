@@ -473,6 +473,27 @@ namespace d360.web.Controllers
                 }
             }
 
+
+            var AttributeType = Request.Form.AllKeys.Any(i => i == "AttributeType") ? Request["AttributeType"] : "";
+            var AttributeSearchValue = Request.Form.AllKeys.Any(i => i == "AttributeSearchValue") ? Server.UrlDecode(Request["AttributeSearchValue"]) : "";
+
+            if (!string.IsNullOrEmpty(AttributeType) && !string.IsNullOrEmpty(AttributeSearchValue))
+            {
+                int attributeTypeID;
+                if (int.TryParse(AttributeType, out attributeTypeID))
+                {
+                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + @"A.ID in (
+                    select ObjectID
+                    from AttributeDetail
+                    where ObjectType = 'Artifact' and AttributeTypeID = " + attributeTypeID + @" and FormattedValue like '%" + AttributeSearchValue.Replace("'", "''").Replace("--", "") + @"%'
+                    union
+                    select  R.SourceObjectID
+                    from    cache.Relationships R
+                            inner join AttributeDetail A on A.ObjectType = 'Intersect' and A.ObjectID = R.IntersectID and R.SourceType = 'ArtifactType' and R.SourceTypeID = @id and A.FormattedValue like '%" + AttributeSearchValue.Replace("'", "''").Replace("--", "") + @"%'
+					)";
+                }
+            }
+
             sql += filters;
 
             return sql;

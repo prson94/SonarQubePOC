@@ -373,7 +373,7 @@ namespace d360.web.Controllers
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.DateLastLoggedIn_Name, datafield = "DateLastLoggedIn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, filteritems = new List<string>() { "Active", "Disabled" }, width = calculateStaticColumnWidth(4, dynamicFieldWidth, remainingWidth, staticFieldCount) });
 
-                    fields.Add(new GridField { name = "ID", type = "number" });
+                    fields.Add(new GridField { name = "ResourceID", type = "number" });
                     fields.Add(new GridField { name = "Email", type = "string" });
                     fields.Add(new GridField { name = "FirstName", type = "string" });
                     fields.Add(new GridField { name = "LastName", type = "string" });
@@ -1273,6 +1273,62 @@ namespace d360.web.Controllers
 
             return list;
         }
+
+        #endregion
+
+        #region Attributes
+
+        [HttpGet, Route("{type}/{id:int}/attributetypefilters")]
+        public HttpResponseMessage GetFilterableAttributeTypesByType(SystemObjects type, int id)
+        {
+            var models = Company.Query<dynamic>(@"
+with relations as	(
+					select	'IntersectType' as [Type],
+							IntersectTypeID as ID
+					from	[utility].[RelationshipTypes]
+					where	SourceObjectType = @type and SourceObjectID = @id
+					union
+					select	@type as [Type],
+							@id as ID
+					)
+select		T.ID,
+			T.Name
+from		AttributeTypeRelation ATR
+			inner join relations R on R.[Type] = ATR.ObjectType and R.ID = ATR.ObjectID
+			inner join AttributeType T on T.ID = ATR.AttributeTypeID
+where       T.ID not in (select ObjectID from FieldType where [Object] = 'AttributeType' and ObjectID = T.ID and [Type] in ('Html', 'Link', 'UncLink') and CHARINDEX(Name, T.TextFormatString) > 0)
+group by	T.ID,
+			T.Name
+order by	T.Name
+", new { type = type.ToString(), id = id });
+            return Request.CreateResponse(HttpStatusCode.OK, models);
+        }
+
+        [HttpGet, Route("{type}/{id:int}/{attributeTypeID:int}/attributefiltervalues")]
+        public HttpResponseMessage GetFilterableAttributeValues(SystemObjects type, int id, int attributeTypeID)
+        {
+            var models = Company.Query<dynamic>(@"
+with types as	(
+				select	'Intersect' as [Object],
+						IntersectID as ID
+				from	cache.Relationships
+				where	SourceType = @type and SourceTypeID = @id
+				union
+				select	[Object] as [Object],
+						ObjectID
+				from	cache.ObjectDetails
+				where	ObjectType = @type 
+						and ObjectTypeID = @id
+				)
+select	A.FormattedValue as Name 
+from	AttributeDetail A
+		inner join types O on O.[Object] = A.ObjectType and O.ID = A.ObjectID and A.AttributeTypeID = @attributeTypeID
+group by A.FormattedValue
+order by A.FormattedValue
+", new { type = type.ToString(), id, attributeTypeID });
+            return Request.CreateResponse(HttpStatusCode.OK, models);
+        }
+
 
         #endregion
 

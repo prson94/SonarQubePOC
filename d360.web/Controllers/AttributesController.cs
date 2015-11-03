@@ -54,13 +54,6 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        //[Route("administration/widgets/tree")]
-        //public ActionResult Administration_Tree()
-        //{
-        //    var model = Company.Table<AttributeType>().ToList();
-        //    return PartialView(model);
-        //}
-
         #endregion
 
         #region Json

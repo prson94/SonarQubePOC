@@ -328,25 +328,32 @@ namespace d360.web.Controllers
                 {
                     Trace.TraceInformation("AssertionConsumerService => Resource account exists for Username: {0}. Now authorizing with cookie.", userName);
 
-                    // Create a login context for the asserted identity.
-                    FormsAuthentication.SetAuthCookie(userName, false);
-
-                    // Get the originally requested resource URL from the relay state, if any.
-                    string redirectURL = "/#";
-
-                    RelayState cachedRelayState = RelayStateCache.Remove(relayState);
-
-                    if (cachedRelayState != null)
+                    if (resource.ID > 0)
                     {
-                        var sendToUrl = cachedRelayState.ResourceURL;
-                        
-                        if(sendToUrl.Contains("?hashPath=")) sendToUrl = Server.UrlDecode(sendToUrl.Replace("?hashPath=","#"));
+                        // Create a login context for the asserted identity.
+                        FormsAuthentication.SetAuthCookie(userName, false);
 
-                        redirectURL = sendToUrl;
+                        // Get the originally requested resource URL from the relay state, if any.
+                        string redirectURL = "/#";
+
+                        RelayState cachedRelayState = RelayStateCache.Remove(relayState);
+
+                        if (cachedRelayState != null)
+                        {
+                            var sendToUrl = cachedRelayState.ResourceURL;
+
+                            if (sendToUrl.Contains("?hashPath=")) sendToUrl = Server.UrlDecode(sendToUrl.Replace("?hashPath=", "#"));
+
+                            redirectURL = sendToUrl;
+                        }
+
+                        // Redirect to the originally requested resource URL, if any, or the default page.
+                        return Redirect(redirectURL);
                     }
-
-                    // Redirect to the originally requested resource URL, if any, or the default page.
-                    return Redirect(redirectURL);                
+                    else
+                    {
+                        Trace.TraceError("AssertionConsumerService => Referencing resource: {0}. Should not authorize with the system account.  The username is: {1}", resource.ID, userName);
+                    }
                 }
                 
                 //If you go this far a problem occurred.

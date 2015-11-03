@@ -162,6 +162,7 @@
     }
 
     function addLabel(panel, field, materializeLabel) {
+        materializeLabel = false; //Hard-coded to always be false for now.  Checkboxes not showing up correctly in the case of true.
         if (materializeLabel) {
             panel.addClass('input-field');
 
@@ -487,6 +488,8 @@
                             case 'Boolean':
                                 //#region Boolean Field Management
 
+                                addLabel(cpnl, v, true);
+
                                 var b = false;
                                 if (cleanedValue == true || cleanedValue == "true" || cleanedValue == "1" || cleanedValue == "True") b = true;
                                 var checkboxHtml = '<input type="checkbox" id="' + v.FieldName + '" name="' + v.FieldName + '"';
@@ -496,7 +499,6 @@
                                 fld = $(checkboxHtml);
 
                                 cpnl.append(fld);
-                                addLabel(cpnl, v, true);
                                 break;
 
                                 //#endregion

@@ -41748,6 +41748,7 @@ function ClickGridTool(event) {
     }
 
     function addLabel(panel, field, materializeLabel) {
+        materializeLabel = false; //Hard-coded to always be false for now.  Checkboxes not showing up correctly in the case of true.
         if (materializeLabel) {
             panel.addClass('input-field');
 
@@ -42073,6 +42074,8 @@ function ClickGridTool(event) {
                             case 'Boolean':
                                 //#region Boolean Field Management
 
+                                addLabel(cpnl, v, true);
+
                                 var b = false;
                                 if (cleanedValue == true || cleanedValue == "true" || cleanedValue == "1" || cleanedValue == "True") b = true;
                                 var checkboxHtml = '<input type="checkbox" id="' + v.FieldName + '" name="' + v.FieldName + '"';
@@ -42082,7 +42085,6 @@ function ClickGridTool(event) {
                                 fld = $(checkboxHtml);
 
                                 cpnl.append(fld);
-                                addLabel(cpnl, v, true);
                                 break;
 
                                 //#endregion
@@ -49165,48 +49167,17 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                         $('#RelationshipFilter').jqxDropDownList('uncheckAll');
                     }
                 } catch (e) {}
-                
+
+                try {
+                    $('#AttributeTypeFilter').jqxDropDownList('clearSelection');
+                    $('#AttributeFilter').val('');
+                    var disabled = $('#AttributeFilter').jqxInput({disabled: true});
+                } catch (e) { }
+
                 $('#List').jqxGrid('updatebounddata');
             }
 
             function runFilter() {
-                //$("#List").jqxGrid('clearfilters');
-
-                //$.each(filters, function () {
-                //    // type, field, id, name, items
-                //    var filtertype = 'stringfilter';
-                //    var filtercondition = 'equal';
-                //    var value = '';
-                //    switch (this.type) {
-                //        case 'number':
-                //            filtertype = 'numericfilter';
-                //            value = $('#' + this.id).jqxNumberInput('val');
-                //            break;
-                //        case 'bool':
-                //            value = $('#' + this.id).jqxCheckBox('val');
-                //            break;
-                //        case 'list':
-                //            value = $('#' + this.id).jqxDropDownList('val');
-                //            break;
-                //        case 'date':
-                //            filtertype = 'datefilter';
-                //            value = $('#' + this.id).jqxDateTimeInput('val');
-                //            break;
-                //        default: //string
-                //            filtercondition = 'contains';
-                //            value = $('#' + this.id).jqxInput('val');
-                //            break;
-                //    }
-                //    if (value != '') {
-                //        var filtergroup = new $.jqx.filter();
-                //        var filter_or_operator = 0;
-                //        var filter = filtergroup.createfilter(filtertype, value, filtercondition);
-                //        filtergroup.addfilter(filter_or_operator, filter);
-                //        $("#List").jqxGrid('addfilter', this.field, filtergroup, false);
-                //    }
-                //});
-                
-                //$("#List").jqxGrid('applyfilters');
                 $('#List').jqxGrid('updatebounddata');
             }
 
@@ -49430,6 +49401,8 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                                     }
                                 });
 
+                                //#region Relationship filter logic
+
                                 data.RelationshipIncludeType = "";
                                 data.RelationshipObjectType = "";
                                 data.RelationshipObjectIDs = "";
@@ -49448,7 +49421,6 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                                     if (relationshipObjectIDs.length > 0) {
                                         data.RelationshipObjectIDs = relationshipObjectIDs.join(',');
                                         data.RelationshipObjectType = relationshipObjectType;
-                                        console.log($('#FilterInclusion').val());
                                         switch ($('#FilterInclusion').jqxButtonGroup('getSelection')) {
                                             case 1:
                                                 data.RelationshipIncludeType = 'All';
@@ -49460,6 +49432,20 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                                         
                                     }
                                 }
+
+                                //#endregion
+
+                                //#region Attribute filter logic
+
+                                data.AttributeType = "";
+                                data.AttributeSearchValue = "";
+                                var disabled = $('#AttributeTypeFilter').jqxDropDownList('disabled');
+                                if (!disabled) {
+                                    data.AttributeType = $('#AttributeTypeFilter').val();
+                                    data.AttributeSearchValue = $('#AttributeFilter').val();
+                                }
+
+                                //#endregion
 
                                 return data;
                             }                        
@@ -49549,6 +49535,9 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                     $("#FilterInclusion").jqxButtonGroup({ theme: theme, mode: 'radio', enableHover: true });
                     $('#FilterInclusion').jqxButtonGroup('setSelection', 0);
 
+                    $('#AttributeTypeFilter').jqxDropDownList({ theme: theme, width: field_width, height: field_height });
+                    $('#AttributeFilter').jqxComboBox({theme: theme, width: field_width, height: field_height, disabled: true});
+
                     $.getJSON('/api/ArtifactType/' + typeID + '/relationshiptypes', function (relateData) {
                         $('#RelationshipTypeFilter').jqxDropDownList({ disabled: (relateData.length == 0) });
 
@@ -49582,6 +49571,47 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                                     $('#RelationshipTypeFilter').jqxDropDownList({ disabled: false });
 
                                 });
+                            });
+                        }
+                    });
+
+                    $.getJSON('/api/ArtifactType/' + typeID + '/attributetypefilters', function (relateData) {
+                        $('#AttributeTypeFilter').jqxDropDownList({ disabled: (relateData.length == 0) });
+
+                        if (relateData.length > 0) {
+                            $.each(relateData, function () {
+                                $('#AttributeTypeFilter').jqxDropDownList('addItem', { value: this.ID, label: this.Name });
+                            });
+
+                            $('#AttributeTypeFilter').on('change', function (event) {
+                                var item = event.args.item;
+                                var value = item.value;
+
+                                $('#AttributeFilter').val('');
+
+                                $('#AttributeTypeFilter').jqxDropDownList({ disabled: true });
+                                var attributeValueSource = {
+                                    datatype: 'json',
+                                    datafields: [
+                                        { name: 'Name' }
+                                    ],
+                                    url: '/api/ArtifactType/' + typeID + '/' + value + '/attributefiltervalues'
+                                };
+                                var attributeValueAdapter = new $.jqx.dataAdapter(attributeValueSource, {
+                                    formatData: function (data) {
+                                        //if ($("#AttributeFilter").jqxComboBox('searchString') != undefined) {
+                                        //    data.name_startsWith = $("#AttributeFilter").jqxComboBox('searchString');
+                                            return data;
+                                        //}
+                                    }
+                                });
+                                $('#AttributeFilter').jqxComboBox({
+                                    disabled: false, displayMember: 'Name', valueMember: 'Name', source: attributeValueAdapter, search: function (searchString) {
+                                        attributeValueAdapter.dataBind();
+                                    }
+                                });
+                                //$('#AttributeFilter').jqxInput({ disabled: false, displayMember: 'Name', valueMember: 'Name', source: attributeValueAdapter });
+                                $('#AttributeTypeFilter').jqxDropDownList({ disabled: false });
                             });
                         }
                     });
@@ -52910,7 +52940,7 @@ function resources_admin(app, pageViewModel, templatePath, contextList) {
 
                         data.Columns.push({
                             text: '',
-                            dataField: 'ID',
+                            dataField: 'ResourceID',
                             width: 160,
                             sortable: false,
                             filterable: false,
@@ -52921,11 +52951,11 @@ function resources_admin(app, pageViewModel, templatePath, contextList) {
                                     ];
 
                                     if (permissions.HasPermission('Root', 'Update')) {
-                                        tools.push({ icon: 'pencil', urlprefix: '/form/resources/' + typeID + '/{0}/edit' });
-                                        tools.push({ icon: 'asterisk', urlprefix: '/form/resources/' + typeID + '/{0}/password' });
+                                        tools.push({ icon: 'pencil', urlprefix: '/form/resources/1/{0}/edit' });
+                                        tools.push({ icon: 'asterisk', urlprefix: '/form/resources/1/{0}/password' });
                                     }
                                     if (permissions.HasPermission('Root', 'Delete')) {
-                                        tools.push({ icon: 'trash-o', urlprefix: '/form/resources/' + typeID + '/{0}/delete' });
+                                        tools.push({ icon: 'trash-o', urlprefix: '/form/resources/1/{0}/delete' });
                                     }
 
                                     return renderToolsHtml(value, tools, contextList.Resource);

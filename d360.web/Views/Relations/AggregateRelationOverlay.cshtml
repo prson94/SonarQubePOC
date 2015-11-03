@@ -13,6 +13,7 @@
         <div class="row">
             <div class="col l3 m4 s12">
                 <div id="AggregateRelationsOverlayGrid"></div>
+                <div id="RelationshipDetailTile" class="tile"></div>
             </div>
             <div class="col l9 m8 s12">
                 <div class="col s12">
@@ -24,9 +25,9 @@
                 </div>
                 <div id="lineage" class="col s12">
                     <div id="DiagramTile"></div>
+                    <div id="zd"></div>
                 </div>
                 <div id="attributes" class="col s12">
-                    <div id="RelationshipDetailTile" class="tile"></div>
                     <div id="RelationshipAttributesTile" class="tile"></div>
                 </div>
                 <div id="fusion" class="col s12">
@@ -87,10 +88,10 @@
                     }
                     break;
                 case 1:
-                    if (self.DetailTileIntersectID != self.IntersectID) {
-                        self.DetailTileIntersectID = self.IntersectID;
-                        DetailTile('RelationshipDetailTile', null, null, 'Intersect', self.DetailTileIntersectID);
-                    }
+                    //if (self.DetailTileIntersectID != self.IntersectID) {
+                    //    self.DetailTileIntersectID = self.IntersectID;
+                    //    DetailTile('RelationshipDetailTile', null, null, 'Intersect', self.DetailTileIntersectID);
+                    //}
                     if (self.AttributeTileIntersectID != self.IntersectID) {
                         self.AttributeTileIntersectID = self.IntersectID;
                         AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", self.AttributeTileIntersectID, 'Business Attributes', true);
@@ -160,22 +161,8 @@
         aggregateRelationsModel.TargetID = (row.TargetType == 'TaxonomyType') ? row.TargetTypeID : row.IntersectID;
         aggregateRelationsModel.updateRibbonData();
 
-
-        //DetailTile('RelationshipDetailTile', null, null, 'Intersect', row.IntersectID);
-        //$('#TechnicalRelationDetailWrapper').fadeOut(100);
-        //$('#TechnicalRelationDetail').html('');
-        //$('#TechnicalRelationsGrid').jqxGrid('clearselection');
-        //technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
-        //$('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
-
-        //AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.IntersectID, 'Business Attributes');
-
-        //if (row.TargetType == 'TaxonomyType') {
-        //    information_catalog_diagram('DiagramTile', row.TargetTypeID);
-        //}
-        //else {
-        //    lineage_diagram('DiagramTile', row.IntersectID);
-        //}
+        self.DetailTileIntersectID = row.IntersectID;
+        DetailTile('RelationshipDetailTile', null, null, 'Intersect', self.DetailTileIntersectID);
     }
 
     function aggregateRelationsRibbonSelect(event) {
@@ -392,3 +379,40 @@
 
     });
 </script>
+
+
+@*<script src="/Scripts/zoomcharts.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var z = new ZoomCharts.NetChart({ 
+            container: document.getElementById("zd"), 
+            //area: { 
+            //    height: 500 
+            //}, 
+            layout: { 
+                //mode: 'radial', 
+                nodeSpacing: 100  
+            },
+            nodeMenu: {
+                contentsFunction: function(data, node){
+                    return "hi there";
+                }
+            }
+        });
+        z.addData({
+            nodes: [
+                { id: 'n1', loaded: true, style: { label: '144 Eligible Indicator', fillColor: '#000', textColor: '#fff', radius: 75, nodeLabel: { maxWidth: 300 } } },
+                { id: 'n2', loaded: true, style: { label: 'Charles River Development', fillColor: '#333', radius: 60 } },
+                { id: 'n3', loaded: true, style: { label: 'Markit EDM', fillColor: 'purple', textColor: 'aqua', radius: 60 } },
+                { id: 'n4', loaded: true, style: { label: 'Bloomberg Credit Risk', fillColor: 'green', textColor: '#fff', radius: 45 } },
+                { id: 'n5', loaded: true, style: { label: 'Per Security Request', fillColor: 'green', textColor: '#fff', radius: 45 } }
+            ],
+            links: [
+                { id: 'l1', from: 'n1', to: 'n2', style: { label: 'warehouses', fillColor: 'red', fromDecoration: 'circle', toDecoration: 'arrow' } },
+                { id: 'l2', from: 'n3', to: 'n1', style: { fillColor: 'red', fromDecoration: 'circle', toDecoration: 'arrow' } },
+                { id: 'l3', from: 'n4', to: 'n3', style: { fillColor: 'orange', fromDecoration: 'circle', toDecoration: 'arrow' } },
+                { id: 'l5', from: 'n5', to: 'n3', style: { fillColor: 'orange', fromDecoration: 'circle', toDecoration: 'arrow' } }
+            ]
+        });
+    });
+</script>*@

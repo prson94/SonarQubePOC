@@ -8,6 +8,7 @@ using Dapper;
 using System.Linq;
 using System.Web.Caching;
 using d360.extensions.caching;
+using System.Diagnostics;
 
 namespace d360.web
 {
@@ -66,6 +67,8 @@ namespace d360.web
             }
             else
             {
+                Trace.TraceWarning("Could not locate the company with host address of: {0}", host);
+                return;
             }
             await _next.Invoke(environment);
         }

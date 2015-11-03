@@ -1,12 +1,11 @@
 ﻿<div class="row">
     <div class="col s12">
         <div class="tile tile-detail">
-            <!--<header>Filter</header>-->
             <div id="FilterBasic"></div>
             <div id="FilterAdvanced" style="display:none">
                 <div class="row">
                     <div class="col s12 form-instructions">
-                        Query by one or more items below to limit the table results to only those items that relate to the selections below.
+                        Query by a relationship type to limit the table results to only those items that relate to the selections.
                     </div>
                     <div class="col s12 m4 l3">
                         <div class="FieldFilter">Type of Relationship</div>
@@ -22,6 +21,20 @@
                             <button style="padding:4px 16px;" id="FilterInclusion_Any">Or</button>
                             <button style="padding:4px 16px;" id="FilterInclusion_All">And</button>
                         </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12 form-instructions">
+                        Query by an attribute to limit the table results to only those items that contain the provided value.
+                    </div>
+                    <div class="col s12 m4 l3">
+                        <div class="FieldFilter">Attribute</div>
+                        <div id="AttributeTypeFilter"></div>
+                    </div>
+                    <div class="col s12 m4 l3">
+                        <div class="FieldFilter">Value</div>
+                        <div id="AttributeFilter"></div>
+                        <!--<input type="text" id="AttributeFilter" />-->
                     </div>
                 </div>
             </div>

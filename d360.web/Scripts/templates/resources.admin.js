@@ -72,7 +72,7 @@
 
                         data.Columns.push({
                             text: '',
-                            dataField: 'ID',
+                            dataField: 'ResourceID',
                             width: 160,
                             sortable: false,
                             filterable: false,
@@ -83,11 +83,11 @@
                                     ];
 
                                     if (permissions.HasPermission('Root', 'Update')) {
-                                        tools.push({ icon: 'pencil', urlprefix: '/form/resources/' + typeID + '/{0}/edit' });
-                                        tools.push({ icon: 'asterisk', urlprefix: '/form/resources/' + typeID + '/{0}/password' });
+                                        tools.push({ icon: 'pencil', urlprefix: '/form/resources/1/{0}/edit' });
+                                        tools.push({ icon: 'asterisk', urlprefix: '/form/resources/1/{0}/password' });
                                     }
                                     if (permissions.HasPermission('Root', 'Delete')) {
-                                        tools.push({ icon: 'trash-o', urlprefix: '/form/resources/' + typeID + '/{0}/delete' });
+                                        tools.push({ icon: 'trash-o', urlprefix: '/form/resources/1/{0}/delete' });
                                     }
 
                                     return renderToolsHtml(value, tools, contextList.Resource);

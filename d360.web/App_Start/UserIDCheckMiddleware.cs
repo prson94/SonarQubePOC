@@ -9,6 +9,7 @@ using System.Linq;
 using System.Web.Caching;
 using d360.extensions.caching;
 using d360.core.entities;
+using System.Diagnostics;
 
 namespace d360.web
 {
@@ -51,7 +52,7 @@ namespace d360.web
             {
                 var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
                 cnn.Open();
-                users = cnn.Query<user>("select ID, Username, Password, APIPublicKey, APIPrivateKey, APIReadOnlyAccessToken from Resource").ToList();
+                users = cnn.Query<user>("select ID, lower(ltrim(rtrim(Username))) as Username, Password, APIPublicKey, APIPrivateKey, APIReadOnlyAccessToken from Resource").ToList();
                 var usercompanies = cnn.Query<CompanyResource>("select * from CompanyResource").ToList();
                 cnn.Close();
                 cnn.Dispose();
@@ -84,6 +85,8 @@ namespace d360.web
             var companyID = context.Get<int>("CompanyID");
 
             var apiCredentials = context.Request.Headers["Authorization"];
+            var token = string.Empty;
+
             if (!string.IsNullOrEmpty(apiCredentials))
             {
                 var authValues = apiCredentials.Split(';');
@@ -94,7 +97,6 @@ namespace d360.web
             }
             else
             {
-                var token = string.Empty;
                 var keyPair = context.Request.Query.FirstOrDefault(i => i.Key == "oauth2_access_token");
                 if (keyPair.Value != null)
                 {
@@ -130,6 +132,13 @@ namespace d360.web
                     context.Set<int>("ResourceID", u.ID);
                     context.Request.User = new System.Security.Principal.GenericPrincipal(new System.Security.Principal.GenericIdentity(u.ID.ToString(), "ID"), null);
                 }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(apiCredentials))          Trace.TraceWarning("Could not locate the user with API credentials of: {0}", apiCredentials);
+                if (!string.IsNullOrEmpty(token))                   Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
+                if (context.Request.User.Identity.IsAuthenticated)  Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
+                return;
             }
 
             await _next.Invoke(environment);
