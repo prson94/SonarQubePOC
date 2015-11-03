@@ -2139,7 +2139,7 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>pushd "$(ProjectDir)\obj\Release" &amp;&amp; (rd /s /q "$(ProjectDir)\obj\Release" 2&gt;nul &amp; popd)</PreBuildEvent>
+    <PreBuildEvent>pushd "$(ProjectDir)\obj\$(ConfigurationName)" &amp;&amp; (rd /s /q "$(ProjectDir)\obj\$(ConfigurationName)" 2&gt;nul &amp; popd)</PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\BuildBundlerMinifier.1.0.42\build\BuildBundlerMinifier.targets" Condition="Exists('..\packages\BuildBundlerMinifier.1.0.42\build\BuildBundlerMinifier.targets')" />
   <Import Project="..\packages\BuildWebCompiler.1.0.83\build\BuildWebCompiler.targets" Condition="Exists('..\packages\BuildWebCompiler.1.0.83\build\BuildWebCompiler.targets')" />
