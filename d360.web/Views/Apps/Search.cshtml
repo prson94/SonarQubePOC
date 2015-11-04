@@ -7,7 +7,7 @@
 
 <div id="SearchArea">
     <div class="row">
-        <div class="col l3 m3 hide-on-small-and-down">
+        <div class="col l3 m3 hide-on-small-and-down fixed">
             <div class="tile tile-detail">
                 <h3>Categorized Results</h3>
                 <div class="widget" id="CategoryResults" data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
@@ -22,6 +22,20 @@
         </div>
     </div>
 </div>
+
+<div id="NoDataMessage">
+    <div class="row">
+        <div class="col l3 m3">&nbsp;</div>
+        <div class="col l6 m6">
+            <div class="card-panel">
+                <span class="red-text text-darken-2">Your search returned no results.</span>
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+
 <script id="searchResultTmpl" type="text/html">
     <div class="entry" data-bind="attr: {'data-category': Type}">
         <div class="name">
@@ -71,6 +85,17 @@
         //    return (self.results().length <= 0);
         //};
 
+        self.showNodata = function () {
+            $("#NoDataMessage").show();
+            $("#SearchArea").hide();
+        }
+
+        self.ensureResultsVisible = function () {
+            $("#NoDataMessage").hide();
+            $("#SearchArea").show();
+        }
+        
+
         self.getResults = function (phrase) {
 
             //try {
@@ -79,6 +104,7 @@
             self.elapsedTime('');
 
             self.shouldShowSpinner(true);
+            self.ensureResultsVisible();
 
             $.ajax({
                 data: 'search=' + phrase,
@@ -90,7 +116,7 @@
                     self.shouldShowSpinner(false);
                 },
                 success: function (data) {
-                    try {
+                    try {                       
                         if (data.Results.length > 0) {
                             var results = $.map(data.Results, function (item) { return new SearchResult(item); });
                             self.results(results);
@@ -99,6 +125,10 @@
                         if (data.Categories.length > 0) {
                             var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
                             self.categories(cats);
+                        }
+
+                        if (data.Results.length == 0) {
+                            self.showNodata();                            
                         }
                     } catch (e) {
 
@@ -135,7 +165,7 @@
     }
 
     $(function () {
-
+        $("#NoDataMessage").hide();
         var searchVm = new SearchViewModel();
         try {
             ko.applyBindings(searchVm, document.getElementById("SearchArea"));
