@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using d360.extensions.search;
 using d360.core.queue;
 using d360.core;
 using Dapper;
 using d360.core.entities;
-using System.Diagnostics;
 
 namespace d360.jobs.ReIndex
 {

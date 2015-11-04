@@ -953,7 +953,9 @@ namespace d360.web.Controllers
                                 addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
                                 if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
                                 {
-                                    addItem.Items.Add(new PageActionItem { Context = ContextList.Policy, Icon = "cube", Title = string.Format("{0}", nextPolicyLevelName), Uri = string.Format("/form/AddPolicy?typeID={0}&parentID={1}", policy.PolicyTypeID, id) });
+                                    if (levels.Count > policy.Level)
+                                        addItem.Items.Add(new PageActionItem { Context = ContextList.Policy, Icon = "cube", Title = string.Format("{0}", nextPolicyLevelName), Uri = string.Format("/form/AddPolicy?typeID={0}&parentID={1}", policy.PolicyTypeID, id) });
+
                                     addItem.Items.Add(new PageActionItem { Context = ContextList.Policy, Icon = "cube", Title = string.Format("{0}", rootLevelName), Uri = string.Format("/form/AddPolicy?typeID={0}", policy.PolicyTypeID) });
                                 }
                                 list.Add(addItem);
@@ -1177,7 +1179,9 @@ namespace d360.web.Controllers
                                 addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
                                 if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
                                 { 
-                                    addItem.Items.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = "sitemap", Title = string.Format("{0}", nextLevelName), Uri = string.Format("/form/taxonomy/{0}/{1}/add", taxonomy.TaxonomyTypeID, id) });
+                                    if (levels.Count > taxonomy.Level)
+                                        addItem.Items.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = "sitemap", Title = string.Format("{0}", nextLevelName), Uri = string.Format("/form/taxonomy/{0}/{1}/add", taxonomy.TaxonomyTypeID, id) });
+
                                     addItem.Items.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = "sitemap", Title = string.Format("{0}", rootLevelName), Uri = string.Format("/form/taxonomy/{0}/0/add", taxonomy.TaxonomyTypeID) });
                                 }                                  
                                 list.Add(addItem);

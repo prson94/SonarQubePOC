@@ -1,5 +1,4 @@
-﻿using System;
-using d360.core.entities.Contracts;
+﻿using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 

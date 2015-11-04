@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.Azure.WebJobs;
-using System.Xml.Linq;
-using d360.core.queue;
 using Newtonsoft.Json;
-using Dapper;
-using d360.core.entities;
-using System.Diagnostics;
 using d360.workflow;
 using d360.workflow.models;
 

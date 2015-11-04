@@ -3,13 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
-using System.Xml.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel;
 
 namespace d360.core.entities
 {
-  [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.EventGroup, "EventGroup")]
+    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.EventGroup, "EventGroup")]
     public class EventGroup : BaseIntObject, IIntObject, IUpdatedMetadata
     {
         public int? RuleID { get; set; }

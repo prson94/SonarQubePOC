@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
 using d360.core.entities.Contracts;
-using System.ComponentModel;
 using System.Xml.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 

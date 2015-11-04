@@ -295,7 +295,6 @@ namespace d360.model
             }
         }
 
-
         public string createRandomPassword()
         {
             int MinimumPasswordLength = 7;
@@ -374,33 +373,6 @@ namespace d360.model
             public List<int> Companies { get; set; }
         }
 
-        //public AccessTokenResourceCacheModel ValidateAccessTokenResource(string token)
-        //{
-        //    string cacheKey = "AccessTokenResource";
-        //    AccessTokenResourceCacheModel model = null;
-
-        //    if (Caching.ListItemExists<AccessTokenResourceCacheModel, string>(cacheKey, token))
-        //    {
-        //        model = Caching.GetItemInListByID<AccessTokenResourceCacheModel, string>(cacheKey, token);
-        //    }
-        //    else
-        //    {
-        //        var resource = Filter<Resource>(i => i.ApiReadOnlyAccessToken == token, i => i.CompanyResources).SingleOrDefault();
-        //        if (resource != null)
-        //        {
-        //            model = new AccessTokenResourceCacheModel
-        //            {
-        //                Token = resource.APIPrivateKey,
-        //                Username = resource.Username,
-        //                Companies = resource.CompanyResources.Select(i => i.CompanyID).ToList()
-        //            };
-        //            Caching.SetItemInListByID<AccessTokenResourceCacheModel, string>(cacheKey, token, model);
-        //        }
-        //    }
-
-        //    return model;
-        //}
-
         public class ApiResourceCacheModel
         {
             public ApiResourceCacheModel()
@@ -415,97 +387,12 @@ namespace d360.model
             public List<int> Companies { get; set; }
         }
 
-        //public ApiResourceCacheModel ValidateApiResource(string key, string secret)
-        //{
-        //    string cacheKey = "ApiResource";
-        //    ApiResourceCacheModel model = null;
-
-        //    if (Caching.ListItemExists<ApiResourceCacheModel, string>(cacheKey, key))
-        //    {
-        //        model = Caching.GetItemInListByID<ApiResourceCacheModel, string>(cacheKey, key);
-        //        if (model.Secret != secret)
-        //        {
-        //            model = null;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        var resource = Filter<Resource>(i => i.APIPublicKey == key, i => i.CompanyResources).SingleOrDefault();
-        //        if (resource != null)
-        //        {
-        //            if (resource.APIPrivateKey == secret)
-        //            {
-        //                model = new ApiResourceCacheModel
-        //                {
-        //                    Key = resource.APIPublicKey,
-        //                    Secret = resource.APIPrivateKey,
-        //                    Username = resource.Username,
-        //                    Companies = resource.CompanyResources.Select(i => i.CompanyID).ToList()
-        //                };
-        //                Caching.SetItemInListByID<ApiResourceCacheModel, string>(cacheKey, key, model);                    
-        //            }
-        //        }
-        //    }
-
-        //    return model;
-        //}
-
         public Resource ValidateResource(string username, string password)
         {
             Resource r = null;
 
-            //switch(Context.UserIDType)
-            //{
-            //    case UserIdentifierType.ApiKey:
-            //        #region
-            //        r = Filter<Resource>(i => i.APIPublicKey == username, i => i.ResourceType).SingleOrDefault();
-
-            //        if (r != null)
-            //        {
-            //            //int minSeconds = -10;
-            //            //int maxSeconds = 10;
-            //            //long secondsSinceEpoch = DateTime.UtcNow.Date.Epoch();
-            //            string secretKey = r.APIPrivateKey;
-
-            //            //var hash = new SHA256Managed();
-
-            //            bool isAuthorized = false;
-
-            //            //for (long i = (secondsSinceEpoch + minSeconds); i <= (secondsSinceEpoch + maxSeconds); i++)
-            //            //{
-            //            //string correctHash = secretKey + secondsSinceEpoch.ToString();
-            //            //byte[] unhashedBytes = Encoding.ASCII.GetBytes(correctHash); //encoding.GetBytes(correctHash);
-            //            //byte[] hashedBytes = hash.ComputeHash(unhashedBytes);
-            //            //correctHash = Convert.ToBase64String(hashedBytes);
-
-            //            //if (correctHash.Equals(password))
-            //            //{
-            //            //    isAuthorized = true;
-            //            //break;
-            //            //}
-            //            ///}
-
-            //            isAuthorized = secretKey.Equals(password);
-
-            //            if (!isAuthorized)
-            //            {
-            //                r = null;
-            //            }
-            //        }
-            //        break;
-            //        #endregion
-            //    case UserIdentifierType.Email:
-            //    case UserIdentifierType.Username:
-                    #region
-                    password = hashPassword(password);//System.Web.Security.FormsAuthentication.HashPasswordForStoringInConfigFile(password, System.Web.Configuration.FormsAuthPasswordFormat.SHA1.ToString());
-                    r = Filter<Resource>(i => i.Username == username && i.Password == password).SingleOrDefault();
-            //        break;
-            //        #endregion
-            //    case UserIdentifierType.ID:
-            //        #region
-            //        break;
-            //        #endregion
-            //}
+            password = hashPassword(password);
+            r = Filter<Resource>(i => i.Username == username && i.Password == password).SingleOrDefault();
 
             // Check that resource has access to this company.
             if (r != null)
@@ -525,16 +412,8 @@ namespace d360.model
                 }
             }
 
-
             return r;
         }
-
-        #endregion
-
-        //public string GetCompanySetting(string settingFieldName)
-        //{
-        //    return CompanySettings.Single(i => i.CompanyID == CurrentCompanyID && i.Setting.FieldName == settingFieldName).Value;
-        //}
 
         public class SettingModel
         {

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.core.entities
 {
@@ -31,18 +27,5 @@ namespace d360.core.entities
 
         [DataMember]
         public string Action { get; set; }
-    }
-
-    public class RelationshipModels : List<RelationshipModel> { }
-
-    public class RelationshipModel
-    {
-        public SystemObjects StartType { get; set; }
-        public int StartID { get; set; }
-        public SystemObjects EndType { get; set; }
-        public int EndID { get; set; }
-
-        public int? ClassificationID { get; set; }
-        public int? RoleID { get; set; }
     }
 }

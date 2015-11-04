@@ -213,12 +213,8 @@
     <Compile Include="entities\Resolution.cs" />
     <Compile Include="entities\Resource.cs" />
     <Compile Include="entities\Role.cs" />
-    <Compile Include="entities\Transitive\AllIntersectPoint.cs" />
     <Compile Include="entities\Transitive\AllowedIntersectionType.cs" />
-    <Compile Include="entities\Transitive\ArtifactHierarchyItem.cs" />
     <Compile Include="entities\Transitive\AttributeHierarchyItem.cs" />
-    <Compile Include="entities\Transitive\FusionAttributesByTabItem.cs" />
-    <Compile Include="entities\Transitive\FusionAttributesByTabModel.cs" />
     <Compile Include="entities\Transitive\FusionOwnerOption.cs" />
     <Compile Include="entities\Transitive\FusionAttributeItem.cs" />
     <Compile Include="entities\Transitive\BulkFusionImport.cs" />
@@ -227,13 +223,9 @@
     <Compile Include="entities\Transitive\FusionPromotionOption.cs" />
     <Compile Include="entities\Transitive\GetRelationshipModel.cs" />
     <Compile Include="entities\Transitive\GroupResourceInfo.cs" />
-    <Compile Include="entities\Transitive\CurrentCompanyInfo.cs" />
-    <Compile Include="entities\Transitive\EventByModel.cs" />
     <Compile Include="entities\Transitive\MostActiveUserReportModel.cs" />
     <Compile Include="entities\Transitive\AttributeTreeItem.cs" />
     <Compile Include="entities\Transitive\MicroModels.cs" />
-    <Compile Include="entities\Transitive\ObjectPermissionModel.cs" />
-    <Compile Include="entities\Transitive\RawIntersectContextMap.cs" />
     <Compile Include="entities\Transitive\RelationNode.cs" />
     <Compile Include="entities\Transitive\RenderTemplateModel.cs" />
     <Compile Include="entities\Transitive\ResponsibilityTypeClaimDetail.cs" />
@@ -259,14 +251,8 @@
     <Compile Include="entities\Views\FieldLookupValue.cs" />
     <Compile Include="entities\Views\FieldWithRelation.cs" />
     <Compile Include="entities\Views\FieldTypeWithRelation.cs" />
-    <Compile Include="entities\Transitive\FusionAttributeByIntersect.cs" />
-    <Compile Include="entities\Transitive\FusionIntersectDetail.cs" />
-    <Compile Include="entities\Transitive\IntersectionPoint.cs" />
     <Compile Include="entities\Transitive\NonIntersectionPoint.cs" />
     <Compile Include="entities\Transitive\ObjectDetail.cs" />
-    <Compile Include="entities\Transitive\SearchResult.cs" />
-    <Compile Include="entities\Transitive\CurrentUserInfo.cs" />
-    <Compile Include="entities\Views\EventHeader.cs" />
     <Compile Include="entities\Views\TaxonomyDetail.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -278,15 +264,11 @@
     <Compile Include="enums\Claim.cs" />
     <Compile Include="enums\ClaimObject.cs" />
     <Compile Include="enums\CommentType.cs" />
-    <Compile Include="enums\CompanyIdentifierType.cs" />
     <Compile Include="enums\DataType.cs" />
-    <Compile Include="enums\Enums.cs" />
     <Compile Include="entities\Views\AttributeTypeRelationDetail.cs" />
     <Compile Include="entities\Views\FollowDetail.cs" />
-    <Compile Include="enums\FusionAttributeIdentifier.cs" />
     <Compile Include="enums\IntersectClassification.cs" />
     <Compile Include="enums\JobIntervalType.cs" />
-    <Compile Include="enums\LoadTypeRuleGroup.cs" />
     <Compile Include="enums\ObjectType.cs" />
     <Compile Include="enums\ResponsibilityTransformationType.cs" />
     <Compile Include="enums\RuleType.cs" />
@@ -296,19 +278,11 @@
     <Compile Include="enums\StatisticCheckType.cs" />
     <Compile Include="enums\SystemObjects.cs" />
     <Compile Include="enums\TemplateAction.cs" />
-    <Compile Include="enums\UserIdentifierType.cs" />
     <Compile Include="exceptions\BaseException.cs" />
-    <Compile Include="exceptions\AttributesExistException.cs" />
     <Compile Include="exceptions\ConflictException.cs" />
     <Compile Include="exceptions\InvalidFieldException.cs" />
     <Compile Include="exceptions\NoFormDataException.cs" />
-    <Compile Include="exceptions\SystemLookupException.cs" />
-    <Compile Include="exceptions\ResourcesExistException.cs" />
-    <Compile Include="exceptions\DuplicateTemplateException.cs" />
-    <Compile Include="exceptions\EventsExistException.cs" />
-    <Compile Include="exceptions\RelationsExistException.cs" />
     <Compile Include="exceptions\DuplicateNameException.cs" />
-    <Compile Include="exceptions\IntersectTypeConstraintNotValidException.cs" />
     <Compile Include="exceptions\MissingPropertiesException.cs" />
     <Compile Include="exceptions\NotFoundException.cs" />
     <Compile Include="exceptions\UnauthorizedException.cs" />

@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.Serialization;
-using d360.core.entities;
+﻿using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
-using System.Configuration;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Xml.Serialization;
-using System.Web.Script.Serialization;
-using System.ComponentModel;
 using d360.core.entities.Contracts;
 
 namespace d360.core.entities

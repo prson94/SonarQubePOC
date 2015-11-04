@@ -1,24 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using d360.core;
 using System.Diagnostics;
 using Dapper;
-using d360.extensions;
-using d360.extensions.storage;
-using Newtonsoft.Json;
-using d360.core.entities;
-using System.IO;
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
-using System.Data.Entity.ModelConfiguration.Conventions;
-using System.Data.SqlClient;
-using System.Data.Entity.Core.Objects;
-using System.Data.Entity.Infrastructure;
-using System.Data;
 
 namespace d360.jobs.queue.ProcessFusion
 {

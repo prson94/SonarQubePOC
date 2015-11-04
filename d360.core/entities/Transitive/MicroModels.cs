@@ -2,10 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.core.entities
 {
@@ -40,13 +37,6 @@ namespace d360.core.entities
         public byte[] SpCertificateFile { get; set; }
         public string SpCertificatePassword { get; set; }
         public HashAlgorithmType HashAlgorithmType { get; set; }
-    }
-
-    [DataContract(Namespace = NAMESPACE)]
-    public class ContextModel : BaseObject
-    {
-        public string ObjectType { get; set; }
-        public int ObjectID { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE), System.ComponentModel.DataAnnotations.Schema.Table("Global_Resource", Schema = "reporting")]
@@ -147,6 +137,7 @@ namespace d360.core.entities
         public List<TopNavigationItem> NavigationItems { get; set; }
 
     }
+
     public class TopNavigationItem
     {
         public string MenuID { get; set; }
@@ -156,6 +147,7 @@ namespace d360.core.entities
         public List<NavigationItem> NavigationItems { get; set; }
 
     }
+
     public class NavigationItem
     {
         public string Name { get; set; }
@@ -264,16 +256,6 @@ namespace d360.core.entities
 
         [DataMember]
         public List<ReportSchemaModel> Items { get; set; }
-    }
-
-    [DataContract(Namespace = NAMESPACE)]
-    public class StatusCount : BaseObject
-    {
-        [DataMember]
-        public string Status { get; set; }
-        
-        [DataMember]
-        public int Count { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]

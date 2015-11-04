@@ -28,12 +28,12 @@
                     @Html.DropDownList("Type", Model.DataTypes, new { @class = "browser-default" })
                 </div>
                 <div class="col s3 input-field">
+                    <div id='IsListableTip' class="FieldName">@(Resources.FieldInfo.FilterEnabled_Name)</div>
                     <input id="IsListable" name="IsListable" type="checkbox" value="@(Model.FieldType.IsListable)" @(Model.FieldType.IsListable ? "checked='checked'" : "") />
-                    <label id='IsListableTip' for="IsListable">@(Resources.FieldInfo.FilterEnabled_Name)</label>
                 </div>
                 <div class="col s3 input-field">
+                    <div id='IsRequiredTip' class="FieldName">@(Resources.FieldInfo.Required_Name)</div>
                     <input id="IsRequired" name="IsRequired" type="checkbox" value="@(Model.FieldType.IsRequired)" @(Model.FieldType.IsRequired ? "checked='checked'" : "") />
-                    <label id='IsRequiredTip' for="IsRequired">@(Resources.FieldInfo.Required_Name)</label>
                 </div>
             </div>
             <div class="row LookupSection">

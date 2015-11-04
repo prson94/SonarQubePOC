@@ -4,81 +4,15 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using System.Data;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.IO;
-using System.Xml;
-using System.Diagnostics.Contracts;
-using d360.core.entities;
 using d360.core.resources;
 
 namespace d360.core
 {
-    public static class DateTimeExtensions
-    {
-        public static long Epoch(this DateTime d)
-        {
-            return (long)(d.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalSeconds;
-        }
-        public static DateTime FromEpoch(int epoch)
-        {
-
-            DateTime d = new DateTime(1970, 1, 1);
-            d = d.AddSeconds(epoch);
-            return d;
-
-        }
-        public static long UtcNowEpoch()
-        {
-            return DateTime.UtcNow.Epoch();
-        }
-
-        public static string FormatNullableDate(this DateTime? date)
-        {
-            var dateString = "";
-
-            if (date.HasValue)
-            {
-                dateString = date.Value.ToShortDateString();
-            }
-            else {
-                dateString = "";
-            }
-
-            return dateString;
-        }
-
-        public static string FormatNullableDateTime(this DateTime? date)
-        {
-            var dateString = "";
-
-            if (date.HasValue)
-            {
-                dateString = date.Value.ToShortDateString() + " " + date.Value.ToShortTimeString();
-            }
-            else
-            {
-                dateString = "";
-            }
-
-            return dateString;
-        }
-    }
-
     public static class StringExtensions
     {
         public static string FormatBooleanReadOnlyValue(this bool b)
         {
             return b ? Values.BooleanTrue : Values.BooleanFalse;
-        }
-
-        public static string CleanColumnName(this string s)
-        {
-            s = s.Replace(" ", "-");
-            s = s.Replace("$", "_");
-            s = System.Text.RegularExpressions.Regex.Replace(s, "[0123456789]", "__");
-            return s;
         }
 
         public static string Decode(this string text)
@@ -133,28 +67,6 @@ namespace d360.core
 
             return text;
         }
-
-        public static string HierarchyPathToText(this string xml)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(xml));
-
-            string separator = " // ";
-            string html = "";
-            var doc = XElement.Parse(xml);
-
-            var lastNodeID = doc.Elements().Last().Attribute("id").Value;
-
-            foreach (XElement node in doc.Elements())
-            {
-                html += node.Attribute("name").Value;
-                if (node.Attribute("id").Value != lastNodeID)
-                    html += separator;
-            }
-
-            //html = html.Remove(html.LastIndexOf(separator) + 1);
-
-            return html;
-        }
     }
 
     public static class XMLExtensions
@@ -172,33 +84,6 @@ namespace d360.core
                 var n = token.Substring(1, token.Length - 2);   // Name of the element to find in the XML.
                 if (fields.ContainsKey(n))
                     tokenFormatString = tokenFormatString.Replace(token, fields[n]);
-            }
-
-            return tokenFormatString;
-        }
-        
-        /// <returns>The previously tokenized string with its replaced field values.</returns>
-        public static string ReplaceTokenWithValues(this string tokenFormatString, List<Field> fields)
-        {
-            List<string> tokens = tokenFormatString.ParseTokens();
-            return tokenFormatString.ReplaceTokenWithValues(tokens, fields);
-        }
-
-        /// <summary>
-        /// Replaces field token with their actual values from system lookups.
-        /// </summary>
-        /// <param name="xml">The list of tokens pulled from the tokenized string.</param>
-        /// <param name="xml">The XML that contains all the field names and values.</param>
-        /// <returns>The previously tokenized string with its replaced field values.</returns>
-        public static string ReplaceTokenWithValues(this string tokenFormatString, List<string> tokens, List<Field> fields)
-        {
-            // Format the text based on the tokens.
-            foreach (string token in tokens)
-            {
-                var n = token.Substring(1, token.Length - 2);   // Name of the element to find in the XML.
-                var fld = fields.FirstOrDefault(t => t.FieldType.Name == n);
-                if (fld != null)
-                    tokenFormatString = tokenFormatString.Replace(token, fld.Value);
             }
 
             return tokenFormatString;
@@ -238,18 +123,6 @@ namespace d360.core
             }
 
             return error;
-        }
-
-        public static string FormatDisplayName(this Resource r)
-        {
-            try
-            {
-                return string.Format("{0} {1}", r.FirstName, r.LastName);
-            }
-            catch
-            {
-                return "Unable to resolve resource name";
-            }
         }
     }
 }

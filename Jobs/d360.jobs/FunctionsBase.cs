@@ -1,16 +1,8 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.utils.company;
-using Dapper;
+﻿using d360.utils.company;
 using Mandrill;
 using Mandrill.Model;
-using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.jobs
 {

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using d360.core;
 using System.Diagnostics;
@@ -11,7 +9,7 @@ using Dapper;
 namespace d360.jobs.queue.ProcessNotification
 {
     #region Models
-    
+
     public class CommentInfo
     {
         public int ID { get; set; }

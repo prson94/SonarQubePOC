@@ -1,20 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-//using System.Data.Objects;
-using System.Xml.Linq;
-using System.Text.RegularExpressions;
 using System.Data;
-using d360.core;
-using d360.core.entities;
-using System.Collections.Specialized;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
 using System.Text;
-using System.Data.Entity;
-using System.Data.Common;
 
 namespace d360.model
 {
@@ -2298,34 +2290,4 @@ namespace d360.model
     }
 
     #endregion
-
-    //public static class Extensions
-    //{
-    //    public static string GetFullExceptionData(this Exception ex)
-    //    {
-    //        string error = "";
-
-    //        error += ex.Message;
-    //        var iex = ex.InnerException;
-    //        while (iex != null)
-    //        {
-    //            error += ";  " + iex.Message + "-----" + iex.StackTrace;
-    //            iex = iex.InnerException;
-    //        }
-
-    //        return error;
-    //    }
-
-    //    public static string FormatDisplayName(this Resource r)
-    //    {
-    //        try
-    //        {
-    //            return string.Format("{0} {1}", r.FirstName, r.LastName);
-    //        }
-    //        catch
-    //        {
-    //            return "Unable to resolve resource name";
-    //        }
-    //    }
-    //}
 }

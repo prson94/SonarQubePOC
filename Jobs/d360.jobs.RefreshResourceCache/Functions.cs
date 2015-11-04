@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
 using System.Diagnostics;
-using System.Data.Entity.Design.PluralizationServices;
 using Dapper;
 using d360.core.entities;
 using System.Data.SqlClient;
