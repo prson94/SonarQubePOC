@@ -1077,14 +1077,13 @@
     <Content Include="Views\Fusion\RelationshipAggregatesOverlay.cshtml" />
     <Content Include="Views\Workflow\WorkflowActionOverlay_1.cshtml" />
     <Content Include="Views\Shared\RowCommandTooltip.cshtml" />
-    <Content Include="Views\Apps\Search.cshtml" />
+    <Content Include="Views\Apps\SearchOld.cshtml" />
     <Content Include="Views\Workflow\ArtifactTypeWorkflowStatusOverlay.cshtml" />
     <Content Include="Views\Overlays\Audit.cshtml" />
     <Content Include="Views\Form\AddFusionSpreadsheetImport.cshtml" />
     <Content Include="Views\Overlays\MyApiCredentials.cshtml" />
     <Content Include="Views\Form\WorkflowTypeRelationEditForm.cshtml" />
     <Content Include="Views\Shared\Apps.cshtml" />
-    <Content Include="Views\Apps\SearchBeta.cshtml" />
     <Content Include="Views\Shared\FormHeader.cshtml" />
     <Content Include="Views\Form\ArtifactTypeEditForm.cshtml" />
     <Content Include="Views\Form\PeopleResponsibilityEditForm.cshtml" />
@@ -1109,7 +1108,7 @@
     <Content Include="Views\Overlays\PolicyTypeClasses.cshtml" />
     <Content Include="Views\Workflow\WorkflowActionOverlay_3.cshtml" />
     <Content Include="Views\Workflow\WorkflowActionOverlay_2.cshtml" />
-    <Content Include="Views\Apps\Searchg.cshtml" />
+    <Content Include="Views\Apps\Search.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

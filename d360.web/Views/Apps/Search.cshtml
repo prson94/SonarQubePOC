@@ -5,191 +5,138 @@
     var phrase = ViewBag.Phrase;
 }
 
-<div id="SearchArea">
-    <div class="row">
-        <div class="col l3 m3 hide-on-small-and-down fixed">
-            <div class="tile tile-detail">
-                <h3>Categorized Results</h3>
-                <div class="widget" id="CategoryResults" data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
-            </div>
-        </div>
-        <div class="col l9 m9">
-            <div class="tile tile-detail">
-                <div data-bind="text: elapsedTime"></div>
-                <div data-bind="visible: shouldShowSpinner()"><i class='fa fa-spinner fa-spin fa-4x'></i></div>
-                <div id="SearchResults" data-bind="template: {name: 'searchResultTmpl', foreach: results }"></div>
-            </div>
-        </div>
-    </div>
-</div>
+<div id="SearchResults"></div>
+<h6 class="grey-text lighten-2 center-align" style="margin:10px;"><span id="Timing"></span> | <input type="button" class="btn-flat grey-text lighten-2" style="padding:0;text-transform:none;vertical-align:baseline" value="Export Results" id="Export" /> | <a class="btn-flat grey-text lighten-2" style="padding:0;text-transform:none;vertical-align:baseline" href="mailto:ideas@data3sixty.com">Feedback</a></h6>
 
-<div id="NoDataMessage">
-    <div class="row">
-        <div class="col l3 m3">&nbsp;</div>
-        <div class="col l6 m6">
-            <div class="card-panel">
-                <span class="red-text text-darken-2">Your search returned no results.</span>
-            </div>
-        </div>
-        
-    </div>
-    
-</div>
-
-<script id="searchResultTmpl" type="text/html">
-    <div class="entry" data-bind="attr: {'data-category': Type}">
-        <div class="name">
-            <strong data-bind="text: Type"></strong> : <a data-bind="attr: {href: Url}, html: Name" target="D3SApp"></a>
-        </div>
-        <div class="description" data-bind="html: Description"></div>
-    </div>
-</script>
-<script id="searchResultsCategoriesTmpl" type="text/html">
-    <div class="widget" id="CategoryResults">
-        <div class='entry'><a href='#' data-category=''>All item(s)</a></div>
-        <div data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
-    </div>
-</script>
-<script id="searchResultsCategoryTmpl" type="text/html">
-    <div class="entry">
-        <a href="#" data-bind="attr: {'data-category': Name}, html: Name"></a> : <span data-bind="text: ResultCount"></span> item(s)
-    </div>
-</script>
-<script type="text/javascript">
-    var phrase = "@(phrase)";
-
-    function SearchResult(data) {
-        var self = this;
-        data = data || {};
-        self.Name = data.Name;
-        self.Url = "/" + data.Url;
-        self.Description = data.Description;
-        self.Type = data.Type;
-    }
-
-    function SearchResultCategory(data) {
-        var self = this;
-        data = data || {};
-        self.Name = data.Name;
-        self.ResultCount = data.ResultCount;
-    }
-
-    function SearchViewModel() {
-        var self = this;
-        self.categories = ko.observableArray();
-        self.results = ko.observableArray();
-        self.elapsedTime = ko.observable();
-
-        self.shouldShowSpinner = ko.observable(false);
-        //self.shouldShowSpinner = function () {
-        //    return (self.results().length <= 0);
-        //};
-
-        self.showNodata = function () {
-            $("#NoDataMessage").show();
-            $("#SearchArea").hide();
-        }
-
-        self.ensureResultsVisible = function () {
-            $("#NoDataMessage").hide();
-            $("#SearchArea").show();
-        }
-        
-
-        self.getResults = function (phrase) {
-
-            //try {
-            self.categories.removeAll();
-            self.results.removeAll();
-            self.elapsedTime('');
-
-            self.shouldShowSpinner(true);
-            self.ensureResultsVisible();
-
-            $.ajax({
-                data: 'search=' + phrase,
-                url: '/search/results',
-                dataType: 'json',
-                type: 'POST',
-                error: function () {
-                    amplify.publish("ShowMessage", { title: 'Error When Searching', message: 'An error occurred while attempting to get search results.', type: 'error' });
-                    self.shouldShowSpinner(false);
-                },
-                success: function (data) {
-                    try {                       
-                        if (data.Results.length > 0) {
-                            var results = $.map(data.Results, function (item) { return new SearchResult(item); });
-                            self.results(results);
-                        }
-
-                        if (data.Categories.length > 0) {
-                            var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
-                            self.categories(cats);
-                        }
-
-                        if (data.Results.length == 0) {
-                            self.showNodata();                            
-                        }
-                    } catch (e) {
-
-                    }
-
-                    self.shouldShowSpinner(false);
-                    self.elapsedTime(data.ElapsedTime);
-                }
-            });
-            //}
-            //catch (e) {
-            //    console.log(e);
-            //}
-        };
-
-        return self;
-    }
-
-    var showOnlyRelevantCategory = function (category) {
-
-        try {
-            $('#SearchResults .entry').each(function () {
-                if (category == '' || $(this).data("category") == category) {
-                    $(this).show(300);
-                }
-                else {
-                    $(this).hide(300);
-                }
-            });
-        }
-        catch (e) {
-            console.log(e);
-        }
-    }
+<script>
 
     $(function () {
-        $("#NoDataMessage").hide();
-        var searchVm = new SearchViewModel();
-        try {
-            ko.applyBindings(searchVm, document.getElementById("SearchArea"));
+        var phrase = "@(phrase)";
+        var permissions = new PermissionsModel();
+        var ellapsed = '';
+
+        var context = {
+            Responsibility : "@(ContextList.Responsibility)"
         }
-        catch (e) {
-            console.log(e);
+                
+        var initrowdetails = function (index, parentElement, gridElement, datarecord) {
+            var div = $($(parentElement).children()[0]);
+            if (div != null) {
+                var ID = datarecord.ID
+                var Group = datarecord.Group;
+                var title = div.find('.title');
+                title.text(datarecord.Name);
+                var details = div.find('.desc');
+                var detId = ID + '_det';
+                var respId = ID + '_resp';
+                var sourcingId = ID + '_src';
+                var scoreId = ID + '_score';
+                var resp = div.find('.resp');
+                var src = div.find('.src');
+                var score = div.find('.score');
+                details.attr('id', detId);
+                resp.attr('id', respId);
+                src.attr('id', sourcingId);
+                score.attr('score', scoreId);
+                DetailTile(detId, null, permissions, Group, ID);
+                //ObjectStatisticsTile(scoreId, Group, ID);
+                PeopleResponsibilityTile(respId, context, permissions, Group, ID, ' ', true);
+                environment_diagram(sourcingId, permissions, Group, ID);
+                $(div).jqxTabs({ width: '95%', height: 380, theme:theme });
+            }
         }
 
-        $(document).ajaxComplete(function () {
-            try {
-                $('#CategoryResults .entry a[data-category]').each(function () {
-                    $(this).click(function () {
-                        var c = $(this).data("category");
-                        showOnlyRelevantCategory(c);
-                    });
-                });
+        var initrowdetailstable = function (index, parentElement, gridElement, datarecord) {
+            var div = $(parentElement);
+            if (div != null) {
+                var ID = datarecord.ID
+                var Group = datarecord.Group;                
+                var details = div.find('.desc');
+                var detId = ID + '_det';
+                var respId = ID + '_resp';
+                var sourcingId = ID + '_src';
+                var resp = div.find('.resp');
+                var src = div.find('.src');
+                details.attr('id', detId);
+                resp.attr('id', respId);
+                src.attr('id', sourcingId);
+                DetailTile(detId, null, permissions, Group, ID);
+                //  ObjectStatisticsTile(scoreId, Group, ID);
+                PeopleResponsibilityTile(respId, context, permissions, Group, ID, 'People Responsibilities', true);
+                //environment_diagram(sourcingId, permissions, Group, ID);                
+                $(div).jqxPanel({width:'90%', height: 580});
             }
-            catch (e) {
-                console.log(e);
-            }
+        }
+
+        var source = {
+            datatype: "json",
+            datafields: [
+                { name: 'Score', type: 'float' },
+                { name: 'Name', type: 'string' },
+                { name: 'Type', type: 'string' },
+                { name: 'Group', type: 'string' },
+                { name: 'Description', type: 'string' },
+                { name: 'ID', type: 'number' }
+            ],
+            type: 'POST',
+            dataType: 'json',
+            url: '/search/results',
+            data: { search: phrase },
+            id:'ID',
+            sortcolumn: 'Score',
+            sortdirection: 'desc'
+        };
+
+        var dataAdapter = new $.jqx.dataAdapter(
+            source, {
+                loadComplete: function (data) {
+                    if (data) { console.log(data); $('#Timing').text(data.ElapsedTime); }
+                }
         });
 
-        if (phrase != '') {
-            searchVm.getResults('"' + phrase + '"');
-        }
+        $("#SearchResults").jqxGrid({
+            altrows: true,
+            width: '98%',
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            filtermode: 'excel',
+            pageable: true,
+            pagesize: 20,
+            pagermode: 'simple',
+            columnsresize: true,
+            source: dataAdapter,
+            theme: theme,
+            rowdetails: true,
+            rowdetailstemplate: { rowdetails: "<div style='margin: 10px 5px 10px 5px;'><ul><li class='title'></li><li>People Responsibilities</li><li>Score</li><li>Lifecycle</li></ul><div class='desc'></div><div class='resp'></div><div class='score'></div><div class='src'></div></div>", rowdetailsheight: 420 },
+            initrowdetails: initrowdetails,
+            /*rowdetailstemplate: {
+                rowdetails: "<div style='margin: 10px;'>" +
+                    "<div class='row'>" +
+                        "<div class='col s8'>" +
+                            "<div class='desc'></div>" +
+                            "<div class='resp' class='tile tile-detail'></div>" +
+                            "<div class='src' class='tile tile-detail'></div>" +
+                        "</div>" +
+                        "<div class='col s4'>" +
+                            "<div class='score' class='tile tile-detail'></div>" +
+                        "</div>" +
+                    "</div>" +
+                "</div>", rowdetailsheight: 600 },
+            initrowdetails: initrowdetailstable,*/
+            columns: [
+                { text: 'Name', dataField: 'Name', width: '65%' },
+                { text: 'Score', dataField: 'Score', width: '10%', filterable: false },
+                { text: 'Category', dataField: 'Group', width: '10%' },
+                { text: 'Type', dataField: 'Type', width: '15%' }
+            ]
+        });
+
+        $('#Export').click(function () {
+            $("#SearchResults").jqxGrid('exportdata', 'csv', 'jqxGrid');
+        });
     });
 </script>
+<script src="/Scripts/d3/d3.js"></script>
+
+
