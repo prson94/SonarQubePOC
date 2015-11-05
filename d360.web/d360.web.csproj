@@ -1109,6 +1109,7 @@
     <Content Include="Views\Overlays\PolicyTypeClasses.cshtml" />
     <Content Include="Views\Workflow\WorkflowActionOverlay_3.cshtml" />
     <Content Include="Views\Workflow\WorkflowActionOverlay_2.cshtml" />
+    <Content Include="Views\Apps\Searchg.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
