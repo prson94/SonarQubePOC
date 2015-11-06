@@ -464,6 +464,11 @@ function CommentItem(data) {//, hub) {
     self.DateEdited = ko.observable(data.DateEditedUTCString || null);
     self.IsEditable = ko.observable(data.IsEditable || false);
 
+    self.tagSuggestions = ko.observableArray();
+    self.tagSuggestionsPresent = ko.computed(function () {
+        return (self.tagSuggestions().length > 0);
+    }, self);
+
     self.ProcessingCount = ko.observable(0);
     self.IsProcessing = ko.computed(function () {
         return (self.ProcessingCount() != 0);
@@ -576,12 +581,9 @@ function CommentItem(data) {//, hub) {
         return !self.tagsAreDisplayed();
     }, self);
 
-    self.tagSuggestions = ko.observableArray();
-    self.tagSuggestionsPresent = ko.computed(function () {
-        return (self.tagSuggestions().length > 0);
-    }, self);
     self.newTag = ko.observable();
     self.tags = ko.observableArray([]);
+
     self.newTag.subscribe(function (value) {
         if (value) {
             $.getJSON('/api/tagsuggestions', { phrase: value }, function (suggestions) {
@@ -589,6 +591,9 @@ function CommentItem(data) {//, hub) {
                 var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagSuggestionItem(item, self); }); //, self.hub
                 self.tagSuggestions(mappedSuggestions);
             });
+        }
+        else {
+            self.tagSuggestions([]);
         }
     });
 

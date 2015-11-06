@@ -563,7 +563,6 @@
             </tr>
             <!-- <span style="font-weight:600; color:#999; font-size:10pt">Discussion &#9660;</span> -->
 
-
             <tr>
                 <td colspan="2" style="position: relative; padding: 6px 3px 0 3px;">
                     <!--<i class="fa fa-2x fa-tags" style="color: #5B401F; position: absolute; top: 5px; left: 5px"></i>-->
@@ -725,11 +724,8 @@
                                 <!-- ko template: {name: 'commentTagTmpl', foreach: tags } -->
                                 <!-- /ko -->
                                 <!-- <button class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" data-bind="visible: HasNewTags, click: updateComment, text: NewTagCountText">Save</button>
-    -->
-                                <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px">
-                                    <!-- ko template: {name: 'commentTagSuggestionTmpl', foreach: tagSuggestions } -->
-                                    <!-- /ko -->
-                                </div>
+        -->
+
                             </td>
                         </tr>
                         <tr>
@@ -737,6 +733,12 @@
                                 <div style="white-space:nowrap;display:inline-block;width:100%">
                                     <input data-bind="textInput: newTag" placeholder="Add another tag" style="border: none; border: 1px solid #adacac; line-height:1.5; padding:2px;margin:5px 0; width:100%;" />
                                     <i class="fa fa-tags" style="position:relative; z-index:1; left: -25px; top: 0; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
+                                </div>
+                                <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px;">
+                                    <div style="padding:4px; border-top:solid 1px #dedede; font-size:12px; ">
+                                        <!-- ko template: {name: 'commentTagSuggestionTmpl', foreach: tagSuggestions } -->
+                                        <!-- /ko -->
+                                    </div>
                                 </div>
                             </td>
                             <td></td>
