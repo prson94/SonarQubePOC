@@ -10,16 +10,31 @@
 <script>
     $(function () {
         var phrase = "@(phrase)";
-        var permissions = new PermissionsModel();
-        var ellapsed = '';
+        var permissions = new PermissionsModel();        
+        var detailRow = -1;
 
         var context = {
             Responsibility : "@(ContextList.Responsibility)"
+        }
+            
+        var initWidgets = function (tab) {            
+            var datarecord = $('#SearchResults').jqxGrid('getrowdata', detailRow);
+            if (datarecord == null) return;
+            var ID = datarecord.ID;
+            var Group = datarecord.Group;
+            console.log(tab);
+            switch (tab) {                
+                case 2:                    
+                    var scoreId = ID + '_score';
+                    ObjectStatisticsTile(scoreId, Group, ID); //tab needs to be visible before rendering chart
+                    break;
+            }
         }
 
         var initrowdetails = function (index, parentElement, gridElement, datarecord) {
             var div = $($(parentElement).children()[0]);
             if (div != null) {
+                detailRow = index;
                 var ID = datarecord.ID;
                 var Group = datarecord.Group;
                 var title = div.find('.title');
@@ -34,9 +49,9 @@
                 resp.attr('id', respId);
                 score.attr('id', scoreId);
                 DetailTile(detId, null, permissions, Group, ID);
-                ObjectStatisticsTile(scoreId, Group, ID);
+                
                 PeopleResponsibilityTile(respId, context, permissions, Group, ID, ' ', true);
-                $(div).jqxTabs({ width: '95%', height: 380, theme:theme });
+                $(div).jqxTabs({ width: '95%', height: 380, theme: theme, initTabContent: initWidgets });
             }
         }
 
