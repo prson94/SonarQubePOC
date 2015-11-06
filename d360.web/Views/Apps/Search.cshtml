@@ -46,28 +46,6 @@
             }
         }
 
-        var initrowdetailstable = function (index, parentElement, gridElement, datarecord) {
-            var div = $(parentElement);
-            if (div != null) {
-                var ID = datarecord.ID
-                var Group = datarecord.Group;                
-                var details = div.find('.desc');
-                var detId = ID + '_det';
-                var respId = ID + '_resp';
-                var sourcingId = ID + '_src';
-                var resp = div.find('.resp');
-                var src = div.find('.src');
-                details.attr('id', detId);
-                resp.attr('id', respId);
-                src.attr('id', sourcingId);
-                DetailTile(detId, null, permissions, Group, ID);
-                //  ObjectStatisticsTile(scoreId, Group, ID);
-                PeopleResponsibilityTile(respId, context, permissions, Group, ID, 'People Responsibilities', true);
-                //environment_diagram(sourcingId, permissions, Group, ID);                
-                $(div).jqxPanel({width:'90%', height: 580});
-            }
-        }
-
         var source = {
             datatype: "json",
             datafields: [
@@ -91,6 +69,16 @@
             source, {
                 loadComplete: function (data) {
                     if (data) { console.log(data); $('#Timing').text(data.ElapsedTime); }
+                },
+                beforeLoadComplete: function (records) {
+                    var data = new Array();
+                    // update the loaded records. Dynamically add EmployeeName and EmployeeID fields. 
+                    for (var i = 0; i < records.length; i++) {
+                        var row = records[i];
+                        row.Score = row.Score * 100;                        
+                        data.push(row);
+                    }
+                    return data;
                 }
         });
 
@@ -102,33 +90,21 @@
             filterable: true,
             filtermode: 'excel',
             pageable: true,
-            pagesize: 20,
+            pagesize: 10,
             pagermode: 'simple',
             columnsresize: true,
             source: dataAdapter,
             theme: theme,
             rowdetails: true,
-            rowdetailstemplate: { rowdetails: "<div style='margin: 10px 5px 10px 5px;'><ul><li class='title'></li><li>People Responsibilities</li><li>Score</li><li>Lifecycle</li></ul><div class='desc'></div><div class='resp'></div><div class='score'></div><div class='src'></div></div>", rowdetailsheight: 420 },
-            initrowdetails: initrowdetails,
-            /*rowdetailstemplate: {
-                rowdetails: "<div style='margin: 10px;'>" +
-                    "<div class='row'>" +
-                        "<div class='col s8'>" +
-                            "<div class='desc'></div>" +
-                            "<div class='resp' class='tile tile-detail'></div>" +
-                            "<div class='src' class='tile tile-detail'></div>" +
-                        "</div>" +
-                        "<div class='col s4'>" +
-                            "<div class='score' class='tile tile-detail'></div>" +
-                        "</div>" +
-                    "</div>" +
-                "</div>", rowdetailsheight: 600 },
-            initrowdetails: initrowdetailstable,*/
+            autorowheight: true,
+            rowdetailstemplate: { rowdetails: "<div style='margin: 10px 5px 10px 5px;'><ul><li class='title'></li><li>People Responsibilities</li><li>Rank</li><li>Lifecycle</li></ul><div class='desc'></div><div class='resp'></div><div class='score'></div><div class='src'></div></div>", rowdetailsheight: 420 },
+            initrowdetails: initrowdetails,            
             columns: [
-                { text: 'Name', dataField: 'Name', width: '65%' },
-                { text: 'Score', dataField: 'Score', width: '10%', filterable: false },
+                { text: 'Name', dataField: 'Name', width: '20%' },
+                { text: 'Description', dataField: 'Description', width: '48%' },
+                { text: 'Rank', dataField: 'Score', width: '7%', filterable: false, cellsformat: 'p1' },
                 { text: 'Category', dataField: 'Group', width: '10%' },
-                { text: 'Type', dataField: 'Type', width: '15%' }
+                { text: 'Type', dataField: 'Type', width: '15%' }                
             ]
         });
 
