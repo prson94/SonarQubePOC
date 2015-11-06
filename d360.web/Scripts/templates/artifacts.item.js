@@ -54,6 +54,7 @@
             }
 
             function saveAction(data) {
+               // alert(ko.toJSON(data));
                 try {
                     switch (data.context) {
                         case contextList.Comment:
@@ -69,6 +70,7 @@
                         case contextList.Responsibility:
                         case contextList.Artifact:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
+                            ObjectStatisticsTile('MicroWidget1', type, id);
                             break;
                         case contextList.SourcingResponsibility:
                             environment_diagram('SourcingTile', permissions, type, id);
@@ -252,7 +254,6 @@
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);
                     amplify.subscribe("SaveAction", saveAction);
-                    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //#endregion
                 });

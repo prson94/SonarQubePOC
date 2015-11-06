@@ -24,27 +24,43 @@ namespace d360.web.Controllers.Services
         public dynamic EditComment(CommentData comment)
         {
             var relations = new List<CommentRelation>();
+            CommentDetail dtl = Company.GetCommentDetail(comment.Comment.ID).SingleOrDefault(c => c.ParentID == null);
             if (comment.Comment.ID != 0)
             {
-                var comm = Company.GetCommentDetailsByID(comment.Comment.ID).SingleOrDefault(c => c.ParentID == null);
-                foreach (var tag in comment.Tags)
+                if (comment.Tags != null)
                 {
-                    relations.Add(new CommentRelation { ObjectType = tag.Object, ObjectID = tag.ObjectID, Date = DateTime.UtcNow });
+                    foreach (var tag in comment.Tags)
+                    {
+                        relations.Add(new CommentRelation { ObjectType = tag.Object, ObjectID = tag.ObjectID, Date = DateTime.UtcNow });
+                    }
                 }
-            }
-            var dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
 
-            if (!string.IsNullOrEmpty(dtl.TagsXml))
-            {
-                dtl.ParseTagXml();
-            }
-            if (!string.IsNullOrEmpty(dtl.VotesXml))
-            {
-                dtl.ParseVoteXml();
+                //var test = dtl.DateCreated.Subtract(DateTime.UtcNow);
+                //var test2 = (dtl.DateCreated.Subtract(DateTime.UtcNow).Duration() < TimeSpan.FromMinutes(5));
+
+                if (dtl.Body != comment.Comment.Body
+                    && !string.IsNullOrWhiteSpace(comment.Comment.Body)
+                    && dtl.CreatingResourceID == Company.CurrentResourceID
+                    && dtl.DateCreated.Subtract(DateTime.UtcNow).Duration() < TimeSpan.FromMinutes(5))
+                {
+                    comment.Comment.DateEdited = DateTime.UtcNow;
+                    dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
+                }
+
+
+                if (!string.IsNullOrEmpty(dtl.TagsXml))
+                {
+                    dtl.ParseTagXml();
+                }
+                if (!string.IsNullOrEmpty(dtl.VotesXml))
+                {
+                    dtl.ParseVoteXml();
+                }
             }
 
             return dtl;
         }
+
         [HttpPost, Route("comment")]
         public dynamic AddComment(CommentData comment)
         {
@@ -134,7 +150,8 @@ namespace d360.web.Controllers.Services
         [HttpPost,Route("vote")]
         public List<CommentVote> VoteComment(CommentVote vote)
         {
-            // should only be +/- 1
+
+            //should only be +/ -1
             if (vote.Vote < 0)
                 vote.Vote = -1;
             else

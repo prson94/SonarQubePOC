@@ -31,6 +31,12 @@ namespace d360.core.entities
         public DateTime DateCreated { get; set; }
 
         [DataMember]
+        public DateTime? DateEdited { get; set; }
+
+        [DataMember]
+        public bool IsDeleted { get; set; }
+
+        [DataMember]
         public int CreatingResourceID { get; set; }
 
         [DataMember]

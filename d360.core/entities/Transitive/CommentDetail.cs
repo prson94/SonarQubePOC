@@ -37,6 +37,8 @@ namespace d360.core.entities
         {
             Tags = new List<CommentDetailTag>();
             Votes = new List<CommentVote>();
+
+
         }
 
         [DataMember]
@@ -51,8 +53,14 @@ namespace d360.core.entities
         [DataMember]
         public DateTime DateCreated { get; set; }
 
-        [DataMember]
+        [DataMember, NotMapped]
         public string DateCreatedUTCString { get { return DateCreated.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"); } }
+
+        [DataMember]
+        public DateTime? DateEdited { get; set; }
+
+        [DataMember, NotMapped]
+        public string DateEditedUTCString { get { return ((DateEdited == null) ? null : ((DateTime)DateEdited).ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'")); } }
 
         [DataMember]
         public string ObjectType { get; set; }
@@ -63,11 +71,20 @@ namespace d360.core.entities
         [DataMember]
         public int CreatingResourceID { get; set; }
 
+        [DataMember]
+        public bool IsDeleted { get; set; }
+
         [DataMember, NotMapped]
         public string ResourceName { get; set; }
 
         [DataMember, NotMapped]
         public string ResourceEmail { get; set; }
+
+        [DataMember, NotMapped]
+        public bool? IsEditable { get; set; }
+
+        [DataMember, NotMapped]
+        public bool CreatorIsOwner { get; set; }
 
         [DataMember]
         public string ObjectName { get; set; }

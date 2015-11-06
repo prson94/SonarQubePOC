@@ -148,7 +148,7 @@
 <script id="policyRuleStatisticsTileTmpl" type="text/html">
     <div>
         <div data-bind="foreach: SocialModels">
-            <div style="margin: 10px 0px 10px 25px">
+            <div style="margin: 10px 0 10px 25px">
                 <span class="StatisticValue SocialStatisticValue" data-bind="text:Count, attr: {'data-tile':'', 'data-uri': SocialOverlayUri, 'data-context': 'TileOverlay'}" class="tile-clickable"></span>
                 <span class="StatisticName SocialStatisticName" data-bind="text:Name"></span>
             </div>
@@ -554,7 +554,6 @@
             <tr>
                 <td>
 
-
                     <select style="background-color:transparent; color:#999; font-size:10pt; font-weight:600; height:100%; width:auto; border:none; outline:none; margin:0; padding:0; display:inline-block;" data-bind="options: typeEntryOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageType" class="browser-default" />
 
                     <span style="float:right; color:#000; font-size:10pt; font-weight:600;">
@@ -588,7 +587,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <button style="display:inline; float:right;  width:auto; margin: 0 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: addComment">Share</button>
+                    <button style="display:inline; float:right;  width:70px; margin: 0 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: addComment, disable: IsProcessing()"><span data-bind="visible: !IsProcessing()">Share</span><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing()" style="text-align:center;"></i></button>
                 </td>
                 <!-- <td class="type-field" style="padding: 5px"><select data-bind="options: typeEntryOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageType" class="browser-default" /></td> -->
                 <!-- <td style="padding: 5px"><button class="btn waves-effect grey-text grey lighten-5" type="button" data-bind="click: addComment">Share</button></td> -->
@@ -597,17 +596,12 @@
 
         <div class="Board-Spacer" data-bind="visible: ShowAddCommentControls"></div>
 
-
         <div class="FilterForm">
             <div>
                 <span style="color:#000; font-size:10pt; font-weight:600;">
                     Threads
                 </span>
                 <select id="BoardDateFilter" data-bind="options: dateFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedDateFilterOption, event: {change: filterComments}" class="browser-default socialDropDown" style="display:inline-block;" />
-                <!--<span style="color:#000; font-size:10pt; font-weight:600;">
-                Threads of
-            </span>
-            <select id="BoardTypeFilter" data-bind="options: typeFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedTypeFilterOption, event: {change: filterComments}" class="browser-default socialDropDown" style="display:inline-block;" />-->
             </div>
             <div style="display: block; /*text-align: justify; -ms-text-justify: distribute-all-lines; text-justify: distribute-all-lines;*/ overflow-x:scroll;white-space:nowrap;overflow:auto;">
                 <!-- ko template: {name: 'commentCountTmpl', foreach: commentCounts } -->
@@ -617,7 +611,8 @@
             <div style="white-space: nowrap;">
                     <div style="width:100%;position:relative;display:inline-block;">
                         <input data-bind="value: searchFilter,valueUpdate:'afterkeydown'" type="text" placeholder="Search for keyword" style="display:inline-block;width:100%;line-height:1.5;padding:2px;" />
-                        <i class="fa fa-search" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
+                        <i data-bind="visible: searchFilter().length < 1" class="fa fa-search" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
+                        <i data-bind="visible: searchFilter().length > 0, click: function () { searchFilter('')}" class="fa fa-remove" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
                         <!-- <button style="display:inline; float:right;  width:auto; margin: 8px 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: filterComments">Search</button>-->
                     </div>
                 </div>
@@ -628,7 +623,7 @@
                 <div class="notification" data-bind="visible: newComments().length > 0"><a data-bind="    click: loadNewComments"> <span data-bind="text: newComments().length"></span> new post(s)</a></div>
                 <!-- ko template: {name: 'commentTmpl', foreach: comments } -->
                 <!-- /ko -->
-                <button class="btn waves-effect grey-text grey lighten-5" style="width: 90%; margin: auto" type="button" data-bind="visible: moreComments(), click: getMoreComments">Load More</button>
+                <button class="btn waves-effect grey-text grey lighten-5" style="width: 90%; margin: auto" type="button" data-bind="visible: moreComments(), click: getMoreComments,  disable: IsProcessing "><span data-bind="visible: !IsProcessing()">Load More</span><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
             </div>
 </script>
 <script id="commentCountTmpl" type="text/html">
@@ -657,32 +652,37 @@
     <div class="entry top-entry" data-bind="css: { 'entry-alt': $index()%2 }, visible: isVisible, attr: { id: ID }">
         <table>
             <tr>
-                <td rowspan="3" class="profile">
-                    <i data-bind="css: getCommentTypeCss()" style="font-size:large;margin-top:11px;"></i>
+                <td rowspan="4" class="profile">
+                    <i data-bind="css: getCommentTypeCss()" style="font-size:large;"></i>
                 </td>
-                <td>
+                <td style="vertical-align:top;">
                     <div>
                         <a style="font-weight:bold" data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind="text: ObjectName"></span></a>
+                        <span data-bind="visible: ShowObjectType">
+                            (posted by 
+                            <a data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: (CreatorIsOwner() ? ResourceName() + ' (owner)' : ResourceName)"></a>)
+                        </span>
                     </div>
-                    <!--<div class="type" data-bind="text: getCommentType()"></div>-->
                 </td>
                 <td class="author">
-                    <div data-bind="if: isNonResourceComment">
-                        <a data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: ResourceName"></a>
+                    <span data-bind="html: DateCreatedLocal"></span>
+                    <div data-bind="visible: (DateEdited() != null)" style="color:#aaa;font-size:.75em">
+                        Edited on <span data-bind="text: DateEditedLocal"></span>
                     </div>
-                    <div data-bind="html: DateCreatedLocal"></div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
-                    <div class="message" data-bind="html: Body"></div>
+                    <div class="message" data-bind="html: Body, visible: EditHidden"></div>
                     <div style="display:inline-block; width:100%">
                         <span>
                             <span style="cursor:pointer" data-bind="click: CastUpVote"><i class="fa fa-thumbs-o-up"></i></span> <span data-bind="html: UpVoteCount"></span>
                             <span style="cursor:pointer" data-bind="click: CastDownVote"><i class="fa fa-thumbs-o-down"></i></span> <span data-bind="html: DownVoteCount"></span>
                         </span>
                         <span style="margin-left:10px">
-                            <a style="color:#272727;" href="#" data-bind="click: showReply, style: {display: ReplyHidden() ? 'none' : 'inline-block' }"><i class="fa fa-reply"></i>Reply</a>
+                            <!--style: {display: (ReplyHidden() ? 'none' : 'inline-block' }-->
+                            <a style="color:#272727;" href="#" data-bind="click: showReply, visible: (ReplyHidden() && ShowAddCommentControls())"><i class="fa fa-reply"></i>Reply</a>&nbsp;
+                            <a style="color:#272727;" href="#" data-bind="click: showEdit, visible: (EditHidden() && IsEditable() && ShowAddCommentControls())"><i class="fa fa-edit"></i>Edit</a>
                         </span>
                         <span style="float:right">
                             <button data-bind="style: {display: tagsAreHidden() ? 'inline-block' : 'none' }, click: displayTags" class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" style="height:auto;padding:1px 5px;line-height:1.4;text-transform:none;font-size:90%">
@@ -698,30 +698,27 @@
                     <div style="display:inline-block;" data-bind="fadeVisible: tagsAreDisplayed">
                         <!-- ko template: {name: 'commentTagTmpl', foreach: CurrentTags } -->
                         <!-- /ko -->
-
-
-                        </div>
-
-                    <!--
-                            <div data-bind="style: {display: tagsAreHidden() ? 'inline-block' : 'none' }, click: displayTags" style="display: inline-block; margin-top: 5px; padding: 0 5px;  border-radius: 2px; background-color:#ddd; cursor:pointer; font-size:90%">
-                                <span data-bind="visible: tagsAreHidden, text: CurrentTagCountText"></span>
-                                <i class="fa fa-arrow-down" style="font-size:80%"></i>
-
-                            </div>
-                            <div data-bind="style: {display: tagsAreHidden() ? 'none' : 'inline-block' }, click: hideTags" style="display: inline-block; margin-top: 5px; padding: 0 5px;  border-radius: 2px; background-color:#ddd; cursor:pointer; font-size:90%">
-                                <span data-bind="visible: tagsAreDisplayed">hide tags</span>
-                                <i class="fa fa-arrow-up" style="font-size:80%"></i>
-
-                            </div>
-
-                           <button style="width: 40px" data-bind="visible: tagsAreHidden, click: displayTags" class="waves-effect waves-green btn-flat" title="Show tags">&gt;&gt;</button>
-                            <button style="width: 40px" data-bind="visible: tagsAreDisplayed, click: hideTags" class="waves-effect waves-red btn-flat" title="Hide tags">&lt;&lt;</button> -->
+                    </div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2" class="ChildComments">
-                    <a class="commentNotification" data-bind="click: loadNewComments, visible: NewComments().length > 0"> <span data-bind="    text: NewComments().length"></span> new comment(s)</a>
-                    <table class="ChildComment" data-bind="visible: ReplyHidden">
+                    <table data-bind="visible: !EditHidden()" class="ChildComments">
+                        <tr>
+                            <td class="input-field" style="width:100%">
+                                <textarea style="width:100%" data-bind="value: Body, htmlarea: {}"></textarea>
+                            </td>
+                            <td>
+                                <button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: updateComment, disable: IsProcessing" style="margin-left:5px; width:auto;"><i class="fa fa-edit" title="Edit" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="ChildComments">
+                    <a class="commentNotification" data-bind="click: loadNewComments, visible: NewComments().length > 0"> <span data-bind="text: NewComments().length"></span> new comment(s)</a>
+                    <table class="ChildComment" data-bind="visible: (!ReplyHidden() && ShowAddCommentControls())">
                         <tr>
                             <td colspan="2" style="text-align:left;">
 
@@ -748,7 +745,7 @@
                             <td class="input-field">
                                 <textarea style="width:100%" data-bind="value: newCommentMessage, htmlarea: {}"></textarea>
                             </td>
-                            <td><button class="btn btn-flat waves-effect waves-light" type="button" data-bind="click: addComment"><i class="fa fa-reply" title="Reply"></i></button></td>
+                            <td><button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: addComment, disable: IsProcessing" style="width:auto;margin-left:5px;"><i class="fa fa-reply" title="Reply" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button></td>
                         </tr>
                     </table>
                     <div data-bind="template: {name: 'subCommentTmpl', foreach: Comments }"></div>
@@ -767,7 +764,7 @@
                 </td>
                 <td>
                     <div>
-                        <div data-bind="if: isNonResourceComment">
+                        <div data-bind="if: !ShowObjectType()">
                             <a data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: ResourceName"></a>
                         </div>
                         @*<a data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind="    text: ObjectName"></span></a>*@

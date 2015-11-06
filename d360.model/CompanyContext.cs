@@ -666,10 +666,19 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
                 .ToList();
         }
 
-        public List<CommentDetail> GetCommentDetailsByID(int id)
-        {
-            return Database.Connection.Query<CommentDetail>("EXEC GetCommentDetailByID @id", new { id }).ToList();
-        }
+        //public List<CommentDetail> GetCommentDetailsByID(int id)
+        //{
+        //    var comments = Database.Connection.Query<CommentDetail>("EXEC GetCommentDetailByID @id", new { id }).ToList();
+
+        //    foreach (CommentDetail cd in comments)
+        //    {
+        //        cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
+        //                && (cd.Comments == null || !cd.Comments.Any())
+        //                && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
+
+        //    }
+        //    return comments;
+        //}
 
         public IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id)
         {
@@ -1719,8 +1728,19 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                     CommentRelations.Remove(r);
                 }
             }
+            Comment c = GetById<Comment>(comment.ID);
 
-            return GetCommentDetailsByID(comment.ID).AsQueryable();
+            if (c.Body != comment.Body && !Comments.Any(x => x.ParentID == c.ID))
+            {
+                c.Body = comment.Body;
+                c.DateEdited = comment.DateEdited;
+                SaveChanges();
+            }
+
+            var coms = GetCommentDetail(comment.ID).ToList();
+
+            return coms.AsQueryable();
+            
         }
 
         public IQueryable<CommentDetail> AddComment(Comment comment, ICollection<CommentRelation> relations)
@@ -1751,7 +1771,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
 
         public IQueryable<CommentDetail> GetCommentDetail(int id)
         {
-            return (
+            var comments = (
                     from c in Database.SqlQuery<CommentDetail>("GetCommentDetailByID @id", new SqlParameter("id", id)).ToList()
                     join r in Community.Resources on c.CreatingResourceID equals r.ID
                     select new CommentDetail
@@ -1770,9 +1790,16 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                         ResourceEmail = r.Email,
                         ResourceName = r.FormatDisplayName(),
                         TagsXml = c.TagsXml,
-                        VotesXml = c.VotesXml
+                        VotesXml = c.VotesXml,
+                        CreatorIsOwner = c.CreatorIsOwner,
+                        DateEdited = c.DateEdited,
+                        IsEditable = (CurrentResourceID == c.CreatingResourceID
+                            && (!Comments.Any(re => re.ParentID == c.ID))
+                            && DateTime.UtcNow.Subtract(c.DateCreated).Duration() < TimeSpan.FromMinutes(5))
                     }
-                   ).AsQueryable();
+                   );          
+            
+            return comments.AsQueryable();
         }
 
         public IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "")
@@ -1792,17 +1819,28 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             if (searchPhrase == null)
                 searchPhrase = "";
 
-            return
+            var comments =
                 Query<CommentDetail>("GetCommentDetailsByFollower @resourceID, @skip, @take, @dateStart, @dateEnd, @commentTypeID, @searchPhrase",
-                new {
+                new
+                {
                     resourceID = resourceID,
                     skip = skip,
                     take = take,
                     dateStart = dateStart,
-                    dateEnd = dateEnd, 
+                    dateEnd = dateEnd,
                     commentTypeID = commentType,
-                    searchPhrase = searchPhrase.Replace("'","''").Replace("--","")
-                }).AsQueryable();
+                    searchPhrase = searchPhrase.Replace("'", "''").Replace("--", "")
+                });
+
+            foreach (CommentDetail cd in comments)
+            {
+                cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
+                        && !Comments.Any(c => c.ParentID == cd.ID)
+                        && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
+
+            }
+
+            return comments.AsQueryable();
 
         }
 
@@ -1858,7 +1896,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             if (searchPhrase == null)
                 searchPhrase = "";
 
-            return
+            var comments =
                 Query<CommentDetail>("GetCommentDetailsByType @type, @id, @skip, @take, @dateStart, @dateEnd, @commentTypeID, @searchPhrase",
                 new {
                     type = type.ToString(),
@@ -1866,10 +1904,19 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                     skip = skip,
                     take = take,
                     dateStart = dateStart,
-                    dateEnd = dateEnd, 
+                    dateEnd = dateEnd,
                     commentTypeID = commentType,
                     searchPhrase = searchPhrase.Replace("'", "''").Replace("--", "")
-                }).AsQueryable();
+                });
+            foreach (CommentDetail cd in comments)
+            {
+                cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
+                        && !Comments.Any(c => c.ParentID == cd.ID)
+                        && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
+
+            }
+
+            return comments.AsQueryable();
         }
 
         /// <summary>

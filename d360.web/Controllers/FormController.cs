@@ -519,7 +519,15 @@ namespace d360.web.Controllers
             }
 
             list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
+
+            var parentTaxonomy = Company.GetById<Artifact>(p);
+            int parentTaxonomyId = 0;
+            if (parentTaxonomy != null)
+                parentTaxonomyId = parentTaxonomy.TaxonomyTypeID;
+
+            list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList()
+                , Value = parentTaxonomyId.ToString()
+                , ReadOnly = true });
             row++;
 
             list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
