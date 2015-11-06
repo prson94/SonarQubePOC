@@ -45882,7 +45882,7 @@ function ResourceStatisticsTile(controlID, type, id) {
                 template(data)
             );
 
-            drawKpi('#ScoreKpi', 'Governance score', data.Score, 100 - data.Score, true);
+            drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
         }
     );
 }
