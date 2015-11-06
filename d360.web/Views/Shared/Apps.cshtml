@@ -29,22 +29,9 @@
     <script type="text/javascript" src="/scripts/All@(suffix).js?version=@(VersionNumber)"></script>
     <script type="text/javascript">
     var currentUserName = "@(User.Identity.Name)";
-    </script>
+    </script>    
 </head>
-<body>
-    <!--<nav>
-        <div class="container-fluid">
-            <div class="row" id="TopLine">
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 blue1 top-line">&nbsp;</div>
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 blue2 top-line">&nbsp;</div>
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 blue3 top-line">&nbsp;</div>
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 blue4 top-line">&nbsp;</div>
-            </div>
-            <div class="nav-top clearfix">
-                <div class="logo"></div>
-            </div>
-        </div>
-    </nav>-->
+<body>    
     <article>
         @RenderBody()
     </article>

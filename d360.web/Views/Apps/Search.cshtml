@@ -4,12 +4,10 @@
     Layout = "~/Views/Shared/Apps.cshtml";
     var phrase = ViewBag.Phrase;
 }
-
+@Html.Partial("KnockoutTemplates")
 <div id="SearchResults"></div>
-<h6 class="grey-text lighten-2 center-align" style="margin:10px;"><span id="Timing"></span> | <input type="button" class="btn-flat grey-text lighten-2" style="padding:0;text-transform:none;vertical-align:baseline" value="Export Results" id="Export" /> | <a class="btn-flat grey-text lighten-2" style="padding:0;text-transform:none;vertical-align:baseline" href="mailto:ideas@data3sixty.com">Feedback</a></h6>
-
+<h6 class="grey-text lighten-2 center-align" style="margin:10px;"><span id="Timing">Loading Results...</span> | <input type="button" class="btn-flat grey-text lighten-2" style="padding:0;text-transform:none;vertical-align:baseline" value="Export Results" id="Export" /> | <a class="btn-flat grey-text lighten-2" style="padding:0;text-transform:none;vertical-align:baseline" href="mailto:ideas@data3sixty.com">Feedback</a></h6>
 <script>
-
     $(function () {
         var phrase = "@(phrase)";
         var permissions = new PermissionsModel();
@@ -18,32 +16,36 @@
         var context = {
             Responsibility : "@(ContextList.Responsibility)"
         }
-                
+
         var initrowdetails = function (index, parentElement, gridElement, datarecord) {
             var div = $($(parentElement).children()[0]);
             if (div != null) {
-                var ID = datarecord.ID
+                var ID = datarecord.ID;
                 var Group = datarecord.Group;
                 var title = div.find('.title');
                 title.text(datarecord.Name);
                 var details = div.find('.desc');
                 var detId = ID + '_det';
                 var respId = ID + '_resp';
-                var sourcingId = ID + '_src';
                 var scoreId = ID + '_score';
                 var resp = div.find('.resp');
-                var src = div.find('.src');
                 var score = div.find('.score');
                 details.attr('id', detId);
                 resp.attr('id', respId);
-                src.attr('id', sourcingId);
-                score.attr('score', scoreId);
+                score.attr('id', scoreId);
                 DetailTile(detId, null, permissions, Group, ID);
-                //ObjectStatisticsTile(scoreId, Group, ID);
+                ObjectStatisticsTile(scoreId, Group, ID);
                 PeopleResponsibilityTile(respId, context, permissions, Group, ID, ' ', true);
-                environment_diagram(sourcingId, permissions, Group, ID);
                 $(div).jqxTabs({ width: '95%', height: 380, theme:theme });
             }
+        }
+
+        var textrenderer = function (row, column, value) {
+            return '<div style="margin: 3px;vertical-align: top;">' + value + '</div>';
+        }
+
+        var cellsrenderer = function (row, column, value) {
+            return '<div style="margin: 3px;">' + value + '</div>';
         }
 
         var source = {
@@ -54,7 +56,9 @@
                 { name: 'Type', type: 'string' },
                 { name: 'Group', type: 'string' },
                 { name: 'Description', type: 'string' },
-                { name: 'ID', type: 'number' }
+                { name: 'ID', type: 'number' },
+                { name: 'Merged', type: 'string' },
+                { name: 'Url', type: 'string' }
             ],
             type: 'POST',
             dataType: 'json',
@@ -68,14 +72,14 @@
         var dataAdapter = new $.jqx.dataAdapter(
             source, {
                 loadComplete: function (data) {
-                    if (data) { console.log(data); $('#Timing').text(data.ElapsedTime); }
+                    if (data) { $('#Timing').text(data.ElapsedTime); }
                 },
                 beforeLoadComplete: function (records) {
                     var data = new Array();
-                    // update the loaded records. Dynamically add EmployeeName and EmployeeID fields. 
                     for (var i = 0; i < records.length; i++) {
                         var row = records[i];
-                        row.Score = row.Score * 100;                        
+                        row.Score = row.Score * 100; //multiply score by 100 for formatting as a percent
+                        row.Merged = "<h5 class='blue-text text-darken-4'>" + row.Name + " <a href='/" + row.Url + "' target='D3SApp' title='View in Data3Sixty Website.'><i class='grey-text fa fa-info-circle fa-sm'></i></a></h5>" + row.Description;
                         data.push(row);
                     }
                     return data;
@@ -97,14 +101,13 @@
             theme: theme,
             rowdetails: true,
             autorowheight: true,
-            rowdetailstemplate: { rowdetails: "<div style='margin: 10px 5px 10px 5px;'><ul><li class='title'></li><li>People Responsibilities</li><li>Rank</li><li>Lifecycle</li></ul><div class='desc'></div><div class='resp'></div><div class='score'></div><div class='src'></div></div>", rowdetailsheight: 420 },
-            initrowdetails: initrowdetails,            
+            rowdetailstemplate: { rowdetails: "<div style='margin: 10px 5px 10px 5px;'><ul><li class='title'></li><li>People Responsibilities</li><li>Score</li></ul><div class='desc'></div><div class='resp'></div><div class='score'></div></div>", rowdetailsheight: 420 },
+            initrowdetails: initrowdetails,
             columns: [
-                { text: 'Name', dataField: 'Name', width: '20%' },
-                { text: 'Description', dataField: 'Description', width: '48%' },
-                { text: 'Rank', dataField: 'Score', width: '7%', filterable: false, cellsformat: 'p1' },
-                { text: 'Category', dataField: 'Group', width: '10%' },
-                { text: 'Type', dataField: 'Type', width: '15%' }                
+                { text: 'Term', dataField: 'Merged', width: '68%', cellsrenderer: cellsrenderer },
+                { text: 'Rank', dataField: 'Score', width: '7%', filterable: false, cellsformat: 'p1', cellsrenderer: textrenderer },
+                { text: 'Category', dataField: 'Group', width: '10%', cellsrenderer: textrenderer },
+                { text: 'Type', dataField: 'Type', width: '15%', cellsrenderer: textrenderer }
             ]
         });
 
@@ -114,5 +117,3 @@
     });
 </script>
 <script src="/Scripts/d3/d3.js"></script>
-
-

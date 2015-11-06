@@ -45863,8 +45863,8 @@ function ObjectStatisticsTile(controlID, type, id) {
             $(controlID).html(
                 template(data)
             );
-
-            drawKpi('#ScoreKpi', 'Governance score', data.Score, 100 - data.Score, true);
+                       
+            drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
         }
     );
 }
