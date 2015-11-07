@@ -427,6 +427,10 @@
     <Content Include="App_Data\Documentation.XML" />
     <Content Include="Areas\HelpPage\HelpPage.css" />
     <Content Include="Content\materialize\css\materialize.css" />
+    <Content Include="Content\styles\apps.css" />
+    <Content Include="Content\styles\apps.min.css">
+      <DependentUpon>apps.css</DependentUpon>
+    </Content>
     <Content Include="Content\templates\rules.list.html" />
     <Content Include="Content\templates\policies.list.html" />
     <Content Include="Content\templates\policies.admin.html" />
@@ -1229,6 +1233,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />

@@ -25,8 +25,10 @@ namespace d360.web
         {
             IOwinContext context = new OwinContext(environment);
             context.Response.Headers.Add("If-Modified-Since", new string[]{ "01 Jan 1970 00:00:00 GMT"});
-            context.Response.Headers.Add("Cache-Control", new string[] { "no-cache, no-store, must-revalidate" });
-            context.Response.Headers.Add("Pragma", new string[] { "no-cache" });
+            if (context.Response.ContentType == "application/json") {
+                context.Response.Headers.Add("Cache-Control", new string[] { "no-cache, no-store, must-revalidate" });
+                context.Response.Headers.Add("Pragma", new string[] { "no-cache" });
+            }
             context.Response.Headers.Add("Expires", new string[] { "0" });
             await _next.Invoke(environment);
         }
