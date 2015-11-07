@@ -114,7 +114,8 @@ namespace d360.core
         {
             string error = "";
 
-            error += ex.Message;
+            if (!ex.Message.Contains("inner exception for details")) error += ex.Message;
+
             var iex = ex.InnerException;
             while (iex != null)
             {

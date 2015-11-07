@@ -92,6 +92,7 @@ namespace d360.web
             app.Use<CompanyIDCheckMiddleware>();
             app.Use<CompanyIDCheckMiddleware>();
             app.Use<UserIDCheckMiddleware>();
+            app.Use<CachingHeaderMiddleware>();
         }
     }
 }

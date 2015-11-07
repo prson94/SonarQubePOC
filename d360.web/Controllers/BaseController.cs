@@ -10,6 +10,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Net.Http;
 using Microsoft.ApplicationInsights;
+using d360.web.Models.Attributes;
 
 namespace System.Net.Http
 {
@@ -128,6 +129,7 @@ namespace d360.web.Controllers
         }
     }
 
+    //[ModifiedSinceHeaderAttribute]
     public class BaseApiController : System.Web.Http.ApiController
     {
         internal CompanyContext Company;
@@ -304,6 +306,7 @@ namespace d360.web.Controllers
         #endregion
     }
 
+    //[ModifiedSinceHeaderAttribute]
     public class BaseController: Controller
     {
         internal CompanyContext Company;

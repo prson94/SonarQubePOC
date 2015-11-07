@@ -94,10 +94,12 @@
             switch (self.RibbonIndex) {
                 case 0:
                     //#region
+
                     if ((self.DiagramTargetType != self.TargetType) || (self.DiagramTargetID != self.TargetID)) {
                         self.DiagramTargetType = self.TargetType;
                         self.DiagramTargetID = self.TargetID;
 
+                        $('#TreeGridLineage').html('');
                         if (self.IntersectID) {
                             if (self.DiagramTargetType == 'TaxonomyType') {
                                 information_catalog_diagram('TreeGridLineage', self.DiagramTargetID);
@@ -105,9 +107,6 @@
                             else {
                                 lineage_diagram('TreeGridLineage', self.DiagramTargetID);
                             }
-                        }
-                        else {
-                            $('#TreeGridLineage').html('');
                         }
                     }
                     //#endregion
@@ -200,6 +199,12 @@
                     break;
                 case contextList.ActionUnrelate:
                     $('#TreeGridAttributesDetail').html('');
+                    $('#TreeGrid').one('bindingcomplete', function (event) {
+                        var rows = $("#TreeGrid").jqxGrid('getrows');
+                        if (rows.length > 0) {
+                            $("#TreeGrid").jqxGrid('selectrow', 0);
+                        }
+                    });
                     $("#TreeGrid").jqxGrid('updatebounddata');
                     amplify.publish('SaveAction', { context: "intersectform" });
                     break;
@@ -253,7 +258,38 @@
                     $("#TechnicalRelationshipsGrid").jqxGrid('updatebounddata');
                 }
                 else {
+                    $('#TreeGrid').one('bindingcomplete', function (event) {
+                        var selectActiveRow = false;
+
+                        if (data.targets.length > 0) {
+                            selectActiveRow = true;
+                        }
+
+                        if (selectActiveRow) {
+                            try {
+                                var boundRows = $("#TreeGrid").jqxGrid('getboundrows', data.id);
+                                var index = -1;
+
+                                $.each(boundRows, function () {
+                                    if (this.TargetObjectType == data.targets[0].ObjectType && this.TargetObjectID == data.targets[0].ObjectID) {
+                                        index = $('#TreeGrid').jqxGrid('getrowboundindexbyid', this.uid);
+                                    }
+                                });
+
+                                if (index >= 0) {
+                                    $("#TreeGrid").jqxGrid('selectrow', index);
+                                }
+                            } catch (e) { }
+                        }
+                        else {
+                            var rows = $("#TreeGrid").jqxGrid('getrows');
+                            if (rows.length > 0) {
+                                $("#TreeGrid").jqxGrid('selectrow', 0);
+                            }
+                        }
+                    });
                     $("#TreeGrid").jqxGrid('updatebounddata');
+
                     TechnicalRelationshipsGridSource.url = null;
                     $("#TechnicalRelationshipsGrid").jqxGrid('updatebounddata');
                     $('#TreeGridAttributesDetail').html('');
@@ -328,9 +364,9 @@
         location.assign(row.TargetUrl);
     }
 
-    function relationsRibbonSelect() { //(event) {
+    function relationsRibbonSelect() {
         var tab = $(this);
-        var ix = tab.data('index'); //event.args.selectedIndex
+        var ix = tab.data('index');
         relationsModel.updateRibbonData(ix);
     }
 
@@ -601,7 +637,7 @@
             ]
         });
 
-        $("#TreeGrid").on("bindingcomplete", function (event) {
+        $("#TreeGrid").one("bindingcomplete", function (event) {
             if ($("#TreeGrid").jqxGrid('getdisplayrows').length > 0) {
                 $("#TreeGrid").jqxGrid('selectrow', 0);
             }

@@ -32,7 +32,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>1.0</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>1.6</TypeScriptToolsVersion>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <ApplicationInsightsResourceId>/subscriptions/ab4c26b1-281d-488b-9657-894d862f9816/resourcegroups/d3s-ui/providers/microsoft.insights/components/UI</ApplicationInsightsResourceId>
@@ -60,7 +60,7 @@
       <HintPath>..\packages\Autofac.WebApi2.3.4.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="ComponentSpace.SAML2">
-      <HintPath>.\ComponentSpace.SAML2.dll</HintPath>
+      <HintPath>..\..\..\..\Users\mike\Box Sync\Engineering\Software\ComponentSpace.SAML2.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=1.40.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.42\lib\net45\Dapper.dll</HintPath>
@@ -68,7 +68,7 @@
     </Reference>
     <Reference Include="DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files (x86)\Open XML SDK\V2.0\lib\DocumentFormat.OpenXml.dll</HintPath>
+      <HintPath>..\Open XML SDK\V2.0\lib\DocumentFormat.OpenXml.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -309,6 +309,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Validation.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_Start\CachingHeaderMiddleware.cs" />
     <Compile Include="App_Start\UserIDCheckMiddleware.cs" />
     <Compile Include="App_Start\CompanyIDCheckMiddleware.cs" />
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
@@ -873,6 +874,7 @@
     <None Include="Properties\PublishProfiles\d3s-ui-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-Test - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-Test - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui__Development.pubxml" />
     <None Include="Scripts\ace\ace.js" />
     <Content Include="Scripts\ace\mode-json.js" />
     <None Include="Scripts\ace\mode-sql.js" />

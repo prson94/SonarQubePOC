@@ -19310,7 +19310,7 @@ function lineage_diagram(controlID, intersectID) {
     //var toolsControlID = controlID + "_tools";
     var diagramControlID = controlID + "_diagram";
     controlID = '#' + controlID;
-
+    
     var html = '';//'<header><div id="' + toolsControlID + '"></div></header>';
     html += '<div id="' + diagramControlID + '"></div>';
     $(controlID).html(html);
@@ -19326,15 +19326,15 @@ function lineage_diagram(controlID, intersectID) {
 
     self.load();
 
-    amplify.subscribe("SaveAction", function (data) {
-        try {
-            switch (data.context) {
-                case contextList.IntersectSourcingResponsibility:
-                    self.load();
-                    break;
-            }
-        } catch (e) { }
-    });
+    //amplify.subscribe("SaveAction", function (data) {
+    //    try {
+    //        switch (data.context) {
+    //            case contextList.IntersectSourcingResponsibility:
+    //                self.load();
+    //                break;
+    //        }
+    //    } catch (e) { }
+    //});
 }
 function environment_diagram(controlID, permissions, type, id) {
     var self = this;
@@ -37852,29 +37852,53 @@ function CommentItem(data) {//, hub) {
     self.ObjectUrl = ko.observable(data.ObjectUrl || "");
     self.CommentType = ko.observable(data.CommentType || "");
     self.VisibilityID = ko.observable(data.VisibilityID || "");
-    //self.UpVotes = ko.observable(data.UpVotes || 0);
-    //self.DownVotes = ko.observable(data.DownVotes || 0);
+    self.CreatorIsOwner = ko.observable(data.CreatorIsOwner || "");
+    self.DateEdited = ko.observable(data.DateEditedUTCString || null);
+    self.IsEditable = ko.observable(data.IsEditable || false);
 
-    self.DateCreatedLocal = ko.computed(function () {
+    self.tagSuggestions = ko.observableArray();
+    self.tagSuggestionsPresent = ko.computed(function () {
+        return (self.tagSuggestions().length > 0);
+    }, self);
+
+    self.ProcessingCount = ko.observable(0);
+    self.IsProcessing = ko.computed(function () {
+        return (self.ProcessingCount() != 0);
+    });
+
+    self.ShowObjectType = ko.computed(function () {
+        return !(self.ObjectType() == "Resource" && self.ObjectID() == self.CreatingResourceID());
+    });
+
+    self.FormatDate = function (utcDateString) {
         //convert date to local timezone and format
-        var dateCreated = new Date(self.DateCreated);
-        var hours = dateCreated.getHours();
+        var date = new Date(utcDateString);
+        var hours = date.getHours();
         var ampm = hours >= 12 ? 'PM' : 'AM';
-        var minutes = dateCreated.getMinutes();
-        var seconds = dateCreated.getSeconds();
-        var day = dateCreated.getDate();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+        var day = date.getDate();
 
         hours = hours % 12;
-        hours = hours ? hours : 12; 
+        hours = hours ? hours : 12;
         minutes = minutes < 10 ? '0' + minutes : minutes;
         seconds = seconds < 10 ? '0' + seconds : seconds;
         day = day < 10 ? '0' + day : day;
         var timeString = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
-        
 
-        var yearString = dateCreated.getFullYear().toString().substr(2, 2);
-        return (dateCreated.getMonth() + 1) + "/" + day + "/" + yearString + " " + timeString;
+
+        var yearString = date.getFullYear().toString().substr(2, 2);
+        return (date.getMonth() + 1) + "/" + day + "/" + yearString + " " + timeString;
+    };
+
+    self.DateCreatedLocal = ko.computed(function () {  
+        return self.FormatDate(self.DateCreated);
     });
+    self.DateEditedLocal = ko.computed(function () {
+        return self.FormatDate(self.DateEdited());
+    });
+   
+
    
 
     var _currentVotes = $.map(data.Votes, function (item) { return new CommentVoteItem(item); });
@@ -37912,9 +37936,6 @@ function CommentItem(data) {//, hub) {
             var commentVoteResults = $.map(commentData, function (item) { return new CommentVoteItem(item); });
             self.CurrentVotes([]);
             self.CurrentVotes(self.CurrentVotes().concat(commentVoteResults));
-            // var commentCountResults = $.map(commentData, function (item) { return new CommentCountItem(item); }); //, self.hub
-            // self.commentCounts([]);
-            // self.commentCounts(self.commentCounts().concat(commentCountResults));
         }).fail(function (xhr, status, error) {
             self.error(status);
         });
@@ -37944,19 +37965,17 @@ function CommentItem(data) {//, hub) {
     self.newCommentMessage = ko.observable();
     
     self.ShowAddCommentControls = ko.observable(CompanySettings.DisableCommunityPosting == 'false');
-    self.ReplyHidden = ko.observable(false);
+    self.ReplyHidden = ko.observable(true);
+    self.EditHidden = ko.observable(true);
 
     self.tagsAreDisplayed = ko.observable(false);
     self.tagsAreHidden = ko.computed(function () {
         return !self.tagsAreDisplayed();
     }, self);
 
-    self.tagSuggestions = ko.observableArray();
-    self.tagSuggestionsPresent = ko.computed(function () {
-        return (self.tagSuggestions().length > 0);
-    }, self);
     self.newTag = ko.observable();
     self.tags = ko.observableArray([]);
+
     self.newTag.subscribe(function (value) {
         if (value) {
             $.getJSON('/api/tagsuggestions', { phrase: value }, function (suggestions) {
@@ -37964,6 +37983,9 @@ function CommentItem(data) {//, hub) {
                 var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagSuggestionItem(item, self); }); //, self.hub
                 self.tagSuggestions(mappedSuggestions);
             });
+        }
+        else {
+            self.tagSuggestions([]);
         }
     });
 
@@ -38011,10 +38033,17 @@ function CommentItem(data) {//, hub) {
     };
 
     self.showReply = function () {
-        self.ReplyHidden(true);
+        self.ReplyHidden(false);
     };
     self.hideReply = function () {
-        self.ReplyHidden(false);
+        self.ReplyHidden(true);
+    };
+
+    self.showEdit = function () {
+        self.EditHidden(false);
+    };
+    self.hideEdit = function () {
+        self.EditHidden(true);
     };
 
     self.getCommentType = function () {
@@ -38089,19 +38118,16 @@ function CommentItem(data) {//, hub) {
         return css;
     };
 
-    self.isNonResourceComment = function () {
-        return (self.ObjectType != 'Resource');
-    };
-
-
     self.updateComment = function () {
         self.error(null);
+        self.ProcessingCount(self.ProcessingCount() + 1);
         if (self.ParentID() != null)
         {
             var commentModel = {
                 Tags: self.tags(),
                 Comment: {
-                    ID: self.ParentID()
+                    ID: self.ParentID(),
+                    Body: self.Body()
                 }
             };
         }
@@ -38125,24 +38151,32 @@ function CommentItem(data) {//, hub) {
                 dataType: 'json',
                 method: 'POST',
                 url: '/services/community/edit'
-            }).done(function (newCommentData, status, xhr) {
+            }).done(function (result, status, xhr) {
                 self.tags([]);
-                var _currentTags = $.map(newCommentData.Tags, function (item) { return new CommentTagItem(item); });
+                var _currentTags = $.map(result.Tags, function (item) { return new CommentTagItem(item); });
                 self.CurrentTags([]);
                 self.CurrentTags(_currentTags);
-                amplify.publish("SaveAction", { context: 'commentform', action: "add", id: newCommentData.ID, custom: {} })
+                self.ProcessingCount(self.ProcessingCount() - 1);
+                self.DateEdited(result.DateEdited);
+                self.IsEditable(result.IsEditable);
+                self.Body(result.Body);
+                self.hideEdit();
+                amplify.publish("SaveAction", { context: 'commentform', action: "add", id: result.ID, custom: {} })
             }).fail(function (xhr, status, error) {
+                self.ProcessingCount(self.ProcessingCount() - 1);
                 self.error(status);
             });
     };
 
-    self.addComment = function () {
 
+    self.addComment = function () {
+        self.ProcessingCount(self.ProcessingCount() + 1);
         if (self.HasNewTags()) {
             self.updateComment();
         }
         
         if (self.newCommentMessage() != '') {
+            
             $.ajax({
                 data: {
                     ObjectType: self.ObjectType,
@@ -38161,8 +38195,12 @@ function CommentItem(data) {//, hub) {
                 self.Comments.push(new CommentItem(data));
                 self.newCommentMessage('');
                 self.hideReply();
+                self.hideEdit();
+                self.IsEditable(false);
+                self.ProcessingCount(self.ProcessingCount() - 1);
             }).fail(function (xhr, status, error) {
                 self.error(status);
+                self.ProcessingCount(self.ProcessingCount() - 1);
             });
             //if ($.connection.hub && $.connection.hub.state === $.signalR.connectionState.disconnected) {
             //    $.connection.hub.start()
@@ -38182,8 +38220,10 @@ function CommentItem(data) {//, hub) {
             //    });
         }
         else {
+            self.ProcessingCount(self.ProcessingCount() - 1);
             self.error('Body may not be empty.');
         }
+        
     };
 
     self.getResourceUrl = function () {
@@ -40403,7 +40443,11 @@ var BoardViewModel = function () {
     self.error = ko.observable();
     self.moreComments = ko.observable();
     self.searchFilter = ko.observable('');
-    
+    self.ProcessingCount = ko.observable(0);
+    self.IsProcessing = ko.computed(function () {
+        return (self.ProcessingCount() != 0);
+    });
+
     self.AppliedSearch = ko.computed(self.searchFilter).extend({ throttle: 400 });
 
     self.AppliedSearch.subscribe(function () {
@@ -40541,6 +40585,8 @@ var BoardViewModel = function () {
     };
 
     self.getMoreComments = function () {
+
+        self.ProcessingCount(self.ProcessingCount() + 2);
         $.ajax({
             data: {
                 "ObjectType": self.ObjectType,
@@ -40562,8 +40608,10 @@ var BoardViewModel = function () {
             if (self.FilterObjectType && self.FilterObjectID) {
                 self.setCommentsFilter(self.FilterObjectType, self.FilterObjectID);
             }
+            self.ProcessingCount(self.ProcessingCount() - 1);
         }).fail(function (xhr, status, error) {
             self.error(status);
+            self.ProcessingCount(self.ProcessingCount() - 1);
         });
 
         $.ajax({
@@ -40584,8 +40632,10 @@ var BoardViewModel = function () {
             }
             self.commentCounts([]);
             self.commentCounts(self.commentCounts().concat(commentCountResults));
+            self.ProcessingCount(self.ProcessingCount() - 1);
         }).fail(function (xhr, status, error) {
             self.error(status);
+            self.ProcessingCount(self.ProcessingCount() - 1);
         });
         
         
@@ -40593,6 +40643,7 @@ var BoardViewModel = function () {
 
 
     self.addComment = function () {
+        self.ProcessingCount(self.ProcessingCount() + 1);
         self.error(null);
         if (self.newMessage() != '') {
 
@@ -40619,12 +40670,15 @@ var BoardViewModel = function () {
             }).done(function (newCommentData, status, xhr) {
                 self.comments.unshift(new CommentItem(newCommentData));
                 self.newMessage('');
+                self.ProcessingCount(self.ProcessingCount() - 1);
                 amplify.publish("SaveAction", { context: 'commentform', action: "add", id: newCommentData.ID, custom: {} })
             }).fail(function (xhr, status, error) {
+                self.ProcessingCount(self.ProcessingCount() - 1);
                 self.error(status);
             });
         }
         else {
+            self.ProcessingCount(self.ProcessingCount() - 1);
             self.error('Body may not be empty.');
         }
     };
@@ -48871,6 +48925,7 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
             }
 
             function saveAction(data) {
+               // alert(ko.toJSON(data));
                 try {
                     switch (data.context) {
                         case contextList.Comment:
@@ -48886,6 +48941,7 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                         case contextList.Responsibility:
                         case contextList.Artifact:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
+                            ObjectStatisticsTile('MicroWidget1', type, id);
                             break;
                         case contextList.SourcingResponsibility:
                             environment_diagram('SourcingTile', permissions, type, id);
@@ -49069,7 +49125,6 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);
                     amplify.subscribe("SaveAction", saveAction);
-                    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //#endregion
                 });
@@ -54244,3 +54299,4 @@ function workflow_item_status(app, pageViewModel, templatePath, contextList) {
             });
     });
 }
+

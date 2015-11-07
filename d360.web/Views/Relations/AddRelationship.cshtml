@@ -189,7 +189,7 @@
                     success: function (data, statusText, xhr) {
                         AddRelationshipDestroy();
                         amplify.publish("RelationshipFormStatus", { title: 'Successfully Added Relationships', message: xhr.statusText + xhr.responseText, success: true });
-                        amplify.publish("RelationshipSave", { action: 'Add', technical: (Source == 'Intersect') });
+                        amplify.publish("RelationshipSave", { action: 'Add', technical: (Source == 'Intersect'), targets: model.Targets });
                         $('#EditableFormSaveButton').removeAttr('disabled');
                         $('#progress').html('');
                     }

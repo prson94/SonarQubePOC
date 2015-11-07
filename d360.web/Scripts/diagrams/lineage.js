@@ -4,7 +4,7 @@
     //var toolsControlID = controlID + "_tools";
     var diagramControlID = controlID + "_diagram";
     controlID = '#' + controlID;
-
+    
     var html = '';//'<header><div id="' + toolsControlID + '"></div></header>';
     html += '<div id="' + diagramControlID + '"></div>';
     $(controlID).html(html);
@@ -20,13 +20,13 @@
 
     self.load();
 
-    amplify.subscribe("SaveAction", function (data) {
-        try {
-            switch (data.context) {
-                case contextList.IntersectSourcingResponsibility:
-                    self.load();
-                    break;
-            }
-        } catch (e) { }
-    });
+    //amplify.subscribe("SaveAction", function (data) {
+    //    try {
+    //        switch (data.context) {
+    //            case contextList.IntersectSourcingResponsibility:
+    //                self.load();
+    //                break;
+    //        }
+    //    } catch (e) { }
+    //});
 }
