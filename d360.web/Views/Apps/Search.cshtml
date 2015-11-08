@@ -94,7 +94,7 @@
                     for (var i = 0; i < records.length; i++) {
                         var row = records[i];
                         row.Score = row.Score * 100; //multiply score by 100 for formatting as a percent
-                        row.Merged = "<h5 class='blue-text text-darken-4'>" + row.Name + " <a href='/" + row.Url + "' target='D3SApp' title='View in Data3Sixty Website.'><i class='grey-text fa fa-info-circle fa-sm'></i></a></h5>" + row.Description;
+                        row.Merged = "<h5 class='blue-text text-darken-4'><a href='/" + row.Url + "' target='D3SApp' class='blue-text text-darken-4'>" + row.Name + "</a> <a href='/" + row.Url + "' target='D3SApp' title='View in Data3Sixty Website.'><i class='grey-text fa fa-info-circle fa-sm'></i></a></h5>" + row.Description;
                         data.push(row);
                     }
                     return data;
