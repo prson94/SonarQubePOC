@@ -46,7 +46,10 @@ namespace d360.web.Controllers.Services
                     comment.Comment.DateEdited = DateTime.UtcNow;
                     dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
                 }
-
+                else if (relations.Count > 0)
+                {
+                    dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
+                }
 
                 if (!string.IsNullOrEmpty(dtl.TagsXml))
                 {

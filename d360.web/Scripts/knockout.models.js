@@ -503,7 +503,7 @@ function CommentItem(data) {//, hub) {
         return self.FormatDate(self.DateCreated);
     });
     self.DateEditedLocal = ko.computed(function () {
-        return self.FormatDate(self.DateEdited());
+        return self.FormatDate((self.DateEdited() || "").toString());
     });
    
 
@@ -765,7 +765,7 @@ function CommentItem(data) {//, hub) {
                 self.CurrentTags([]);
                 self.CurrentTags(_currentTags);
                 self.ProcessingCount(self.ProcessingCount() - 1);
-                self.DateEdited(result.DateEdited);
+                self.DateEdited(result.DateEditedUTCString);
                 self.IsEditable(result.IsEditable);
                 self.Body(result.Body);
                 self.hideEdit();
