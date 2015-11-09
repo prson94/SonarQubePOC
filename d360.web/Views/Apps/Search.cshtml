@@ -11,30 +11,14 @@
     $(function () {
         var phrase = "@(phrase)";
         var permissions = new PermissionsModel();        
-        var detailRow = -1;
-
+        
         var context = {
             Responsibility : "@(ContextList.Responsibility)"
         }
             
-        var initWidgets = function (tab) {            
-            var datarecord = $('#SearchResults').jqxGrid('getrowdata', detailRow);
-            if (datarecord == null) return;
-            var ID = datarecord.ID;
-            var Group = datarecord.Group;
-            console.log(tab);
-            switch (tab) {                
-                case 2:                    
-                    var scoreId = ID + '_score';
-                    ObjectStatisticsTile(scoreId, Group, ID); //tab needs to be visible before rendering chart
-                    break;
-            }
-        }
-    
         var initrowdetails = function (index, parentElement, gridElement, datarecord) {
             var div = $($(parentElement).children()[0]);
-            if (div != null) {
-                detailRow = index;
+            if (div != null) {                
                 var ID = datarecord.ID;
                 var Group = datarecord.Group;
                 var title = div.find('.title');
@@ -48,9 +32,23 @@
                 details.attr('id', detId);
                 resp.attr('id', respId);
                 score.attr('id', scoreId);
+                score.attr('d3sId', ID);
+                score.attr('d3sGroup', Group);
                 DetailTile(detId, null, permissions, Group, ID);                
                 PeopleResponsibilityTile(respId, context, permissions, Group, ID, ' ', true);                
-                $(div).jqxTabs({ width: '95%', height: 380, theme: theme, initTabContent: initWidgets });
+                $(div).jqxTabs({ width: '95%', height: 380, theme: theme });
+                $(div).on('tabclick', function (event) {
+                    var pageIndex = event.args.item + 1;
+                    switch (pageIndex) {                        
+                        case 3:
+                            var scoreDiv = $(event.target).find('.score');
+                            console.log('D3S Group:' + scoreDiv.attr('d3sGroup'));
+                            console.log('D3S ID:' + scoreDiv.attr('d3sId'));
+                            ObjectStatisticsTile(scoreDiv.attr('id'), scoreDiv.attr('d3sGroup'), scoreDiv.attr('d3sId')); //tab needs to be visible before rendering chart                      
+                            break;                        
+                        default:
+                    }
+                });
             }
         }
             
