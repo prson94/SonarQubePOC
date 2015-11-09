@@ -26,6 +26,10 @@ namespace d360.extensions
         public string AbsoluteUrl { get; set; }
         public string Url { get; set; }
         public float Score { get; set; }
+        /// <summary>
+        /// score ranging between 1 and 0 adjusted based on max value.
+        /// </summary>
+        public float NormalizedScore { get; set; }
     }
 
     #endregion

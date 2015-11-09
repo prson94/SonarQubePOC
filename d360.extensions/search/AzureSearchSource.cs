@@ -232,6 +232,11 @@ namespace d360.extensions.search
                 query.Add(parser.Parse(phrase), Occur.MUST);
 
                 search = searcher.Search(query, null, searcher.MaxDoc);
+
+                var maxScore = search.MaxScore;
+
+                if (maxScore == System.Single.NaN) maxScore = 1;
+
                 results = search.ScoreDocs.Select(x =>
                 {
                     var doc = searcher.Doc(x.Doc);
@@ -243,6 +248,7 @@ namespace d360.extensions.search
                         ID = doc.Get("ID"),
                         Description = doc.Get("Description") + "",
                         Url = doc.Get("Url") + "",
+                        NormalizedScore = x.Score / maxScore,
                         Score = x.Score
                     };
                 }

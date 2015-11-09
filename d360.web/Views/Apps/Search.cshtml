@@ -53,7 +53,7 @@
         }
             
         var percentrenderer = function (row, column, value) {
-            return '<div style="margin: 3px;vertical-align: top;">' + value.toFixed(1) + '%</div>';
+            return '<div style="margin: 3px;vertical-align: top;">' + (value *100).toFixed(1) + '%</div>';
         }
 
         var textrenderer = function (row, column, value) {
@@ -67,7 +67,7 @@
         var source = {
             datatype: "json",
             datafields: [
-                { name: 'Score', type: 'float' },
+                { name: 'NormalizedScore', type: 'float' },
                 { name: 'Name', type: 'string' },
                 { name: 'Type', type: 'string' },
                 { name: 'Group', type: 'string' },
@@ -81,7 +81,7 @@
             url: '/search/results',
             data: { search: phrase },
             id:'ID',
-            sortcolumn: 'Score',
+            sortcolumn: 'NormalizedScore',
             sortdirection: 'desc'
         };
 
@@ -93,8 +93,7 @@
                 beforeLoadComplete: function (records) {
                     var data = new Array();
                     for (var i = 0; i < records.length; i++) {
-                        var row = records[i];
-                        row.Score = row.Score * 100; //multiply score by 100 for formatting as a percent
+                        var row = records[i];                        
                         row.Merged = "<h5 class='blue-text text-darken-4'><a href='/" + row.Url + "' target='D3SApp' class='blue-text text-darken-4' title='View in Data3Sixty Website.'>" + row.Name + "</a></h5>" + row.Description;
                         data.push(row);
                     }
@@ -122,7 +121,7 @@
             initrowdetails: initrowdetails,
             columns: [
                 { text: 'Term', dataField: 'Merged', width: '70%', cellsrenderer: cellsrenderer },
-                { text: 'Rank', dataField: 'Score', width: '10%', filterable: false, cellsformat: 'p1', cellsrenderer: percentrenderer },                
+                { text: 'Rank', dataField: 'NormalizedScore', width: '10%', filterable: false, cellsrenderer: percentrenderer },
                 { text: 'Type', dataField: 'Type', width: '20%', filtertype: 'checkedlist', cellsrenderer: textrenderer }
             ]
         });
