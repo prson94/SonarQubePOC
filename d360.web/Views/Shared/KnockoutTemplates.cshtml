@@ -627,8 +627,8 @@
 </script>
 <script id="commentCountTmpl" type="text/html">
     <div class="social-count-box" data-bind="css: IsSelected, click: function() {  $parent.filterCommentsByID(CommentTypeValue)}">
-        <span data-bind="html: Count" style="font-weight:800;font-size:14pt;text-align:center;display:block;"></span>
-        <span data-bind="html: CommentTypeName" style="text-transform:lowercase;overflow:hidden;font-size:small"></span>
+        <span data-bind="text: Count" style="font-weight:800;font-size:14pt;text-align:center;display:block;"></span>
+        <span data-bind="text: CommentTypeName" style="text-transform:lowercase;overflow:hidden;font-size:small"></span>
     </div>
 </script>
 <script id="commentTagSuggestionTmpl" type="text/html">
@@ -664,7 +664,7 @@
                     </div>
                 </td>
                 <td class="author">
-                    <span data-bind="html: DateCreatedLocal"></span>
+                    <span data-bind="text: DateCreatedLocal"></span>
                     <div data-bind="visible: (DateEdited() != null)" style="color:#aaa;font-size:.75em">
                         Edited on <span data-bind="text: DateEditedLocal"></span>
                     </div>
@@ -672,11 +672,11 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <div class="message" data-bind="html: Body, visible: EditHidden"></div>
+                    <div class="message" data-bind="text: Body, visible: EditHidden"></div>
                     <div style="display:inline-block; width:100%">
                         <span>
-                            <span style="cursor:pointer" data-bind="click: CastUpVote"><i class="fa fa-thumbs-o-up"></i></span> <span data-bind="html: UpVoteCount"></span>
-                            <span style="cursor:pointer" data-bind="click: CastDownVote"><i class="fa fa-thumbs-o-down"></i></span> <span data-bind="html: DownVoteCount"></span>
+                            <span style="cursor:pointer" data-bind="click: CastUpVote"><i class="fa fa-thumbs-o-up"></i></span> <span data-bind="text: UpVoteCount"></span>
+                            <span style="cursor:pointer" data-bind="click: CastDownVote"><i class="fa fa-thumbs-o-down"></i></span> <span data-bind="text: DownVoteCount"></span>
                         </span>
                         <span style="margin-left:10px">
                             <!--style: {display: (ReplyHidden() ? 'none' : 'inline-block' }-->
@@ -773,12 +773,12 @@
                     </div>
                 </td>
                 <td class="author">
-                    <div data-bind="html: DateCreatedLocal"></div>
+                    <div data-bind="text: DateCreatedLocal"></div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
-                    <div class="message" data-bind="html: Body"></div>
+                    <div class="message" data-bind="text: Body"></div>
                 </td>
             </tr>
             <tr>
@@ -794,9 +794,9 @@
 <script id="searchResultTmpl" type="text/html">
     <div class="entry" data-bind="attr: {'data-category': Type}">
         <div class="name">
-            <strong data-bind="text: Type"></strong> : <a data-bind="attr: {href: Url}, html: Name"></a>
+            <strong data-bind="text: Type"></strong> : <a data-bind="attr: {href: Url}, text: Name"></a>
         </div>
-        <div class="description" data-bind="html: Description"></div>
+        <div class="description" data-bind="text: Description"></div>
     </div>
 </script>
 <script id="searchResultsCategoriesTmpl" type="text/html">
@@ -807,6 +807,6 @@
 </script>
 <script id="searchResultsCategoryTmpl" type="text/html">
     <div class="entry">
-        <a href="#" data-bind="attr: {'data-category': Name}, html: Name"></a> : <span data-bind="text: ResultCount"></span> item(s)
+        <a href="#" data-bind="attr: {'data-category': Name}, text: Name"></a> : <span data-bind="text: ResultCount"></span> item(s)
     </div>
 </script>
