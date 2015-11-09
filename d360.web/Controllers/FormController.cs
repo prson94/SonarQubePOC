@@ -525,9 +525,15 @@ namespace d360.web.Controllers
             if (parentTaxonomy != null)
                 parentTaxonomyId = parentTaxonomy.TaxonomyTypeID;
 
-            list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList()
-                , Value = parentTaxonomyId.ToString()
-                , ReadOnly = true });
+            list.Add(new EditableField { Row = row, Column = 2,
+                Required = true,
+                FieldName = "TaxonomyTypeID",
+                Name = Resources.FieldInfo.TaxonomyType_Name,
+                FieldDescription = Resources.FieldInfo.TaxonomyType_Description,
+                FieldType = DataType.Lookup.ToString(),
+                Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(),
+                Value = parentTaxonomyId.ToString()
+            });
             row++;
 
             list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
