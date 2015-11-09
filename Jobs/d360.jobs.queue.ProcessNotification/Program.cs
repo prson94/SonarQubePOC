@@ -38,6 +38,22 @@ namespace d360.jobs.queue.ProcessNotification
     {
         #region SQL Statements
 
+        static string notificationSql = @"select n.* from queue.Notification n
+inner join Comment c on 
+	n.[Object] = 'Comment' 
+	AND ObjectId = c.ID 
+	AND  (
+			(select count(*) from comment r where r.ParentID = c.ID) > 0
+			OR (
+				c.ParentID IS NOT NULL
+				OR C.DateCreated < (getdate() - (5 / 24.0 / 60.0))
+			)
+		 )
+where n.MachineAssigned IS NULL
+union all
+select * from queue.Notification where [Object] != 'Comment' and MachineAssigned IS NULL";
+
+
         static string commentSql = @"select	C.ID,
 C.Body,
 C.DateCreated,
@@ -54,7 +70,8 @@ from	Comment C
 inner join reporting.Global_Resource R on R.ResourceID = C.CreatingResourceID and C.ID = @CommentID
 inner join cache.ObjectDetails D on D.[Object] = C.OwnerObjectType and D.ObjectID = C.OwnerObjectID
 left join Comment P on P.ID = C.ParentID
-left join reporting.Global_Resource PR on PR.ResourceID = P.CreatingResourceID";
+left join reporting.Global_Resource PR on PR.ResourceID = P.CreatingResourceID
+where (select count(*) from comment where parentID = @CommentID) > 0 OR C.DateCreated < (getdate() - (5 / 24.0 / 60.0)) ";
 
         static string resourcesSql = @"select	F.ResourceID,
 R.FirstName + ' ' + R.LastName as Name,
@@ -99,7 +116,7 @@ inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceI
                     companyConnection.Open();
 
                     var domainPrefix = domainPrefixes.First(i => i.Key == companyID).Value;
-                    var queueItems = companyConnection.Query<dynamic>(@"select * from [queue].Notification where MachineAssigned is null").ToList();
+                    var queueItems = companyConnection.Query<dynamic>(notificationSql).ToList();
 
                     queueItems.ForEach(q =>
                     {
