@@ -30,7 +30,7 @@
                     break;
             }
         }
-
+    
         var initrowdetails = function (index, parentElement, gridElement, datarecord) {
             var div = $($(parentElement).children()[0]);
             if (div != null) {
@@ -44,13 +44,12 @@
                 var respId = ID + '_resp';
                 var scoreId = ID + '_score';
                 var resp = div.find('.resp');
-                var score = div.find('.score');
+                var score = div.find('.score');                
                 details.attr('id', detId);
                 resp.attr('id', respId);
                 score.attr('id', scoreId);
-                DetailTile(detId, null, permissions, Group, ID);
-                
-                PeopleResponsibilityTile(respId, context, permissions, Group, ID, ' ', true);
+                DetailTile(detId, null, permissions, Group, ID);                
+                PeopleResponsibilityTile(respId, context, permissions, Group, ID, ' ', true);                
                 $(div).jqxTabs({ width: '95%', height: 380, theme: theme, initTabContent: initWidgets });
             }
         }
@@ -120,12 +119,13 @@
             theme: theme,
             rowdetails: true,
             autorowheight: true,
+            showfilterrow: true,
             rowdetailstemplate: { rowdetails: "<div style='margin: 10px 5px 10px 5px;'><ul><li class='title'></li><li>People Responsibilities</li><li>Score</li></ul><div class='desc'></div><div class='resp'></div><div class='score'></div></div>", rowdetailsheight: 420 },
             initrowdetails: initrowdetails,
             columns: [
-                { text: 'Term', dataField: 'Merged', width: '75%', cellsrenderer: cellsrenderer },
+                { text: 'Term', dataField: 'Merged', width: '70%', cellsrenderer: cellsrenderer },
                 { text: 'Rank', dataField: 'Score', width: '10%', filterable: false, cellsformat: 'p1', cellsrenderer: percentrenderer },                
-                { text: 'Type', dataField: 'Type', width: '15%', cellsrenderer: textrenderer }
+                { text: 'Type', dataField: 'Type', width: '20%', filtertype: 'checkedlist', cellsrenderer: textrenderer }
             ]
         });
 
