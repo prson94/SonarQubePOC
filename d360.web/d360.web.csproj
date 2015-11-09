@@ -908,10 +908,6 @@
     <Content Include="Scripts\Apps.min.js">
       <DependentUpon>Apps.js</DependentUpon>
     </Content>
-    <Content Include="Scripts\apps\search\directives.js" />
-    <Content Include="Scripts\apps\search\search.controller.js" />
-    <Content Include="Scripts\apps\search\search.main.js" />
-    <Content Include="Scripts\apps\search\search.view.html" />
     <Content Include="Scripts\d3\d3.js" />
     <Content Include="Scripts\errors.json" />
     <None Include="Scripts\handlebars-1.1.2.js" />
@@ -1078,7 +1074,6 @@
     <Content Include="Views\Fusion\RelationshipAggregatesOverlay.cshtml" />
     <Content Include="Views\Workflow\WorkflowActionOverlay_1.cshtml" />
     <Content Include="Views\Shared\RowCommandTooltip.cshtml" />
-    <Content Include="Views\Apps\SearchOld.cshtml" />
     <Content Include="Views\Workflow\ArtifactTypeWorkflowStatusOverlay.cshtml" />
     <Content Include="Views\Overlays\Audit.cshtml" />
     <Content Include="Views\Form\AddFusionSpreadsheetImport.cshtml" />

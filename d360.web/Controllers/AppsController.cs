@@ -23,15 +23,7 @@ namespace d360.web.Controllers
         }
 
         #endregion
-
-        public ActionResult SearchOld(string phrase)
-        {
-            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("ResourceID", Company.CurrentResourceID);
-            ViewBag.Phrase = phrase;
-            return View();
-        }
-        
+                
         public ActionResult Search(string phrase)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
