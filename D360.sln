@@ -20,11 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0. Solution Items", "0. Sol
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{3EC039C4-C48E-44F4-8C75-04C5A048F7C4}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D627328F-6E6B-497D-B588-8450B61DBD33}"
 	ProjectSection(SolutionItems) = preProject
 		WE-settings.xml = WE-settings.xml
@@ -117,6 +112,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.test.jobs", "Tests\d360.test.jobs\d360.test.jobs.csproj", "{BEAEB4B8-82A6-40AD-B4F3-CC5373334A2A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.queue.ProcessRecache", "Jobs\d360.jobs.queue.ProcessRecache\d360.jobs.queue.ProcessRecache.csproj", "{6D30A98E-6906-4452-8185-A94E65012074}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1D215E64-921D-400C-BB0A-762C6E31A076}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
