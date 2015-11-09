@@ -88,16 +88,18 @@ function drawKpi(controlID, title, total, available, isPercentage) {
     };
 
     settings.drawBefore = function (renderer, rect) {
-        sz = renderer.measureText(total + (isPercentage ? "%" : ""), 0, { 'class': 'kpi-inner-text' });
+        var text = ((total == null) ? '-' : total + (isPercentage ? "%" : ""));
+        sz = renderer.measureText(text, 0, { 'class': 'kpi-inner-text' });
+        
         renderer.text(
-        total + (isPercentage ? "%" : ""),
-        rect.x + (rect.width - sz.width) / 2,
-        rect.y + rect.height / 2,
-        0,
-        0,
-        0,
-        { 'class': 'kpi-inner-text' }
-        );
+                text,
+                rect.x + (rect.width - sz.width) / 2,
+                rect.y + rect.height / 2,
+                0,
+                0,
+                0,
+                { 'class': 'kpi-inner-text' }
+            );
     }
     $(controlID).jqxChart(settings);
     $(controlID).jqxChart('addColorScheme', 'customColorScheme', ['#3f9d40', '#EDE6E7']);
