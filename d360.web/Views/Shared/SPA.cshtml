@@ -312,9 +312,14 @@
 
             });
 
-            $('body').on('click', '*[data-tile]', function (event) {
-                var tile = $(this);
-                //amplify.publish("ToolAction", { uri: tile.data("uri"), context: tile.data("context") });
+            $('body').on('click', '*[data-tile]', function (event) {                
+                if(event.originalEvent == null) // this happens when you click on the kpi ring, it sends two events one with a missing original event causing 2x the overlays missing all data
+                {
+                    console.log('click - *[data-title] handler encountered null originalEvent, ignoring event:');
+                    console.log(event);
+                    return;
+                }
+                var tile = $(this); 
                 openTileOverlay(tile.data("uri"));
             });
 
@@ -527,7 +532,7 @@
                 }
             });
 
-            amplify.subscribe("ToolAction", function (data) {
+            amplify.subscribe("ToolAction", function (data) {                
                 if (data.context != "nullform") {
                     try {
                         switch (data.context) {
