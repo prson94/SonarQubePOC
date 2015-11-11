@@ -207,11 +207,8 @@
                             filterable: false,
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                                 var tools = [];
-                                tools.push({ title: 'More info on this execution', icon: 'info', urlprefix: '/fusion/FusionExecution?id=' + data.ID });
-                                //if (data.RawLogFileName.length > 0) {
-                                //    tools.push({ title: 'View raw agent submission log', icon: 'file-code-o', urlprefix: '/fusion/FusionExecutionRawLog?id=' + data.ID });
-                                //}
-                                return renderToolsHtml(value, tools, "FusionExecution", data);//contextList.FusionFilter
+                                tools.push({ title: 'More info on this execution', icon: 'info', urlprefix: '/fusion/FusionExecution?id=' + data.ID });                                                                
+                                return renderToolsHtml(value, tools, "openexceptiondetailsdlg", data);
                             }
                         }
                     ]
