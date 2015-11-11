@@ -367,8 +367,8 @@ namespace d360.web.Controllers
                     remainingWidth = 34;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName", width = calculateStaticColumnWidth(13, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName", width = calculateStaticColumnWidth(13, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName", width = calculateStaticColumnWidth(13, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.DateLastLoggedIn_Name, datafield = "DateLastLoggedIn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });

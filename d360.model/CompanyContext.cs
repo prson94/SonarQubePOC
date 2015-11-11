@@ -2013,8 +2013,7 @@ from	ResponsibilityDetail RD
 			on	(
 					(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
 					(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
-				)
-			and R.Email not like '%?subject=%'", new { wt = (int)workflowType, id = id });
+				)", new { wt = (int)workflowType, id = id });
         }
 
         public Workflow GetMostRecentCertificationWorkflowByArtifact(int id)

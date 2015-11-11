@@ -38012,7 +38012,7 @@ function CommentItem(data) {//, hub) {
         return self.FormatDate(self.DateCreated);
     });
     self.DateEditedLocal = ko.computed(function () {
-        return self.FormatDate(self.DateEdited());
+        return self.FormatDate((self.DateEdited() || "").toString());
     });
    
 
@@ -38274,7 +38274,7 @@ function CommentItem(data) {//, hub) {
                 self.CurrentTags([]);
                 self.CurrentTags(_currentTags);
                 self.ProcessingCount(self.ProcessingCount() - 1);
-                self.DateEdited(result.DateEdited);
+                self.DateEdited(result.DateEditedUTCString);
                 self.IsEditable(result.IsEditable);
                 self.Body(result.Body);
                 self.hideEdit();
@@ -43279,16 +43279,18 @@ function drawKpi(controlID, title, total, available, isPercentage) {
     };
 
     settings.drawBefore = function (renderer, rect) {
-        sz = renderer.measureText(total + (isPercentage ? "%" : ""), 0, { 'class': 'kpi-inner-text' });
+        var text = ((total == null) ? '-' : total + (isPercentage ? "%" : ""));
+        sz = renderer.measureText(text, 0, { 'class': 'kpi-inner-text' });
+        
         renderer.text(
-        total + (isPercentage ? "%" : ""),
-        rect.x + (rect.width - sz.width) / 2,
-        rect.y + rect.height / 2,
-        0,
-        0,
-        0,
-        { 'class': 'kpi-inner-text' }
-        );
+                text,
+                rect.x + (rect.width - sz.width) / 2,
+                rect.y + rect.height / 2,
+                0,
+                0,
+                0,
+                { 'class': 'kpi-inner-text' }
+            );
     }
     $(controlID).jqxChart(settings);
     $(controlID).jqxChart('addColorScheme', 'customColorScheme', ['#3f9d40', '#EDE6E7']);
@@ -53084,7 +53086,7 @@ function resources_admin(app, pageViewModel, templatePath, contextList) {
 
                         UsersSource = {
                             datatype: 'json',
-                            url: '/api/resources/' + typeID,
+                            url: '/api/resources/' + typeID + "?$orderby=LastName,FirstName",
                             datafields: data.Fields
                         };
 

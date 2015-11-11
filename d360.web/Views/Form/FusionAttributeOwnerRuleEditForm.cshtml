@@ -53,7 +53,6 @@
             var items = $("#FusionOwnerOptionsDropdown").jqxDropDownList('getItems');
             if (items) {
                 $.each(items, function () {
-                    console.log(this.value);
                     if (this.value == "@(Model.Rule.RelationshipOwnerObjectID)") {
                         $("#FusionOwnerOptionsDropdown").jqxDropDownList('selectItem', this);
                     }

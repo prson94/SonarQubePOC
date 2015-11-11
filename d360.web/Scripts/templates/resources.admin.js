@@ -64,7 +64,7 @@
 
                         UsersSource = {
                             datatype: 'json',
-                            url: '/api/resources/' + typeID,
+                            url: '/api/resources/' + typeID + "?$orderby=LastName,FirstName",
                             datafields: data.Fields
                         };
 

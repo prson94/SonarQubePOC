@@ -320,34 +320,34 @@ namespace d360.web.Models
         public string SaveActionName { get; set; }
     }
 
-    //public class FusionAttributeTypeEditorControl
-    //{
-    //    public string Title { get; set; }
-    //    public List<FusionAttributeType> Types { get; set; }
-    //    public int? SelectedID { get; set; }
-    //}
+    public class FusionAttributeTypeEditorControl
+    {
+        public string Title { get; set; }
+        public List<FusionAttributeType> Types { get; set; }
+        public int? SelectedID { get; set; }
+    }
 
-    //public class FusionOwnerEditModel
-    //{
-    //    public string ObjectType { get; set; }
+    public class FusionOwnerEditModel
+    {
+        public string ObjectType { get; set; }
 
-    //    public int? ObjectID { get; set; }
+        public int? ObjectID { get; set; }
 
-    //    public string ParentObjectType { get; set; }
+        public string ParentObjectType { get; set; }
 
-    //    public int? ParentObjectID { get; set; }
-    //}
+        public int? ParentObjectID { get; set; }
+    }
 
-    //public class FusionOwnerEditListModel
-    //{
-    //    public string RelationshipOwnerObjectType { get; set; }
+    public class FusionOwnerEditListModel
+    {
+        public string RelationshipOwnerObjectType { get; set; }
 
-    //    public int RelationshipOwnerObjectID { get; set; }
+        public int RelationshipOwnerObjectID { get; set; }
 
-    //    public int FusionID { get; set; }
+        public int FusionID { get; set; }
 
-    //    public List<FusionOwnerEditModel> Items { get; set; }
-    //}
+        public List<FusionOwnerEditModel> Items { get; set; }
+    }
 
     public class FusionOwnerRuleEditorModel
     {
