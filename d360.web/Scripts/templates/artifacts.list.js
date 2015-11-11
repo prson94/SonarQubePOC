@@ -3,6 +3,8 @@
         context.app.swap('');
 
         var typeID = context.params['typeid'];
+        var type = 'ArtifactType';
+        var id = context.params['id'];
         var filters = [];
 
         $.getJSON('/api/artifacts/' + typeID, function (json) {
@@ -20,6 +22,11 @@
             var ArtifactListAdapter;
 
             //#region Event Handlers
+            function refreshActionMenu(data) {
+                //$('#SideIcons').PageTools('reload', type: type, id: id, context: 'list');
+                $('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
+            }
+
 
             function artifactListPageResized() {
                 $("#List").jqxGrid('refresh');
@@ -36,7 +43,11 @@
                 try {
                     switch (data.context) {
                         case contextList.Artifact:
+                            $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             $('#List').jqxGrid('updatebounddata');
+                            break;
+                        case contextList.ArtifactType:
+                            $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;
                     }
                 } catch (e) { }
@@ -122,6 +133,7 @@
                 $('#ShowFilterAdvanced').off('click', showFilterAdvanced);
                 amplify.unsubscribe("ToolAction", toolAction);
                 amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
             }
 
             //#endregion
@@ -530,7 +542,7 @@
                     $('#ShowFilterAdvanced').on('click', showFilterAdvanced);
                     amplify.subscribe("ToolAction", toolAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
+                    amplify.subscribe("RefreshActionMenu", refreshActionMenu);
                     //#endregion
                 });
         });

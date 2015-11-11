@@ -1077,6 +1077,19 @@ order by	ColumnIndex", new { id });
             else
             {
                 f = new Follow { ObjectID = objectID, ObjectType = type.ToString(), ResourceID = resourceID.Value, DateCreated = DateTime.UtcNow };
+                switch (type)
+                {
+                    case SystemObjects.Artifact:
+                        f.FollowTypeID = FollowType.Artifact;
+                        break;
+                    case SystemObjects.ArtifactType:
+                        f.FollowTypeID = FollowType.ArtifactType;
+                        break;
+                    default:
+                        f.FollowTypeID = FollowType.Query;
+                        break;
+                }
+
                 Follows.Add(f);
                 SaveChanges();
                 value = true;

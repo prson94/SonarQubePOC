@@ -544,11 +544,14 @@
 <script id="boardTmpl" type="text/html">
     <div class="social">
 
-        <table class="CommentForm" style="background-color: #efefef; border-radius: 2px;" data-bind="visible: ShowAddCommentControls">
+        <table class="CommentForm" style="background-color: #efefef; border-radius: 2px;width: 100%; word-wrap:break-word;table-layout: fixed;" data-bind="visible: ShowAddCommentControls">
             <tr>
                 <td class="input-field" colspan="2" style="padding: 5px">
+                    <div style="width:100%;">
+                        <textarea placeholder="What's on your mind?" class="grey lighten-5" style="font-size: larger; border: 1px solid #999; " data-bind="htmlarea: newMessage"></textarea> @*, event: { keyup: checkForTags } class="htmlArea"*@
+                    </div>
                     <!--<div class="FieldName">What's on your mind?</div>-->
-                    <textarea placeholder="What's on your mind?" class="grey lighten-5" style="font-size: larger; border: 1px solid #999; height:70px;" data-bind="textInput: newMessage, htmlarea: {}"></textarea> @*, event: { keyup: checkForTags } class="htmlArea"*@
+
                 </td>
             </tr>
             <tr>
@@ -602,28 +605,31 @@
                 </span>
                 <select id="BoardDateFilter" data-bind="options: dateFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedDateFilterOption, event: {change: filterComments}" class="browser-default socialDropDown" style="display:inline-block;" />
             </div>
-            <div style="display: block; /*text-align: justify; -ms-text-justify: distribute-all-lines; text-justify: distribute-all-lines;*/ overflow-x:scroll;white-space:nowrap;overflow:auto;">
+            <div style="display: block; /*text-align: justify; -ms-text-justify: distribute-all-lines; text-justify: distribute-all-lines;*/ overflow-x:auto;white-space:nowrap;overflow:auto;">
                 <!-- ko template: {name: 'commentCountTmpl', foreach: commentCounts } -->
                 <!-- /ko -->
                 <!--<span style="width:100%;display:inline-block;font-size:0;line-height:0;"></span>-->
             </div>
             <div style="white-space: nowrap;">
-                    <div style="width:100%;position:relative;display:inline-block;">
-                        <input data-bind="value: searchFilter,valueUpdate:'afterkeydown'" type="text" placeholder="Search for keyword" style="display:inline-block;width:100%;line-height:1.5;padding:2px;" />
-                        <i data-bind="visible: searchFilter().length < 1" class="fa fa-search" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
-                        <i data-bind="visible: searchFilter().length > 0, click: function () { searchFilter('')}" class="fa fa-remove" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
-                        <!-- <button style="display:inline; float:right;  width:auto; margin: 8px 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: filterComments">Search</button>-->
-                    </div>
+                <div style="width:100%;position:relative;display:inline-block;">
+                    <input data-bind="value: searchFilter,valueUpdate:'afterkeydown'" type="text" placeholder="Search for keyword" style="display:inline-block;width:100%;line-height:1.5;padding:2px;" />
+                    <i data-bind="visible: searchFilter().length < 1" class="fa fa-search" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
+                    <i data-bind="visible: searchFilter().length > 0, click: function () { searchFilter('')}" class="fa fa-remove" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
+                    <!-- <button style="display:inline; float:right;  width:auto; margin: 8px 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: filterComments">Search</button>-->
                 </div>
             </div>
-                <div class="Board-Spacer"></div>
+        </div>
+        <div class="Board-Spacer"></div>
 
-                <p class="error" style="color:red" data-bind="text: error"></p>
-                <div class="notification" data-bind="visible: newComments().length > 0"><a data-bind="    click: loadNewComments"> <span data-bind="text: newComments().length"></span> new post(s)</a></div>
-                <!-- ko template: {name: 'commentTmpl', foreach: comments } -->
-                <!-- /ko -->
-                <button class="btn waves-effect grey-text grey lighten-5" style="width: 90%; margin: auto" type="button" data-bind="visible: moreComments(), click: getMoreComments,  disable: IsProcessing "><span data-bind="visible: !IsProcessing()">Load More</span><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
-            </div>
+        <p class="error" style="color:red" data-bind="text: error"></p>
+        <div class="notification" data-bind="visible: newComments().length > 0"><a data-bind="    click: loadNewComments"> <span data-bind="text: newComments().length"></span> new post(s)</a></div>
+        <div data-bind="visible: IsProcessing() && !moreComments()" style="width:100%">
+            <i class="fa fa-spinner fa-spin fa-2x grey-text"  style="width:100%;text-align:center;"></i>
+        </div>
+        <!-- ko template: {name: 'commentTmpl', foreach: comments } -->
+        <!-- /ko -->
+        <button class="btn waves-effect grey-text grey lighten-5" style="width: 100%; margin: auto" type="button" data-bind="visible: moreComments(), click: getMoreComments,  disable: IsProcessing "><span data-bind="visible: !IsProcessing()">Load More</span><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
+    </div>
 </script>
 <script id="commentCountTmpl" type="text/html">
     <div class="social-count-box" data-bind="css: IsSelected, click: function() {  $parent.filterCommentsByID(CommentTypeValue)}">
@@ -649,16 +655,16 @@
 
 <script id="commentTmpl" type="text/html">
     <div class="entry top-entry" data-bind="css: { 'entry-alt': $index()%2 }, visible: isVisible, attr: { id: ID }">
-        <table>
+        <table style="table-layout:fixed;">
             <tr>
-                <td rowspan="4" class="profile">
+                <td rowspan="4" class="profile" style="width:24px;">
                     <i data-bind="css: getCommentTypeCss()" style="font-size:large;"></i>
                 </td>
                 <td style="vertical-align:top;">
                     <div>
                         <a style="font-weight:bold" data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind="text: ObjectName"></span></a>
                         <span data-bind="visible: ShowObjectType">
-                            (posted by 
+                            (posted by
                             <a data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: (CreatorIsOwner() ? ResourceName() + ' (owner)' : ResourceName)"></a>)
                         </span>
                     </div>
@@ -672,7 +678,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <div class="message" data-bind="text: Body, visible: EditHidden"></div>
+                    <div class="message" data-bind="html: Body, visible: EditHidden" style="-ms-overflow-style:auto;overflow-x:auto;white-space:nowrap;overflow:auto;"></div>
                     <div style="display:inline-block; width:100%">
                         <span>
                             <span style="cursor:pointer" data-bind="click: CastUpVote"><i class="fa fa-thumbs-o-up"></i></span> <span data-bind="text: UpVoteCount"></span>
@@ -702,13 +708,16 @@
             </tr>
             <tr>
                 <td colspan="2" class="ChildComments">
-                    <table data-bind="visible: !EditHidden()" class="ChildComments">
+                    <table data-bind="visible: !EditHidden()" class="ChildComments" style="width: 100%; word-wrap:break-word;table-layout: fixed;">
                         <tr>
-                            <td class="input-field" style="width:100%">
-                                <textarea style="width:100%" data-bind="value: Body, htmlarea: {}"></textarea>
+                            <td class="input-field" style="width:100%" colspan="2">
+                                <textarea style="width:100%" data-bind="value: Body, htmlarea: Body"></textarea>
                             </td>
+                        </tr>
+                        <tr>
+                            <td></td>
                             <td>
-                                <button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: updateComment, disable: IsProcessing" style="margin-left:5px; width:auto;"><i class="fa fa-edit" title="Edit" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
+                                <button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: updateComment, disable: IsProcessing" style="margin-left:5px; margin-top:5px; width:auto;float:right"><i class="fa fa-edit" title="Edit" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
                             </td>
                         </tr>
                     </table>
@@ -717,19 +726,25 @@
             <tr>
                 <td colspan="2" class="ChildComments">
                     <a class="commentNotification" data-bind="click: loadNewComments, visible: NewComments().length > 0"> <span data-bind="text: NewComments().length"></span> new comment(s)</a>
-                    <table class="ChildComment" data-bind="visible: (!ReplyHidden() && ShowAddCommentControls())">
+                    <table class="ChildComment" style="width: 100%; word-wrap:break-word;table-layout: fixed;" data-bind="visible: (!ReplyHidden() && ShowAddCommentControls())">
                         <tr>
                             <td colspan="2" style="text-align:left;">
 
                                 <!-- ko template: {name: 'commentTagTmpl', foreach: tags } -->
                                 <!-- /ko -->
                                 <!-- <button class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" data-bind="visible: HasNewTags, click: updateComment, text: NewTagCountText">Save</button>
-        -->
+                                -->
 
                             </td>
                         </tr>
+
                         <tr>
-                            <td>
+                            <td colspan="2" class="ChildComments" style="text-align:left;">
+                                <textarea style="width:100%" data-bind="htmlareasimple: newCommentMessage"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="text-align:left;">
                                 <div style="white-space:nowrap;display:inline-block;width:100%">
                                     <input data-bind="textInput: newTag" placeholder="Add another tag" style="border: none; border: 1px solid #adacac; line-height:1.5; padding:2px;margin:5px 0; width:100%;" />
                                     <i class="fa fa-tags" style="position:relative; z-index:1; left: -25px; top: 0; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
@@ -741,13 +756,12 @@
                                     </div>
                                 </div>
                             </td>
-                            <td></td>
                         </tr>
                         <tr>
-                            <td class="input-field">
-                                <textarea style="width:100%" data-bind="value: newCommentMessage, htmlarea: {}"></textarea>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: addComment, disable: IsProcessing" style="width:auto;margin-left:5px;margin-top:5px;float:right;"><i class="fa fa-reply" title="Reply" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
                             </td>
-                            <td><button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: addComment, disable: IsProcessing" style="width:auto;margin-left:5px;"><i class="fa fa-reply" title="Reply" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button></td>
                         </tr>
                     </table>
                     <div data-bind="template: {name: 'subCommentTmpl', foreach: Comments }"></div>
@@ -766,7 +780,7 @@
                 </td>
                 <td>
                     <div>
-                        <div data-bind="if: !ShowObjectType()">
+                        <div>
                             <a data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: ResourceName"></a>
                         </div>
                         @*<a data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind="    text: ObjectName"></span></a>*@
@@ -778,7 +792,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <div class="message" data-bind="text: Body"></div>
+                    <div class="message" data-bind="html: Body"></div>
                 </td>
             </tr>
             <tr>

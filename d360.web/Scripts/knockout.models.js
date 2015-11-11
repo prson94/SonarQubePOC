@@ -12,42 +12,46 @@ ko.bindingHandlers.fadeVisible = {
     }
 };
 
+
+ko.bindingHandlers.htmlareasimple = {
+    init: function (element, valueAccessor) {
+        var value = valueAccessor();
+
+        if (ko.isObservable(value)) {
+            $(element).redactor({
+                changeCallback: value,
+                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist','orderedlist','outdent','indent','link','fontcolor','backcolor','alignment']
+            });
+        }
+    },
+    update: function (element, valueAccessor) {
+        var value = ko.utils.unwrapObservable(valueAccessor()) || '';
+        if (value !== $(element).redactor('get')) {
+            $(element).redactor('set', value);
+        }
+    }
+};
+
 ko.bindingHandlers.htmlarea = {
     init: function (element, valueAccessor) {
         var value = valueAccessor();
 
-        // We only want Redactor to notify our value of changes if the value
-        // is an observable (rather than a string, say).
-
         if (ko.isObservable(value)) {
             $(element).redactor({
-                changeCallback: value
+                changeCallback: value,
+                imageUploadCallback:function(image, json)
+                {
+                    image.css("max-width", "100%").css("max-height", "100%");
+                },
+                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist', 'orderedlist', 'outdent', 'indent', 'image', 'video', 'link', 'fontcolor', 'backcolor', 'alignment', 'horizontalrule']
             });
         }
-
     },
     update: function(element, valueAccessor) {
-        // New value, note that Redactor expects the argument passed to 'set'
-        // to have toString method, which is why we disjoin with ''.
-
-        //var value = ko.utils.unwrapObservable(valueAccessor()) || '';
-
-        // We only call 'set' if the content has changed, as we only need to
-        // to do so then, and 'set' also resets the cursor position, which
-        // we don't want happening all the time.
-
-        // This code would work with Redactor 9, but no longer works with Redactor 10
-        //if (value !== $(element).redactor('get')) {
-        //    $(element).redactor('code.set', value);
-        //}
-
-        // The API method has become 'code.get', and it behaves a bit differently: it
-        // returns formatted HTML, i.e. with whitespace and EOLs.  That means that we
-        // would update the Redactor content every time the observable changed, which
-        // was bad.  So instead we can use this:
- //       if (value !== $(element).redactor('core.getTextarea').val()) {
- //           $(element).redactor('code.set', value);
- //       }
+        var value = ko.utils.unwrapObservable(valueAccessor()) || '';
+        if (value !== $(element).redactor('get')) {
+            $(element).redactor('set', value);
+        }
     }
 };
 
@@ -475,6 +479,9 @@ function CommentItem(data) {//, hub) {
     });
 
     self.ShowObjectType = ko.computed(function () {
+        //var result = (self.ObjectType() == "Resource" && self.ObjectID() == self.CreatingResourceID());
+        //alert(self.ObjectType() + ", " + self.CreatingResourceID() + ", " + result);
+
         return !(self.ObjectType() == "Resource" && self.ObjectID() == self.CreatingResourceID());
     });
 
@@ -3094,10 +3101,10 @@ var BoardViewModel = function () {
     ]);
 
     self.visibilityOptions = ko.observableArray([
-        { Text: 'All', Value: 1 },
-        { Text: 'Followers', Value: 2 },
-        { Text: 'Owners', Value: 3 },
-        { Text: 'Only Me', Value: 4 }
+        { Text: 'All', Value: 4 },
+        { Text: 'Followers', Value: 3 },
+        { Text: 'Owners', Value: 2 },
+        { Text: 'Only Me', Value: 1 }
     ]);
 
     self.typeFilterOptions = ko.observableArray([
