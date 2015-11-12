@@ -538,15 +538,11 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
                             viewNames.Add(objectName);
 
                             selectSql = string.Format(@"select A.ID, A.ParentID, A.Name, A.TextPath, A.Description, A.[Level], L.Name as LevelName, L.Description as LevelDescription, 
-    case T.Class 
-     when 1 then 'Informational' 
-     when 2 then 'Organizational'
-     when 4 then 'Other'
-     else 'Vendor'
-    end as Class,
+    C.Name as Class,
     {0} dbo.GenerateObjectUrl('{3}', A.TaxonomyTypeID, A.ID) as Url, AC.AttributeCount, Rels.[Count] as RelationshipCount 
     from Taxonomy A {2} 
     inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
+    inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
     left join TaxonomyTypeLevel L on L.TaxonomyTypeID = L.TaxonomyTypeID and L.[Level] = A.[Level]
     cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC 
     cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels
@@ -860,12 +856,7 @@ from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner jo
 		    S.[Level] as SourceLevel,
 		    SL.Name as SourceLevelName,
 		    dbo.GenerateObjectUrl('Taxonomy', S.TaxonomyTypeID, S.ID) as SourceURL,
-		    case ST.[Class] 
-		     when 1 then 'Informational' 
-		     when 2 then 'Organizational'
-		     when 4 then 'Other'
-		     else 'Vendor'
-		    end as SourceClass,
+		    SC.Name as SourceClass,
 		    T.ID as TargetID,
 		    T.Name as TargetName,
             T.TextPath as TargetTextPath,
@@ -873,18 +864,15 @@ from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner jo
 		    T.[Level] as TargetLevel,
 		    TL.Name as TargetLevelName,
 		    dbo.GenerateObjectUrl('Taxonomy', T.TaxonomyTypeID, T.ID) as TargetUrl,
-		    case TT.[Class] 
-		     when 1 then 'Informational' 
-		     when 2 then 'Organizational'
-		     when 4 then 'Other'
-		     else 'Vendor'
-		    end as TargetClass
+		    TC.Name as TargetClass
     from	cache.Relationships R
 		    inner join Taxonomy S on S.ID = R.SourceObjectID
 		    inner join Taxonomy T on T.ID = R.TargetObjectID
 		    inner join TaxonomyType ST on ST.ID = S.TaxonomyTypeID
-		    left join TaxonomyTypeLevel SL on SL.TaxonomyTypeID = S.TaxonomyTypeID and S.[Level] = SL.[Level]
+            inner join TaxonomyTypeClass SC on SC.ID = ST.TaxonomyTypeClassID
+            left join TaxonomyTypeLevel SL on SL.TaxonomyTypeID = S.TaxonomyTypeID and S.[Level] = SL.[Level]
 		    inner join TaxonomyType TT on TT.ID = T.TaxonomyTypeID
+            inner join TaxonomyTypeClass TC on TC.ID = TT.TaxonomyTypeClassID
 		    left join TaxonomyTypeLevel TL on TL.TaxonomyTypeID = T.TaxonomyTypeID and T.[Level] = TL.[Level]
     where	R.SourceObject = 'Taxonomy' and R.TargetObject = 'Taxonomy'";
 
@@ -934,16 +922,12 @@ from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner jo
 		    O.[Level],
 		    TL.Name as LevelName,
 		    TL.Description as LevelDescription,
-		    case T.[Class] 
-		     when 1 then 'Informational' 
-		     when 2 then 'Organizational'
-		     when 4 then 'Other'
-		     else 'Vendor'
-		    end as [Class]
+		    C.Name as [Class]
     from	ResponsibilityDetail R
 		    inner join Taxonomy O on O.ID = R.ObjectID
 		    inner join TaxonomyType T on T.ID = O.TaxonomyTypeID
-		    left join TaxonomyTypeLevel TL on TL.TaxonomyTypeID = T.ID and TL.[Level] = O.[Level]
+            inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
+            left join TaxonomyTypeLevel TL on TL.TaxonomyTypeID = T.ID and TL.[Level] = O.[Level]
 		    left join [reporting].[Global_Resource] U on U.ResourceID = R.[ResponsibleObjectID] and R.[ResponsibleObjectType] = 'Resource'
 		    left join [reporting].[Global_Resource] GU on GU.ResourceID = R.[PrimaryOwnerResourceID]
     where	ObjectType = 'Taxonomy'";
