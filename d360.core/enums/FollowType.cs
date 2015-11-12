@@ -10,7 +10,7 @@ namespace d360.core.enums
     {
         Artifact = 1,
         ArtifactType = 2,
-        ChildrenOf = 3,
+        Children = 3,
         Query = 4
     }
 }

@@ -385,7 +385,7 @@ ko.bindingHandlers.customFileInput = {
 //#endregion
 
 //#region    BASE MODELS
-function CommentTagItem(data) {
+function CommentTagItem(data, parent) {
     var self = this;
     data = data || {};
     self.Object = ko.observable(data.Object);
@@ -397,21 +397,15 @@ function CommentTagItem(data) {
     self.IconBackColor = ko.observable(data.IconBackColor);
     self.IconForeColor = ko.observable(data.IconForeColor);
 
-    //self.getTagBackgroundColor = function () {
+    self.removeTag = function () {
+        parent.tags.remove(self);
+    }
 
-    //    var hash = CryptoJS.MD5(data.ObjectTypeName).toString();
-        
-    //    var r = parseInt(hash.substring(0, 2), 16);
-    //    var g = parseInt(hash.substring(2, 4), 16);
-    //    var b = parseInt(hash.substring(4, 6), 16);
-        
-    //    //lighten color
-    //    r = (((r + 127) / 2.0) + 255) / 2.0;
-    //    g = (((g + 255) / 2.0) + 255) / 2.0;
-    //    b = (((b + 255) / 2.0) + 255) / 2.0;
-
-    //    return "rgb(" + Math.floor(r)+ "," +  Math.floor(g) +"," +  Math.floor(b) + ")";
-    //};
+    self.addTag = function () {
+        parent.tags(parent.tags().concat(self));
+        parent.newTag('');
+        parent.tagSuggestions([]);
+    }
 }
 
 function CommentCountItem(data) {
@@ -514,8 +508,6 @@ function CommentItem(data) {//, hub) {
     });
    
 
-   
-
     var _currentVotes = $.map(data.Votes, function (item) { return new CommentVoteItem(item); });
     self.CurrentVotes = ko.observableArray(_currentVotes);
 
@@ -564,7 +556,7 @@ function CommentItem(data) {//, hub) {
     }
 
 
-    var _currenTags = $.map(data.Tags, function (item) { return new CommentTagItem(item); });
+    var _currenTags = $.map(data.Tags, function (item) { return new CommentTagItem(item, self); });
     self.CurrentTags = ko.observableArray(_currenTags);
     self.CurrentTagCount = ko.computed(function () {
         return self.CurrentTags().length;
@@ -589,7 +581,11 @@ function CommentItem(data) {//, hub) {
     }, self);
 
     self.newTag = ko.observable();
-    self.tags = ko.observableArray([]);
+    //self.tags = ko.observableArray([]);
+
+    var _tags = $.map(data.Tags, function (item) { return new CommentTagItem(item, self); });
+    self.tags = ko.observableArray(_tags);
+
 
     self.newTag.subscribe(function (value) {
         if (value) {
@@ -656,6 +652,12 @@ function CommentItem(data) {//, hub) {
 
     self.showEdit = function () {
         self.EditHidden(false);
+        self.hideTags();
+
+        for (var i = 0; i < self.tags().length; i++) {
+            self.tags()[i].ShowRemove(true);
+        }
+        
     };
     self.hideEdit = function () {
         self.EditHidden(true);
@@ -767,10 +769,11 @@ function CommentItem(data) {//, hub) {
                 method: 'POST',
                 url: '/services/community/edit'
             }).done(function (result, status, xhr) {
-                self.tags([]);
-                var _currentTags = $.map(result.Tags, function (item) { return new CommentTagItem(item); });
+                var _currentTags = $.map(result.Tags, function (item) { return new CommentTagItem(item, self); });
                 self.CurrentTags([]);
                 self.CurrentTags(_currentTags);
+                self.tags([]);
+                self.tags(_currentTags);
                 self.ProcessingCount(self.ProcessingCount() - 1);
                 self.DateEdited(result.DateEditedUTCString);
                 self.IsEditable(result.IsEditable);
@@ -879,22 +882,6 @@ function CommentTagSuggestionItem(data, parent) {
     self.removeTag = function () {
         parent.tags.remove(self);
     }
-
-    //self.getTagBackgroundColor = function () {
-
-    //    var hash = CryptoJS.MD5(data.ObjectTypeName).toString();
-
-    //    var r = parseInt(hash.substring(0, 2), 16);
-    //    var g = parseInt(hash.substring(2, 4), 16);
-    //    var b = parseInt(hash.substring(4, 6), 16);
-
-    //    //lighten color
-    //    r = (((r + 127) / 2.0) + 255) / 2.0;
-    //    g = (((g + 255) / 2.0) + 255) / 2.0;
-    //    b = (((b + 255) / 2.0) + 255) / 2.0;
-
-    //    return "rgb(" + Math.floor(r) + "," + Math.floor(g) + "," + Math.floor(b) + ")";
-    //};
 
     self.addTag = function () {
             parent.tags(parent.tags().concat(self));
@@ -3120,7 +3107,7 @@ var BoardViewModel = function () {
         { Text: 'Questions', Value: 9 }
     ]);
 
-    self.selectedDateFilterOption = ko.observable();
+    self.selectedDateFilterOption = ko.observable(-7);
     self.selectedTypeFilterOption = ko.observable();
 
     self.tagSuggestions = ko.observableArray();
@@ -3283,6 +3270,7 @@ var BoardViewModel = function () {
                 method: 'POST',
                 url: '/services/community/comment'
             }).done(function (newCommentData, status, xhr) {
+                self.tags([]);
                 self.comments.unshift(new CommentItem(newCommentData));
                 self.newMessage('');
                 self.ProcessingCount(self.ProcessingCount() - 1);

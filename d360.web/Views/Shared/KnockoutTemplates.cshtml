@@ -657,7 +657,7 @@
     <div class="entry top-entry" data-bind="css: { 'entry-alt': $index()%2 }, visible: isVisible, attr: { id: ID }">
         <table style="table-layout:fixed;">
             <tr>
-                <td rowspan="4" class="profile" style="width:24px;">
+                <td rowspan="5" class="profile" style="width:24px;">
                     <i data-bind="css: getCommentTypeCss()" style="font-size:large;"></i>
                 </td>
                 <td style="vertical-align:top;">
@@ -686,7 +686,7 @@
                         </span>
                         <span style="margin-left:10px">
                             <!--style: {display: (ReplyHidden() ? 'none' : 'inline-block' }-->
-                            <a style="color:#272727;" href="#" data-bind="click: showReply, visible: (ReplyHidden() && ShowAddCommentControls())"><i class="fa fa-reply"></i>Reply</a>&nbsp;
+                            <a style="color:#272727;" href="#" data-bind="click: function() { showReply(); hideTags(); }, visible: (ReplyHidden() && ShowAddCommentControls())"><i class="fa fa-reply"></i>Reply</a>&nbsp;
                             <a style="color:#272727;" href="#" data-bind="click: showEdit, visible: (EditHidden() && IsEditable() && ShowAddCommentControls())"><i class="fa fa-edit"></i>Edit</a>
                         </span>
                         <span style="float:right">
@@ -704,6 +704,15 @@
                         <!-- ko template: {name: 'commentTagTmpl', foreach: CurrentTags } -->
                         <!-- /ko -->
                     </div>
+
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align:left;" data-bind="visible: !EditHidden()">
+
+                    <!-- ko template: {name: 'commentTagTmpl', foreach: tags } -->
+                    <!-- /ko -->
+
                 </td>
             </tr>
             <tr>
@@ -715,7 +724,23 @@
                             </td>
                         </tr>
                         <tr>
-                            <td></td>
+                            <td colspan="2" style="text-align:left;">
+                                <div style="white-space:nowrap;display:inline-block;width:100%">
+                                    <input data-bind="textInput: newTag" placeholder="Add another tag" style="border: none; border: 1px solid #adacac; line-height:1.5; padding:2px;margin:5px 0; width:100%;" />
+                                    <i class="fa fa-tags" style="position:relative; z-index:1; left: -25px; top: 0; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
+                                </div>
+                                <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px;">
+                                    <div style="padding:4px; border-top:solid 1px #dedede; font-size:12px; ">
+                                        <!-- ko template: {name: 'commentTagSuggestionTmpl', foreach: tagSuggestions } -->
+                                        <!-- /ko -->
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+
+                            </td>
                             <td>
                                 <button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: updateComment, disable: IsProcessing" style="margin-left:5px; margin-top:5px; width:auto;float:right"><i class="fa fa-edit" title="Edit" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
                             </td>

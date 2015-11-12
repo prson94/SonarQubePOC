@@ -25,6 +25,8 @@ namespace d360.web.Controllers.Services
         {
             var relations = new List<CommentRelation>();
             CommentDetail dtl = Company.GetCommentDetail(comment.Comment.ID).SingleOrDefault(c => c.ParentID == null);
+            dtl.ParseTagXml();
+
             if (comment.Comment.ID != 0)
             {
                 if (comment.Tags != null)
@@ -34,11 +36,13 @@ namespace d360.web.Controllers.Services
                         relations.Add(new CommentRelation { ObjectType = tag.Object, ObjectID = tag.ObjectID, Date = DateTime.UtcNow });
                     }
                 }
+                else
+                    comment.Tags = new List<CommentTag>();
 
                 //var test = dtl.DateCreated.Subtract(DateTime.UtcNow);
                 //var test2 = (dtl.DateCreated.Subtract(DateTime.UtcNow).Duration() < TimeSpan.FromMinutes(5));
 
-                if (dtl.Body != comment.Comment.Body
+                if ((dtl.Body != comment.Comment.Body || comment.Tags.Count() != dtl.Tags.Count())
                     && !string.IsNullOrWhiteSpace(comment.Comment.Body)
                     && dtl.CreatingResourceID == Company.CurrentResourceID
                     && dtl.DateCreated.Subtract(DateTime.UtcNow).Duration() < TimeSpan.FromMinutes(5))
@@ -46,7 +50,7 @@ namespace d360.web.Controllers.Services
                     comment.Comment.DateEdited = DateTime.UtcNow;
                     dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
                 }
-                else if (relations.Count > 0)
+                else 
                 {
                     dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
                 }

@@ -1080,13 +1080,14 @@ order by	ColumnIndex", new { id });
                 switch (type)
                 {
                     case SystemObjects.Artifact:
+                    case SystemObjects.Taxonomy:
                         f.FollowTypeID = FollowType.Artifact;
                         break;
                     case SystemObjects.ArtifactType:
                         f.FollowTypeID = FollowType.ArtifactType;
                         break;
                     default:
-                        f.FollowTypeID = FollowType.Query;
+                        f.FollowTypeID = FollowType.Artifact;
                         break;
                 }
 
@@ -1726,9 +1727,18 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             //comment.CreatingResourceID = CurrentResourceID;
             var now = DateTime.UtcNow;
             //SaveOrUpdate<Comment>(comment);
+            if (relations == null)
+                relations = new List<CommentRelation>();
+
+            var removeRelations = CommentRelations.Where(t => t.CommentID == comment.ID && !(t.ObjectType == "Resource" && t.ObjectID == CurrentResourceID )).ToList();
+
+            foreach (var r in removeRelations)
+                if (!relations.ToList().Contains(r))
+                CommentRelations.Remove(r);
 
             foreach (var r in relations)
             {
+
                 try
                 {
                     r.Date = now;
@@ -1741,9 +1751,11 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                     CommentRelations.Remove(r);
                 }
             }
+
+
             Comment c = GetById<Comment>(comment.ID);
 
-            if (c.Body != comment.Body && !Comments.Any(x => x.ParentID == c.ID))
+            if ((c.Body != comment.Body || removeRelations.Count() + 1 != relations.Count()) && !Comments.Any(x => x.ParentID == c.ID))
             {
                 c.Body = comment.Body;
                 c.DateEdited = comment.DateEdited;
