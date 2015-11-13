@@ -2066,6 +2066,8 @@ namespace d360.web.Controllers
             var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
             var model = new CompanySettingsEditorModel();
             model.DisableCommunityPosting = (settings.Any(i => i.SettingID == 1) ? bool.Parse(settings.Single(i => i.SettingID == 1).Value) : false);
+            model.DisableIssuePosting = (settings.Any(i => i.SettingID == 5) ? bool.Parse(settings.Single(i => i.SettingID == 5).Value) : false);
+            model.DisableQuestionPosting = (settings.Any(i => i.SettingID == 6) ? bool.Parse(settings.Single(i => i.SettingID == 6).Value) : false);
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
             if (settings.Any(i => i.SettingID == 4))
@@ -2188,7 +2190,7 @@ namespace d360.web.Controllers
 
                 #region social
 
-                var socialSetting = settings.SingleOrDefault(i => i.SettingID == 1);
+                var socialSetting = settings.FirstOrDefault(i => i.SettingID == 1);
                 if (socialSetting == null)
                 {
                     socialSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 1, Value = formModel.DisableCommunityPosting.ToString().ToLower() };
@@ -2197,6 +2199,30 @@ namespace d360.web.Controllers
                 else
                 {
                     socialSetting.Value = formModel.DisableCommunityPosting.ToString().ToLower();
+                    Community.SaveChanges();
+                }
+
+                socialSetting = settings.FirstOrDefault(i => i.SettingID == 5);
+                if (socialSetting == null)
+                {
+                    socialSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 5, Value = formModel.DisableIssuePosting.ToString().ToLower() };
+                    Community.Add<CompanySetting>(socialSetting);
+                }
+                else
+                {
+                    socialSetting.Value = formModel.DisableIssuePosting.ToString().ToLower();
+                    Community.SaveChanges();
+                }
+
+                socialSetting = settings.FirstOrDefault(i => i.SettingID == 6);
+                if (socialSetting == null)
+                {
+                    socialSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 6, Value = formModel.DisableQuestionPosting.ToString().ToLower() };
+                    Community.Add<CompanySetting>(socialSetting);
+                }
+                else
+                {
+                    socialSetting.Value = formModel.DisableQuestionPosting.ToString().ToLower();
                     Community.SaveChanges();
                 }
 

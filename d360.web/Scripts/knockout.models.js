@@ -571,7 +571,26 @@ function CommentItem(data) {//, hub) {
     self.NewComments = ko.observableArray();
     self.newCommentMessage = ko.observable();
     
-    self.ShowAddCommentControls = ko.observable(CompanySettings.DisableCommunityPosting == 'false');
+    self.ShowAddCommentControls = ko.observable(CompanySettings.DisableCommunityPosting == 'false' || CompanySettings.DisableIssuePosting == 'false' || CompanySettings.DisableQuestionPosting == 'false');
+
+    self.ShowReplyControl = ko.computed(function () {
+        switch (self.CommentTypeID())
+        {
+            case 1:
+                return (CompanySettings.DisableCommunityPosting == 'false');
+                break;
+            case 5:
+                return (CompanySettings.DisableIssuePosting == 'false');
+                break;
+            case 6:
+                return (CompanySettings.DisableQuestionPosting == 'false');
+                break;
+            default:
+                return true;
+                break;
+        }
+    });
+
     self.ReplyHidden = ko.observable(true);
     self.EditHidden = ko.observable(true);
 
@@ -1665,6 +1684,8 @@ function CompanySettingsViewModel(data) {
 
     //Simple Properties
     self.DisableCommunityPosting = ko.observable(data.DisableCommunityPosting);
+    self.DisableIssuePosting = ko.observable(data.DisableIssuePosting);
+    self.DisableQuestionPosting = ko.observable(data.DisableQuestionPosting);
     self.SetIconToDefault = ko.observable(data.SetLogoToDefault);
     self.SetLogoToDefault = ko.observable(data.SetLogoToDefault);
 
@@ -1715,6 +1736,12 @@ function CompanySettingsViewModel(data) {
     self.DisableCommunityPosting.subscribe(function (value) {
     });
 
+    self.DisableIssuePosting.subscribe(function (value) {
+    });
+
+    self.DisableQuestionPosting.subscribe(function (value) {
+    });
+
 
     //#region Methods
 
@@ -1731,6 +1758,8 @@ function CompanySettingsViewModel(data) {
             self.CurrentCompanyIconPath(relData.CurrentCompanyIconPath);
             self.CurrentCompanyLogoPath(relData.CurrentCompanyLogoPath);
             self.DisableCommunityPosting(relData.DisableCommunityPosting);
+            self.DisableIssuePosting(relData.DisableIssuePosting);
+            self.DisableQuestionPosting(relData.DisableQuestionPosting);
 
             console.log(self.CurrentCompanyLogoPath());
 
@@ -1752,6 +1781,8 @@ function CompanySettingsViewModel(data) {
 
         var postModel = {
             DisableCommunityPosting: self.DisableCommunityPosting(),
+            DisableIssuePosting: self.DisableIssuePosting(),
+            DisableQuestionPosting: self.DisableQuestionPosting(),
             SetLogoToDefault: self.SetLogoToDefault(),
             CompanyLogo: self.CompanyLogo().dataURL(),
             SetIconToDefault: self.SetIconToDefault(),
@@ -3063,7 +3094,8 @@ var BoardViewModel = function () {
     self.newComments = ko.observableArray();
     self.commentCounts = ko.observableArray();
 
-    self.ShowAddCommentControls =  ko.observable(CompanySettings.DisableCommunityPosting == 'false');
+    self.ShowAddCommentControls =  ko.observable(CompanySettings.DisableCommunityPosting == 'false' || CompanySettings.DisableIssuePosting == 'false' || ComanySettings.DisableQuestionPosting);
+    
 
     self.ObjectType = null;
     self.ObjectID = null;
@@ -3079,13 +3111,31 @@ var BoardViewModel = function () {
         { Text: 'All time', Value: 0 }
     ]);
 
-    self.typeEntryOptions = ko.observableArray([
-        //{ Text: 'Data Event', Value: 8 },
-        { Text: 'Discussion', Value: 2 },
-        { Text: 'Issue', Value: 5 },
-        //{ Text: 'Task', Value: 6 },
-        { Text: 'Question', Value: 9 }
-    ]);
+    var typeOps = [];
+    
+    var discussion = { Text: 'Discussion', Value: 2 };
+    var issue = { Text: 'Issue', Value: 5 };
+    var question = { Text: 'Question', Value: 9 };
+
+    if (CompanySettings.DisableCommunityPosting == 'false') {
+        typeOps.push(discussion);
+    }
+    if (CompanySettings.DisableIssuePosting == 'false') {
+        typeOps.push(issue);
+    }
+    if (CompanySettings.DisableQuestionPosting == 'false') {
+        typeOps.push(question);
+    }
+
+    self.typeEntryOptions = ko.observableArray(typeOps);
+
+    //self.typeEntryOptions = ko.observableArray([
+    //    //{ Text: 'Data Event', Value: 8 },
+    //    { Text: 'Discussion', Value: 2 },
+    //    { Text: 'Issue', Value: 5 },
+    //    //{ Text: 'Task', Value: 6 },
+    //    { Text: 'Question', Value: 9 }
+    //]);
 
     self.visibilityOptions = ko.observableArray([
         { Text: 'All', Value: 4 },

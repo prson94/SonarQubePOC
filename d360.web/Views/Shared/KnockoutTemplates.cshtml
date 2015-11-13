@@ -109,6 +109,14 @@
                 <div class="directions">
                     Disable the ability for users to post new items to the boards of other users and assets.  Users will still be able to see any system-generated comments.
                 </div>
+                <div data-bind="jqxCheckBox: {checked: DisableIssuePosting, theme: theme, width: '120px'}">Disable Issue Posts</div>
+                <div class="directions">
+                    Disable the ability for users to post new  issues to the boards of other users and assets.  Users will still be able to see any system-generated issues.
+                </div>
+                <div data-bind="jqxCheckBox: {checked: DisableQuestionPosting, theme: theme, width: '120px'}">Disable Question Posts</div>
+                <div class="directions">
+                    Disable the ability for users to post new questions to the boards of other users and assets.  Users will still be able to see any system-generated questions.
+                </div>
             </div>
         </div>
         <div class="col s12 m12 l2">
@@ -686,7 +694,7 @@
                         </span>
                         <span style="margin-left:10px">
                             <!--style: {display: (ReplyHidden() ? 'none' : 'inline-block' }-->
-                            <a style="color:#272727;" href="#" data-bind="click: function() { showReply(); hideTags(); }, visible: (ReplyHidden() && ShowAddCommentControls())"><i class="fa fa-reply"></i>Reply</a>&nbsp;
+                            <a style="color:#272727;" href="#" data-bind="click: function() { showReply(); hideTags(); }, visible: (ReplyHidden() && ShowReplyControl())"><i class="fa fa-reply"></i>Reply</a>&nbsp;
                             <a style="color:#272727;" href="#" data-bind="click: showEdit, visible: (EditHidden() && IsEditable() && ShowAddCommentControls())"><i class="fa fa-edit"></i>Edit</a>
                         </span>
                         <span style="float:right">
@@ -754,7 +762,6 @@
                     <table class="ChildComment" style="width: 100%; word-wrap:break-word;table-layout: fixed;" data-bind="visible: (!ReplyHidden() && ShowAddCommentControls())">
                         <tr>
                             <td colspan="2" style="text-align:left;">
-
                                 <!-- ko template: {name: 'commentTagTmpl', foreach: tags } -->
                                 <!-- /ko -->
                                 <!-- <button class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" data-bind="visible: HasNewTags, click: updateComment, text: NewTagCountText">Save</button>
