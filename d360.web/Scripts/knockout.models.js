@@ -576,13 +576,13 @@ function CommentItem(data) {//, hub) {
     self.ShowReplyControl = ko.computed(function () {
         switch (self.CommentTypeID())
         {
-            case 1:
+            case 2:
                 return (CompanySettings.DisableCommunityPosting == 'false');
                 break;
             case 5:
                 return (CompanySettings.DisableIssuePosting == 'false');
                 break;
-            case 6:
+            case 9:
                 return (CompanySettings.DisableQuestionPosting == 'false');
                 break;
             default:

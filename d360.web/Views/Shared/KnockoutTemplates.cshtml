@@ -105,17 +105,21 @@
                     Community
                     <div class="TileTools"></div>
                 </header>
-                <div data-bind="jqxCheckBox: {checked: DisableCommunityPosting, theme: theme, width: '120px'}">Disable Community Posts</div>
-                <div class="directions">
-                    Disable the ability for users to post new items to the boards of other users and assets.  Users will still be able to see any system-generated comments.
-                </div>
+
+                <div data-bind="jqxCheckBox: {checked: DisableCommunityPosting, theme: theme, width: '120px'}">Disable Discussion Posts</div>
+                @*<div class="directions">
+                    Disable the ability for users to post new comments to the boards of other users and assets.  Users will still be able to see any system-generated comments.
+                </div>*@
                 <div data-bind="jqxCheckBox: {checked: DisableIssuePosting, theme: theme, width: '120px'}">Disable Issue Posts</div>
-                <div class="directions">
-                    Disable the ability for users to post new  issues to the boards of other users and assets.  Users will still be able to see any system-generated issues.
-                </div>
+                @*<div class="directions">
+                    Disable the ability for users to post new issues to the boards of other users and assets.  Users will still be able to see any system-generated issues.
+                </div>*@
                 <div data-bind="jqxCheckBox: {checked: DisableQuestionPosting, theme: theme, width: '120px'}">Disable Question Posts</div>
-                <div class="directions">
+                @*<div class="directions">
                     Disable the ability for users to post new questions to the boards of other users and assets.  Users will still be able to see any system-generated questions.
+                </div>*@
+                <div class="directions">
+                    Disable the ability for users to post new comments or replies to the boards of other users and assets.  Users will still be able to see any system-generated comments.
                 </div>
             </div>
         </div>
