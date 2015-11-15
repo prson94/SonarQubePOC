@@ -21,6 +21,7 @@ namespace d360.web
                 context.Response.Headers.Add("Cache-Control", new string[] { "no-cache, no-store, must-revalidate" });
                 context.Response.Headers.Add("Pragma", new string[] { "no-cache" });
             }
+            context.Response.Headers.Add("X-Frame-Options", new string[] { "SAMEORIGIN" });
             context.Response.Headers.Add("Expires", new string[] { "0" });
             await _next.Invoke(environment);
         }
