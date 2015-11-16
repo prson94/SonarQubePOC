@@ -59,6 +59,53 @@ namespace d360.web.Controllers
         #region Json
 
         /// <summary>
+        /// Gets the list of columns for the relationship overlay grid based on the input owner
+        /// </summary>        
+        /// <param name="id">The object ID to get list of attributes for.</param>        
+        /// <returns></returns>
+        public JsonResult RelationshipAttributesFieldList(int id)
+        {
+            var permissions = Company.GetPermissions(SystemObjects.Intersect, id).ToList();
+            
+            var list = new List<GridDynamicAttributeField>();
+
+            IQueryable<AttributeType> types = null;
+            if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Create, ClaimObject.Attribute))
+            {                
+                {
+                    var detail = Company.GetObjectDetail(SystemObjects.Artifact, id);
+                    var sType = "Intersect";
+                    var _id = detail.TypeID;
+                                        
+                    sType += "Type";
+
+                //    Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
+
+                    list = (
+                            from t in Company.AttributeTypes
+                            join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID
+                            where r.ObjectType == sType
+                            where r.ObjectID == _id                            
+                            select new GridDynamicAttributeField { attributeID = r.AttributeTypeID, label = t.Name, allowMultiple = r.AllowMultipleEntries }
+                            ).OrderBy(i => i.label).ToList();
+
+                    //determine if any of these attributes are complex
+                    var attributeIDList = list.Select(i => i.attributeID).ToList();
+
+                    var complexAttributes = (from t in Company.AttributeTypes where attributeIDList.Contains(t.ParentID.Value) select  t.ParentID  ).ToList();
+
+                    foreach(var attr in list)
+                    {
+                        if (complexAttributes.Contains(attr.attributeID)) attr.isComplex = true;
+                    }
+                }                
+            }
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+
+        }
+
+        /// <summary>
         /// Gets list of allowed actions that you can take on the selected attribute or node.
         /// </summary>
         /// <param name="type">The object type to get actions for.</param>

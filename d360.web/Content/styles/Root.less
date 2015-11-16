@@ -313,9 +313,33 @@ fieldset legend {
     }
 }
 
-.RowTools {
-    margin: 4px;
-    float: right;
+.RowMultiTools,
+.tools {
+    width: 100%;
+    color: @d3s-gray-1;
+    font-weight: 400;
+    height: 25px;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 16px;
+    font-size: 16px;        
+    a {
+        color: @d3s-gray-1;
+        text-decoration: none;
+        border: 1px solid transparent;                
+        margin: 0px 5px 0px 5px;
+        span {            
+            font-size: @font-size-base * .75;
+        }
+        &:hover {
+            color: @d3s-blue-2;
+        }
+    }
+}
+
+.RowTools, .RowMultiTools {
+    margin: 4px; 
+    float: right;   
 }
 
 /*#endregion */

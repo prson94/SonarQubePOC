@@ -147,6 +147,9 @@
   <data name="ArtifactType_Text" xml:space="preserve">
     <value>Artifact Type</value>
   </data>
+  <data name="Attributes_Icon" xml:space="preserve">
+    <value>list</value>
+  </data>
   <data name="AttributeType_Text" xml:space="preserve">
     <value>Attribute Group</value>
   </data>
@@ -201,6 +204,9 @@
   <data name="Follow_Icon" xml:space="preserve">
     <value>bookmark</value>
   </data>
+  <data name="Fusion_Icon" xml:space="preserve">
+    <value>bolt</value>
+  </data>
   <data name="Governance" xml:space="preserve">
     <value>Governance</value>
   </data>
@@ -215,6 +221,9 @@
   </data>
   <data name="Levels_Icon" xml:space="preserve">
     <value>sitemap</value>
+  </data>
+  <data name="Lineage_Icon" xml:space="preserve">
+    <value>code-fork</value>
   </data>
   <data name="Report_Icon" xml:space="preserve">
     <value>bar-chart-o</value>

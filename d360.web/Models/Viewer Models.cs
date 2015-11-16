@@ -307,6 +307,23 @@ namespace d360.web.Models
         public string type { get; set; }
     }
 
+    public class GridDynamicAttributeField
+    {
+        public string label { get; set; }
+        public int attributeID { get; set; }
+        public bool allowMultiple { get; set; }
+
+        public bool isComplex { get; set; }
+    }
+    
+    public class RelationAttributeValue
+    {
+        public int AttributeTypeID { get; set; }
+        public string Name { get; set; }
+        public string Value { get; set; }
+        public int TargetID { get; set; }
+    }   
+    
     public class GridLayout
     {
         public GridLayout(List<FieldType> types)

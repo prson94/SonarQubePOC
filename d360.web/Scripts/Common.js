@@ -224,8 +224,12 @@ var linkRenderer = function (uri, name) {
     return "<a href='" + uri + "'>" + name + "</a>";
 }
 
+var previewIconLink = function (type, id, uri) {
+    return "<a data-context='Preview' data-type='" + type + "' data-id='" + id + "' href='" + uri + "'><i class='fa fa-info'></i></a>";
+}
+
 var previewIconRenderer = function (type, id, uri) {
-    return "<div class='RowTools'><a data-context='Preview' data-type='" + type + "' data-id='" + id + "' href='" + uri + "'><i class='fa fa-info'></i></a></div>";
+    return "<div class='RowTools'>" + previewIconLink(type, id, uri) + "</div>";
 }
 
 var previewLinkRenderer = function (type, id, uri, name) {

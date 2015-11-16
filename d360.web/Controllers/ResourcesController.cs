@@ -210,6 +210,49 @@ namespace d360.web.Controllers
             return Content(html, "text/html");
         }
 
+        [Route("complexvalue/{id:int}/{attribute:int}/templates/tooltip/preview")]
+        public ContentResult RenderComplexValueTooltip(int id, int attribute)
+        {
+            //get values for attribute and all attributes that have this as a parent for specified element
+            StringBuilder sb = new StringBuilder();
+
+            int maxIterations = 50;
+            var firstValue = Company.Filter<AttributeDetail>(i => i.AttributeTypeID == attribute && i.ObjectID == id && i.ObjectType == "Intersect").Select(i => new { name = i.Name, value = i.FormattedValue, ID = i.ID }).FirstOrDefault();
+
+            if (firstValue != null)
+            {
+                sb.Append("<b>" + firstValue.name + ":</b> ");
+                sb.Append(firstValue.value);
+                sb.Append("<br>");
+                Queue<int> attributeIDQueue = new Queue<int>();
+
+                attributeIDQueue.Enqueue(firstValue.ID);
+                int level = 1;
+
+                while (attributeIDQueue.Count > 0 && maxIterations > 0)
+                {
+                    int currentID = attributeIDQueue.Dequeue();
+                    var valuePairs = Company.Filter<AttributeDetail>(i => i.ParentID == currentID && i.ObjectID == id).Select(i => new { name = i.Name, value = i.FormattedValue, ID = i.ID }).ToList();
+
+                    //add each of the values to the html output
+                    //enqueue unique attribute ids
+                    foreach (var item in valuePairs)
+                    {                        
+                        sb.Append(string.Concat(Enumerable.Repeat("&nbsp;", (level * 3))));
+                        sb.Append("<b>" + item.name + ":</b> ");
+                        sb.Append(item.value);
+                        sb.Append("<br>");
+
+                        if (!attributeIDQueue.Contains(item.ID)) attributeIDQueue.Enqueue(item.ID);
+                    }
+                    level++; //used for spaces
+                    maxIterations--; // for christ sakes Jim this is a tooltip, do you really think it makes sense to show a tooltip bigger than the screen?
+                }
+            }
+
+            return Content(sb.ToString(),"text/html");
+        }
+
         [Route("{type}/{id:int}/templates/tooltip/{templateAction}")]
         public ContentResult _RenderTooltip(SystemObjects type, int id, string templateAction)
         {

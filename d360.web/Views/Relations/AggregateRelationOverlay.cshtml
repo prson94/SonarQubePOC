@@ -10,42 +10,60 @@
     <div class="ui segment">
         <h4>@(title)</h4>
         <div class="form-instructions"></div>
-        <div class="row">
-            <div class="col l3 m4 s12">
+        <div class="row" id="main-rel">
+            <div class="col l12 m12 s12">
                 <div id="AggregateRelationsOverlayGrid"></div>
                 <div id="RelationshipDetailTile" class="tile"></div>
             </div>
-            <div class="col l9 m8 s12">
-                <div class="col s12">
-                    <ul id="AggregateRelationsRibbon" class="tabs">
-                        <li class="tab col s4"><a class="active" href="#lineage" data-index="0">Lineage</a></li>
-                        <li class="tab col s4"><a href="#attributes" data-index="1">Attributes</a></li>
-                        <li class="tab col s4"><a href="#fusion" data-index="2">Fusion</a></li>
-                    </ul>
+        </div>
+        <div class="container-fluid" id="lineage" style="display:none;">            
+            <div id="DiagramTile"></div>
+            <div id="zd"></div>            
+            <div class="row">                
+                <div class="col l11 m11">
+                    <ol class="breadcrumb" style="padding:0;">
+                        <li>@title</li>
+                        <li class="active">Lineage</li>
+                    </ol>
                 </div>
-                <div id="lineage" class="col s12">
-                    <div id="DiagramTile"></div>
-                    <div id="zd"></div>
+                <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+            </div>            
+        </div>
+        <div class="container-fluid" id="attribute" style="display:none;">            
+            <div id="RelationshipAttributesTile" class="tile"></div>
+            <div class="row">
+                <div class="col l11 m11">
+                    <ol class="breadcrumb" style="padding:0;">
+                        <li>@title</li>
+                        <li class="active">Lineage</li>
+                    </ol>
                 </div>
-                <div id="attributes" class="col s12">
-                    <div id="RelationshipAttributesTile" class="tile"></div>
-                </div>
-                <div id="fusion" class="col s12">
-                    <div class="pull-left" style="width: 49%">
-                        <div class="tile">
-                            <header>Relationships</header>
-                            <article id="TechnicalRelationsGrid"></article>
-                        </div>
-                    </div>
-                    <div class="pull-right" style="width: 49%">
-                        <div id="TechnicalRelationDetailWrapper" class="tile">
-                            <header id="TechnicalRelationDetailHeader"></header>
-                            <article id="TechnicalRelationDetail"></article>
-                        </div>
-                    </div>
-                    <div class="clearfix"></div>
+                <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+            </div>            
+        </div>
+        <div class="container-fluid" id="fusion" style="display:none;">            
+            <div class="pull-left" style="width: 49%">
+                <div class="tile">
+                    <header>Relationships</header>
+                    <article id="TechnicalRelationsGrid"></article>
                 </div>
             </div>
+            <div class="pull-right" style="width: 49%">
+                <div id="TechnicalRelationDetailWrapper" class="tile">
+                    <header id="TechnicalRelationDetailHeader"></header>
+                    <article id="TechnicalRelationDetail"></article>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="row">
+                <div class="col l11 m11">
+                    <ol class="breadcrumb" style="padding:0;">
+                        <li>@title</li>
+                        <li class="active">Lineage</li>
+                    </ol>
+                </div>
+                <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+            </div>            
         </div>
     </div>
 </div>
@@ -57,11 +75,11 @@
     var aggregateRelationshipOverlayTargetID = @targetID;
     var aggregateRelationsModelType = function() {
         var self = this;
-        self.RibbonIndex = 0;
         self.IntersectID = -1;
 
         self.TargetType = 'Intersect';
         self.TargetID = -1;
+        self.TargetName = '';
 
         self.DetailTileIntersectID = -1;
         self.AttributeTileIntersectID = -1;
@@ -69,46 +87,6 @@
         self.DiagramTargetType = 'Intersect';
         self.DiagramTargetID = -1;
 
-        self.updateRibbonData = function(selectedIndex) {
-            if (selectedIndex != undefined)
-                self.RibbonIndex = selectedIndex;
-
-            switch(self.RibbonIndex) {
-                case 0:
-                    if ( (self.DiagramTargetType != self.TargetType) || (self.DiagramTargetID != self.TargetID) ) {
-                        self.DiagramTargetType = self.TargetType;
-                        self.DiagramTargetID = self.TargetID;
-
-                        if (self.DiagramTargetType == 'TaxonomyType') {
-                            information_catalog_diagram('DiagramTile', self.DiagramTargetID);
-                        }
-                        else {
-                            lineage_diagram('DiagramTile', self.DiagramTargetID);
-                        }                    
-                    }
-                    break;
-                case 1:
-                    //if (self.DetailTileIntersectID != self.IntersectID) {
-                    //    self.DetailTileIntersectID = self.IntersectID;
-                    //    DetailTile('RelationshipDetailTile', null, null, 'Intersect', self.DetailTileIntersectID);
-                    //}
-                    if (self.AttributeTileIntersectID != self.IntersectID) {
-                        self.AttributeTileIntersectID = self.IntersectID;
-                        AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", self.AttributeTileIntersectID, 'Business Attributes', true);
-                    }
-                    break;
-                case 2:
-                    if (self.TechnicalRelationIntersectID != self.IntersectID) {
-                        self.TechnicalRelationIntersectID = self.IntersectID;
-                        $('#TechnicalRelationDetailWrapper').fadeOut(100);
-                        $('#TechnicalRelationDetail').html('');
-                        $('#TechnicalRelationsGrid').jqxGrid('clearselection');
-                        technicalRelationsSource.url = "/api/Intersect/" + self.TechnicalRelationIntersectID + "/relations";
-                        $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');                    
-                    }                    
-                    break;
-            }
-        }
     };
     var aggregateRelationsModel = new aggregateRelationsModelType();
 
@@ -148,7 +126,6 @@
     }
 
     function aggregateRelationsOverlayGridRowDoubleClick(event) {
-        //var args = event.args;
         var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', event.args.rowindex);
         location.assign(row.TargetUrl);
     }
@@ -159,14 +136,10 @@
         aggregateRelationsModel.IntersectID = row.IntersectID;
         aggregateRelationsModel.TargetType = row.TargetType;
         aggregateRelationsModel.TargetID = (row.TargetType == 'TaxonomyType') ? row.TargetTypeID : row.IntersectID;
-        aggregateRelationsModel.updateRibbonData();
+        aggregateRelationsModel.TargetName = row.TargetName;
 
         self.DetailTileIntersectID = row.IntersectID;
         DetailTile('RelationshipDetailTile', null, null, 'Intersect', self.DetailTileIntersectID);
-    }
-
-    function aggregateRelationsRibbonSelect(event) {
-        aggregateRelationsModel.updateRibbonData(event.args.selectedIndex);
     }
 
     function technicalRelationsGridBindingComplete(event) {
@@ -182,35 +155,97 @@
         $('#TechnicalRelationDetail').load('/parts/' + row.TargetObjectType + '/' + row.TargetObjectID + '/detail');
     }
 
+    function setBreadCrumb(parent, action){
+        $(parent).find('.active').html(aggregateRelationsModel.TargetName + ' ' + action);
+    }
+
+    function lineageShow(event) {
+        $('#main-rel').hide();
+        $('#lineage').show();
+        setBreadCrumb('#lineage','Lineage');
+        self.DiagramTargetType = aggregateRelationsModel.TargetType;
+        self.DiagramTargetID = aggregateRelationsModel.TargetID;
+        if (self.DiagramTargetType == 'TaxonomyType') {
+            information_catalog_diagram('DiagramTile', self.DiagramTargetID);
+        }
+        else {
+            lineage_diagram('DiagramTile', self.DiagramTargetID);
+        }
+    }
+
+    function fusionShow(event) {
+        $('#main-rel').hide();
+        $('#fusion').show();
+        setBreadCrumb('#fusion','Fusion');
+        var getselectedrowindexes = $('#AggregateRelationsOverlayGrid').jqxGrid('getselectedrowindexes');
+        if(getselectedrowindexes.length > 0){
+            var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
+            self.TechnicalRelationIntersectID = row.IntersectID;
+            $('#TechnicalRelationDetailWrapper').fadeOut(100);
+            $('#TechnicalRelationDetail').html('');
+            $('#TechnicalRelationsGrid').jqxGrid('clearselection');
+            technicalRelationsSource.url = "/api/Intersect/" + self.TechnicalRelationIntersectID + "/relations";
+            $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
+        }
+    }
+
+    function attributeShow(event) {
+        $('#main-rel').hide();
+        $('#attribute').show();
+        setBreadCrumb('#attribute','Attributes');
+        var getselectedrowindexes = $('#AggregateRelationsOverlayGrid').jqxGrid('getselectedrowindexes');
+        if(getselectedrowindexes.length > 0){
+            var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
+            self.AttributeTileIntersectID = row.IntersectID;
+            AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", self.AttributeTileIntersectID, 'Business Attributes', true);
+        }
+    }
+
+    function closeDetailTab(event) {
+        $(event.target).closest('div.container-fluid').hide();
+        $('#main-rel').show();
+    }
+
     function unsubscribe(data) {
         technicalRelationsAdapter = null;
         technicalRelationsSource = null;
         aggregateRelationshipOverlayAdapter = null;
         aggregateRelationshipOverlaySource = null;
 
-        $('#AggregateRelationsRibbon > li > a').off('click', relationsRibbonSelect);
-        //$('#AggregateRelationsRibbon').off('select', aggregateRelationsRibbonSelect); 
         $("#AggregateRelationsOverlayGrid").off("bindingcomplete", aggregateRelationsOverlayGridBindingComplete);
         $('#AggregateRelationsOverlayGrid').off('rowdoubleclick', aggregateRelationsOverlayGridRowDoubleClick);
         $('#AggregateRelationsOverlayGrid').off('rowselect', aggregateRelationsOverlayGridRowSelect);
         $('#TechnicalRelationsGrid').off('rowselect', technicalRelationsGridRowSelect);
         $("#TechnicalRelationsGrid").off("bindingcomplete", technicalRelationsGridBindingComplete);
+
+        $("#AggregateRelationsOverlayGrid").off("click", ".lineage", lineageShow);
+        $("#AggregateRelationsOverlayGrid").off("click", ".fusion", fusionShow);
+        $("#AggregateRelationsOverlayGrid").off("click", ".attribute", attributeShow);
+        $("div.large-overlay").off("click", ".detailclose", closeDetailTab);
+
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
 
     //#endregion
 
-    function relationsRibbonSelect() { //(event) {
-        var tab = $(this);
-        var ix = tab.data('index'); //event.args.selectedIndex
-        aggregateRelationsModel.updateRibbonData(ix);
+    function getDisplayFields() {
+        return JSON.parse($.ajax({
+            type: "GET",
+            url: '/attributes/RelationshipAttributesFieldList?id=@id',
+            async: false
+        }).responseText);
+    }
+
+    function getDynamicValues(){
+        return JSON.parse($.ajax({ type:'GET',
+            url: '/api/' + aggregateRelationshipOverlayType + '/' + aggregateRelationshipOverlayId + '/relationshipsAndAttributes/' + aggregateRelationshipOverlayTargetType + '/' + aggregateRelationshipOverlayTargetID + '/' + aggregateRelationshipCriticalOnly + '?$orderby=TargetName',
+            async: false
+        }).responseText);
     }
 
     $(function () {
 
         $("html, body").animate({ scrollTop: 0 }, "slow");
-
-        $("#AggregateRelationsRibbon").tabs();
 
         //#region Main Grid
 
@@ -237,17 +272,81 @@
             ]
         };
 
-        aggregateRelationshipOverlayAdapter = new $.jqx.dataAdapter(aggregateRelationshipOverlaySource);
+        var addColumns = function(newColumns){
+            var existing = $("#AggregateRelationsOverlayGrid").jqxGrid("columns");
+            for(var i=0;i<newColumns.length;i++){
+                existing.splice(3,0, newColumns[i]);
+            }
+            return existing;
+        }
+
+
+        //add dynamic fields
+        var fields = getDisplayFields();
+        // i no likey  syncy
+        var values = getDynamicValues();
+        var gridColumns = [];
+
+        var findDynamicValue = function(attributeID, TargetID){
+            var val='';
+            for(var i = 0 ; i < values.length;i++)
+            {
+                if(values[i].TargetID==TargetID && values[i].AttributeTypeID==attributeID){
+                    console.log('target id:' + values[i].TargetID + ' rowId:' + TargetID + ' id:' + values[i].AttributeTypeID + ' fieldid:'+attributeID);
+                    if(val.length) val+=', ';
+                    val +=values[i].Value
+                }
+            }
+            return val;
+        }
+
+        var relationIconRowRender = function (type, id, uri) {
+            return "<div class='RowMultiTools'><i class='lineage fa fa-@Resources.Actions.Lineage_Icon' title='Lineage'></i> <i class='fusion fa fa-@Resources.Actions.Fusion_Icon' title='Fusion'></i> <i class='attribute fa fa-@Resources.Actions.Attributes_Icon' title='Attributes'></i>" + previewIconLink(type, id, uri) + " </div>";
+        }
+
+        var complexAttributeColumnRenderer = function(index, datafield, value, defaultvalue, column, data) {
+            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ? "<div data-context='Preview' data-type='complexvalue' data-id='" + data.IntersectID + "/" + column.datafield + "' >Populated <i class='fusion fa fa-info-circle'></i></div>" : "") + "</div>";
+        }
+
+        var attributeColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
+            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + value + "</div>";
+        }
+
+        for(var i = 0 ; i < fields.length;i++){
+            aggregateRelationshipOverlaySource.datafields.push({name:fields[i].attributeID});
+            gridColumns.push({
+                text:fields[i].label,
+                datafield:fields[i].attributeID,
+                width:'250px',
+                filterable: !fields[i].isComplex,
+                cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : attributeColumnCellRenderer
+            });
+        }
+
+        aggregateRelationshipOverlayAdapter = new $.jqx.dataAdapter(aggregateRelationshipOverlaySource, {
+            beforeLoadComplete: function (records) {
+                var data = new Array();
+                for (var i = 0; i < records.length; i++) {
+                    var row = records[i];
+                    for(var j = 0 ; j < fields.length;j++){
+                        row[fields[j].attributeID]=findDynamicValue(fields[j].attributeID,row.IntersectID);
+                    }
+                    data.push(row);
+                }
+                return data;
+            }
+        });
+
 
         try {
             var mainGridHeight = 400;
             $('#AggregateRelationsOverlayGrid').jqxGrid({
                 altrows: true,
                 width: grid_width,
-                height: mainGridHeight,//400,
+                height: mainGridHeight,
                 showheader: true,
                 showfilterrow: true,
-                sortable: false,
+                sortable: true,
                 columnsresize: true,
                 filterable: true,
                 pageable: false,
@@ -259,8 +358,10 @@
                     {
                         datafield: "TargetName",
                         text: "Name",
+                        width: '40%',
+                        pinned: true,
                         cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return "<div class='d3s-cell'>" + (data.HasTechnicalRelationships ? "<b>" + data.TargetName + "</b>" : data.TargetName) + "</div>";
+                            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (data.HasTechnicalRelationships ? "<b>" + data.TargetName + "</b>" : data.TargetName) + "</div>";
                         }
                     },
                     {
@@ -274,24 +375,29 @@
                     {
                         datafield: "Role",
                         text: "Role",
+                        width: '125px',
                         filtertype: 'checkedlist'
                     },
                     {
                         text: '',
                         groupable: false,
                         datafield: 'IntersectID',
-                        width: '40px',
+                        width: '85px',
                         filterable: false,
                         cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return previewIconRenderer(data.TargetObjectType, data.TargetObjectID, data.TargetUrl);
+                            return relationIconRowRender(data.TargetObjectType, data.TargetObjectID, data.TargetUrl);
                         }
                     }
                 ]
             });
+
+            $("#AggregateRelationsOverlayGrid").jqxGrid({ columns: addColumns(gridColumns) });
+
         } catch (e) {
         }
 
         //#endregion
+
 
         //#region Technical Relations Grid
 
@@ -300,21 +406,13 @@
             url: null,
             datafields: [
                 { name: 'IntersectID' },
-                //{ name: 'Description' },
                 { name: 'TargetName' },
                 { name: 'TargetObjectID' },
                 { name: 'TargetObjectType' },
                 { name: 'TargetTypeID' },
                 { name: 'TargetType' },
                 { name: 'TargetTypeName' },
-                //{ name: 'Classification' },
                 { name: 'TargetUrl' }
-                //{ name: "IntersectID", type: "number" },
-                //{ name: "TypeName", type: "string" },
-                //{ name: "ObjectType", type: "string" },
-                //{ name: "ObjectID", type: "number" },
-                //{ name: "ObjectName", type: "string" },
-                //{ name: "Url", type: "string" }
             ]
         };
 
@@ -347,11 +445,10 @@
                 },
                 groupsexpandedbydefault: false,
                 columns: [
-                    { text: 'Type', groupable: true, datafield: 'TargetTypeName', width: '100px' }, //, hidden: true
+                    { text: 'Type', groupable: true, datafield: 'TargetTypeName', width: '100px' },
                     {
                         text: 'Name',
                         groupable: false,
-                        //width: 300,
                         datafield: 'TargetName',
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return previewLinkRenderer(data.TargetObjectType, data.TargetObjectID, data.TargetUrl, data.TargetName);
@@ -366,13 +463,18 @@
 
         //#region Event Registration
 
-        $('#AggregateRelationsRibbon > li > a').on('click', relationsRibbonSelect);
-        //$('#AggregateRelationsRibbon').on('select', aggregateRelationsRibbonSelect);
         $("#AggregateRelationsOverlayGrid").on("bindingcomplete", aggregateRelationsOverlayGridBindingComplete);
         $('#AggregateRelationsOverlayGrid').on('rowdoubleclick', aggregateRelationsOverlayGridRowDoubleClick);
         $('#AggregateRelationsOverlayGrid').on('rowselect', aggregateRelationsOverlayGridRowSelect);
         $('#TechnicalRelationsGrid').on('rowselect', technicalRelationsGridRowSelect);
         $("#TechnicalRelationsGrid").on("bindingcomplete", technicalRelationsGridBindingComplete);
+
+        //tool clicks
+        $("#AggregateRelationsOverlayGrid").on("click", ".lineage", lineageShow);
+        $("#AggregateRelationsOverlayGrid").on("click", ".fusion", fusionShow);
+        $("#AggregateRelationsOverlayGrid").on("click", ".attribute", attributeShow);
+        $("div.large-overlay").on("click", ".detailclose", closeDetailTab);
+
         amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
         //#endregion
@@ -382,37 +484,37 @@
 
 
 @*<script src="/Scripts/zoomcharts.js"></script>
-<script type="text/javascript">
-    $(function () {
-        var z = new ZoomCharts.NetChart({ 
-            container: document.getElementById("zd"), 
-            //area: { 
-            //    height: 500 
-            //}, 
-            layout: { 
-                //mode: 'radial', 
-                nodeSpacing: 100  
-            },
-            nodeMenu: {
-                contentsFunction: function(data, node){
-                    return "hi there";
+    <script type="text/javascript">
+        $(function () {
+            var z = new ZoomCharts.NetChart({
+                container: document.getElementById("zd"),
+                //area: {
+                //    height: 500
+                //},
+                layout: {
+                    //mode: 'radial',
+                    nodeSpacing: 100
+                },
+                nodeMenu: {
+                    contentsFunction: function(data, node){
+                        return "hi there";
+                    }
                 }
-            }
+            });
+            z.addData({
+                nodes: [
+                    { id: 'n1', loaded: true, style: { label: '144 Eligible Indicator', fillColor: '#000', textColor: '#fff', radius: 75, nodeLabel: { maxWidth: 300 } } },
+                    { id: 'n2', loaded: true, style: { label: 'Charles River Development', fillColor: '#333', radius: 60 } },
+                    { id: 'n3', loaded: true, style: { label: 'Markit EDM', fillColor: 'purple', textColor: 'aqua', radius: 60 } },
+                    { id: 'n4', loaded: true, style: { label: 'Bloomberg Credit Risk', fillColor: 'green', textColor: '#fff', radius: 45 } },
+                    { id: 'n5', loaded: true, style: { label: 'Per Security Request', fillColor: 'green', textColor: '#fff', radius: 45 } }
+                ],
+                links: [
+                    { id: 'l1', from: 'n1', to: 'n2', style: { label: 'warehouses', fillColor: 'red', fromDecoration: 'circle', toDecoration: 'arrow' } },
+                    { id: 'l2', from: 'n3', to: 'n1', style: { fillColor: 'red', fromDecoration: 'circle', toDecoration: 'arrow' } },
+                    { id: 'l3', from: 'n4', to: 'n3', style: { fillColor: 'orange', fromDecoration: 'circle', toDecoration: 'arrow' } },
+                    { id: 'l5', from: 'n5', to: 'n3', style: { fillColor: 'orange', fromDecoration: 'circle', toDecoration: 'arrow' } }
+                ]
+            });
         });
-        z.addData({
-            nodes: [
-                { id: 'n1', loaded: true, style: { label: '144 Eligible Indicator', fillColor: '#000', textColor: '#fff', radius: 75, nodeLabel: { maxWidth: 300 } } },
-                { id: 'n2', loaded: true, style: { label: 'Charles River Development', fillColor: '#333', radius: 60 } },
-                { id: 'n3', loaded: true, style: { label: 'Markit EDM', fillColor: 'purple', textColor: 'aqua', radius: 60 } },
-                { id: 'n4', loaded: true, style: { label: 'Bloomberg Credit Risk', fillColor: 'green', textColor: '#fff', radius: 45 } },
-                { id: 'n5', loaded: true, style: { label: 'Per Security Request', fillColor: 'green', textColor: '#fff', radius: 45 } }
-            ],
-            links: [
-                { id: 'l1', from: 'n1', to: 'n2', style: { label: 'warehouses', fillColor: 'red', fromDecoration: 'circle', toDecoration: 'arrow' } },
-                { id: 'l2', from: 'n3', to: 'n1', style: { fillColor: 'red', fromDecoration: 'circle', toDecoration: 'arrow' } },
-                { id: 'l3', from: 'n4', to: 'n3', style: { fillColor: 'orange', fromDecoration: 'circle', toDecoration: 'arrow' } },
-                { id: 'l5', from: 'n5', to: 'n3', style: { fillColor: 'orange', fromDecoration: 'circle', toDecoration: 'arrow' } }
-            ]
-        });
-    });
-</script>*@
+    </script>*@

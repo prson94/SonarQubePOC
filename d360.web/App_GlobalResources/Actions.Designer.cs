@@ -151,6 +151,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to list.
+        /// </summary>
+        internal static string Attributes_Icon {
+            get {
+                return ResourceManager.GetString("Attributes_Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Attribute Group.
         /// </summary>
         internal static string AttributeType_Text {
@@ -313,6 +322,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to bolt.
+        /// </summary>
+        internal static string Fusion_Icon {
+            get {
+                return ResourceManager.GetString("Fusion_Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Governance.
         /// </summary>
         internal static string Governance {
@@ -354,6 +372,15 @@ namespace Resources {
         internal static string Levels_Icon {
             get {
                 return ResourceManager.GetString("Levels_Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to code-fork.
+        /// </summary>
+        internal static string Lineage_Icon {
+            get {
+                return ResourceManager.GetString("Lineage_Icon", resourceCulture);
             }
         }
         
