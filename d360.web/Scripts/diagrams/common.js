@@ -31,7 +31,7 @@
         initialY = 0,
         initialX = 0,
         maxZoom = 4,
-        minZoom = 1,
+        minZoom = 0.1,
         x = function (d) {
             return _width - d.y - _boxWidth;
         },
