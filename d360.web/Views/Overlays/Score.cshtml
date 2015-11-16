@@ -144,7 +144,7 @@
                         datafield: "Score",
                         text: "Score",
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return data.Score + " out of <b>" + data.MaxScore + "</b> points.";
+                            return "<div style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + data.Score + " out of <b>" + data.MaxScore + "</b> points.</div>";
                         }
                     }
                 ]
