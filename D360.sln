@@ -118,6 +118,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1D215E
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.queue.ProcessFollowChildren", "Jobs\d360.jobs.queue.ProcessFollowChildren\d360.jobs.queue.ProcessFollowChildren.csproj", "{25783F16-C344-4226-940B-DE6C49801267}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -458,6 +460,18 @@ Global
 		{6D30A98E-6906-4452-8185-A94E65012074}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6D30A98E-6906-4452-8185-A94E65012074}.Release|x86.ActiveCfg = Release|Any CPU
 		{6D30A98E-6906-4452-8185-A94E65012074}.Release|x86.Build.0 = Release|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Debug|x86.Build.0 = Debug|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Release|x86.ActiveCfg = Release|Any CPU
+		{25783F16-C344-4226-940B-DE6C49801267}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -495,9 +509,10 @@ Global
 		{E4C3657B-41A2-4F71-88A8-C1B50B8ACFCB} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 		{BEAEB4B8-82A6-40AD-B4F3-CC5373334A2A} = {313B4C9B-F3D7-4718-97A5-2F04A3B12589}
 		{6D30A98E-6906-4452-8185-A94E65012074} = {BA377137-34B5-4D67-86AA-5803B3D1957E}
+		{25783F16-C344-4226-940B-DE6C49801267} = {BA377137-34B5-4D67-86AA-5803B3D1957E}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 30
+		SccNumberOfProjects = 31
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -617,6 +632,10 @@ Global
 		SccProjectTopLevelParentUniqueName29 = D360.sln
 		SccProjectName29 = Jobs/d360.jobs.queue.ProcessRecache
 		SccLocalPath29 = Jobs\\d360.jobs.queue.ProcessRecache
+		SccProjectUniqueName30 = Jobs\\d360.jobs.queue.ProcessFollowChildren\\d360.jobs.queue.ProcessFollowChildren.csproj
+		SccProjectTopLevelParentUniqueName30 = D360.sln
+		SccProjectName30 = Jobs/d360.jobs.queue.ProcessFollowChildren
+		SccLocalPath30 = Jobs\\d360.jobs.queue.ProcessFollowChildren
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi

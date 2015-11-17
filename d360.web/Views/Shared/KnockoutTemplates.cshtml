@@ -601,7 +601,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <button style="display:inline; float:right;  width:70px; margin: 0 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: addComment, disable: IsProcessing()"><span data-bind="visible: !IsProcessing()">Share</span><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing()" style="text-align:center;"></i></button>
+                    <button style="display:inline; float:right; width:70px; margin: 0 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: addComment, disable: !CanReply()"><span data-bind="visible: !IsProcessing()">Share</span><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing()" style="text-align:center;"></i></button>
                 </td>
                 <!-- <td class="type-field" style="padding: 5px"><select data-bind="options: typeEntryOptions, optionsText: 'Text', optionsValue: 'Value', value: newMessageType" class="browser-default" /></td> -->
                 <!-- <td style="padding: 5px"><button class="btn waves-effect grey-text grey lighten-5" type="button" data-bind="click: addComment">Share</button></td> -->
@@ -698,7 +698,7 @@
                         </span>
                         <span style="margin-left:10px">
                             <!--style: {display: (ReplyHidden() ? 'none' : 'inline-block' }-->
-                            <a style="color:#272727;" href="#" data-bind="click: function() { showReply(); hideTags(); }, visible: (ReplyHidden() && ShowReplyControl())"><i class="fa fa-reply"></i>Reply</a>&nbsp;
+                            <a style="color:#272727;" href="#" data-bind="click: function() { showReply(); hideTags(); }, visible: (ReplyHidden() && ShowReplyControl()) "><i class="fa fa-reply"></i>Reply</a>&nbsp;
                             <a style="color:#272727;" href="#" data-bind="click: showEdit, visible: (EditHidden() && IsEditable() && ShowAddCommentControls())"><i class="fa fa-edit"></i>Edit</a>
                         </span>
                         <span style="float:right">
@@ -796,7 +796,7 @@
                         <tr>
                             <td></td>
                             <td>
-                                <button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: addComment, disable: IsProcessing" style="width:auto;margin-left:5px;margin-top:5px;float:right;"><i class="fa fa-reply" title="Reply" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
+                                <button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: addComment, disable: (IsProcessing() || DisableReply())" style="width:auto;margin-left:5px;margin-top:5px;float:right;"><i class="fa fa-reply" title="Reply" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
                             </td>
                         </tr>
                     </table>

@@ -127,6 +127,7 @@ namespace d360.model
         public DbSet<FieldTypeWithRelation> FieldTypeWithRelations { get; set; }                /* VIEW */
 
         public DbSet<Follow> Follows { get; set; }
+        public DbSet<FollowChild> FollowChildren { get; set; }
 
         public DbSet<FollowDetail> FollowDetails { get; set; }                                  /* VIEW */
 
@@ -1048,15 +1049,64 @@ order by	ColumnIndex", new { id });
                 resourceID = CurrentResourceID;
             }
             string sType = type.ToString();
-            return Follows.Any(i => i.ResourceID == resourceID && i.ObjectType == sType && i.ObjectID == objectID);
+
+            var following = Follows.Where(i => i.ResourceID == resourceID && (i.FollowTypeID == FollowType.Parent || (i.ObjectID == objectID && i.ObjectType == sType)));
+
+            if (following.Any(i => i.ObjectID == objectID && i.ObjectType == sType))
+                return true;
+
+            following = following.Where(i => i.FollowTypeID == FollowType.Parent);
+            if (!following.Any())
+                return false;
+
+            var children = FollowChildren.Where(i => following.Any(f => f.ObjectID == i.ParentObjectID && f.ObjectType == i.ParentObjectType) && i.ObjectType == sType && i.ObjectID == objectID);
+
+            return children.Any();
         }
+
+        public bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID)
+        {
+            //if (!resourceID.HasValue)
+            //{
+            //    resourceID = CurrentResourceID;
+            //}
+            //string sType = type.ToString();
+
+            //var children = FollowChildren.Where(i => i.ObjectID == objectID && i.ObjectType == sType);
+
+            //if (!children.Any())
+            //    return false;
+
+            //var following = Follows.Where(i => children.Any(c => c.ParentObjectType == i.ObjectType && c.ParentObjectID == i.ObjectID) && i.ResourceID == resourceID && i.FollowTypeID == FollowType.Parent);
+
+            return (GetFollowingParent(type,objectID,resourceID) != null);
+        }
+
+        public Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID)
+        {
+            if (!resourceID.HasValue)
+            {
+                resourceID = CurrentResourceID;
+            }
+            string sType = type.ToString();
+
+            var children = FollowChildren.Where(i => i.ObjectID == objectID && i.ObjectType == sType);
+
+            if (!children.Any())
+                return null;
+
+            var following = Follows.Where(i => children.Any(c => c.ParentObjectType == i.ObjectType && c.ParentObjectID == i.ObjectID) && i.ResourceID == resourceID && i.FollowTypeID == FollowType.Parent);
+
+            return following.FirstOrDefault();
+        }
+
 
         public IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90)
         {
             return Database.Connection.Query<T>(sql, param, null, true, timeout);
         }
 
-        public bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID)
+        public bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false)
         {
             if (!resourceID.HasValue)
             {
@@ -1076,26 +1126,44 @@ order by	ColumnIndex", new { id });
             }
             else
             {
-                f = new Follow { ObjectID = objectID, ObjectType = type.ToString(), ResourceID = resourceID.Value, DateCreated = DateTime.UtcNow };
-                switch (type)
+                if (IsUserFollowingParent(type, objectID, resourceID.Value) && !IsUserFollowing(type, objectID, resourceID.Value))
                 {
-                    case SystemObjects.Artifact:
-                    case SystemObjects.Taxonomy:
-                        f.FollowTypeID = FollowType.Artifact;
-                        break;
-                    case SystemObjects.ArtifactType:
-                        f.FollowTypeID = FollowType.ArtifactType;
-                        break;
-                    default:
-                        f.FollowTypeID = FollowType.Artifact;
-                        break;
+                    //the user is following a parent of this item
                 }
+                else
+                {
+                    f = new Follow { ObjectID = objectID, ObjectType = type.ToString(), ResourceID = resourceID.Value, DateCreated = DateTime.UtcNow };
+                    switch (type)
+                    {
+                        case SystemObjects.Artifact:
+                        case SystemObjects.Taxonomy:
+                            f.FollowTypeID = FollowType.Artifact;
+                            break;
+                        case SystemObjects.ArtifactType:
+                            f.FollowTypeID = FollowType.ArtifactType;
+                            break;
+                        default:
+                            f.FollowTypeID = FollowType.Artifact;
+                            break;
+                    }
 
-                Follows.Add(f);
-                SaveChanges();
-                value = true;
+                    if (includeChildren)
+                    {
+                        f.FollowTypeID = FollowType.Parent;
+                    }
+
+                    Follows.Add(f);
+                    SaveChanges();
+
+                    if (includeChildren)
+                    {
+                        var pFollowId = new SqlParameter("followId", f.ID);
+                        Database.ExecuteSqlCommand("SetChildrenByFollowID @followId", pFollowId);
+                    }
+
+                    value = true;
+                }
             }
-
             return value;
         }
 

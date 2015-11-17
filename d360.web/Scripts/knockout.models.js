@@ -479,6 +479,9 @@ function CommentItem(data) {//, hub) {
         return !(self.ObjectType() == "Resource" && self.ObjectID() == self.CreatingResourceID());
     });
 
+
+
+
     self.FormatDate = function (utcDateString) {
         //convert date to local timezone and format
         var date = new Date(utcDateString);
@@ -571,6 +574,9 @@ function CommentItem(data) {//, hub) {
     self.NewComments = ko.observableArray();
     self.newCommentMessage = ko.observable();
     
+    self.DisableReply = ko.computed(function () {
+        return !((self.newCommentMessage() || '').length > 0);
+    });
     self.ShowAddCommentControls = ko.observable(CompanySettings.DisableCommunityPosting == 'false' || CompanySettings.DisableIssuePosting == 'false' || CompanySettings.DisableQuestionPosting == 'false');
 
     self.ShowReplyControl = ko.computed(function () {
@@ -3081,6 +3087,7 @@ var BoardViewModel = function () {
         return (self.ProcessingCount() != 0);
     });
 
+
     self.AppliedSearch = ko.computed(self.searchFilter).extend({ throttle: 400 });
 
     self.AppliedSearch.subscribe(function () {
@@ -3179,6 +3186,12 @@ var BoardViewModel = function () {
             self.tagSuggestions([]);
         }
     });
+
+
+    self.CanReply = ko.computed(function () {
+        return (!self.IsProcessing() && (self.newMessage() || '').length > 0  );
+    });
+
 
     //self.checkForTags = function () {
     //    var message = self.newMessage() + "";

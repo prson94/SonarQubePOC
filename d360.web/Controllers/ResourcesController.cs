@@ -442,11 +442,11 @@ namespace d360.web.Controllers
         }
 
         [HttpPost]
-        public JsonResult UpdateFollowStatus(SystemObjects type, int id)
+        public JsonResult UpdateFollowStatus(SystemObjects type, int id, bool includeChildren = false)
         {
             try
             {
-                bool status = Company.UpdateFollowStatus(type, id, null);
+                bool status = Company.UpdateFollowStatus(type, id, null, includeChildren);
                 return Json(new { title = "Success!", message = string.Format("You are {0} following this item.", (status) ? "now" : "no longer"), type = "notification" });
             }
             catch (Exception ex)

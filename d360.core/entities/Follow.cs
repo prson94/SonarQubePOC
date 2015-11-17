@@ -9,13 +9,16 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Follow : BaseObject
     {
-        [Column(Order = 1), DataMember, Key]
+        [Column(Order = 1), Key]
+        public int ID { get; set; }
+
+        [DataMember]
         public int ResourceID { get; set; }
 
-        [Column(Order = 2), DataMember, Key]
+        [DataMember]
         public string ObjectType { get; set; }
-        
-        [Column(Order = 3), DataMember, Key]
+
+        [DataMember]
         public int ObjectID { get; set; }
 
         [DataMember]
@@ -23,5 +26,23 @@ namespace d360.core.entities
 
         [DataMember]
         public FollowType FollowTypeID { get; set; }
+
     }
+
+    public class FollowChild : BaseObject
+    {
+        [Column(Order = 1), Key]
+        public string ParentObjectType { get; set; }
+        [Column(Order = 2), Key]
+        public int ParentObjectID { get; set; }
+        [DataMember]
+        public int ObjectID { get; set; }
+        [DataMember]
+        public string ObjectType { get; set; }
+        [DataMember]
+        public DateTime DateCreated { get; set; }
+        [DataMember]
+        public FollowType FollowTypeID { get; set; }
+    }
+
 }

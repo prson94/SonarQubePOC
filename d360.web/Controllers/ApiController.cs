@@ -557,6 +557,9 @@ namespace d360.web.Controllers
         {
             var list = new List<PageActionItem>();
             bool following = false;
+            bool followingParent = false;
+            Follow followParent = null;
+
 
             #region Determine permissions
 
@@ -1206,7 +1209,10 @@ namespace d360.web.Controllers
                     if (taxonomy != null && context != "root")
                     {
                         following = Company.IsUserFollowing(type, id, null);
+                        followParent = Company.GetFollowingParent(type, id, null);
+                        followingParent = (followParent != null);
 
+                        
                         if (hasPermission(permissions, Claim.Update, ClaimObject.Root))
                             list.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = Resources.Actions.Edit_Icon, Title = Resources.Actions.Edit, Uri = string.Format("/form/taxonomy/{0}/{1}/edit", taxonomy.TaxonomyTypeID, id) });
                         if (hasPermission(permissions, Claim.Delete, ClaimObject.Root))
@@ -1214,7 +1220,25 @@ namespace d360.web.Controllers
                         //list.Add(new PageActionItem { Context = ContextList.ActionDiagram, Icon = "exchange", Title = "Lineage Diagram", Uri = string.Format("/parts/Taxonomy/{0}/lineage", id) });
                         reportNode = appendReportMenu(type, id, SystemObjects.TaxonomyType, taxonomy.TaxonomyTypeID, true);
                         if (reportNode != null) list.Add(reportNode);
-                        list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
+
+                        var followText = "";
+                        if (!followingParent)
+                            if (!following)
+                                followText = Resources.Actions.Follow;
+                            else
+                                followText = Resources.Actions.Unfollow;
+                        else
+                        {
+                            followText = "Following ";
+                            var obj = Company.GetObjectDetail(followParent.ObjectType, followParent.ObjectID);
+                            followText += obj.Name;
+                        }
+                            
+
+                        var followNode = new PageActionItem { Context = followingParent ?  "nullform" : "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon  : Resources.Actions.Follow_Icon, Title = followText, Uri = followingParent ? "#" : string.Format("/resources/UpdateFollowStatus?type={0}&id={1}&includeChildren=true", type, id), Enabled = !followingParent };
+                        list.Add(followNode);
+
+
                     }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
