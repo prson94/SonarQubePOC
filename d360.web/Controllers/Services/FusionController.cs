@@ -630,6 +630,23 @@ where   ExecutionID = {0}", id);
 
                 Trace.TraceInformation("{0}{1}", prefix, "Finished saving queue item to database.");
 
+                Trace.TraceInformation("{0}{1}", prefix, "Starting to save xml to Azure blob.");
+                try
+                {
+                    var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
+                    Storage.CreateFolder(folder);
+                    fileName = string.Format("{0}.{1}.{2}.xml", typeID, fusionID, date.ToString("yyyy-MM-dd_hh.mm.ss"));
+                    Storage.CreateFile(folder, fileName, doc.ToString());
+                    Trace.TraceInformation("{0}{1}", prefix, "Saved transformed xml data to storage container.");
+                }
+                catch (Exception ex)
+                {
+                    errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                    Trace.TraceError("{0}{1}", prefix, errorMessage);
+                }
+
+                Trace.TraceInformation("{0}{1}", prefix, "Finished saving xml to Azure blob.");
+
                 return Request.CreateResponse<string>(HttpStatusCode.OK, "Now parsing items");
             }
             catch (BaseException ex)
