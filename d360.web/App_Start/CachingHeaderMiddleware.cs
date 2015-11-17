@@ -21,7 +21,12 @@ namespace d360.web
                 context.Response.Headers.Add("Cache-Control", new string[] { "no-cache, no-store, must-revalidate" });
                 context.Response.Headers.Add("Pragma", new string[] { "no-cache" });
             }
+            // security headers - https://www.owasp.org/index.php/List_of_useful_HTTP_headers 
+            // clickjacking protection, prevent the site from being placed in a frameset not originating from D3S
             context.Response.Headers.Add("X-Frame-Options", new string[] { "SAMEORIGIN" });
+            // Turn on browser xss protection and render blank page.  Its usually on by default however this reenables it if the user has turned it off
+            context.Response.Headers.Add("X-XSS-Protection", new string[] { "1; mode=block" });
+            //X - XSS - Protection:1; mode = block
             context.Response.Headers.Add("Expires", new string[] { "0" });
             await _next.Invoke(environment);
         }
