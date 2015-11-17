@@ -119,6 +119,13 @@
         renderNodes(nodes, source);
         renderLinks(nodes, source);
     }
+    function getSize(d) {
+        var bbox = this.getBBox(),
+            cbbox = this.parentNode.getBBox(),
+            scale = Math.min(cbbox.width / bbox.width, cbbox.height / bbox.height);
+        
+        d.scale = scale < 10 ? scale : 10;
+    }
     function renderNodes(nodes, source) {
 
         nodes.forEach(function (d) {
@@ -155,6 +162,9 @@
             .attr("dy", function (d) { return 20; })
             .attr("text-anchor", "middle")
             .text(function (d) { return d.Name; })
+            .style("font-size", "1px")
+            .each(getSize)
+            .style("font-size", function(d) { return d.scale + "px"; })
             .style("fill", function (d) { return d.ForeColor; });
             //.call(wrap, (_boxWidth - 5));
 
@@ -162,7 +172,7 @@
             .attr("dx", function (d) { return _boxWidth / 2; })
             .attr("dy", function (d) { return 32; })
             .attr("text-anchor", "middle")
-            .text(function (d) { return d.Type; })
+            .text(function (d) { return d.Type; })           
             .style("fill", function (d) { return d.ForeColor; });
 
 
@@ -170,7 +180,7 @@
             .attr("dx", function (d) { return _boxWidth / 2; })
             .attr("dy", function (d) { return 44; })
             .attr("text-anchor", function (d) { return "middle"; })
-            .text(function (d) { return (d.Role) ? '( ' + d.Role + ' )' : ""; })
+            .text(function (d) { return (d.Role) ? '( ' + d.Role + ' )' : ""; })            
             .style("fill", function (d) { return d.ForeColor; });
 
         renderIcons(nodeEnter);
