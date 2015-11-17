@@ -1,0 +1,223 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+    <link href="Content/font-awesome.css" rel="stylesheet" />
+    <script src="Scripts/jquery-2.1.4.js"></script>
+    <script src="Scripts/go-1.5.12-debug.js"></script>
+</head>
+<body>
+    <div id="myOverviewDiv" style="width: 100%; height: 500px"></div>
+    <script type="text/javascript">
+        var g = go.GraphObject.make;
+
+        myDiagram = g(go.Diagram, "myOverviewDiv", {
+            initialContentAlignment: go.Spot.Left,
+            //autoScale: true,
+            initialAutoScale: go.Diagram.Uniform,//ToFill,
+            //initialPosition: Point(125, 200),
+            layout: g(go.LayeredDigraphLayout, {
+                direction: 0
+            }),
+            "undoManager.isEnabled": true
+        });
+
+        function handleScale() {
+            var s = myDiagram.scale;
+            var h = 500;
+            //if (s > 1) {
+                h = h * s;
+            //}
+            $('#myOverviewDiv').css('height', h);
+            console.log(h);
+        }
+
+        myDiagram.addDiagramListener('ViewportBoundsChanged', handleScale);
+
+        function makePort(name, leftside) {
+            var port = g(go.Shape, "Rectangle", {
+                fill: "gray",
+                stroke: null,
+                strokeWidth: 0,
+                desiredSize: new go.Size(8, 8),
+                portId: name, // declare this object to be a "port"
+                toMaxLinks: 1, // don't allow more than one link into a port
+                cursor: "pointer" // show a different cursor to indicate potential link point
+            });
+
+            var lab = g(go.TextBlock, name, // the name of the port
+            {
+                font: "7pt sans-serif"
+            });
+
+            var panel = g(go.Panel, "Horizontal", {
+                margin: new go.Margin(2, 0)
+            });
+
+            if (leftside) {
+                port.toSpot = go.Spot.Left;
+                port.toLinkable = true;
+                lab.margin = new go.Margin(1, 0, 0, 1);
+                panel.alignment = go.Spot.TopLeft;
+                panel.add(port);
+                panel.add(lab);
+            } else {
+                port.fromSpot = go.Spot.Right;
+                port.fromLinkable = true;
+                lab.margin = new go.Margin(1, 1, 0, 0);
+                panel.alignment = go.Spot.TopRight;
+                panel.add(lab);
+                panel.add(port);
+            }
+            return panel;
+        }
+
+        function makeTemplate(typename, inports, outports) {
+            var node = g(go.Node, "Spot",
+            g(go.Panel, "Auto", {
+                width: 200,
+                height: 100
+            },
+            g(go.Shape, "Rectangle", {
+                    stroke: null,
+                    strokeWidth: 0,
+                    spot1: go.Spot.TopLeft,
+                    spot2: go.Spot.BottomRight
+                },
+                new go.Binding("fill", "back").makeTwoWay()
+           ),
+            g(go.Panel, "Table",
+                g(go.TextBlock, {
+                        row: 0,
+                        margin: 3,
+                        editable: false,
+                        maxSize: new go.Size(180, 40),
+                        font: "bold 10pt sans-serif"
+                    },
+                    new go.Binding("text", "name").makeTwoWay(),
+                    new go.Binding("stroke", "fore").makeTwoWay()
+                ),
+                g(go.TextBlock, typename, {
+                        row: 1,
+                        margin: 3,
+                        maxSize: new go.Size(80, NaN),
+                        font: "bold 7pt sans-serif"
+                    },
+                    new go.Binding("stroke", "fore").makeTwoWay()
+                ),
+                g(go.TextBlock, {
+                        row: 2,
+                        margin: 3,
+                        maxSize: new go.Size(80, NaN),
+                        font: "bold 8pt sans-serif"
+                    },
+                    new go.Binding("text", "role").makeTwoWay(),
+                    new go.Binding("stroke", "fore").makeTwoWay()
+                ),
+                g(go.Panel, "Table",
+                { row: 3 },
+                g(go.TextBlock, "&#xf129;", { //info
+                    row: 0,
+                    column: 0,
+                    margin: 3,
+                    editable: false,
+                    maxSize: new go.Size(20, 20),
+                    font: "bold 10pt FontAwesome"
+                },
+                    new go.Binding("stroke", "fore").makeTwoWay()
+                ),
+                g(go.TextBlock, "&#xf079;", { //retweet
+                    row: 0,
+                    column: 1,
+                    margin: 3,
+                    maxSize: new go.Size(20, 20),
+                    font: "bold 10pt FontAwesome"
+                },
+                    new go.Binding("stroke", "fore").makeTwoWay()
+                ),
+                g(go.TextBlock, "&#xf02c;", { //tags
+                    row: 0,
+                    column: 2,
+                    margin: 3,
+                    maxSize: new go.Size(20, 20),
+                    font: "bold 10pt FontAwesome"
+                },
+                    new go.Binding("stroke", "fore").makeTwoWay()
+                ),
+                g(go.TextBlock, "&#xf1c0;", { //database
+                    row: 0,
+                    column: 2,
+                    margin: 3,
+                    maxSize: new go.Size(20, 20),
+                    font: "bold 10pt FontAwesome"
+                },
+                    new go.Binding("stroke", "fore").makeTwoWay()
+                )
+            )
+            )),
+            g(go.Panel, "Vertical", {
+                alignment: go.Spot.Left,
+                alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+            },
+            inports),
+            g(go.Panel, "Vertical", {
+                alignment: go.Spot.Right,
+                alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+            },
+            outports));
+            myDiagram.nodeTemplateMap.add(typename, node);
+        }
+
+        makeTemplate("Vendor", [makePort("", true)], [makePort("OUT", false)]);
+
+        makeTemplate("Application", [makePort("", true)], [makePort("OUT", false)]);
+
+        makeTemplate("Term", [makePort("", true)], [makePort("OUT", false)]);
+
+        myDiagram.linkTemplate = g(go.Link, {
+            routing: go.Link.Orthogonal,
+            corner: 3,
+            relinkableFrom: false,
+            relinkableTo: false
+        },
+        g(go.Shape, {
+            stroke: "gray",
+            strokeWidth: 2
+        }),
+        g(go.Shape, {
+            stroke: "gray",
+            fill: "gray",
+            toArrow: "Standard"
+        }));
+
+        myDiagram.model = go.Model.fromJson({
+            "class": "go.GraphLinksModel",
+            "nodeCategoryProperty": "type",
+            "linkFromPortIdProperty": "frompid",
+            "linkToPortIdProperty": "topid",
+            "nodeDataArray": [
+                { "key": 20, "type": "Vendor", "name": "Compustat", "role": "", "back": "green", "fore": "white" },
+                { "key": 21, "type": "Vendor", "name": "Bloomberg", "role": "", "back": "green", "fore": "white" },
+                { "key": 22, "type": "Vendor", "name": "MSCI", "role": "", "back": "green", "fore": "white" },
+                { "key": 41, "type": "Application", "name": "XpressFeed", "role": "", "back": "aqua", "fore": "black" },
+                { "key": 42, "type": "Application", "name": "VendorDataMart", "role": "", "back": "aqua", "fore": "black" },
+                { "key": 51, "type": "Term", "name": "Issue Shares Outstanding", "role": "Calculation", "back": "black", "fore": "white" },
+                { "key": 61, "type": "Term", "name": "Price Close", "role": "Calculation", "back": "black", "fore": "white" },
+                { "key": 71, "type": "Term", "name": "Issue Market Cap", "role": "Consumer", "back": "black", "fore": "white" }
+            ],
+            "linkDataArray": [
+                { "from": 20, "frompid": "OUT", "to": 41 },
+                { "from": 21, "frompid": "OUT", "to": 42 },
+                { "from": 22, "frompid": "OUT", "to": 42 },
+                { "from": 41, "frompid": "OUT", "to": 51 }, //, "topid": "L"
+                { "from": 42, "frompid": "OUT", "to": 51 }, //, "topid": "R"
+                { "from": 41, "frompid": "OUT", "to": 61 }, //, "topid": "L"
+                { "from": 42, "frompid": "OUT", "to": 61 }, //, "topid": "R"
+                { "from": 51, "frompid": "OUT", "to": 71 },
+                { "from": 61, "frompid": "OUT", "to": 71 }
+            ]
+        });
+    </script>
+</body>
+</html>

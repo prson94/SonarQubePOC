@@ -199,33 +199,6 @@ from	h
         }
 
         [DataContract]
-        public class LineageDiagramDataMappingGroup
-        {
-            [DataMember]
-            public string Definition { get; set; }
-
-            [DataMember]
-            public string Formula { get; set; }
-        }
-
-        [DataContract]
-        public class LineageDiagramDataMapping
-        {
-            [DataMember]
-            public string SourceSystem { get; set; }
-            [DataMember]
-            public string SourceObject { get; set; }
-            [DataMember]
-            public string SourceFusionAttribute { get; set; }
-            [DataMember]
-            public string TargetSystem { get; set; }
-            [DataMember]
-            public string TargetObject { get; set; }
-            [DataMember]
-            public string TargetFusionAttribute { get; set; }
-        }
-
-        [DataContract]
         public class BaseDiagramItem
         {
             //public int IntersectID { get; set; }
@@ -254,13 +227,14 @@ from	h
             public string ForeColor { get; set; }
 
             [DataMember]
+            public string Role { get; set; }
+
+            [DataMember]
             public string Url { get; set; }
 
             public string TechnicalRelationships { get; set; }
             public string Contexts { get; set; }
             public string Transformations { get; set; }
-            public string MappingGroups { get; set; }
-            public string Mappings { get; set; }
 
             [DataMember(Name = "Contexts")]
             public List<LineageDiagramDataContext> ContextItems { get; set; }
@@ -270,12 +244,6 @@ from	h
 
             [DataMember(Name = "Transformations")]
             public List<LineageDiagramDataTransformation> TransformationItems { get; set; }
-
-            [DataMember(Name = "MappingGroups")]
-            public List<LineageDiagramDataMappingGroup> MappingGroupItems { get; set; }
-
-            [DataMember(Name = "Mappings")]
-            public List<LineageDiagramDataMapping> MappingItems { get; set; }
         }
 
         [DataContract]
@@ -293,9 +261,6 @@ from	h
 
             [DataMember]
             public int AssigningItemID { get; set; }
-
-            [DataMember]
-            public string Role { get; set; }
 
             [DataMember]
             public List<EnvironmentDetailDiagramItem> children { get; set; }
@@ -385,32 +350,6 @@ from	h
                         ID = int.Parse(e.Attribute("id").Value),
                         Type = e.Attribute("type").Value//,
                         //Url = e.Attribute("url").Value
-                    }).ToList();
-            }
-
-            if (!string.IsNullOrEmpty(i.MappingGroups))
-            {
-                xml = XElement.Parse(i.MappingGroups);
-                i.MappingGroupItems = xml.Elements("group")
-                    .Select(e => new LineageDiagramDataMappingGroup
-                    {
-                        Definition = (e.Element("definition") != null ? e.Element("definition").Value : ""),
-                        Formula = (e.Element("formula") != null ? e.Element("formula").Value : "")
-                    }).ToList();
-            }
-
-            if (!string.IsNullOrEmpty(i.Mappings))
-            {
-                xml = XElement.Parse(i.Mappings);
-                i.MappingItems = xml.Elements("mapping")
-                    .Select(e => new LineageDiagramDataMapping
-                    {
-                        SourceSystem = e.Attribute("SourceSystem").Value,
-                        SourceObject = e.Attribute("SourceObject").Value,
-                        SourceFusionAttribute = e.Attribute("SourceFusionAttribute").Value,
-                        TargetSystem = e.Attribute("TargetSystem").Value,
-                        TargetObject = e.Attribute("TargetObject").Value,
-                        TargetFusionAttribute = e.Attribute("TargetFusionAttribute").Value
                     }).ToList();
             }
         }

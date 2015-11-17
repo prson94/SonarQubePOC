@@ -1,0 +1,2 @@
+﻿CREATE USER [d3s_4_user] WITHOUT LOGIN;
+

@@ -96,7 +96,7 @@
 }
 .social .entry .profile {
   vertical-align: top;
-  width: 3%;
+  width: 4%;
   margin-right: 5px;
   min-width: 30px;
 }
@@ -113,6 +113,10 @@
 }
 .social .entry .message {
   margin-top: 10px;
+}
+.social .entry .message img {
+  max-height: 100%;
+  max-width: 100%;
 }
 .social .entry .ChildComments {
   margin: 15px 0px 10px 0px;

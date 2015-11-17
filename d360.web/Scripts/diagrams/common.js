@@ -1,20 +1,5 @@
 ﻿function lineage(diagramID, height, customIcons) {
 
-    //var diagramID = controlID + '_Diagram';
-
-    //var templateHtml = '';
-    ////templateHtml += '<div class="zoomBar">';
-    ////templateHtml += '<button type="button" rel="out" value="-" class="zoomBtn btn btn-info btn-xs"><i class="fa fa-minus"></i></button>';
-    ////templateHtml += '<button type="button" rel="in" value="+" class="zoomBtn btn btn-info btn-xs"><i class="fa fa-plus"></i></button>';
-    ////templateHtml += '<button type="button" rel="reset" value="reset" class="zoomBtn btn btn-info btn-xs"><i class="fa fa-refresh"></i></button>';
-    ////templateHtml += '</div>';
-    //templateHtml += '<div id="' + diagramID + '" style="min-height: 200px"></div>';
-
-    //controlID = '#' + controlID;
-    //diagramID = '#' + diagramID;
-
-    //$(controlID).html(templateHtml);
-
     //#region Variables
 
     var _chart = {};
@@ -50,52 +35,9 @@
                 .call(
                     zm = d3.behavior.zoom().scaleExtent([minZoom, maxZoom]).on('zoom', zoom)
                 );
-
-            //necessary so that zoom knows where to zoom and unzoom from
-            //zm.translate([initialX, initialY]);
-
-            //_svg.append("defs")
-            //    .append("marker")    // This section adds in the arrows
-            //    .attr('id', 'Arrowhead')
-            //    .attr("viewBox", "0 0 10 10")
-            //    .attr("refX", 10)
-            //    .attr("refY", 5)
-            //    .attr("markerWidth", 6)
-            //    .attr("markerHeight", 6)
-            //    .attr("orient", "auto")
-            //    .attr("fill", "black")
-            //    .append("path")
-            //    .attr("d", "M 0 0 L 10 5 L 0 10 z");
         }
 
         renderBody(_svg);
-
-        //$('.zoomBtn').on('click', function (e) {
-        //    var action = $(this).attr('rel')
-
-        //    var currentZoom = zm.scale();
-        //    var zoomScale = 1;
-
-        //    if (currentZoom >= 1) {
-        //        if (action == 'reset') {
-        //            zm.scale(1).translate([initialX, initialY]).event(_bodyG);
-        //        }
-        //        else if (action == 'in') {
-        //            if (currentZoom < maxZoom) {
-        //                var newScale = currentZoom + zoomScale;
-        //                zm.scale(newScale).event(_bodyG);
-        //            }
-        //        }
-        //        else {
-        //            if (currentZoom > minZoom) {
-        //                var newScale = currentZoom - zoomScale;
-        //                zm.scale(newScale).event(_bodyG);
-        //            }
-        //        }
-        //    }
-
-        //    e.preventDefault();
-        //});
     };
 
     function renderBody(svg) {

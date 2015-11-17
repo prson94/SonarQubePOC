@@ -70,6 +70,11 @@
               Looks up a localized string similar to Artifact Type.
             </summary>
         </member>
+        <member name="P:Resources.Actions.Attributes_Icon">
+            <summary>
+              Looks up a localized string similar to list.
+            </summary>
+        </member>
         <member name="P:Resources.Actions.AttributeType_Text">
             <summary>
               Looks up a localized string similar to Attribute Group.
@@ -160,6 +165,11 @@
               Looks up a localized string similar to bookmark.
             </summary>
         </member>
+        <member name="P:Resources.Actions.Fusion_Icon">
+            <summary>
+              Looks up a localized string similar to bolt.
+            </summary>
+        </member>
         <member name="P:Resources.Actions.Governance">
             <summary>
               Looks up a localized string similar to Governance.
@@ -183,6 +193,11 @@
         <member name="P:Resources.Actions.Levels_Icon">
             <summary>
               Looks up a localized string similar to sitemap.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Lineage_Icon">
+            <summary>
+              Looks up a localized string similar to code-fork.
             </summary>
         </member>
         <member name="P:Resources.Actions.Report_Icon">
@@ -2392,6 +2407,13 @@
             <param name="type">The type of object</param>
             <param name="id">The ID of the object</param>
             <returns>A list of fields with the name, friendly name, and value.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.AttributesController.RelationshipAttributesFieldList(System.Int32)">
+            <summary>
+            Gets the list of columns for the relationship overlay grid based on the input owner
+            </summary>        
+            <param name="id">The object ID to get list of attributes for.</param>        
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.AttributesController.AttributeActions(d360.core.SystemObjects,System.Int32,d360.core.SystemObjects,System.Int32,System.Nullable{System.Int32})">
             <summary>

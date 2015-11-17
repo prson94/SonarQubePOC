@@ -18176,21 +18176,6 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 }));
 function lineage(diagramID, height, customIcons) {
 
-    //var diagramID = controlID + '_Diagram';
-
-    //var templateHtml = '';
-    ////templateHtml += '<div class="zoomBar">';
-    ////templateHtml += '<button type="button" rel="out" value="-" class="zoomBtn btn btn-info btn-xs"><i class="fa fa-minus"></i></button>';
-    ////templateHtml += '<button type="button" rel="in" value="+" class="zoomBtn btn btn-info btn-xs"><i class="fa fa-plus"></i></button>';
-    ////templateHtml += '<button type="button" rel="reset" value="reset" class="zoomBtn btn btn-info btn-xs"><i class="fa fa-refresh"></i></button>';
-    ////templateHtml += '</div>';
-    //templateHtml += '<div id="' + diagramID + '" style="min-height: 200px"></div>';
-
-    //controlID = '#' + controlID;
-    //diagramID = '#' + diagramID;
-
-    //$(controlID).html(templateHtml);
-
     //#region Variables
 
     var _chart = {};
@@ -18207,7 +18192,7 @@ function lineage(diagramID, height, customIcons) {
         initialY = 0,
         initialX = 0,
         maxZoom = 4,
-        minZoom = 1,
+        minZoom = 0.1,
         x = function (d) {
             return _width - d.y - _boxWidth;
         },
@@ -18226,52 +18211,9 @@ function lineage(diagramID, height, customIcons) {
                 .call(
                     zm = d3.behavior.zoom().scaleExtent([minZoom, maxZoom]).on('zoom', zoom)
                 );
-
-            //necessary so that zoom knows where to zoom and unzoom from
-            //zm.translate([initialX, initialY]);
-
-            //_svg.append("defs")
-            //    .append("marker")    // This section adds in the arrows
-            //    .attr('id', 'Arrowhead')
-            //    .attr("viewBox", "0 0 10 10")
-            //    .attr("refX", 10)
-            //    .attr("refY", 5)
-            //    .attr("markerWidth", 6)
-            //    .attr("markerHeight", 6)
-            //    .attr("orient", "auto")
-            //    .attr("fill", "black")
-            //    .append("path")
-            //    .attr("d", "M 0 0 L 10 5 L 0 10 z");
         }
 
         renderBody(_svg);
-
-        //$('.zoomBtn').on('click', function (e) {
-        //    var action = $(this).attr('rel')
-
-        //    var currentZoom = zm.scale();
-        //    var zoomScale = 1;
-
-        //    if (currentZoom >= 1) {
-        //        if (action == 'reset') {
-        //            zm.scale(1).translate([initialX, initialY]).event(_bodyG);
-        //        }
-        //        else if (action == 'in') {
-        //            if (currentZoom < maxZoom) {
-        //                var newScale = currentZoom + zoomScale;
-        //                zm.scale(newScale).event(_bodyG);
-        //            }
-        //        }
-        //        else {
-        //            if (currentZoom > minZoom) {
-        //                var newScale = currentZoom - zoomScale;
-        //                zm.scale(newScale).event(_bodyG);
-        //            }
-        //        }
-        //    }
-
-        //    e.preventDefault();
-        //});
     };
 
     function renderBody(svg) {
@@ -19424,15 +19366,13 @@ function information_catalog_diagram(controlID, typeID) {
 function lineage_diagram(controlID, intersectID) {
     var self = this;
 
-    //var toolsControlID = controlID + "_tools";
     var diagramControlID = controlID + "_diagram";
     controlID = '#' + controlID;
     
-    var html = '';//'<header><div id="' + toolsControlID + '"></div></header>';
+    var html = '';
     html += '<div id="' + diagramControlID + '"></div>';
     $(controlID).html(html);
     diagramControlID = '#' + diagramControlID;
-    //toolsControlID = '#' + toolsControlID;
 
     self.load = function () {
         d3.json("/diagrams/LineageDiagramData?id=" + intersectID, function (error, data) {
@@ -19442,16 +19382,6 @@ function lineage_diagram(controlID, intersectID) {
     }
 
     self.load();
-
-    //amplify.subscribe("SaveAction", function (data) {
-    //    try {
-    //        switch (data.context) {
-    //            case contextList.IntersectSourcingResponsibility:
-    //                self.load();
-    //                break;
-    //        }
-    //    } catch (e) { }
-    //});
 }
 function environment_diagram(controlID, permissions, type, id) {
     var self = this;
@@ -37521,42 +37451,46 @@ ko.bindingHandlers.fadeVisible = {
     }
 };
 
+
+ko.bindingHandlers.htmlareasimple = {
+    init: function (element, valueAccessor) {
+        var value = valueAccessor();
+
+        if (ko.isObservable(value)) {
+            $(element).redactor({
+                changeCallback: value,
+                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist','orderedlist','outdent','indent','link','fontcolor','backcolor','alignment']
+            });
+        }
+    },
+    update: function (element, valueAccessor) {
+        var value = ko.utils.unwrapObservable(valueAccessor()) || '';
+        if (value !== $(element).redactor('get')) {
+            $(element).redactor('set', value);
+        }
+    }
+};
+
 ko.bindingHandlers.htmlarea = {
     init: function (element, valueAccessor) {
         var value = valueAccessor();
 
-        // We only want Redactor to notify our value of changes if the value
-        // is an observable (rather than a string, say).
-
         if (ko.isObservable(value)) {
             $(element).redactor({
-                changeCallback: value
+                changeCallback: value,
+                imageUploadCallback:function(image, json)
+                {
+                    image.css("max-width", "100%").css("max-height", "100%");
+                },
+                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist', 'orderedlist', 'outdent', 'indent', 'image', 'video', 'link', 'fontcolor', 'backcolor', 'alignment', 'horizontalrule']
             });
         }
-
     },
     update: function(element, valueAccessor) {
-        // New value, note that Redactor expects the argument passed to 'set'
-        // to have toString method, which is why we disjoin with ''.
-
-        //var value = ko.utils.unwrapObservable(valueAccessor()) || '';
-
-        // We only call 'set' if the content has changed, as we only need to
-        // to do so then, and 'set' also resets the cursor position, which
-        // we don't want happening all the time.
-
-        // This code would work with Redactor 9, but no longer works with Redactor 10
-        //if (value !== $(element).redactor('get')) {
-        //    $(element).redactor('code.set', value);
-        //}
-
-        // The API method has become 'code.get', and it behaves a bit differently: it
-        // returns formatted HTML, i.e. with whitespace and EOLs.  That means that we
-        // would update the Redactor content every time the observable changed, which
-        // was bad.  So instead we can use this:
- //       if (value !== $(element).redactor('core.getTextarea').val()) {
- //           $(element).redactor('code.set', value);
- //       }
+        var value = ko.utils.unwrapObservable(valueAccessor()) || '';
+        if (value !== $(element).redactor('get')) {
+            $(element).redactor('set', value);
+        }
     }
 };
 
@@ -37890,7 +37824,7 @@ ko.bindingHandlers.customFileInput = {
 //#endregion
 
 //#region    BASE MODELS
-function CommentTagItem(data) {
+function CommentTagItem(data, parent) {
     var self = this;
     data = data || {};
     self.Object = ko.observable(data.Object);
@@ -37902,21 +37836,15 @@ function CommentTagItem(data) {
     self.IconBackColor = ko.observable(data.IconBackColor);
     self.IconForeColor = ko.observable(data.IconForeColor);
 
-    //self.getTagBackgroundColor = function () {
+    self.removeTag = function () {
+        parent.tags.remove(self);
+    }
 
-    //    var hash = CryptoJS.MD5(data.ObjectTypeName).toString();
-        
-    //    var r = parseInt(hash.substring(0, 2), 16);
-    //    var g = parseInt(hash.substring(2, 4), 16);
-    //    var b = parseInt(hash.substring(4, 6), 16);
-        
-    //    //lighten color
-    //    r = (((r + 127) / 2.0) + 255) / 2.0;
-    //    g = (((g + 255) / 2.0) + 255) / 2.0;
-    //    b = (((b + 255) / 2.0) + 255) / 2.0;
-
-    //    return "rgb(" + Math.floor(r)+ "," +  Math.floor(g) +"," +  Math.floor(b) + ")";
-    //};
+    self.addTag = function () {
+        parent.tags(parent.tags().concat(self));
+        parent.newTag('');
+        parent.tagSuggestions([]);
+    }
 }
 
 function CommentCountItem(data) {
@@ -37984,8 +37912,14 @@ function CommentItem(data) {//, hub) {
     });
 
     self.ShowObjectType = ko.computed(function () {
+        //var result = (self.ObjectType() == "Resource" && self.ObjectID() == self.CreatingResourceID());
+        //alert(self.ObjectType() + ", " + self.CreatingResourceID() + ", " + result);
+
         return !(self.ObjectType() == "Resource" && self.ObjectID() == self.CreatingResourceID());
     });
+
+
+
 
     self.FormatDate = function (utcDateString) {
         //convert date to local timezone and format
@@ -38014,8 +37948,6 @@ function CommentItem(data) {//, hub) {
     self.DateEditedLocal = ko.computed(function () {
         return self.FormatDate((self.DateEdited() || "").toString());
     });
-   
-
    
 
     var _currentVotes = $.map(data.Votes, function (item) { return new CommentVoteItem(item); });
@@ -38066,7 +37998,7 @@ function CommentItem(data) {//, hub) {
     }
 
 
-    var _currenTags = $.map(data.Tags, function (item) { return new CommentTagItem(item); });
+    var _currenTags = $.map(data.Tags, function (item) { return new CommentTagItem(item, self); });
     self.CurrentTags = ko.observableArray(_currenTags);
     self.CurrentTagCount = ko.computed(function () {
         return self.CurrentTags().length;
@@ -38081,7 +38013,29 @@ function CommentItem(data) {//, hub) {
     self.NewComments = ko.observableArray();
     self.newCommentMessage = ko.observable();
     
-    self.ShowAddCommentControls = ko.observable(CompanySettings.DisableCommunityPosting == 'false');
+    self.DisableReply = ko.computed(function () {
+        return !((self.newCommentMessage() || '').length > 0);
+    });
+    self.ShowAddCommentControls = ko.observable(CompanySettings.DisableCommunityPosting == 'false' || CompanySettings.DisableIssuePosting == 'false' || CompanySettings.DisableQuestionPosting == 'false');
+
+    self.ShowReplyControl = ko.computed(function () {
+        switch (self.CommentTypeID())
+        {
+            case 2:
+                return (CompanySettings.DisableCommunityPosting == 'false');
+                break;
+            case 5:
+                return (CompanySettings.DisableIssuePosting == 'false');
+                break;
+            case 9:
+                return (CompanySettings.DisableQuestionPosting == 'false');
+                break;
+            default:
+                return true;
+                break;
+        }
+    });
+
     self.ReplyHidden = ko.observable(true);
     self.EditHidden = ko.observable(true);
 
@@ -38091,7 +38045,11 @@ function CommentItem(data) {//, hub) {
     }, self);
 
     self.newTag = ko.observable();
-    self.tags = ko.observableArray([]);
+    //self.tags = ko.observableArray([]);
+
+    var _tags = $.map(data.Tags, function (item) { return new CommentTagItem(item, self); });
+    self.tags = ko.observableArray(_tags);
+
 
     self.newTag.subscribe(function (value) {
         if (value) {
@@ -38158,6 +38116,12 @@ function CommentItem(data) {//, hub) {
 
     self.showEdit = function () {
         self.EditHidden(false);
+        self.hideTags();
+
+        for (var i = 0; i < self.tags().length; i++) {
+            self.tags()[i].ShowRemove(true);
+        }
+        
     };
     self.hideEdit = function () {
         self.EditHidden(true);
@@ -38269,10 +38233,11 @@ function CommentItem(data) {//, hub) {
                 method: 'POST',
                 url: '/services/community/edit'
             }).done(function (result, status, xhr) {
-                self.tags([]);
-                var _currentTags = $.map(result.Tags, function (item) { return new CommentTagItem(item); });
+                var _currentTags = $.map(result.Tags, function (item) { return new CommentTagItem(item, self); });
                 self.CurrentTags([]);
                 self.CurrentTags(_currentTags);
+                self.tags([]);
+                self.tags(_currentTags);
                 self.ProcessingCount(self.ProcessingCount() - 1);
                 self.DateEdited(result.DateEditedUTCString);
                 self.IsEditable(result.IsEditable);
@@ -38381,22 +38346,6 @@ function CommentTagSuggestionItem(data, parent) {
     self.removeTag = function () {
         parent.tags.remove(self);
     }
-
-    //self.getTagBackgroundColor = function () {
-
-    //    var hash = CryptoJS.MD5(data.ObjectTypeName).toString();
-
-    //    var r = parseInt(hash.substring(0, 2), 16);
-    //    var g = parseInt(hash.substring(2, 4), 16);
-    //    var b = parseInt(hash.substring(4, 6), 16);
-
-    //    //lighten color
-    //    r = (((r + 127) / 2.0) + 255) / 2.0;
-    //    g = (((g + 255) / 2.0) + 255) / 2.0;
-    //    b = (((b + 255) / 2.0) + 255) / 2.0;
-
-    //    return "rgb(" + Math.floor(r) + "," + Math.floor(g) + "," + Math.floor(b) + ")";
-    //};
 
     self.addTag = function () {
             parent.tags(parent.tags().concat(self));
@@ -39180,6 +39129,8 @@ function CompanySettingsViewModel(data) {
 
     //Simple Properties
     self.DisableCommunityPosting = ko.observable(data.DisableCommunityPosting);
+    self.DisableIssuePosting = ko.observable(data.DisableIssuePosting);
+    self.DisableQuestionPosting = ko.observable(data.DisableQuestionPosting);
     self.SetIconToDefault = ko.observable(data.SetLogoToDefault);
     self.SetLogoToDefault = ko.observable(data.SetLogoToDefault);
 
@@ -39230,6 +39181,12 @@ function CompanySettingsViewModel(data) {
     self.DisableCommunityPosting.subscribe(function (value) {
     });
 
+    self.DisableIssuePosting.subscribe(function (value) {
+    });
+
+    self.DisableQuestionPosting.subscribe(function (value) {
+    });
+
 
     //#region Methods
 
@@ -39246,6 +39203,8 @@ function CompanySettingsViewModel(data) {
             self.CurrentCompanyIconPath(relData.CurrentCompanyIconPath);
             self.CurrentCompanyLogoPath(relData.CurrentCompanyLogoPath);
             self.DisableCommunityPosting(relData.DisableCommunityPosting);
+            self.DisableIssuePosting(relData.DisableIssuePosting);
+            self.DisableQuestionPosting(relData.DisableQuestionPosting);
 
             console.log(self.CurrentCompanyLogoPath());
 
@@ -39267,6 +39226,8 @@ function CompanySettingsViewModel(data) {
 
         var postModel = {
             DisableCommunityPosting: self.DisableCommunityPosting(),
+            DisableIssuePosting: self.DisableIssuePosting(),
+            DisableQuestionPosting: self.DisableQuestionPosting(),
             SetLogoToDefault: self.SetLogoToDefault(),
             CompanyLogo: self.CompanyLogo().dataURL(),
             SetIconToDefault: self.SetIconToDefault(),
@@ -40565,6 +40526,7 @@ var BoardViewModel = function () {
         return (self.ProcessingCount() != 0);
     });
 
+
     self.AppliedSearch = ko.computed(self.searchFilter).extend({ throttle: 400 });
 
     self.AppliedSearch.subscribe(function () {
@@ -40578,7 +40540,8 @@ var BoardViewModel = function () {
     self.newComments = ko.observableArray();
     self.commentCounts = ko.observableArray();
 
-    self.ShowAddCommentControls =  ko.observable(CompanySettings.DisableCommunityPosting == 'false');
+    self.ShowAddCommentControls =  ko.observable(CompanySettings.DisableCommunityPosting == 'false' || CompanySettings.DisableIssuePosting == 'false' || ComanySettings.DisableQuestionPosting);
+    
 
     self.ObjectType = null;
     self.ObjectID = null;
@@ -40594,19 +40557,37 @@ var BoardViewModel = function () {
         { Text: 'All time', Value: 0 }
     ]);
 
-    self.typeEntryOptions = ko.observableArray([
-        //{ Text: 'Data Event', Value: 8 },
-        { Text: 'Discussion', Value: 2 },
-        { Text: 'Issue', Value: 5 },
-        //{ Text: 'Task', Value: 6 },
-        { Text: 'Question', Value: 9 }
-    ]);
+    var typeOps = [];
+    
+    var discussion = { Text: 'Discussion', Value: 2 };
+    var issue = { Text: 'Issue', Value: 5 };
+    var question = { Text: 'Question', Value: 9 };
+
+    if (CompanySettings.DisableCommunityPosting == 'false') {
+        typeOps.push(discussion);
+    }
+    if (CompanySettings.DisableIssuePosting == 'false') {
+        typeOps.push(issue);
+    }
+    if (CompanySettings.DisableQuestionPosting == 'false') {
+        typeOps.push(question);
+    }
+
+    self.typeEntryOptions = ko.observableArray(typeOps);
+
+    //self.typeEntryOptions = ko.observableArray([
+    //    //{ Text: 'Data Event', Value: 8 },
+    //    { Text: 'Discussion', Value: 2 },
+    //    { Text: 'Issue', Value: 5 },
+    //    //{ Text: 'Task', Value: 6 },
+    //    { Text: 'Question', Value: 9 }
+    //]);
 
     self.visibilityOptions = ko.observableArray([
-        { Text: 'All', Value: 1 },
-        { Text: 'Followers', Value: 2 },
-        { Text: 'Owners', Value: 3 },
-        { Text: 'Only Me', Value: 4 }
+        { Text: 'All', Value: 4 },
+        { Text: 'Followers', Value: 3 },
+        { Text: 'Owners', Value: 2 },
+        { Text: 'Only Me', Value: 1 }
     ]);
 
     self.typeFilterOptions = ko.observableArray([
@@ -40622,7 +40603,7 @@ var BoardViewModel = function () {
         { Text: 'Questions', Value: 9 }
     ]);
 
-    self.selectedDateFilterOption = ko.observable();
+    self.selectedDateFilterOption = ko.observable(-7);
     self.selectedTypeFilterOption = ko.observable();
 
     self.tagSuggestions = ko.observableArray();
@@ -40644,6 +40625,12 @@ var BoardViewModel = function () {
             self.tagSuggestions([]);
         }
     });
+
+
+    self.CanReply = ko.computed(function () {
+        return (!self.IsProcessing() && (self.newMessage() || '').length > 0  );
+    });
+
 
     //self.checkForTags = function () {
     //    var message = self.newMessage() + "";
@@ -40785,6 +40772,7 @@ var BoardViewModel = function () {
                 method: 'POST',
                 url: '/services/community/comment'
             }).done(function (newCommentData, status, xhr) {
+                self.tags([]);
                 self.comments.unshift(new CommentItem(newCommentData));
                 self.newMessage('');
                 self.ProcessingCount(self.ProcessingCount() - 1);
@@ -41146,8 +41134,12 @@ var linkRenderer = function (uri, name) {
     return "<a href='" + uri + "'>" + name + "</a>";
 }
 
+var previewIconLink = function (type, id, uri) {
+    return "<a data-context='Preview' data-type='" + type + "' data-id='" + id + "' href='" + uri + "'><i class='fa fa-info'></i></a>";
+}
+
 var previewIconRenderer = function (type, id, uri) {
-    return "<div class='RowTools'><a data-context='Preview' data-type='" + type + "' data-id='" + id + "' href='" + uri + "'><i class='fa fa-info'></i></a></div>";
+    return "<div class='RowTools'>" + previewIconLink(type, id, uri) + "</div>";
 }
 
 var previewLinkRenderer = function (type, id, uri, name) {
@@ -49255,6 +49247,8 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
         context.app.swap('');
 
         var typeID = context.params['typeid'];
+        var type = 'ArtifactType';
+        var id = context.params['id'];
         var filters = [];
 
         $.getJSON('/api/artifacts/' + typeID, function (json) {
@@ -49272,6 +49266,11 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
             var ArtifactListAdapter;
 
             //#region Event Handlers
+            function refreshActionMenu(data) {
+                //$('#SideIcons').PageTools('reload', type: type, id: id, context: 'list');
+                $('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
+            }
+
 
             function artifactListPageResized() {
                 $("#List").jqxGrid('refresh');
@@ -49288,7 +49287,11 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                 try {
                     switch (data.context) {
                         case contextList.Artifact:
+                            $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             $('#List').jqxGrid('updatebounddata');
+                            break;
+                        case contextList.ArtifactType:
+                            $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;
                     }
                 } catch (e) { }
@@ -49374,6 +49377,7 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                 $('#ShowFilterAdvanced').off('click', showFilterAdvanced);
                 amplify.unsubscribe("ToolAction", toolAction);
                 amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
             }
 
             //#endregion
@@ -49782,7 +49786,7 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                     $('#ShowFilterAdvanced').on('click', showFilterAdvanced);
                     amplify.subscribe("ToolAction", toolAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
+                    amplify.subscribe("RefreshActionMenu", refreshActionMenu);
                     //#endregion
                 });
         });
@@ -50870,11 +50874,8 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                             filterable: false,
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                                 var tools = [];
-                                tools.push({ title: 'More info on this execution', icon: 'info', urlprefix: '/fusion/FusionExecution?id=' + data.ID });
-                                //if (data.RawLogFileName.length > 0) {
-                                //    tools.push({ title: 'View raw agent submission log', icon: 'file-code-o', urlprefix: '/fusion/FusionExecutionRawLog?id=' + data.ID });
-                                //}
-                                return renderToolsHtml(value, tools, "FusionExecution", data);//contextList.FusionFilter
+                                tools.push({ title: 'More info on this execution', icon: 'info', urlprefix: '/fusion/FusionExecution?id=' + data.ID });                                                                
+                                return renderToolsHtml(value, tools, "openexceptiondetailsdlg", data);
                             }
                         }
                     ]

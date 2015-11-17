@@ -4317,7 +4317,7 @@ namespace d360.web.Controllers
                 AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).ToList()
             };
 
-            return PartialView("FusionAttributePromotionRuleEditForm", model);
+            return PartialView("FusionAttributeOwnerRuleEditForm", model);
         }
 
         [HttpPut, ValidateInput(false)]

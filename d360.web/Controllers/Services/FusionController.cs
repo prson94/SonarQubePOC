@@ -160,6 +160,13 @@ where A.FusionTypeID = @id", columns, joins);
                 {
                     dictionary.Add(n.Name, n.Value);
                 }
+                if (model.Fusion.ForceRefresh.HasValue)
+                {
+                    if (model.Fusion.ForceRefresh.Value)
+                    {
+                        dictionary.Add("ForceRefresh", model.Fusion.ForceRefresh.ToString().ToLower());
+                    }
+                }
 
                 Trace.TraceInformation("Fusion.GetNextConfigurationInSchedule END");
                 return Request.CreateResponse<Dictionary<string, object>>(HttpStatusCode.OK, dictionary);

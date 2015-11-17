@@ -110,9 +110,10 @@ inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceI
                 var companies = GetActiveCompanyIDs();//.Where(i => i == 9).ToList();
                 var domainPrefixes = GetCompanyDomainPrefixes();
 
-                companies.AsParallel().WithDegreeOfParallelism(4).ForAll(companyID =>
+                companies.AsParallel().WithDegreeOfParallelism(3).ForAll(companyID =>
                 {
                     var companyConnection = GetCompanyConnection(companyID);
+
                     companyConnection.Open();
 
                     var domainPrefix = domainPrefixes.First(i => i.Key == companyID).Value;

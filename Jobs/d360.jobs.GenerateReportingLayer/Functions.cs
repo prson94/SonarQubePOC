@@ -17,7 +17,7 @@ namespace d360.jobs.GenerateReportingLayer
 
         static string cleanObjectName(string name)
         {
-            return name.Replace("'", "''").Replace(" ", "").Replace("-", "").Replace("&", "And").Replace(":", "").Replace(";", "").Trim();
+            return name.Replace("'", "").Replace(" ", "").Replace("-", "").Replace("&", "And").Replace(":", "").Replace(";", "").Trim();
         }
 
         static void getDynamicFieldJoinStatements(List<FieldTypeWithRelation> fields, string type, out string joins, out string columns)
