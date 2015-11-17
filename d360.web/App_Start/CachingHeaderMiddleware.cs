@@ -28,6 +28,8 @@ namespace d360.web
             context.Response.Headers.Add("X-XSS-Protection", new string[] { "1; mode=block" });
             //X - XSS - Protection:1; mode = block
             context.Response.Headers.Add("Expires", new string[] { "0" });
+            // Remove the server version number from being sent with every response.
+            context.Response.Headers.Remove("server"); 
             await _next.Invoke(environment);
         }
     }
