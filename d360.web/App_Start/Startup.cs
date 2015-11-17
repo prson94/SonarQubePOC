@@ -52,7 +52,7 @@ namespace d360.web
 
             //GlobalHost.DependencyResolver.UseRedis("d3ssession.redis.cache.windows.net", 6379, "bnIUbvztGIYchNT/VSz4iHHaL/ChYMLsppmXLbJp5Jw=", "UI-SignalR");
             ////GlobalHost.DependencyResolver.UseRedis("d3ssignalr.redis.cache.windows.net", 6380, "8ymYsgGiMttNlZeApex9AAPGmywzEyMnPMJVPfW7dwo=", "UI-SignalR");
-            
+
             ////var connectionString = constants.SERVICE_BUS_UI;
             ////GlobalHost.DependencyResolver.UseServiceBus(connectionString, "D3S-UI");
 
@@ -64,6 +64,8 @@ namespace d360.web
             #endregion
 
             #region Mvc
+
+            MvcHandler.DisableMvcResponseHeader = true; // Security (by obscurity) disable ASP MVC Version header i.e. X-AspNetMvc-Version:5.2
 
             GlobalFilters.Filters.Add(new AiHandleErrorAttribute());
             if (!System.Web.HttpContext.Current.IsDebuggingEnabled)
