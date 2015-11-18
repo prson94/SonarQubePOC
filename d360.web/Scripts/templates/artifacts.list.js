@@ -97,12 +97,13 @@
             function showFilterAdvanced() {
                 var adv = $('#ShowFilterAdvanced');
                 if (adv.data('visible')) {
-                    adv.text('Show Advanced');
+                    adv.html('<i class="fa fa-gear brown-text lighten-4"></i> Show Advanced')
+                    //adv.text('Show Advanced');
                     adv.removeData('visible');
                     $('#FilterAdvanced').fadeOut(200);
                 }
                 else {
-                    adv.text('Hide Advanced');
+                    adv.html('<i class="fa fa-gear brown-text lighten-4"></i> Hide Advanced')
                     adv.data('visible', true);
                     $('#FilterAdvanced').fadeIn(200);
                 }
@@ -525,6 +526,7 @@
                                     }
                                 });
                                 //$('#AttributeFilter').jqxInput({ disabled: false, displayMember: 'Name', valueMember: 'Name', source: attributeValueAdapter });
+                                
                                 $('#AttributeTypeFilter').jqxDropDownList({ disabled: false });
                             });
                         }

@@ -909,6 +909,14 @@ function CommentTagSuggestionItem(data, parent) {
     }
 
     self.addTag = function () {
+
+        for (var i = 0; i < parent.tags().length; i++) {
+            if (parent.tags()[i].ObjectID() == self.ObjectID()) {
+                parent.newTag('');
+                parent.tagSuggestions([]);
+                return;
+            }
+        }
             parent.tags(parent.tags().concat(self));
             parent.newTag('');
             parent.tagSuggestions([]);
