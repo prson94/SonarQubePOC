@@ -175,21 +175,49 @@
 
         makeTemplate("Term", [makePort("", true)], [makePort("OUT", false)]);
 
-        myDiagram.linkTemplate = g(go.Link, {
-            routing: go.Link.Orthogonal,
-            corner: 3,
-            relinkableFrom: false,
-            relinkableTo: false
-        },
-        g(go.Shape, {
-            stroke: "gray",
-            strokeWidth: 2
-        }),
-        g(go.Shape, {
-            stroke: "gray",
-            fill: "gray",
-            toArrow: "Standard"
-        }));
+        myDiagram.linkTemplate = g(go.Link,
+            {
+                routing: go.Link.Orthogonal,
+                corner: 3,
+                relinkableFrom: false,
+                relinkableTo: false
+            }, // the whole link panel
+        g(go.Shape,  // the link shape
+          { stroke: "black" }),
+        g(go.Shape,  // the arrowhead
+          { toArrow: "standard", stroke: null }),
+        g(go.Panel, "Auto",
+          g(go.Shape,  // the link shape
+            {
+                fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                stroke: null
+            }),
+          g(go.TextBlock,  // the label
+            {
+                textAlign: "center",
+                font: "8pt helvetica, arial, sans-serif",
+                stroke: "#555555",
+                margin: 4
+            },
+            new go.Binding("text", "text"))
+        )
+      );
+
+        //myDiagram.linkTemplate = g(go.Link, {
+        //    routing: go.Link.Orthogonal,
+        //    corner: 3,
+        //    relinkableFrom: false,
+        //    relinkableTo: false
+        //},
+        //g(go.Shape, {
+        //    stroke: "gray",
+        //    strokeWidth: 2
+        //}),
+        //g(go.Shape, {
+        //    stroke: "gray",
+        //    fill: "gray",
+        //    toArrow: "Standard"
+        //}));
 
         myDiagram.model = go.Model.fromJson({
             "class": "go.GraphLinksModel",
@@ -207,15 +235,15 @@
                 { "key": 71, "type": "Term", "name": "Issue Market Cap", "role": "Consumer", "back": "black", "fore": "white" }
             ],
             "linkDataArray": [
-                { "from": 20, "frompid": "OUT", "to": 41 },
-                { "from": 21, "frompid": "OUT", "to": 42 },
-                { "from": 22, "frompid": "OUT", "to": 42 },
-                { "from": 41, "frompid": "OUT", "to": 51 }, //, "topid": "L"
-                { "from": 42, "frompid": "OUT", "to": 51 }, //, "topid": "R"
-                { "from": 41, "frompid": "OUT", "to": 61 }, //, "topid": "L"
-                { "from": 42, "frompid": "OUT", "to": 61 }, //, "topid": "R"
-                { "from": 51, "frompid": "OUT", "to": 71 },
-                { "from": 61, "frompid": "OUT", "to": 71 }
+                { "from": 20, "frompid": "OUT", "to": 41, "text": "licenses to" },
+                { "from": 21, "frompid": "OUT", "to": 42, "text": "licenses to" },
+                { "from": 22, "frompid": "OUT", "to": 42, "text": "licenses to" },
+                { "from": 41, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "L"
+                { "from": 42, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "R"
+                { "from": 41, "frompid": "OUT", "to": 61, "text": "warehouses" }, //, "topid": "L"
+                { "from": 42, "frompid": "OUT", "to": 61, "text": "warehouses" }, //, "topid": "R"
+                { "from": 51, "frompid": "OUT", "to": 71, "text": "used to calculate" },
+                { "from": 61, "frompid": "OUT", "to": 71, "text": "used to calculate" }
             ]
         });
     </script>

@@ -437,4 +437,7 @@
     <None Include="ProductionCompare.scmp" />
     <None Include="DevelopmentCompare.scmp" />
   </ItemGroup>
+  <ItemGroup>
+    <PreDeploy Include="ToDeployToProd.sql" />
+  </ItemGroup>
 </Project>

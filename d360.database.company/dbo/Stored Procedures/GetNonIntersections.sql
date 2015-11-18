@@ -42,7 +42,7 @@ BEGIN
 		INSERT INTO @tbl
 			SELECT	dbo.GenerateObjectUrl(@TargetType, O.ArtifactTypeID, O.ID),
 					O.ID,
-					O.Name,
+					coalesce(O.TextPath, O.Name),
 					T.Name
 			FROM	Artifact O
 					INNER JOIN ArtifactType T ON	O.ArtifactTypeID = T.ID
