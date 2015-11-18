@@ -11,16 +11,20 @@
     <div class="ui segment">
         <h4>@(title)</h4>
         <div class="form-instructions"></div>
-        <div class="row" id="main-rel">
-            <div class="col l12 m12 s12">
-                <div id="AggregateRelationsOverlayGrid"></div>
-                <div id="RelationshipDetailTile" class="tile"></div>
+        <div id="main-rel">
+            <div class="row">
+                <div class="col l12 m12 s12">
+                    <div id="AggregateRelationsOverlayGrid"></div>
+                </div>                
+            </div>
+            <div class="row">
+                <div class="col l12 m12 s12" style="padding-top:10px"><h5 style="font-style:italic;">** A <b>bold</b> name indicate the items has technical relationships</h5></div>
             </div>
         </div>
-        <div class="container-fluid" id="lineage" style="display:none;">            
+        <div class="container-fluid" id="lineage" style="display:none;">
             <div id="DiagramTile"></div>
-            <div id="zd"></div>            
-            <div class="row">                
+            <div id="zd"></div>
+            <div class="row">
                 <div class="col l11 m11">
                     <ol class="breadcrumb" style="padding:0;">
                         <li>@title</li>
@@ -28,9 +32,9 @@
                     </ol>
                 </div>
                 <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
-            </div>            
+            </div>
         </div>
-        <div class="container-fluid" id="attribute" style="display:none;">            
+        <div class="container-fluid" id="attribute" style="display:none;">
             <div id="RelationshipAttributesTile" class="tile"></div>
             <div class="row">
                 <div class="col l11 m11">
@@ -40,9 +44,9 @@
                     </ol>
                 </div>
                 <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
-            </div>            
+            </div>
         </div>
-        <div class="container-fluid" id="fusion" style="display:none;">            
+        <div class="container-fluid" id="fusion" style="display:none;">
             <div class="pull-left" style="width: 49%">
                 <div class="tile">
                     <header>Relationships</header>
@@ -64,7 +68,7 @@
                     </ol>
                 </div>
                 <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
-            </div>            
+            </div>
         </div>
     </div>
 </div>
@@ -77,18 +81,10 @@
     var aggregateRelationshipIntersectTypeID = @intersectTypeID;
     var aggregateRelationsModelType = function() {
         var self = this;
-        self.IntersectID = -1;
 
         self.TargetType = 'Intersect';
         self.TargetID = -1;
         self.TargetName = '';
-
-        self.DetailTileIntersectID = -1;
-        self.AttributeTileIntersectID = -1;
-        self.TechnicalRelationIntersectID = -1;
-        self.DiagramTargetType = 'Intersect';
-        self.DiagramTargetID = -1;
-
     };
     var aggregateRelationsModel = new aggregateRelationsModelType();
 
@@ -135,13 +131,9 @@
     function aggregateRelationsOverlayGridRowSelect(event) {
         var row = event.args.row;
 
-        aggregateRelationsModel.IntersectID = row.IntersectID;
         aggregateRelationsModel.TargetType = row.TargetType;
         aggregateRelationsModel.TargetID = (row.TargetType == 'TaxonomyType') ? row.TargetTypeID : row.IntersectID;
         aggregateRelationsModel.TargetName = row.TargetName;
-
-        self.DetailTileIntersectID = row.IntersectID;
-        DetailTile('RelationshipDetailTile', null, null, 'Intersect', self.DetailTileIntersectID);
     }
 
     function technicalRelationsGridBindingComplete(event) {
@@ -165,13 +157,11 @@
         $('#main-rel').hide();
         $('#lineage').show();
         setBreadCrumb('#lineage','Lineage');
-        self.DiagramTargetType = aggregateRelationsModel.TargetType;
-        self.DiagramTargetID = aggregateRelationsModel.TargetID;
-        if (self.DiagramTargetType == 'TaxonomyType') {
-            information_catalog_diagram('DiagramTile', self.DiagramTargetID);
+        if (aggregateRelationsModel.TargetType == 'TaxonomyType') {
+            information_catalog_diagram('DiagramTile', aggregateRelationsModel.TargetID);
         }
         else {
-            lineage_diagram('DiagramTile', self.DiagramTargetID);
+            lineage_diagram('DiagramTile', aggregateRelationsModel.TargetID);
         }
     }
 
@@ -182,11 +172,10 @@
         var getselectedrowindexes = $('#AggregateRelationsOverlayGrid').jqxGrid('getselectedrowindexes');
         if(getselectedrowindexes.length > 0){
             var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
-            self.TechnicalRelationIntersectID = row.IntersectID;
             $('#TechnicalRelationDetailWrapper').fadeOut(100);
             $('#TechnicalRelationDetail').html('');
             $('#TechnicalRelationsGrid').jqxGrid('clearselection');
-            technicalRelationsSource.url = "/api/Intersect/" + self.TechnicalRelationIntersectID + "/relations";
+            technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
             $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
         }
     }
@@ -198,8 +187,7 @@
         var getselectedrowindexes = $('#AggregateRelationsOverlayGrid').jqxGrid('getselectedrowindexes');
         if(getselectedrowindexes.length > 0){
             var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
-            self.AttributeTileIntersectID = row.IntersectID;
-            AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", self.AttributeTileIntersectID, 'Business Attributes', true);
+            AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.IntersectID, 'Business Attributes', true);
         }
     }
 
@@ -258,17 +246,15 @@
             [
                 { name: 'IntersectID' },
                 { name: 'Description' },
+                { name: 'Classification' },
                 { name: 'Role' },
                 { name: 'TargetName' },
                 { name: 'TargetObjectID' },
-                { name: 'TargetParent' },
-                { name: 'TargetParentID' },
                 { name: 'TargetParentName' },
                 { name: 'TargetObjectType' },
                 { name: 'TargetTypeID' },
                 { name: 'TargetType' },
                 { name: 'TargetTypeName' },
-                { name: 'Classification' },
                 { name: 'TargetUrl' },
                 { name: 'HasTechnicalRelationships' }
             ]
@@ -276,12 +262,13 @@
 
         var addColumns = function(newColumns){
             var existing = $("#AggregateRelationsOverlayGrid").jqxGrid("columns");
+            var end = existing.length;
             for(var i=0;i<newColumns.length;i++){
-                existing.splice(3,0, newColumns[i]);
+                existing.splice(end,0, newColumns[i]);
             }
             return existing;
         }
-        
+
         //add dynamic fields
         var fields = getDisplayFields();
         // i no likey  syncy
@@ -292,7 +279,7 @@
             var val='';
             for(var i = 0 ; i < values.length;i++)
             {
-                if(values[i].TargetID==TargetID && values[i].AttributeTypeID==attributeID){                    
+                if(values[i].TargetID==TargetID && values[i].AttributeTypeID==attributeID){
                     if(val.length) val+=', ';
                     val +=values[i].Value
                 }
@@ -331,6 +318,7 @@
                     for(var j = 0 ; j < fields.length;j++){
                         row[fields[j].attributeID]=findDynamicValue(fields[j].attributeID,row.IntersectID);
                     }
+                    row.Classification = row.Classification == @((int)d360.core.enums.IntersectClassification.Normal) ? "Normal" : "Critical";
                     data.push(row);
                 }
                 return data;
@@ -339,7 +327,7 @@
 
 
         try {
-            var mainGridHeight = 400;
+            var mainGridHeight = 500;
             $('#AggregateRelationsOverlayGrid').jqxGrid({
                 altrows: true,
                 width: grid_width,
@@ -356,14 +344,25 @@
                 theme: theme,
                 columns: [
                     {
+                        text: '',
+                        groupable: false,
+                        datafield: 'IntersectID',
+                        width: '85px',
+                        filterable: false,
+                        pinned: true,
+                        cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return relationIconRowRender(data.TargetObjectType, data.TargetObjectID, data.TargetUrl);
+                        }
+                    },
+                    {
                         datafield: "TargetName",
                         text: "Name",
-                        width: '40%',
+                        width: '30%',
                         pinned: true,
                         cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (data.HasTechnicalRelationships ? "<b>" + data.TargetName + "</b>" : data.TargetName) + "</div>";
                         }
-                    },
+                    },                    
                     {
                         datafield: "TargetParentName",
                         text: "Parent",
@@ -379,15 +378,18 @@
                         filtertype: 'checkedlist'
                     },
                     {
-                        text: '',
-                        groupable: false,
-                        datafield: 'IntersectID',
-                        width: '85px',
-                        filterable: false,
-                        cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return relationIconRowRender(data.TargetObjectType, data.TargetObjectID, data.TargetUrl);
-                        }
+                        datafield: "Description",
+                        text: "Description",
+                        width: '250px',
+                        cellsrenderer: attributeColumnCellRenderer
+                    },
+                    {
+                        datafield: "Classification",
+                        text: "Classification",
+                        width: '100px',
+                        filtertype: 'checkedlist'
                     }
+
                 ]
             });
 

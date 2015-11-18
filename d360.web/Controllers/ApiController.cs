@@ -34,6 +34,9 @@ namespace d360.web.Controllers
         public D3SApiController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
+#if DEBUG
+            company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
+#endif
         }
 
         #endregion
@@ -2075,15 +2078,13 @@ from	    ResponsibilityTypeHierarchy H
             var sType = type.ToString();
             var tType = targetType.ToString();
             return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && ((i.Classification == IntersectClassification.Critical && criticalOnly) || !criticalOnly));
-        }
+        }        
 
         private List<int> LoadAttributes(int intersectTypeID)
         {                        
             var list = new List<int>();
             
             {
-                Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
-
                 list = (
                         from t in Company.AttributeTypes
                         join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID
@@ -2096,8 +2097,7 @@ from	    ResponsibilityTypeHierarchy H
 
         [Route("{type}/{id:int}/relationshipsAndAttributes/{targetType}/{targetID:int}/{criticalOnly:bool=false?}"), HttpGet]
         public List<RelationAttributeValue> GetRelationshipsAndAttributesForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, bool criticalOnly, int intersectTypeID)
-        {
-            //Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
+        {            
             //get list of relationships
             var sType = type.ToString();
             var tType = targetType.ToString();
