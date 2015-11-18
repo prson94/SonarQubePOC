@@ -1641,25 +1641,26 @@ where	ObjectType = 'Intersect'
 		T.TargetTypeID as TypeID,
 		T.TargetType as [Type],
 		D.IconBackColor,
-		T.[Count]
+		T.[Count],
+        T.IntersectTypeID
 from	(
 		select	'1' as [Group], 'All Glossary Items' as GroupName, cast(0 as bit) as Critical,
-				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName
+				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 		from	cache.Relationships
 		where	SourceObject = @type and SourceObjectID = @id and TargetObject <> 'Taxonomy'
-		group by	TargetType, TargetTypeID, TargetTypeName
+		group by	TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 union
 		select	'2' as [Group], 'Critical Glossary Items' as GroupName, cast(1 as bit) as Critical,
-				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName
+				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 		from	cache.Relationships
 		where	SourceObject = @type and SourceObjectID = @id and TargetObject <> 'Taxonomy' and Classification = 1
-		group by	TargetType, TargetTypeID, TargetTypeName
+		group by	TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 union
 		select	'3' as [Group], 'All Models' as GroupName, cast(0 as bit) as Critical,
-				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName
+				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 		from	cache.Relationships
 		where	SourceObject = @type and SourceObjectID = @id and TargetObject = 'Taxonomy'
-		group by	TargetType, TargetTypeID, TargetTypeName
+		group by	TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 ) T 
 inner join cache.ObjectDetails D on D.[Object] = T.TargetType and D.ObjectID = T.TargetTypeID 
 order by T.[Group], T.TargetTypeName";

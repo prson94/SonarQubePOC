@@ -2077,38 +2077,25 @@ from	    ResponsibilityTypeHierarchy H
             return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && ((i.Classification == IntersectClassification.Critical && criticalOnly) || !criticalOnly));
         }
 
-        private List<int> LoadAttributes(int id)
-        {
-            var permissions = Company.GetPermissions(SystemObjects.Intersect, id).ToList();
-            
+        private List<int> LoadAttributes(int intersectTypeID)
+        {                        
             var list = new List<int>();
-                        
-            if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Create, ClaimObject.Attribute))
+            
             {
-                {
-                    var detail = Company.GetObjectDetail(SystemObjects.Artifact, id);
-                    var sType = "Intersect";
-                    var _id = sType.EndsWith("Type") ? detail.ID : detail.TypeID;
+                Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
 
-                    var usedIDs = Company.Filter<d360.core.entities.Attribute>(i => i.ObjectType == sType && i.ObjectID == id).Select(i => i.AttributeTypeID).ToList();
-
-                    sType += "Type";
-                    list = (
-                            from t in Company.AttributeTypes
-                            join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID
-                            where r.ObjectType == sType
-                            where r.ObjectID == _id
-                            where (r.AllowMultipleEntries || !usedIDs.Contains(t.ID))
-                            select r.AttributeTypeID
-                            ).ToList();
-                }                              
+                list = (
+                        from t in Company.AttributeTypes
+                        join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID
+                        where r.ObjectType == "IntersectType" && r.ObjectID == intersectTypeID
+                        select r.AttributeTypeID).ToList();                
             }
-
+            
             return list;
         }
 
         [Route("{type}/{id:int}/relationshipsAndAttributes/{targetType}/{targetID:int}/{criticalOnly:bool=false?}"), HttpGet]
-        public List<RelationAttributeValue> GetRelationshipsAndAttributesForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, bool criticalOnly)
+        public List<RelationAttributeValue> GetRelationshipsAndAttributesForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, bool criticalOnly, int intersectTypeID)
         {
             //Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
             //get list of relationships
@@ -2117,7 +2104,7 @@ from	    ResponsibilityTypeHierarchy H
             var rels = Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && ((i.Classification == IntersectClassification.Critical && criticalOnly) || !criticalOnly));
 
             //get list of attributes
-            List<int> attributesList = LoadAttributes(id);
+            List<int> attributesList = LoadAttributes(intersectTypeID);
 
             //build a list of object ids so we dont make tons of queries
             var targetIDList = rels.Select(i => i.IntersectID).ToList();

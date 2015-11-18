@@ -296,7 +296,7 @@ from	flows F
             return PartialView(model);
         }
 
-        public ActionResult AggregateRelationOverlay(SystemObjects type, int id, SystemObjects targetType, int targetID, bool criticalOnly = false)
+        public ActionResult AggregateRelationOverlay(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly = false)
         {
             var source = Company.GetObjectDetail(type, id);
             var target = Company.GetObjectDetail(targetType, targetID);
@@ -313,6 +313,7 @@ from	flows F
             ViewData.Add("id", id);
             ViewData.Add("targetType", targetType);
             ViewData.Add("targetID", targetID);
+            ViewData.Add("intersectTypeID", intersectTypeID);
             return PartialView();
         }
 

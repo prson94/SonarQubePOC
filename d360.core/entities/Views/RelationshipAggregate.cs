@@ -30,5 +30,8 @@ namespace d360.core.entities
 
         [DataMember]
         public int Count { get; set; }
+
+        [DataMember]
+        public int IntersectTypeID { get; set; }
     }
 }

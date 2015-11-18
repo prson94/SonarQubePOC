@@ -5,6 +5,7 @@
     var targetType = (d360.core.SystemObjects)ViewData["targetType"];
     var targetID = (int)ViewData["targetID"];
     var criticalOnly = (bool)ViewData["criticalOnly"];
+    var intersectTypeID = (int)ViewData["intersectTypeID"];
 }
 <div class="large-overlay">
     <div class="ui segment">
@@ -73,6 +74,7 @@
     var aggregateRelationshipOverlayId = @id;
     var aggregateRelationshipOverlayTargetType = "@targetType.ToString()";
     var aggregateRelationshipOverlayTargetID = @targetID;
+    var aggregateRelationshipIntersectTypeID = @intersectTypeID;
     var aggregateRelationsModelType = function() {
         var self = this;
         self.IntersectID = -1;
@@ -231,14 +233,14 @@
     function getDisplayFields() {
         return JSON.parse($.ajax({
             type: "GET",
-            url: '/attributes/RelationshipAttributesFieldList?id=@id',
+            url: '/attributes/RelationshipAttributesFieldList?intersectTypeID=' + aggregateRelationshipIntersectTypeID,
             async: false
         }).responseText);
     }
 
     function getDynamicValues(){
         return JSON.parse($.ajax({ type:'GET',
-            url: '/api/' + aggregateRelationshipOverlayType + '/' + aggregateRelationshipOverlayId + '/relationshipsAndAttributes/' + aggregateRelationshipOverlayTargetType + '/' + aggregateRelationshipOverlayTargetID + '/' + aggregateRelationshipCriticalOnly + '?$orderby=TargetName',
+            url: '/api/' + aggregateRelationshipOverlayType + '/' + aggregateRelationshipOverlayId + '/relationshipsAndAttributes/' + aggregateRelationshipOverlayTargetType + '/' + aggregateRelationshipOverlayTargetID + '/' + aggregateRelationshipCriticalOnly + '?$orderby=TargetName&intersectTypeID=' + aggregateRelationshipIntersectTypeID,
             async: false
         }).responseText);
     }
@@ -279,8 +281,7 @@
             }
             return existing;
         }
-
-
+        
         //add dynamic fields
         var fields = getDisplayFields();
         // i no likey  syncy
@@ -291,8 +292,7 @@
             var val='';
             for(var i = 0 ; i < values.length;i++)
             {
-                if(values[i].TargetID==TargetID && values[i].AttributeTypeID==attributeID){
-                    console.log('target id:' + values[i].TargetID + ' rowId:' + TargetID + ' id:' + values[i].AttributeTypeID + ' fieldid:'+attributeID);
+                if(values[i].TargetID==TargetID && values[i].AttributeTypeID==attributeID){                    
                     if(val.length) val+=', ';
                     val +=values[i].Value
                 }

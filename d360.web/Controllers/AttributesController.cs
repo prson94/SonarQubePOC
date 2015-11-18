@@ -61,33 +61,23 @@ namespace d360.web.Controllers
         /// <summary>
         /// Gets the list of columns for the relationship overlay grid based on the input owner
         /// </summary>        
-        /// <param name="id">The object ID to get list of attributes for.</param>        
+        /// <param name="intersectTypeID">The object ID to get list of attributes for.</param>        
         /// <returns></returns>
-        public JsonResult RelationshipAttributesFieldList(int id)
-        {
-            var permissions = Company.GetPermissions(SystemObjects.Intersect, id).ToList();
+        public JsonResult RelationshipAttributesFieldList(int intersectTypeID)
+        {         
+            var permissions = Company.GetPermissions(SystemObjects.IntersectType, intersectTypeID).ToList();
             
             var list = new List<GridDynamicAttributeField>();
-
-            IQueryable<AttributeType> types = null;
-            if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Create, ClaimObject.Attribute))
+                        
+            if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Read, ClaimObject.Attribute))
             {                
                 {
-                    var detail = Company.GetObjectDetail(SystemObjects.Artifact, id);
-                    var sType = "Intersect";
-                    var _id = detail.TypeID;
-                                        
-                    sType += "Type";
-
-                //    Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
-
                     list = (
                             from t in Company.AttributeTypes
-                            join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID
-                            where r.ObjectType == sType
-                            where r.ObjectID == _id                            
+                            join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID                 
+                            where r.ObjectType == "IntersectType" && r.ObjectID == intersectTypeID                            
                             select new GridDynamicAttributeField { attributeID = r.AttributeTypeID, label = t.Name, allowMultiple = r.AllowMultipleEntries }
-                            ).OrderBy(i => i.label).ToList();
+                            ).OrderByDescending(i => i.label).ToList();
 
                     //determine if any of these attributes are complex
                     var attributeIDList = list.Select(i => i.attributeID).ToList();
@@ -102,7 +92,6 @@ namespace d360.web.Controllers
             }
 
             return Json(list, JsonRequestBehavior.AllowGet);
-
         }
 
         /// <summary>
@@ -116,6 +105,8 @@ namespace d360.web.Controllers
         /// <returns>A list of available actions as JSON.</returns>
         public JsonResult AttributeActions(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID)
         {
+            Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
+
             var permissions = Company.GetPermissions(owner, ownerID).ToList();
 
             var list = new List<ToolbarItem>();

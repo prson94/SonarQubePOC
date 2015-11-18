@@ -3447,8 +3447,8 @@ function RelationshipAggregatesTile(controlID, type, id, permissions) {
                                 ],
                                 click: function (e) {
                                     var clickBaseUri = '/Relations/AggregateRelationOverlay?criticalOnly=' + (critical ? 'true' : 'false') + '&';
-                                    var data = nodes[e.elementIndex];
-                                    var url = clickBaseUri + 'type=' + type + '&id=' + id + '&targetType=' + data.Type + '&targetID=' + data.TypeID;
+                                    var data = nodes[e.elementIndex];                                    
+                                    var url = clickBaseUri + 'type=' + type + '&id=' + id + '&targetType=' + data.Type + '&targetID=' + data.TypeID + '&intersectTypeID=' + data.IntersectTypeID;
                                     openTileOverlay(url);
                                 }
                             }
