@@ -2978,11 +2978,11 @@ from	    ResponsibilityTypeHierarchy H
                     break;
                     #endregion
                 case SystemObjects.Intersect:
-                    #region Fields
+                    #region Fields                    
                     var intersect = Company.GetById<Intersect>(id, i => i.IntersectTypeRole);
                     if (intersect != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = intersect.GetName(i => i.Classification), FieldName = "IntersectClassification", FieldDescription = intersect.GetDescription(i => i.Classification), Value = intersect.Classification.HasValue ? intersect.Classification.ToString() : IntersectClassification.Normal.ToString() });
+                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = intersect.GetName(i => i.Classification), FieldName = "IntersectClassification", FieldDescription = intersect.GetDescription(i => i.Classification), Value = (Enum.IsDefined(typeof(IntersectClassification), intersect.Classification.GetValueOrDefault(IntersectClassification.Normal)) ? intersect.Classification.GetValueOrDefault(IntersectClassification.Normal).ToString() : IntersectClassification.Normal.ToString()) });
                         if (intersect.IntersectTypeRoleID.HasValue)
                             list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = Resources.FieldInfo.Role_Name, FieldName = "IntersectRole", FieldDescription = "", Value = intersect.IntersectTypeRole.Name });
 
