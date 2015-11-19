@@ -324,9 +324,37 @@
             }
         });
 
+        $('#AggregateRelationsOverlayGrid').on('mouseenter', '[data-gridtip]', function (event) {          
+            var tipText=$(event.currentTarget).attr('data-gridtip');                         
+            $(this).qtip({ // Grab all elements with a non-blank data-tooltip attr.                
+                content: {
+                    text: tipText
+                },
+                position: {
+                    at: 'left center',
+                    my: 'right center',
+                    viewport: $(window), // Keep the tooltip on-screen at all times
+                    effect: false // Disable positioning animation
+                },
+                overwrite: false,
+                show: {
+                    event: event.type,  // show using same event as above.
+                    solo: false,         // Only show one tooltip at a time
+                    ready: true
+                },
+                hide: {
+                    fixed: true,
+                    delay: 1000,
+                },                
+                style: {
+                    classes: 'qtip-blue qtip-rounded'
+                }
+            });
+        });
+
 
         try {
-            var mainGridHeight = 500;
+            var mainGridHeight = 500;            
             $('#AggregateRelationsOverlayGrid').jqxGrid({
                 altrows: true,
                 width: grid_width,
@@ -339,8 +367,8 @@
                 pageable: false,
                 scrollmode: 'deferred',
                 deferreddatafields: ['TargetName'],
-                source: aggregateRelationshipOverlayAdapter,
-                theme: theme,
+                source: aggregateRelationshipOverlayAdapter,                
+                theme: theme,                
                 columns: [
                     {
                         text: '',
@@ -359,7 +387,7 @@
                         width: '350px',
                         pinned: true,
                         cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (data.HasTechnicalRelationships ? "<b>" + data.TargetName + "</b>" : data.TargetName) + "</div>";
+                            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;' " + (data.Description != null ? "data-gridtip='" + data.Description + "'" : "") +" >" + data.TargetName + "</div>";
                         }
                     },                    
                     {
@@ -382,24 +410,19 @@
                         text: "Role",
                         width: '125px',
                         filtertype: 'checkedlist'
-                    },
-                    {
-                        datafield: "Description",
-                        text: "Description",
-                        width: '250px',
-                        cellsrenderer: attributeColumnCellRenderer
-                    }                    
+                    }       
                 ]
             });
 
             $("#AggregateRelationsOverlayGrid").jqxGrid({ columns: addColumns(gridColumns) });
 
+            
+
         } catch (e) {
         }
 
         //#endregion
-
-
+    
         //#region Technical Relations Grid
 
         technicalRelationsSource = {
