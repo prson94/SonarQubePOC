@@ -18,7 +18,7 @@
                 </div>                
             </div>
             <div class="row">
-                <div class="col l12 m12 s12" style="padding-top:10px"><h5 style="font-style:italic;">** A <b>bold</b> name indicate the item has technical relationships</h5></div>
+                <div class="col l12 m12 s12" style="padding-top:10px">&nbsp;</div>
             </div>
         </div>
         <div class="container-fluid" id="lineage" style="display:none;">
@@ -250,6 +250,7 @@
                 { name: 'TargetName' },
                 { name: 'TargetObjectID' },
                 { name: 'TargetParentName' },
+                { name: 'TargetParentID' },
                 { name: 'TargetObjectType' },
                 { name: 'TargetTypeID' },
                 { name: 'TargetType' },
@@ -286,8 +287,8 @@
             return val;
         }
 
-        var relationIconRowRender = function (type, id, uri) {
-            return "<div class='RowMultiTools'><i class='lineage fa fa-@Resources.Actions.Lineage_Icon' title='Lineage'></i> <i class='fusion fa fa-@Resources.Actions.Fusion_Icon' title='Fusion'></i> <i class='attribute fa fa-@Resources.Actions.Attributes_Icon' title='Attributes'></i>" + previewIconLink(type, id, uri) + " </div>";
+        var relationIconRowRender = function (type, id, uri, data) {
+            return "<div class='RowMultiTools'>" + (data.HasLineage ? "<i class='lineage fa fa-@Resources.Actions.Lineage_Icon' title='Lineage'></i> " : "") + (data.HasTechnicalRelationships ? "<i class='fusion fa fa-@Resources.Actions.Fusion_Icon' title='Fusion'></i> " :"") + (data.HasAttributes ? "<i class='attribute fa fa-@Resources.Actions.Attributes_Icon' title='Attributes'></i>" : "") + previewIconLink(type, id, uri) + " </div>";
         }
 
         var complexAttributeColumnRenderer = function(index, datafield, value, defaultvalue, column, data) {
@@ -314,10 +315,15 @@
                 var data = new Array();
                 for (var i = 0; i < records.length; i++) {
                     var row = records[i];
+                    var bHasAttributes=false;
                     for(var j = 0 ; j < fields.length;j++){
-                        row[fields[j].attributeID]=findDynamicValue(fields[j].attributeID,row.IntersectID);
+                        var val=findDynamicValue(fields[j].attributeID,row.IntersectID);
+                        bHasAttributes=(bHasAttributes || (val!=null&&val.length>0));
+                        row[fields[j].attributeID]=val
                     }
                     row.Classification = row.Classification == @((int)d360.core.enums.IntersectClassification.Normal) ? "Normal" : "Critical";
+                    row.HasAttributes = bHasAttributes;
+                    row.HasLineage = true;
                     data.push(row);
                 }
                 return data;
@@ -351,8 +357,7 @@
                 }
             });
         });
-
-
+    
         try {
             var mainGridHeight = 500;            
             $('#AggregateRelationsOverlayGrid').jqxGrid({
@@ -378,7 +383,7 @@
                         filterable: false,
                         pinned: true,
                         cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return relationIconRowRender(data.TargetObjectType, data.TargetObjectID, data.TargetUrl);
+                            return relationIconRowRender(data.TargetObjectType, data.TargetObjectID, data.TargetUrl,data);
                         }
                     },
                     {
