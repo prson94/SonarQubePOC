@@ -66,6 +66,40 @@ begin
 							cross apply M.m.nodes('*') P(p)
 			end
 
+			if @data is not null
+			begin
+				insert into [fusion].[StagingRelation]
+					select	@executionID,
+						R.StartID,
+						R.EndID,
+						S.ID,
+						E.ID,
+						S.FusionAttributeTypeID,
+						E.FusionAttributeTypeID,
+						RT.SourceIntersectTypeNodeID,
+						RT.TargetIntersectTypeNodeID,
+						RT.IntersectTypeID,
+						V.IntersectID
+				from	(
+						select	replace(R.r.value('@s', 'nvarchar(250)'), ' ', '') as StartID,
+								replace(R.r.value('@e', 'nvarchar(250)'), ' ', '') as EndID
+						from	@data.nodes('/import') as I(i)
+								cross apply I.i.nodes('rs/r') R(r)
+						) R
+						inner join FusionAttribute S on S.FusionID = @fusionID and S.SourceID = R.StartID
+						inner join FusionAttribute E on E.FusionID = @fusionID and E.SourceID = R.EndID
+						cross apply (
+									select	IntersectTypeID,
+											SourceIntersectTypeNodeID,
+											TargetIntersectTypeNodeID
+									from	utility.RelationshipTypes
+									where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = S.FusionAttributeTypeID 
+											and TargetObjectType = 'FusionAttributeType' and TargetObjectID = E.FusionAttributeTypeID
+									) RT
+						left join cache.Relationships V on V.SourceObject = @objectType and V.TargetObject = @objectType and V.SourceObjectID = S.ID and V.TargetObjectID = E.ID
+				where	V.IntersectID is null	--only get non-existent relationships
+			end
+			
 			set @data = null
 
 			insert into fusion.StepStatistic values (@executionID, 1, DATEDIFF(ss, @start, getutcdate()))
@@ -302,37 +336,7 @@ begin
 	begin
 		declare @Intersects IDTable
 		
-		begin try		
-			insert into [fusion].[StagingRelation]
-				select	@executionID,
-						R.StartID,
-						R.EndID,
-						S.ID,
-						E.ID,
-						S.FusionAttributeTypeID,
-						E.FusionAttributeTypeID,
-						RT.SourceIntersectTypeNodeID,
-						RT.TargetIntersectTypeNodeID,
-						RT.IntersectTypeID,
-						V.IntersectID
-				from	(
-						select	replace(R.r.value('@s', 'nvarchar(250)'), ' ', '') as StartID,
-								replace(R.r.value('@e', 'nvarchar(250)'), ' ', '') as EndID
-						from	@data.nodes('/import') as I(i)
-								cross apply I.i.nodes('rs/r') R(r)
-						) R
-						inner join FusionAttribute S on S.FusionID = @fusionID and S.SourceID = R.StartID
-						inner join FusionAttribute E on E.FusionID = @fusionID and E.SourceID = R.EndID
-						cross apply (
-									select	IntersectTypeID,
-											SourceIntersectTypeNodeID,
-											TargetIntersectTypeNodeID
-									from	utility.RelationshipTypes
-									where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = S.FusionAttributeTypeID 
-											and TargetObjectType = 'FusionAttributeType' and TargetObjectID = E.FusionAttributeTypeID
-									) RT
-						left join cache.Relationships V on V.SourceObject = @objectType and V.TargetObject = @objectType and V.SourceObjectID = S.ID and V.TargetObjectID = E.ID
-				where	V.IntersectID is null	--only get non-existent relationships
+		begin try					
 
 			select @current = MIN(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID
 			select @max = MAX(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID
