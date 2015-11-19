@@ -48,12 +48,14 @@ namespace d360.web.Controllers.Services
                     && dtl.DateCreated.Subtract(DateTime.UtcNow).Duration() < TimeSpan.FromMinutes(5))
                 {
                     comment.Comment.DateEdited = DateTime.UtcNow;
-                    dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
                 }
-                else 
+                if (dtl.IsDeleted != comment.Comment.IsDeleted && !dtl.IsDeletable.Value)
                 {
-                    dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
+                    comment.Comment.IsDeleted = false;   
                 }
+
+                dtl = Company.EditComment(comment.Comment, relations).FirstOrDefault(i => i.ID == comment.Comment.ID);
+                
 
                 if (!string.IsNullOrEmpty(dtl.TagsXml))
                 {

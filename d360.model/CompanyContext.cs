@@ -1823,9 +1823,10 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
 
 
             Comment c = GetById<Comment>(comment.ID);
-
-            if ((c.Body != comment.Body || removeRelations.Count() + 1 != relations.Count()) && !Comments.Any(x => x.ParentID == c.ID))
+            var hasReplies = Comments.Any(x => x.ParentID == c.ID);
+            if (((c.Body != comment.Body || removeRelations.Count() + 1 != relations.Count()) && !hasReplies) || (c.IsDeleted != comment.IsDeleted && (!hasReplies || CurrentResourceIsAdmin)))
             {
+                c.IsDeleted = comment.IsDeleted;
                 c.Body = comment.Body;
                 c.DateEdited = comment.DateEdited;
                 SaveChanges();
@@ -1887,9 +1888,13 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                         VotesXml = c.VotesXml,
                         CreatorIsOwner = c.CreatorIsOwner,
                         DateEdited = c.DateEdited,
+                        IsDeleted = c.IsDeleted,
                         IsEditable = (CurrentResourceID == c.CreatingResourceID
                             && (!Comments.Any(re => re.ParentID == c.ID))
-                            && DateTime.UtcNow.Subtract(c.DateCreated).Duration() < TimeSpan.FromMinutes(5))
+                            && DateTime.UtcNow.Subtract(c.DateCreated).Duration() < TimeSpan.FromMinutes(5)),
+                        IsDeletable = (CurrentResourceIsAdmin || (CurrentResourceID == c.CreatingResourceID
+                            && (!Comments.Any(re => re.ParentID == c.ID))
+                            && DateTime.UtcNow.Subtract(c.DateCreated).Duration() < TimeSpan.FromMinutes(5)))
                     }
                    );          
             
@@ -1931,6 +1936,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                 cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
                         && !Comments.Any(c => c.ParentID == cd.ID)
                         && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
+                cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
 
             }
 
@@ -2007,6 +2013,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                 cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
                         && !Comments.Any(c => c.ParentID == cd.ID)
                         && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
+                cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
 
             }
 

@@ -54,10 +54,11 @@
             }
 
             function saveAction(data) {
-               // alert(ko.toJSON(data));
+                // alert(ko.toJSON(data));
                 try {
                     switch (data.context) {
                         case contextList.Comment:
+                        case 'commentform':
                             ObjectStatisticsTile('MicroWidget1', type, id);
                             break;
                         case contextList.Intersect:

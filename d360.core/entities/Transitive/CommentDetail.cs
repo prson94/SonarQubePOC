@@ -84,6 +84,9 @@ namespace d360.core.entities
         public bool? IsEditable { get; set; }
 
         [DataMember, NotMapped]
+        public bool? IsDeletable { get; set; }
+
+        [DataMember, NotMapped]
         public bool CreatorIsOwner { get; set; }
 
         [DataMember]
