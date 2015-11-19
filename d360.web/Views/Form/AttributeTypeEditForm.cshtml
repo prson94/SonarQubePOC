@@ -156,9 +156,9 @@
 
         //#endregion
 
-        //#region Set Values
-        $("#Name").val("@(Model.AttributeType.Name)");
-        $("#TextFormatString").val("@(Model.AttributeType.TextFormatString)");
+        //#region Set Values HttpUtility.JavaScriptStringEncode
+        $("#Name").val("@(Html.Raw(HttpUtility.JavaScriptStringEncode(Model.AttributeType.Name)))");
+        $("#TextFormatString").val("@(Html.Raw(HttpUtility.JavaScriptStringEncode(Model.AttributeType.TextFormatString)))");
         //#endregion
 
         $("html, body").animate({ scrollTop: 0 }, "slow");

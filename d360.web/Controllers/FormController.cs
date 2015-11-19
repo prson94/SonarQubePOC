@@ -687,7 +687,7 @@ namespace d360.web.Controllers
                 // Static fields
                 model.ArtifactTypeID = typeID;
                 model.TaxonomyTypeID = taxonomyTypeID;
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.Status = (workflowEnabled) ? "Draft" : form["Status"];
 
@@ -1025,7 +1025,7 @@ namespace d360.web.Controllers
 
                 var a = new ArtifactType
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     CanOwnFusion = parseBooleanField(form, "CanOwnFusion"),
                     AllowRelatedArtifacts = parseBooleanField(form, "AllowRelatedArtifacts")
@@ -1154,7 +1154,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 //model.AllowHierarchy = parseBooleanField(form, "AllowHierarchy");
                 model.AllowRelatedArtifacts = parseBooleanField(form, "AllowRelatedArtifacts");
@@ -1465,7 +1465,7 @@ namespace d360.web.Controllers
 
                 var a = new AttributeType
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     TextFormatString = parseTextField(form, "TextFormatString")
                 };
@@ -1592,7 +1592,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.AttributeType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.TextFormatString = parseTextField(form, "TextFormatString");
 
@@ -7144,7 +7144,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 var a = new LookupType
                 {
-                    Name = parseTextField(form, "Name", null, true)
+                    Name = parseTextField(form, "Name")
                 };
 
                 Company.Add<LookupType>(a);
@@ -7255,7 +7255,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
 
                 Company.Update<LookupType>(model);
 
@@ -7589,7 +7589,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 var a = new PolicyType
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     MaximumDepth = parseIntField(form, "MaximumDepth"),
                     PolicyTypeClassID = parseIntField(form, "Class")
@@ -7701,7 +7701,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.PolicyTypeClassID = parseIntField(form, "Class");
@@ -7917,7 +7917,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (!Company.HasPermission(SystemObjects.PolicyTypeClass, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
 
                 Company.Update<PolicyTypeClass>(model);
 
@@ -13480,7 +13480,7 @@ order by TextPath
 
                 var a = new TaxonomyType
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     TaxonomyTypeClassID = parseIntField(form, "Class"),
                     MaximumDepth = parseIntField(form, "MaximumDepth")
@@ -13594,7 +13594,7 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.TaxonomyTypeClassID = parseIntField(form, "Class");

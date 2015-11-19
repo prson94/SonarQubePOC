@@ -228,9 +228,10 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
                 html = "<ul>";
 
                 $.each(data, function (idx, t) {
+                    console.log(t);
                     html += "<li data-uri='" + t.Uri + "'><i class='fa fa-" + t.Icon + "'";
                     if (t.Title != "" && t.Title) {
-                        html += " title='" + t.Title + "'></i>" + t.Title
+                        html += " title='" + encodeURI(t.Title) + "'></i>" + t.Title
                     }
                     else {
                         html += "></i>";
