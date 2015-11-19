@@ -356,7 +356,7 @@
                     {
                         datafield: "TargetName",
                         text: "Name",
-                        width: '30%',
+                        width: '350px',
                         pinned: true,
                         cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (data.HasTechnicalRelationships ? "<b>" + data.TargetName + "</b>" : data.TargetName) + "</div>";
@@ -366,9 +366,16 @@
                         datafield: "TargetParentName",
                         text: "Parent",
                         filtertype: 'checkedlist',
+                        width: '200px',
                         cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return "<div class='d3s-cell'>" + data.TargetParentName + "</div>";
                         }
+                    },
+                    {
+                        datafield: "Classification",
+                        text: "Classification",
+                        width: '100px',
+                        filtertype: 'checkedlist'
                     },
                     {
                         datafield: "Role",
@@ -381,14 +388,7 @@
                         text: "Description",
                         width: '250px',
                         cellsrenderer: attributeColumnCellRenderer
-                    },
-                    {
-                        datafield: "Classification",
-                        text: "Classification",
-                        width: '100px',
-                        filtertype: 'checkedlist'
-                    }
-
+                    }                    
                 ]
             });
 
