@@ -1066,19 +1066,6 @@ order by	ColumnIndex", new { id });
 
         public bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID)
         {
-            //if (!resourceID.HasValue)
-            //{
-            //    resourceID = CurrentResourceID;
-            //}
-            //string sType = type.ToString();
-
-            //var children = FollowChildren.Where(i => i.ObjectID == objectID && i.ObjectType == sType);
-
-            //if (!children.Any())
-            //    return false;
-
-            //var following = Follows.Where(i => children.Any(c => c.ParentObjectType == i.ObjectType && c.ParentObjectID == i.ObjectID) && i.ResourceID == resourceID && i.FollowTypeID == FollowType.Parent);
-
             return (GetFollowingParent(type,objectID,resourceID) != null);
         }
 
@@ -1132,34 +1119,32 @@ order by	ColumnIndex", new { id });
                 }
                 else
                 {
-                    f = new Follow { ObjectID = objectID, ObjectType = type.ToString(), ResourceID = resourceID.Value, DateCreated = DateTime.UtcNow };
+                    FollowType followType;
                     switch (type)
                     {
+                        case SystemObjects.ArtifactType:
+                        case SystemObjects.ResourceType:
+                            followType = FollowType.Parent;
+                            break;
                         case SystemObjects.Artifact:
                         case SystemObjects.Taxonomy:
-                            f.FollowTypeID = FollowType.Artifact;
-                            break;
-                        case SystemObjects.ArtifactType:
-                            f.FollowTypeID = FollowType.ArtifactType;
-                            break;
+                        case SystemObjects.Group:
+                        case SystemObjects.Resource:
                         default:
-                            f.FollowTypeID = FollowType.Artifact;
+                            followType = FollowType.Single;
                             break;
                     }
 
-                    if (includeChildren)
-                    {
-                        f.FollowTypeID = FollowType.Parent;
-                    }
+                    if (includeChildren || objectID == 0)
+                        followType = FollowType.Parent;
 
-                    Follows.Add(f);
-                    SaveChanges();
+                    var pObjectID = new SqlParameter("id", objectID);
+                    var pType = new SqlParameter("type", sType);
+                    var pResourceID = new SqlParameter("resourceID", resourceID);
+                    var pFollowTypeID = new SqlParameter("followTypeID", followType);
+                    var pIncludeChildren = new SqlParameter("includeChildren", includeChildren);
 
-                    if (includeChildren)
-                    {
-                        var pFollowId = new SqlParameter("followId", f.ID);
-                        Database.ExecuteSqlCommand("SetChildrenByFollowID @followId", pFollowId);
-                    }
+                    Database.ExecuteSqlCommand("FollowObject @id, @type, @resourceID, @followTypeID, @includeChildren", pObjectID, pType, pResourceID, pFollowTypeID, pIncludeChildren);
 
                     value = true;
                 }

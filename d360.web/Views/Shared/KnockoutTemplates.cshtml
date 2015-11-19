@@ -583,7 +583,7 @@
                     <!--<i class="fa fa-2x fa-tags" style="color: #5B401F; position: absolute; top: 5px; left: 5px"></i>-->
                     <div style="white-space: nowrap;">
                         <div style="display:inline-block; position: relative; width:100%;">
-                            <input data-bind="textInput: newTag" placeholder="Add a tag" style="border: none; border: 1px solid #adacac; width:100%; line-height:1.5; padding:2px;" />
+                            <input data-bind="value: newTag, valueUpdate: 'afterkeydown', event : { keyup: setIndex }" placeholder="Add a tag" style="border: none; border: 1px solid #adacac; width:100%; line-height:1.5; padding:2px;" />
                             <i class="fa fa-tags" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
                             <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px">
                                 <div style="padding:4px; border-top:solid 1px #dedede; font-size:12px; ">
@@ -650,7 +650,7 @@
     </div>
 </script>
 <script id="commentTagSuggestionTmpl" type="text/html">
-    <div data-bind="click: addTag, css: { 'entry-alt': $index()%2 }">
+    <div data-bind="click: addTag, style: {'backgroundColor': (IsSelected() ? '#EFC43D': ($index()%2 == 0 ? '#f9f9f9' : 'white'))}">
         <div data-bind="text: TextPath" style="font-weight: 600"></div>
         <div data-bind="text: ObjectTypeName" style="font-size: 75%"></div>
     </div>
@@ -697,12 +697,9 @@
                             <span style="cursor:pointer" data-bind="click: CastDownVote"><i class="fa fa-thumbs-o-down"></i></span> <span data-bind="text: DownVoteCount"></span>
                         </span>
                         <span style="margin-left:10px">
-                            <!--style: {display: (ReplyHidden() ? 'none' : 'inline-block' }-->
-
                             <button class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" style="height:auto;padding:1px 5px;line-height:1.4;text-transform:none;font-size:90%" data-bind="click: function() { showReply(); hideTags(); hideEdit(); DeleteHidden(true);}, visible: (ReplyHidden() && ShowReplyControl())"><i style="font-size:80%;" class="fa fa-reply"></i> Reply</button>
                             <button class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" style="height:auto;padding:1px 5px;line-height:1.4;text-transform:none;font-size:90%" data-bind="click: function() { showEdit(); hideReply(); DeleteHidden(true);}, visible: (EditHidden() && IsEditable() && ShowAddCommentControls())"><i style="font-size:80%;" class="fa fa-edit"></i> Edit</button>
                             <button class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" style="height:auto;padding:1px 5px;line-height:1.4;text-transform:none;font-size:90%" data-bind="click: function() { DeleteHidden(false); hideEdit(); hideReply(); }, visible: (DeleteHidden() && IsDeletable() && ShowAddCommentControls())"><i style="font-size:80%;" class="fa fa-remove"></i> Delete</button>
-
                         </span>
                         <span style="float:right;">
                             <button data-bind="style: {display: tagsAreHidden() ? 'inline-block' : 'none' }, click: displayTags" class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" style="height:auto;padding:1px 5px;line-height:1.4;text-transform:none;font-size:90%">
@@ -747,7 +744,7 @@
                         <tr>
                             <td colspan="2" style="text-align:left;">
                                 <div style="white-space:nowrap;display:inline-block;width:100%">
-                                    <input data-bind="textInput: newTag" placeholder="Add another tag" style="border: none; border: 1px solid #adacac; line-height:1.5; padding:2px;margin:5px 0; width:100%;" />
+                                    <input data-bind="value: newTag, valueUpdate: 'afterkeydown', event : { keyup: setIndex }" placeholder="Add another tag" style="border: none; border: 1px solid #adacac; line-height:1.5; padding:2px;margin:5px 0; width:100%;" />
                                     <i class="fa fa-tags" style="position:relative; z-index:1; left: -25px; top: 0; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
                                 </div>
                                 <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px;">
@@ -792,7 +789,7 @@
                         <tr>
                             <td colspan="2" style="text-align:left;">
                                 <div style="white-space:nowrap;display:inline-block;width:100%">
-                                    <input data-bind="textInput: newTag" placeholder="Add another tag" style="border: none; border: 1px solid #adacac; line-height:1.5; padding:2px;margin:5px 0; width:100%;" />
+                                    <input data-bind="value: newTag, valueUpdate: 'afterkeydown', event : { keyup: setIndex }" placeholder="Add another tag" style="border: none; border: 1px solid #adacac; line-height:1.5; padding:2px;margin:5px 0; width:100%;" />
                                     <i class="fa fa-tags" style="position:relative; z-index:1; left: -25px; top: 0; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
                                 </div>
                                 <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px;">

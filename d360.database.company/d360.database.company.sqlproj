@@ -432,6 +432,7 @@
     <Build Include="Security\tile.sql" />
     <Build Include="Security\utility.sql" />
     <Build Include="Security\validate.sql" />
+    <Build Include="dbo\Stored Procedures\FollowObject.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

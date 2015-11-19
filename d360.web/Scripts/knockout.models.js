@@ -474,6 +474,65 @@ function CommentItem(data, parent) {//, hub) {
         return (self.ProcessingCount() != 0);
     });
 
+    self.tagIndex = -1;
+
+    self.setIndex = function (data, event) {
+        //38, 40, 37, 39, 13
+        //console.log(event);
+
+
+        if (event.keyCode == 13) { //enter key
+            if (self.tagSuggestions().length == 1) {
+                var t = self.tagSuggestions()[0];
+                t.addTag();
+                //self.tags.push(t);
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+                var t = self.tagSuggestions()[self.tagIndex];
+                t.addTag();
+                //self.tags.push(t);
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+        }
+        else if (event.keyCode == 40 || event.keyCode == 38) { //up & down arrows
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+
+                self.tagSuggestions()[self.tagIndex].IsSelected(false);
+
+                if (event.keyCode == 38 && self.tagIndex > 0) {
+                    self.tagIndex--;
+                }
+                else if (event.keyCode == 40 && self.tagIndex < self.tagSuggestions().length) {
+                    self.tagIndex++;
+                }
+
+            } else {
+                self.tagIndex = 0;
+            }
+
+            if (self.tagIndex != -1) {
+                self.tagSuggestions()[self.tagIndex].IsSelected(true);
+            }
+            return false;
+        }
+        else {
+            self.tagIndex = -1;
+            return true;
+        }
+    };
+
+
     self.ShowObjectType = ko.computed(function () {
         //var result = (self.ObjectType() == "Resource" && self.ObjectID() == self.CreatingResourceID());
         //alert(self.ObjectType() + ", " + self.CreatingResourceID() + ", " + result);
@@ -928,7 +987,7 @@ function CommentTagSuggestionItem(data, parent) {
     self.ShowRemove = ko.observable(true);
     self.IconForeColor = ko.observable(data.IconForeColor);
     self.IconBackColor = ko.observable(data.IconBackColor);
-
+    self.IsSelected = ko.observable(false);
     self.removeTag = function () {
         parent.tags.remove(self);
     }
@@ -3120,6 +3179,63 @@ var BoardViewModel = function () {
         return (self.ProcessingCount() != 0);
     });
 
+    self.tagIndex = -1;
+
+    self.setIndex = function (data, event) {
+        //38, 40, 37, 39, 13
+        //console.log(event);
+        
+
+        if (event.keyCode == 13) { //enter key
+            if (self.tagSuggestions().length == 1) {
+                var t = self.tagSuggestions()[0];
+                t.addTag();                
+                //self.tags.push(t);
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+                var t = self.tagSuggestions()[self.tagIndex];
+                t.addTag();
+                //self.tags.push(t);
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+        }
+        else if (event.keyCode == 40 || event.keyCode == 38) { //up & down arrows
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+                
+                self.tagSuggestions()[self.tagIndex].IsSelected(false);
+
+                if (event.keyCode == 38 && self.tagIndex > 0) {
+                    self.tagIndex--;
+                }
+                else if (event.keyCode == 40 && self.tagIndex < self.tagSuggestions().length) {
+                    self.tagIndex++;
+                }
+                
+            } else {
+                self.tagIndex = 0;
+            }
+
+            if (self.tagIndex != -1) {
+                self.tagSuggestions()[self.tagIndex].IsSelected(true);
+            }
+            return false;
+        }
+        else {
+            self.tagIndex = -1;
+            return true;
+        }
+    };
 
     self.AppliedSearch = ko.computed(self.searchFilter).extend({ throttle: 400 });
 

@@ -79,8 +79,10 @@
             .then(function (content) {
                 context.contentHeader(pageViewModel);
 
-                $('#SideIcons').PageTools({ type: null, id: null });
-                $('#SideIcons').PageTools('clear');
+                //$('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
+
+                $('#SideIcons').PageTools({ type: 'Group', id: 0, context: 'list' });
+                //$('#SideIcons').PageTools('clear');
 
                 //#region Group Grid
 
@@ -120,7 +122,6 @@
                             text: "",
                             width: 40,
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-
                                 var tools;
                                 if (data.IsMember) {
                                     tools = [
@@ -152,7 +153,7 @@
                     url: '/api/resources/1',
                     datafields:
                     [
-                        { name: 'ID', type: 'number' },
+                        { name: 'ResourceID', type: 'number' },
                         { name: 'FirstName', type: 'string' },
                         { name: 'LastName', type: 'string' }
                     ]
@@ -179,7 +180,7 @@
                         { datafield: "LastName", text: "Last Name" },
                         { datafield: "FirstName", text: "First Name" },
                         {
-                            datafield: "ID",
+                            datafield: "ResourceID",
                             text: "",
                             width: 40,
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {

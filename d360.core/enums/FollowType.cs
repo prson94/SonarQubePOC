@@ -8,10 +8,10 @@ namespace d360.core.enums
 {
     public enum FollowType
     {
-        Artifact = 1,
-        ArtifactType = 2,
+        Single = 1,
+        //Type = 2,
         Parent = 3,
-        Query = 4,
+        //Query = 4,
         Child = 5
     }
 }
