@@ -329,9 +329,8 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
         ready: function () {
             try {
                 var rows = $(treeControlID).jqxTreeGrid('getRows');
-                if (rows.length > 0) {
-                    var firstRow = $(treeControlID).jqxTreeGrid('getRows')[0];
-                    $(treeControlID).jqxTreeGrid('selectRow', firstRow.uid);
+                if (rows.length > 0) {                    
+                    $(treeControlID).jqxTreeGrid('selectRow', (rows[0].Items[0] != null ? rows[0].Items[0].uid : rows[0].uid));
                 }
             } catch (e) {
                 console.log(e);
