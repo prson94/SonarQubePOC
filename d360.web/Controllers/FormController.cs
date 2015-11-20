@@ -3555,6 +3555,11 @@ namespace d360.web.Controllers
                 model.Object = type.ToString();
                 model.ObjectID = id;
                 model.Name = parseTextField(form, "Name", null, true);
+
+                //dont let fields with reserved names in
+                CheckIsFieldTypeNameReserved(model.Name);
+                
+
                 model.FriendlyName = string.IsNullOrEmpty(form["FriendlyName"]) ? form["Name"] : form["FriendlyName"];
                 model.DisplayDescription = parseTextField(form, "DisplayDescription", "");
                 model.FormDescription = parseTextField(form, "FormDescription", "");
@@ -3613,6 +3618,12 @@ namespace d360.web.Controllers
             }
         }
 
+        private void CheckIsFieldTypeNameReserved(string name)
+        {
+            var nameUpper = name.ToUpper();
+
+            if (nameUpper == "STATUS" || nameUpper == "NAME" || nameUpper == "DESCRIPTION" || nameUpper == "PARENTID" || nameUpper == "DATELASTCERTIFIED" || nameUpper == "TAXONOMYTYPEID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");            
+        }
 
         public ActionResult DeleteFieldType(int id)
         {
@@ -3703,6 +3714,10 @@ namespace d360.web.Controllers
 
                 // Static fields
                 model.Name = parseTextField(form, "Name", null, true);
+
+                //dont let fields with reserved names in
+                CheckIsFieldTypeNameReserved(model.Name);
+
                 model.FriendlyName = string.IsNullOrEmpty(form["FriendlyName"]) ? form["Name"] : form["FriendlyName"];
                 model.DisplayDescription = parseTextField(form, "DisplayDescription", "");
                 model.FormDescription = parseTextField(form, "FormDescription", "");
