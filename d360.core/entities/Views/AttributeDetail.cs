@@ -25,5 +25,8 @@ namespace d360.core.entities
 
         [DataMember]
         public string AttributeTypeCategory { get; set; }
+
+        [DataMember]
+        public bool ShowNameInTree { get; set; }
     }
 }

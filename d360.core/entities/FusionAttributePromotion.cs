@@ -17,5 +17,8 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
 
         public int FusionAttributePromotionRuleID { get; set; }
+
+        [IgnoreDataMember, ForeignKey("FusionAttributePromotionRuleID")]
+        public virtual FusionAttributePromotionRule FusionAttributePromotionRule { get; set; }
     }
 }

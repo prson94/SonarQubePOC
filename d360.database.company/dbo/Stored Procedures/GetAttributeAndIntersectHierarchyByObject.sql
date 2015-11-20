@@ -20,7 +20,8 @@ begin
 			A.ID as TargetObjectID,
 			T.IsTechnical,
 			A.FormattedValue as Name,
-			A.AttributeTypeCategory
+			A.AttributeTypeCategory,
+			A.ShowNameInTree
 	from	AttributeDetail A
 			INNER JOIN	(
 						SELECT	@type + '|' +cast(@id as varchar(25)) as ID,

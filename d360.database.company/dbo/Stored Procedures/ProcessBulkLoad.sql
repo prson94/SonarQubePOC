@@ -1,7 +1,7 @@
 ﻿CREATE procedure [dbo].[ProcessBulkLoad]
 --declare
 	@LoadID int
---set @LoadID = 29
+--set @LoadID = 4
 as
 begin
 	set nocount on;
@@ -333,7 +333,7 @@ begin
 											) P
 						where	LI.LoadID = @LoadID
 						) S
-				on		(T.TaxonomyTypeID = S.TaxonomyTypeID and T.ParentID = S.ParentID and T.Name = S.Name)
+				on		(T.TaxonomyTypeID = S.TaxonomyTypeID and ((T.ParentID = S.ParentID and S.ParentID is not null) OR (T.ParentID is null and S.ParentID is null)) and T.Name = S.Name)
 				when	matched then
 						update	set T.[Description] = S.[Description]
 				when	not matched then
@@ -415,44 +415,9 @@ begin
 				insert (ObjectType, ObjectID, FieldTypeID, Value)
 				values (S.[Object], S.ObjectID, S.FieldTypeID, S.Value);
 	end
-
-	if @Action = 'R'	--RELATION
+	else
 	begin
-		declare @Intersects IDTable
-
-		-- PARSE both sides.
-		update	T
-		set		T.LookupObject = S.LookupObject,
-				T.LookupObjectID = S.LookupObjectID
-		from	LoadItemColumn T
-				inner join	(
-							select	IC.LoadID,
-									IC.RowIndex,
-									IC.ColumnIndex,
-									T.[Object] as LookupObject,
-									T.ObjectID as LookupObjectID
-							from	[Load] L
-									inner join [LoadColumn] C on C.LoadID = L.ID and L.ID = @LoadID
-									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-									inner join IntersectTypeNode IT on IT.IntersectTypeID = @ObjectID and IT.[Order] = IC.[ColumnIndex]
-									inner join cache.ObjectDetails T on T.[TextPath] = IC.Value and T.[ObjectType] = IT.[ObjectType] and T.ObjectTypeID = IT.ObjectID
-							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-		update	T
-		set		T.[Status] = 0,
-				T.StatusMessage =	REPLACE(REPLACE(
-										STUFF(
-										(
-										select	LIC.Value + ' could not be located in the <a href="' + T.Url + '">' + T.Name + '</a> list, '
-										from	[Load] L
-												inner join [IntersectTypeNode] ITN on ITN.IntersectTypeID = L.ObjectID and L.ID = @LoadID
-												inner join [LoadItemColumn] LIC on LIC.LoadID = L.ID and LIC.ColumnIndex = ITN.[Order] and LIC.ColumnIndex = IC.ColumnIndex and LIC.RowIndex = IC.RowIndex and LIC.LookupObject is null
-												inner join cache.ObjectDetails T on T.[Object] = ITN.[ObjectType] and T.ObjectID = ITN.ObjectID
-										for xml path('')
-										), 1, 0, ''),
-									'&lt;', '<'), '&gt;', '>')
-		from	[LoadItem] T
-				inner join [LoadItemColumn] IC on T.LoadID = @LoadID and IC.LoadID = T.LoadID and IC.RowIndex = T.RowIndex and IC.LookupObject IS NULL and IC.LookupObjectID is null
-
+		-- This is for actions: R, U
 		declare @current int,
 				@max int,
 				@sourceObject varchar(50),
@@ -464,12 +429,53 @@ begin
 				@intersectID int = null,
 				@date datetime = getutcdate()
 
-		select	@current = min(I.RowIndex),
-				@max = max(I.RowIndex)
-		from	LoadItem I
-				inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 1 and S.LookupObject is not null
-				inner join LoadItemColumn T on T.LoadID = I.LoadID and T.RowIndex = I.RowIndex and T.ColumnIndex = 2 and T.LookupObject is not null
-		where	I.LoadID = @LoadID
+		declare @Intersects IDTable
+
+		if @Action = 'R' OR @Action = 'U'	--UNRELATION (Remove existing relation)
+		begin
+			-- PARSE both sides.
+			update	T
+			set		T.LookupObject = S.LookupObject,
+					T.LookupObjectID = S.LookupObjectID
+			from	LoadItemColumn T
+					inner join	(
+								select	IC.LoadID,
+										IC.RowIndex,
+										IC.ColumnIndex,
+										T.[Object] as LookupObject,
+										T.ObjectID as LookupObjectID
+								from	[Load] L
+										inner join [LoadColumn] C on C.LoadID = L.ID and L.ID = @LoadID
+										inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+										inner join IntersectTypeNode IT on IT.IntersectTypeID = @ObjectID and IT.[Order] = IC.[ColumnIndex]
+										inner join cache.ObjectDetails T on T.[TextPath] = IC.Value and T.[ObjectType] = IT.[ObjectType] and T.ObjectTypeID = IT.ObjectID
+								) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+			update	T
+			set		T.[Status] = 0,
+					T.StatusMessage =	REPLACE(REPLACE(
+											STUFF(
+											(
+											select	LIC.Value + ' could not be located in the <a href="' + T.Url + '">' + T.Name + '</a> list, '
+											from	[Load] L
+													inner join [IntersectTypeNode] ITN on ITN.IntersectTypeID = L.ObjectID and L.ID = @LoadID
+													inner join [LoadItemColumn] LIC on LIC.LoadID = L.ID and LIC.ColumnIndex = ITN.[Order] and LIC.ColumnIndex = IC.ColumnIndex and LIC.RowIndex = IC.RowIndex and LIC.LookupObject is null
+													inner join cache.ObjectDetails T on T.[Object] = ITN.[ObjectType] and T.ObjectID = ITN.ObjectID
+											for xml path('')
+											), 1, 0, ''),
+										'&lt;', '<'), '&gt;', '>')
+			from	[LoadItem] T
+					inner join [LoadItemColumn] IC on T.LoadID = @LoadID and IC.LoadID = T.LoadID and IC.RowIndex = T.RowIndex and IC.LookupObject IS NULL and IC.LookupObjectID is null
+
+			select	@current = min(I.RowIndex),
+					@max = max(I.RowIndex)
+			from	LoadItem I
+					inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 1 and S.LookupObject is not null
+					inner join LoadItemColumn T on T.LoadID = I.LoadID and T.RowIndex = I.RowIndex and T.ColumnIndex = 2 and T.LookupObject is not null
+			where	I.LoadID = @LoadID
+
+
+
+		end
 
 		while @current <= @max
 		begin
@@ -492,57 +498,121 @@ begin
 													and SN.ObjectID = @sourceObjectID 
 													and TN.ObjectType = @targetObject 
 													and TN.ObjectID = @targetObjectID
-			if @intersectID is null
+			if @Action = 'R'	--RELATION
 			begin
-				-- Get the node type IDs
-				select	@sourceIntersectTypeNodeID = S.ID,
-						@targetIntersectTypeNodeID = T.ID
-				from	IntersectTypeNode S 
-						inner join IntersectTypeNode T on S.IntersectTypeID = T.IntersectTypeID and S.[Order] = 1 and T.[Order] = 2 and S.ID <> T.ID and S.IntersectTypeID = @ObjectID
+				if @intersectID is null
+				begin
+					-- Get the node type IDs
+					select	@sourceIntersectTypeNodeID = S.ID,
+							@targetIntersectTypeNodeID = T.ID
+					from	IntersectTypeNode S 
+							inner join IntersectTypeNode T on S.IntersectTypeID = T.IntersectTypeID and S.[Order] = 1 and T.[Order] = 2 and S.ID <> T.ID and S.IntersectTypeID = @ObjectID
 
-				insert into [Intersect] (IntersectTypeID, Classification) values (@ObjectID, 2)
-				set @intersectID = SCOPE_IDENTITY()
+					insert into [Intersect] (IntersectTypeID, Classification) values (@ObjectID, 2)
+					set @intersectID = SCOPE_IDENTITY()
 
-				insert into [IntersectNode] (IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
-				values						(@sourceIntersectTypeNodeID, @intersectID, @sourceObject, @sourceObjectID)
-				insert into [IntersectNode] (IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
-				values						(@targetIntersectTypeNodeID, @intersectID, @targetObject, @targetObjectID)
+					insert into [IntersectNode] (IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
+					values						(@sourceIntersectTypeNodeID, @intersectID, @sourceObject, @sourceObjectID)
+					insert into [IntersectNode] (IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
+					values						(@targetIntersectTypeNodeID, @intersectID, @targetObject, @targetObjectID)
 
-				exec utility.AddAuditEntry @sourceObject, @sourceObjectID, 0, @date, 'Created', 'Intersect', @intersectID
-				exec utility.AddAuditEntry @targetObject, @targetObjectID, 0, @date, 'Created', 'Intersect', @intersectID
-			end
+					exec utility.AddAuditEntry @sourceObject, @sourceObjectID, 0, @date, 'Created', 'Intersect', @intersectID
+					exec utility.AddAuditEntry @targetObject, @targetObjectID, 0, @date, 'Created', 'Intersect', @intersectID
+				end
 
-			if @intersectID is not null
+				if @intersectID is not null
+				begin
+					update	LoadItem
+					set		[Object] = 'Intersect',
+							ObjectID = @intersectID,
+							[Status] = 1,
+							StatusMessage = 'Successfully created/updated relationship'
+					where	LoadID = @LoadID
+							and RowIndex = @current
+				end
+				else
+				begin
+					update	LoadItem
+					set		[Status] = 0,
+							StatusMessage = 'Failed to create relationship'
+					where	LoadID = @LoadID
+							and RowIndex = @current
+				end
+			end --end R
+
+			if @Action = 'U'	--UNRELATION
 			begin
-				update	LoadItem
-				set		[Object] = 'Intersect',
-						ObjectID = @intersectID,
-						[Status] = 1,
-						StatusMessage = 'Successfully created/updated relationship'
-				where	LoadID = @LoadID
-						and RowIndex = @current
-			end
-			else
-			begin
-				update	LoadItem
-				set		[Status] = 0,
-						StatusMessage = 'Failed to create relationship'
-				where	LoadID = @LoadID
-						and RowIndex = @current
-			end
+				if @intersectID is not null
+				begin
+					begin try
+						if exists(	select 1 
+									from	[cache].[Relationships] SR
+											inner join Responsibility RE on RE.ResponsibleObjectType = SR.SourceObject and RE.ResponsibleObjectID = SR.SourceObjectID
+											inner join [cache].[Relationships] TR on RE.ObjectType = 'Intersect' and RE.ObjectID = TR.IntersectID and TR.TargetObject = SR.TargetObject and TR.TargetObjectID = SR.TargetObjectID
+									where	SR.IntersectID = @intersectID
+								 )
+						begin
+							DECLARE @Targets VARCHAR(8000) 
+							SELECT	@Targets = COALESCE(@Targets + ', ', '') + TR.SourceObjectName 
+							from	[cache].[Relationships] SR
+									inner join Responsibility RE on RE.ResponsibleObjectType = SR.SourceObject and RE.ResponsibleObjectID = SR.SourceObjectID
+									inner join [cache].[Relationships] TR on RE.ObjectType = 'Intersect' and RE.ObjectID = TR.IntersectID and TR.TargetObject = SR.TargetObject and TR.TargetObjectID = SR.TargetObjectID
+							where	SR.IntersectID = @intersectID
+
+							update	LoadItem
+							set		[Object] = 'Intersect',
+									ObjectID = @intersectID,
+									[Status] = 0,
+									StatusMessage = 'Unable to remove relationship as it acts as a source for: ' + @Targets
+							where	LoadID = @LoadID
+									and RowIndex = @current
+						end
+						else
+						begin
+							delete [Intersect] where ID = @intersectID
+
+							update	LoadItem
+							set		[Object] = 'Intersect',
+									ObjectID = @intersectID,
+									[Status] = 1,
+									StatusMessage = 'Successfully removed relationship'
+							where	LoadID = @LoadID
+									and RowIndex = @current
+						end
+					end try
+					begin catch
+							update	LoadItem
+							set		[Object] = 'Intersect',
+									ObjectID = @intersectID,
+									[Status] = 0,
+									StatusMessage = 'Unable to remove relationship due to the following error: ' + ERROR_MESSAGE()
+							where	LoadID = @LoadID
+									and RowIndex = @current
+					end catch
+				end
+				else
+				begin
+					update	LoadItem
+					set		[Object] = 'Intersect',
+							ObjectID = NULL,
+							[Status] = 0,
+							StatusMessage = 'Relationship not found'
+					where	LoadID = @LoadID
+							and RowIndex = @current
+				end
+			end --end U
 
 			insert into @Intersects values (@intersectID)
 
 			set @current = @current + 1
 		end
 
-		exec cache.SynchronizeRelationships @Intersects
-	end
+		if @Action = 'R'
+		begin
+			exec cache.SynchronizeRelationships @Intersects
+		end
 
-	--if @Action = 'U'	--UNRELATION (Remove existing relation)
-	--begin
-
-	--end
+	end --end IF statement to check if action = P or NOT
 
 	update	[Load] 
 	set		DateCompleted = getutcdate()

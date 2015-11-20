@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.WebJobs;
 using d360.core;
-using System.Diagnostics;
 using Dapper;
+using System.Threading;
 
 namespace d360.jobs.queue.ProcessFusion
 {
@@ -21,14 +21,20 @@ namespace d360.jobs.queue.ProcessFusion
                 var companies = GetActiveCompanyIDs();//.Where(i => i == 4).ToList();
                 var domainPrefixes = GetCompanyDomainPrefixes();
 
-                companies.AsParallel().WithDegreeOfParallelism(4).ForAll(companyID =>
+                #region Must keep this segment here b/c this webjob can execute on multiple machines.  We do not want two or more machines trying to grab hold of the same queue item.
+                var rand = new Random();
+                int sleepSeconds = rand.Next(1, 15);
+                Thread.Sleep(sleepSeconds*1000);
+                #endregion
+
+                companies.AsParallel().WithDegreeOfParallelism(3).ForAll(companyID =>
                 {
                     var companyConnection = GetCompanyConnection(companyID);
                     companyConnection.Open();
-                    //var ctx = new FusionContext(GetCompanyConnectionString(companyID));
-                    var queueItems = companyConnection.Query<dynamic>(@"select top 2 ID from [queue].Fusion where MachineAssigned is null and NumberOfRetries < 5").ToList();
 
-                    Trace.TraceInformation("Found {0} queue items for company {1}.  Starting to process them.", queueItems.Count, companyID);
+                    var queueItems = companyConnection.Query<dynamic>(@"select top 2 ID from [queue].Fusion where MachineAssigned is null and NumberOfRetries < 3").ToList();
+
+                    Console.WriteLine("Found {0} queue items for company {1}.  Starting to process them.", queueItems.Count, companyID);
 
                     queueItems.ForEach(q =>
                     {
@@ -44,6 +50,7 @@ namespace d360.jobs.queue.ProcessFusion
 
 
                             bool processFusionWriteStatus = true;
+                            Console.WriteLine("Starting execution of procedure for {0}, {1}", companyID, q.ID);
                             var processFusionTask = companyConnection.ExecuteAsync("exec fusion.ProcessFusionInQueue @queueID", new { queueID = q.ID }, null, 10800);    // 180 minute timeout.
                             processFusionTask.ContinueWith(t =>
                             {
@@ -78,7 +85,7 @@ namespace d360.jobs.queue.ProcessFusion
 
                             while (processFusionWriteStatus)
                             {
-                                Console.WriteLine("Process fusion procedure executing...");
+                                Console.WriteLine("Process fusion procedure executing for company {0}, queue {1}...", companyID, q.ID);
                                 System.Threading.Thread.Sleep(30000);
                             }
                         }
@@ -94,8 +101,8 @@ namespace d360.jobs.queue.ProcessFusion
             }
             catch (Exception ex)
             {
-                var msg = ex.Message + ((ex.InnerException != null) ? "  " + ex.InnerException.Message : "");
-                Trace.TraceError(msg);
+                var msg = ex.GetFullExceptionData();
+                Console.WriteLine(msg);
             }
 
             if (mex.Count > 0) throw new AggregateException("One or more exceptions occurred", mex);

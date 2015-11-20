@@ -1466,6 +1466,7 @@ namespace d360.web.Controllers
                 var a = new AttributeType
                 {
                     Name = parseTextField(form, "Name"),
+                    ShowNameInTree = parseBooleanField(form, "ShowNameInTree"),
                     Description = parseTextField(form, "Description"),
                     TextFormatString = parseTextField(form, "TextFormatString")
                 };
@@ -1593,6 +1594,7 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name");
+                model.ShowNameInTree = parseBooleanField(form, "ShowNameInTree");
                 model.Description = parseTextField(form, "Description");
                 model.TextFormatString = parseTextField(form, "TextFormatString");
 

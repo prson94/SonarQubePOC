@@ -2412,7 +2412,7 @@
             <summary>
             Gets the list of columns for the relationship overlay grid based on the input owner
             </summary>        
-            <param name="id">The object ID to get list of attributes for.</param>        
+            <param name="intersectTypeID">The object ID to get list of attributes for.</param>        
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.AttributesController.AttributeActions(d360.core.SystemObjects,System.Int32,d360.core.SystemObjects,System.Int32,System.Nullable{System.Int32})">

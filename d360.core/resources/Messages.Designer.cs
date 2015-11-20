@@ -239,5 +239,14 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("Error_Taxonomy_SourcingResponsibilitiesExist", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This model type is assigned as a subject area to one or more artifacts and may not be removed..
+        /// </summary>
+        public static string TaxonomyType_Assigned {
+            get {
+                return ResourceManager.GetString("TaxonomyType_Assigned", resourceCulture);
+            }
+        }
     }
 }

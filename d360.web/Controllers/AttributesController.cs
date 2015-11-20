@@ -31,13 +31,13 @@ namespace d360.web.Controllers
 
             var list = new List<AttributeHierarchyItem>();
 
-            var rootNode = new AttributeHierarchyItem { ID = "EC", IsCategory = true, ObjectTypeName = "", Name = "Enterprise-wide", ObjectType = type.ToString(), ObjectID = id, IsTechnical = false, ParentObjectType = type.ToString(), ParentObjectID = id };
+            var rootNode = new AttributeHierarchyItem { ID = "EC", IsCategory = true, ObjectTypeName = "", ShowNameInTree = true, Name = "Enterprise-wide", ObjectType = type.ToString(), ObjectID = id, IsTechnical = false, ParentObjectType = type.ToString(), ParentObjectID = id };
             rootNode.Items.AddRange(nestHierarchyNode(attributes, null, null));
             list.Add(rootNode);
 
             foreach (var c in categories)
             {
-                var cNode = new AttributeHierarchyItem { ID = c, IsCategory = true, ObjectTypeName = "", Name = c, ObjectType = type.ToString(), ObjectID = id, IsTechnical = false, ParentObjectType = type.ToString(), ParentObjectID = id };
+                var cNode = new AttributeHierarchyItem { ID = c, IsCategory = true, ObjectTypeName = "", ShowNameInTree = true, Name = c, ObjectType = type.ToString(), ObjectID = id, IsTechnical = false, ParentObjectType = type.ToString(), ParentObjectID = id };
                 cNode.Items.AddRange(nestHierarchyNode(attributes, null, c));
                 list.Add(cNode);
             }

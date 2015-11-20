@@ -9,9 +9,13 @@
             <input type="hidden" id="ID" name="ID" value="@(Model.AttributeType.ID)" />
             <input type="hidden" id="ParentID" name="ParentID" value="@(Model.AttributeType.ParentID)" />
             <div class="row">
-                <div class="col s12">
+                <div class="col s9">
                     <div id='NameTip' class="FieldNameRequired">@Model.AttributeType.GetName(i => i.Name)</div>
                     <input id="Name" name="Name" type="text" />
+                </div>
+                <div class="col s3">
+                    <div id='ShowNameInTreeTip' class="FieldName">@Model.AttributeType.GetName(i => i.ShowNameInTree)</div>
+                    <input id="ShowNameInTree" name="ShowNameInTree" type="checkbox" @(Model.AttributeType.ShowNameInTree ? "checked='checked'" : "") />
                 </div>
             </div>
             <div class="row">

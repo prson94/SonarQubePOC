@@ -67,6 +67,14 @@ BEGIN
 					INNER JOIN DomainType T ON O.DomainTypeID = T.ID and O.ID = @id
 	end
 
+	if @type = 'DomainGroup'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,		O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, O.DomainTypeID, O.ID),	O.DomainTypeID,	'DomainType',	T.Name
+			FROM	DomainGroup O
+					INNER JOIN DomainType T ON O.DomainTypeID = T.ID and O.ID = @id
+	end
+
 	if @type = 'DomainType'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)

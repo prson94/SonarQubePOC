@@ -7,6 +7,7 @@
     [AttributeTypeCategoryID] INT             NULL,
     [UpdatedOn]               DATETIME        NULL,
     [UpdatedBy]               INT             NULL,
+	ShowNameInTree bit not null default(1),
     CONSTRAINT [PK_AttributeType] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_AttributeType_AttributeTypeCategory] FOREIGN KEY ([AttributeTypeCategoryID]) REFERENCES [dbo].[AttributeTypeCategory] ([ID]),
     CONSTRAINT [FK_AttributeType_ParentAttributeType] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[AttributeType] ([ID])

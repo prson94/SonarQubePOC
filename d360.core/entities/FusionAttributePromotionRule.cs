@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -30,10 +31,13 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public virtual Fusion Fusion { get; set; }
 
-        [IgnoreDataMember]//, ForeignKey("FusionAttributePromotionRuleID")]
+        [IgnoreDataMember, ForeignKey("FusionAttributePromotionRuleID")]
+        public virtual ICollection<FusionAttributePromotion> FusionAttributePromotions { get; set; }
+
+        [IgnoreDataMember, ForeignKey("FusionAttributePromotionRuleID")]
         public virtual ICollection<FusionAttributePromotionRuleItem> FusionAttributePromotionRuleItems { get; set; }
 
-        [IgnoreDataMember]//, ForeignKey("FusionAttributePromotionRuleID")]
+        [IgnoreDataMember, ForeignKey("FusionAttributePromotionRuleID")]
         public virtual ICollection<FusionAttributePromotionRuleMapping> FusionAttributePromotionRuleMappings { get; set; }
     }
 }

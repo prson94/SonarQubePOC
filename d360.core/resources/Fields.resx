@@ -1143,4 +1143,10 @@
   <data name="SynonymType_Name" xml:space="preserve">
     <value>Synonym Type</value>
   </data>
+  <data name="ShowNameInTree_Description" xml:space="preserve">
+    <value>Show the name of this attribute group in the UI.</value>
+  </data>
+  <data name="ShowNameInTree_Name" xml:space="preserve">
+    <value>Show Name in Tree?</value>
+  </data>
 </root>

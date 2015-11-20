@@ -177,4 +177,7 @@
   <data name="Error_Taxonomy_SourcingResponsibilitiesExist" xml:space="preserve">
     <value>One or more sourcing responsibilities exist. You must first remove these responsibilities before continuing.</value>
   </data>
+  <data name="TaxonomyType_Assigned" xml:space="preserve">
+    <value>This model type is assigned as a subject area to one or more artifacts and may not be removed.</value>
+  </data>
 </root>

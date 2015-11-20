@@ -6,7 +6,6 @@ using d360.core.entities.Views;
 using d360.extensions;
 using d360.core;
 using System;
-using System.Collections.Specialized;
 using System.Xml.Linq;
 using System.Data.Entity.Infrastructure;
 using d360.core.entities.Contracts;
@@ -2260,6 +2259,10 @@ order by Name", new { workflowType, type, id });
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<FusionAttributePromotion>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotions).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<FusionAttributePromotionRuleMapping>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleMappings).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<FusionAttributePromotionRuleItem>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleItems).HasForeignKey(k => k.FusionAttributePromotionRule).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectTypeNode>().HasRequired(t => t.IntersectType).WithMany(t => t.Nodes).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectFlowMapping>().HasMany<DomainItem>(i => i.Contexts).WithMany(i => i.Mappings).Map(i =>
             {
@@ -2928,6 +2931,10 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Modified:
                             if (TaxonomyTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            if (Artifacts.Any(i => i.TaxonomyTypeID == o.ID))
+                                throw new ArgumentException(Messages.TaxonomyType_Assigned);
                             break;
                     }
 

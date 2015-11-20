@@ -5,6 +5,7 @@ using Microsoft.Azure.WebJobs;
 using d360.core;
 using System.Diagnostics;
 using Dapper;
+using System.Threading;
 
 namespace d360.jobs.queue.ProcessNotification
 {
@@ -102,13 +103,16 @@ inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceI
         static void Main()
         {
             var host = new JobHost(new JobHostConfiguration(constants.WEBJOBS_STORAGE_CONNECTION));
-
-            var mex = new List<Exception>();
-
             try
             {
                 var companies = GetActiveCompanyIDs();//.Where(i => i == 9).ToList();
                 var domainPrefixes = GetCompanyDomainPrefixes();
+
+                #region Must keep this segment here b/c this webjob can execute on multiple machines.  We do not want two or more machines trying to grab hold of the same queue item.
+                var rand = new Random();
+                int sleepSeconds = rand.Next(1, 15);
+                Thread.Sleep(sleepSeconds * 1000);
+                #endregion
 
                 companies.AsParallel().WithDegreeOfParallelism(3).ForAll(companyID =>
                 {
@@ -124,6 +128,8 @@ inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceI
                         companyConnection.Execute("update [queue].Notification set MachineAssigned = @m where ID = @queueID", new { m = Environment.MachineName, queueID = q.ID });
                     });
 
+                    Console.WriteLine("Processing {0} notifications for company {1}", queueItems.Count, companyID);
+
                     queueItems.ForEach(q =>
                     {
                         try
@@ -131,7 +137,7 @@ inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceI
                             switch ((string)q.Object)
                             { 
                                 case "Comment":
-                                #region
+                                    #region
                                     var comment = companyConnection.Query<CommentInfo>(commentSql, new { CommentID = q.ObjectID }, null, true, 900).FirstOrDefault();
 
                                     if (comment != null)
@@ -159,7 +165,7 @@ inner join reporting.Global_Resource RE on RE.ResourceID = coalesce(RG.ResourceI
                                         });
                                     }
                                     break;
-                                #endregion
+                                    #endregion
                                 case "FusionExecution":
                                     #region
                                     var execution = companyConnection.Query<d360.core.entities.FusionExecution>(@"select * from fusion.Execution where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
@@ -199,7 +205,6 @@ inner join FusionType FT on FT.ID = F.FusionTypeID and F.ID = @id", new { id = e
                         }
                         catch (Exception ex)
                         {
-                            mex.Add(ex);
                             companyConnection.Execute(@"update [queue].Notification set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = ex.GetFullExceptionData() }, null, 500);
                         }
                     });                    
@@ -210,11 +215,8 @@ inner join FusionType FT on FT.ID = F.FusionTypeID and F.ID = @id", new { id = e
             }
             catch (Exception ex)
             {
-                var msg = ex.Message + ((ex.InnerException != null) ? "  " + ex.InnerException.Message : "");
-                Trace.TraceError(msg);
+                Console.WriteLine(ex.GetFullExceptionData());
             }
-
-            if (mex.Count > 0) throw new AggregateException("One or more exceptions occurred", mex);
         }
     }
 }

@@ -2770,6 +2770,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show the name of this attribute group in the UI..
+        /// </summary>
+        public static string ShowNameInTree_Description {
+            get {
+                return ResourceManager.GetString("ShowNameInTree_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show Name in Tree?.
+        /// </summary>
+        public static string ShowNameInTree_Name {
+            get {
+                return ResourceManager.GetString("ShowNameInTree_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The item&apos;s ID from the system that generated it..
         /// </summary>
         public static string SourceID_Description {

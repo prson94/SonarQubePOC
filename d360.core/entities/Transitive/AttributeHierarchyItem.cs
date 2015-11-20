@@ -24,6 +24,7 @@ namespace d360.core.entities
         public string Name { get; set; }
         public string AttributeTypeCategory { get; set; }
 
+        public bool ShowNameInTree { get; set; }
         public bool IsCategory { get; set; }
         public bool IsTechnical { get; set; }
         public bool expanded { get; set; }

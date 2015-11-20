@@ -8,6 +8,7 @@ AS
 			A.ParentID,
 			T.Name,
 			C.Name as AttributeTypeCategory,
+			T.ShowNameInTree,
 			utility.GetFormattedFieldAttributeValue(A.ID, T.TextFormatString) as FormattedValue
 	from	Attribute A
 			inner join AttributeType T on A.AttributeTypeID = T.ID

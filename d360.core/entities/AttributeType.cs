@@ -30,6 +30,10 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "AttributeTypeCategory_Name", Description = "AttributeTypeCategory_Description")]
         public int? AttributeTypeCategoryID { get; set; }
 
+        [DataMember]
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ShowNameInTree_Name", Description = "ShowNameInTree_Description")]
+        public bool ShowNameInTree { get; set; }
+
         [IgnoreDataMember]
         public virtual AttributeType Parent { get; set; }
 

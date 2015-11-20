@@ -35,10 +35,10 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Parent_Name", Description = "Parent_Description")]
         public int? ParentID { get; set; }
 
-        [ReadOnly(true)]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
-        public string Path { get; set; }
+        //[ReadOnly(true)]
+        //[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        //[Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
+        //public string Path { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }

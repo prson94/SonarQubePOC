@@ -42,6 +42,10 @@ begin
 		insert into fusion.Execution (QueueID, FusionID, DateStarted, DateToUseForHistory) values (@queueID, @fusionID, @start, @start)
 		set @executionID = SCOPE_IDENTITY()
 	end
+	else
+	begin
+		update fusion.Execution set DateStarted = @start where ID = @executionID
+	end
 
 	select @nextStep = coalesce(max(Step), 0) + 1 from fusion.StepStatistic where ExecutionID = @executionID
 

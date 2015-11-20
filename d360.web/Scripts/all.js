@@ -37890,7 +37890,7 @@ function CommentVoteItem(data) {
     self.Vote = ko.observable(data.Vote || 0);
 }
 
-function CommentItem(data) {//, hub) {
+function CommentItem(data, parent) {//, hub) {
     var self = this;
     data = data || {};
     self.ID = ko.observable(data.ID);
@@ -37910,6 +37910,8 @@ function CommentItem(data) {//, hub) {
     self.CreatorIsOwner = ko.observable(data.CreatorIsOwner || "");
     self.DateEdited = ko.observable(data.DateEditedUTCString || null);
     self.IsEditable = ko.observable(data.IsEditable || false);
+    self.IsDeletable = ko.observable(data.IsDeletable || false);
+    self.IsDeleted = ko.observable(data.IsDeleted || false);
 
     self.tagSuggestions = ko.observableArray();
     self.tagSuggestionsPresent = ko.computed(function () {
@@ -37920,6 +37922,65 @@ function CommentItem(data) {//, hub) {
     self.IsProcessing = ko.computed(function () {
         return (self.ProcessingCount() != 0);
     });
+
+    self.tagIndex = -1;
+
+    self.setIndex = function (data, event) {
+        //38, 40, 37, 39, 13
+        //console.log(event);
+
+
+        if (event.keyCode == 13) { //enter key
+            if (self.tagSuggestions().length == 1) {
+                var t = self.tagSuggestions()[0];
+                t.addTag();
+                //self.tags.push(t);
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+                var t = self.tagSuggestions()[self.tagIndex];
+                t.addTag();
+                //self.tags.push(t);
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+        }
+        else if (event.keyCode == 40 || event.keyCode == 38) { //up & down arrows
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+
+                self.tagSuggestions()[self.tagIndex].IsSelected(false);
+
+                if (event.keyCode == 38 && self.tagIndex > 0) {
+                    self.tagIndex--;
+                }
+                else if (event.keyCode == 40 && self.tagIndex < self.tagSuggestions().length) {
+                    self.tagIndex++;
+                }
+
+            } else {
+                self.tagIndex = 0;
+            }
+
+            if (self.tagIndex != -1) {
+                self.tagSuggestions()[self.tagIndex].IsSelected(true);
+            }
+            return false;
+        }
+        else {
+            self.tagIndex = -1;
+            return true;
+        }
+    };
+
 
     self.ShowObjectType = ko.computed(function () {
         //var result = (self.ObjectType() == "Resource" && self.ObjectID() == self.CreatingResourceID());
@@ -38048,6 +38109,7 @@ function CommentItem(data) {//, hub) {
 
     self.ReplyHidden = ko.observable(true);
     self.EditHidden = ko.observable(true);
+    self.DeleteHidden = ko.observable(true);
 
     self.tagsAreDisplayed = ko.observable(false);
     self.tagsAreHidden = ko.computed(function () {
@@ -38137,6 +38199,13 @@ function CommentItem(data) {//, hub) {
         self.EditHidden(true);
     };
 
+    self.showDelete = function () {
+        self.DeleteHidden(false);
+    };
+    self.hideDelete = function () {
+        self.DeleteHidden(true);
+    };
+
     self.getCommentType = function () {
         var commentType = "";
 
@@ -38212,6 +38281,7 @@ function CommentItem(data) {//, hub) {
     self.updateComment = function () {
         self.error(null);
         self.ProcessingCount(self.ProcessingCount() + 1);
+        
         if (self.ParentID() != null)
         {
             var commentModel = {
@@ -38232,7 +38302,8 @@ function CommentItem(data) {//, hub) {
                     ID: self.ID,
                     Body: self.Body,
                     CommentTypeID: self.CommentTypeID(),
-                    VisibilityID: self.VisibilityID()
+                    VisibilityID: self.VisibilityID(),
+                    IsDeleted: self.IsDeleted()
                 }
             };
         }
@@ -38251,9 +38322,22 @@ function CommentItem(data) {//, hub) {
                 self.ProcessingCount(self.ProcessingCount() - 1);
                 self.DateEdited(result.DateEditedUTCString);
                 self.IsEditable(result.IsEditable);
+                self.IsDeletable(result.IsDeletable);
                 self.Body(result.Body);
+                self.IsDeleted(result.IsDeleted);
                 self.hideEdit();
+                self.DeleteHidden(true);
+
+                if (self.IsDeleted() == true) {
+                    //parent.comments().remove(self);
+                    self.isVisible(false);
+                    parent.getMoreComments();
+                    
+                }
+
+
                 amplify.publish("SaveAction", { context: 'commentform', action: "add", id: result.ID, custom: {} })
+                
             }).fail(function (xhr, status, error) {
                 self.ProcessingCount(self.ProcessingCount() - 1);
                 self.error(status);
@@ -38284,7 +38368,7 @@ function CommentItem(data) {//, hub) {
                 method: 'POST',
                 url: '/services/community/comment'
             }).done(function (data, status, xhr) {
-                self.Comments.push(new CommentItem(data));
+                self.Comments.push(new CommentItem(data,self));
                 self.newCommentMessage('');
                 self.hideReply();
                 self.hideEdit();
@@ -38336,7 +38420,7 @@ function CommentItem(data) {//, hub) {
 
 
     if (data.Comments) {
-        var mappedPosts = $.map(data.Comments, function (item) { return new CommentItem(item); });//, self.hub
+        var mappedPosts = $.map(data.Comments, function (item) { return new CommentItem(item, self); });//, self.hub
         self.Comments(mappedPosts);
     }
 
@@ -38352,12 +38436,20 @@ function CommentTagSuggestionItem(data, parent) {
     self.ShowRemove = ko.observable(true);
     self.IconForeColor = ko.observable(data.IconForeColor);
     self.IconBackColor = ko.observable(data.IconBackColor);
-
+    self.IsSelected = ko.observable(false);
     self.removeTag = function () {
         parent.tags.remove(self);
     }
 
     self.addTag = function () {
+
+        for (var i = 0; i < parent.tags().length; i++) {
+            if (parent.tags()[i].ObjectID() == self.ObjectID()) {
+                parent.newTag('');
+                parent.tagSuggestions([]);
+                return;
+            }
+        }
             parent.tags(parent.tags().concat(self));
             parent.newTag('');
             parent.tagSuggestions([]);
@@ -40536,6 +40628,63 @@ var BoardViewModel = function () {
         return (self.ProcessingCount() != 0);
     });
 
+    self.tagIndex = -1;
+
+    self.setIndex = function (data, event) {
+        //38, 40, 37, 39, 13
+        //console.log(event);
+        
+
+        if (event.keyCode == 13) { //enter key
+            if (self.tagSuggestions().length == 1) {
+                var t = self.tagSuggestions()[0];
+                t.addTag();                
+                //self.tags.push(t);
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+                var t = self.tagSuggestions()[self.tagIndex];
+                t.addTag();
+                //self.tags.push(t);
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+        }
+        else if (event.keyCode == 40 || event.keyCode == 38) { //up & down arrows
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+                
+                self.tagSuggestions()[self.tagIndex].IsSelected(false);
+
+                if (event.keyCode == 38 && self.tagIndex > 0) {
+                    self.tagIndex--;
+                }
+                else if (event.keyCode == 40 && self.tagIndex < self.tagSuggestions().length) {
+                    self.tagIndex++;
+                }
+                
+            } else {
+                self.tagIndex = 0;
+            }
+
+            if (self.tagIndex != -1) {
+                self.tagSuggestions()[self.tagIndex].IsSelected(true);
+            }
+            return false;
+        }
+        else {
+            self.tagIndex = -1;
+            return true;
+        }
+    };
 
     self.AppliedSearch = ko.computed(self.searchFilter).extend({ throttle: 400 });
 
@@ -40716,7 +40865,7 @@ var BoardViewModel = function () {
             url: '/services/community/comments'
         }).done(function (commentData, status, xhr) {
             //alert(ko.toJSON(commentData));
-            var mappedPosts = $.map(commentData, function (item) { return new CommentItem(item); }); //, self.hub
+            var mappedPosts = $.map(commentData, function (item) { return new CommentItem(item, self); }); //, self.hub
             self.comments(self.comments().concat(mappedPosts));
             self.moreComments(mappedPosts.length >= self.pageSize);
             if (self.FilterObjectType && self.FilterObjectID) {
@@ -40783,7 +40932,7 @@ var BoardViewModel = function () {
                 url: '/services/community/comment'
             }).done(function (newCommentData, status, xhr) {
                 self.tags([]);
-                self.comments.unshift(new CommentItem(newCommentData));
+                self.comments.unshift(new CommentItem(newCommentData, self));
                 self.newMessage('');
                 self.ProcessingCount(self.ProcessingCount() - 1);
                 amplify.publish("SaveAction", { context: 'commentform', action: "add", id: newCommentData.ID, custom: {} })
@@ -43421,9 +43570,10 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
                 html = "<ul>";
 
                 $.each(data, function (idx, t) {
+                    console.log(t);
                     html += "<li data-uri='" + t.Uri + "'><i class='fa fa-" + t.Icon + "'";
                     if (t.Title != "" && t.Title) {
-                        html += " title='" + t.Title + "'></i>" + t.Title
+                        html += " title='" + encodeURI(t.Title) + "'></i>" + t.Title
                     }
                     else {
                         html += "></i>";
@@ -43475,6 +43625,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             { name: 'TypeID', type: 'int' },
             { name: 'IsCategory', type: 'bool' },
             { name: 'IsTechnical', type: 'bool' },
+            { name: 'ShowNameInTree', type: 'bool' },
             { name: 'ObjectType', type: 'string' },
             { name: 'ObjectID', type: 'int' },
             { name: 'TargetObjectType', type: 'string' },
@@ -43513,7 +43664,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
                       return "<span class='Attribute-Category'>" + data.Name + "</span>";
                   }
                   else {
-                      return "<b>" + data.ObjectTypeName + "</b> : " + data.Name;
+                      return ((data.ShowNameInTree) ? "<b>" + data.ObjectTypeName + "</b> : " : "") + data.Name
                   }
               }
           }
@@ -46640,8 +46791,8 @@ function RelationshipAggregatesTile(controlID, type, id, permissions) {
                                 ],
                                 click: function (e) {
                                     var clickBaseUri = '/Relations/AggregateRelationOverlay?criticalOnly=' + (critical ? 'true' : 'false') + '&';
-                                    var data = nodes[e.elementIndex];
-                                    var url = clickBaseUri + 'type=' + type + '&id=' + id + '&targetType=' + data.Type + '&targetID=' + data.TypeID;
+                                    var data = nodes[e.elementIndex];                                    
+                                    var url = clickBaseUri + 'type=' + type + '&id=' + id + '&targetType=' + data.Type + '&targetID=' + data.TypeID + '&intersectTypeID=' + data.IntersectTypeID;
                                     openTileOverlay(url);
                                 }
                             }
@@ -49046,10 +49197,11 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
             }
 
             function saveAction(data) {
-               // alert(ko.toJSON(data));
+                // alert(ko.toJSON(data));
                 try {
                     switch (data.context) {
                         case contextList.Comment:
+                        case 'commentform':
                             ObjectStatisticsTile('MicroWidget1', type, id);
                             break;
                         case contextList.Intersect:
@@ -49351,12 +49503,13 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
             function showFilterAdvanced() {
                 var adv = $('#ShowFilterAdvanced');
                 if (adv.data('visible')) {
-                    adv.text('Show Advanced');
+                    adv.html('<i class="fa fa-gear brown-text lighten-4"></i> Show Advanced')
+                    //adv.text('Show Advanced');
                     adv.removeData('visible');
                     $('#FilterAdvanced').fadeOut(200);
                 }
                 else {
-                    adv.text('Hide Advanced');
+                    adv.html('<i class="fa fa-gear brown-text lighten-4"></i> Hide Advanced')
                     adv.data('visible', true);
                     $('#FilterAdvanced').fadeIn(200);
                 }
@@ -49779,6 +49932,7 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                                     }
                                 });
                                 //$('#AttributeFilter').jqxInput({ disabled: false, displayMember: 'Name', valueMember: 'Name', source: attributeValueAdapter });
+                                
                                 $('#AttributeTypeFilter').jqxDropDownList({ disabled: false });
                             });
                         }
@@ -51365,8 +51519,10 @@ function groups_list(app, pageViewModel, templatePath, contextList) {
             .then(function (content) {
                 context.contentHeader(pageViewModel);
 
-                $('#SideIcons').PageTools({ type: null, id: null });
-                $('#SideIcons').PageTools('clear');
+                //$('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
+
+                $('#SideIcons').PageTools({ type: 'Group', id: 0, context: 'list' });
+                //$('#SideIcons').PageTools('clear');
 
                 //#region Group Grid
 
@@ -51406,7 +51562,6 @@ function groups_list(app, pageViewModel, templatePath, contextList) {
                             text: "",
                             width: 40,
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-
                                 var tools;
                                 if (data.IsMember) {
                                     tools = [
@@ -51438,7 +51593,7 @@ function groups_list(app, pageViewModel, templatePath, contextList) {
                     url: '/api/resources/1',
                     datafields:
                     [
-                        { name: 'ID', type: 'number' },
+                        { name: 'ResourceID', type: 'number' },
                         { name: 'FirstName', type: 'string' },
                         { name: 'LastName', type: 'string' }
                     ]
@@ -51465,7 +51620,7 @@ function groups_list(app, pageViewModel, templatePath, contextList) {
                         { datafield: "LastName", text: "Last Name" },
                         { datafield: "FirstName", text: "First Name" },
                         {
-                            datafield: "ID",
+                            datafield: "ResourceID",
                             text: "",
                             width: 40,
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {

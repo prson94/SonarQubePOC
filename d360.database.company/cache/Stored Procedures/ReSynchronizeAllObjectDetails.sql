@@ -311,31 +311,12 @@ begin
 
 
 		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
-			SELECT	@type, O.ID, O.Name, O.TextPath, O.Description,	
-					'Policy', P.ID,	P.Name,
-					dbo.GenerateObjectUrl(@type, O.PolicyID, O.ID),
+			SELECT	@type, O.ID, O.Name, O.Name, O.Description,	
+					NULL, NULL,	NULL,
+					dbo.GenerateObjectUrl(@type, O.ID, O.ID),
 					'Rule', 0, 'Rule',
 					'Rule', 0
-			FROM	[Rule] O
-					inner join Policy P on P.ID = O.PolicyID;
-	end;
-
-	begin
-		set @type = 'Synonym';
-		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
-			SELECT	@type, O.ID, O.Name, O.Name, O.Description,
-					NULL, NULL, NULL,
-					case 
-						when A.ID is not null then dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID)
-						when TA.ID is not null then dbo.GenerateObjectUrl('Taxonomy', TA.TaxonomyTypeID, TA.ID)
-						else '#'
-					end + '',
-					'SynonymType', T.ID, T.Name,
-					'SynonymType', T.ID
-			FROM	[Synonym] O
-					inner join SynonymType T on T.ID = O.SynonymTypeID
-					left join Artifact A on O.ObjectType = 'Artifact' and A.ID = O.ObjectID
-					left join Taxonomy TA on O.ObjectType = 'Taxonomy' and TA.ID = O.ObjectID
+			FROM	[Rule] O;
 	end;
 
 	begin
@@ -347,22 +328,24 @@ begin
 						else NULL
 					end, O.ParentID, P.Name,
 					dbo.GenerateObjectUrl(@type, O.TaxonomyTypeID, O.ID),
-					'TaxonomyType',	O.TaxonomyTypeID, case T.Class when 1 then 'Informational' when 2 then 'Organizational' when 4 then 'Vendor' else 'Other' end + ' Model :' + T.Name,
+					'TaxonomyType',	O.TaxonomyTypeID, C.Name + ' Model :' + T.Name,
 					'TaxonomyType',	O.TaxonomyTypeID
 			FROM	Taxonomy O
 					INNER JOIN TaxonomyType T ON O.TaxonomyTypeID = T.ID
+					inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
 					left join Taxonomy P on P.ID = O.ParentID;
 	end;
 
 	begin
 		set @type = 'TaxonomyType';
 		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
-			SELECT	@type, ID, Name, Name, Description,
+			SELECT	@type, T.ID, T.Name, T.Name, T.Description,
 					NULL, NULL, NULL,
-					dbo.GenerateObjectUrl(@type, ID, ID),
-					@type, Class, case Class when 1 then 'Informational' when 2 then 'Organizational' when 4 then 'Vendor' else 'Other' end,
-					@type, ID
-			FROM	TaxonomyType;
+					dbo.GenerateObjectUrl(@type, T.ID, T.ID),
+					@type, C.ID, C.Name,
+					@type, T.ID
+			FROM	TaxonomyType T
+					inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID;
 	end;
 
 	-- update style for object regardless of its type.

@@ -214,14 +214,14 @@ as
 					RU.ID as ObjectID
 			from	[Rule] RU 
 					inner join Responsibility R on R.ObjectType = 'Rule' and R.ObjectID = RU.ID
-			union
-			select	AssigningItemType,
-					AssigningItemID,
-					ResponsibilityID,
-					'Rule' as ObjectType,
-					R.ID as ObjectID
-			from	PolicyHierarchyForRule P
-					inner join [Rule] R on R.PolicyID = P.ID
+			--union
+			--select	AssigningItemType,
+			--		AssigningItemID,
+			--		ResponsibilityID,
+			--		'Rule' as ObjectType,
+			--		R.ID as ObjectID
+			--from	PolicyHierarchyForRule P
+			--		inner join [Rule] R on R.PolicyID = P.ID
 			union
 			select	AssigningItemType,
 					AssigningItemID,

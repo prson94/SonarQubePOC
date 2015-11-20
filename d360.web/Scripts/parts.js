@@ -283,6 +283,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             { name: 'TypeID', type: 'int' },
             { name: 'IsCategory', type: 'bool' },
             { name: 'IsTechnical', type: 'bool' },
+            { name: 'ShowNameInTree', type: 'bool' },
             { name: 'ObjectType', type: 'string' },
             { name: 'ObjectID', type: 'int' },
             { name: 'TargetObjectType', type: 'string' },
@@ -321,7 +322,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
                       return "<span class='Attribute-Category'>" + data.Name + "</span>";
                   }
                   else {
-                      return "<b>" + data.ObjectTypeName + "</b> : " + data.Name;
+                      return ((data.ShowNameInTree) ? "<b>" + data.ObjectTypeName + "</b> : " : "") + data.Name
                   }
               }
           }
