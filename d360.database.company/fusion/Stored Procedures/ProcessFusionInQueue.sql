@@ -351,7 +351,23 @@ begin
 	begin
 		declare @Intersects IDTable
 		
-		begin try					
+		begin try		
+			-- delete any relations we already have that was already added from stagingrelation table so we dont duplicate
+			delete from fusion.stagingrelation where 
+				executionid = @executionID
+					and
+				id in(
+					select 
+						sr.id
+					from
+						intersectnode inode1
+						inner join intersectnode inode2 on(inode1.IntersectID = inode2.IntersectID)
+						inner join fusion.stagingrelation sr on(inode1.ObjectID = sr.startfusionattributeid and inode2.ObjectID = sr.endfusionattributeid and inode1.IntersectTypeNodeID = sr.startintersecttypenodeid and inode2.IntersectTypeNodeID = sr.endintersecttypenodeid)
+					where 
+						inode1.objecttype = @objectType
+								and
+						inode2.objecttype = @objectType);
+					
 
 			select @current = MIN(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID and IntersectID is null  -- only want the relations we didnt already process in a previous pass
 			select @max = MAX(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID and IntersectID is null  -- only want the relations we didnt already process in a previous pass
