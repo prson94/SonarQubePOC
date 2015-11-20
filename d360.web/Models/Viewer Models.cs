@@ -312,8 +312,8 @@ namespace d360.web.Models
         public string label { get; set; }
         public int attributeID { get; set; }
         public bool allowMultiple { get; set; }
-
         public bool isComplex { get; set; }
+        public string description { get; set; }
     }
     
     public class RelationAttributeValue

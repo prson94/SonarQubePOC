@@ -298,15 +298,22 @@
         var attributeColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
             return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + value + "</div>";
         }
-
+        var headerTooltipRenderer = function(text) {
+            return function (columnHeaderElement) {
+                if(text!=null && text.length>0)
+                    $(columnHeaderElement).parent().jqxTooltip({ position: 'mouse', content: text });                
+            };
+        };
+        
         for(var i = 0 ; i < fields.length;i++){
-            aggregateRelationshipOverlaySource.datafields.push({name:fields[i].attributeID});
+            aggregateRelationshipOverlaySource.datafields.push({name:fields[i].attributeID});            
             gridColumns.push({
                 text:fields[i].label,
                 datafield:fields[i].attributeID,
                 width:'250px',
                 filterable: !fields[i].isComplex,
-                cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : attributeColumnCellRenderer
+                cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : attributeColumnCellRenderer,            
+                rendered: headerTooltipRenderer (fields[i].description)
             });
         }
 
