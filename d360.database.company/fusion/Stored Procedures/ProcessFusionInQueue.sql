@@ -64,12 +64,24 @@ begin
 					from	@data.nodes('/import') as I(i)
 							cross apply I.i.nodes('ms/m') M(m)
 							cross apply M.m.nodes('*') P(p)
+
+				set @data = null
 			end
 
-			if @data is not null
-			begin
-				insert into [fusion].[StagingRelation]
-					select	@executionID,
+
+			-- insert this into temp table this takes 30 seconds
+			insert into [fusion].[StagingRelationMapping]
+					select	
+								@executionID,
+								replace(R.r.value('@s', 'nvarchar(250)'), ' ', '') as StartID,
+								replace(R.r.value('@e', 'nvarchar(250)'), ' ', '') as EndID
+						from	[queue].[Fusion] fus
+								CROSS APPLY data.nodes('/import/rs/r') as R(r)								
+						where fus.id = @queueID
+			
+
+			insert into [fusion].[StagingRelation]
+				select	@executionID,
 						R.StartID,
 						R.EndID,
 						S.ID,
@@ -81,10 +93,10 @@ begin
 						RT.IntersectTypeID,
 						V.IntersectID
 				from	(
-						select	replace(R.r.value('@s', 'nvarchar(250)'), ' ', '') as StartID,
-								replace(R.r.value('@e', 'nvarchar(250)'), ' ', '') as EndID
-						from	@data.nodes('/import') as I(i)
-								cross apply I.i.nodes('rs/r') R(r)
+						select	srm.StartID,
+								srm.EndID
+						from	[fusion].[StagingRelationMapping] srm							
+						where srm.ExecutionID = @executionID
 						) R
 						inner join FusionAttribute S on S.FusionID = @fusionID and S.SourceID = R.StartID
 						inner join FusionAttribute E on E.FusionID = @fusionID and E.SourceID = R.EndID
@@ -96,11 +108,10 @@ begin
 									where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = S.FusionAttributeTypeID 
 											and TargetObjectType = 'FusionAttributeType' and TargetObjectID = E.FusionAttributeTypeID
 									) RT
-						left join cache.Relationships V on V.SourceObject = @objectType and V.TargetObject = @objectType and V.SourceObjectID = S.ID and V.TargetObjectID = E.ID
-				where	V.IntersectID is null	--only get non-existent relationships
-			end
+						left join cache.Relationships V on V.SourceObject = @objectType and V.TargetObject = @objectType and V.SourceObjectID = S.ID and V.TargetObjectID = E.ID						
+				where	V.IntersectID is null --only get non-existent relationships
+							
 			
-			set @data = null
 
 			insert into fusion.StepStatistic values (@executionID, 1, DATEDIFF(ss, @start, getutcdate()))
 			set @nextStep = @nextStep + 1
@@ -338,8 +349,8 @@ begin
 		
 		begin try					
 
-			select @current = MIN(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID
-			select @max = MAX(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID
+			select @current = MIN(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID and IntersectID is null  -- only want the relations we didnt already process in a previous pass
+			select @max = MAX(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID and IntersectID is null  -- only want the relations we didnt already process in a previous pass
 
 			while (@current <= @max)
 			begin
@@ -358,7 +369,8 @@ begin
 						@IntersectTypeID = IntersectTypeID,
 						@IntersectID = IntersectID
 				from	[fusion].[StagingRelation]
-				where	ExecutionID = @executionID and ID = @current
+				where	ExecutionID = @executionID and ID = @current 
+							and IntersectID is null  -- only want the relations we didnt already process in a previous pass
 
 				begin try
 					INSERT INTO [Intersect] (IntersectTypeID, Classification, Description) VALUES (@IntersectTypeID, 2, NULL)
@@ -440,9 +452,11 @@ begin
 				where	ExecutionID = @executionID
 
 			delete fusion.StagingRelation where ExecutionID = @executionID
+			delete fusion.StagingRelationMapping where ExecutionID = @executionID
 
 			UPDATE STATISTICS fusion.StagingItem
 			UPDATE STATISTICS fusion.StagingRelation
+			UPDATE STATISTICS fusion.StagingRelationMapping
 			
 			insert into fusion.StepStatistic values (@executionID, 9, DATEDIFF(ss, @start, getutcdate()))
 			set @nextStep = @nextStep + 1
