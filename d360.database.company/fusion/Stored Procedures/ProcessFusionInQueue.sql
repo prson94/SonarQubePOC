@@ -52,28 +52,19 @@ begin
 	-- STEP 1.  Load StagingItem table
 	if @nextStep = 1
 	begin
-		begin try
-			select	@data = Data
-			from	[queue].[Fusion] 
-			where	ID = @queueID
+		begin try			
 
-			if @data is not null
-			begin
-				-- Insert staging data to work with.
-				insert into fusion.StagingItem (ExecutionID, RowID, Name, Value)
-					select	@executionID,
-							M.m.value('./@id', 'int') as RowID,
-							P.p.value('local-name(.)', 'nvarchar(250)') as Name,
-							P.p.value('(./text())[1]', 'nvarchar(250)') as Value
-					from	@data.nodes('/import') as I(i)
-							cross apply I.i.nodes('ms/m') M(m)
-							cross apply M.m.nodes('*') P(p)
+			insert into fusion.StagingItem (ExecutionID, RowID, Name, Value)
+				SELECT @executionID,
+					T.c.value('./@id', 'int') as RowID,
+					P.p.value('local-name(.)', 'nvarchar(250)') as Name,
+					P.p.value('(./text())[1]', 'nvarchar(250)') as Value
+				FROM [queue].[Fusion] fus
+					CROSS APPLY data.nodes('/import/ms/m') as T(c)
+					cross apply T.c.nodes('*') P(p)
+				where fus.ID = @queueID;
 
-				set @data = null
-			end
-
-
-			-- insert this into temp table this takes 30 seconds
+				
 			insert into [fusion].[StagingRelationMapping]
 					select	
 								@executionID,
@@ -372,22 +363,20 @@ begin
 			select @current = MIN(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID and IntersectID is null  -- only want the relations we didnt already process in a previous pass
 			select @max = MAX(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID and IntersectID is null  -- only want the relations we didnt already process in a previous pass
 
+			-- this is the slow part of this proc when there are lots of relations about 30k or so.  The loop kills performance.
+			-- a insert into select from .. would fix this however the intersectnode query needs the ids from the identity column
 			while (@current <= @max)
 			begin
 				declare	
-						@StartFusionAttributeID int,		@EndFusionAttributeID int,
-						@StartFusionAttributeTypeID int,	@EndFusionAttributeTypeID int,
+						@StartFusionAttributeID int,		@EndFusionAttributeID int,						
 						@StartIntersectNodeTypeID int,		@EndIntersectNodeTypeID int,
 						@IntersectTypeID int,				@IntersectID int
 			
 				select	@StartFusionAttributeID = StartFusionAttributeID,
-						@EndFusionAttributeID = EndFusionAttributeID,
-						@StartFusionAttributeTypeID = StartFusionAttributeTypeID,
-						@EndFusionAttributeTypeID = EndFusionAttributeTypeID,
+						@EndFusionAttributeID = EndFusionAttributeID,						
 						@StartIntersectNodeTypeID = StartIntersectTypeNodeID,
 						@EndIntersectNodeTypeID = EndIntersectTypeNodeID,
-						@IntersectTypeID = IntersectTypeID,
-						@IntersectID = IntersectID
+						@IntersectTypeID = IntersectTypeID						
 				from	[fusion].[StagingRelation]
 				where	ExecutionID = @executionID and ID = @current 
 							and IntersectID is null  -- only want the relations we didnt already process in a previous pass
