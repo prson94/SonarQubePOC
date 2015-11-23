@@ -1,4 +1,4 @@
-﻿create procedure tile.GetSocialStatisticsByObject
+﻿create procedure [tile].[GetSocialStatisticsByObject]
 --declare
 	@type varchar(50),
 	@id int
@@ -22,6 +22,7 @@ begin
 					inner join CommentRelation R	on R.CommentID = C.ID 
 													and R.ObjectType = @type 
 													and R.ObjectID = @id
+													and C.IsDeleted = 0
 			) P
 			cross apply
 			(
@@ -31,5 +32,6 @@ begin
 													and R.ObjectType = @type 
 													and R.ObjectID = @id
 													and C.DateCreated > dateadd(dd, -2, getutcdate())
+													and C.IsDeleted = 0
 			) LP
 end

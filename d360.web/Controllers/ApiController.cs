@@ -562,6 +562,7 @@ namespace d360.web.Controllers
             bool following = false;
             bool followingParent = false;
             Follow followParent = null;
+            string followText = "";
 
 
             #region Determine permissions
@@ -607,6 +608,20 @@ namespace d360.web.Controllers
 
                     var artifact = Company.GetById<Artifact>(id);
                     following = Company.IsUserFollowing(type, id, null);
+                    followParent = Company.GetFollowingParent(type, id, null);
+                    followingParent = (followParent != null);
+                    followText = "";
+                    if (!followingParent)
+                        if (!following)
+                            followText = Resources.Actions.Follow;
+                        else
+                            followText = Resources.Actions.Unfollow;
+                    else
+                    {
+                        followText = "Following ";
+                        var obj = Company.GetObjectDetail(followParent.ObjectType, followParent.ObjectID);
+                        followText += obj.Name;
+                    }
 
                     if (artifact != null)
                     {
@@ -672,7 +687,8 @@ namespace d360.web.Controllers
                         reportNode = appendReportMenu(type, id, SystemObjects.ArtifactType, artifact.ArtifactTypeID);
                         if (reportNode != null) list.Add(reportNode);
 
-                        list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
+
+                        list.Add(new PageActionItem { Context = followingParent ? "nullform" : ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = followText, Uri = followingParent ? "#" : string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id), Enabled = !followingParent ? true : false });
                         list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                         //list.Add(otherActionsItem);
                     }
@@ -793,22 +809,40 @@ namespace d360.web.Controllers
                         }
                     }
                     break;
-                    #endregion
+                #endregion
                 case SystemObjects.Group:
                     #region Actions
-                    if (context == "root")
+                    if (context == "default")
                     {
                         //if (hasPermission(permissions, Claim.Create, ClaimObject.Root) || hasPermission(permissions, Claim.Update, ClaimObject.Root))
                         //{
                         //    list.Add(new PageActionItem { Context = ContextList.Group, Icon = Resources.Actions.Add_Icon, Uri = "/form/AddGroup" });
                         //}
+                        following = Company.IsUserFollowing(type, id, null);
+                        followParent = Company.GetFollowingParent(type, id, null);
+                        followingParent = (followParent != null);
+
+                        if (!followingParent)
+                            if (!following)
+                                followText = Resources.Actions.Follow;
+                            else
+                                followText = Resources.Actions.Unfollow;
+                        else
+                        {
+                            followText = "Following Groups";
+                        }
+
+                        following = Company.IsUserFollowing(type, 0, null);
+                        list.Add(new PageActionItem { Context = followingParent ? "nullform" : "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = followText, Uri = followingParent ? "#" : string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id), Enabled = !followingParent ? true : false });
                     }
                     else 
                     {
-                        following = Company.IsUserFollowing(type, id, null);
-                        list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
+                        following = Company.IsUserFollowing(SystemObjects.ResourceType, 1, null);
+                        list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow + " People" : "Follow People", Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", SystemObjects.ResourceType, 1) });
+                        following = Company.IsUserFollowing(type, 0, null);
+                        list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow + " Groups" : "Follow Groups", Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, 0) });
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    //list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                     #endregion
                 case SystemObjects.Fusion:
@@ -1074,7 +1108,20 @@ namespace d360.web.Controllers
                         list.Add(new PageActionItem { Context = ContextList.Resource, Icon = "asterisk", Title = "Change password", Uri = "/form/resources/me/changepassword" });
                     }
                     else {
-                        list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });                    
+                        following = Company.IsUserFollowing(type, id, null);
+                        followParent = Company.GetFollowingParent(type, id, null);
+                        followingParent = (followParent != null);
+
+                        if (!followingParent)
+                            if (!following)
+                                followText = Resources.Actions.Follow;
+                            else
+                                followText = Resources.Actions.Unfollow;
+                        else
+                        {
+                            followText = "Following People";
+                        }
+                        list.Add(new PageActionItem { Context = followingParent ? "nullform" : "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = followText, Uri = followingParent ? "#" : string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id), Enabled = !followingParent ? true : false });                    
                     }
                     break;
                     #endregion
@@ -1087,6 +1134,7 @@ namespace d360.web.Controllers
                     //        list.Add(new PageActionItem { Context = ContextList.Resource, Icon = Resources.Actions.Add_Icon, Uri = string.Format("/form/resources/{0}/add", id) });
                     //    }
                     //}
+                    list.Add(new PageActionItem { Context = "command", Icon = Resources.Actions.Follow_Icon, Uri = "#" });
                     break;
                     #endregion
                 case SystemObjects.ResponseType:
@@ -1213,17 +1261,7 @@ namespace d360.web.Controllers
                         following = Company.IsUserFollowing(type, id, null);
                         followParent = Company.GetFollowingParent(type, id, null);
                         followingParent = (followParent != null);
-
                         
-                        if (hasPermission(permissions, Claim.Update, ClaimObject.Root))
-                            list.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = Resources.Actions.Edit_Icon, Title = Resources.Actions.Edit, Uri = string.Format("/form/taxonomy/{0}/{1}/edit", taxonomy.TaxonomyTypeID, id) });
-                        if (hasPermission(permissions, Claim.Delete, ClaimObject.Root))
-                            list.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/taxonomy/{0}/{1}/delete", taxonomy.TaxonomyTypeID, id) });
-                        //list.Add(new PageActionItem { Context = ContextList.ActionDiagram, Icon = "exchange", Title = "Lineage Diagram", Uri = string.Format("/parts/Taxonomy/{0}/lineage", id) });
-                        reportNode = appendReportMenu(type, id, SystemObjects.TaxonomyType, taxonomy.TaxonomyTypeID, true);
-                        if (reportNode != null) list.Add(reportNode);
-
-                        var followText = "";
                         if (!followingParent)
                             if (!following)
                                 followText = Resources.Actions.Follow;
@@ -1235,7 +1273,14 @@ namespace d360.web.Controllers
                             var obj = Company.GetObjectDetail(followParent.ObjectType, followParent.ObjectID);
                             followText += obj.Name;
                         }
-                            
+
+                        if (hasPermission(permissions, Claim.Update, ClaimObject.Root))
+                            list.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = Resources.Actions.Edit_Icon, Title = Resources.Actions.Edit, Uri = string.Format("/form/taxonomy/{0}/{1}/edit", taxonomy.TaxonomyTypeID, id) });
+                        if (hasPermission(permissions, Claim.Delete, ClaimObject.Root))
+                            list.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/taxonomy/{0}/{1}/delete", taxonomy.TaxonomyTypeID, id) });
+                        //list.Add(new PageActionItem { Context = ContextList.ActionDiagram, Icon = "exchange", Title = "Lineage Diagram", Uri = string.Format("/parts/Taxonomy/{0}/lineage", id) });
+                        reportNode = appendReportMenu(type, id, SystemObjects.TaxonomyType, taxonomy.TaxonomyTypeID, true);
+                        if (reportNode != null) list.Add(reportNode);  
 
                         var followNode = new PageActionItem { Context = followingParent ?  "nullform" : "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon  : Resources.Actions.Follow_Icon, Title = followText, Uri = followingParent ? "#" : string.Format("/resources/UpdateFollowStatus?type={0}&id={1}&includeChildren=true", type, id), Enabled = !followingParent };
                         list.Add(followNode);

@@ -396,12 +396,23 @@ function CommentTagItem(data, parent) {
     self.ShowRemove = ko.observable(false);
     self.IconBackColor = ko.observable(data.IconBackColor);
     self.IconForeColor = ko.observable(data.IconForeColor);
+    self.IsSelected = ko.observable(false);
+
 
     self.removeTag = function () {
         parent.tags.remove(self);
     }
 
     self.addTag = function () {
+
+        for (var i = 0; i < parent.tags().length; i++) {
+            if (parent.tags()[i].ObjectID() == self.ObjectID()) {
+                parent.newTag('');
+                parent.tagSuggestions([]);
+                return;
+            }
+        }
+        self.ShowRemove(true);
         parent.tags(parent.tags().concat(self));
         parent.newTag('');
         parent.tagSuggestions([]);
@@ -678,7 +689,7 @@ function CommentItem(data, parent) {//, hub) {
         if (value) {
             $.getJSON('/api/tagsuggestions', { phrase: value }, function (suggestions) {
                 // Object, ObjectID, TextPath, Url, ObjectTypeName
-                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagSuggestionItem(item, self); }); //, self.hub
+                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagItem(item, self); }); //, self.hub
                 self.tagSuggestions(mappedSuggestions);
             });
         }
@@ -976,36 +987,7 @@ function CommentItem(data, parent) {//, hub) {
     }
 
 }
-function CommentTagSuggestionItem(data, parent) {
-    var self = this;
-    data = data || {};
-    self.Object = ko.observable(data.Object);
-    self.ObjectID = ko.observable(data.ObjectID);
-    self.TextPath = ko.observable(data.TextPath);
-    self.Url = ko.observable(data.Url);
-    self.ObjectTypeName = ko.observable(data.ObjectTypeName);
-    self.ShowRemove = ko.observable(true);
-    self.IconForeColor = ko.observable(data.IconForeColor);
-    self.IconBackColor = ko.observable(data.IconBackColor);
-    self.IsSelected = ko.observable(false);
-    self.removeTag = function () {
-        parent.tags.remove(self);
-    }
 
-    self.addTag = function () {
-
-        for (var i = 0; i < parent.tags().length; i++) {
-            if (parent.tags()[i].ObjectID() == self.ObjectID()) {
-                parent.newTag('');
-                parent.tagSuggestions([]);
-                return;
-            }
-        }
-            parent.tags(parent.tags().concat(self));
-            parent.newTag('');
-            parent.tagSuggestions([]);
-    }
-}
 var ChildArtifactsMicroTileItem = function (parentID, name, id, count) {
     var self = this;
     self.ParentID = ko.observable(parentID);
@@ -3201,6 +3183,7 @@ var BoardViewModel = function () {
             if (self.tagIndex != -1) {
                 var t = self.tagSuggestions()[self.tagIndex];
                 t.addTag();
+                //t.ShowRemove(true);
                 //self.tags.push(t);
                 self.tagSuggestions([]);
                 self.newTag('');
@@ -3327,7 +3310,7 @@ var BoardViewModel = function () {
         if (value) {
             $.getJSON('/api/tagsuggestions', { phrase: value }, function (suggestions) {
                 // Object, ObjectID, TextPath, Url, ObjectTypeName
-                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagSuggestionItem(item, self); });
+                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagItem(item, self); });
                 self.tagSuggestions(mappedSuggestions);
             });
         }
@@ -3388,7 +3371,7 @@ var BoardViewModel = function () {
             self.ObjectType = objectType;
             self.ObjectID = objectID;
 
-            self.selectedDateFilterOption($.jqx.cookie.cookie("BoardDateFilterCookie"));
+            self.selectedDateFilterOption(-7);
 
 
             self.getMoreComments();

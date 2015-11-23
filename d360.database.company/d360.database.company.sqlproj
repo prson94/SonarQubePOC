@@ -433,6 +433,7 @@
     <Build Include="Security\utility.sql" />
     <Build Include="Security\validate.sql" />
     <Build Include="dbo\Stored Procedures\FollowObject.sql" />
+    <Build Include="tile\Stored Procedures\GetObjectStatistics.sql" />
     <Build Include="fusion\Tables\StagingRelationMapping.sql" />
   </ItemGroup>
   <ItemGroup>
