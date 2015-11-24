@@ -359,52 +359,42 @@ begin
 								and
 						inode2.objecttype = @objectType);
 					
-
-			select @current = MIN(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID and IntersectID is null  -- only want the relations we didnt already process in a previous pass
-			select @max = MAX(ID) from [fusion].[StagingRelation] where ExecutionID = @executionID and IntersectID is null  -- only want the relations we didnt already process in a previous pass
-
-			-- this is the slow part of this proc when there are lots of relations about 30k or so.  The loop kills performance.
-			-- a insert into select from .. would fix this however the intersectnode query needs the ids from the identity column
-			while (@current <= @max)
-			begin
-				declare	
-						@StartFusionAttributeID int,		@EndFusionAttributeID int,						
-						@StartIntersectNodeTypeID int,		@EndIntersectNodeTypeID int,
-						@IntersectTypeID int,				@IntersectID int
+			Declare @IDList Table(IntersectID int,StageID Int);
 			
-				select	@StartFusionAttributeID = StartFusionAttributeID,
-						@EndFusionAttributeID = EndFusionAttributeID,						
-						@StartIntersectNodeTypeID = StartIntersectTypeNodeID,
-						@EndIntersectNodeTypeID = EndIntersectTypeNodeID,
-						@IntersectTypeID = IntersectTypeID						
-				from	[fusion].[StagingRelation]
-				where	ExecutionID = @executionID and ID = @current 
-							and IntersectID is null  -- only want the relations we didnt already process in a previous pass
+			--insert intersect records and save there id's
+			-- trick is to use merge to keep the sequence id and staging row ids
+			-- http://stackoverflow.com/questions/15614261/using-output-clause-to-insert-value-not-in-inserted
+			MERGE
+				INTO    [Intersect] d
+				USING   (
+						SELECT sr.IntersectTypeID isectid , 2 as class,sr.ID as srID
+							FROM [fusion].stagingrelation sr
+							where sr.ExecutionID = @executionID and sr.IntersectID is null
+						) s
+				ON      (1 = 0)
+				WHEN NOT MATCHED THEN
+				INSERT  (IntersectTypeID, Classification, Description)
+				VALUES  (isectid, class, NULL)
+				OUTPUT  INSERTED.ID, s.srID into @IDList;
 
-				begin try
-					INSERT INTO [Intersect] (IntersectTypeID, Classification, Description) VALUES (@IntersectTypeID, 2, NULL)
+			--insert start records into intersect node
+			INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
+					select sr.StartIntersectTypeNodeID, il.IntersectID, 'FusionAttribute',sr.StartFusionAttributeID from [fusion].[StagingRelation] sr inner join @IDList il on (sr.ID = il.StageID)
+						where	sr.ExecutionID = @executionID and sr.IntersectID is null;
 
-					SELECT @IntersectID = SCOPE_IDENTITY()
-
-					INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
-					VALUES						(@StartIntersectNodeTypeID, @IntersectID, @objectType, @StartFusionAttributeID)
-
-					INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-					VALUES						(@EndIntersectNodeTypeID, @IntersectID, @objectType, @EndFusionAttributeID)
-
-					insert into @Intersects values (@IntersectID)
-
-					UPDATE	[fusion].[StagingRelation]
-					SET		IntersectID = @IntersectID
-					WHERE	ExecutionID = @executionID and ID = @current
-				end try
-				begin catch
-					insert into fusion.Error values (@executionID, getutcdate(), 'STEP 8:LOOP. (Line ' + cast(ERROR_LINE() as varchar(50)) + ') ' + error_message())
-				end catch
-
-				set @current = @current +1
-			end
-
+			--insert end records into intersect node
+			INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
+					select sr.EndIntersectTypeNodeID, il.IntersectID, 'FusionAttribute',sr.EndFusionAttributeID from [fusion].[StagingRelation] sr inner join @IDList il on (sr.ID = il.StageID)
+						where	sr.ExecutionID = @executionID and sr.IntersectID is null;
+	
+			--update staginrelation to have the id's we used in intersect table
+			UPDATE	[fusion].[StagingRelation]
+					SET		IntersectID = idl.intersectid
+					from @IDList idl
+					WHERE	ExecutionID = @executionID and ID = idl.stageid;
+										
+			insert into @Intersects select idl.intersectid from @IDList idl;
+			
 			declare @IntersectCount int
 			select @IntersectCount = count(1) from @Intersects
 			if @IntersectCount > 0 
