@@ -6717,9 +6717,15 @@ namespace d360.web.Controllers
                     }
                     break;
                 case "TaxonomyType":
-                    fieldTypeNames.Insert(0, "Name");
-                    fieldTypeNames.Insert(1, "Description");
-                    fieldTypeNames.Insert(2, "Parent");
+                    var levels = Company.Query<int>("select MaximumDepth from TaxonomyType where ID = @id", new { id }).SingleOrDefault();
+                    for(int i = 0; i < levels; i++)
+                    {
+                        fieldTypeNames.Insert(i, "Level" + (i+1));
+                    }
+
+                   // fieldTypeNames.Add("Name");
+                    fieldTypeNames.Add("Description");
+                   // fieldTypeNames.Add("Parent");
                     break;
             }
 

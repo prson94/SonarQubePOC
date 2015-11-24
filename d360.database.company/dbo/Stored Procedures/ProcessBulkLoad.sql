@@ -253,96 +253,164 @@ begin
 		end
 		else if @Object = 'TaxonomyType'
 		begin
-			-- You need to figure out the levels of the models within the spreadsheet, and insert by the level number ASCENDING.
-			declare @TypeName nvarchar(250) --temp
-			select	 @TypeName = Name from TaxonomyType where ID = @ObjectID
-
-			--populate the textpath with the model type name.
-			update	T
-			set		T.Value = @TypeName + '/' + T.Value
-			from	[LoadItemColumn] T
-					inner join	(
-								select	IC.LoadID,
-										IC.RowIndex,
-										IC.ColumnIndex,
-										IC.Value
-								from	[Load] L 
-										inner join [LoadColumn] C on L.[Object] = 'TaxonomyType' and C.LoadID = L.ID and C.Name = 'Parent'
-										inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-								where	L.ID = @LoadID and CHARINDEX(@TypeName, IC.Value) = 0 and (IC.Value <> '' and IC.Value is not null)
-								) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-
-			declare @levels table (RowIndex int, [Level] int)
-			insert into @levels
-				select	IC.RowIndex,
-						LEN(IC.Value) - LEN(REPLACE(IC.Value, '/', '')) as [LevelCount]
-				from	[Load] L 
-						inner join [LoadColumn] C on L.[Object] = 'TaxonomyType' and C.LoadID = L.ID and C.Name = 'Parent'
-						inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-				where	L.ID = @LoadID
+		--begin tran
 
 			declare @currentLevel int,
-					@maxLevel int
+			@maxLevel int,
+			@rowCount int,
+			@rowCurr int;
 
-			select @currentLevel = min([Level]) from @levels
-			select @maxLevel = max([Level]) from @levels
+			select 
+				@currentLevel = 0
+				,@maxLevel = max(
+					case when isnumeric(replace(Name,'Level','')) = 1 then
+						replace(Name,'Level','') 
+					else 
+						0 
+					end) 
+			from 
+				LoadColumn 
+			where 
+				LoadID = @LoadID and Name like 'Level%';
+			
 
+			declare @levels table (id int, ColumnIndex int, RowIndex int, [Level] varchar(50), Value varchar(250),MaxLevel int, TaxonomyID int, ParentID int, [Status] varchar(50));
+			with v as
+			(
+				select L.ID, L.Object, L.ObjectID, LC.Name, LC.ColumnIndex, IC.RowIndex, IC.Value, replace(LC.Name,'Level','') as [Level], T.ID as TaxonomyID from [Load] L
+				join LoadColumn LC on LC.LoadID = L.ID
+				join LoadItemColumn IC on IC.LoadID = LC.LoadID AND IC.ColumnIndex = LC.ColumnIndex
+				left join Taxonomy T on T.TaxonomyTypeID = L.ObjectID and T.[Level] = replace(LC.Name,'Level','') and T.Name = IC.Value
+				where L.ID = @LoadID AND ltrim(rtrim(IC.Value)) != '' and LC.Name like 'Level%'  
+			)
+			insert into @levels
+			select distinct
+				row_number() over (partition by 1 order by v.[Level]) as ID,
+				v.ColumnIndex
+				,v.RowIndex
+				,v.[Level]
+				,v.Value
+				,m.[Level] as MaxLevel
+				,v.TaxonomyID
+				,p.TaxonomyID as ParentID 
+				,'UPDATE' as [Status]
+			from v
+			left join v p 
+				on p.RowIndex = v.RowIndex and v.TaxonomyID is null and p.ColumnIndex = (v.ColumnIndex - 1)
+			inner join v m on m.RowIndex = v.RowIndex and m.[Level] = (select max([Level]) from v where RowIndex = m.RowIndex)
+			order by v.[Level] asc;
+
+			--calculate hierarchy
 			while @currentLevel <= @maxLevel
 			begin
-				-- PARSE any Parent Taxonomy fields.  This is only in the case of models.
-				update	T
-				set		T.LookupObject = S.LookupObject,
-						T.LookupObjectID = S.LookupObjectID
-				from	LoadItemColumn T
-						inner join	(
-									select	IC.LoadID,
-											IC.RowIndex,
-											IC.ColumnIndex,
-											'Taxonomy' as LookupObject,
-											P.ID as LookupObjectID
-									from	[Load] L 
-											inner join [LoadColumn] C on L.[Object] = 'TaxonomyType' and C.LoadID = L.ID and C.Name = 'Parent'
-											inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-											inner join Taxonomy P on P.TaxonomyTypeID = @ObjectID and P.[TextPath] = IC.Value
-											inner join @levels LE on LE.RowIndex = IC.RowIndex and LE.[Level] = @currentLevel
-									) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+				set @currentLevel = @currentLevel + 1;
+				
+				update LV
+				set LV.ParentID = P.ID
+				from @levels LV
+				left join @levels P on P.[Level] = (LV.[Level] - 1) AND LV.RowIndex = P.RowIndex
+				where LV.[Level] = @currentLevel;
+			end 
 
-				merge	Taxonomy T
-				using	(
-						select	distinct
-								LI.LoadID,
-								LI.RowIndex,
-								@ObjectID as TaxonomyTypeID,
-								IC_N.Value as Name,
-								D.[Description],
-								P.ParentID
-						from	[LoadItem] LI
-								inner join [LoadItemColumn] IC_N on IC_N.LoadID = LI.LoadID and IC_N.RowIndex = LI.RowIndex inner join LoadColumn C_N on C_N.LoadID = LI.LoadID and C_N.ColumnIndex = IC_N.ColumnIndex and C_N.Name = 'Name'
-								inner join @levels L on L.RowIndex = IC_N.RowIndex and L.[Level] = @currentLevel
-								outer apply (
-											select	I.Value as Description
-											from	[LoadItemColumn] I
-													inner join LoadColumn C on I.LoadID = LI.LoadID and I.RowIndex = LI.RowIndex 
-																				 and C.LoadID = LI.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name = 'Description'
-											) D
-								outer apply (
-											select	I.LookupObjectID as ParentID
-											from	[LoadItemColumn] I
-													inner join LoadColumn C on I.LoadID = LI.LoadID and I.RowIndex = LI.RowIndex 
-																				 and C.LoadID = LI.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name = 'Parent'
-											) P
-						where	LI.LoadID = @LoadID
-						) S
-				on		(T.TaxonomyTypeID = S.TaxonomyTypeID and ((T.ParentID = S.ParentID and S.ParentID is not null) OR (T.ParentID is null and S.ParentID is null)) and T.Name = S.Name)
-				when	matched then
-						update	set T.[Description] = S.[Description]
-				when	not matched then
-						insert (TaxonomyTypeID, ParentID, Name, [Description], UpdatedOn, UpdatedBy)
-						values (S.TaxonomyTypeID, S.ParentID, S.Name, S.[Description], getutcdate(), 0)
-				output	'Taxonomy', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
+			--delete records that have a level > 1 and no parentid, missing info
+			--delete from @levels where parentid is null and level > 1;
 
-				set @currentLevel = @currentLevel + 1
-			end --while loop end
+			select @rowCurr = 0, @rowCount = count(*) from @levels;
+
+			while @rowCurr <= @rowCount
+			begin
+				set @rowCurr = @rowCurr + 1;
+
+				--parent does not exist or leading columns were not filled
+				if (select ParentID from @levels where id = @rowCurr) IS NULL AND (select Level from @levels where id = @rowCurr) > 1
+				begin
+					update @levels set [Status] = 'ERROR' where rowIndex = (select rowindex from @levels where id = @rowCurr);
+					continue;
+				end
+
+
+				--update the TaxonomyID for records that do not yet have it
+				if (select level from @levels where id = @rowCurr) = 1
+				begin
+					update LV
+					set TaxonomyID = T.ID
+					from @levels LV
+					join Taxonomy T on T.Name = LV.Value and T.ParentID is NULL and T.Level = LV.Level
+					where LV.ID = @rowCurr;
+				end
+				else
+				begin
+					update LV
+					set TaxonomyID = T.ID
+					from @levels LV
+					left join @levels P on P.ID = LV.ParentID
+					join Taxonomy T on T.Name = LV.Value and T.ParentID = P.TaxonomyID and T.Level = LV.Level
+					where LV.ID = @rowCurr;
+				end
+
+				if (select TaxonomyID from @levels where id = @rowCurr) IS NULL
+				begin
+					--insert the new taxonomy
+					insert into Taxonomy (TaxonomyTypeID, ParentID, Name, [Description], UpdatedOn, UpdatedBy)
+					select distinct
+						 L.ObjectID as TaxonomyTypeID
+						,LVP.TaxonomyID as ParentID
+						,LV.Value as Name
+						,case when LV.Level = LV.MaxLevel then
+							LI.Value
+						else
+							''
+						END as Description
+						,getdate() as UpdatedOn
+						,0 as UpdatedBy
+					from 
+						@levels LV
+					left join @levels LVP on LVP.ID = LV.ParentID
+					join [Load] L on L.ID = @LoadID
+					inner join LoadColumn LC on LC.Name = 'Description' and LC.LoadID = @LoadID
+					inner join LoadItemColumn LI on LI.RowIndex = LV.RowIndex AND LI.ColumnIndex = LC.ColumnIndex AND LI.LoadID = @LoadID
+					where
+						LV.ID = @rowCurr
+
+					update @levels set [Status] = 'INSERT' where id = @rowCurr;
+
+					--set the levels taxonomy id after insert
+					update LV
+					set TaxonomyID = T.ID
+					from @levels LV
+					left join @levels P on P.ID = LV.ParentID
+					join Taxonomy T on T.Name = LV.Value and coalesce(T.ParentID,-1) = coalesce(P.TaxonomyID,-1) and T.Level = LV.Level
+					where LV.ID = @rowCurr;
+				end
+				
+				--if level = max, update the description
+				if (select level from @levels where id = @rowCurr) = (select maxlevel from @levels where id = @rowCurr)
+				begin
+					update T
+					set T.Description = case when LI.Value = '' then T.Description else LI.Value end
+					from Taxonomy T
+					join @levels LV on LV.ID = @rowCurr and T.ID = LV.TaxonomyID
+					inner join LoadColumn LC on LC.Name = 'Description' and LC.LoadID = @LoadID
+					inner join LoadItemColumn LI on LI.RowIndex = LV.RowIndex AND LI.ColumnIndex = LC.ColumnIndex AND LI.LoadID = @LoadID;
+
+				end
+			end --end while
+			
+
+			--remove error rows
+			delete from @levels
+			where rowindex in (select rowindex from @levels where status is null or status = 'ERROR');
+
+						--insert object statuses
+			insert into @ResolvedObjects ([Object], ObjectID, [Action], LoadID, RowIndex)
+			select
+				'Taxonomy',
+				TaxonomyID,
+				[Status],
+				@LoadID,
+				RowIndex
+			from 
+			@levels;
 
 		end
 
