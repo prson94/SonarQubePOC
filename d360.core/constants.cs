@@ -13,6 +13,7 @@
         public const string AZURE_STORAGE_BLOB_ENDPOINT = @"http://data3sixty.blob.core.windows.net/";
         public const string AZURE_STORAGE_NAME = "data3sixty";
         public const string AZURE_STORAGE_KEY = "akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==";
+
         public const string WEBJOBS_STORAGE_CONNECTION = "DefaultEndpointsProtocol=https;AccountName=data3sixty;AccountKey=akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==";
 
         public const string COMPANY_ICON_FOLDER = "company-icons";
@@ -23,5 +24,8 @@
         public const string ARTIFACT_STATUS_DRAFT = "Draft";
         public const string ARTIFACT_STATUS_REVIEW = "Under Review";
         public const string ARTIFACT_STATUS_CERTIFIED = "Certified";
+
+        //azure container names
+        public const string AZURE_CLOUD_FUSION_CONTAINER = "cloud-fusion-data";
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace d360.extensions
@@ -7,6 +8,13 @@ namespace d360.extensions
     { 
         public static string RESOURCE_IMAGE_CONTAINER = "d3s-resource-image";
     }
+
+    public class StorageFileInfo
+    {
+        public string Name { get; set; }
+        public DateTimeOffset? LastModified { get; set; }
+    }
+
     public interface IStorageProvider
     {
         void CreateFolder(string name);
@@ -22,5 +30,7 @@ namespace d360.extensions
         List<string> ListFilenamesByPrefix(string folderName, string prefix);
 
         bool ReleaseLockOnBlobFile(string folderName, string fileName);
+
+        List<StorageFileInfo> ListFiles(string folderName);
     }
 }

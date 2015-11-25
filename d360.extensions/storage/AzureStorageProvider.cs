@@ -128,6 +128,30 @@ namespace d360.extensions.storage
             return c.ListBlobs(prefix, true, BlobListingDetails.Metadata).Select(i => i.Uri.LocalPath.Replace(folderName, "").Replace("/", "")).ToList();
         }
 
+        public List<StorageFileInfo> ListFiles(string folderName)
+        {
+            //container is the first part of the path
+            var containerName = folderName.Substring(0, folderName.IndexOf('/'));
+                        
+            var c = getContainer(containerName);
+            
+            string blobPrefix = (containerName.Length < folderName.Length ? folderName.Substring(folderName.IndexOf('/'), folderName.Length - folderName.IndexOf('/')) : null);
+            blobPrefix = blobPrefix.TrimStart('/');
+
+            bool useFlatBlobListing = true;
+
+            List<StorageFileInfo> files =
+                c.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.Metadata).
+                Select(b => new StorageFileInfo
+                {
+                    LastModified = (((CloudBlockBlob)b).Properties.LastModified),//put actual time
+                    Name = b.Uri.LocalPath.Remove(0, folderName.Length + 2).Replace('/', '\\')
+                }).
+                ToList();
+
+            return files;
+        }
+
         public bool ReleaseLockOnBlobFile(string folderName, string fileName)
         {
             var c = getContainer(folderName);
