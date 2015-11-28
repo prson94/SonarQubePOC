@@ -41,7 +41,6 @@ BEGIN
 	delete ResponsibilityTypeSourceType where ObjectType = @type and ObjectID in (select ID from deleted)
 
 	delete StatisticTypeRelation where ObjectType = @type and ObjectID in (select ID from deleted)
-	delete SynonymTypeRelation where ObjectType = @type and ObjectID in (select ID from deleted)
 	delete WorkflowTypeRelation where [Object] = @type and ObjectID in (select ID from deleted)
 
 	DELETE	O

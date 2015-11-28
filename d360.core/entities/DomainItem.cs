@@ -39,9 +39,6 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public virtual Domain Domain { get; set; }
 
-        [IgnoreDataMember]
-        public virtual ICollection<IntersectFlowMapping> Mappings { get; set; }
-
         #endregion
     }
 }

@@ -65,6 +65,8 @@ BEGIN
 		from	P
 				left join reporting.Global_Resource R on R.ResourceID = P.CreatingResourceID
 				left join cache.ObjectDetails D on D.[Object] = P.ObjectType and D.ObjectID = P.ObjectID
+		where
+			P.isdeleted = 0
 				) t
 					UNPIVOT
 				(
@@ -92,3 +94,4 @@ BEGIN
 		) i on i.CommentTypeName = u.CommentTypeName
 		
 END
+GO

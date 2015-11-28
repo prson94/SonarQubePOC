@@ -166,107 +166,107 @@ order by	SD.ObjectTypeName,
             public List<SimpleHierarchyJsonViewModel> Items { get; set; }
         }
 
-        public JsonNetResult SimpleHierarchies(SystemObjects type, int id)
-        {
-            var list = Company.Query<SimpleHierarchyDbViewModel>(@"
-declare @Flows table (ID int, FlowTypeName nvarchar(250))
+//        public JsonNetResult SimpleHierarchies(SystemObjects type, int id)
+//        {
+//            var list = Company.Query<SimpleHierarchyDbViewModel>(@"
+//declare @Flows table (ID int, FlowTypeName nvarchar(250))
 
-insert into @Flows
-	select	F.ID,
-            FT.Name
-	from	IntersectFlow F
-            inner join IntersectFlowType FT on FT.ID = F.IntersectFlowTypeID and FT.IntersectFlowConfiguration = 1
-			inner join IntersectFlowItem I on I.IntersectFlowID = F.ID
-			inner join IntersectNode N on (N.ID = I.FromIntersectNodeID or N.ID = I.ToIntersectNodeID) and N.ObjectType = @type and N.ObjectID = @id;
+//insert into @Flows
+//	select	F.ID,
+//            FT.Name
+//	from	IntersectFlow F
+//            inner join IntersectFlowType FT on FT.ID = F.IntersectFlowTypeID and FT.IntersectFlowConfiguration = 1
+//			inner join IntersectFlowItem I on I.IntersectFlowID = F.ID
+//			inner join IntersectNode N on (N.ID = I.FromIntersectNodeID or N.ID = I.ToIntersectNodeID) and N.ObjectType = @type and N.ObjectID = @id;
 
-with flows as
-	(
-	select	I.*,
-			1 as [Level]
-	from	IntersectFlowItem I
-			inner join @Flows F on F.ID = I.IntersectFlowID and I.ParentID is null
-	union all
-	select	I.*,
-			P.[Level] + 1 as [Level]
-	from	IntersectFlowItem I
-			inner join flows P on I.ParentID = P.ID
-	)
-select	F.ID,
-        F.ParentID,
-        F.IntersectFlowID,
-        FT.FlowTypeName,
-        F.FromIntersectNodeID,
-        FN.ObjectType as FromObjectType,
-        FN.ObjectID as FromObjectID,
-        FD.Name as FromObjectName,
-        FD.Url as FromObjectUrl,
-        F.ToIntersectNodeID,
-        TN.ObjectType as ToObjectType,
-        TN.ObjectID as ToObjectID,
-        TD.Name as ToObjectName,
-        TD.Url as ToObjectUrl
-from	flows F
-        inner join @Flows FT on FT.ID = F.IntersectFlowID
-		inner join IntersectNode FN on FN.ID = F.FromIntersectNodeID
-        inner join cache.ObjectDetails FD on FD.[Object] =  FN.ObjectType and FD.ObjectID = FN.ObjectID
-		inner join IntersectNode TN on TN.ID = F.ToIntersectNodeID
-		inner join cache.ObjectDetails TD on TD.[Object] =  TN.ObjectType and TD.ObjectID = TN.ObjectID", new { type = type.ToString(), id }).ToList();
+//with flows as
+//	(
+//	select	I.*,
+//			1 as [Level]
+//	from	IntersectFlowItem I
+//			inner join @Flows F on F.ID = I.IntersectFlowID and I.ParentID is null
+//	union all
+//	select	I.*,
+//			P.[Level] + 1 as [Level]
+//	from	IntersectFlowItem I
+//			inner join flows P on I.ParentID = P.ID
+//	)
+//select	F.ID,
+//        F.ParentID,
+//        F.IntersectFlowID,
+//        FT.FlowTypeName,
+//        F.FromIntersectNodeID,
+//        FN.ObjectType as FromObjectType,
+//        FN.ObjectID as FromObjectID,
+//        FD.Name as FromObjectName,
+//        FD.Url as FromObjectUrl,
+//        F.ToIntersectNodeID,
+//        TN.ObjectType as ToObjectType,
+//        TN.ObjectID as ToObjectID,
+//        TD.Name as ToObjectName,
+//        TD.Url as ToObjectUrl
+//from	flows F
+//        inner join @Flows FT on FT.ID = F.IntersectFlowID
+//		inner join IntersectNode FN on FN.ID = F.FromIntersectNodeID
+//        inner join cache.ObjectDetails FD on FD.[Object] =  FN.ObjectType and FD.ObjectID = FN.ObjectID
+//		inner join IntersectNode TN on TN.ID = F.ToIntersectNodeID
+//		inner join cache.ObjectDetails TD on TD.[Object] =  TN.ObjectType and TD.ObjectID = TN.ObjectID", new { type = type.ToString(), id }).ToList();
 
-            var models = new List<SimpleHierarchyJsonViewModel>();
+//            var models = new List<SimpleHierarchyJsonViewModel>();
 
-            //The distinct IDs we are getting here represent different flows altogether, meaning different hierarchies.
-            var distinctFlowIDs = list.Select(i => i.IntersectFlowID).Distinct().ToList();
+//            //The distinct IDs we are getting here represent different flows altogether, meaning different hierarchies.
+//            var distinctFlowIDs = list.Select(i => i.IntersectFlowID).Distinct().ToList();
 
-            distinctFlowIDs.ForEach(flowID =>
-            {
-                var flowItems = list.Where(i => i.IntersectFlowID == flowID).ToList();
-                parseSimpleHierarchyJsonViewModel(models, flowItems);
-            });
+//            distinctFlowIDs.ForEach(flowID =>
+//            {
+//                var flowItems = list.Where(i => i.IntersectFlowID == flowID).ToList();
+//                parseSimpleHierarchyJsonViewModel(models, flowItems);
+//            });
 
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
-        void parseSimpleHierarchyJsonViewModel(List<SimpleHierarchyJsonViewModel> models, List<SimpleHierarchyDbViewModel> flowItems, int? parentID = null, SimpleHierarchyJsonViewModel parent = null)
-        {
-            bool shouldAddToModelCollection = false;
+//        void parseSimpleHierarchyJsonViewModel(List<SimpleHierarchyJsonViewModel> models, List<SimpleHierarchyDbViewModel> flowItems, int? parentID = null, SimpleHierarchyJsonViewModel parent = null)
+//        {
+//            bool shouldAddToModelCollection = false;
 
-            foreach (var flowItem in flowItems.Where(i => i.ParentID == parentID))
-            {
-                SimpleHierarchyJsonViewModel model = null;
+//            foreach (var flowItem in flowItems.Where(i => i.ParentID == parentID))
+//            {
+//                SimpleHierarchyJsonViewModel model = null;
 
-                if (parent == null)
-                {
-                    // We should only be in this loop the first time we cycle through to generate the hierarchy.
-                    parent = new SimpleHierarchyJsonViewModel
-                    {
-                        FlowTypeName = flowItem.FlowTypeName,
-                        IntersectFlowID = flowItem.IntersectFlowID,
-                        ObjectID = flowItem.FromObjectID,
-                        ObjectName = flowItem.FromObjectName,
-                        ObjectType = flowItem.FromObjectType,
-                        ObjectUrl = flowItem.FromObjectUrl
-                    };
-                    shouldAddToModelCollection = true;
-                }
+//                if (parent == null)
+//                {
+//                    // We should only be in this loop the first time we cycle through to generate the hierarchy.
+//                    parent = new SimpleHierarchyJsonViewModel
+//                    {
+//                        FlowTypeName = flowItem.FlowTypeName,
+//                        IntersectFlowID = flowItem.IntersectFlowID,
+//                        ObjectID = flowItem.FromObjectID,
+//                        ObjectName = flowItem.FromObjectName,
+//                        ObjectType = flowItem.FromObjectType,
+//                        ObjectUrl = flowItem.FromObjectUrl
+//                    };
+//                    shouldAddToModelCollection = true;
+//                }
 
-                model = new SimpleHierarchyJsonViewModel
-                {
-                    FlowTypeName = flowItem.FlowTypeName,
-                    IntersectFlowID = flowItem.IntersectFlowID,
-                    ObjectID = flowItem.ToObjectID,
-                    ObjectName = flowItem.ToObjectName,
-                    ObjectType = flowItem.ToObjectType,
-                    ObjectUrl = flowItem.ToObjectUrl
-                };
-                parseSimpleHierarchyJsonViewModel(models, flowItems, flowItem.ID, model);   // Recurse
-                parent.Items.Add(model);                                                    // Add to parent Items collection.
-            }
+//                model = new SimpleHierarchyJsonViewModel
+//                {
+//                    FlowTypeName = flowItem.FlowTypeName,
+//                    IntersectFlowID = flowItem.IntersectFlowID,
+//                    ObjectID = flowItem.ToObjectID,
+//                    ObjectName = flowItem.ToObjectName,
+//                    ObjectType = flowItem.ToObjectType,
+//                    ObjectUrl = flowItem.ToObjectUrl
+//                };
+//                parseSimpleHierarchyJsonViewModel(models, flowItems, flowItem.ID, model);   // Recurse
+//                parent.Items.Add(model);                                                    // Add to parent Items collection.
+//            }
 
-            if (shouldAddToModelCollection)
-            {
-                models.Add(parent);         // We only add this to the model collections once per hierarchy flow.
-            }
-        }
+//            if (shouldAddToModelCollection)
+//            {
+//                models.Add(parent);         // We only add this to the model collections once per hierarchy flow.
+//            }
+//        }
 
         #endregion
 

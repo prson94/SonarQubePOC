@@ -89,3 +89,4 @@ BEGIN
 					inner join cache.Relationships CR on CR.SourceObject = @Type and CR.SourceObjectID = @ID and CR.TargetObject = 'Rule' and CR.TargetObjectID = R.ID
 		end
 END
+GO

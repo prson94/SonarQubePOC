@@ -26,4 +26,8 @@
     [TargetResponsibilityID]  INT            NULL,
     CONSTRAINT [PK_CacheResponsibilities] PRIMARY KEY CLUSTERED ([ResponsibilityID] ASC, [AssigningItem] ASC, [AssigningItemID] ASC, [Object] ASC, [ObjectID] ASC, [ContextHash] ASC)
 );
+GO
 
+CREATE NONCLUSTERED INDEX [IX_CacheResponsibilities_ResponsibleObject]
+    ON [cache].[Responsibilities]([ResponsibleObject] ASC, [ResponsibleObjectID] ASC);
+GO

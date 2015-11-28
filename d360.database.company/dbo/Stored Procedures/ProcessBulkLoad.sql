@@ -414,6 +414,103 @@ begin
 
 		end
 
+			
+			
+
+
+		--	-- You need to figure out the levels of the models within the spreadsheet, and insert by the level number ASCENDING.
+		--	declare @TypeName nvarchar(250) --temp
+		--	select	 @TypeName = Name from TaxonomyType where ID = @ObjectID
+
+		--	--populate the textpath with the model type name.
+		--	update	T
+		--	set		T.Value = @TypeName + '/' + T.Value
+		--	from	[LoadItemColumn] T
+		--			inner join	(
+		--						select	IC.LoadID,
+		--								IC.RowIndex,
+		--								IC.ColumnIndex,
+		--								IC.Value
+		--						from	[Load] L 
+		--								inner join [LoadColumn] C on L.[Object] = 'TaxonomyType' and C.LoadID = L.ID and C.Name = 'Parent'
+		--								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+		--						where	L.ID = @LoadID and CHARINDEX(@TypeName, IC.Value) = 0 and (IC.Value <> '' and IC.Value is not null)
+		--						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+
+		--	declare @levels table (RowIndex int, [Level] int)
+		--	insert into @levels
+		--		select	IC.RowIndex,
+		--				LEN(IC.Value) - LEN(REPLACE(IC.Value, '/', '')) as [LevelCount]
+		--		from	[Load] L 
+		--				inner join [LoadColumn] C on L.[Object] = 'TaxonomyType' and C.LoadID = L.ID and C.Name = 'Parent'
+		--				inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+		--		where	L.ID = @LoadID
+
+		--	declare @currentLevel int,
+		--			@maxLevel int
+
+		--	select @currentLevel = min([Level]) from @levels
+		--	select @maxLevel = max([Level]) from @levels
+
+		--	while @currentLevel <= @maxLevel
+		--	begin
+		--		-- PARSE any Parent Taxonomy fields.  This is only in the case of models.
+		--		update	T
+		--		set		T.LookupObject = S.LookupObject,
+		--				T.LookupObjectID = S.LookupObjectID
+		--		from	LoadItemColumn T
+		--				inner join	(
+		--							select	IC.LoadID,
+		--									IC.RowIndex,
+		--									IC.ColumnIndex,
+		--									'Taxonomy' as LookupObject,
+		--									P.ID as LookupObjectID
+		--							from	[Load] L 
+		--									inner join [LoadColumn] C on L.[Object] = 'TaxonomyType' and C.LoadID = L.ID and C.Name = 'Parent'
+		--									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+		--									inner join Taxonomy P on P.TaxonomyTypeID = @ObjectID and P.[TextPath] = IC.Value
+		--									inner join @levels LE on LE.RowIndex = IC.RowIndex and LE.[Level] = @currentLevel
+		--							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+
+		--		merge	Taxonomy T
+		--		using	(
+		--				select	distinct
+		--						LI.LoadID,
+		--						LI.RowIndex,
+		--						@ObjectID as TaxonomyTypeID,
+		--						IC_N.Value as Name,
+		--						D.[Description],
+		--						P.ParentID
+		--				from	[LoadItem] LI
+		--						inner join [LoadItemColumn] IC_N on IC_N.LoadID = LI.LoadID and IC_N.RowIndex = LI.RowIndex inner join LoadColumn C_N on C_N.LoadID = LI.LoadID and C_N.ColumnIndex = IC_N.ColumnIndex and C_N.Name = 'Name'
+		--						inner join @levels L on L.RowIndex = IC_N.RowIndex and L.[Level] = @currentLevel
+		--						outer apply (
+		--									select	I.Value as Description
+		--									from	[LoadItemColumn] I
+		--											inner join LoadColumn C on I.LoadID = LI.LoadID and I.RowIndex = LI.RowIndex 
+		--																		 and C.LoadID = LI.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name = 'Description'
+		--									) D
+		--						outer apply (
+		--									select	I.LookupObjectID as ParentID
+		--									from	[LoadItemColumn] I
+		--											inner join LoadColumn C on I.LoadID = LI.LoadID and I.RowIndex = LI.RowIndex 
+		--																		 and C.LoadID = LI.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name = 'Parent'
+		--									) P
+		--				where	LI.LoadID = @LoadID
+		--				) S
+		--		on		(T.TaxonomyTypeID = S.TaxonomyTypeID and ((T.ParentID = S.ParentID and S.ParentID is not null) OR (T.ParentID is null and S.ParentID is null)) and T.Name = S.Name)
+		--		when	matched then
+		--				update	set T.[Description] = S.[Description]
+		--		when	not matched then
+		--				insert (TaxonomyTypeID, ParentID, Name, [Description], UpdatedOn, UpdatedBy)
+		--				values (S.TaxonomyTypeID, S.ParentID, S.Name, S.[Description], getutcdate(), 0)
+		--		output	'Taxonomy', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
+
+		--		set @currentLevel = @currentLevel + 1
+		--	end --while loop end
+
+		--end
+
 		-- Update the LoadItem table with the IDs we recieved in the merge statements above.
 		update	T
 		set		T.[Object] = S.[Object],
@@ -686,3 +783,4 @@ begin
 	set		DateCompleted = getutcdate()
 	where	ID = @LoadID
 end
+GO

@@ -43,11 +43,11 @@
                 try {
                     switch (data.context) {
                         case contextList.Artifact:
-                            $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
+                            //$('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             $('#List').jqxGrid('updatebounddata');
                             break;
                         case contextList.ArtifactType:
-                            $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
+                            //$('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;
                     }
                 } catch (e) { }

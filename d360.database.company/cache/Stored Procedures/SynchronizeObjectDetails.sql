@@ -790,3 +790,4 @@ begin
 		FROM	cache.Relationships R INNER JOIN @item S ON R.TargetType = S.[Object] and R.TargetTypeID = S.ObjectID
 	end
 end
+GO

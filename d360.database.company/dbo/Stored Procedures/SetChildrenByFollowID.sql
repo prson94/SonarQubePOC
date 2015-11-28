@@ -138,6 +138,12 @@ BEGIN
 
 END
 
+
+
+--insert all child records into the child table
+--select * from followchild
+
+
 --when i follow a parent i need to unfollow any Parent records which are children of the new parent
 delete from follow where
 id in (
@@ -146,5 +152,56 @@ join follow f on f.resourceId = @resourceID and f.followtypeid = 3 and f.objecti
  where c.parentobjecttype = @type and c.parentobjectid = @id
  );
 
+--select * from follow where followtypeid = 3 and resourceId = 3243
+
+
+
+--delete any existing follow records or records that are children of existing records which have been inserted as part of the above
+--with e as
+--(
+--	select f1.id 
+--	from 
+--		follow f1
+--	join 
+--		follow f2 on f2.parentid = @followid 
+--		and f2.objecttype = f1.objecttype 
+--		and f2.objectid = f1.objectid 
+--		and f1.resourceId = 3243 
+--		and f1.parentid is null
+--	union all
+--	select 
+--		f3.id 
+--	from 
+--		e
+--	join 
+--		follow f3 on f3.parentid = e.id
+--)
+--delete from follow
+--where 
+--	id in (select id from e);
+
+
+--with d as
+--(
+--	select * from cache.ObjectDetails d where d.ObjectID = @id and d.Object = @type
+--	union all
+--	select d2.* from d
+--	inner join cache.ObjectDetails d2 on d2.parentid = d.Objectid 
+--)
+--insert into follow (ResourceID, ObjectType, ObjectID, DateCreated, FollowTypeID, ParentID)
+--select @resourceId as ResourceID, r.targetobject as ObjectType,r.targetobjectid as ObjectId, getdate() as DateCreated, 5 as FollowTypeId, @followId as ParentID from d
+--join cache.relationships r on r.SourceObject = d.Object and r.SourceObjectID = d.ObjectID
+--where  r.targetobject = @type and not exists (select * from follow f where f.followtypeid = 5 and f.resourceId = @resourceID and f.ObjectType = r.targetobject and f.objectid = r.targetobjectid);
+
+--select * from cache.relationships
+
+--select * from follow order by datecreated desc
+
+--delete from follow where id > 2500
+
+--select objectid, count(objectid) from follow where  Parentid = 1741
+--group by objectid order by 2 desc
+
 
 END
+GO

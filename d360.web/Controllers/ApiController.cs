@@ -2780,8 +2780,7 @@ from	    ResponsibilityTypeHierarchy H
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = artifactType.GetName(i => i.Name), FieldName = "ArtifactTypeName", FieldDescription = artifactType.GetDescription(i => i.Name), Value = artifactType.Name });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = artifactType.GetName(i => i.ID), FieldName = "ArtifactTypeID", FieldDescription = artifactType.GetDescription(i => i.ID), Value = artifactType.ID.ToString() });
 
-                        if (!string.IsNullOrEmpty(artifactType.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = artifactType.GetName(i => i.Description), FieldName = "ArtifactTypeDescription", FieldDescription = artifactType.GetDescription(i => i.Description), Value = artifactType.Description });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = artifactType.GetName(i => i.Description), FieldName = "ArtifactTypeDescription", FieldDescription = artifactType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description });
 
                         list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = artifactType.GetName(i => i.CanOwnFusion), FieldName = "ArtifactTypeCanOwnFusion", FieldDescription = artifactType.GetDescription(i => i.CanOwnFusion), Value = artifactType.CanOwnFusion.FormatBooleanReadOnlyValue() });
 
@@ -2810,8 +2809,7 @@ from	    ResponsibilityTypeHierarchy H
                         list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = attributeType.GetName(i => i.Name), FieldName = "AttributeTypeName", FieldDescription = attributeType.GetDescription(i => i.Name), Value = attributeType.Name });
                         list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = attributeType.GetName(i => i.TextFormatString), FieldName = "AttributeTypeTextFormatString", FieldDescription = attributeType.GetDescription(i => i.TextFormatString), Value = attributeType.TextFormatString });
 
-                        if (!string.IsNullOrEmpty(attributeType.Description))
-                            list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = attributeType.GetName(i => i.Description), FieldName = "AttributeTypeDescription", FieldDescription = attributeType.GetDescription(i => i.Description), Value = attributeType.Description });
+                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = attributeType.GetName(i => i.Description), FieldName = "AttributeTypeDescription", FieldDescription = attributeType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description });
                     }
                     attributeType = null;
                     break;
@@ -2860,8 +2858,7 @@ from	    ResponsibilityTypeHierarchy H
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = domainType.GetName(i => i.Name), FieldName = "DomainTypeName", FieldDescription = domainType.GetDescription(i => i.Name), Value = domainType.Name });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = domainType.GetName(i => i.ID), FieldName = "DomainTypeID", FieldDescription = domainType.GetDescription(i => i.ID), Value = domainType.ID.ToString() });
 
-                        if (!string.IsNullOrEmpty(domainType.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = domainType.GetName(i => i.Description), FieldName = "DomainTypeDescription", FieldDescription = domainType.GetDescription(i => i.Description), Value = domainType.Description });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = domainType.GetName(i => i.Description), FieldName = "DomainTypeDescription", FieldDescription = domainType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(domainType.Description) ? "None provided" : domainType.Description });
                     }
                     domainType = null;
                     break;
@@ -2933,8 +2930,7 @@ from	    ResponsibilityTypeHierarchy H
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = fusion.GetName(i => i.Name), FieldName = "FusionName", FieldDescription = fusion.GetDescription(i => i.Name), Value = fusion.Name });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = fusion.GetName(i => i.ID), FieldName = "FusionID", FieldDescription = fusion.GetDescription(i => i.ID), Value = fusion.ID.ToString() });
 
-                        if (!string.IsNullOrEmpty(fusion.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = fusion.GetName(i => i.Description), FieldName = "FusionDescription", FieldDescription = fusion.GetDescription(i => i.Description), Value = fusion.Description });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = fusion.GetName(i => i.Description), FieldName = "FusionDescription", FieldDescription = fusion.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(fusion.Description) ? "None provided" : fusion.Description });
 
                         row = 3;
                         foreach (var k in fusionFields)
@@ -3002,8 +2998,7 @@ from	    ResponsibilityTypeHierarchy H
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = fusionType.GetName(i => i.Name), FieldName = "FusionTypeName", FieldDescription = fusionType.GetDescription(i => i.Name), Value = fusionType.Name });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = fusionType.GetName(i => i.ID), FieldName = "FusionTypeID", FieldDescription = fusionType.GetDescription(i => i.ID), Value = fusionType.ID.ToString() });
 
-                        if (!string.IsNullOrEmpty(fusionType.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = fusionType.GetName(i => i.Description), FieldName = "FusionTypeDescription", FieldDescription = fusionType.GetDescription(i => i.Description), Value = fusionType.Description });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = fusionType.GetName(i => i.Description), FieldName = "FusionTypeDescription", FieldDescription = fusionType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description });
                     }
                     fusionType = null;
                     break;
@@ -3017,8 +3012,7 @@ from	    ResponsibilityTypeHierarchy H
                         if (intersect.IntersectTypeRoleID.HasValue)
                             list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = Resources.FieldInfo.Role_Name, FieldName = "IntersectRole", FieldDescription = "", Value = intersect.IntersectTypeRole.Name });
 
-                        if (!string.IsNullOrEmpty(intersect.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = intersect.GetName(i => i.Description), FieldName = "IntersectDescription", FieldDescription = intersect.GetDescription(i => i.Description), Value = intersect.Description + "" });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = intersect.GetName(i => i.Description), FieldName = "IntersectDescription", FieldDescription = intersect.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(intersect.Description) ? "None provided" : intersect.Description });
                     }
                     intersect = null;
                     break;
@@ -3087,8 +3081,7 @@ from	    ResponsibilityTypeHierarchy H
 
                         list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = policy.GetName(i => i.TextPath), FieldName = "PolicyTextPath", FieldDescription = policy.GetDescription(i => i.TextPath), Value = policy.TextPath });
 
-                        if (!string.IsNullOrEmpty(policy.Description))
-                            list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = policy.GetName(i => i.Description), FieldName = "PolicyDescription", FieldDescription = policy.GetDescription(i => i.Description), Value = policy.Description });
+                        list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = policy.GetName(i => i.Description), FieldName = "PolicyDescription", FieldDescription = policy.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policy.Description) ? "None provided" : policy.Description });
                     }
                     policy = null;
                     break;
@@ -3101,8 +3094,7 @@ from	    ResponsibilityTypeHierarchy H
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = rule.GetName(i => i.Name), FieldName = "RuleName", FieldDescription = rule.GetDescription(i => i.Description), Value = rule.Name });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = rule.GetName(i => i.RuleType), FieldName = "RuleRuleType", FieldDescription = rule.GetDescription(i => i.RuleType), Value = rule.RuleType.GetRuleTypeDisplayName() });
 
-                        if (!string.IsNullOrEmpty(rule.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = rule.GetName(i => i.Description), FieldName = "RuleDescription", FieldDescription = rule.GetDescription(i => i.Description), Value = rule.Description });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = rule.GetName(i => i.Description), FieldName = "RuleDescription", FieldDescription = rule.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(rule.Description) ? "None provided" : rule.Description });
                     }
                     policy = null;
                     break;
@@ -3232,8 +3224,7 @@ from	    ResponsibilityTypeHierarchy H
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = policyType.GetName(i => i.Name), FieldName = "PolicyTypeName", FieldDescription = policyType.GetDescription(i => i.Name), Value = policyType.Name });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = policyType.GetName(i => i.ID), FieldName = "PolicyTypeID", FieldDescription = policyType.GetDescription(i => i.ID), Value = policyType.ID.ToString() });
 
-                        if (!string.IsNullOrEmpty(policyType.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = policyType.GetName(i => i.Description), FieldName = "PolicyTypeDescription", FieldDescription = policyType.GetDescription(i => i.Description), Value = policyType.Description });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = policyType.GetName(i => i.Description), FieldName = "PolicyTypeDescription", FieldDescription = policyType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description });
                     }
                     policyType = null;
                     break;
@@ -3445,16 +3436,16 @@ from	    ResponsibilityTypeHierarchy H
                     #endregion
                 case SystemObjects.TaxonomyType:
                     #region Fields
-                    var taxonomyType = Company.GetById<TaxonomyType>(id);
+                    var taxonomyType = Company.GetById<TaxonomyType>(id, i => i.TaxonomyTypeClass);
                     if (taxonomyType != null)
                     {
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = taxonomyType.GetName(i => i.Name), FieldName = "TaxonomyTypeName", FieldDescription = taxonomyType.GetDescription(i => i.Name), Value = taxonomyType.Name });
                         list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = taxonomyType.GetName(i => i.ID), FieldName = "TaxonomyTypeID", FieldDescription = taxonomyType.GetDescription(i => i.ID), Value = taxonomyType.ID.ToString() });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = taxonomyType.GetName(i => i.MaximumDepth), FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = taxonomyType.GetDescription(i => i.MaximumDepth), Value = taxonomyType.MaximumDepth.ToString() });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = taxonomyType.GetName(i => i.TaxonomyTypeClassID), FieldName = "TaxonomyTypeClass", FieldDescription = taxonomyType.GetDescription(i => i.TaxonomyTypeClassID), Value = taxonomyType.TaxonomyTypeClass.Name });
+                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = taxonomyType.GetName(i => i.MaximumDepth), FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = taxonomyType.GetDescription(i => i.MaximumDepth), Value = taxonomyType.MaximumDepth.ToString() });
 
-                        if (!string.IsNullOrEmpty(taxonomyType.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = taxonomyType.GetName(i => i.Description), FieldName = "TaxonomyTypeDescription", FieldDescription = taxonomyType.GetDescription(i => i.Description), Value = taxonomyType.Description });
+                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = taxonomyType.GetName(i => i.Description), FieldName = "TaxonomyTypeDescription", FieldDescription = taxonomyType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description });
                     }
                     taxonomyType = null;
                     break;

@@ -46,6 +46,28 @@
             try {
                 switch (data.context) {
                     case contextList.TaxonomyType:
+                        //$('#List').one('bindingcomplete', function (event) {
+                        //    var selectActiveRow = false;
+
+                        //    if (data) {
+                        //        if (data.id) {
+                        //            selectActiveRow = true;
+                        //        }
+                        //    }
+
+                        //    if (selectActiveRow) {
+                        //        try {
+                        //            $("#Tree").jqxTreeGrid('selectRow', data.id);
+                        //        } catch (e) { }
+                        //    }
+                        //    else {
+                        //        var rows = $("#Tree").jqxTreeGrid('getRows');
+                        //        if (rows.length > 0) {
+                        //            var firstRow = $("#Tree").jqxTreeGrid('getRows')[0];
+                        //            $("#Tree").jqxTreeGrid('selectRow', firstRow.uid);
+                        //        }
+                        //    }
+                        //});
                         $('#List').jqxGrid('updatebounddata');
                         amplify.publish("RefreshNavigation");
                         break;

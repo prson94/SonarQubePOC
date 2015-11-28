@@ -94,5 +94,7 @@ BEGIN
 	from	P
 			left join reporting.Global_Resource R on R.ResourceID = P.CreatingResourceID
 			left join cache.ObjectDetails D on D.[Object] = P.ObjectType and D.ObjectID = P.ObjectID
-
+	where
+		isdeleted = 0;
 END
+GO

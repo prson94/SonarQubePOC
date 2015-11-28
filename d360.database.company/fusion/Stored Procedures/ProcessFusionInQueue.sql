@@ -1,4 +1,4 @@
-﻿CREATE procedure [fusion].[ProcessFusionInQueue]
+﻿create procedure [fusion].[ProcessFusionInQueue]
 --declare
 	@queueID uniqueidentifier
 --set @queueID = '25921D75-6190-430A-A2DC-DC0D360F108A'
@@ -480,3 +480,4 @@ begin
 		end catch
 	end
 end
+GO

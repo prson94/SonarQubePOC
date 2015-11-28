@@ -1442,7 +1442,7 @@ namespace d360.web.Controllers
                 FormMethod = "POST",
                 Tokens = new List<SelectListItem>(),
                 FormName = Resources.FormInfo.Add_AttributeType_Title,
-                AttributeType = new AttributeType { ParentID = parentID },
+                AttributeType = new AttributeType { ParentID = parentID, ShowNameInTree = true },
                 AttributeTypeCategories = (parentID.HasValue) ? new List<SelectListItem>() : Company.Table<AttributeTypeCategory>().OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList()
             };
             if (!parentID.HasValue)
@@ -12237,170 +12237,170 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
         #region SourceToTarget
 
-        public JsonNetResult SourceToTarget_Step1()
-        {
-            //var models = (
-            //            from a in Company.Table<Artifact>()
-            //            join rt in Company.Filter<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == 0) on a.ArtifactTypeID equals rt.ObjectID
-            //            join t in Company.Table<ArtifactType>() on rt.ObjectID equals t.ID
-            //            orderby t.Name
-            //            orderby a.Name
-            //            select new { @group = t.Name, title = a.Name, value = a.ID.ToString() }//{ group = t.Name, title = a.Name }//{ group = t.Name, text = a.Name, value = a.ID.ToString()}
-            //            );
-            var models = Company.Query<dynamic>(
-@"select    AT.Name as [group],
-			A.Name as title,
-			A.ID as value
-from		Artifact A
-			inner join ResponsibilityTypeSourceType RT on RT.ResponsibilityTypeID = 0 and RT.ObjectID = A.ArtifactTypeID
-			inner join ArtifactType AT on AT.ID = A.ArtifactTypeID
-order by	AT.Name,
-			A.Name");
-            return new JsonNetResult
-            {
-                Formatting = Newtonsoft.Json.Formatting.None,
-                Data = models
-            };
-        }
+//        public JsonNetResult SourceToTarget_Step1()
+//        {
+//            //var models = (
+//            //            from a in Company.Table<Artifact>()
+//            //            join rt in Company.Filter<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == 0) on a.ArtifactTypeID equals rt.ObjectID
+//            //            join t in Company.Table<ArtifactType>() on rt.ObjectID equals t.ID
+//            //            orderby t.Name
+//            //            orderby a.Name
+//            //            select new { @group = t.Name, title = a.Name, value = a.ID.ToString() }//{ group = t.Name, title = a.Name }//{ group = t.Name, text = a.Name, value = a.ID.ToString()}
+//            //            );
+//            var models = Company.Query<dynamic>(
+//@"select    AT.Name as [group],
+//			A.Name as title,
+//			A.ID as value
+//from		Artifact A
+//			inner join ResponsibilityTypeSourceType RT on RT.ResponsibilityTypeID = 0 and RT.ObjectID = A.ArtifactTypeID
+//			inner join ArtifactType AT on AT.ID = A.ArtifactTypeID
+//order by	AT.Name,
+//			A.Name");
+//            return new JsonNetResult
+//            {
+//                Formatting = Newtonsoft.Json.Formatting.None,
+//                Data = models
+//            };
+//        }
 
-        public JsonNetResult SourceToTarget_SourcingObjectOptions(SystemObjects type, int id)
-        {
-            var models = Company.Query<dynamic>(
-@"select		cast(TTN.IntersectTypeID as varchar(15)) + '|' + D.[Object] + '|' + cast(D.ObjectID as varchar(15)) as value,
-			D.Name as title,
-			D.ObjectTypeName as [group],
-			case 
-				when CR.value is null then 0
-				else 1
-			end as related
-from		cache.ObjectDetails SD 
-			inner join IntersectTypeNode STN on SD.[Object] = @type and SD.ObjectID = @id and STN.ObjectType = SD.ObjectType and STN.ObjectID = SD.ObjectTypeID
-			inner join IntersectTypeNode TTN on TTN.IntersectTypeID = STN.IntersectTypeID and TTN.ID <> STN.ID and TTN.[Order] = 2 and TTN.[Order] = 1
-			inner join cache.ObjectDetails D on D.ObjectType = TTN.ObjectType and D.ObjectTypeID = TTN.ObjectID
-			left join	(
-						select	cast(R.IntersectTypeID as varchar(15)) + '|' + R.TargetObject + '|' + cast(R.TargetObjectID as varchar(15)) as value
-						from	[cache].[Relationships] R
-								inner join IntersectTypeNode TN on TN.ID = R.TargetIntersectTypeNodeID and TN.[Order] = 2 and TN.[Order] = 1 and R.SourceObject = @type and R.SourceObjectID = @id
-						) CR on CR.value = cast(TTN.IntersectTypeID as varchar(15)) + '|' + D.[Object] + '|' + cast(D.ObjectID as varchar(15))
-order by	D.ObjectTypeName,
-			D.Name", new { type = type.ToString(), id });
-            return new JsonNetResult
-            {
-                Formatting = Newtonsoft.Json.Formatting.None,
-                Data = models
-            };
-        }
+//        public JsonNetResult SourceToTarget_SourcingObjectOptions(SystemObjects type, int id)
+//        {
+//            var models = Company.Query<dynamic>(
+//@"select		cast(TTN.IntersectTypeID as varchar(15)) + '|' + D.[Object] + '|' + cast(D.ObjectID as varchar(15)) as value,
+//			D.Name as title,
+//			D.ObjectTypeName as [group],
+//			case 
+//				when CR.value is null then 0
+//				else 1
+//			end as related
+//from		cache.ObjectDetails SD 
+//			inner join IntersectTypeNode STN on SD.[Object] = @type and SD.ObjectID = @id and STN.ObjectType = SD.ObjectType and STN.ObjectID = SD.ObjectTypeID
+//			inner join IntersectTypeNode TTN on TTN.IntersectTypeID = STN.IntersectTypeID and TTN.ID <> STN.ID and TTN.[Order] = 2 and TTN.[Order] = 1
+//			inner join cache.ObjectDetails D on D.ObjectType = TTN.ObjectType and D.ObjectTypeID = TTN.ObjectID
+//			left join	(
+//						select	cast(R.IntersectTypeID as varchar(15)) + '|' + R.TargetObject + '|' + cast(R.TargetObjectID as varchar(15)) as value
+//						from	[cache].[Relationships] R
+//								inner join IntersectTypeNode TN on TN.ID = R.TargetIntersectTypeNodeID and TN.[Order] = 2 and TN.[Order] = 1 and R.SourceObject = @type and R.SourceObjectID = @id
+//						) CR on CR.value = cast(TTN.IntersectTypeID as varchar(15)) + '|' + D.[Object] + '|' + cast(D.ObjectID as varchar(15))
+//order by	D.ObjectTypeName,
+//			D.Name", new { type = type.ToString(), id });
+//            return new JsonNetResult
+//            {
+//                Formatting = Newtonsoft.Json.Formatting.None,
+//                Data = models
+//            };
+//        }
 
-        public JsonNetResult SourceToTarget_SourcingAttributeOptions(SystemObjects type, int id)
-        {
-            var models = Company.Query<dynamic>(
-@"with fa as	(
-			select	A.ID,
-					A.ParentID,
-					A.FusionAttributeTypeID
-			from	FusionAttributeOwnerRule R
-					inner join FusionAttributeOwnerRuleItem RI on RI.FusionAttributeOwnerRuleID = R.ID and R.RelationshipOwnerObjectType = @type and R.RelationshipOwnerObjectID = @id
-					inner join FusionAttribute A on (
-													(RI.FusionAttributeID is not null and A.ID = RI.FusionAttributeID) OR 
-													(RI.FusionAttributeID is null and A.FusionAttributeTypeID = R.ObjectID)
-													)
-			union all
-			select	C.ID,
-					C.ParentID,
-					C.FusionAttributeTypeID
-			from	FusionAttribute C
-					inner join fa P on C.ParentID = P.ID --and P.ID <> C.ID
-			)
+//        public JsonNetResult SourceToTarget_SourcingAttributeOptions(SystemObjects type, int id)
+//        {
+//            var models = Company.Query<dynamic>(
+//@"with fa as	(
+//			select	A.ID,
+//					A.ParentID,
+//					A.FusionAttributeTypeID
+//			from	FusionAttributeOwnerRule R
+//					inner join FusionAttributeOwnerRuleItem RI on RI.FusionAttributeOwnerRuleID = R.ID and R.RelationshipOwnerObjectType = @type and R.RelationshipOwnerObjectID = @id
+//					inner join FusionAttribute A on (
+//													(RI.FusionAttributeID is not null and A.ID = RI.FusionAttributeID) OR 
+//													(RI.FusionAttributeID is null and A.FusionAttributeTypeID = R.ObjectID)
+//													)
+//			union all
+//			select	C.ID,
+//					C.ParentID,
+//					C.FusionAttributeTypeID
+//			from	FusionAttribute C
+//					inner join fa P on C.ParentID = P.ID --and P.ID <> C.ID
+//			)
 
-SELECT	B.ID as value,
-		B.TextPath as title,
-		C.TextPath as [group]
-FROM	fa 
-		inner join FusionAttribute B on B.ID = fa.ID
-		INNER JOIN FusionAttributeType C ON	C.ID = B.FusionAttributeTypeID
-where	fa.FusionAttributeTypeID in (
-									select		TI.ObjectID
-									from		cache.ObjectDetails D 
-												inner join IntersectTypeNode S on D.[Object] = @type and D.ObjectID = @id and S.ObjectType = D.ObjectType and S.ObjectID = D.ObjectTypeID
-												inner join IntersectTypeNode T on T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and T.[Order] = 2 and S.[Order] = 1
-												inner join IntersectTypeNode SI on SI.ObjectType = 'IntersectType' and SI.ObjectID = T.IntersectTypeID  
-												inner join IntersectTypeNode TI on TI.IntersectTypeID = SI.IntersectTypeID and TI.ID <> SI.ID and T.[Order] = 2 and TI.ObjectType = 'FusionAttributeType'
-									)
-order by	C.TextPath,
-			B.TextPath", new { type = type.ToString(), id });
-            return new JsonNetResult
-            {
-                Formatting = Newtonsoft.Json.Formatting.None,
-                Data = models
-            };
-        }
+//SELECT	B.ID as value,
+//		B.TextPath as title,
+//		C.TextPath as [group]
+//FROM	fa 
+//		inner join FusionAttribute B on B.ID = fa.ID
+//		INNER JOIN FusionAttributeType C ON	C.ID = B.FusionAttributeTypeID
+//where	fa.FusionAttributeTypeID in (
+//									select		TI.ObjectID
+//									from		cache.ObjectDetails D 
+//												inner join IntersectTypeNode S on D.[Object] = @type and D.ObjectID = @id and S.ObjectType = D.ObjectType and S.ObjectID = D.ObjectTypeID
+//												inner join IntersectTypeNode T on T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and T.[Order] = 2 and S.[Order] = 1
+//												inner join IntersectTypeNode SI on SI.ObjectType = 'IntersectType' and SI.ObjectID = T.IntersectTypeID  
+//												inner join IntersectTypeNode TI on TI.IntersectTypeID = SI.IntersectTypeID and TI.ID <> SI.ID and T.[Order] = 2 and TI.ObjectType = 'FusionAttributeType'
+//									)
+//order by	C.TextPath,
+//			B.TextPath", new { type = type.ToString(), id });
+//            return new JsonNetResult
+//            {
+//                Formatting = Newtonsoft.Json.Formatting.None,
+//                Data = models
+//            };
+//        }
 
-        public ActionResult AddSourceToTarget(SystemObjects type, int id)
-        {
-            var detail = Company.GetObjectDetail(type.ToString(), id);
+//        public ActionResult AddSourceToTarget(SystemObjects type, int id)
+//        {
+//            var detail = Company.GetObjectDetail(type.ToString(), id);
 
-            var o = new SourceToTargetEditForm
-            {
-                FormUri = "/Form/AddSourceToTarget",
-                FormMethod = "POST",
-                FormTitle = Resources.FormInfo.Add_SourceTargetMapping_Title,
-                Context = ContextList.SourceToTarget,
-                FormDescription = Resources.FormInfo.Add_SourceTargetMapping_Directions,
-                Object = type.ToString(),
-                ObjectID = id,
-                ObjectName = detail.Name
-            };
+//            var o = new SourceToTargetEditForm
+//            {
+//                FormUri = "/Form/AddSourceToTarget",
+//                FormMethod = "POST",
+//                FormTitle = Resources.FormInfo.Add_SourceTargetMapping_Title,
+//                Context = ContextList.SourceToTarget,
+//                FormDescription = Resources.FormInfo.Add_SourceTargetMapping_Directions,
+//                Object = type.ToString(),
+//                ObjectID = id,
+//                ObjectName = detail.Name
+//            };
 
-            return PartialView("SourceToTargetEditForm", o);
-        }
+//            return PartialView("SourceToTargetEditForm", o);
+//        }
 
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddSourceToTarget(SourceToTargetEditModel model)
-        {
-            try
-            {
-                model.Groups.ForEach(g =>
-                {
-                    var mapping = new IntersectFlowMapping { Definition = g.Definition, Formula = g.Formula };
-                    Company.Add<IntersectFlowMapping>(mapping);
+//        [HttpPost, ValidateInput(false)]
+//        public JsonResult AddSourceToTarget(SourceToTargetEditModel model)
+//        {
+//            try
+//            {
+//                model.Groups.ForEach(g =>
+//                {
+//                    var mapping = new IntersectFlowMapping { Definition = g.Definition, Formula = g.Formula };
+//                    Company.Add<IntersectFlowMapping>(mapping);
 
-                    g.Items.ForEach(i => 
-                    {
-                        var sourceSystem = "Artifact";
-                        var sourceSystemID = int.Parse(i.SourceSystem);
-                        var sourceObjectRaw = i.SourceObject.Split('|');
-                        var sourceObjectIntersectTypeID = int.Parse(sourceObjectRaw[0]);
-                        var sourceObject = sourceObjectRaw[1];
-                        var sourceObjectID = int.Parse(sourceObjectRaw[2]);
-                        var sourceFusionAttributeID = i.SourceFusionAttribute;
+//                    g.Items.ForEach(i => 
+//                    {
+//                        var sourceSystem = "Artifact";
+//                        var sourceSystemID = int.Parse(i.SourceSystem);
+//                        var sourceObjectRaw = i.SourceObject.Split('|');
+//                        var sourceObjectIntersectTypeID = int.Parse(sourceObjectRaw[0]);
+//                        var sourceObject = sourceObjectRaw[1];
+//                        var sourceObjectID = int.Parse(sourceObjectRaw[2]);
+//                        var sourceFusionAttributeID = i.SourceFusionAttribute;
 
-                        var targetSystem = "Artifact";
-                        var targetSystemID = int.Parse(i.TargetSystem);
-                        var targetObjectRaw = i.TargetObject.Split('|');
-                        var targetObjectIntersectTypeID = int.Parse(targetObjectRaw[0]);
-                        var targetObject = targetObjectRaw[1];
-                        var targetObjectID = int.Parse(targetObjectRaw[2]);
-                        var targetFusionAttributeID = i.TargetFusionAttribute;
+//                        var targetSystem = "Artifact";
+//                        var targetSystemID = int.Parse(i.TargetSystem);
+//                        var targetObjectRaw = i.TargetObject.Split('|');
+//                        var targetObjectIntersectTypeID = int.Parse(targetObjectRaw[0]);
+//                        var targetObject = targetObjectRaw[1];
+//                        var targetObjectID = int.Parse(targetObjectRaw[2]);
+//                        var targetFusionAttributeID = i.TargetFusionAttribute;
 
-                        Company.AddMappingDependency(mapping.ID,
-                            sourceSystem, sourceSystemID, sourceObject, sourceObjectID, sourceFusionAttributeID,
-                            targetSystem, targetSystemID, targetObject, targetObjectID, targetFusionAttributeID
-                        );
-                    });
+//                        Company.AddMappingDependency(mapping.ID,
+//                            sourceSystem, sourceSystemID, sourceObject, sourceObjectID, sourceFusionAttributeID,
+//                            targetSystem, targetSystemID, targetObject, targetObjectID, targetFusionAttributeID
+//                        );
+//                    });
 
-                });
-                return jsonSuccess("", "0", ContextList.SourceToTarget, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+//                });
+//                return jsonSuccess("", "0", ContextList.SourceToTarget, "add", HttpStatusCode.Created);
+//            }
+//            catch (BaseException ex)
+//            {
+//                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+//            }
+//            catch (Exception ex)
+//            {
+//                SendException(ex);
+//                return jsonException(ex, HttpStatusCode.InternalServerError);
+//            }
+//        }
 
         #endregion
 
@@ -13622,7 +13622,7 @@ order by TextPath
                 model.MaximumDepth = parseIntField(form, "MaximumDepth");
                 model.TaxonomyTypeClassID = parseIntField(form, "Class");
 
-                var currentMaxLevel = Company.Query<int>("select max([Level]) from Taxonomy where TaxonomyTypeID = @t", new { t = id }).SingleOrDefault();
+                var currentMaxLevel = Company.Query<int>("select coalesce(max([Level]), 0) from Taxonomy where TaxonomyTypeID = @t", new { t = id }).SingleOrDefault();
 
                 if (currentMaxLevel > model.MaximumDepth)
                     throw new InvalidFieldException(d360.core.resources.Fields.MaximumDepth_Name, "less than the current maximum depth of " + currentMaxLevel);

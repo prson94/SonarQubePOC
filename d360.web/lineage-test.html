@@ -114,47 +114,56 @@
                     },
                     new go.Binding("text", "role").makeTwoWay(),
                     new go.Binding("stroke", "fore").makeTwoWay()
-                ),
-                g(go.Panel, "Table",
-                { row: 3 },
-                g(go.TextBlock, "&#xf129;", { //info
-                    row: 0,
-                    column: 0,
-                    margin: 3,
-                    editable: false,
-                    maxSize: new go.Size(20, 20),
-                    font: "bold 10pt FontAwesome"
-                },
-                    new go.Binding("stroke", "fore").makeTwoWay()
-                ),
-                g(go.TextBlock, "&#xf079;", { //retweet
-                    row: 0,
-                    column: 1,
-                    margin: 3,
-                    maxSize: new go.Size(20, 20),
-                    font: "bold 10pt FontAwesome"
-                },
-                    new go.Binding("stroke", "fore").makeTwoWay()
-                ),
-                g(go.TextBlock, "&#xf02c;", { //tags
-                    row: 0,
-                    column: 2,
-                    margin: 3,
-                    maxSize: new go.Size(20, 20),
-                    font: "bold 10pt FontAwesome"
-                },
-                    new go.Binding("stroke", "fore").makeTwoWay()
-                ),
-                g(go.TextBlock, "&#xf1c0;", { //database
-                    row: 0,
-                    column: 2,
-                    margin: 3,
-                    maxSize: new go.Size(20, 20),
-                    font: "bold 10pt FontAwesome"
-                },
-                    new go.Binding("stroke", "fore").makeTwoWay()
-                )
-            )
+                )//,
+            //    g(go.Panel, "Table",
+            //    { row: 3 },
+            //    g(go.TextBlock, "\uf05a", { //info
+            //        row: 0,
+            //        column: 0,
+            //        margin: 10,
+            //        editable: false,
+            //        maxSize: new go.Size(20, 20),
+            //        font: "bold 10pt FontAwesome",
+            //        toolTip: g(go.Adornment, "Auto",
+            //         g(go.Shape, { fill: '#ffffcc'}),
+            //         g(go.TextBlock, { margin: 4 },
+            //            new go.Binding('text', 'role'),
+            //            new go.Binding('data-context', 'context'),
+            //            new go.Binding('data-type', 'otype'),
+            //            new go.Binding('data-id', 'oid')
+            //         )
+            //        )
+            //    },
+            //        new go.Binding("stroke", "fore").makeTwoWay()
+            //    ),
+            //    g(go.TextBlock, "\uf079", { //retweet
+            //        row: 0,
+            //        column: 1,
+            //        margin: 10,
+            //        maxSize: new go.Size(20, 20),
+            //        font: "bold 10pt FontAwesome"
+            //    },
+            //        new go.Binding("stroke", "fore").makeTwoWay()
+            //    ),
+            //    g(go.TextBlock, "\uf02c", { //tags
+            //        row: 0,
+            //        column: 2,
+            //        margin: 10,
+            //        maxSize: new go.Size(20, 20),
+            //        font: "bold 10pt FontAwesome"
+            //    },
+            //        new go.Binding("stroke", "fore").makeTwoWay()
+            //    ),
+            //    g(go.TextBlock, "\uf1c0", { //database
+            //        row: 0,
+            //        column: 10,
+            //        margin: 3,
+            //        maxSize: new go.Size(20, 20),
+            //        font: "bold 10pt FontAwesome"
+            //    },
+            //        new go.Binding("stroke", "fore").makeTwoWay()
+            //    )
+            //)
             )),
             g(go.Panel, "Vertical", {
                 alignment: go.Spot.Left,
@@ -225,26 +234,46 @@
             "linkFromPortIdProperty": "frompid",
             "linkToPortIdProperty": "topid",
             "nodeDataArray": [
-                { "key": 20, "type": "Vendor", "name": "Compustat", "role": "", "back": "green", "fore": "white" },
-                { "key": 21, "type": "Vendor", "name": "Bloomberg", "role": "", "back": "green", "fore": "white" },
-                { "key": 22, "type": "Vendor", "name": "MSCI", "role": "", "back": "green", "fore": "white" },
-                { "key": 41, "type": "Application", "name": "XpressFeed", "role": "", "back": "aqua", "fore": "black" },
-                { "key": 42, "type": "Application", "name": "VendorDataMart", "role": "", "back": "aqua", "fore": "black" },
-                { "key": 51, "type": "Term", "name": "Issue Shares Outstanding", "role": "Calculation", "back": "black", "fore": "white" },
-                { "key": 61, "type": "Term", "name": "Price Close", "role": "Calculation", "back": "black", "fore": "white" },
-                { "key": 71, "type": "Term", "name": "Issue Market Cap", "role": "Consumer", "back": "black", "fore": "white" }
+                { "key": 'Artifact16233', "type": "Vendor", "name": "MSCI Inc", "back": "green", "fore": "white" },
+                { "key": 'Artifact739', "type": "Vendor", "name": "Bloomberg LP", "back": "green", "fore": "white" },
+                { "key": 'Artifact972862', "type": "Application", "name": "XpressFeed", "back": "aqua", "fore": "black" },
+                { "key": 'Artifact972864', "type": "Application", "name": "GDM", "back": "aqua", "fore": "black" },
+                { "key": 'Artifact972863', "type": "Application", "name": "VDM", "back": "aqua", "fore": "black" },
+                { "key": 'Artifact972860', "type": "Term", "name": "Issue Shares Outstanding", "back": "black", "fore": "white" },
+                { "key": 'Artifact972861', "type": "Term", "name": "Price Close", "back": "black", "fore": "white" },
+                { "key": 'Artifact972859', "type": "Term", "name": "Issue Market Cap", "back": "black", "fore": "white" }
             ],
             "linkDataArray": [
-                { "from": 20, "frompid": "OUT", "to": 41, "text": "licenses to" },
-                { "from": 21, "frompid": "OUT", "to": 42, "text": "licenses to" },
-                { "from": 22, "frompid": "OUT", "to": 42, "text": "licenses to" },
-                { "from": 41, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "L"
-                { "from": 42, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "R"
-                { "from": 41, "frompid": "OUT", "to": 61, "text": "warehouses" }, //, "topid": "L"
-                { "from": 42, "frompid": "OUT", "to": 61, "text": "warehouses" }, //, "topid": "R"
-                { "from": 51, "frompid": "OUT", "to": 71, "text": "used to calculate" },
-                { "from": 61, "frompid": "OUT", "to": 71, "text": "used to calculate" }
+                { "from": 'Artifact972860', "frompid": "OUT", "to": 'Artifact972864', "text": "used in calculation" }, //, "topid": "R"
+                { "from": 'Artifact739', "frompid": "OUT", "to": 'Artifact972862', "text": "licenses" },
+                { "from": 'Artifact972863', "frompid": "OUT", "to": 'Artifact972860', "text": "warehouses" }, //, "topid": "L"
+                { "from": 'Artifact16233', "frompid": "OUT", "to": 'Artifact972863', "text": "licenses" },
+                { "from": 'Artifact972862', "frompid": "OUT", "to": 'Artifact972861', "text": "warehouses" }, //, "topid": "R"
+                { "from": 'Artifact972861', "frompid": "OUT", "to": 'Artifact972864', "text": "used in calculation" }, //, "topid": "L"
+                { "from": 'Artifact972864', "frompid": "OUT", "to": 'Artifact972859', "text": "calculates" }
             ]
+            //"nodeDataArray": [
+            //    { "key": 20, "type": "Vendor", "name": "Compustat", "role": "", "back": "green", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
+            //    { "key": 21, "type": "Vendor", "name": "Bloomberg", "role": "", "back": "green", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
+            //    { "key": 22, "type": "Vendor", "name": "MSCI", "role": "", "back": "green", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
+            //    { "key": 41, "type": "Application", "name": "XpressFeed", "role": "", "back": "aqua", "fore": "black", "context": "Preview", "otype": "Artifact", "oid": "1" },
+            //    { "key": 42, "type": "Application", "name": "VendorDataMart", "role": "", "back": "aqua", "fore": "black", "context": "Preview", "otype": "Artifact", "oid": "1" },
+            //    { "key": 51, "type": "Term", "name": "Issue Shares Outstanding", "role": "Calculation", "back": "black", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
+            //    { "key": 61, "type": "Term", "name": "Price Close", "role": "Calculation", "back": "black", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
+            //    { "key": 71, "type": "Term", "name": "Issue Market Cap", "role": "Consumer", "back": "black", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" }
+            //],
+            //"linkDataArray": [
+            //    { "from": 20, "frompid": "OUT", "to": 41, "text": "licenses to" },
+            //    { "from": 21, "frompid": "OUT", "to": 42, "text": "licenses to" },
+            //    { "from": 22, "frompid": "OUT", "to": 42, "text": "licenses to" },
+            //    { "from": 41, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "L"
+            //    { "from": 42, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "R"
+            //    { "from": 41, "frompid": "OUT", "to": 61, "text": "warehouses" }, //, "topid": "L"
+            //    { "from": 42, "frompid": "OUT", "to": 61, "text": "warehouses" }, //, "topid": "R"
+            //    { "from": 51, "frompid": "OUT", "to": 71, "text": "used to calculate" },
+            //    { "from": 61, "frompid": "OUT", "to": 71, "text": "used to calculate" }
+            //]
+
         });
     </script>
 </body>

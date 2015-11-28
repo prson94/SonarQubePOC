@@ -80,12 +80,7 @@
     <Compile Include="entities\AlertFlag.cs" />
     <Compile Include="entities\CommentVote.cs" />
     <Compile Include="entities\CommentCount.cs" />
-    <Compile Include="entities\IntersectFlowType.cs" />
-    <Compile Include="entities\IntersectFlow.cs" />
-    <Compile Include="entities\IntersectFlowItem.cs" />
     <Compile Include="entities\IntersectTypeRoleRelation.cs" />
-    <Compile Include="entities\IntersectFlowMappingItem.cs" />
-    <Compile Include="entities\IntersectFlowMapping.cs" />
     <Compile Include="entities\FusionAttributeOwnerRuleItem.cs" />
     <Compile Include="entities\FusionAttributePromotionRuleItem.cs" />
     <Compile Include="entities\Queues\BulkLoadQueue.cs" />

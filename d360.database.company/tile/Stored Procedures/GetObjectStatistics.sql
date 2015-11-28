@@ -43,3 +43,4 @@ declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25
 	select * from @table
 
 END
+GO

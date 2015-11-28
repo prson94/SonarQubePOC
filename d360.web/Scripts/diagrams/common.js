@@ -58,7 +58,8 @@
     }
     function render(source) {
         var nodes = _tree.nodes(_nodes);
-        renderNodes(nodes, source);
+        var h = renderNodes(nodes, source);
+        _tree.size([h, _width]);
         renderLinks(nodes, source);
     }
     function getSize(d) {
@@ -70,14 +71,23 @@
     }
     function renderNodes(nodes, source) {
 
+        var depth = 1;
+        var bottomCount = 0;
+        var height = 500;
+
         nodes.forEach(function (d) {
+            if (d.depth > depth) depth = d.depth;
             d.y = d.depth * 175;
         });
-
         var node = _bodyG.selectAll("g.node")
             .data(nodes, function (d) {
+                if (d.depth == depth) {
+                    bottomCount++;
+                }
                 return d.id || (d.id = ++_i);
             });
+        if (bottomCount > 3)
+            height = bottomCount * 150;
 
         var nodeEnter = node.enter().append("g")
             .attr("class", "node")
@@ -126,6 +136,8 @@
             .style("fill", function (d) { return d.ForeColor; });
 
         renderIcons(nodeEnter);
+
+        return height;
     }
     function renderIcons(nodeEnter) {
 
@@ -495,303 +507,3 @@
 
     return _chart;
 }
-
-//function tree() {
-//    var _chart = {};
-//    var _width = 1600,
-//        _height = 500,
-//        _boxHeight = 80,
-//        _boxWidth = 150,
-//        _margins = { top: 25, left: 25, right: 25, bottom: 25 },
-//        _svg,
-//        _nodes,
-//        _i = 0,
-//        _tree,
-//        _diagonal,
-//        _bodyG;
-//    _chart.render = function () {
-//        if (!_svg) {
-//            _svg = d3.select("#dgm").append("svg")
-//                    .attr("height", _height)
-//                    .attr("width", _width);
-//        }
-//        _svg.append("svg:defs")
-//            .selectAll("marker")
-//            .data(["endRoot"])      // Different link/path types can be defined here
-//            .enter()
-//            .append("svg:marker")    // This section adds in the arrows
-//            .attr("viewBox", "0 -5 10 10")
-//            .attr("refX", (20 / 2) + 19)
-//            .attr("refY", 0)
-//            .attr("markerWidth", 6)
-//            .attr("markerHeight", 6)
-//            .attr("orient", "auto")
-//            .attr("fill", "black")
-//            .append("svg:path")
-//            .attr("d", "M0,-5L10,0L0,5");
-
-//        renderBody(_svg);
-//    };
-//    function renderBody(svg) {
-//        if (!_bodyG) {
-//            _bodyG = svg.append("g")
-//				.attr("transform", function (d) {
-//				    return "translate(" + _margins.left
-//						+ "," + _margins.top + ")";
-//				});
-//        }
-
-//        _tree = d3.layout.tree()
-//                .size([
-//					(_height - _margins.top - _margins.bottom),
-//					(_width - _margins.left - _margins.right)
-//                ]);
-
-//        _diagonal = d3.svg.diagonal().projection(function (d) { return [d.y, d.x]; });
-
-//        _nodes.x0 = (_height - _margins.top - _margins.bottom) / 2;
-//        _nodes.y0 = 0;
-//        render(_nodes);
-//    }
-//    function render(source) {
-//        var nodes = _tree.nodes(_nodes).reverse();
-//        renderNodes(nodes, source);
-//        renderLinks(nodes, source);
-//    }
-//    function renderNodes(nodes, source) {
-//        nodes.forEach(function (d) {
-//            d.y = d.depth * 175;
-//        });
-//        var node = _bodyG.selectAll("g.node")
-//            .data(nodes, function (d) {
-//                return d.id || (d.id = ++_i);
-//            });
-//        var nodeEnter = node.enter().append("svg:g")
-//            .attr("class", "node")
-//            .attr("transform", function (d) {
-//                return "translate(" + source.y0
-//                + "," + source.x0 + ")";
-//            })
-//            .on("click", function (d) {
-//                //toggle(d);
-//                //render(d);
-//            });
-
-//        nodeEnter.append("svg:rect")
-//            .attr('width', _boxWidth)
-//            .attr('height', _boxHeight)
-//            .attr('class', function (d) {
-//                return d._children ? 'box-withnodes' : 'box-withoutnodes';
-//            })
-//            .style("fill", function (d) {
-//                return d.BackColor;
-//            });
-
-//        var nodeUpdate = node.transition()
-//            .attr("transform", function (d) {
-//                return "translate(" + d.y + "," + (d.x - _boxHeight / 2) + ")";
-//            });
-
-//        nodeUpdate.select("rect")
-//            .attr('class', function (d) {
-//                return d._children ? 'box-withnodes' : 'box-withoutnodes';
-//            })
-//            .attr('width', _boxWidth)
-//            .attr('height', _boxHeight)
-//            .style("fill", function (d) {
-//                return d.BackColor;
-//            });
-
-//        var nodeExit = node.exit().transition()
-//            .attr("transform", function (d) {
-//                return "translate(" + source.y + "," + source.x + ")";
-//            })
-//            .remove();
-
-//        nodeExit.select("rect")
-//            .attr('width', 150).attr('height', 75)//.attr("r", 1e-6);
-
-//        renderIcons(nodeEnter, nodeUpdate, nodeExit);
-//        renderLabels(nodeEnter, nodeUpdate, nodeExit);
-
-//        nodes.forEach(function (d) {
-//            d.x0 = d.x;
-//            d.y0 = d.y;
-//        });
-//    }
-
-//    function iconHtml(title, iconSuffix, iconColor) {
-//        return '<i title="' + title + '" style="font-size: 1em; color: ' + iconColor + '" class="fa fa-' + iconSuffix + '"></i>';
-//    }
-
-//    function renderIcons(nodeEnter, nodeUpdate, nodeExit) {
-//        //#region Icons
-//        var iconSize = 20;
-//        var basePosition = _boxWidth / 2;
-
-//        nodeEnter.append('svg:foreignObject')
-//            .attr("width", iconSize)
-//            .attr("height", iconSize)
-//            .attr("x", function (d) { return basePosition - 30; })
-//            .attr("y", function (d) { return _boxHeight - 20; })
-//            .html(function (d) { return iconHtml("Go to this item", "info", '#000'); })
-//            .on("click", iconLink);
-
-//        nodeEnter.append('svg:foreignObject')
-//            .attr("width", iconSize)
-//            .attr("height", iconSize)
-//            .attr("x", function (d) { return basePosition - 10; })
-//            .attr("y", function (d) { return _boxHeight - 20; })
-//            .html(function (d) { return iconHtml("Related Items", "retweet", '#000'); });
-//        //.on("click", iconRelationships);
-
-//        nodeEnter.append('svg:foreignObject')
-//            .attr("width", iconSize)
-//            .attr("height", iconSize)
-//            .attr("x", function (d) { return basePosition + 10; })
-//            .attr("y", function (d) { return _boxHeight - 20; })
-//            .html(function (d) { return iconHtml("Source Contexts", "tags", ((d.Contexts) ? "#000" : "#ebebeb")); });
-//        //.on("click", iconContexts);
-
-//        nodeEnter.append('svg:foreignObject')
-//            .attr("width", iconSize)
-//            .attr("height", iconSize)
-//            .attr("x", function (d) { return basePosition + 30; })
-//            .attr("y", function (d) { return _boxHeight - 20; })
-//            .html(function (d) { return iconHtml("Technical Relationships", "database", ((d.Relationships) ? "#000" : "#ebebeb")); });
-//        //.on("click", iconTechnicalRelationships);
-
-//        //#endregion
-//    }
-
-//    function renderLabels(nodeEnter, nodeUpdate, nodeExit) {
-//        nodeEnter.append("svg:text")
-//            .attr("dx", function (d) {
-//                return _boxWidth / 2;
-//            })
-//            .attr("dy", function (d) {
-//                return 20;
-//            })
-//            .attr("text-anchor", function (d) {
-//                return "middle";
-//            })
-//            .text(function (d) {
-//                return d.Name;
-//            })
-//            .style("fill", function (d) {
-//                return d.ForeColor;
-//            });
-
-//        nodeEnter.append("svg:text")
-//            .attr("dx", function (d) {
-//                return _boxWidth / 2;
-//            })
-//            .attr("dy", function (d) {
-//                return _boxHeight / 2;
-//            })
-//            .attr("text-anchor", function (d) {
-//                return "middle";
-//            })
-//            .text(function (d) {
-//                return (d.Role) ? d.Role : "";
-//            })
-//            .style("fill", function (d) {
-//                return d.ForeColor;
-//            });
-
-//        nodeEnter.append("svg:text")
-//            .attr("dx", function (d) {
-//                return _boxWidth / 2;
-//            })
-//            .attr("dy", function (d) {
-//                return (_boxHeight / 2) + 20;
-//            })
-//            .attr("text-anchor", function (d) {
-//                return "middle";
-//            })
-//            .text(function (d) {
-//                return d.Type;
-//            })
-//            .style("fill", function (d) {
-//                return d.ForeColor;
-//            });
-
-//        nodeUpdate.select("text")
-//                .style("fill-opacity", 1);
-
-//        nodeExit.select("text")
-//                .style("fill-opacity", 1e-6);
-//    }
-//    function renderLinks(nodes, source) {
-
-//        var link = _bodyG.selectAll("path.link")
-//                .data(_tree.links(nodes), function (d) {
-//                    return d.target.id;
-//                });
-
-//        link.enter().insert("svg:path", "g")
-//                .attr("class", "link")
-//                .attr("d", function (d) {
-//                    var o = { x: source.x0, y: source.y0 };
-//                    return _diagonal({ source: o, target: o });
-//                }).attr("marker-end", "url(#end)");
-
-//        link.transition()
-//                .attr("d", _diagonal);
-
-//        link.exit().transition()
-//                .attr("d", function (d) {
-//                    var o = { x: source.x, y: source.y };
-//                    return _diagonal({ source: o, target: o });
-//                })
-//                .remove();
-
-//    }
-
-//    function iconLink(d) {
-//        $('#tt').text(d.Name);//location.assign(d.Url);
-//    }
-
-//    function toggle(d) {
-//        if (d.children) {
-//            d._children = d.children;
-//            d.children = null;
-//        } else {
-//            d.children = d._children;
-//            d._children = null;
-//        }
-//    }
-
-//    function toggleAll(d) {
-//        if (d.children) {
-//            d.children.forEach(toggleAll);
-//            toggle(d);
-//        }
-//    }
-
-//    _chart.width = function (w) {
-//        if (!arguments.length) return _width;
-//        _width = w;
-//        return _chart;
-//    };
-
-//    _chart.height = function (h) {
-//        if (!arguments.length) return _height;
-//        _height = h;
-//        return _chart;
-//    };
-
-//    _chart.margins = function (m) {
-//        if (!arguments.length) return _margins;
-//        _margins = m;
-//        return _chart;
-//    };
-
-//    _chart.nodes = function (n) {
-//        if (!arguments.length) return _nodes;
-//        _nodes = n;
-//        return _chart;
-//    };
-
-//    return _chart;
-//}

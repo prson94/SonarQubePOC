@@ -172,16 +172,6 @@ namespace d360.model
         
         public DbSet<Intersect> Intersects { get; set; }
 
-        public DbSet<IntersectFlow> IntersectFlows { get; set; }
-
-        public DbSet<IntersectFlowItem> IntersectFlowItems { get; set; }
-
-        public DbSet<IntersectFlowMapping> IntersectFlowMappings { get; set; }
-
-        public DbSet<IntersectFlowMappingItem> IntersectFlowMappingItems { get; set; }
-
-        public DbSet<IntersectFlowType> IntersectFlowTypes { get; set; }
-
         public DbSet<IntersectNode> IntersectNodes { get; set; }
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
@@ -2226,10 +2216,10 @@ order by Name", new { workflowType, type, id });
             //modelBuilder.Entity<FusionAttributePromotionRuleMapping>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleMappings).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
             //modelBuilder.Entity<FusionAttributePromotionRuleItem>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleItems).HasForeignKey(k => k.FusionAttributePromotionRule).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectTypeNode>().HasRequired(t => t.IntersectType).WithMany(t => t.Nodes).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<IntersectFlowMapping>().HasMany<DomainItem>(i => i.Contexts).WithMany(i => i.Mappings).Map(i =>
-            {
-                i.MapLeftKey("IntersectFlowMappingID").MapRightKey("DomainItemID").ToTable("IntersectFlowMappingContextItem");
-            });
+            //modelBuilder.Entity<IntersectFlowMapping>().HasMany<DomainItem>(i => i.Contexts).WithMany(i => i.Mappings).Map(i =>
+            //{
+            //    i.MapLeftKey("IntersectFlowMappingID").MapRightKey("DomainItemID").ToTable("IntersectFlowMappingContextItem");
+            //});
             modelBuilder.Entity<IntersectTypeRoleRelation>().HasRequired(t => t.IntersectTypeRole).WithMany(t => t.RoleRelations).HasForeignKey(k => k.IntersectTypeRoleID).WillCascadeOnDelete(true);
 
             base.OnModelCreating(modelBuilder);

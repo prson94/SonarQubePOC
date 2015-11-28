@@ -35,3 +35,4 @@ as
 	--		inner join ResponsibilityType RT on RT.ID = R.ResponsibilityTypeID
 	--		left join cache.ObjectDetails ROD on ROD.[Object] = R.ResponsibleObjectType and ROD.ObjectID = R.ResponsibleObjectID
 	--		inner join cache.ObjectDetails OD on OD.[Object] = R.ObjectType and OD.ObjectID = R.ObjectID
+GO

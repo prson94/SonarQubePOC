@@ -35,3 +35,4 @@ begin
 													and C.IsDeleted = 0
 			) LP
 end
+GO

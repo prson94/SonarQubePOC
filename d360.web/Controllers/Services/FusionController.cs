@@ -603,7 +603,7 @@ where   ExecutionID = {0}", id);
                     {
                         if (!string.IsNullOrEmpty(o.StartID) && !string.IsNullOrEmpty(o.EndID))
                         {
-                            rXml.Add(new XElement("r", new XAttribute("s", o.StartID), new XAttribute("e", o.EndID), new XAttribute("a", o.Action)));                        
+                            rXml.Add(new XElement("r", new XAttribute("s", o.StartID), new XAttribute("e", o.EndID), new XAttribute("a", string.IsNullOrEmpty(o.Action) ? "A" : o.Action)));                        
                         }
                     });
                 }
