@@ -76,7 +76,13 @@ namespace d360.web.Controllers
                             from t in Company.AttributeTypes
                             join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID                 
                             where r.ObjectType == "IntersectType" && r.ObjectID == intersectTypeID                            
-                            select new GridDynamicAttributeField { attributeID = r.AttributeTypeID, label = t.Name, allowMultiple = r.AllowMultipleEntries, description = t.Description }
+                            select new GridDynamicAttributeField {
+                                attributeID = r.AttributeTypeID,
+                                label = t.Name,
+                                allowMultiple = r.AllowMultipleEntries,
+                                description = t.Description,
+                                fieldCount = (from p in Company.FieldTypes where p.ObjectID == t.ID && p.Object == "AttributeType" select p).Count()
+                            }
                             ).OrderByDescending(i => i.label).ToList();
 
                     //determine if any of these attributes are complex

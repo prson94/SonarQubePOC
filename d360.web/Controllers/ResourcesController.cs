@@ -253,6 +253,28 @@ namespace d360.web.Controllers
             return Content(sb.ToString(),"text/html");
         }
 
+        [Route("fieldvalues/{id:int}/{attribute:int}/templates/tooltip/preview")]
+        public ContentResult RenderMultiFieldValueTooltip(int id, int attribute)
+        {
+            //get values for attribute and all attributes that have this as a parent for specified element
+            StringBuilder sb = new StringBuilder();
+                        
+            var fieldValues = (from ft in Company.FieldTypes
+            join f in Company.Fields on ft.ID equals f.FieldTypeID
+            join ad in Company.AttributeDetails on f.ObjectID equals ad.ID
+            where ft.Object == "AttributeType" && ft.ObjectID == attribute && ad.ObjectID == id && ad.ObjectType == "Intersect"
+            select new { Name = ft.FriendlyName, Value = f.FormattedValue, Order = ft.SortOrder}).OrderBy(i => i.Order);
+
+            foreach(var val in fieldValues)
+            {                
+                sb.Append("<b>" + val.Name + ":</b> ");
+                sb.Append(val.Value);
+                sb.Append("<br>");
+            }
+
+            return Content(sb.ToString(), "text/html");
+        }
+
         [Route("{type}/{id:int}/templates/tooltip/{templateAction}")]
         public ContentResult _RenderTooltip(SystemObjects type, int id, string templateAction)
         {

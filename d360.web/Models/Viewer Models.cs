@@ -314,6 +314,7 @@ namespace d360.web.Models
         public bool allowMultiple { get; set; }
         public bool isComplex { get; set; }
         public string description { get; set; }
+        public int fieldCount { get; set; }
     }
     
     public class RelationAttributeValue
@@ -321,7 +322,7 @@ namespace d360.web.Models
         public int AttributeTypeID { get; set; }
         public string Name { get; set; }
         public string Value { get; set; }
-        public int TargetID { get; set; }
+        public int TargetID { get; set; }        
     }   
     
     public class GridLayout

@@ -298,6 +298,12 @@
         var attributeColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
             return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + value + "</div>";
         }
+
+        var multipleFieldColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
+            console.log(data);
+            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ?  "<div data-context='Preview' data-type='fieldvalues' data-id='" + data.IntersectID + "/" + column.datafield + "' >" + value + " <i class='fusion fa fa-info-circle'></i></div></div>" : "") + "</div>";
+        }
+
         var headerTooltipRenderer = function(text) {
             return function (columnHeaderElement) {
                 if(text!=null && text.length>0)
@@ -312,7 +318,7 @@
                 datafield:fields[i].attributeID,
                 width:'250px',
                 filterable: !fields[i].isComplex,
-                cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : attributeColumnCellRenderer,            
+                cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : fields[i].fieldCount > 1 ? multipleFieldColumnCellRenderer : attributeColumnCellRenderer,            
                 rendered: headerTooltipRenderer (fields[i].description)
             });
         }
@@ -330,7 +336,7 @@
                     }
                     row.Classification = row.Classification == @((int)d360.core.enums.IntersectClassification.Normal) ? "Normal" : "Critical";
                     row.HasAttributes = bHasAttributes;
-                    row.HasLineage = true;
+                    row.HasLineage = true;                    
                     data.push(row);
                 }
                 return data;
