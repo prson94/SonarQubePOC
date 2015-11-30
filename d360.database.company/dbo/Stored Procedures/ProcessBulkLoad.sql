@@ -1,4 +1,5 @@
-﻿CREATE procedure [dbo].[ProcessBulkLoad]
+﻿
+CREATE procedure [dbo].[ProcessBulkLoad]
 --declare
 	@LoadID int
 --set @LoadID = 4
@@ -335,7 +336,8 @@ begin
 					update LV
 					set TaxonomyID = T.ID
 					from @levels LV
-					join Taxonomy T on T.Name = LV.Value and T.ParentID is NULL and T.Level = LV.Level
+					join Load L on L.ID = @LoadID
+					join Taxonomy T on T.Name = LV.Value and T.ParentID is NULL and T.Level = LV.Level and T.TaxonomyTypeID = L.ObjectID
 					where LV.ID = @rowCurr;
 				end
 				else
