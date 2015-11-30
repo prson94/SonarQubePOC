@@ -2846,8 +2846,9 @@ function ObjectStatisticsTile(controlID, type, id) {
             $(controlID).html(
                 template(data)
             );
-                       
-            drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
+            if ($(controlID).find('.ScoreKpi').length) {
+                drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
+            }
         }
     );
 }
@@ -2864,8 +2865,9 @@ function ResourceStatisticsTile(controlID, type, id) {
             $(controlID).html(
                 template(data)
             );
-
-            drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
+            if ($(controlID).find('.ScoreKpi').length) {
+                drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
+            }
         }
     );
 }

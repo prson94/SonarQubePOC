@@ -161,7 +161,7 @@
                         context.contentHeader(pageViewModel);
                     //});
 
-                    $('#SideIcons').PageTools({ type: type, id: id });
+                        $('#SideIcons').PageTools({ type: type, id: id });
                     $("#RandomQuestion").RandomSurveyQuestion({ objectType: type, objectID: id });
 
                     var loadPermissionsDependentTiles = function () {
@@ -255,6 +255,7 @@
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);
                     amplify.subscribe("SaveAction", saveAction);
+                    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //#endregion
                 });

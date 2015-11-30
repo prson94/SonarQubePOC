@@ -48,7 +48,7 @@
         }
 
         function refreshActionMenu(data) {
-            $('#SideIcons').PageTools('refresh');
+            $('#SideIcons').PageTools('reload', 'Group',0,'list' );
         }
 
         function unsubscribe(data) {
@@ -78,11 +78,8 @@
             .appendTo(context.$element())
             .then(function (content) {
                 context.contentHeader(pageViewModel);
-
-                //$('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
-
                 $('#SideIcons').PageTools({ type: 'Group', id: 0, context: 'list' });
-                //$('#SideIcons').PageTools('clear');
+
 
                 //#region Group Grid
 
