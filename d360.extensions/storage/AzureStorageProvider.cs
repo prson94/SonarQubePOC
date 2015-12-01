@@ -99,6 +99,17 @@ namespace d360.extensions.storage
             return str;
         }
 
+        public DateTime GetFileLastModifiedDate(string folderName, string fileName)
+        {            
+            using (var stream = new MemoryStream())
+            {
+                var c = getContainer(folderName);
+                CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
+                blockBlob.FetchAttributes();
+                return blockBlob.Properties.LastModified.HasValue? blockBlob.Properties.LastModified.Value.UtcDateTime : DateTime.MinValue;
+            }            
+        }
+
         public string GetFileSecureUrl(string folderName, string fileName)
         {
             var c = getContainer(folderName);

@@ -32,5 +32,7 @@ namespace d360.extensions
         bool ReleaseLockOnBlobFile(string folderName, string fileName);
 
         List<StorageFileInfo> ListFiles(string folderName);
+
+        DateTime GetFileLastModifiedDate(string folderName, string fileName);
     }
 }
