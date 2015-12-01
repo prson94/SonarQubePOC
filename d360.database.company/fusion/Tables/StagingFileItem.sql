@@ -1,5 +1,6 @@
 ﻿CREATE TABLE [fusion].[StagingFileItem]
 (
+	   [ID] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
        [StagingFileID] INT NOT NULL,
        [Tag] NVARCHAR(500)  NOT NULL,
        [Value] NVARCHAR(500) NOT NULL,
@@ -7,7 +8,7 @@
 )
 go
 
-CREATE CLUSTERED INDEX [CIX_StagingFileItem]
+CREATE nonCLUSTERED INDEX [CIX_StagingFileItem]
     ON [fusion].[StagingFileItem]([StagingFileID] ASC);
 
 

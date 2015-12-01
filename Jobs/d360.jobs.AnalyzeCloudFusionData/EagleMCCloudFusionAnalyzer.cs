@@ -207,7 +207,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
                     //    need to look up bloomberg nmeonic  
                     // fire off proc to do this
                     if (newCloudJobId > 0)
-                        companyConnection.Execute("EXEC fusion.ProcessEagleMCToBloombergRelations @id", new { id = newCloudJobId }, null, 7200);
+                        companyConnection.Execute("EXEC fusion.ProcessEagleMCToBloombergRelations @id,@fId", new { id = newCloudJobId, fId  = EAGLE_MC_FUSION_TYPE}, null, 7200);
                     else
                         Console.WriteLine("UNABLE TO CALL PROCESSEAGLETOBBRELATIONS PROC DUE TO MISSING ID FROM STAGE FILE TABLE.");
                 }
