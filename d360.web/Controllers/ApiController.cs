@@ -165,7 +165,7 @@ namespace d360.web.Controllers
                                 filterItems = Company.Filter<DomainItem>(o => o.DomainID == i.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
                                 break;
                             case "Lookup":
-                                filterItems = Company.Filter<FieldLookupValue>(o => o.LookupObjectType == "Lookup" && o.LookupObjectID == i.LookupObjectID).OrderBy(o => o.Text).Select(o => o.Text).ToList();
+                                filterItems = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == i.ID && o.LookupObjectType == "Lookup" && o.LookupObjectID == i.LookupObjectID).OrderBy(o => o.Text).Select(o => o.Text).ToList();
                                 break;
                         }
                         columnType = GridColumn.COLUMN_TYPE_DROPDOWN;

@@ -14,7 +14,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0. Solution Items", "0. Solution Items", "{9E0D6764-2E58-4258-8D9B-B73D8D483C9A}"
 	ProjectSection(SolutionItems) = preProject
 		D360.vsmdi = D360.vsmdi
-		..\..\Windows\System32\drivers\etc\hosts = ..\..\Windows\System32\drivers\etc\hosts
 		Local.testsettings = Local.testsettings
 		Release Notes.txt = Release Notes.txt
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings

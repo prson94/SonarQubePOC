@@ -168,7 +168,7 @@
                         ObjectStatisticsTile('MicroWidget1', type, id);
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
 
-                        Relationship_SimpleHierarchyTile('SimpleHierarchyTile', contextList, permissions, type, id);
+                        //Relationship_SimpleHierarchyTile('SimpleHierarchyTile', contextList, permissions, type, id);
 
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
                         environment_diagram('SourcingTile', permissions, type, id);

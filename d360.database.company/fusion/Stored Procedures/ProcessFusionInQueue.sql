@@ -58,7 +58,7 @@ begin
 				SELECT @executionID,
 					T.c.value('./@id', 'int') as RowID,
 					P.p.value('local-name(.)', 'nvarchar(250)') as Name,
-					P.p.value('(./text())[1]', 'nvarchar(250)') as Value
+					P.p.value('(./text())[1]', 'nvarchar(4000)') as Value
 				FROM [queue].[Fusion] fus
 					CROSS APPLY data.nodes('/import/ms/m') as T(c)
 					cross apply T.c.nodes('*') P(p)

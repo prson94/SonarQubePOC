@@ -423,6 +423,7 @@ where   ExecutionID = {0}", id);
                 errorMessage = "Schedule was previously completed.";
                 Trace.TraceWarning("{0}{1}", prefix, errorMessage);
                 return Request.CreateErrorResponse(HttpStatusCode.Conflict, errorMessage);
+                
             }
 
             if (!string.IsNullOrEmpty(log.MachineQueuedOn))
@@ -435,18 +436,12 @@ where   ExecutionID = {0}", id);
                 }
             }
 
-            if (!model.IsComplete)
-            {
-                if (log.Fusion.ForceRefresh.HasValue)
-                {
-                    if (log.Fusion.ForceRefresh.Value)
-                        log.Fusion.ForceRefresh = false;
-                }
-            }
-
+            //model.IsComplete = log.DateCompleted.HasValue;
             if (model.IsComplete)
             {
                 Trace.TraceInformation("{0}{1}", prefix, "Schedule marked as complete");
+
+                log.Fusion.ForceRefresh = false;
                 log.DateCompleted = DateTime.UtcNow;
             }
             log.MachineQueuedOn = model.MachineQueuedOn;

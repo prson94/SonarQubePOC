@@ -45883,8 +45883,9 @@ function ObjectStatisticsTile(controlID, type, id) {
             $(controlID).html(
                 template(data)
             );
-                       
-            drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
+            if ($(controlID).find('.ScoreKpi').length) {
+                drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
+            }
         }
     );
 }
@@ -45901,8 +45902,9 @@ function ResourceStatisticsTile(controlID, type, id) {
             $(controlID).html(
                 template(data)
             );
-
-            drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
+            if ($(controlID).find('.ScoreKpi').length) {
+                drawKpi($(controlID).find('.ScoreKpi'), 'Governance score', data.Score, 100 - data.Score, true);
+            }
         }
     );
 }
@@ -48998,14 +49000,14 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                         context.contentHeader(pageViewModel);
                     //});
 
-                    $('#SideIcons').PageTools({ type: type, id: id });
+                        $('#SideIcons').PageTools({ type: type, id: id });
                     $("#RandomQuestion").RandomSurveyQuestion({ objectType: type, objectID: id });
 
                     var loadPermissionsDependentTiles = function () {
                         ObjectStatisticsTile('MicroWidget1', type, id);
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
 
-                        Relationship_SimpleHierarchyTile('SimpleHierarchyTile', contextList, permissions, type, id);
+                        //Relationship_SimpleHierarchyTile('SimpleHierarchyTile', contextList, permissions, type, id);
 
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
                         environment_diagram('SourcingTile', permissions, type, id);
@@ -49092,6 +49094,7 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);
                     amplify.subscribe("SaveAction", saveAction);
+                    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //#endregion
                 });
@@ -51182,7 +51185,7 @@ function groups_list(app, pageViewModel, templatePath, contextList) {
         }
 
         function refreshActionMenu(data) {
-            $('#SideIcons').PageTools('refresh');
+            $('#SideIcons').PageTools('reload', 'Group',0,'list' );
         }
 
         function unsubscribe(data) {
@@ -51212,11 +51215,8 @@ function groups_list(app, pageViewModel, templatePath, contextList) {
             .appendTo(context.$element())
             .then(function (content) {
                 context.contentHeader(pageViewModel);
-
-                //$('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
-
                 $('#SideIcons').PageTools({ type: 'Group', id: 0, context: 'list' });
-                //$('#SideIcons').PageTools('clear');
+
 
                 //#region Group Grid
 

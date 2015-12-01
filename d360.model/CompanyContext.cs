@@ -717,7 +717,7 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
             
             return model;
         }
-        
+
         public List<FusionOwnerOption> GetFusionOwnerOptions()
         {
             return Database.Connection.Query<FusionOwnerOption>("EXEC fusion.GetFusionOwnerOptions").ToList();
