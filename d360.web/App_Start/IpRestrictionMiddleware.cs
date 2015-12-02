@@ -94,7 +94,7 @@ from	Company C
                     var ranges = dict[host];
                     if (ranges.Count > 0)
                     {
-                        var currentIp = context.Request.RemoteIpAddress;
+                        var currentIp = context.Environment["server.RemoteIpAddress"].ToString(); //.Request.RemoteIpAddress;
                         bool isCurrentIpAllowed = false;
 
                         foreach (var range in ranges)
