@@ -436,6 +436,7 @@
     <Build Include="fusion\Tables\StagingFile.sql" />
     <Build Include="fusion\Tables\StagingFileItem.sql" />
     <Build Include="fusion\Stored Procedures\ProcessEagleMCToBloombergRelations.sql" />
+    <Build Include="fusion\Stored Procedures\ProcessEagleMCToEagleFieldRelations.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

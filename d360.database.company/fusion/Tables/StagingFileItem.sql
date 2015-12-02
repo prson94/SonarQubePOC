@@ -11,7 +11,7 @@ go
 CREATE nonCLUSTERED INDEX [CIX_StagingFileItem]
     ON [fusion].[StagingFileItem]([StagingFileID] ASC);
 
-
+go
 
 ALTER TABLE [fusion].[StagingFileItem]  WITH CHECK ADD  CONSTRAINT [FK_StagingFileItem_StagingFile] FOREIGN KEY([StagingFileID])
 	REFERENCES [fusion].[StagingFile] ([ID])
