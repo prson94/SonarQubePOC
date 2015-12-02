@@ -2,7 +2,7 @@
 -- Create date: <12/1/2015>
 -- Description:	<Given the input Stage File instance the proc looks up Eagle DB Columns and adds relations to Given BB mnemonic>
 -- =============================================
-create PROCEDURE [Fusion].[ProcessEagleMCToBloombergRelations]	
+CREATE PROCEDURE [Fusion].[ProcessEagleMCToBloombergRelations]	
 	@StagingFileID int,
 	@FusionID int
 AS
@@ -55,7 +55,7 @@ BEGIN
 							from 
 								[dbo].[intersect] isect inner join intersectnode srcINode on (isect.intersecttypeid = 179 and isect.id = srcINode.IntersectID and srcINode.IntersectTypeNodeID = 420)
 								inner join intersectnode tgtINode on(isect.intersecttypeid = 179 and isect.id = tgtINode.IntersectID and tgtINode.IntersectTypeNodeID = 419)) existing
-								on existing.SourceObjectID = fa.ID and existing.TargetObjectID = faBB.id
+								on existing.SourceObjectID = faBB.ID and existing.TargetObjectID = fa.id
 					where fa.fusionattributetypeid = 205 and ft.name = 'startag'  and sfi.stagingfileid = @StagingFileID and existing.hasExisting is null;
 
 
