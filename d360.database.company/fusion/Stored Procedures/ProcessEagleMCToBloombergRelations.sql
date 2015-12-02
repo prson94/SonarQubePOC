@@ -1,4 +1,8 @@
-﻿CREATE PROCEDURE [Fusion].[ProcessEagleMCToBloombergRelations]	
+﻿-- =============================================
+-- Create date: <12/1/2015>
+-- Description:	<Given the input Stage File instance the proc looks up Eagle DB Columns and adds relations to Given BB mnemonic>
+-- =============================================
+create PROCEDURE [Fusion].[ProcessEagleMCToBloombergRelations]	
 	@StagingFileID int,
 	@FusionID int
 AS
@@ -49,9 +53,9 @@ BEGIN
 								   tgtINode.ObjectID as TargetObjectID,
 								   1 as hasExisting
 							from 
-								[dbo].[intersect] isect inner join intersectnode srcINode on (isect.intersecttypeid = 179 and isect.id = srcINode.IntersectID and srcINode.IntersectTypeNodeID = 419)
-								inner join intersectnode tgtINode on(isect.intersecttypeid = 179 and isect.id = tgtINode.IntersectID and tgtINode.IntersectTypeNodeID = 420)) existing
-								on existing.SourceObjectID = sf.FusionAttributeID and existing.TargetObjectID = fa.ID
+								[dbo].[intersect] isect inner join intersectnode srcINode on (isect.intersecttypeid = 179 and isect.id = srcINode.IntersectID and srcINode.IntersectTypeNodeID = 420)
+								inner join intersectnode tgtINode on(isect.intersecttypeid = 179 and isect.id = tgtINode.IntersectID and tgtINode.IntersectTypeNodeID = 419)) existing
+								on existing.SourceObjectID = fa.ID and existing.TargetObjectID = faBB.id
 					where fa.fusionattributetypeid = 205 and ft.name = 'startag'  and sfi.stagingfileid = @StagingFileID and existing.hasExisting is null;
 
 
