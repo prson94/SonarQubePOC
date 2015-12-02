@@ -29,6 +29,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
         public int StagingFileID { get; set; }
         public string Tag { get; set; }
         public string Value { get; set; }
+        public ChangeType ChangeType { get; set; }
     }
 
     public class EagleMCCloudFusionAnalyzer : FunctionsBase
@@ -210,12 +211,16 @@ namespace d360.jobs.AnalyzeCloudFusionData
                     companyConnection.Execute("insert into " + CLOUD_EXECUTION_TABLE + " ([FusionID], [FusionAttributeID], [File],[UpdatedOn]) values(@fus,@objID, @f, @now)", new { fus = EAGLE_MC_FUSION_TYPE, objID = stream.ID, f = file, now = DateTime.UtcNow }, trans);
 
                     newCloudJobId = companyConnection.Query<int>("select ID from " + CLOUD_EXECUTION_TABLE + " where FusionID = @f and FusionAttributeID = @o", new { f = EAGLE_MC_FUSION_TYPE, o = stream.ID }, trans).FirstOrDefault();
+                    List<StagingFileItem> stagingItems = new List<StagingFileItem>();
 
                     // insert them into cloudfusion tables
                     foreach (var item in relationships)
                     {
-                        companyConnection.Execute("insert into " + CLOUD_EXECUTION_JOB_DATA + " values(@id,@tag,@value,@c)", new { id = newCloudJobId, tag = item.StarTag, value = item.Target, c = item.Change }, trans);
+                        stagingItems.Add(new StagingFileItem { ChangeType = item.Change, Tag = item.StarTag, Value = item.Target, StagingFileID = newCloudJobId });
                     }
+
+                    companyConnection.Execute("insert into " + CLOUD_EXECUTION_JOB_DATA + " values(@StagingFileID,@Tag,@Value,@ChangeType)", stagingItems, trans);
+
                     trans.Commit();
                 }
 

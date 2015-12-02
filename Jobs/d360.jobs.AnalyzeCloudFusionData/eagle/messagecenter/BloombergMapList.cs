@@ -101,7 +101,9 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
         }
         
         private void extractMnemonics(BloombergRelationshipMapping rel)
-        {            
+        {
+            return; // dont want to do this yet as it will take things in if(my value) then my value 2 
+
             //run regexpression to find all 
             var matches = Regex.Matches(rel.Expression, ":(.*?):");
 
