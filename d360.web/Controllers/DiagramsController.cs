@@ -408,5 +408,46 @@ from	h
         #endregion
 
         #endregion
+
+
+        #region Lineage Go JS Test & Prototyping
+
+        public ActionResult LineageTest()
+        {
+            return View();
+        }
+
+        public JsonNetResult GetDiagramDetails(SystemObjects type, int id)
+        {
+            var items = Company.Query<dynamic>(
+                "EXEC GetEnvironmentDetailsDiagramData @ObjectType, @ObjectID",
+                new { ObjectType = type.ToString(), ObjectID = id }
+            ).ToList();
+
+            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult GetArtifactTypes()
+        {
+            var items = Company.Query<dynamic>("select id,name from artifacttype");
+            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult GetArtifact(int id, string search)
+        {
+            var items = Company.Query<dynamic>("select top 5 objectid as id, c.name, iconbackcolor as backcolor, iconforecolor as forecolor, c.objecttypename as typename, c.url from cache.objectdetails c join artifact a on a.artifacttypeid = @id and c.objectid = a.id where lower(c.name) like lower('%' + @search + '%') ", new { id, search });
+            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult GetRelationshipByTypes(string type1, string type2)
+        {
+            string t1 = type1 + '/' + type2;
+            string t2 = type2 + '/' + type1;
+            var items = Company.Query<dynamic>("select rr.side1label, rr.side2label, t.name as [types], r.name as name from intersecttyperolerelation rr join intersecttype t on t.id = rr.intersecttypeid join intersecttyperole r on r.id = rr.intersecttyperoleid where lower(t.name) = lower(@t1) or lower(t.name) = lower(@t2)",new { t1, t2 });
+
+            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        #endregion
     }
 }

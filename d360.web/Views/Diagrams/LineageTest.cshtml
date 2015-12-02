@@ -1,0 +1,560 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Lineage Go JS Prototype</title>
+    <meta charset="utf-8" />
+    <link href="~/Content/font-awesome.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-2.1.4.js"></script>
+    <script src="~/Scripts/go-1.5.12-debug.js"></script>
+    <script src="~/Scripts/jqx/3.8.2/jqx-all.js"></script>
+    <script src="~/Scripts/knockout-3.3.0.js"></script>
+    <link href="~/Content/styles/all.min.css" rel="stylesheet" />
+
+</head>
+<body>
+    <div style="width:100%">
+        <div style="width:83%;display:inline-block;float:left;resize:both;">
+            <div id="myOverviewDiv" style="height: 500px;background:white"></div>
+        </div>
+
+        <div style="width:16%;display:inline-block;float:left;border:1px solid #929292;height: 500px;">
+            @*<div style="margin-bottom:10px;">
+                    <ul style="display:inline-block; text-decoration:none;list-style-type:none;margin:0;padding:0;border:none;">
+                        <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:black"><i class="fa fa-plus"></i></li>
+                        <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-info-circle"></i></li>
+                        <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-pencil"></i></li>
+                        <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-database"></i></li>
+                        <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-tags"></i></li>
+                        <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-refresh"></i></li>
+                    </ul>
+                </div>*@
+
+            <div id="addNode" style="display:none;">
+                Artifact Type:<select id="artType">
+                    <option value="1">Term</option>
+                    <option value="2">Vendor</option>
+                    <option value="3">Application</option>
+                    <option value="4">Data Service</option>
+                </select>
+                <br />
+                Name: <input id="txtName" type="text" /><br />
+                Relationship Type:<select id="relType">
+                    <option value="1">relates to</option>
+                    <option value="2">warehouses</option>
+                    <option value="3">licenses to</option>
+                </select>
+                <br />
+                Related Item:
+                <select id="relNode"></select>
+                <br />
+
+                <a href="#" onclick="add();" id="add">Add to Diagram</a>
+            </div>
+
+
+            <div id="jqxExpander0">
+                <div><i class="fa fa-info-circle"></i> Info</div>
+                <div>
+                    <div id="noneSel" class="grey-text">Nothing selected</div>
+                    <div id="isSel" style="display:none">
+                        @*<span style="font-weight:600">Name: </span><a href="#" id="title" target="_blank"></a><br />
+                            <span style="font-weight:600">Type: </span><span id="subTitle"></span><br />
+                            <span style="font-weight:600">Role: </span><span id="roleTitle"></span><br />*@
+                        <div id="preview"></div>
+                    </div>
+                    <br />
+                </div>
+            </div>
+
+            <div id="jqxExpander1">
+                <div><i class="fa fa-plus"></i> Add a new node</div>
+                <div>
+                    Relate To: <select id="ddlRel" style="display:block !important; padding:0 !important; height: 1.2rem !important; width:80% !important"></select>
+
+                    Type: <select class="select-dropdown" id="ddlType" style="display:block !important; padding:0 !important; height: 1.2rem !important; width:80% !important"></select><br />
+                    Search: <input id="txtSearch" type="text" />
+                    <button onclick="getArtifact();">Search</button>
+                    <br /> Relationship: <select id="ddlRType" style="display:block !important; padding:0 !important; height: 1.2rem !important; width:80% !important"></select>
+                    <br /><a href="#" id="txtResult" onclick="addExisting();"></a><br /><br />
+                </div>
+            </div>
+
+            <div id="jqxExpander2">
+                <div><i class="fa fa-retweet"></i> Relationships</div>
+                <div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div style="font-weight:600">Populate Diagram:</div>
+    <div>
+        Object Type: <input type="text" id="objecttype" value="Artifact" />
+        Object Id: <input type="text" id="objectid" value="3042" />
+        <button onclick="popDiagram();" class="btn">Populate</button>
+
+    </div>
+
+    <script type="text/javascript">
+        var newId = -1;
+        var temp = null;
+        var relationshipLabels = null;
+
+        function createArtifactModel() {
+            return {
+                id: null,
+                key: null,
+                parentId: null,
+                assigningItemType: null,
+                assigningItemId: null,
+                objectType: null,
+                objectId: null,
+                name: null,
+                type: "Artifact",
+                typeName: null,
+                backColor: null,
+                foreColor: null,
+                url: null,
+                technicalRelationships: null,
+                contexts: null,
+                transformations: null,
+                role: null
+            };
+        };
+
+        function createLinkModel() {
+            return {
+                from: null,
+                frompid: "OUT",
+                to: null,
+                text: null
+            };
+        };
+
+        function parseData(data) {
+
+            myDiagram.startTransaction("parse");
+            myDiagram.model.nodeDataArray = [];
+            myDiagram.model.linkDataArray = [];
+            for (var i = 0; i < data.length; i++) {
+                var d = data[i];
+                var model = createArtifactModel();
+                model.key = d.ID;
+                model.foreColor = d.ForeColor;
+                model.backColor = d.BackColor;
+                model.typeName = d.Type;
+                model.name = d.Name;
+                model.role = d.Role;
+                model.url = d.Url
+                model.id = d.ObjectID;
+
+                myDiagram.model.addNodeData(model);
+
+                if (d.ParentID != null) {
+                    var link = createLinkModel();
+                    link.from = model.key;
+                    link.to = d.ParentID;
+                    link.text = "";
+                    myDiagram.model.addLinkData(link);
+                }
+
+            }
+            myDiagram.commitTransaction("parse");
+        }
+
+
+
+        var g = go.GraphObject.make;
+
+        myDiagram = g(go.Diagram, "myOverviewDiv", {
+            initialContentAlignment: go.Spot.Left,
+            //autoScale: true,
+            allowDrop: true,
+            initialAutoScale: go.Diagram.Uniform,//ToFill,
+            //initialPosition: Point(125, 200),
+            layout: g(go.LayeredDigraphLayout, {
+                direction: 0
+            }),
+            "undoManager.isEnabled": true
+        });
+
+        function handleScale() {
+            var s = myDiagram.scale;
+            var h = 500;
+            //if (s > 1) {
+            h = h * s;
+            //}
+            //$('#myOverviewDiv').css('height', h);
+            //console.log(h);
+        }
+
+        myDiagram.addDiagramListener('ViewportBoundsChanged', handleScale);
+        myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
+
+        myDiagram.grid.visible = false;
+        myDiagram.grid.gridCellSize = new go.Size(8, 8);
+        myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
+        myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
+
+        function onSelectionChange(e) {
+            var node = e.diagram.selection.first();
+            if (node == null) {
+                //$('#title').text('');
+                //$('#subTitle').text('');
+                //$('#roleTitle').text('');
+                $('#noneSel').show();
+                $('#isSel').hide();
+                $('#preview').html('');
+                
+                return;
+            }
+            var data = node.data;
+
+            //$('#title').html(data.name + ' <i class="fa fa-external-link"></i>').attr('href', '/' + data.url);
+
+            //$('#subTitle').text(data.typeName);
+            //$('#roleTitle').text(data.role);
+            //$('#txtName').val(data.name);
+            $('#noneSel').hide();
+            $('#isSel').show();
+            //console.log(data.key);
+            $('#ddlRel').val(data.key);
+          
+            $.ajax({
+                url: '/resources/Artifact/' + data.id + '/templates/tooltip/Preview',
+                data: null,
+                success: function (data) {
+                    $('#preview').html(data);
+                   
+                },
+                async: true
+            });
+
+
+            
+        }
+
+        function mouseEnter(e, node) {
+            node.isShadowed = true;
+        };
+
+        function mouseLeave(e, node) {
+            node.isShadowed = false;
+        };
+
+        function makePort(name, leftside) {
+            var port = g(go.Shape, "Circle", {
+                fill: "white",
+                stroke: "gray",
+                strokeWidth: 3,
+                desiredSize: new go.Size(9, 9),
+                portId: name, // declare this object to be a "port"
+                toMaxLinks: 1, // don't allow more than one link into a port
+                cursor: "pointer" // show a different cursor to indicate potential link point
+            });
+
+            var lab = g(go.TextBlock, name, // the name of the port
+            {
+                font: "7pt sans-serif"
+            });
+
+            var panel = g(go.Panel, "Horizontal", {
+                margin: new go.Margin(2, 0)
+            });
+
+            if (leftside) {
+                port.toSpot = go.Spot.Left;
+                port.toLinkable = true;
+                lab.margin = new go.Margin(1, 0, 0, 1);
+                panel.alignment = go.Spot.TopLeft;
+                panel.add(port);
+                // panel.add(lab);
+            } else {
+                port.fromSpot = go.Spot.Right;
+                port.fromLinkable = true;
+                lab.margin = new go.Margin(1, 1, 0, 0);
+                panel.alignment = go.Spot.TopRight;
+                // panel.add(lab);
+                panel.add(port);
+            }
+            return panel;
+        }
+
+
+        function makeTemplate(inports, outports) {
+            var node = g(go.Node, "Spot",
+                {
+                    mouseEnter: mouseEnter,
+                    mouseLeave: mouseLeave
+                },
+            g(go.Panel, "Auto", {
+                width: 207,
+                height: 105,
+                name: "NodePanel"
+            },
+            g(go.Shape, "RoundedRectangle", {
+                stroke: 'transparent',
+                strokeWidth: 2,
+                spot1: go.Spot.TopLeft,
+                spot2: go.Spot.BottomRight,
+                name: "NodeShape"
+            },
+                new go.Binding("fill", "backColor").makeTwoWay()
+                //new go.Binding("stroke", "foreColor").makeTwoWay()
+           ),
+            g(go.Panel, "Table",
+                g(go.TextBlock, {
+                    row: 0,
+                    margin: 3,
+                    alignment: go.Spot.Top,
+                    editable: false,
+                    maxSize: new go.Size(180, 40),
+                    font: "bold 12pt sans-serif"
+                },
+                    new go.Binding("text", "name").makeTwoWay(),
+                    new go.Binding("stroke", "foreColor").makeTwoWay()
+                ),
+                g(go.TextBlock, {
+                    row: 1,
+                    margin: 3,
+                    maxSize: new go.Size(180, NaN),
+                    font: "10pt sans-serif"
+                },
+                    new go.Binding("stroke", "foreColor").makeTwoWay(),
+                    new go.Binding("text", "typeName").makeTwoWay()
+                ),
+                g(go.TextBlock, {
+                    row: 2,
+                    margin: 3,
+                    maxSize: new go.Size(180, NaN),
+                    font: "bold 10pt sans-serif"
+                },
+                    new go.Binding("text", "role").makeTwoWay(),
+                    new go.Binding("stroke", "foreColor").makeTwoWay()
+                )
+            )),
+            g(go.Panel, "Vertical", {
+                alignment: go.Spot.Left,
+                alignmentFocus: go.Spot.Default //new go.Spot(0, 0.5, -8, 0)
+            },
+            inports),
+            g(go.Panel, "Vertical", {
+                alignment: go.Spot.Right,
+                alignmentFocus: go.Spot.Default //new go.Spot(1, 0.5, 8, 0)
+            },
+            outports));
+
+            myDiagram.nodeTemplateMap.add("Artifact", node);
+        }
+
+        makeTemplate([makePort("", true)], [makePort("OUT", false)]);
+
+        myDiagram.linkTemplate = g(go.Link,
+            {
+                routing: go.Link.Orthogonal,
+                curve: go.Link.JumpOver,
+                corner: 10,
+                relinkableFrom: false,
+                relinkableTo: false
+            }, // the whole link panel
+        g(go.Shape,  // the link shape
+          {
+              stroke: "gray",
+              strokeWidth: 2
+          }),
+        g(go.Shape,  // the arrowhead
+          { toArrow: "standard", fill: "gray", stroke: "gray" }),
+        g(go.Panel, "Auto",
+          g(go.Shape,  // the link shape
+            {
+                visible: false,
+                fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                stroke: null
+                //stroke: 'gray',
+                //strokeWidth: 2
+            },
+            //only visible if there's a label
+            new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+            ),
+          g(go.TextBlock,  // the label
+            {
+                textAlign: "center",
+                font: "9pt helvetica, arial, sans-serif",
+                stroke: "#000",
+                margin: 4
+            },
+            new go.Binding("text", "text").makeTwoWay())
+        )
+      );
+
+
+
+        myDiagram.model = go.Model.fromJson({
+            "class": "go.GraphLinksModel",
+            "nodeCategoryProperty": "type",
+            "linkFromPortIdProperty": "frompid",
+            "linkToPortIdProperty": "topid",
+            "nodeDataArray": [],
+            "linkDataArray": []
+        });
+
+
+
+        function populateNodeSelectList() {
+
+            $('#ddlRel').html('');
+            var output = [];
+            output.push('<option value="-10000">(None)</option>');
+            for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
+                var node = myDiagram.model.nodeDataArray[i];
+                output.push('<option style = "background-color:' + node.backColor + ';color:' + node.foreColor + ';" value="' + node.key + '">' + node.name + ' (' + node.typeName + ')</option>');
+            }
+            $('#ddlRel').html(output.join(''));
+
+        };
+
+        function populateTypeSelectList() {
+
+            $.ajax({
+                url: '/Diagrams/GetArtifactTypes',
+                data: null,
+                success: function (data) {
+                    $('#ddlType').html('');
+                    var output = [];
+                    for (var i = 0; i < data.length; i++) {
+                        output.push('<option value="' + data[i].id + '">' + data[i].name + '</option>');
+                    }
+                    $('#ddlType').html(output.join(''));
+                }
+            });
+        };
+
+        function getArtifact() {
+            var data = {
+                id: $('#ddlType').val(),
+                search: $('#txtSearch').val()
+            };
+
+            $.ajax({
+                url: '/Diagrams/GetArtifact',
+                data: data,
+                success: function (data) {
+                    $('#txtResult').text('Add ' + data[0].name);
+                    $('#txtResult').css('color', data[0].forecolor).css('background-color', data[0].backcolor);
+                    temp = data[0];
+                },
+                async: false
+            });
+
+            if (temp == null) {
+                return;
+            }
+            var data = {
+                type1: $("#ddlType option:selected").text(),
+                type2: ''
+            };
+
+            for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
+                if (myDiagram.model.nodeDataArray[i].key == $('#ddlRel').val()) {
+                    data.type2 = myDiagram.model.nodeDataArray[i].typeName;
+                    break;
+                }
+            }
+
+
+
+            $.ajax({
+                url: '/Diagrams/GetRelationshipByTypes',
+                data: data,
+                success: function (data) {
+                   // console.log(data);
+                    relationshipLabels = data;
+                    var output = [];
+                    for (var i = 0; i < data.length; i++) {
+                        output.push('<option value="' + data[i].name + '">' + data[i].name + ' (' + data[i].side1label + '/' + data[i].side2label + ')</option>');
+                    }
+                   // console.log(output);
+                    $('#ddlRType').html(output.join(''));
+                }
+            });
+
+        }
+
+        
+
+        function addExisting() {
+            myDiagram.startTransaction("add_existing");
+            var newNode = createArtifactModel();
+            newNode.key = temp.id;
+            newNode.typeName = temp.typename;
+            newNode.name = temp.name + " *";
+            newNode.role = "";
+            newNode.backColor = temp.backcolor;
+            newNode.foreColor = temp.forecolor;
+            newNode.id = temp.id;
+
+            myDiagram.model.addNodeData(newNode);
+
+
+            if ($('#ddlRel').val() != -10000) {
+                var newLink = {
+                    from: $('#ddlRel').val(),
+                    to: newNode.key,
+                    frompid: "OUT",
+                    text: relationshipLabels[$("#ddlRType")[0].selectedIndex].side1label
+                };
+               // console.log(newLink);
+                myDiagram.model.addLinkData(newLink);
+            }
+
+
+            myDiagram.commitTransaction("add_existing");
+
+            temp = null;
+            $('#txtResult').text('');
+            populateNodeSelectList();
+        }
+
+
+        function popDiagram() {
+            var data = {
+                type: $('#objecttype').val(),
+                id: $('#objectid').val()
+            };
+
+            var results = $.ajax({
+                url: '/diagrams/GetDiagramDetails',
+                data: data,
+                success: function (data) {
+                    //console.log(data);
+                    parseData(data);
+                    populateNodeSelectList();
+                }
+            });
+        };
+
+
+       
+        populateTypeSelectList();
+        popDiagram();
+        
+
+        $(document).ready(function () {
+            // Create jqxExpander
+            $("#jqxExpander0").jqxExpander({ width: '100%', height: 'auto' }).jqxExpander('collapse');
+            $("#jqxExpander1").jqxExpander({ width: '100%', height: 'auto' }).jqxExpander('collapse');
+            $("#jqxExpander2").jqxExpander({ width: '100%', height: 'auto' }).jqxExpander('collapse');
+        });
+    </script>
+</body>
+
+
+
+</html>

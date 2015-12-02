@@ -8,13 +8,139 @@
     <script src="Scripts/go-1.5.12-debug.js"></script>
 </head>
 <body>
-    <div id="myOverviewDiv" style="width: 100%; height: 500px"></div>
+    <div style="width:100%">
+        <div style="width:83%;display:inline-block;float:left">
+            <div id="myOverviewDiv" style="height: 500px;"></div>
+        </div>
+
+        <div style="width:16%;display:inline-block;float:left;border:1px solid black;height: 500px;">
+            <div style="margin-bottom:10px;">
+                <ul style="display:inline-block; text-decoration:none;list-style-type:none;margin:0;padding:0;border:none;">
+                    <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:black"><i class="fa fa-plus"></i></li>
+                    <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-info-circle"></i></li>
+                    <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-pencil"></i></li>
+                    <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-database"></i></li>
+                    <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-tags"></i></li>
+                    <li style="display:inline-block;border:1px solid black;margin:0; padding:5px; width:32px;text-align:center;color:darkgray"><i class="fa fa-refresh"></i></li>
+                </ul>
+            </div>
+            <div id="title"></div>
+            <div id="subTitle"></div>
+            <div id="addNode">
+                Artifact Type:<select id="artType">
+                    <option value="1">Term</option>
+                    <option value="2">Vendor</option>
+                    <option value="3">Application</option>
+                    <option value="4">Data Service</option>
+                </select>
+                <br/>
+                Name: <input id="txtName" type="text" /><br />
+                Relationship Type:<select id="relType">
+                    <option value="1">relates to</option>
+                    <option value="2">warehouses</option>
+                    <option value="3">licenses to</option>
+                </select>
+                <br />
+                Related Item:
+                <select id="relNode">
+                </select>
+                <br/>
+              
+                <a href="#" onclick="add();" id="add">Add to Diagram</a>
+            </div>
+        </div>
+    </div>
+
+
     <script type="text/javascript">
+
+
+         function createArtifactModel() {
+            return {
+                id: null,
+                key: null,
+                parentId: null,
+                assigningItemType: null,
+                assigningItemId: null,
+                objectType: null,
+                objectId: null,
+                name: null,
+                type: "Artifact",
+                typeName: null,
+                backColor: null,
+                foreColor: null,
+                url: null,
+                technicalRelationships: null,
+                contexts: null,
+                transformations: null,
+                role: null
+            };
+        };
+
+         function createLinkModel() {
+             return {
+                 from: null,
+                 frompid: "OUT",
+                 to: null,
+                 text: null
+             };
+         };
+
+         var dataArray = [
+
+            //144A indicator or w/e, id 11808
+            //{ "ID": "0", "ParentID": "", "AssigningItemType": "", "AssigningItemID": "", "ObjectType": "Artifact", "ObjectID": "11808", "Name": "144A Eligible Indicator", "Type": "Business Term", "BackColor": "#0f4714", "ForeColor": "#f7fcf8", "Url": "#/artifacts/1/11808", "TechnicalRelationships": "", "Contexts": "", "Transformations": "", "Role": "" },
+            //{ "ID": "365", "ParentID": "0", "AssigningItemType": "Artifact", "AssigningItemID": "11808", "ObjectType": "Artifact", "ObjectID": "16313", "Name": "Markit EDM", "Type": "Application", "BackColor": "#5227C6", "ForeColor": "#7CFFEF", "Url": "#/artifacts/2/16313", "TechnicalRelationships": "<relationships><relationship type='Artifact' id='11808' attribute='Column' fusion='Markit EDM' name='IS_144A_INDICATOR' url='#/fusion/1/17'/></relationships>", "Contexts": "", "Transformations": "", "Role": "Authoritative Source" },
+            //{ "ID": "421", "ParentID": "365", "AssigningItemType": "Artifact", "AssigningItemID": "11808", "ObjectType": "Artifact", "ObjectID": "16181", "Name": "Bloomberg Credit Risk", "Type": "Data Service", "BackColor": "#2B511A", "ForeColor": "#EFF0F4", "Url": "#/artifacts/10/16181", "TechnicalRelationships": "", "Contexts": "", "Transformations": "", "Role": "Data Provider" },
+            //{ "ID": "442", "ParentID": "365", "AssigningItemType": "Artifact", "AssigningItemID": "11808", "ObjectType": "Artifact", "ObjectID": "746", "Name": "Back Office Data License", "Type": "License Service", "BackColor": "#63047a", "ForeColor": "#f9f7fa", "Url": "#/artifacts/9/746", "TechnicalRelationships": "", "Contexts": "", "Transformations": "", "Role": "Data License" }
+
+            //country of risk
+            //{ "ID": "0", "ParentID": "", "AssigningItemType": "", "AssigningItemID": "", "ObjectType": "Artifact", "ObjectID": "4651", "Name": "Country of Risk", "Type": "Business Term", "BackColor": "#0f4714", "ForeColor": "#f7fcf8", "Url": "#/artifacts/1/4651", "TechnicalRelationships": "", "Contexts": "", "Transformations": "", "Role": "" },
+            //{ "ID": "53", "ParentID": "0", "AssigningItemType": "Taxonomy", "AssigningItemID": "240", "ObjectType": "Artifact", "ObjectID": "733", "Name": "Eagle PACE", "Type": "Application", "BackColor": "#5227C6", "ForeColor": "#7CFFEF", "Url": "#/artifacts/2/733", "TechnicalRelationships": "<relationships><relationship type='Artifact' id='4651' attribute='Column' fusion='Eagle V2015 R2' name='country_of_risk' url='#/fusion/5/29'/><relationship type='Artifact' id='4651' attribute='Column' fusion='Eagle V2015 R2' name='country_domicile' url='#/fusion/5/29'/><relationship type='Artifact' id='4651' attribute='Column' fusion='Eagle V2015 R2' name='class_17_source' url='#/fusion/5/29'/><relationship type='Artifact' id='4651' attribute='Column' fusion='Eagle V2015 R2' name='type' url='#/fusion/5/29'/><relationship type='Artifact' id='4651' attribute='Report_Profile' fusion='Eagle Access Dev' name='eglPrfMp-Verification Daily Region Country Model' url='#/fusion/5/13'/><relationship type='Artifact' id='4651' attribute='Column' fusion='Eagle V2015 R2' name='rule_name' url='#/fusion/5/29'/><relationship type='Artifact' id='4651' attribute='Column' fusion='Eagle V2015 R2' name='update_date' url='#/fusion/5/29'/><relationship type='Artifact' id='4651' attribute='Column' fusion='Eagle V2015 R2' name='instance' url='#/fusion/5/29'/></relationships>", "Contexts": "<contexts><context lookup='Instrument Type' name='Equity' code='EQ'/></contexts>", "Transformations": "", "Role": "Authoritative Source" },
+            //{ "ID": "416", "ParentID": "417", "AssigningItemType": "Artifact", "AssigningItemID": "4651", "ObjectType": "Artifact", "ObjectID": "750", "Name": "Per Security Request", "Type": "License Service", "BackColor": "#63047a", "ForeColor": "#f9f7fa", "Url": "#/artifacts/9/750", "TechnicalRelationships": "", "Contexts": "", "Transformations": "", "Role": "Data License" },
+            //{ "ID": "417", "ParentID": "53", "AssigningItemType": "Artifact", "AssigningItemID": "4651", "ObjectType": "Artifact", "ObjectID": "16181", "Name": "Bloomberg Credit Risk", "Type": "Data Service", "BackColor": "#2B511A", "ForeColor": "#EFF0F4", "Url": "#/artifacts/10/16181", "TechnicalRelationships": "<relationships><relationship type='Artifact' id='4651' attribute='Mnemonic' fusion='Bloomberg Fields File' name='Credit Risk.CNTRY_OF_RISK' url='#/fusion/8/15'/></relationships>", "Contexts": "", "Transformations": "", "Role": "Data Provider" },
+            //{ "ID": "425", "ParentID": "417", "AssigningItemType": "Artifact", "AssigningItemID": "4651", "ObjectType": "Artifact", "ObjectID": "746", "Name": "Back Office Data License", "Type": "License Service", "BackColor": "#63047a", "ForeColor": "#f9f7fa", "Url": "#/artifacts/9/746", "TechnicalRelationships": "", "Contexts": "", "Transformations": "", "Role": "Data License" }
+
+                //id 3042
+             {"ID": "0","ParentID": "","AssigningItemType": "","AssigningItemID": "","ObjectType": "Artifact","ObjectID": "3042","Name": "A.M. Best Rating","Type": "Business Term","BackColor": "#0f4714","ForeColor": "#f7fcf8","Url": "#/artifacts/1/3042","TechnicalRelationships": "","Contexts": "","Transformations": "","Role": ""},
+             {"ID": "287","ParentID": "290","AssigningItemType": "Taxonomy","AssigningItemID": "274","ObjectType": "Artifact","ObjectID": "757","Name": "Moodys Credit Ratings","Type": "License Service","BackColor": "#63047a","ForeColor": "#f9f7fa","Url": "#/artifacts/9/757","TechnicalRelationships": "","Contexts": "","Transformations": "","Role": "Data License"},
+             {"ID": "288","ParentID": "290","AssigningItemType": "Taxonomy","AssigningItemID": "274","ObjectType": "Artifact","ObjectID": "743","Name": "S&P Ratings License","Type": "License Service","BackColor": "#63047a","ForeColor": "#f9f7fa","Url": "#/artifacts/9/743","TechnicalRelationships": "","Contexts": "","Transformations": "","Role": "Data License"},
+             {"ID": "289","ParentID": "290","AssigningItemType": "Taxonomy","AssigningItemID": "274","ObjectType": "Artifact","ObjectID": "16505","Name": "Fitch Ratings Service","Type": "License Service","BackColor": "#63047a","ForeColor": "#f9f7fa","Url": "#/artifacts/9/16505","TechnicalRelationships": "","Contexts": "","Transformations": "","Role": "Data License"},
+             {"ID": "290","ParentID": "291","AssigningItemType": "Taxonomy","AssigningItemID": "274","ObjectType": "Artifact","ObjectID": "16180","Name": "Per Security Requests","Type": "Data Service","BackColor": "#2B511A","ForeColor": "#EFF0F4","Url": "#/artifacts/10/16180","TechnicalRelationships": "<relationships><relationship type='Artifact' id='3042' attribute='Mnemonic' fusion='Bloomberg Fields File' name='Security Master.RTG_AMBEST' url='#/fusion/8/15'/></relationships>","Contexts": "","Transformations": "","Role": "Data Provider"},
+             {"ID": "291","ParentID": "0","AssigningItemType": "Taxonomy","AssigningItemID": "268","ObjectType": "Artifact","ObjectID": "733","Name": "Eagle PACE","Type": "Application","BackColor": "#5227C6","ForeColor": "#7CFFEF","Url": "#/artifacts/2/733","TechnicalRelationships": "<relationships><relationship type='Artifact' id='3042' attribute='Column' fusion='Eagle V2015 R2' name='fid_float16' url='#/fusion/5/29'/></relationships>","Contexts": "","Transformations": "","Role": "Authoritative Source"}
+         ];
+
+         function parseData(data) {
+             for (var i = 0; i < dataArray.length; i++) {
+                 var d = dataArray[i];
+                 var model = createArtifactModel();
+                 model.key = d.ID;
+                 model.foreColor = d.ForeColor;
+                 model.backColor = d.BackColor;
+                 model.typeName = d.Type;
+                 model.name = d.Name;
+                 model.role = d.Role;
+
+                 myDiagram.model.addNodeData(model);
+
+                 if (d.ParentID != "") {
+                     var link = createLinkModel();
+                     link.from = model.key;
+                     link.to = d.ParentID;
+                     link.text = "relates to";
+                     myDiagram.model.addLinkData(link);
+                 }
+             }
+         }
+
+
+
         var g = go.GraphObject.make;
 
         myDiagram = g(go.Diagram, "myOverviewDiv", {
             initialContentAlignment: go.Spot.Left,
             //autoScale: true,
+            allowDrop: true,
             initialAutoScale: go.Diagram.Uniform,//ToFill,
             //initialPosition: Point(125, 200),
             layout: g(go.LayeredDigraphLayout, {
@@ -27,13 +153,30 @@
             var s = myDiagram.scale;
             var h = 500;
             //if (s > 1) {
-                h = h * s;
+            h = h * s;
             //}
-            $('#myOverviewDiv').css('height', h);
-            console.log(h);
+            //$('#myOverviewDiv').css('height', h);
+            //console.log(h);
         }
 
         myDiagram.addDiagramListener('ViewportBoundsChanged', handleScale);
+        myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
+
+
+        function onSelectionChange(e) {
+            var node = e.diagram.selection.first();
+            if (node == null) {
+                $('#title').text('');
+                $('#subTitle').text('');
+                
+                return;
+            }
+            var data = node.data;
+
+            $('#title').text(data.name);
+            $('#subTitle').text(data.type);
+            $('#txtName').val(data.name);
+        }
 
         function makePort(name, leftside) {
             var port = g(go.Shape, "Rectangle", {
@@ -61,108 +204,102 @@
                 lab.margin = new go.Margin(1, 0, 0, 1);
                 panel.alignment = go.Spot.TopLeft;
                 panel.add(port);
-                panel.add(lab);
+                // panel.add(lab);
             } else {
                 port.fromSpot = go.Spot.Right;
                 port.fromLinkable = true;
                 lab.margin = new go.Margin(1, 1, 0, 0);
                 panel.alignment = go.Spot.TopRight;
-                panel.add(lab);
+                // panel.add(lab);
                 panel.add(port);
             }
             return panel;
         }
 
-        function makeTemplate(typename, inports, outports) {
+
+        function makeTemplate(inports, outports) {
             var node = g(go.Node, "Spot",
             g(go.Panel, "Auto", {
                 width: 200,
                 height: 100
             },
             g(go.Shape, "Rectangle", {
-                    stroke: null,
-                    strokeWidth: 0,
-                    spot1: go.Spot.TopLeft,
-                    spot2: go.Spot.BottomRight
-                },
-                new go.Binding("fill", "back").makeTwoWay()
+                stroke: 'black',
+                strokeWidth: 1,
+                spot1: go.Spot.TopLeft,
+                spot2: go.Spot.BottomRight
+            },
+                new go.Binding("fill", "backColor").makeTwoWay(),
+                new go.Binding("stroke","foreColor").makeTwoWay()
            ),
             g(go.Panel, "Table",
                 g(go.TextBlock, {
-                        row: 0,
-                        margin: 3,
-                        editable: false,
-                        maxSize: new go.Size(180, 40),
-                        font: "bold 10pt sans-serif"
-                    },
-                    new go.Binding("text", "name").makeTwoWay(),
-                    new go.Binding("stroke", "fore").makeTwoWay()
-                ),
-                g(go.TextBlock, typename, {
-                        row: 1,
-                        margin: 3,
-                        maxSize: new go.Size(80, NaN),
-                        font: "bold 7pt sans-serif"
-                    },
-                    new go.Binding("stroke", "fore").makeTwoWay()
+                    row: 0,
+                    margin: 3,
+                    editable: false,
+                    maxSize: new go.Size(180, 40),
+                    font: "bold 10pt sans-serif"
+                },
+                    new go.Binding("text","name").makeTwoWay(),
+                    new go.Binding("stroke", "foreColor").makeTwoWay()
                 ),
                 g(go.TextBlock, {
-                        row: 2,
-                        margin: 3,
-                        maxSize: new go.Size(80, NaN),
-                        font: "bold 8pt sans-serif"
-                    },
+                    row: 1,
+                    margin: 3,
+                    maxSize: new go.Size(80, NaN),
+                    font: "bold 7pt sans-serif"
+                },
+                    new go.Binding("stroke", "foreColor").makeTwoWay(),
+                    new go.Binding("text","typeName").makeTwoWay()
+                ),
+                g(go.TextBlock, {
+                    row: 2,
+                    margin: 3,
+                    maxSize: new go.Size(80, NaN),
+                    font: "bold 8pt sans-serif"
+                },
                     new go.Binding("text", "role").makeTwoWay(),
-                    new go.Binding("stroke", "fore").makeTwoWay()
-                )//,
-            //    g(go.Panel, "Table",
-            //    { row: 3 },
-            //    g(go.TextBlock, "\uf05a", { //info
-            //        row: 0,
-            //        column: 0,
-            //        margin: 10,
-            //        editable: false,
-            //        maxSize: new go.Size(20, 20),
-            //        font: "bold 10pt FontAwesome",
-            //        toolTip: g(go.Adornment, "Auto",
-            //         g(go.Shape, { fill: '#ffffcc'}),
-            //         g(go.TextBlock, { margin: 4 },
-            //            new go.Binding('text', 'role'),
-            //            new go.Binding('data-context', 'context'),
-            //            new go.Binding('data-type', 'otype'),
-            //            new go.Binding('data-id', 'oid')
-            //         )
-            //        )
-            //    },
-            //        new go.Binding("stroke", "fore").makeTwoWay()
-            //    ),
-            //    g(go.TextBlock, "\uf079", { //retweet
-            //        row: 0,
-            //        column: 1,
-            //        margin: 10,
-            //        maxSize: new go.Size(20, 20),
-            //        font: "bold 10pt FontAwesome"
-            //    },
-            //        new go.Binding("stroke", "fore").makeTwoWay()
-            //    ),
-            //    g(go.TextBlock, "\uf02c", { //tags
-            //        row: 0,
-            //        column: 2,
-            //        margin: 10,
-            //        maxSize: new go.Size(20, 20),
-            //        font: "bold 10pt FontAwesome"
-            //    },
-            //        new go.Binding("stroke", "fore").makeTwoWay()
-            //    ),
-            //    g(go.TextBlock, "\uf1c0", { //database
-            //        row: 0,
-            //        column: 10,
-            //        margin: 3,
-            //        maxSize: new go.Size(20, 20),
-            //        font: "bold 10pt FontAwesome"
-            //    },
-            //        new go.Binding("stroke", "fore").makeTwoWay()
-            //    )
+                    new go.Binding("stroke", "foreColor").makeTwoWay()
+                )
+                //g(go.Panel, "Table",
+                //{ row: 3 },
+                //g(go.TextBlock, "&#xf129;", { //info
+                //    row: 0,
+                //    column: 0,
+                //    margin: 3,
+                //    editable: false,
+                //    maxSize: new go.Size(20, 20),
+                //    font: "bold 10pt FontAwesome"
+                //},
+                //    new go.Binding("stroke", "fore").makeTwoWay()
+                //),
+                //g(go.TextBlock, "&#xf079;", { //retweet
+                //    row: 0,
+                //    column: 1,
+                //    margin: 3,
+                //    maxSize: new go.Size(20, 20),
+                //    font: "bold 10pt FontAwesome"
+                //},
+                //    new go.Binding("stroke", "fore").makeTwoWay()
+                //),
+                //g(go.TextBlock, "&#xf02c;", { //tags
+                //    row: 0,
+                //    column: 2,
+                //    margin: 3,
+                //    maxSize: new go.Size(20, 20),
+                //    font: "bold 10pt FontAwesome"
+                //},
+                //    new go.Binding("stroke", "fore").makeTwoWay()
+                //),
+                //g(go.TextBlock, "&#xf1c0;", { //database
+                //    row: 0,
+                //    column: 2,
+                //    margin: 3,
+                //    maxSize: new go.Size(20, 20),
+                //    font: "bold 10pt FontAwesome"
+                //},
+                //    new go.Binding("stroke", "fore").makeTwoWay()
+                //)
             //)
             )),
             g(go.Panel, "Vertical", {
@@ -175,26 +312,30 @@
                 alignmentFocus: new go.Spot(1, 0.5, 8, 0)
             },
             outports));
-            myDiagram.nodeTemplateMap.add(typename, node);
+            myDiagram.nodeTemplateMap.add("Artifact", node);
         }
 
-        makeTemplate("Vendor", [makePort("", true)], [makePort("OUT", false)]);
+        makeTemplate([makePort("", true)], [makePort("OUT", false)]);
 
-        makeTemplate("Application", [makePort("", true)], [makePort("OUT", false)]);
-
-        makeTemplate("Term", [makePort("", true)], [makePort("OUT", false)]);
+        //makeTemplate("Application", [makePort("", true)], [makePort("OUT", false)]);
+        //makeTemplate("Term", [makePort("", true)], [makePort("OUT", false)]);
+        //makeTemplate("Data Service", [makePort("", true)], [makePort("OUT", false)]);
 
         myDiagram.linkTemplate = g(go.Link,
             {
                 routing: go.Link.Orthogonal,
+                curve: go.Link.JumpOver,
                 corner: 3,
                 relinkableFrom: false,
                 relinkableTo: false
             }, // the whole link panel
         g(go.Shape,  // the link shape
-          { stroke: "black" }),
+          {
+              stroke: "gray",
+              strokeWidth: 2
+          }),
         g(go.Shape,  // the arrowhead
-          { toArrow: "standard", stroke: null }),
+          { toArrow: "standard", fill: "gray", stroke: "gray" }),
         g(go.Panel, "Auto",
           g(go.Shape,  // the link shape
             {
@@ -205,28 +346,31 @@
             {
                 textAlign: "center",
                 font: "8pt helvetica, arial, sans-serif",
-                stroke: "#555555",
+                stroke: "#000",
                 margin: 4
             },
             new go.Binding("text", "text"))
         )
       );
 
-        //myDiagram.linkTemplate = g(go.Link, {
-        //    routing: go.Link.Orthogonal,
-        //    corner: 3,
-        //    relinkableFrom: false,
-        //    relinkableTo: false
-        //},
-        //g(go.Shape, {
-        //    stroke: "gray",
-        //    strokeWidth: 2
-        //}),
-        //g(go.Shape, {
-        //    stroke: "gray",
-        //    fill: "gray",
-        //    toArrow: "Standard"
-        //}));
+        /*myDiagram.linkTemplate = g(go.Link, {
+            routing: go.Link.Orthogonal,
+            curve: go.Link.JumpOver,
+            corner: 3,
+            relinkableFrom: false,
+            relinkableTo: false
+        },
+        g(go.Shape, {
+            stroke: "gray",
+            strokeWidth: 2
+        }),
+        g(go.Shape, {
+            stroke: "gray",
+            fill: "gray",
+            toArrow: "Standard"
+        }));*/
+
+
 
         myDiagram.model = go.Model.fromJson({
             "class": "go.GraphLinksModel",
@@ -234,47 +378,107 @@
             "linkFromPortIdProperty": "frompid",
             "linkToPortIdProperty": "topid",
             "nodeDataArray": [
-                { "key": 'Artifact16233', "type": "Vendor", "name": "MSCI Inc", "back": "green", "fore": "white" },
-                { "key": 'Artifact739', "type": "Vendor", "name": "Bloomberg LP", "back": "green", "fore": "white" },
-                { "key": 'Artifact972862', "type": "Application", "name": "XpressFeed", "back": "aqua", "fore": "black" },
-                { "key": 'Artifact972864', "type": "Application", "name": "GDM", "back": "aqua", "fore": "black" },
-                { "key": 'Artifact972863', "type": "Application", "name": "VDM", "back": "aqua", "fore": "black" },
-                { "key": 'Artifact972860', "type": "Term", "name": "Issue Shares Outstanding", "back": "black", "fore": "white" },
-                { "key": 'Artifact972861', "type": "Term", "name": "Price Close", "back": "black", "fore": "white" },
-                { "key": 'Artifact972859', "type": "Term", "name": "Issue Market Cap", "back": "black", "fore": "white" }
+                //{ "key": 20, "type": "Artifact", "typeName": "Vendor", "name": "Compustat", "role": "", "backColor": "green", "foreColor": "white" },
+                //{ "key": 21, "type": "Artifact", "typeName": "Vendor", "name": "Bloomberg", "role": "", "backColor": "green", "foreColor": "white" },
+                //{ "key": 22, "type": "Artifact", "typeName": "Vendor", "name": "MSCI", "role": "", "backColor": "green", "foreColor": "white" },
+                //{ "key": 41, "type": "Artifact", "typeName": "Application", "name": "XpressFeed", "role": "", "backColor": "aqua", "foreColor": "black" },
+                //{ "key": 42, "type": "Artifact", "typeName": "Application", "name": "VendorDataMart", "role": "", "backColor": "aqua", "foreColor": "black" },
+                //{ "key": 51, "type": "Artifact", "typeName": "Business Term", "name": "Issue Shares Outstanding", "role": "Calculation", "backColor": "black", "foreColor": "white" },
+                //{ "key": 61, "type": "Artifact", "typeName": "Business Term", "name": "Price Close", "role": "Calculation", "backColor": "black", "foreColor": "white" },
+                //{ "key": 71, "type": "Artifact", "typeName": "Business Term", "name": "Issue Market Cap", "role": "Consumer", "backColor": "black", "foreColor": "white" }
             ],
             "linkDataArray": [
-                { "from": 'Artifact972860', "frompid": "OUT", "to": 'Artifact972864', "text": "used in calculation" }, //, "topid": "R"
-                { "from": 'Artifact739', "frompid": "OUT", "to": 'Artifact972862', "text": "licenses" },
-                { "from": 'Artifact972863', "frompid": "OUT", "to": 'Artifact972860', "text": "warehouses" }, //, "topid": "L"
-                { "from": 'Artifact16233', "frompid": "OUT", "to": 'Artifact972863', "text": "licenses" },
-                { "from": 'Artifact972862', "frompid": "OUT", "to": 'Artifact972861', "text": "warehouses" }, //, "topid": "R"
-                { "from": 'Artifact972861', "frompid": "OUT", "to": 'Artifact972864', "text": "used in calculation" }, //, "topid": "L"
-                { "from": 'Artifact972864', "frompid": "OUT", "to": 'Artifact972859', "text": "calculates" }
+                //{ "from": 20, "frompid": "OUT", "to": 41, "text": "licenses to" },
+                //{ "from": 21, "frompid": "OUT", "to": 42, "text": "licenses to" },
+                //{ "from": 22, "frompid": "OUT", "to": 42, "text": "licenses to" },
+                //{ "from": 41, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "L"
+                //{ "from": 42, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "R"
+                //{ "from": 51, "frompid": "OUT", "to": 71, "text": "used to calculate" },
+                //{ "from": 61, "frompid": "OUT", "to": 71, "text": "used to calculate" }
             ]
-            //"nodeDataArray": [
-            //    { "key": 20, "type": "Vendor", "name": "Compustat", "role": "", "back": "green", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
-            //    { "key": 21, "type": "Vendor", "name": "Bloomberg", "role": "", "back": "green", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
-            //    { "key": 22, "type": "Vendor", "name": "MSCI", "role": "", "back": "green", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
-            //    { "key": 41, "type": "Application", "name": "XpressFeed", "role": "", "back": "aqua", "fore": "black", "context": "Preview", "otype": "Artifact", "oid": "1" },
-            //    { "key": 42, "type": "Application", "name": "VendorDataMart", "role": "", "back": "aqua", "fore": "black", "context": "Preview", "otype": "Artifact", "oid": "1" },
-            //    { "key": 51, "type": "Term", "name": "Issue Shares Outstanding", "role": "Calculation", "back": "black", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
-            //    { "key": 61, "type": "Term", "name": "Price Close", "role": "Calculation", "back": "black", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" },
-            //    { "key": 71, "type": "Term", "name": "Issue Market Cap", "role": "Consumer", "back": "black", "fore": "white", "context": "Preview", "otype": "Artifact", "oid": "1" }
-            //],
-            //"linkDataArray": [
-            //    { "from": 20, "frompid": "OUT", "to": 41, "text": "licenses to" },
-            //    { "from": 21, "frompid": "OUT", "to": 42, "text": "licenses to" },
-            //    { "from": 22, "frompid": "OUT", "to": 42, "text": "licenses to" },
-            //    { "from": 41, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "L"
-            //    { "from": 42, "frompid": "OUT", "to": 51, "text": "warehouses" }, //, "topid": "R"
-            //    { "from": 41, "frompid": "OUT", "to": 61, "text": "warehouses" }, //, "topid": "L"
-            //    { "from": 42, "frompid": "OUT", "to": 61, "text": "warehouses" }, //, "topid": "R"
-            //    { "from": 51, "frompid": "OUT", "to": 71, "text": "used to calculate" },
-            //    { "from": 61, "frompid": "OUT", "to": 71, "text": "used to calculate" }
-            //]
-
         });
+
+        var newId = -1;
+
+
+        function getColorByType(t) {
+            var colors = {
+                fore: 'black',
+                back: 'white'
+            };
+            switch (t)
+            {
+                case 'Term':
+                    colors.fore = 'white';
+                    colors.back = 'black';
+                    break;
+                case 'Vendor':
+                    colors.fore = 'white';
+                    colors.back = 'green';
+                    break;
+                case 'Application':
+                    colors.fore = 'black';
+                    colors.back = 'aqua';
+                    break;
+                case 'Data Service':
+                    colors.fore = 'aqua';
+                    colors.back = 'purple';
+                    break;
+            }
+            return colors;
+        }
+
+        function populateNodeSelectList() {
+
+            $('#relNode').html('');
+            var output = [];
+            output.push('<option value="0">(None)</option>');
+            for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
+                var node = myDiagram.model.nodeDataArray[i];
+                output.push('<option value="' + node.key + '">' + node.name + ' (' + node.type + ')</option>');
+            }
+            $('#relNode').html(output.join(''));
+
+        };
+
+        function add() {
+            var type = $("#artType option:selected").text();
+            //console.log(type);
+            var name = $('#txtName').val();
+            var colors = getColorByType(type);
+
+            myDiagram.startTransaction("add_new");
+
+            var newNode = createArtifactModel();
+
+            newNode.key = newId;
+            newNode.typeName = type;
+            newNode.name = name;
+            newNode.role = "";
+            newNode.backColor = colors.back;
+            newNode.foreColor = colors.fore;
+
+            myDiagram.model.addNodeData(newNode);
+            //console.log($('#relNode').val());
+            if ($('#relNode').val() != 0) {
+                var newLink = {
+                    from: $('#relNode').val(),
+                    to: newId,
+                    frompid: "OUT",
+                    text: $("#relType option:selected").text()
+                };
+                console.log(newLink);
+                myDiagram.model.addLinkData(newLink);
+            }
+            
+            myDiagram.commitTransaction("add_new");
+            newId--;
+            populateNodeSelectList();
+        };
+
+        populateNodeSelectList();
+        parseData(dataArray);
     </script>
 </body>
+
 </html>

@@ -1133,6 +1133,7 @@
     <Content Include="Views\Workflow\WorkflowActionOverlay_3.cshtml" />
     <Content Include="Views\Workflow\WorkflowActionOverlay_2.cshtml" />
     <Content Include="Views\Apps\Search.cshtml" />
+    <Content Include="Views\Diagrams\LineageTest.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
