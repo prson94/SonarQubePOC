@@ -13,12 +13,17 @@ BEGIN
 	declare		@IDList Table(IntersectID int,StageID Int);
 
 	declare		@Intersects IDTable;
-	
+
+	declare		@MessageStreamFussionAttributeID int,
+				@EagleFieldFusionAttributeID int;
+
+	select @MessageStreamFussionAttributeID = 196;
+	select @EagleFieldFusionAttributeID = 205;
 
 	-- load the stream that we want to add relations ships for    
 	select @eagleStreamID = fusionattributeid from [fusion].[stagingfile] where id = @StagingFileID and fusionID = @FusionID
 		
-	-- add relationships for Stream (171) to Eagle DB Columns (205)
+	-- add relationships for Stream (196) to Eagle DB Columns (205)
 	-- using star tag field that is a field for for fusionattribute type 205 lookup fields to add rels for
 	-- todo pull to separate proc
 	if @eagleStreamID is not null
@@ -32,8 +37,8 @@ BEGIN
 					@streamSourceIntersectTypeNodeID = SourceIntersectTypeNodeID,
 					@streamTargetIntersectTypeNodeID = TargetIntersectTypeNodeID
 				 from	utility.RelationshipTypes
-				where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = 171
-					and TargetObjectType = 'FusionAttributeType' and TargetObjectID = 205
+				where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = @MessageStreamFussionAttributeID
+					and TargetObjectType = 'FusionAttributeType' and TargetObjectID = @EagleFieldFusionAttributeID
 
 			-- insert into in memory table variable the values we want to add intersects for
 			insert into @StreamToFieldList
@@ -48,10 +53,10 @@ BEGIN
 								   tgtINode.ObjectID as TargetObjectID,
 								   1 as hasExisting
 							from 
-								[dbo].[intersect] isect inner join intersectnode srcINode on (isect.intersecttypeid = 178 and isect.id = srcINode.IntersectID and srcINode.IntersectTypeNodeID = 417)
-								inner join intersectnode tgtINode on(isect.intersecttypeid = 178 and isect.id = tgtINode.IntersectID and tgtINode.IntersectTypeNodeID = 418)) existing
+								[dbo].[intersect] isect inner join intersectnode srcINode on (isect.intersecttypeid = @streamToFieldIntersectTypeID and isect.id = srcINode.IntersectID and srcINode.IntersectTypeNodeID = @streamSourceIntersectTypeNodeID)
+								inner join intersectnode tgtINode on(isect.intersecttypeid = @streamToFieldIntersectTypeID and isect.id = tgtINode.IntersectID and tgtINode.IntersectTypeNodeID = @streamTargetIntersectTypeNodeID)) existing
 								on existing.SourceObjectID = sf.FusionAttributeID and existing.TargetObjectID = fa.ID
-					where fa.fusionattributetypeid = 205 and ft.name = 'startag'  and sfi.stagingfileid = @StagingFileID and existing.hasExisting is null
+					where fa.fusionattributetypeid = @EagleFieldFusionAttributeID and ft.name = 'startag'  and sfi.stagingfileid = @StagingFileID and existing.hasExisting is null
 					--group by fa.id, sf.FusionAttributeID -- grouping is used to eliminate duplicate star tag relations
 
 			--insert intersect records and save there id's

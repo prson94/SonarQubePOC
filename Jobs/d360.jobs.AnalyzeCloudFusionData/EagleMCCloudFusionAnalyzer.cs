@@ -35,7 +35,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
     public class EagleMCCloudFusionAnalyzer : FunctionsBase
     {
         static int EAGLE_MC_FUSION_TYPE = 17;
-        static int MESSAGE_CENTER_FEED_FUSION_ATTRIBUTE_TYPE = 171;
+        static int MESSAGE_CENTER_FEED_FUSION_ATTRIBUTE_TYPE = 196;
 
         static string CLOUD_EXECUTION_TABLE = "[fusion].[StagingFile]";
         static string CLOUD_EXECUTION_JOB_DATA = "[fusion].[StagingFileItem]";
@@ -74,9 +74,9 @@ namespace d360.jobs.AnalyzeCloudFusionData
             var streamDetails = companyConnection.Query<dynamic>("select ft.name as name,f.value as value from field f inner join fieldtype ft on(f.fieldtypeid = ft.id) where ft.object = 'FusionAttributeType' and ft.objectID = @t and f.objectID = @f", new { t = MESSAGE_CENTER_FEED_FUSION_ATTRIBUTE_TYPE, f = stream.ID }).ToList();
 
             //file and directory should be listed as attributes here if not log an error and bail
-            var fileName = streamDetails.Find(f => f.name == "file");
-            var directoryName = streamDetails.Find(f => f.name == "directory");
-
+            var fileName = streamDetails.Where(s => String.Equals(s.name, "file", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            var directoryName = streamDetails.Where(s => String.Equals(s.name, "directory", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                        
             var file = fileName != null ? fileName.value : string.Empty;
             var directory = directoryName != null ? directoryName.value : string.Empty;
 
@@ -86,9 +86,10 @@ namespace d360.jobs.AnalyzeCloudFusionData
 
                 return;
             }
-            var formatName = streamDetails.Find(f => f.name == "format");
-            var directionName = streamDetails.Find(f => f.name == "direction");
-
+            
+            var formatName = streamDetails.Where(s => String.Equals(s.name, "format", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            var directionName = streamDetails.Where(s => String.Equals(s.name, "direction", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            
             var formatValue = formatName != null ? formatName.value : string.Empty;
             var directionValue = directionName != null ? directionName.value : string.Empty;
 

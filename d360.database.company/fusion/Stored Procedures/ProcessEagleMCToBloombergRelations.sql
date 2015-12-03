@@ -53,8 +53,8 @@ BEGIN
 								   tgtINode.ObjectID as TargetObjectID,
 								   1 as hasExisting
 							from 
-								[dbo].[intersect] isect inner join intersectnode srcINode on (isect.intersecttypeid = 179 and isect.id = srcINode.IntersectID and srcINode.IntersectTypeNodeID = 420)
-								inner join intersectnode tgtINode on(isect.intersecttypeid = 179 and isect.id = tgtINode.IntersectID and tgtINode.IntersectTypeNodeID = 419)) existing
+								[dbo].[intersect] isect inner join intersectnode srcINode on (isect.intersecttypeid = @fieldToBBIntersectTypeID and isect.id = srcINode.IntersectID and srcINode.IntersectTypeNodeID = @fieldSourceIntersectTypeNodeID)
+								inner join intersectnode tgtINode on(isect.intersecttypeid = @fieldToBBIntersectTypeID and isect.id = tgtINode.IntersectID and tgtINode.IntersectTypeNodeID = @fieldTargetIntersectTypeNodeID)) existing
 								on existing.SourceObjectID = faBB.ID and existing.TargetObjectID = fa.id
 					where fa.fusionattributetypeid = 205 and ft.name = 'startag'  and sfi.stagingfileid = @StagingFileID and existing.hasExisting is null;
 
