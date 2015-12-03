@@ -102,14 +102,17 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
         
         private void extractMnemonics(BloombergRelationshipMapping rel)
         {
-            return; // dont want to do this yet as it will take things in if(my value) then my value 2 
+          //  return; // dont want to do this yet as it will take things in if(my value) then my value 2 
 
             //run regexpression to find all 
-            var matches = Regex.Matches(rel.Expression, ":(.*?):");
+            var matches = Regex.Matches(rel.Expression, ":([A-Z0-9-_]+):");
 
             foreach (var match in matches)
             {
-                rel.BloombergMnemonics.Add(match.ToString().Trim(':'));
+                var item = match.ToString().Trim(':');
+
+                if(!rel.BloombergMnemonics.Contains(item))
+                    rel.BloombergMnemonics.Add(item);
             }
 
         }

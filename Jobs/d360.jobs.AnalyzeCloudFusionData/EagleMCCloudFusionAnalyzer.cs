@@ -30,6 +30,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
         public string Tag { get; set; }
         public string Value { get; set; }
         public ChangeType ChangeType { get; set; }
+        public string Description { get; set; }
     }
 
     public class EagleMCCloudFusionAnalyzer : FunctionsBase
@@ -217,10 +218,10 @@ namespace d360.jobs.AnalyzeCloudFusionData
                     // insert them into cloudfusion tables
                     foreach (var item in relationships)
                     {
-                        stagingItems.Add(new StagingFileItem { ChangeType = item.Change, Tag = item.StarTag, Value = item.Target, StagingFileID = newCloudJobId });
+                        stagingItems.Add(new StagingFileItem { ChangeType = item.Change, Tag = item.StarTag, Value = item.Target, StagingFileID = newCloudJobId, Description = item.Raw });
                     }
 
-                    companyConnection.Execute("insert into " + CLOUD_EXECUTION_JOB_DATA + " values(@StagingFileID,@Tag,@Value,@ChangeType)", stagingItems, trans);
+                    companyConnection.Execute("insert into " + CLOUD_EXECUTION_JOB_DATA + " ([StagingFileID],[Tag],[Value],[ChangeType],[Description]) values(@StagingFileID,@Tag,@Value,@ChangeType,@Description)", stagingItems, trans);
 
                     trans.Commit();
                 }

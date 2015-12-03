@@ -24,6 +24,7 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
         public string StarTag { get; set; }
         public string Target { get; set; }
         public ChangeType Change { get; set; }
+        public string Raw { get; set; }
 
         public int CompareTo(GenericRelationship other)
         {
@@ -68,7 +69,7 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
                 
                 foreach (var item in rels)
                 {
-                    if (item.ExpressionValueType != RelationshipExpressionType.DirectMapping || item.ColumnTagType != RelationshipColumnType.Mapping) continue;
+                    if (item.ExpressionValueType != RelationshipExpressionType.DirectMapping && item.ExpressionValueType != RelationshipExpressionType.ConditionalMapping || item.ColumnTagType != RelationshipColumnType.Mapping) continue;
                     
                     if (item is BloombergRelationshipMapping)
                     {
@@ -76,7 +77,7 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
 
                         foreach (var mnemonic in bbMapping.BloombergMnemonics)
                         {
-                            yield return new GenericRelationship { StarTag = item.Tag, Target = mnemonic, Change = ChangeType.Notset };
+                            yield return new GenericRelationship { StarTag = item.Tag, Target = mnemonic, Change = ChangeType.Notset, Raw = item.Expression };
                         }
                     }
                 }                

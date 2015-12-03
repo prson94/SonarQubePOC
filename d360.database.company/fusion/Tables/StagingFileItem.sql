@@ -4,7 +4,8 @@
        [StagingFileID] INT NOT NULL,
        [Tag] NVARCHAR(500)  NOT NULL,
        [Value] NVARCHAR(500) NOT NULL,
-	   [ChangeType] int not null
+	   [ChangeType] int not null,
+	   [Description] NVARCHAR(max) NULL
 )
 go
 
