@@ -67,6 +67,7 @@ namespace d360.web
             }
             else
             {
+                context.Response.Write(string.Format("Company [{0}] Not Found", host));
                 Trace.TraceWarning("Could not locate the company with host address of: {0}", host);
                 return;
             }

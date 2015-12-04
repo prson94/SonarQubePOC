@@ -1,4 +1,4 @@
-﻿CREATE procedure [dbo].[AddRelationships]
+﻿create procedure [dbo].[AddRelationships]
 --declare
 	@ResourceID int,
 	@Date datetime,
@@ -8,15 +8,15 @@
 	@IntersectRole int,
 	@Description nvarchar(4000),
 	@Objects ObjectsTable READONLY
-
+	
 --set @ResourceID = 1
 --set @Date = getutcdate()
---set @Type = 'Rule'
---set @ID = 16
+--set @Type = 'Artifact'
+--set @ID = 4651
 --set @Classification = 1
 --set @IntersectRole = NULL
 --set @Description = ''
---insert into @Objects VALUES ('Policy', 6)
+--insert into @Objects VALUES ('Artifact', 11808)
 as
 begin
 	set nocount on;
@@ -37,15 +37,18 @@ begin
 	declare @Relations table (
 		ID int identity, 
 			
-		ObjectType varchar(50), ObjectID int, 
-
+		StartObject varchar(50), StartObjectID int, 
 		StartName nvarchar(500), StartTypeID int, StartIntersectNodeTypeID int, 
+
+		EndObject varchar(50), EndObjectID int,
 		EndName nvarchar(500), EndTypeID int, EndIntersectNodeTypeID int,
 		IntersectTypeID int, IntersectID int, [Action] varchar(1)
 	)
 	insert into @Relations
-		select	O.ObjectType, O.ObjectID,
+		select	distinct 
+				O.ObjectType, O.ObjectID,
 				OD.Name, OD.ObjectTypeID, RT.SourceIntersectTypeNodeID, 
+				@Type, @ID,
 				D.Name, D.ObjectTypeID, RT.TargetIntersectTypeNodeID,
 				RT.IntersectTypeID, R.ID, CASE WHEN R.ID IS NULL THEN 'C' ELSE 'U' END
 		from	@Objects O
@@ -64,22 +67,24 @@ begin
 	select @max = MAX(ID) from @Relations
 	while @current <= @max
 	begin
-		declare @ObjectType varchar(50),	@ObjectID int,
-				@StartName nvarchar(500),	@StartTypeID int,	@StartIntersectNodeTypeID int, 
-				@EndName nvarchar(500),		@EndTypeID int,		@EndIntersectNodeTypeID int,
+		declare @StartObject varchar(50),	@StartObjectID int, @StartName nvarchar(500),	@StartTypeID int,	@StartIntersectNodeTypeID int, 
+				@EndObject varchar(50),		@EndObjectID int,	@EndName nvarchar(500),		@EndTypeID int,		@EndIntersectNodeTypeID int,
 				@IntersectTypeID int,		@Action varchar(1)
 
 		set @IntersectID = null	--reset here
 
-		select	@ObjectType = ObjectType,
-				@ObjectID = ObjectID,
-				
+		select	@StartObject = StartObject,
+				@StartObjectID = StartObjectID,
 				@StartName = StartName,	
 				@StartTypeID = StartTypeID,	
 				@StartIntersectNodeTypeID = StartIntersectNodeTypeID, 
+
+				@EndObject = EndObject,
+				@EndObjectID = EndObjectID,	
 				@EndName = EndName,	
 				@EndTypeID = EndTypeID,	
 				@EndIntersectNodeTypeID = EndIntersectNodeTypeID,
+
 				@IntersectTypeID = IntersectTypeID, 
 				@IntersectID = IntersectID, 
 				@Action = [Action]
@@ -96,17 +101,19 @@ begin
 					SELECT @IntersectID = SCOPE_IDENTITY()
 
 					INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
-					VALUES						(@StartIntersectNodeTypeID, @IntersectID, @Type, @ID)
+					VALUES						(@StartIntersectNodeTypeID, @IntersectID, @StartObject, @StartObjectID)
 
 					INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-					VALUES						(@EndIntersectNodeTypeID, @IntersectID, @ObjectType, @ObjectID)
+					VALUES						(@EndIntersectNodeTypeID, @IntersectID, @EndObject, @EndObjectID)
 
 					update	@Relations
 					set		IntersectID = @IntersectID
-					where	ID = @current
+					where	(StartObject = @StartObject and StartObjectID = @StartObjectID and EndObject = @EndObject and EndObjectID = @EndObjectID) 
+							or (StartObject = @EndObject and StartObjectID = @EndObjectID and EndObject = @StartObject and EndObjectID = @StartObjectID)
+							--ID = @current
 
-					exec utility.AddAuditEntry @Type, @ID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
-					exec utility.AddAuditEntry @Type, @ObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
+					exec utility.AddAuditEntry @StartObject, @StartObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
+					exec utility.AddAuditEntry @EndObject, @EndObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
 				end
 			else
 				begin
@@ -122,9 +129,12 @@ begin
 						exec utility.AddAuditEntry 'Intersect', @IntersectID, @ResourceID, @Date, 'Updated', 'Intersect', @IntersectID
 					end
 				end
-
-			insert into @Intersects VALUES (@IntersectID)
-			exec [cache].[SynchronizeObjectDetails] 'Intersect', @IntersectID
+			
+			if (@IntersectID is not null) and (not exists(select 1 from @Intersects where ObjectID = @IntersectID))
+			begin
+				insert into @Intersects VALUES (@IntersectID)
+				exec [cache].[SynchronizeObjectDetails] 'Intersect', @IntersectID
+			end
 		end
 
 		set @current = @current + 1

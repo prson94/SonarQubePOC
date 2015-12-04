@@ -23,6 +23,22 @@ namespace d360.test.jobs
     [TestClass]
     public class RunJobsTest
     {
+        List<int> getCompanies(bool developmentOnly = false)
+        {
+            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            cnn.Open();
+            var sql = "select ID from Company";
+            if (developmentOnly)
+            {
+                sql += " where DatabaseServerID = 6";
+            }
+            var list = cnn.Query<int>(sql).ToList();
+            cnn.Close();
+            cnn.Dispose();
+
+            return list;
+        }
+
         SqlConnection getCompanyConnection(int companyID)
         {
             var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
@@ -47,8 +63,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 4; //10
-            var fusionTypeID = 17;
+            var companyID = 18; //10
+            var fusionTypeID = 8;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FieldTypes);
@@ -78,6 +94,23 @@ BEGIN
 			INSERT INTO IntersectTypeNode (IntersectTypeID, ObjectType, ObjectID, [Order]) values (@intersectTypeID, @type, @ti, 2)
 END", 
                 new { type = "FusionAttributeType", si = t.StartFusionAttributeTypeID, ti = t.EndFusionAttributeTypeID, ro = t.ReadOnly });
+            });
+        }
+
+        [TestMethod]
+        public void DeployDatabaseChanges()
+        {
+            #region SQL
+            var sql = @"";
+            #endregion
+            var list = getCompanies();
+            list.ForEach(id =>
+            {
+                var cnn = getCompanyConnection(id);
+                cnn.Open();
+                cnn.Execute(sql);
+                cnn.Close();
+                cnn.Dispose();
             });
         }
 
@@ -115,31 +148,6 @@ END
             }        
         }
 
-        string getConnectionString(int id, string server, string username, string password)
-        {
-            return string.Format("server={0};Database=D3S_{1};User ID={2};Password={3}", server, id, username, password);
-        }
-
-
-        SqlConnection GetCompanyConnection(int companyID)
-        {
-            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-            cnn.Open();
-            var db = cnn.Query<DatabaseServer>(
-                @"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id",
-                new { id = companyID }
-            ).SingleOrDefault();
-            cnn.Close();
-            cnn.Dispose();
-
-            if (db != null)
-            {
-                cnn = new SqlConnection(getConnectionString(companyID, db.Server, db.Username, db.Password));
-                db = null;
-            }
-            return cnn;
-        }
-
         [TestMethod]
         public void SaveCertificate_Success()
         {
@@ -156,7 +164,7 @@ END
         public void ReIndex_Execute_Artifacts()
         {
             var companyID = 1;
-            var context = GetCompanyConnection(companyID);
+            var context = getCompanyConnection(companyID);
 
             var sType = SystemObjects.Artifact.ToString();
             var list = new List<UpdateInIndexModel>();//<AddToIndexModel>();
@@ -190,7 +198,7 @@ END
         public void ReIndex_Execute_InformationModels()
         {
             var companyID = 1;
-            var context = GetCompanyConnection(companyID);
+            var context = getCompanyConnection(companyID);
 
             var sType = SystemObjects.Taxonomy.ToString();
             var list = new List<AddToIndexModel>();

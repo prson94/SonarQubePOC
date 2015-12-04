@@ -449,5 +449,82 @@ from	h
         }
 
         #endregion
+
+        #region Map Testing
+
+        [HttpGet, Route("maps/{id:int}")]
+        public ActionResult Map(int id)
+        {
+            ViewBag.MapID = id;
+            return View();
+        }
+
+        public class DbMapItem
+        {
+            public int ID { get; set; }
+            public int MapID { get; set; }
+
+            public string Sub { get; set; }
+            public int SubID { get; set; }
+            public string SubjectID { get; set; }
+            public string Subject { get; set; }
+            public string SubjectType { get; set; }
+            public string SubjectBackColor { get; set; }
+            public string SubjectForeColor { get; set; }
+
+            public string Obj { get; set; }
+            public int ObjID { get; set; }
+            public string ObjectID { get; set; }
+            public string Object { get; set; }
+            public string ObjectType { get; set; }
+            public string ObjectBackColor { get; set; }
+            public string ObjectForeColor { get; set; }
+
+            public string Predicate { get; set; }
+        }
+
+        public class JsonNodeItem
+        {
+            public string key { get; set; }
+            public string obj { get; set; }
+            public int objid { get; set; }
+            public string type { get; set; }
+            public string name { get; set; }
+            public string back { get; set; }
+            public string fore { get; set; }
+        }
+
+        public class JsonLinkItem
+        {
+            public string from { get; set; }
+            public string frompid { get { return "OUT"; } }
+            public string to { get; set; }
+            public string text { get; set; }
+        }
+
+        [HttpGet, Route("maps/{id:int}.json")]
+        public JsonNetResult MapJson(int id)
+        {
+            var list = Company.Query<DbMapItem>("GetMapDiagram @mapID", new { mapID = id }).ToList();
+
+            var nodes = new List<JsonNodeItem>();
+            var links = new List<JsonLinkItem>();
+
+            list.ForEach(mapItem =>
+            {
+                if (!nodes.Any(i => i.key == mapItem.ObjectID))
+                    nodes.Add(new JsonNodeItem { key = mapItem.ObjectID, obj = mapItem.Obj, objid = mapItem.ObjID, name = mapItem.Object, type = mapItem.ObjectType, back = mapItem.ObjectBackColor, fore = mapItem.ObjectForeColor });
+                if (!nodes.Any(i => i.key == mapItem.SubjectID))
+                    nodes.Add(new JsonNodeItem { key = mapItem.SubjectID, obj = mapItem.Sub, objid = mapItem.SubID, name = mapItem.Subject, type = mapItem.SubjectType, back = mapItem.SubjectBackColor, fore = mapItem.SubjectForeColor });
+                links.Add(new JsonLinkItem { from = mapItem.SubjectID, to = mapItem.ObjectID, text = mapItem.Predicate });
+            });
+
+            return new JsonNetResult {
+                Data = new { nodes, links },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        #endregion
     }
 }

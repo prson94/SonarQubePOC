@@ -84,6 +84,7 @@ from	Company C
             {
                 host = "demo.dev";
             }
+            Trace.TraceInformation("Host is : {0}", host);
 
             var dict = loadCache();
 
@@ -94,11 +95,15 @@ from	Company C
                     var ranges = dict[host];
                     if (ranges.Count > 0)
                     {
+                        Trace.TraceInformation("Range Count is: {0}", ranges.Count);
+
                         var currentIp = context.Environment["server.RemoteIpAddress"].ToString(); //.Request.RemoteIpAddress;
                         bool isCurrentIpAllowed = false;
 
                         foreach (var range in ranges)
                         {
+                            Trace.TraceInformation("{0} - {1}", range.Start, range.End);
+
                             var rangeTest = IPAddressRange.Parse(string.Format("{0} - {1}", range.Start, range.End));
                             isCurrentIpAllowed = rangeTest.Contains(IPAddress.Parse(currentIp));
 
@@ -107,7 +112,7 @@ from	Company C
 
                         if (!isCurrentIpAllowed)
                         {
-                            context.Response.Write("IP Address Not Allowed");
+                            context.Response.Write(string.Format("IP Address [{0}] Not Allowed", currentIp));
                             return;
                         }
                     }
