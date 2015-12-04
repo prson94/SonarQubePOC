@@ -122,6 +122,8 @@
     <Build Include="utility\Stored Procedures\StopJob.sql" />
     <Build Include="Security\plugin.sql" />
     <Build Include="Security\utility.sql" />
+    <Build Include="plugin\Tables\FusionLookupValue.sql" />
+    <Build Include="plugin\Tables\FusionLookupType.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
