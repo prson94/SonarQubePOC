@@ -154,7 +154,8 @@ from	    FusionAttribute FA
 		R.TargetObjectName as TargetName,
 		R.TargetTypeID,
 		R.TargetTypeName,
-		dbo.GenerateObjectUrl(R.TargetType, R.TargetTypeID, R.TargetObjectID) as TargetUrl
+		dbo.GenerateObjectUrl(R.TargetType, R.TargetTypeID, R.TargetObjectID) as TargetUrl,
+        R.[Description] as Description
 from	FusionAttribute FA
 		inner join  h on h.ID = FA.ID
 		inner join FusionAttributeType FAT on FAT.ID = FA.FusionAttributeTypeID

@@ -37,17 +37,18 @@
             {name: 'FusionAttribute', type: 'string'},
             {name: 'FusionAttributeTextPath', type: 'string'},
             {name: 'FusionAttributeID', type: 'number'},
-            {name: 'FusionAttributeType', type: 'string'}
+            {name: 'FusionAttributeType', type: 'string'},
+            {name: 'Description', type: 'string'},
         ];
         var columns = [
             {
                 datafield: "FusionAttributeType", text: "Attribute Type", width: '10%', filtertype: 'checkedlist'
             },
             {
-                datafield: "FusionAttributeTextPath", text: "Attribute", width: '30%'//,
-                //cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                //    return previewLinkRenderer(data.FusionAttributeType, data.FusionAttributeID, '', data.FusionAttributeTextPath);
-                //}
+                datafield: "FusionAttributeTextPath", text: "Attribute", width: '30%',
+                cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {                    
+                    return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'" + (data.Description != null ? " title='" + data.Description.replace(/[']/g, "\"") + "'" : "") +">" + value + "</div>";
+                }
             }
         ];
 
@@ -124,7 +125,7 @@
             var row = event.args.row;
             //technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
         });
-
+    
         //#endregion
     });
 </script>
