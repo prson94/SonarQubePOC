@@ -114,7 +114,7 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
 
             ruleset.CreatedBy = created;
 
-            ruleset.CreatedOn = DateTime.ParseExact(createDate, "yyyy-MM-dd hh:mm", CultureInfo.InvariantCulture);
+            ruleset.CreatedOn = DateTime.ParseExact(createDate, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
                         
             loadRulesetFiles(doc, ruleset);
 
@@ -132,10 +132,11 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
         {
             //look for default file
             var defaultFile = doc.Descendants("DEFAULT").FirstOrDefault();
+            
+            var defaultFileAttribute = defaultFile != null ? defaultFile.Attribute("FILE") : null;
 
-            var defaultFileAttribute = defaultFile.Attribute("FILE");
-
-            rs.FileList.Add(new RulesetFile { FileType = RulesetFileType.Default, FileName = (defaultFileAttribute != null ? defaultFileAttribute.Value : string.Empty) });
+            if(defaultFileAttribute != null)
+                rs.FileList.Add(new RulesetFile { FileType = RulesetFileType.Default, FileName = defaultFileAttribute.Value });
 
             var conditionalFiles = doc.Descendants("IF").Select(x => x);
 
@@ -144,7 +145,8 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
                 var condition = conditionalFile.Attribute("EXPR") == null ? string.Empty : conditionalFile.Attribute("EXPR").Value;
                 var fileName = conditionalFile.Attribute("FILE") == null ? string.Empty : conditionalFile.Attribute("FILE").Value.ToLower();
 
-                rs.FileList.Add(new RulesetFile { FileType = RulesetFileType.Conditional, Condition = condition, FileName = fileName.ToLower() });
+                if(!rs.FileList.Where(x => x.FileName == fileName).Any())
+                    rs.FileList.Add(new RulesetFile { FileType = RulesetFileType.Conditional, Condition = condition, FileName = fileName.ToLower() });
             }
         }
 
@@ -156,10 +158,31 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
         {
             //based on the format of the ruleset file we need to load the appropriate xml mapping
             foreach (var file in ruleset.FileList)
-            {                
-                var sXML = storageProvider.GetFileContentsAsString(constants.AZURE_CLOUD_FUSION_CONTAINER, path + file.FileName);
+            {
+                string sXML = string.Empty;
+                try
+                {
+                    sXML = storageProvider.GetFileContentsAsString(constants.AZURE_CLOUD_FUSION_CONTAINER, path + file.FileName);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine("Error while loading xml mapping file: [{0}] path: [{1}]", file.FileName, path);
+                    throw ex;
+                }
+
+                XElement xmlMapping = null;
                 //assume the file is in same directory as ruleset
-                XElement xmlMapping = XElement.Parse(sXML);
+                try
+                {
+                    xmlMapping = XElement.Parse(sXML);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error while parsing xml mapping file: [{0}] path: [{1}] content: [{2}]", file.FileName, path,sXML);
+                    throw ex;
+                }
+
+                if (xmlMapping == null) continue;
 
                 ruleset.XmlMappings.Add(MapListCreator.Create(ruleset.Format, xmlMapping));
             }            
