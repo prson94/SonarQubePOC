@@ -63,8 +63,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 18; //10
-            var fusionTypeID = 8;
+            var companyID = 22; //10
+            var fusionTypeID = 17;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FieldTypes);
@@ -240,10 +240,14 @@ END
         [TestMethod]
         public void DeployFusionLookupEagleStarTagData()
         {
-            var companyID = 4;
-            var starTagFieldTypeID = 51622;
-                        
+            var companyID = 22;
+
             var company = getCompanyConnection(companyID);
+
+            //var starTagFieldTypeID = 51622;
+            var starTagFieldTypeID = company.Query<int>("select id from fieldtype where name = 'startag' and[object] = 'FusionAttributeType' and objectid = 205").FirstOrDefault();
+
+            if (starTagFieldTypeID <= 0) throw new Exception("Unable to find StarTag field associated with fusionattribute 205.");
 
             //delete fields with null star tags or star tags that are not numbers
             //delete from field where (value = '' or IsNumeric(value) = 0) and objecttype = 'FusionAttribute' and fieldtypeid = (select id from fieldtype where name = 'startag' and[object] = 'FusionAttributeType' and objectid = 205)
