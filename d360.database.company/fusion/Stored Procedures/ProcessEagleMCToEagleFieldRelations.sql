@@ -28,8 +28,6 @@ BEGIN
 	-- todo pull to separate proc
 	if @eagleStreamID is not null
 	begin
-		
-
 			Declare @StreamToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int,IntersectTypeID int, ID int);
 			
 			-- load the intersect type ids
@@ -42,7 +40,7 @@ BEGIN
 
 			-- insert into in memory table variable the values we want to add intersects for
 			insert into @StreamToFieldList
-				select fa.id, sf.FusionAttributeID, @streamToFieldIntersectTypeID, ROW_NUMBER() OVER (Order by sfi.id) AS 'RowNumber'
+				select fa.id, sf.FusionAttributeID, @streamToFieldIntersectTypeID, ROW_NUMBER() OVER (Order by fa.id) AS 'RowNumber'
 					from 
 						field f 
 						inner join fusionAttribute fa on (f.ObjectID = fa.ID)
@@ -57,7 +55,7 @@ BEGIN
 								inner join intersectnode tgtINode on(isect.intersecttypeid = @streamToFieldIntersectTypeID and isect.id = tgtINode.IntersectID and tgtINode.IntersectTypeNodeID = @streamTargetIntersectTypeNodeID)) existing
 								on existing.SourceObjectID = sf.FusionAttributeID and existing.TargetObjectID = fa.ID
 					where fa.fusionattributetypeid = @EagleFieldFusionAttributeID and ft.name = 'startag'  and sfi.stagingfileid = @StagingFileID and existing.hasExisting is null
-					--group by fa.id, sf.FusionAttributeID -- grouping is used to eliminate duplicate star tag relations
+					group by fa.id, sf.FusionAttributeID  -- grouping is used to eliminate duplicate star tag relations
 
 			--insert intersect records and save there id's
 			-- trick is to use merge to keep the sequence id and staging row ids
@@ -89,10 +87,10 @@ BEGIN
 			
 			declare @IntersectCount int
 			select @IntersectCount = count(1) from @Intersects
+			
 			if @IntersectCount > 0 
-			begin
+			begin				
 				EXEC cache.SynchronizeRelationships @Intersects
 			end
 	end;
 end;
-
