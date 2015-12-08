@@ -60,6 +60,8 @@ namespace d360.jobs.AnalyzeCloudFusionData
                     return;
                 }
 
+                Console.WriteLine("{1} Eagle Message Center streams found for company id:{0}", companyID, streams.Count);
+
                 foreach (var stream in streams)
                 {
                     AnalyzeStream(companyID, companyConnection, stream, storageProvider);
@@ -69,10 +71,14 @@ namespace d360.jobs.AnalyzeCloudFusionData
 
         private static void AnalyzeStream(int companyID, SqlConnection companyConnection, FusionAttribute stream, IStorageProvider storageProvider)
         {
+            Console.WriteLine("Loading stream details for company: {0}, stream: {1}", companyID, stream.ID);
+
             // get details about this stream
             // stream rule file name
             // get cloud fusion execution details for date last run
             var streamDetails = companyConnection.Query<dynamic>("select ft.name as name,f.value as value from field f inner join fieldtype ft on(f.fieldtypeid = ft.id) where ft.object = 'FusionAttributeType' and ft.objectID = @t and f.objectID = @f", new { t = MESSAGE_CENTER_FEED_FUSION_ATTRIBUTE_TYPE, f = stream.ID }).ToList();
+
+            Console.WriteLine("Loaded stream details for company: {0}, stream: {1}.  Examining stream properties.", companyID, stream.ID);
 
             //file and directory should be listed as attributes here if not log an error and bail
             var fileName = streamDetails.Where(s => String.Equals(s.name, "file", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
@@ -94,6 +100,8 @@ namespace d360.jobs.AnalyzeCloudFusionData
             var formatValue = formatName != null ? formatName.value : string.Empty;
             var directionValue = directionName != null ? directionName.value : string.Empty;
 
+            Console.WriteLine("Checking stream direction and type for, company: {0}, stream: {1}.", companyID, stream.ID);
+
             // if it is not a bloomberg input stream ignore it             
 
             if (formatValue.ToUpper() != "BLOOMBERG" && directionValue.ToUpper() != "I")
@@ -102,6 +110,8 @@ namespace d360.jobs.AnalyzeCloudFusionData
 
                 return;
             }
+
+            Console.WriteLine("Loading last run stats from db, company: {0}, stream: {1}.", companyID, stream.ID);
 
             // 2 - go to storage and load those / check dates against last modified date stored in cloudfusion analyzer stats
             var cloudLastRunDetails = companyConnection.Query<StagingFile>("select * from " + CLOUD_EXECUTION_TABLE + " where [FusionID] = @t and [FusionAttributeID] = @s", new { t = EAGLE_MC_FUSION_TYPE, s = stream.ID }).FirstOrDefault();
@@ -113,6 +123,8 @@ namespace d360.jobs.AnalyzeCloudFusionData
             var azureDirectory = companyID + "." + EAGLE_MC_FUSION_TYPE + "/" + directory.Replace("\\", "/");
             var azureFilePath = azureDirectory + file;
 
+            Console.WriteLine("Getting stream last modifieddate for company: {0}, stream: {1}.", companyID, stream.ID);
+
             DateTime lastModified = storageProvider.GetFileLastModifiedDate(constants.AZURE_CLOUD_FUSION_CONTAINER, azureFilePath);
 
             // 3 - if last modified date differs we need to analyze else continue
@@ -123,6 +135,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
                 return;
             }
 
+            Console.WriteLine("Interpreting ruleset  company: {0}, ruleset: {1}, directory: {2}.", companyID, file, azureDirectory);
             // if we are here this is the first run for this stream or it has changed either way we need to load the file
             // go to azure an try to get the file and compare to above details
 
@@ -226,6 +239,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
                     trans.Commit();
                 }
 
+                Console.WriteLine("Calling proc fusion.ProcessEagleMCToBloombergRelations for company: {0}, ruleset: {1}, directory: {2}.", companyID, file, azureDirectory);
                 // 8 - handle updates to intersects for these differences need to look up db columns from star tag
                 //    need to look up bloomberg nmeonic  
                 // fire off proc to do this

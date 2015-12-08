@@ -20,6 +20,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
 
                 companies.AsParallel().WithDegreeOfParallelism(3).ForAll(companyID =>
                 {
+                    Console.WriteLine("Starting to analyze cloud fusion data for company id: {0}", companyID);
                     // run EagleMC cloud fusion analysis
                     EagleMCCloudFusionAnalyzer.Analyze(companyID);                    
                 });
@@ -28,8 +29,6 @@ namespace d360.jobs.AnalyzeCloudFusionData
             {
                 Console.WriteLine("AN EXCEPTION OCCURED WHILE RUNNING D360.JOBS.ANALYZECLOUDFUSIONDATA FOR DETAILS:" + ex.Message);
             }
-        }
-        
-                        
+        }                        
     }
 }
