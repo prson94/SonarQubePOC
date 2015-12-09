@@ -1,7 +1,7 @@
 ﻿CREATE TABLE [fusion].[StagingItem] (
     [RowID]                   INT             NOT NULL,
     [Name]                    NVARCHAR (250)  NULL,
-    [Value]                   NVARCHAR (250)  NULL,
+    [Value]                   NVARCHAR (4000)  NULL,
     [FusionAttributeTypeID]   INT             NULL,
     [FusionAttributeID]       INT             NULL,
     [SourceID]                NVARCHAR (250)  NULL,
