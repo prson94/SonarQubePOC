@@ -61,7 +61,7 @@ select @html", new { type = type, id = id }).Single();
         {
             [DataMember(Name = "id")]
             public int ID { get; set; }
-            [IgnoreDataMember]
+            [DataMember(Name = "parentid")]
             public int? ParentID { get; set; }
             [DataMember(Name = "name")]
             public string Name { get; set; }
@@ -416,7 +416,10 @@ from	h
         {
             return View();
         }
-
+        public ActionResult ModelTest()
+        {
+            return View();
+        }
         public JsonNetResult GetDiagramDetails(SystemObjects type, int id)
         {
             var items = Company.Query<dynamic>(
@@ -435,7 +438,7 @@ from	h
 
         public JsonNetResult GetArtifact(int id, string search)
         {
-            var items = Company.Query<dynamic>("select top 5 objectid as id, c.name, iconbackcolor as backcolor, iconforecolor as forecolor, c.objecttypename as typename, c.url from cache.objectdetails c join artifact a on a.artifacttypeid = @id and c.objectid = a.id where lower(c.name) like lower('%' + @search + '%') ", new { id, search });
+            var items = Company.Query<dynamic>("select top 8 objectid as id, c.name, iconbackcolor as backColor, iconforecolor as foreColor, c.objecttypename as typeName, c.url from cache.objectdetails c join artifact a on a.artifacttypeid = @id and c.objectid = a.id where lower(c.name) like lower('%' + @search + '%') ", new { id, search });
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -443,7 +446,7 @@ from	h
         {
             string t1 = type1 + '/' + type2;
             string t2 = type2 + '/' + type1;
-            var items = Company.Query<dynamic>("select rr.side1label, rr.side2label, t.name as [types], r.name as name from intersecttyperolerelation rr join intersecttype t on t.id = rr.intersecttypeid join intersecttyperole r on r.id = rr.intersecttyperoleid where lower(t.name) = lower(@t1) or lower(t.name) = lower(@t2)",new { t1, t2 });
+            var items = Company.Query<dynamic>("select t.id as intersecttypeid,rr.intersecttyperoleid, rr.side1label, rr.side2label, t.name as [types] from intersecttype t left join intersecttyperolerelation rr on rr.intersecttypeid = t.id where lower(t.name) = lower(@t1) or lower(t.name) = lower(@t2); ", new { t1, t2 });
 
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
