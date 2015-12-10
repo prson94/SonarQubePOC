@@ -22,6 +22,12 @@ BEGIN
 
 	-- load the stream that we want to add relations ships for    
 	select @eagleStreamID = fusionattributeid from [fusion].[stagingfile] where id = @StagingFileID and fusionID = @FusionID
+
+	if @eagleStreamID is null
+	begin
+		raiserror('ERROR : UNABLE TO LOCATE SPECIFIED STREAM INFORMATION FOR INPUT FUSION ID / STAGING ID', 15, 1);
+		return;
+	end;
 		
 	-- add relationships for Stream (196) to Eagle DB Columns (205)
 	-- using star tag field that is a field for for fusionattribute type 205 lookup fields to add rels for
@@ -37,6 +43,12 @@ BEGIN
 				 from	utility.RelationshipTypes
 				where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = @MessageStreamFussionAttributeID
 					and TargetObjectType = 'FusionAttributeType' and TargetObjectID = @EagleFieldFusionAttributeID
+
+			if @streamToFieldIntersectTypeID is null or @streamSourceIntersectTypeNodeID is null or @streamTargetIntersectTypeNodeID is null
+			begin
+				raiserror('ERROR : UNABLE TO LOCATE INTERSECT TYPE IDS FOR EAGLE TO EAGLE MESSAGE STREAMS', 15, 1);
+				return;
+			end;
 
 			-- insert into in memory table variable the values we want to add intersects for
 			insert into @StreamToFieldList

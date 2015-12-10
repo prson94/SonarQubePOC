@@ -21,6 +21,12 @@ BEGIN
 	-- load the panel that we want to add relations ships for
     
 	select @eagleStreamID = fusionattributeid from [fusion].[stagingfile] where id = @StagingFileID and fusionID = @FusionID
+	
+	if @eagleStreamID is null
+	begin
+		raiserror('ERROR : UNABLE TO LOCATE SPECIFIED STREAM INFORMATION FOR INPUT FUSION ID / STAGING ID', 15, 1);
+		return;
+	end;
 			
 	exec ProcessEagleMCToEagleFieldRelations @StagingFileID, @FusionID
 
@@ -38,6 +44,11 @@ BEGIN
 				where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = 301
 					and TargetObjectType = 'FusionAttributeType' and TargetObjectID = 205;
 
+		if @fieldToBBIntersectTypeID is null or @fieldSourceIntersectTypeNodeID is null or @fieldTargetIntersectTypeNodeID is null
+		begin
+			raiserror('ERROR : UNABLE TO LOCATE INTERSECT TYPE IDS', 15, 1);
+			return;
+		end;
 
 		-- load into memory the id's that we need to add intersects for
 		insert into @BBToFieldList
