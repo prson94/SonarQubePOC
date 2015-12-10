@@ -438,6 +438,7 @@
     <Build Include="fusion\Stored Procedures\ProcessEagleMCToBloombergRelations.sql" />
     <Build Include="fusion\Stored Procedures\ProcessEagleMCToEagleFieldRelations.sql" />
     <Build Include="dbo\Stored Procedures\GetMapDiagram.sql" />
+    <Build Include="fusion\Stored Procedures\ConvertSQLServerFusionIDs.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
