@@ -83,7 +83,7 @@ namespace d360.jobs.queue.ProcessFusion
                                 processFusionWriteStatus = false;
                             });
 
-                            while (processFusionWriteStatus)
+                            while (processFusionWriteStatus && (processFusionTask.Exception == null))
                             {
                                 Console.WriteLine("Process fusion procedure executing for company {0}, queue {1}...", companyID, q.ID);
                                 System.Threading.Thread.Sleep(30000);
