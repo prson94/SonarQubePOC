@@ -27,5 +27,8 @@
 
         //azure container names
         public const string AZURE_CLOUD_FUSION_CONTAINER = "cloud-fusion-data";
+
+        //azure queue names
+        public const string AZURE_FUSION_QUEUE = "fusion-queue";
     }
 }

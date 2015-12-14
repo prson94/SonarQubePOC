@@ -105,6 +105,7 @@
     <Compile Include="entities\PolicyTypeClass.cs" />
     <Compile Include="entities\TaxonomyTypeClass.cs" />
     <Compile Include="entities\PolicyTypeLevel.cs" />
+    <Compile Include="entities\Transitive\FusionProcessingData.cs" />
     <Compile Include="entities\Views\FusionExecutionResultDetail.cs" />
     <Compile Include="entities\CompanyDomainSetting.cs" />
     <Compile Include="entities\DomainSetting.cs" />
