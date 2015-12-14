@@ -97,40 +97,71 @@ namespace d360.fusion
 
         private async Task SaveChangedValuesLog(SqlConnection companyConnection)
         {
+            if (_workArea.ChangedValues.Count <= 0) return;
             // TODO: Save changed fields / values to [fusion].[result] table.  Right now this uses the guid from fusion queue...
             //[fusion].[ResultEx]
 
             //bulk sql insert to the resultex table
-         /*   using (var bulkCopy = new SqlBulkCopy(companyConnection))
+            using (var bulkCopy = new SqlBulkCopy(companyConnection))
             {
-                bulkCopy.BatchSize = _workArea.FieldValueCollection.Count();
+                bulkCopy.BatchSize = _workArea.ChangedValues.Count();
                 bulkCopy.DestinationTableName = "[fusion].[resultex]";
 
                 var table = new DataTable();
-                var columnName = "ID";
+                var columnName = "ExecutionID";
                 table.Columns.Add(columnName, typeof(int));
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                columnName = "ParentID";
+                columnName = "FusionAttributeID";
                 table.Columns.Add(columnName, typeof(int));
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                foreach (var item in parentsNeedingUpdates)
+                columnName = "FieldTypeID";
+                table.Columns.Add(columnName, typeof(int));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "FieldName";
+                table.Columns.Add(columnName, typeof(string));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "Action";
+                table.Columns.Add(columnName, typeof(char));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "OldValue";
+                table.Columns.Add(columnName, typeof(string));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "NewValue";
+                table.Columns.Add(columnName, typeof(string));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                foreach (var item in _workArea.ChangedValues)
                 {
                     var row = table.NewRow();
 
-                    if (item.ID <= 0 || item.ParentID <= 0)
-                        throw new Exception("ERROR INVALID PARENT CHILD MAPPING. CHILD - " + item.ID.ToString() + " PARENT - " + item.ParentID.ToString());
+                    row["ExecutionID"] = ExecutionID;
+                    row["FusionAttributeID"] = item.FusionAttributeID;
+                    row["FieldTypeID"] = item.FieldTypeID;
+                    var fieldInfo = _workArea.FieldToAttributeMapping.FirstOrDefault(x => x.FieldTypeID == item.FieldTypeID);
+                    if(fieldInfo != null)
+                        row["FieldName"] = fieldInfo.FieldTypeName;
+                    row["Action"] = item.Action;
+                    if(!string.IsNullOrEmpty(item.OldValue) && item.OldValue.Length > 250)
+                        row["OldValue"] = item.OldValue.Substring(0,250);
+                    else
+                        row["OldValue"] = item.OldValue;
 
-                    row["ID"] = item.ID;
-                    row["ParentID"] = item.ParentID;
+                    if(!string.IsNullOrEmpty(item.Value) && item.Value.Length > 250)
+                        row["NewValue"] = item.Value.Substring(0,250);
+                    else
+                        row["NewValue"] = item.Value;
 
                     table.Rows.Add(row);
                 }
 
-                await bulkCopy.WriteToServerAsync(table);*/
-      //      }
-
+                await bulkCopy.WriteToServerAsync(table);
+            }
         }
 
         private async Task UpdateExecutionWithStats(SqlConnection companyConnection)
@@ -224,32 +255,62 @@ namespace d360.fusion
             await MergeUpdatedParentIDValues(companyConnection);
             Trace.WriteLine(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
+            sw.Restart();
+            await UpdateFusionAttributeTextPaths(companyConnection);
+            Trace.WriteLine(string.Format("UpdateFusionAttributeTextPaths TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+
             //update old values with values we             
             sw.Restart();
             DetermineChangedFields();
             Trace.WriteLine(string.Format("DetermineChangedFields TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
         }
 
+        private async Task UpdateFusionAttributeTextPaths(SqlConnection companyConnection)
+        {
+            await companyConnection.ExecuteAsync(@"
+                UPDATE     FusionAttribute
+                SET        TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
+                WHERE   FusionID = @fus
+            ", new { fus = FusionID });
+        }
+
         private void DetermineChangedFields()
         {
-            Parallel.ForEach(_workArea.FieldTempValues, x =>
-            //foreach( var x in _workArea.FieldTempValues)
+            SortedList<string, string> oldFieldDict = new SortedList<string, string>();
+
+            foreach (var item in _workArea.FieldValueCollection)
             {
-                var oldVal = _workArea.FieldValueCollection.FirstOrDefault(y => y.FieldTypeID == x.FieldTypeID && y.FusionAttributeID == x.FusionAttributeID);
+                if (string.IsNullOrEmpty(item.CurrentValue)) continue;
 
-                x.OldValue = oldVal == null ? string.Empty : oldVal.CurrentValue;
+                var key = string.Format("{0}_{1}", item.FieldTypeID, item.FusionAttributeID);
 
-                if (oldVal == null)
+                oldFieldDict.Add(key, item.CurrentValue);
+            }
+
+          //  Parallel.ForEach(_workArea.FieldTempValues, x =>
+            foreach( var x in _workArea.FieldTempValues)
+            {
+                //  var oldVal = _workArea.FieldValueCollection.FirstOrDefault(y => y.FieldTypeID == x.FieldTypeID && y.FusionAttributeID == x.FusionAttributeID);
+                var key = string.Format("{0}_{1}", x.FieldTypeID, x.FusionAttributeID);
+                string oldValue = string.Empty;
+
+                if (!oldFieldDict.TryGetValue(key,out oldValue) && !string.IsNullOrEmpty(x.Value))
                 {
                     x.Action = "A";
                     _workArea.AddCount++;
+                }                
+                else if((string.IsNullOrEmpty(x.Value) && string.IsNullOrEmpty(oldValue)) || (oldValue == x.Value))
+                {
+                    continue;
                 }
                 else
                 {
                     x.Action = "U";
                     _workArea.UpdateCount++;
                 }
-            });            
+
+                _workArea.ChangedValues.Add(x);
+            }//);            
         }
 
         private async Task MergeUpdatedParentIDValues(SqlConnection companyConnection)

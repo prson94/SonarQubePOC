@@ -14,6 +14,7 @@ namespace d360.fusion
             InSourceIDList = new List<string>();
             FusionAttributeTempValues = new List<FusionAttributeTempTableValue>();
             FieldTempValues = new List<FusionFieldTempTableValue>();
+            ChangedValues = new List<FusionFieldTempTableValue>();
         }
 
         public List<string> InSourceIDList { get; set; }
@@ -32,5 +33,7 @@ namespace d360.fusion
         public int AddCount { get; set; }
         public int UpdateCount { get; set; }
         public int DeleteCount { get; set; }
+
+        public List<FusionFieldTempTableValue> ChangedValues { get; set; }
     }
 }
