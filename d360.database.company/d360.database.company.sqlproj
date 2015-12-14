@@ -447,6 +447,8 @@
     <None Include="ProductionCompare.scmp" />
     <None Include="DevelopmentCompare.scmp" />
     <None Include="LocalCompare.scmp" />
+    <None Include="dbo\Stored Procedures\AddMapRelationship.sql" />
+    <None Include="dbo\Stored Procedures\GetLineageDiagram.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

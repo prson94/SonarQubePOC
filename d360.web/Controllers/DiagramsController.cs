@@ -7,6 +7,8 @@ using d360.model;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
+using System;
+using Dapper;
 
 namespace d360.web.Controllers
 {
@@ -417,6 +419,42 @@ from	h
 
         #region Lineage Go JS Test & Prototyping
 
+        public class DiagramNode
+        {
+            public string ID { get; set; }
+            public string Key { get; set; }
+            public int ParentID { get; set; }
+            public string ObjectType { get; set; }
+            public string ObjectID { get; set; }
+            public string TypeName { get; set; }
+        }
+
+        public class DiagramLink
+        {
+            public string From { get; set; }
+            public string To { get; set; }
+            public string Text { get; set; }
+            public string Phrase { get; set; }
+            public string PredicateName { get; set; }
+            public int IntersectTypeID { get; set; }
+            public int IntersectTypeRoleID { get; set; }
+            public DiagramNode FromNode { get; set; }
+            public DiagramNode ToNode { get; set; }
+        }
+
+        public class DiagramChanges
+        {
+            public List<DiagramNode> AddedNodes { get; set; }
+            public List<DiagramNode> ModifiedNodes { get; set; }
+            public List<DiagramNode> DeletedNodes { get; set; }
+            public List<DiagramLink> AddedLinks { get; set; }
+            public List<DiagramLink> ModifiedLinks { get; set; }
+            public List<DiagramLink> DeletedLinks { get; set; }
+            public List<DiagramNode> AllNodes { get; set; }
+            public List<DiagramLink> AllLinks { get; set; }
+            public int MapID { get; set; }
+        }
+
         public ActionResult LineageTest()
         {
             return View();
@@ -443,7 +481,7 @@ from	h
 
         public JsonNetResult GetArtifact(int id, string search)
         {
-            var items = Company.Query<dynamic>("select top 8 objectid as id, c.name, iconbackcolor as backColor, iconforecolor as foreColor, c.objecttypename as typeName, c.url from cache.objectdetails c join artifact a on a.artifacttypeid = @id and c.objectid = a.id where lower(c.name) like lower('%' + @search + '%') ", new { id, search });
+            var items = Company.Query<dynamic>("select top 8 objectid as id, c.name, iconbackcolor as backColor, iconforecolor as foreColor, c.objecttypename as typeName, c.url, c.object as objectType from cache.objectdetails c join artifact a on a.artifacttypeid = @id and c.objectid = a.id where lower(c.name) like lower('%' + @search + '%') ", new { id, search });
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -456,6 +494,51 @@ from	h
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+
+        public JsonNetResult SaveChanges(DiagramChanges changes)
+        {
+            string err = "";
+            
+
+            if (changes.AddedLinks == null)
+                return null;
+            foreach(DiagramLink l in changes.AddedLinks)
+            {
+                l.ToNode = changes.AllNodes.Where(n => n.Key == l.To).FirstOrDefault();
+                l.FromNode = changes.AllNodes.Where(n => n.Key == l.From).FirstOrDefault();
+
+                if (l.ToNode == null || l.FromNode == null)
+                {
+                    //TODO: error handling here
+                }
+
+                var r = Company.Query<dynamic>("EXEC AddMapRelationship @MapID, @ResourceID, @Date, @ObjectType, @ObjectID, @Classification, @IntersectRole, @Description, @SubjectType, @SubjectID, @PredicateName, @PredicatePhrase"
+                , new
+                {
+                    MapID = changes.MapID,
+                    ResourceID = Company.CurrentResourceID,
+                    Date = DateTime.UtcNow,
+                    ObjectType = l.FromNode.ObjectType,
+                    ObjectID = l.FromNode.ID,
+                    Classification = (int?)null,
+                    IntersectRole = (int?)null,
+                    Description = (string)null,
+                    SubjectType = l.ToNode.ObjectType,
+                    SubjectID = l.ToNode.ID,
+                    PredicateName = l.PredicateName,
+                    PredicatePhrase = l.Phrase
+                });
+
+            }
+            //TODO: return something useful here
+            return null;
+        }
+
+        public JsonNetResult GetPredicateInfo()
+        {
+            var items = Company.Query<dynamic>("select pp.id, pp.predicateId, p.name, pp.phrase, cast(pp.ID as varchar(100)) + '_' + cast(p.ID as varchar(100)) as value, pp.Phrase + ' (' + p.Name + ') ' as displayName from predicatephrase pp join predicate p on p.id = pp.predicateid");
+            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
         #endregion
 
         #region Map Testing
@@ -519,6 +602,7 @@ from	h
 
             var nodes = new List<JsonNodeItem>();
             var links = new List<JsonLinkItem>();
+            var mapId = (list.Count() == 0 ? 0 : list.First().MapID);
 
             list.ForEach(mapItem =>
             {
@@ -530,7 +614,7 @@ from	h
             });
 
             return new JsonNetResult {
-                Data = new { nodes, links },
+                Data = new { nodes, links, mapId },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

@@ -28,11 +28,11 @@
                                 <div style="width:100%;text-align:center;">
                                     <div id="newRelDisplay"></div><br />
                                 </div>
-                                <table>
+                                @*<table>
                                     <tbody>
                                         <tr>
                                             <td colspan="2" style="font-weight:bold">
-                                                Choose Existing Relationship Type
+                                                Choose Existing Relationship:
                                             </td>
                                         </tr>
                                         <tr id="noRelFound" style="display:none;">
@@ -52,41 +52,66 @@
                                             </td>
                                         </tr>
                                     </tbody>
+                                </table>*@
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" style="font-weight:bold">
+                                                Choose a Predicate
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Predicate: 
+                                            </td>
+                                            <td>
+                                                <select id="ddlPredicate" style="display:block !important; padding:0 !important; height: 1.5rem !important; width:80% !important"></select>
+                                            </td>
+                                        </tr>
+                                        @*<tr>
+                                            <td>
+                                                Phrase: 
+                                            </td>
+                                            <td>
+                                                <select id="ddlPhrase"></select>
+                                            </td>
+                                        </tr>*@
+                                    </tbody>
                                 </table>
                                 <table>
                                     <tbody>
                                         <tr>
                                             <td colspan="2" style="font-weight:bold">
-                                                Add New Relationship Type
+                                                Create a new Predicate
                                             </td>
                                         </tr>
                                         <tr style="padding-bottom:2px">
                                             <td>
-                                                Name:
+                                                Predicate Name:
                                             </td>
                                             <td>
-                                                <input type="text" id="newRelName" />
+                                                <input type="text" id="newPredicateName" />
                                             </td>
                                         </tr>
                                         <tr style="padding-bottom:2px">
                                             <td>
-                                                Side 1 Label:
+                                                Phrase:
                                             </td>
                                             <td>
-                                                <input type="text" id="newRelSide1" />
+                                                <input type="text" id="newPredicatePhrase" />
                                             </td>
                                         </tr>
-                                        <tr style="padding-bottom:2px">
+                                        @*<tr style="padding-bottom:2px">
                                             <td>
                                                 Side 2 Label:
                                             </td>
                                             <td>
                                                 <input type="text" id="newRelSide2" />
                                             </td>
-                                        </tr>
+                                        </tr>*@
                                         <tr>
                                             <td>
-                                                <button id="AddNewRel" style="display:none;" class="btn white-text" onclick="AddRelationship();">Add Relationship</button>
+                                                <button id="AddNewRel" style="display:none;" class="btn white-text" onclick="AddRelationship($('#ddlPredicate').val());">OK</button>
                                             </td>
                                             <td>
                                                 <button id="CancelNewRel" class="btn red darken-3 white-text" onclick="CancelAddLink();">Cancel</button>
@@ -140,19 +165,29 @@
 
                 </td>
             </tr>
+            <tr>
+                <td>
+                         zoom: <div id="jqxZoom" style="display:inline-block;background-color:#e20000"></div><span id="zoomDisplay" style="margin-left:10px">100% </span>
+                        | <a href="#" onclick="$('#jqxZoom').val(1500);"> zoom to 100%</a>
+                        | <a href="#" onclick="myDiagram.zoomToFit();"> zoom to fit</a>
+                        | <a href="#" onclick="reOrderLayout();">reorganize </a>
+                        | <a href="#" onclick="toggleFullscreen(isFullscreen);">toggle fullscreen</a>
+                        | spacing: <input id="txtSpacing" type="text" value="25" maxlength="3" style="width:40px" onkeyup="changeSpacing($(this).val())" />
+                        <button id="saveBtn" class="btn red" onclick="saveChanges();" style="float:right"><i class="fa fa-save"></i> Save Changes</button>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                     Object Type: <input type="text" id="objecttype" value="Artifact" />
+                    Object Id: <input type="text" id="objectid" value="972864" /> @*972864*@
+                    <button onclick="popDiagram();" class="btn">Populate</button>
+                </td>
+                <td></td>
+            </tr>
         </tbody>
     </table>
-    <div>
-        Object Type: <input type="text" id="objecttype" value="Artifact" />
-        Object Id: <input type="text" id="objectid" value="4651" />
-        <button onclick="popDiagram();" class="btn">Populate</button>
-        <button class="btn" onclick="reOrderLayout();"><i class="fa fa-sitemap"></i> </button>
-        <div id="jqxZoom" style="display:inline-block;background-color:#e20000"></div><span id="zoomDisplay" style="margin-left:10px">100% </span>
-         | <a href="#" onclick="$('#jqxZoom').val(1500);"> reset</a> |
-        <a href="#" onclick="myDiagram.zoomToFit();"> fit</a> |
-        <a href="#" onclick="toggleFullscreen(!isFullscreen);"><i class="fa fa-arrows-alt"></i></a>
 
-    </div>
 
 
     <script type="text/javascript">
@@ -194,8 +229,8 @@
                 transformations: null,
                 role: null,
                 isDeletable: true,
-                highlightColor: null, //anchor, downstream, upstream
-                objectType: "Node"
+                highlightColor: null,
+                diagramObjectType: "Node"
             };
         };
 
@@ -206,12 +241,14 @@
                 frompid: "OUT",
                 to: null,
                 text: null,
-                intersectTypeID: null,
-                intersectTypeRoleID: null,
-                side1label: null,
-                side2label: null,
+                phrase: null,
+                predicateName: null,
+                //intersectTypeID: null,
+                //intersectTypeRoleID: null,
+                //side1label: null,
+                //side2label: null,
                 isDeletable: true,
-                objectType: "Link"
+                diagramObjectType: "Link"
             };
         };
 
@@ -219,20 +256,24 @@
         var temp = null; //store search result node here
         var newRelationships = [];
         var newNodes = [];
-        var relationshipTypes = [];
+        var predicates = [];
         var newLink = null;
         var g = go.GraphObject.make;
         var showDirectionHighlights = false;
         var isFullscreen = false;
+        var initialNodes = [];
+        var initialLinks = [];
+        var mapId = 0;
 
         myDiagram = g(go.Diagram, "myOverviewDiv", {
-            initialContentAlignment: go.Spot.TopLeft,
+            initialContentAlignment: go.Spot.Center,
             contentAlignment: go.Spot.Default,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             layout: g(go.LayeredDigraphLayout, {
                 direction: 0,
                 isInitial: true,
+                columnSpacing: 25
                 //isOngoing: false
             }),
             "undoManager.isEnabled": true
@@ -250,22 +291,24 @@
         function reOrderLayout() {
             //myDiagram.layout.isValidLayout = false;
             myDiagram.layout.invalidateLayout(); //isValidLayout = false;
+            myDiagram.requestUpdate();
         };
 
         function toggleFullscreen(on) {
+            console.log(on);
             if (on === false) {
-                $('#sidebarCell').width(1);
+                $('#sidebarCell').width(1).hide();
                 $('#sidebarContainer').hide();
                 $('#resizeContainer').height($(window).height() - 60);
                 $('#myOverviewDiv').height($('#resizeContainer').height());
-                myDiagram.requestUpdate();
+                //myDiagram.requestUpdate();
                 isFullscreen = true;
             } else {
-                $('#sidebarCell').width(350);
+                $('#sidebarCell').width(350).show();
                 $('#sidebarContainer').show();
                 $('#resizeContainer').height(520);
-                $('#myOverviewDiv').height($('#resizeContainer').height());
-                myDiagram.requestUpdate();
+                $('#myOverviewDiv').height(500);
+                //myDiagram.requestUpdate();
                 isFullscreen = false;
             }
             
@@ -281,19 +324,20 @@
             var anchor = null;
             var modelList = [];
             var linkList = [];
-            for (var i = 0; i < data.length; i++) {
-                var d = data[i];
+            for (var i = 0; i < data.nodes.length; i++) {
+                var d = data.nodes[i];
                 var model = createArtifactModel();
-                model.key = d.ID;
-                model.parentId = d.ParentID;
-                model.foreColor = d.ForeColor;
-                model.backColor = d.BackColor;
-                model.typeName = d.Type;
-                model.name = d.Name;
-                model.role = d.Role;
-                model.url = d.Url
-                model.id = d.ObjectID;
-                model.objectType = "Node";
+                model.key = d.key;
+                //model.parentId = d.ParentID;
+                model.foreColor = d.fore;
+                model.backColor = d.back;
+                model.typeName = d.type;
+                model.name = d.name;
+                model.role = "";
+                model.url = ""
+                model.id = d.objid;
+                model.objectType = d.obj;
+                model.diagramObjectType = "Node";
                 model.isDeletable = false;
 
                 if (model.id.toString() == $('#objectid').val()) {
@@ -303,22 +347,35 @@
 
                 modelList.push(model);
 
-                if (d.ParentID != null) {
-                    var link = createLinkModel();
-                    link.from = model.key;
-                    link.to = d.ParentID;
-                    link.text = "";
-                    link.isDeletable = false;
-                    link.objectType = "Link";
-                    linkList.push(link);
-                }
+                //if (d.ParentID != null) {
+                //    var link = createLinkModel();
+                //    link.from = model.key;
+                //    link.to = d.ParentID;
+                //    link.text = "";
+                //    link.isDeletable = false;
+                //    link.diagramObjectType = "Link";
+                //    linkList.push(link);
+                //}
 
             }
 
+            for (var i = 0; i < data.links.length; i++) {
+                var d = data.links[i];
+                var link = createLinkModel();
+                    link.from = d.from;
+                    link.to = d.to;
+                    link.text = d.text;
+                    link.isDeletable = false;
+                    link.diagramObjectType = "Link";
+                    linkList.push(link);
 
+            }
 
             myDiagram.model.nodeDataArray = modelList;
             myDiagram.model.linkDataArray = linkList;
+
+            initialNodes = modelList.slice(); //copy by val, not ref
+            initialLinks = linkList.slice();
             //markUpstream(anchor);
             //markDownstream(anchor);
 
@@ -340,27 +397,28 @@
         myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
         myDiagram.addDiagramListener('LinkDrawn', onLinkDrawn);
         myDiagram.addDiagramListener('SelectionDeleting', onDelete);
+        myDiagram.addDiagramListener('ObjectDoubleClicked', onDoubleClick);
         myDiagram.layout.isInitial = true;
 
         function onDelete(e) {
             e.subject.each(function (d) {
                 if ((d.data.isDeletable || false) == false) {
                   //this was part of the original diagram, do not delete  
-                    e.cancel = true;
+                  e.cancel = true;
                 }
             });
 
             //if (!e.cancel) {
             //    e.subject.each(function (d) {
             //        if (d.data.isDeletable) {
-            //            if (d.data.objectType == "Node") {
+            //            if (d.data.diagramObjectType == "Node") {
             //                for (var i = 0; i < newNodes.length; i++) {
             //                    if (newNodes[i].id == d.data.id) {
             //                        newNodes.splice(i, 1);
             //                        break;
             //                    }
             //                }
-            //            } else if (d.data.objectType == "Link") {
+            //            } else if (d.data.diagramObjectType == "Link") {
             //                for (var j = 0; j < newRelationships.length; j++) {                   
             //                    if (newRelationships[j].from == d.data.from && newRelationships[j].to == d.data.to) {
             //                        newRelationships.splice(j, 1);
@@ -373,6 +431,18 @@
             //}
         };
 
+        function onDoubleClick(e) {
+            var obj = e.diagram.selection.first().data;
+            console.log(obj);
+            if (obj != null) {
+
+                $('#objecttype').val(obj.objectType);
+                $('#objectid').val(obj.id);
+
+                popDiagram();
+            }
+        }
+
         function onLinkDrawn(e) {
             $('#overlay').show();
             //'top', e.subject.position.y).css('left', e.subject.position.x);
@@ -382,12 +452,12 @@
             //}
 
             newLink = e.subject.data;
-            newLink.objectType = "Link";
+            newLink.diagramObjectType = "Link";
             var from = e.subject.data.from;
             var to = e.subject.data.to;
             var toNode = null;
             var fromNode = null;
-            //console.log(from);
+            console.log(e.subject.data);
             //console.log(to);
             for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
                 if (myDiagram.model.nodeDataArray[i].key == to) {
@@ -411,24 +481,32 @@
                 type1: fromNode.typeName,
                 type2: toNode.typeName
             };
+            populatePredicateList();
+            //populateRelationshipTypes(data);
 
-            populateRelationshipTypes(data);
-
-            if ($('#ddlRType option').length < 1) {
-                $('#chooseRelRow1').hide();
-                $('#chooseRelRow2').hide();
-                $('#noRelFound').show();
-            } else {
-                $('#chooseRelRow1').show();
-                $('#chooseRelRow2').show();
-                $('#noRelFound').hide();
-            }
-            //var ypos = e.subject.midPoint.y.toString() + 'px';
-            //var xpos = e.subject.midPoint.x.toString() + 'px';
-            //$('#overlayzz').css({ top: ypos, left: xpos }).text(ypos + ', ' + xpos);
-            //$("#jqxExpander2").jqxExpander('expand');
+            //if ($('#ddlRType option').length < 1) {
+            //    $('#chooseRelRow1').hide();
+            //    $('#chooseRelRow2').hide();
+            //    $('#noRelFound').show();
+            //} else {
+            //    $('#chooseRelRow1').show();
+            //    $('#chooseRelRow2').show();
+            //    $('#noRelFound').hide();
+            //}
         };
 
+        function changeSpacing(val) {
+
+            var num = parseInt(val);
+
+            if (num == null || num == NaN) {
+                $('#txtSpacing').val(myDiagram.layout.columnSpacing);
+                return;
+            }
+            myDiagram.layout.columnSpacing = num;
+            myDiagram.layout.layerSpacing = num;
+            myDiagram.requestUpdate();
+        }
 
         function markDownstream(node) {
             //console.log(node.parentId);
@@ -480,14 +558,13 @@
         function AddRelationship(id) {
             var id = (id || '');
             var rel = null;
-            if (id != '') {
-                for (var i = 0; i < relationshipTypes.length; i++) {
-                    if (relationshipTypes[i].id == id) {
+            if (id != '' && id != 0) {
+                for (var i = 0; i < predicates.length; i++) {
+                    if (predicates[i].value == id) {
 
                         rel = {
-                            name: '',
-                            side1label: relationshipTypes[i].side1label,
-                            side2label: relationshipTypes[i].side12abel
+                            name: predicates[i].name,
+                            phrase: predicates[i].phrase
                         };
                     }
                 }
@@ -495,16 +572,14 @@
             }
             else {
                 rel = {
-                    name: $('#newRelName').val(),
-                    side1label: $('#newRelSide1').val(),
-                    side2label: $('#newRelSide2').val()
+                    name: $('#newPredicateName').val(),
+                    phrase: $('#newPredicatePhrase').val()
                 };
             }
-            
-            newLink.side1label = rel.side1label;
-            newLink.side2label = rel.side2label;
-            newLink.text = rel.side1label;
-            newLink.objectType = "Link";
+            newLink.predicateName = rel.name;
+            newLink.phrase = rel.phrase;
+            newLink.text = rel.phrase;
+            newLink.diagramObjectType = "Link";
 
             myDiagram.startTransaction("nameRel")
             var index = -1;
@@ -523,10 +598,10 @@
             //newRelationships.push(newLink);
             newLink = null;
 
+
+            $('#newPredicateName').text('');
+            $('#newPredicatePhrase').text('');
             $('#newRelDisplay').text('');
-            $('#newRelSide1').val('');
-            $('#newRelSide2').val('');
-            $('#newRelName').val('');
             $('#AddNewRel').hide();
             //$("#jqxExpander2").jqxExpander('collapse');
 
@@ -549,7 +624,7 @@
             $('#isSel').show();
             $('#ddlRel').val(data.key);
 
-            if (data.objectType == "Node") { //node selected
+            if (data.diagramObjectType == "Node") { //node selected
                 $.ajax({
                     url: '/resources/Artifact/' + data.id + '/templates/tooltip/Preview',
                     data: null,
@@ -559,7 +634,7 @@
                     },
                     async: true
                 });
-            } else if (data.objectType == "Link") { //link selected
+            } else if (data.diagramObjectType == "Link") { //link selected
                 //console.log(data.from);
                 $("#jqxExpander0").jqxExpander('collapse');
             }
@@ -653,7 +728,7 @@
                     maxSize: new go.Size(180, NaN),
                     font: "bold 10pt sans-serif"
                 },
-                    new go.Binding("text", "role").makeTwoWay(),
+                    new go.Binding("text", "id").makeTwoWay(),
                     new go.Binding("stroke", "foreColor").makeTwoWay()
                 )
             )),
@@ -715,37 +790,8 @@
                    },
                        new go.Binding("text", "name").makeTwoWay()
                        ,new go.Binding("stroke", "foreColor").makeTwoWay()
-                   )
-                   //g(go.TextBlock, {
-                   //    row: 1,
-                   //    margin: 3,
-                   //    maxSize: new go.Size(180, NaN),
-                   //    font: "10pt sans-serif"
-                   //},
-                   //    new go.Binding("stroke", "foreColor").makeTwoWay(),
-                   //    new go.Binding("text", "typeName").makeTwoWay()
-                   //),
-                   //g(go.TextBlock, {
-                   //    row: 2,
-                   //    margin: 3,
-                   //    maxSize: new go.Size(180, NaN),
-                   //    font: "bold 10pt sans-serif"
-                   //},
-        
-                       //new go.Binding("text", "role").makeTwoWay(),
-                      // new go.Binding("stroke", "foreColor").makeTwoWay()
-                   )
+                   ))
                ));
-               //g(go.Panel, "Vertical", {
-               //    alignment: go.Spot.Left,
-               //    alignmentFocus: go.Spot.Default //new go.Spot(0, 0.5, -8, 0)
-               //},
-               //inports),
-               //g(go.Panel, "Vertical", {
-               //    alignment: go.Spot.Right,
-               //    alignmentFocus: go.Spot.Default //new go.Spot(1, 0.5, 8, 0)
-               //},
-               //outports));
 
             myPalette.nodeTemplateMap.add("Artifact", node);
         }
@@ -844,28 +890,16 @@
                 url: '/Diagrams/GetArtifact',
                 data: data,
                 success: function (data) {
-                    //$('#txtResult').html('<i class="fa fa-plus"></i> ' + data[0].name);
-                    //$('#txtResult').css('color', data[0].foreColor).css('background-color', data[0].backColor);
-                    //console.log(data[0]);
                     
                     myPalette.model.nodeDataArray = [];
                     temp = data[0];
                     for (var i = 0; i < data.length; i++) {
                         data[i].type = "Artifact";
+                        data[i].key = data[i].objectType + data[i].id.toString();
+                        //data[i].objectType = "Artifact";
                         data[i].isDeletable = true;
                         myPalette.model.addNodeData(data[i]);
                     }
-                    //myPalette.nodeTemplateMap = myDiagram.nodeTemplateMap;
-                    //myPalette.model = new go.GraphLinksModel([
-                    //    { category: "Artifact", type: "Artifact", text: 'asdf', foreColor: temp.foreColor, backColor: temp.backColor, typeName: temp.typeName, key: newId }
-                    //]);
-
-                    //temp.foreColor = 'white';
-                    //temp.backColor = 'black';
-                    //console.log(data[0]);
-                    //myPalette.model = new go.GraphLinksModel([temp]);
-                    
-                    //myPalette.model.nodeDataArray = [data[0]]; //.push(temp);
                 },
                 async: false
             });
@@ -884,36 +918,36 @@
                     break;
                 }
             }
-
-            populateRelationshipTypes(data);
+            populatePredicateList();
+            //populateRelationshipTypes(data);
         }
 
 
-        function populateRelationshipTypes(types) {
-            $.ajax({
-                url: '/Diagrams/GetRelationshipByTypes',
-                data: types,
-                async: false,
-                success: function (data) {
-                    if (data.length < 1) {
-                        $('#ddlRType').html('');
-                        relationshipTypes = [];
-                        return;
-                    }
+        //function populateRelationshipTypes(types) {
+        //    $.ajax({
+        //        url: '/Diagrams/GetRelationshipByTypes',
+        //        data: types,
+        //        async: false,
+        //        success: function (data) {
+        //            if (data.length < 1) {
+        //                $('#ddlRType').html('');
+        //                relationshipTypes = [];
+        //                return;
+        //            }
 
-                    //console.log(data);
-                    var output = [];
-                    relationshipTypes = [];
-                    for (var i = 0; i < data.length; i++) {
-                        data[i].id = data[i].intersecttypeid + '_' + data[i].intersecttyperoleid
-                        output.push('<option value="' + data[i].id + '">' + (data[i].side1label || '&lt;No Label&gt;') + '/' + (data[i].side2label || '&lt;No Label&gt;') + '</option>');
-                        relationshipTypes.push(data[i]);
-                    }
-                    // console.log(output);
-                    $('#ddlRType').html(output.join(''));
-                }
-            });
-        }
+        //            //console.log(data);
+        //            var output = [];
+        //            relationshipTypes = [];
+        //            for (var i = 0; i < data.length; i++) {
+        //                data[i].id = data[i].intersecttypeid + '_' + data[i].intersecttyperoleid
+        //                output.push('<option value="' + data[i].id + '">' + (data[i].side1label || '&lt;No Label&gt;') + '/' + (data[i].side2label || '&lt;No Label&gt;') + '</option>');
+        //                relationshipTypes.push(data[i]);
+        //            }
+        //            // console.log(output);
+        //            $('#ddlRType').html(output.join(''));
+        //        }
+        //    });
+        //}
 
         function addExisting() {
             myDiagram.startTransaction("add_existing");
@@ -965,18 +999,169 @@
             };
 
             var results = $.ajax({
-                url: '/diagrams/GetDiagramDetails',
-                data: data,
+                url: '/diagrams/maps/Artifact/' + data.id + '.json',
+                data: null,
                 success: function (data) {
-                    //console.log(data);
+                    mapId = data.mapId;
+                    console.log(data);
                     parseData(data);
                     populateNodeSelectList();
+                    myDiagram.zoomToFit();
                 }
             });
         }
 
+        function populatePredicateList() {
+            $.ajax({
+                url: '/diagrams/getpredicateinfo',
+                success: function (data) {
+                    console.log(data);
+                    var output = [];
+                    predicates = [];
+                    output.push('<option value="0">(No Choice)</option>');
+                    for (var i = 0; i < data.length; i++) {
+                        data[i].id = data[i].intersecttypeid + '_' + data[i].intersecttyperoleid
+                        output.push('<option value="' + data[i].value + '">' + data[i].displayName + '</option>');
+                        predicates.push(data[i]);
+                    }
+                    $('#ddlPredicate').html(output.join(''));
+                }
+            });
+        }
 
+        function saveChanges() {
+            //$('#saveBtn').prop('disabled',true);
+            var nodeChanges = getNodeChanges();
+            var linkChanges = getLinkChanges();
+
+            var data = {
+                AddedNodes: nodeChanges.added,
+                ModifiedNodes: nodeChanges.modified,
+                DeletedNodes: nodeChanges.deleted,
+                AddedLinks: linkChanges.added,
+                NodifiedLinks: linkChanges.modified,
+                DeletedLinks: linkChanges.deleted,
+                AllNodes: myDiagram.model.nodeDataArray,
+                AllLinks: myDiagram.model.linkDataArray,
+                MapID: mapId
+            }
+
+            $.ajax({
+                url: '/Diagrams/SaveChanges',
+                data: JSON.stringify(data),
+                processData: false,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    $('#saveBtn').prop('disabled', false);
+                },
+                failure: function (data) {
+                    $('#saveBtn').prop('disabled', false);
+                }
+            });
+
+        }
        
+        function getLinkChanges() {
+            var changes = {
+                added: [],
+                modified: [],
+                deleted: []
+            };
+            var links = myDiagram.model.linkDataArray;
+
+            for (var i = 0; i < links.length; i++) {
+                var found = false;
+                for (var j = 0; j < initialLinks.length; j++) {
+                    if (initialLinks[j].to == links[i].to && initialLinks[j].from == links[i].from) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    changes.added.push(links[i]);
+                }
+            }
+
+            for (var i = 0; i < initialLinks.length; i++) {
+                var found = false;
+                for (var j = 0; j < links.length; j++) {
+                    if (initialLinks[i].to == links[j].to && initialLinks[i].from == links[j].from) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    changes.deleted.push(initialLinks[i]);
+                }
+            }
+
+            for (var i = 0; i < links.length; i++) {
+                for (var j = 0; j < initialLinks.length; j++) {
+                    //modified logic
+                }
+            }
+            
+            console.log(changes);
+            return changes;
+        }
+        
+        function getNodeChanges() {
+            var changes = {
+                added: [],
+                modified: [],
+                deleted: []
+            };
+
+            var nodes = myDiagram.model.nodeDataArray;
+
+            //added
+            for (var i = 0; i < nodes.length; i++ ) {
+                var found = false;
+                for (var j = 0; j < initialNodes.length; j++) {
+                    if (initialNodes[j].key == nodes[i].key) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    changes.added.push(nodes[i]);
+                }
+            }
+
+            //deleted
+            for (var i = 0; i < initialNodes.length; i++) {
+                var found = false;
+                for (var j = 0; j < nodes.length; j++) {
+                    if (initialNodes[i].key == nodes[j].key) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    changes.deleted.push(initialNodes[i]);
+                }
+            }
+
+            //modified
+            for (var i = 0; i < nodes.length; i++) {
+                for (var j = 0; j < initialNodes.length; j++) {
+                    if (initialNodes[j].id == nodes[i].id) {
+
+                        if (initialNodes[j].key === nodes[i].key) {
+                            changes.modified.push(nodes[i]);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            console.log(changes);
+            return changes;
+
+        }
+
         populateTypeSelectList();
         popDiagram();
         
@@ -990,12 +1175,10 @@
 
             $("#jqxZoom").jqxScrollBar({ width: 280, height: 18, min: 750, max: 2250, value: 1500 });
             $("#jqxZoom").on('valueChanged', function (event) {
-                $('#zoomDisplay').text(Math.round((parseInt(event.currentValue) / 1500) * 100) + '%');
-                myDiagram.scale = (parseInt(event.currentValue) / 1500);
+                var val = parseInt(event.currentValue);
+                $('#zoomDisplay').text(Math.round( (val / 1500) * 100) + '%');
+                myDiagram.scale = (val / 1500);
             });
-
-
-
 
         });
     </script>
