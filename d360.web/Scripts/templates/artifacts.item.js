@@ -161,7 +161,7 @@
                         context.contentHeader(pageViewModel);
                     //});
 
-                        $('#SideIcons').PageTools({ type: type, id: id });
+                    $('#SideIcons').PageTools({ type: type, id: id });
                     $("#RandomQuestion").RandomSurveyQuestion({ objectType: type, objectID: id });
 
                     var loadPermissionsDependentTiles = function () {

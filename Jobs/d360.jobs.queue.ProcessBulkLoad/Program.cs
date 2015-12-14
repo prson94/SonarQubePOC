@@ -78,6 +78,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
             try
             {
+                //var companies = new List<int>() { 15 };
                 var companies = GetActiveCompanyIDs();//.Where(i => i == 4).ToList();
                 var domainPrefixes = GetCompanyDomainPrefixes();
 
@@ -104,33 +105,38 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                             Console.WriteLine("Company: {0}. Processing Load {1}", companyID, load.ID);
 
-                            var memoryStream = new MemoryStream(load.File);
-                            var xls = new SLDocument(memoryStream);
+                            var existingRows = ctx.LoadItems.Any(i => i.LoadID == q.LoadID);
 
-                            var stats = xls.GetWorksheetStatistics();
-
-                            var numberOfRows = stats.NumberOfRows;
-                            var rowIndex = stats.StartRowIndex + 1;
-                            while (rowIndex <= stats.EndRowIndex)
+                            if (!existingRows)
                             {
-                                var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>() };
+                                var memoryStream = new MemoryStream(load.File);
+                                var xls = new SLDocument(memoryStream);
 
-                                foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
+                                var stats = xls.GetWorksheetStatistics();
+
+                                var numberOfRows = stats.NumberOfRows;
+                                var rowIndex = stats.StartRowIndex + 1;
+                                while (rowIndex <= stats.EndRowIndex)
                                 {
-                                    loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = xls.GetCellValueAsString(rowIndex, c.ColumnIndex) });
+                                    var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>() };
+
+                                    foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
+                                    {
+                                        loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = xls.GetCellValueAsString(rowIndex, c.ColumnIndex) });
+                                    }
+
+                                    ctx.LoadItems.Add(loadItem);
+
+                                    rowIndex++;
                                 }
 
-                                ctx.LoadItems.Add(loadItem);
-
-                                rowIndex++;
+                                ctx.SaveChanges();  // Save all load items and columns we created.
                             }
-
-                            ctx.SaveChanges();  // Save all load items and columns we created.
 
                             Console.WriteLine("Company: {0}. Executing ProcessBulkLoad procedure for Load {1}", companyID, load.ID);
 
                             bool writeStatus = true;
-                            var task = companyConnection.ExecuteAsync("exec ProcessBulkLoad @LoadID", new { LoadID = load.ID }, null, 1800);
+                            var task = companyConnection.ExecuteAsync("exec ProcessBulkLoad @LoadID", new { LoadID = load.ID }, null, 10800);   // 180 minute timeout.
                             task.ContinueWith(t =>
                             {
                                 if (t.IsCompleted)
@@ -147,7 +153,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                 writeStatus = false;
                             });
 
-                            while (writeStatus)
+                            while (writeStatus && (task.Exception == null))
                             {
                                 Console.WriteLine(".");
                                 System.Threading.Thread.Sleep(45000);

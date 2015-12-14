@@ -1576,7 +1576,7 @@ where	ObjectType = 'Intersect'
 		T.TargetTypeName as TypeName,
 		T.TargetTypeID as TypeID,
 		T.TargetType as [Type],
-		D.IconBackColor,
+		coalesce(S.IconBackColor, '#000') as IconBackColor,
 		T.[Count],
         T.IntersectTypeID
 from	(
@@ -1598,7 +1598,7 @@ union
 		where	SourceObject = @type and SourceObjectID = @id and TargetObject = 'Taxonomy'
 		group by	TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 ) T 
-inner join cache.ObjectDetails D on D.[Object] = T.TargetType and D.ObjectID = T.TargetTypeID 
+left join ObjectStyle S on  T.TargetType = S.ObjectType and T.TargetTypeID = S.ObjectID
 order by T.[Group], T.TargetTypeName";
             #endregion
 

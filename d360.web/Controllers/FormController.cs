@@ -396,7 +396,7 @@ namespace d360.web.Controllers
         JsonResult jsonException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
             Response.StatusCode = (int)statusCode;
-            Response.StatusDescription = ex.GetFullExceptionData().Replace("\n", "  ").Replace("\r", " ");
+            Response.StatusDescription = ex.GetFullExceptionData();//.Replace("\n", "  ").Replace("\r", " ");
             return Json(new { type = "error", title = title, message = Response.StatusDescription }, JsonRequestBehavior.AllowGet);
         }
 

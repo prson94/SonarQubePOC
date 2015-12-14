@@ -228,7 +228,6 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
                 html = "<ul>";
 
                 $.each(data, function (idx, t) {
-                    console.log(t);
                     html += "<li data-uri='" + t.Uri + "'><i class='fa fa-" + t.Icon + "'";
                     if (t.Title != "" && t.Title) {
                         html += " title='" + encodeURI(t.Title) + "'></i>" + t.Title
@@ -4861,4 +4860,207 @@ function YourWorkflowTasks(controlID, title, showTitle) {
     //#endregion
 
     //#endregion
+}
+
+function LineageDiagram(controlID, type, id, permissions) {
+    var dataUri = '/diagrams/maps/' + type + '/' + id + '.json';
+
+    var newId = -1;
+    var temp = null;
+    var relationshipLabels = null;
+
+    function createLinkModel() {
+        return {
+            from: null,
+            frompid: "OUT",
+            to: null,
+            text: null
+        };
+    };
+
+    var g = go.GraphObject.make;
+
+    myDiagram = g(go.Diagram, controlID, {
+        initialContentAlignment: go.Spot.Left,
+        //autoScale: go.Diagram.UniformToFill,
+        allowDrop: true,
+        initialAutoScale: go.Diagram.Uniform,//ToFill,
+        scrollMode: go.Diagram.DocumentScroll,
+        //initialPosition: Point(125, 200),
+        layout: g(go.LayeredDigraphLayout, { direction: 0 }),
+        "undoManager.isEnabled": true
+    });
+
+    function handleScale() {
+        var s = myDiagram.scale;
+        var h = 500;
+        if (s > 1) {
+            h = h * s;
+        }
+        $('#' + controlID).css('height', h);
+    }
+
+    function layoutCompleted() {
+        console.log(myDiagram.documentBounds.height);
+        console.log(myDiagram.viewportBounds.height);
+
+        var height = $('#' + controlID).height($(window).innerHeight());
+    }
+
+    //function onSelectionChange(e) {
+    //    var node = e.diagram.selection.first();
+    //    if (node == null) {
+    //        return;
+    //    }
+
+    //    var data = node.data;
+
+    //    $.ajax({
+    //        url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
+    //        data: null,
+    //        success: function (data) {
+    //            $('#ObjectDetail').html(data);
+
+    //        },
+    //        async: true
+    //    });
+    //}
+
+    myDiagram.addDiagramListener('ViewportBoundsChanged', handleScale);
+    //myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
+
+    myDiagram.addDiagramListener('LayoutCompleted', layoutCompleted);
+    
+
+    myDiagram.grid.visible = false;
+    myDiagram.grid.gridCellSize = new go.Size(8, 8);
+    myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
+    myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
+
+    function makePort(name, leftside) {
+        var port = g(go.Shape, "Rectangle", {
+            fill: "gray",
+            stroke: null,
+            strokeWidth: 0,
+            desiredSize: new go.Size(8, 8),
+            portId: name, // declare this object to be a "port"
+            toMaxLinks: 1, // don't allow more than one link into a port
+            cursor: "pointer" // show a different cursor to indicate potential link point
+        });
+
+        var lab = g(go.TextBlock, name, // the name of the port
+        {
+            font: "7pt sans-serif"
+        });
+
+        var panel = g(go.Panel, "Horizontal", {
+            margin: new go.Margin(2, 0)
+        });
+
+        if (leftside) {
+            port.toSpot = go.Spot.Left;
+            port.toLinkable = true;
+            lab.margin = new go.Margin(1, 0, 0, 1);
+            panel.alignment = go.Spot.TopLeft;
+            panel.add(port);
+            panel.add(lab);
+        } else {
+            port.fromSpot = go.Spot.Right;
+            port.fromLinkable = true;
+            lab.margin = new go.Margin(1, 1, 0, 0);
+            panel.alignment = go.Spot.TopRight;
+            panel.add(lab);
+            panel.add(port);
+        }
+        return panel;
+    }
+
+    function makeTemplate(obj, w, h, fontSize, inports, outports) {
+        var node = g(go.Node, "Spot",
+        g(go.Panel, "Auto", {
+            width: w,
+            height: h
+        },
+        g(go.Shape, "RoundedRectangle", {
+            stroke: 'transparent',
+            strokeWidth: 2,
+            spot1: go.Spot.TopLeft,
+            spot2: go.Spot.BottomRight,
+            name: "NodeShape"
+        },
+        new go.Binding("fill", "back").makeTwoWay()
+       ),
+        g(go.Panel, "Table",
+            g(go.TextBlock, {
+                row: 0,
+                margin: 3,
+                alignment: go.Spot.Top,
+                editable: false,
+                maxSize: new go.Size(w - 20, h - 10),
+                font: "bold " + fontSize + "pt sans-serif"
+            },
+                new go.Binding("text", "name").makeTwoWay(),
+                new go.Binding("stroke", "fore").makeTwoWay()
+            ),
+            g(go.TextBlock, {
+                row: 1,
+                margin: 3,
+                maxSize: new go.Size(180, NaN),
+                font: (fontSize - 2) + "pt sans-serif"
+            },
+                new go.Binding("stroke", "fore").makeTwoWay(),
+                new go.Binding("text", "type").makeTwoWay()
+            )//,
+            //g(go.TextBlock, {
+            //    row: 2,
+            //    margin: 3,
+            //    maxSize: new go.Size(180, NaN),
+            //    font: "bold 10pt sans-serif"
+            //},
+            //    new go.Binding("text", "role").makeTwoWay(),
+            //    new go.Binding("stroke", "fore").makeTwoWay()
+            //)
+        )),
+        g(go.Panel, "Vertical", {
+            alignment: go.Spot.Left,
+            alignmentFocus: go.Spot.Default //new go.Spot(0, 0.5, -8, 0)
+        },
+        inports),
+        g(go.Panel, "Vertical", {
+            alignment: go.Spot.Right,
+            alignmentFocus: go.Spot.Default //new go.Spot(1, 0.5, 8, 0)
+        },
+        outports));
+
+        myDiagram.nodeTemplateMap.add(obj, node);
+    }
+
+    makeTemplate("Artifact", 225, 105, 10, [makePort("", true)], [makePort("OUT", false)]);
+    makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
+
+    myDiagram.linkTemplate = g(
+        go.Link, { routing: go.Link.Orthogonal, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel
+        g(go.Shape, { stroke: "gray", strokeWidth: 2 }), // the link shape
+        g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
+        g(go.Panel, "Auto",
+            g(go.Shape, { visible: false, fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }), stroke: null },
+                //only visible if there's a label
+                new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+            ), // the link shape
+            g(go.TextBlock, { textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4 },   // the label
+                new go.Binding("text", "text").makeTwoWay()
+             )
+        )
+    );
+
+    $.getJSON(dataUri, function (data) {
+        myDiagram.model = go.Model.fromJson({
+            "class": "go.GraphLinksModel",
+            "nodeCategoryProperty": "obj",
+            "linkFromPortIdProperty": "frompid",
+            "linkToPortIdProperty": "topid",
+            "nodeDataArray": data.nodes,
+            "linkDataArray": data.links
+        });
+    });
 }

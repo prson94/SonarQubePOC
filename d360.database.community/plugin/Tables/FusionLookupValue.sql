@@ -4,8 +4,7 @@
 	[FusionLookupTypeID] INT NOT NULL,
 	[Key] NVARCHAR(500) NOT NULL,
 	[Value] NVARCHAR(500) NOT NULL,
-	[Description] NVARCHAR(1000) NULL,
-	CONSTRAINT [UC_FusionLookupValue] UNIQUE([FusionFieldLookupTypeID],[Key]) 
+	[Description] NVARCHAR(1000) NULL
 )
 
 GO

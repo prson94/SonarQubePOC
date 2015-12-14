@@ -6,24 +6,26 @@
 <div id='TreeGridItemViewer' class="large-overlay">
     <div class="ui segment">
 
-        <div class="left form-header-info">
+        <div class="form-header-info">
             <h4>Relationships for @Model.Name</h4>
             <p>All relationships for the @Model.Name @Model.TypeName are displayed below.  To add a new relationship please select a type of relationship to the right.</p>
         </div>
-        <div class="right">
+        @*<div>*@
             @if (CanCreateRelationships)
             {
-                <div id="AddRelationshipButton"></div>
-                @*<button type="button" id="AddSourceToTargetButton"><i class="fa fa-plus-square"></i>Source to Target</button>*@
+                @*<div style="display:inline-block; font-size: 120%">Add Relationships: </div>
+                <div style="display:inline-block">*@
+                    <div id="AddRelationshipMenu"></div>
+                @*</div>*@
             }
-        </div>
-        <div class="clear"></div>
+        @*</div>*@
 
-        <div class="row">
+        <div class="row" style="margin-top:20px">
             <div class="col l3 m4">
                 <div id="TreeGrid"></div>
             </div>
             <div class="col l9 m8">
+                <div id="dgm" style="height:500px"></div>
                 <div class="row">
                     <div class="col s12">
                         <ul id="RelationsRibbon" class="tabs">
@@ -171,7 +173,6 @@
     };
     var relationsModel = new relationsModelType();
 
-
     //#region Amplify Methods
 
     function cancelAction(data) {
@@ -301,7 +302,6 @@
             logError("RelationOverlay : RelationshipSave", e);
         }
     }
-
 
     function responsibilityCancel(data) {
         try {
@@ -436,73 +436,50 @@
 
     var loadAddRelationDropdown = function (intersectID) {
         try {
-            var relationUri = '/relations/RelationshipTypesForAdding?type=' + pType + '&typeID=' + pTypeID;
-            //if (intersectID) {
-            //    relationUri += "&intersectID=" + intersectID;
-            //}
+            var relationUri = '/relations/OptionsToRelate';
+
             $.getJSON(relationUri, function (data) {
 
-                var items = new Array();
-                //var childMenu = {
-                //    html: "<span style='width: 350px'><b>Add Child</b></span>",
-                //    items: [],
-                //    id: 'RelationshipTypeChildMenu'
-                //};
-                //var shouldAddChild = false;
-                $.each(data, function (ix, it) {
-                    var menuItem;
+                var addMenuItem = { html: '<span>Add</span>', items: data };
+                addMenuItem.items.push({ html: '<span data-a="Source">Source</span>' });
+                var items = [
+                    addMenuItem,
+                    {
+                        html: '<span>Reports</span>', items: [
+                            { html: 'Sample Report' }
+                        ]
+                    }
+                ];
 
-                    //if (it.ParentIntersectID) {
-                    //    menuItem = { html: "<span data-parentintersectid='" + it.ParentIntersectID + "' data-value='" + it.Value + "'>" + it.Name + "</span>" };
-                    //    childMenu.items.push(menuItem);
-                    //    shouldAddChild = true;
-                    //}
-                    //else {
-                    menuItem = { html: "<span data-value='" + it.Value + "'>" + it.Name + "</span>" };
-                    items.push(menuItem);
-                    //}
-                });
-
-                //if (shouldAddChild) items.push(childMenu);
-
-                var source = [{
-                    html: "<span><b><i class='fa fa-2x fa-plus'></i></b></span>",
-                    items: items
-                }];
-
-                $('#AddRelationshipButton').jqxMenu({
-                    source: source,
+                $('#AddRelationshipMenu').jqxMenu({
+                    source: items,//data,
                     theme: theme,
-                    width: 43
+                    width: '100%',
+                    animationHideDelay: 1000
                 });
 
-                $("#AddRelationshipButton").jqxMenu('setItemOpenDirection', 'RelationshipTypeChildMenu', 'left', 'down');
-
-                $('#AddRelationshipButton').on('itemclick', function (event) {
+                $('#AddRelationshipMenu').on('itemclick', function (event) {
                     var li = $(event.args);
                     var span = $(li.find('span'));
-                    var value = span.data('value');
-                    var parentintersectid = span.data('parentintersectid');
-                    if (value) {
-                        $('#TreeGridItemViewer').fadeOut(10);
-                        var url = '/Relations/AddRelationship?';
-                        if (parentintersectid) {
-                            url += "source=Intersect&sourceID=" + parentintersectid;
-                        }
-                        else {
-                            url += "source=" + type + "&sourceID=" + typeID;
-                        }
-                        var arr = value.split('|');
-                        url += "&intersectTypeID=" + arr[0] + "&target=" + arr[1] + "&targetID=" + arr[2];
+                    if (span.data('a')) {
+                        var url = '';
 
-                        $('#TreeGridRelationshipEditor').fadeIn(10);
-                        $('#TreeGridRelationshipEditor').load(url);
+                        switch (span.data('a')) {
+                            case 'Intersect':
+                                url = '/Relations/AddRelationship?source=' + type + '&sourceID=' + typeID + '&target=' + span.data('t') + '&targetID=' + span.data('i');
+                                break;
+                            case 'Source':
+                                url = '/Relations/AddSource?type=' + type + '&id=' + typeID;
+                                break;
+                        }
+
+                        if (url != '') {
+                            $('#TreeGridItemViewer').fadeOut(10);
+                            $('#TreeGridRelationshipEditor').fadeIn(10);
+                            $('#TreeGridRelationshipEditor').load(url);
+                        }
                     }
                 });
-
-                //$('#AddSourceToTargetButton').on('click', function () {
-                //    amplify.publish(AmplifyActions.Local, { context: contextList.SourceToTarget, uri: '/form/AddSourceToTarget?type=' + type + '&id=' + typeID });
-                //});
             });
         } catch (e) {
             logError("RelationOverlay : loadAddRelationDropdown", e);
@@ -565,6 +542,8 @@
     $(function () {
 
         $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        LineageDiagram('dgm', type, typeID, null);
 
         $("#RelationsRibbon").tabs();
 

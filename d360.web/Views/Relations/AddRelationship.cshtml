@@ -22,7 +22,7 @@
 <script type="text/javascript">
     var Source = "@(ViewData["Source"])";
     var SourceID = "@(ViewData["SourceID"])";
-    var IntersectTypeID = "@(ViewData["IntersectTypeID"])";
+    @*var IntersectTypeID = "@(ViewData["IntersectTypeID"])";*@
     var TargetType = "@(ViewData["TargetType"])";
     var TargetTypeID = "@(ViewData["TargetTypeID"])";
 
@@ -49,15 +49,17 @@
 
         var ItemsSource = {
             datafields: [
-                        { name: 'TargetID' },
-                        { name: 'TargetName' },
-                        { name: 'TargetType' },
-                        { name: 'IntersectTypeID' }//,
-                        //{ name: 'ConstrainingObjectID' },
-                        //{ name: 'ConstrainingObjectType' }
+                { name: 'Object' },
+                { name: 'ObjectID' },
+                { name: 'Name' },
+                { name: 'Url' }
+                //{ name: 'TargetID' },
+                //{ name: 'TargetName' },
+                //{ name: 'TargetType' },
+                //{ name: 'IntersectTypeID' }
             ],
             datatype: "json",
-            url: '/relations/PossibleRelationshipsBySource?source=' + Source + '&id=' + SourceID + '&targetType=' + TargetType + '&targetTypeID=' + TargetTypeID + '&intersectTypeID=' + IntersectTypeID
+            url: '/relations/PossibleRelationshipsBySource?source=' + Source + '&id=' + SourceID + '&targetType=' + TargetType + '&targetTypeID=' + TargetTypeID// + '&intersectTypeID=' + IntersectTypeID
         };
 
         var ItemsAdapter = new $.jqx.dataAdapter(ItemsSource);
@@ -78,7 +80,7 @@
             width: '100%',
             height: 325,
             columns: [
-                { text: 'Name', datafield: 'TargetName' }
+                { text: 'Name', datafield: 'Name' }
             ]
         });
 
@@ -100,25 +102,25 @@
 
         //#region Question 2
 
-        var RoleSource = {
-            datatype: "json",
-            datafields: [
-                { name: 'Name' },
-                { name: 'ID' }
-            ],
-            url: '/relations/Roles?IntersectTypeID=' + IntersectTypeID,
-            async: false
-        };
+        //var RoleSource = {
+        //    datatype: "json",
+        //    datafields: [
+        //        { name: 'Name' },
+        //        { name: 'ID' }
+        //    ],
+        //    //url: '/relations/Roles?IntersectTypeID=' + IntersectTypeID,
+        //    async: false
+        //};
 
-        var RoleAdapter = new $.jqx.dataAdapter(RoleSource, {
-            loadComplete: function (records) {
-                if (records.length == 0) {
-                    $('#RoleDropdownWrapper').hide();
-                }
-            }
-        });
+        //var RoleAdapter = new $.jqx.dataAdapter(RoleSource, {
+        //    loadComplete: function (records) {
+        //        if (records.length == 0) {
+        //            $('#RoleDropdownWrapper').hide();
+        //        }
+        //    }
+        //});
 
-        $('#RoleDropdown').jqxDropDownList({ theme: theme, placeHolder: 'Choose Role...', source: RoleAdapter, displayMember: 'Name', valueMember: 'ID', width: field_width, height: field_height, dropDownWidth: 250 });
+        //$('#RoleDropdown').jqxDropDownList({ theme: theme, placeHolder: 'Choose Role...', source: RoleAdapter, displayMember: 'Name', valueMember: 'ID', width: field_width, height: field_height, dropDownWidth: 250 });
 
         //#endregion
 
@@ -140,7 +142,6 @@
 
         //#endregion
 
-
         //#region Question 4
 
         $('#Description').redactor({
@@ -160,7 +161,7 @@
             var model = {
                 Targets: [],
                 Classification: $('#ImportanceDropdown').val(),
-                Role: $('#RoleDropdown').val(),
+                //Role: $('#RoleDropdown').val(),
                 Description: $('#Description').val()
             };
 
@@ -174,7 +175,7 @@
 
                 $(rowindexes).each(function () {
                     var data = $('#ItemsGrid').jqxGrid('getrowdata', this);
-                    model.Targets.push({ ObjectType: data.TargetType, ObjectID: data.TargetID });
+                    model.Targets.push({ ObjectType: data.Object, ObjectID: data.ObjectID });
                 });
 
                 $.ajax('/api/' + Source + '/' + SourceID + '/relationships', {

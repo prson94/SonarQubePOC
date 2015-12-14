@@ -6,50 +6,48 @@ using System.Reflection;
 
 namespace d360.core.enums
 {
-    public enum IntersectFlowConfiguration
+    public enum MapType
     {
+        [Name("Source To Target"), Description("The most common mapping that allows you to set sources and targets across types contained in the system.")]
+        SourceToTarget = 1,
         [Name("Simple Hierarchy"), Description("This simple hierarchy allows for creating a tree structure or hierarchy referencing the same underlying artifact type.")]
-        SimpleHierarchy = 1,
+        SimpleHierarchy = 2,
         [Name("Type Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level.")]
-        TypeHierarchy = 2,
-        [Name("Name/Value Mapping")Description("Name-value mapping.")]
-        NameValue = 3,
-        [Name("Calculation Mapping")Description("A calculation.")]
-        Calculation = 4,
-        [Name("Sourcing Hierarchy Mapping")Description("A set of calculations involving a hierarchy or ordering to which source to choose, depending on context.")]
-        SourcingHierarchy = 5
+        TypeHierarchy = 3,
+        [Name("Sourcing Hierarchy")Description("A set of calculations involving a hierarchy or ordering to which source to choose, depending on context.")]
+        SourcingHierarchy = 4
     }
 
-    public class IntersectFlowConfigurationInfo
+    public class MapTypeInfo
     {
-        public IntersectFlowConfiguration ID { get; set; }
+        public MapType ID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }
 
-    public static class IntersectFlowTypeExtensions
+    public static class MapTypeExtensions
     {
-        public static string GetDisplayName(this IntersectFlowConfiguration type)
+        public static string GetDisplayName(this MapType type)
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DisplayNameAttribute>().DisplayName;
         }
 
-        public static string GetDescription(this IntersectFlowConfiguration type)
+        public static string GetDescription(this MapType type)
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DescriptionAttribute>().Description;
         }
 
-        public static List<IntersectFlowConfigurationInfo> GetAsList(this IntersectFlowConfiguration type)
+        public static List<MapTypeInfo> GetAsList(this MapType type)
         {
-            var list = new List<IntersectFlowConfigurationInfo>();
+            var list = new List<MapTypeInfo>();
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
-                list.Add(new IntersectFlowConfigurationInfo
+                list.Add(new MapTypeInfo
                 {
                     Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
-                    ID = (IntersectFlowConfiguration)Enum.Parse(typeof(IntersectFlowConfiguration), tm.Name)
+                    ID = (MapType)Enum.Parse(typeof(MapType), tm.Name)
                 });
             }
 

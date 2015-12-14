@@ -2,11 +2,52 @@
     <div class="ui segment">
         <h4>Hierarchy</h4>
         <div class="form-instructions"></div>
-        <div id="CatalogDiagram"></div>
+        <div id="CatalogDiagram" style="height: 700px"></div>
         <script type="text/javascript">
-            information_catalog_diagram('CatalogDiagram', @(ViewData["ID"]));
+            var id = @(ViewData["ID"]);
+            //information_catalog_diagram('CatalogDiagram', @(ViewData["ID"]));
             $("html, body").animate({ scrollTop: 0 }, "slow");
+
+            var g = go.GraphObject.make;  // for conciseness in defining templates
+
+            var myDiagram;
+
+            function layoutCompleted() {
+                myDiagram.scale = 1;
+                myDiagram.scrollToRect(myDiagram.findNodeForKey(0).actualBounds);
+            }
+
+            $.getJSON('/diagrams/InformationCatalogDiagramData?id=' + id, function (nodeDataArray) {
+                delete nodeDataArray[0].parent;
+
+                myDiagram =
+                    g(go.Diagram, 
+                        "CatalogDiagram",
+                        { allowCopy: false, layout: g(go.TreeLayout, { angle: 90, nodeSpacing: 10, layerSpacing: 40, layerStyle: go.TreeLayout.LayerUniform }) }
+                    );
+
+                myDiagram.nodeTemplate =
+                  g(go.Node, "Auto",
+                    { deletable: false },
+                    new go.Binding("text", "name"),
+                    g(go.Shape, "Rectangle",
+                      { fill: "lightgray", stroke: "black", stretch: go.GraphObject.Fill, alignment: go.Spot.Center }
+                    ),
+                    g(go.TextBlock,
+                        { font: "bold 8pt Helvetica, bold Arial, sans-serif", textAlign: "center", margin: 6, maxSize: new go.Size(90, NaN) },
+                        new go.Binding("text", "name")
+                    )
+                  );
+
+                myDiagram.linkTemplate = g(go.Link,
+                    { routing: go.Link.Orthogonal, corner: 5, selectable: false },
+                    g(go.Shape)
+                );
+
+                myDiagram.addDiagramListener('LayoutCompleted', layoutCompleted);
+
+                myDiagram.model = new go.TreeModel(nodeDataArray);
+            });
         </script>
-        @*<iframe src="/overlays/TaxonomyTypeDiagram_CatalogIFrame?id=@(ViewData["ID"])" frameborder="0" style="width: 100%; height: 600px"></iframe>*@
     </div>
 </div>

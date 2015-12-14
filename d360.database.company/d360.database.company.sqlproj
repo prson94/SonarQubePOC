@@ -91,6 +91,7 @@
     <Folder Include="validate\" />
     <Folder Include="validate\Stored Procedures\" />
     <Folder Include="dbo\User Defined Types\" />
+    <Folder Include="queue\Functions" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="fusion\Tables\StagingRelation.sql">
@@ -439,6 +440,8 @@
     <Build Include="fusion\Stored Procedures\ProcessEagleMCToEagleFieldRelations.sql" />
     <Build Include="dbo\Stored Procedures\GetMapDiagram.sql" />
     <Build Include="fusion\Stored Procedures\ConvertSQLServerFusionIDs.sql" />
+    <Build Include="queue\Tables\Task.sql" />
+    <Build Include="queue\Functions\WriteIndexXml.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

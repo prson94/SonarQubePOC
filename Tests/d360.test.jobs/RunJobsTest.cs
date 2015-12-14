@@ -101,9 +101,25 @@ END",
         public void DeployDatabaseChanges()
         {
             #region SQL
-            var sql = @"";
+            var sql = @"CREATE FUNCTION [queue].[WriteIndexXml]
+(
+	@Action varchar(15),
+	@ActionObject varchar(50),
+	@ActionObjectID int,
+	@ResourceID int
+)
+RETURNS varchar(250)
+AS
+BEGIN
+	RETURN '<fields>
+			<Action>' + @Action + '</Action>
+			<ActionObject>' + @ActionObject + '</ActionObject>
+			<ActionObjectID>' + cast(@ActionObjectID as varchar) + '</ActionObjectID>
+			<ResourceID>' + cast(@ResourceID as varchar) + '</ResourceID>
+		</fields>'
+END";
             #endregion
-            var list = getCompanies();
+            var list = getCompanies().Where(i => i != 4).ToList();
             list.ForEach(id =>
             {
                 var cnn = getCompanyConnection(id);
@@ -151,12 +167,12 @@ END
         [TestMethod]
         public void SaveCertificate_Success()
         {
-            var companyID = 6;
+            var companyID = 15;
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
-            
-            var bytes = File.ReadAllBytes("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "American Century Public Certificate", File = bytes };
+
+            var bytes = File.ReadAllBytes("GMO.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "GMO Certificate", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

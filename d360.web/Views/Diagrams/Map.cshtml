@@ -1,6 +1,7 @@
 ﻿@{
     Layout = null;
-    int mapID = ViewBag.MapID;
+    string type = ViewBag.Type;
+    int id = ViewBag.ID;
 }
 <!DOCTYPE html>
 <html>
@@ -29,7 +30,8 @@
 
 
     <script type="text/javascript">
-        var mapID = @(mapID);
+        var dataUri = '/diagrams/maps/@(type)/@(id).json';
+
         var newId = -1;
         var temp = null;
         var relationshipLabels = null;
@@ -80,7 +82,7 @@
                 data: null,
                 success: function (data) {
                     $('#ObjectDetail').html(data);
-                   
+
                 },
                 async: true
             });
@@ -213,7 +215,7 @@
         $(function(){
             $("#NavBar").jqxNavigationBar({ theme: 'd3s', width: 400, height: 'auto', expandedIndexes: [0] });
 
-            $.getJSON('/diagrams/maps/' + mapID + '.json', function (data) {
+            $.getJSON(dataUri, function (data) {
                 myDiagram.model = go.Model.fromJson({
                     "class": "go.GraphLinksModel",
                     "nodeCategoryProperty": "obj",

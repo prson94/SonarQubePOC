@@ -3410,13 +3410,14 @@ from	    ResponsibilityTypeHierarchy H
                     #endregion
                 case SystemObjects.Taxonomy:
                     #region Fields
-                    var taxonomy = Company.GetById<Taxonomy>(id);
+                    var taxonomy = Company.GetById<Taxonomy>(id, i => i.TaxonomyType.TaxonomyTypeClass);
                     if (taxonomy != null)
                     {
                         var levelInfo = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == taxonomy.TaxonomyTypeID && i.Level == taxonomy.Level).SingleOrDefault();
 
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = taxonomy.GetName(i => i.Name), FieldName = "TaxonomyName", FieldDescription = taxonomy.GetDescription(i => i.Name), Value = taxonomy.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = taxonomy.GetName(i => i.TaxonomyType), FieldName = "TaxonomyTaxonomyType", FieldDescription = taxonomy.GetDescription(i => i.TaxonomyType), Value = taxonomy.TaxonomyType.Name });
+                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = taxonomy.GetName(i => i.TaxonomyType.TaxonomyTypeClassID), FieldName = "TaxonomyTypeClass", FieldDescription = taxonomy.GetDescription(i => i.TaxonomyType.TaxonomyTypeClassID), Value = taxonomy.TaxonomyType.TaxonomyTypeClass.Name });
+                        //list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = taxonomy.GetName(i => i.TaxonomyType), FieldName = "TaxonomyTaxonomyType", FieldDescription = taxonomy.GetDescription(i => i.TaxonomyType), Value = taxonomy.TaxonomyType.Name });
 
                         if (levelInfo != null)
                         {

@@ -7,6 +7,7 @@ using d360.core.enums;
 using d360.web.Models;
 using d360.core.entities;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace d360.web.Controllers
 {
@@ -95,20 +96,181 @@ order by	SD.ObjectTypeName,
             return Json(models, JsonRequestBehavior.AllowGet);
         }
 
-        public JsonResult PossibleRelationshipsBySource(string source, int id, string targetType, int targetTypeID, int intersectTypeID)
+        public class OptionsToRelateDbModel
         {
-            source = source.Replace("Type", "");
-            if (targetType != SystemObjects.EventType.ToString())
-                targetType = targetType.Replace("Type", "");
+            public string Menu { get; set; }
+            public string SubMenu { get; set; }
+            public string Type { get; set; }
+            public int ID { get; set; }
+            public string Name { get; set; }
+        }
 
-            var items = Company.GetPossibleRelationshipsBySourceAndTargetType(
-                (SystemObjects)Enum.Parse(typeof(SystemObjects), source),
-                id,
-                (SystemObjects)Enum.Parse(typeof(SystemObjects), targetType),
-                targetTypeID,
-                intersectTypeID);
-            //, i.ConstrainingObjectID, i.ConstrainingObjectType
-            return Json(items.Select(i => new { i.TargetID, i.TargetName, TargetType = targetType, IntersectTypeID = intersectTypeID }).OrderBy(i => i.TargetName), JsonRequestBehavior.AllowGet);
+        public class OptionsToRelateJsonModel
+        {
+            public string html { get; set; }
+            public List<OptionsToRelateJsonModel> items { get; set; }
+        }
+
+        public JsonNetResult OptionsToRelate()
+        {
+            #region SQL
+            var sql = @"select	Menu,
+		SubMenu,
+		Type,
+        ID,
+		Name
+from	(
+		select	1 as SortOrder,
+				'ArtifactType' as [Type],
+				ID,
+				Name,
+				'Glossary' as Menu,
+				'Artifacts' as SubMenu
+		from	ArtifactType 
+		union
+		SELECT	1 as SortOrder,
+				'TaxonomyType' as [Type],
+				T.ID,
+				T.Name as Name, --C.Name + ' : ' + 
+				'Glossary' as Menu,
+				'Models' as SubMenu
+		FROM	TaxonomyType T
+				--inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
+		union
+		SELECT	4 as SortOrder,
+				'DomainType' as [Type],
+				ID,
+				Name as Name,
+				'Reference' as Menu,
+				NULL as SubMenu
+		FROM	DomainType
+		union
+		SELECT	3 as SortOrder,
+				'PolicyType' as [Type],
+				ID,
+				Name as Name,
+				'Events' as Menu,
+				'Policies' as SubMenu
+		FROM	PolicyType
+		union
+		SELECT	3 as SortOrder,
+				'RuleType' as [Type],
+				ID,
+				Name as Name,
+				'Events' as Menu,
+				'Rules' as SubMenu
+		FROM	(
+				select 1 as ID, 'Informational' as Name
+				union select 2 as ID, 'Quality Check' as Name
+				union select 3 as ID, 'Metric' as Name
+				union select 4 as ID, 'Profile' as Name
+				) O
+		union
+		SELECT	5 as SortOrder,
+				'Resource' as [Type],
+				1,
+				'Resource' as Name,
+				'People' as Menu,
+				NULL as SubMenu
+		union
+		SELECT	5 as SortOrder,
+				'Group' as [Type],
+				1,
+				'Group' as Name,
+				'People' as Menu,
+				NULL as SubMenu
+		union
+		SELECT	2 as SortOrder,
+				'FusionAttributeType' as [Type],
+				A.ID,
+				REPLACE(A.TextPath, T.Name + '.', '') as Name,
+				'Fusion' as Menu,
+				T.Name as SubMenu
+		FROM	FusionAttributeType A
+				inner join FusionType T on T.ID = A.FusionTypeID
+		) O
+order by	SortOrder, Menu, SubMenu, Name";
+            #endregion
+
+            var list = Company.Query<OptionsToRelateDbModel>(sql).ToList();
+            var jsonItems = new List<OptionsToRelateJsonModel>();
+            var jsonMenus = list.Select(i => new { i.Menu }).Distinct().ToList();
+            var jsonSubMenus = list.Select(i => new { i.Menu, i.SubMenu }).Distinct().ToList();
+            jsonMenus.ForEach(m =>
+            {
+                var menu = new OptionsToRelateJsonModel { html = string.Format("<span>{0}</span>", m.Menu) };
+                if (jsonSubMenus.Any(i => i.Menu == m.Menu))
+                {
+                    menu.items = new List<OptionsToRelateJsonModel>();
+                    foreach (var s in jsonSubMenus.Where(i => i.Menu == m.Menu))
+                    {
+                        var submenu = new OptionsToRelateJsonModel { html = string.Format("<span>{0}</span>", s.SubMenu) };
+                        var addToSubMenu = !string.IsNullOrEmpty(s.SubMenu);
+
+                        if (addToSubMenu)
+                            submenu.items = new List<OptionsToRelateJsonModel>();
+
+                        foreach (var listItem in list.Where(i => i.Menu == m.Menu && i.SubMenu == s.SubMenu))
+                        {
+                            var listItemMenu = new OptionsToRelateJsonModel { html = string.Format("<span data-a='Intersect' data-t='{0}' data-i='{1}'>{2}</span>", listItem.Type, listItem.ID, listItem.Name) };
+                            if (addToSubMenu)
+                                submenu.items.Add(listItemMenu);
+                            else
+                                menu.items.Add(listItemMenu);
+                        }
+
+                        if (addToSubMenu)
+                            menu.items.Add(submenu);
+                    }
+                }
+
+                jsonItems.Add(menu);
+            });
+
+            list = null;
+
+            return new JsonNetResult { Data = jsonItems, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult PossibleRelationshipsBySource(string source, int id, string targetType, int targetTypeID)
+        {
+            var sql = "";
+
+            if (targetType == "FusionAttributeType")
+            {
+                sql = @"select	D.[Object], D.ObjectID, F.Name + '.' + D.TextPath as Name, D.Url
+from	cache.ObjectDetails D
+		inner join FusionAttribute FA on D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID and FA.ID = D.ObjectID
+		inner join Fusion F on F.ID = FA.FusionID
+where	not exists  (
+					select	1 
+					from	[cache].[Relationships] R 
+					where	R.SourceObject = @source 
+							and R.SourceObjectID = @id
+							and R.TargetObject = D.[Object] 
+							and R.TargetObjectID = D.ObjectID
+					)
+order by F.Name, D.TextPath";
+            }
+            else
+            {
+                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name, D.Url
+from	cache.ObjectDetails D
+where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID
+		and not exists (
+						select	1 
+						from	[cache].[Relationships] R 
+						where	R.SourceObject = @source 
+								and R.SourceObjectID = @id
+								and R.TargetObject = D.[Object] 
+								and R.TargetObjectID = D.ObjectID
+						)
+order by D.TextPath";
+            }
+
+            var items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source, id }).ToList();
+
+            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         public JsonResult RelationshipTypes(string type, int typeID)
@@ -117,54 +279,54 @@ order by	SD.ObjectTypeName,
             return Json(types, JsonRequestBehavior.AllowGet);
         }
 
-        public JsonResult RelationshipTypesForAdding(string type, int typeID, int intersectID = 0)
-        {
-            var types = Company.GetAllowedIntersectionTypes(type, typeID, intersectID);
-            return Json(
-                types.Select(i => new { 
-                    Name = i.TargetName, 
-                    Value = string.Format("{0}|{1}|{2}", i.IntersectTypeID, i.TargetType, i.TargetTypeID), 
-                    ParentIntersectID = i.ParentIntersectID
-                }), 
-                JsonRequestBehavior.AllowGet
-                );
-        }
+        //public JsonResult RelationshipTypesForAdding(string type, int typeID, int intersectID = 0)
+        //{
+        //    var types = Company.GetAllowedIntersectionTypes(type, typeID, intersectID);
+        //    return Json(
+        //        types.Select(i => new { 
+        //            Name = i.TargetName, 
+        //            Value = string.Format("{0}|{1}|{2}", i.IntersectTypeID, i.TargetType, i.TargetTypeID), 
+        //            ParentIntersectID = i.ParentIntersectID
+        //        }), 
+        //        JsonRequestBehavior.AllowGet
+        //        );
+        //}
 
-        internal class SimpleHierarchyDbViewModel
-        {
-            public int ID { get; set; }
-            public int? ParentID { get; set; }
-            public int IntersectFlowID { get; set; }
-            public string FlowTypeName { get; set; }
+        //internal class SimpleHierarchyDbViewModel
+        //{
+        //    public int ID { get; set; }
+        //    public int? ParentID { get; set; }
+        //    public int IntersectFlowID { get; set; }
+        //    public string FlowTypeName { get; set; }
 
-            public int FromIntersectNodeID { get; set; }
-            public string FromObjectType { get; set; }
-            public int FromObjectID { get; set; }
-            public string FromObjectName { get; set; }
-            public string FromObjectUrl { get; set; }
+        //    public int FromIntersectNodeID { get; set; }
+        //    public string FromObjectType { get; set; }
+        //    public int FromObjectID { get; set; }
+        //    public string FromObjectName { get; set; }
+        //    public string FromObjectUrl { get; set; }
 
-            public int ToIntersectNodeID { get; set; }
-            public string ToObjectType { get; set; }
-            public int ToObjectID { get; set; }
-            public string ToObjectName { get; set; }
-            public string ToObjectUrl { get; set; }
-        }
+        //    public int ToIntersectNodeID { get; set; }
+        //    public string ToObjectType { get; set; }
+        //    public int ToObjectID { get; set; }
+        //    public string ToObjectName { get; set; }
+        //    public string ToObjectUrl { get; set; }
+        //}
 
-        internal class SimpleHierarchyJsonViewModel
-        {
-            public SimpleHierarchyJsonViewModel()
-            {
-                Items = new List<SimpleHierarchyJsonViewModel>();   
-            }
+        //internal class SimpleHierarchyJsonViewModel
+        //{
+        //    public SimpleHierarchyJsonViewModel()
+        //    {
+        //        Items = new List<SimpleHierarchyJsonViewModel>();   
+        //    }
 
-            public int IntersectFlowID { get; set; }
-            public string FlowTypeName { get; set; }
-            public string ObjectType { get; set; }
-            public int ObjectID { get; set; }
-            public string ObjectName { get; set; }
-            public string ObjectUrl { get; set; }
-            public List<SimpleHierarchyJsonViewModel> Items { get; set; }
-        }
+        //    public int IntersectFlowID { get; set; }
+        //    public string FlowTypeName { get; set; }
+        //    public string ObjectType { get; set; }
+        //    public int ObjectID { get; set; }
+        //    public string ObjectName { get; set; }
+        //    public string ObjectUrl { get; set; }
+        //    public List<SimpleHierarchyJsonViewModel> Items { get; set; }
+        //}
 
 //        public JsonNetResult SimpleHierarchies(SystemObjects type, int id)
 //        {
@@ -272,13 +434,20 @@ order by	SD.ObjectTypeName,
 
         #region Partials
 
-        public ActionResult AddRelationship(SystemObjects source, int sourceID, int intersectTypeID, SystemObjects target, int targetID)
+        public ActionResult AddRelationship(SystemObjects source, int sourceID, SystemObjects target, int targetID) //, int intersectTypeID
         {
             ViewData.Add("Source", source.ToString());
             ViewData.Add("SourceID", sourceID);
-            ViewData.Add("IntersectTypeID", intersectTypeID);
+            //ViewData.Add("IntersectTypeID", intersectTypeID);
             ViewData.Add("TargetType", target.ToString());
             ViewData.Add("TargetTypeID", targetID);
+            return PartialView();
+        }
+
+        public ActionResult AddSource(SystemObjects type, int id)
+        {
+            ViewBag.Type = type.ToString();
+            ViewBag.ID = id;
             return PartialView();
         }
 

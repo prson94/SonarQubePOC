@@ -254,7 +254,7 @@
     <Compile Include="enums\AuthenticationType.cs" />
     <Compile Include="enums\CommentVisibility.cs" />
     <Compile Include="enums\FollowType.cs" />
-    <Compile Include="enums\IntersectFlowConfiguration.cs" />
+    <Compile Include="enums\MapType.cs" />
     <Compile Include="enums\HashAlgorithmType.cs" />
     <Compile Include="enums\Feature.cs" />
     <Compile Include="enums\Claim.cs" />

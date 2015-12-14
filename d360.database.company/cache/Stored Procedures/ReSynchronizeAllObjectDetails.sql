@@ -208,7 +208,7 @@ begin
 		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
 			SELECT	@type, O.ID, O.Name, O.TextPath, NULL, 
 					case 
-						when P.ID is not null then 'Artifact'
+						when P.ID is not null then 'FusionAttribute'
 						else NULL
 					end, O.ParentID,	P.Name,
 					'#/fusion/' + CAST(FT.ID as varchar(15)) + '/' + + CAST(O.FusionID as varchar(15)) + '/' + CAST(O.ID as varchar(15)),
@@ -225,7 +225,7 @@ begin
 		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
 			SELECT	@type, O.ID, O.Name, O.TextPath, NULL,
 					case 
-						when P.ID is not null then 'Artifact'
+						when P.ID is not null then 'FusionAttributeType'
 						else NULL
 					end, O.ParentID, P.Name,
 					'#',--dbo.GenerateObjectUrl(@type, 0, O.ID),
@@ -249,23 +249,28 @@ begin
 	begin
 		set @type = 'Policy';
 		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
-			select	@type, 0, 'Policy', 'Policy', NULL,
-					NULL, NULL, NULL,
-					'#', 
-					@type, 0, 'Policy',
-					@type, 0
-
-		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
 			SELECT	@type, O.ID, O.Name, O.TextPath, O.Description,	
 					case 
 						when P.ID is not null then @type
 						else NULL
 					end, O.ParentID, P.Name,
-					dbo.GenerateObjectUrl(@type, 0, O.ID),
-					'Policy', 0, 'Policy',
-					'Policy', 0
+					dbo.GenerateObjectUrl(@type, T.ID, O.ID),
+					'PolicyType', T.ID, T.Name,
+					'PolicyType', T.ID
 			FROM	[Policy] O
-					left join Policy P on P.ID = O.ParentID;
+					left join Policy P on P.ID = O.ParentID
+					inner join PolicyType T on T.ID = O.PolicyTypeID;
+	end;
+
+	begin
+		set @type = 'PolicyType';
+		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
+			SELECT	@type, ID, Name, Name, Description,	
+					NULL, NULL, NULL,
+					dbo.GenerateObjectUrl(@type, 0, ID),
+					'PolicyType', 0, 'Policy Type',
+					'PolicyType', ID
+			FROM	[PolicyType]
 	end;
 
 	begin
@@ -301,21 +306,25 @@ begin
 	end;
 
 	begin
+		INSERT INTO [cache].[ObjectDetails] 
+		VALUES ('RuleType', 1, 'Informational', 'Informational', 'An informational rule such as a rule defining a data event.  This rule delivers events that are purely informational, and there is no need to perform any other steps.', NULL, NULL, NULL, '#/rules', 'RuleType', 0, 'Rule Type', '#000000', '#ffffff', 'In')
+
+		INSERT INTO [cache].[ObjectDetails] 
+		VALUES ('RuleType', 2, 'Quality Check', 'Quality Check', 'A quality check rule.', NULL, NULL, NULL, '#/rules', 'RuleType', 0, 'Rule Type', '#000000', '#ffffff', 'In')
+
+		INSERT INTO [cache].[ObjectDetails] 
+		VALUES ('RuleType', 3, 'Metric', 'Metric', 'A metric rule.  These rules can be included as part of scoring for a related item.', NULL, NULL, NULL, '#/rules', 'RuleType', 0, 'Rule Type', '#000000', '#ffffff', 'In')
+
+		INSERT INTO [cache].[ObjectDetails] 
+		VALUES ('RuleType', 4, 'Profile', 'Profile', 'A profile rule.', NULL, NULL, NULL, '#/rules', 'RuleType', 0, 'Rule Type', '#000000', '#ffffff', 'In')
+
 		set @type = 'Rule';
-		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
-			select	@type, 0, 'Rule', 'Rule', NULL,
-					NULL, NULL, NULL,
-					'#', 
-					@type, 0, 'Rule',
-					@type, 0
-
-
 		insert into #Recache ([Object], ObjectID, Name, TextPath, Description, Parent, ParentID, ParentName, Url, ObjectType, ObjectTypeID, ObjectTypeName, StyleType, StyleTypeID)
 			SELECT	@type, O.ID, O.Name, O.Name, O.Description,	
 					NULL, NULL,	NULL,
 					dbo.GenerateObjectUrl(@type, O.ID, O.ID),
-					'Rule', 0, 'Rule',
-					'Rule', 0
+					'RuleType', RuleType, 'Rule',
+					'Rule', RuleType
 			FROM	[Rule] O;
 	end;
 

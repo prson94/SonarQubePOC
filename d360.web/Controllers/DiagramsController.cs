@@ -59,9 +59,10 @@ select @html", new { type = type, id = id }).Single();
         [DataContract]
         public class InformationCatalogDiagramDataItem
         {
-            [DataMember(Name = "id")]
+            [DataMember(Name = "key")]
             public int ID { get; set; }
-            [DataMember(Name = "parentid")]
+            //[IgnoreDataMember]
+            [DataMember(Name = "parent")]
             public int? ParentID { get; set; }
             [DataMember(Name = "name")]
             public string Name { get; set; }
@@ -119,10 +120,10 @@ from	h
                     where   ObjectType = 'Taxonomy' and ObjectID = h.ID
                     ) R
 ", new { id = id }).ToList();
-            var rootModel = query.Single(i => i.ID == 0);
-            rootModel.Children = loadInformationCatalogDiagramData(rootModel, query);
+            //var rootModel = query.Single(i => i.ID == 0);
+            //rootModel.Children = loadInformationCatalogDiagramData(rootModel, query);
             return new JsonNetResult {
-                Data = rootModel,
+                Data = query,//rootModel,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -311,46 +312,49 @@ from	h
         {
             XElement xml = null;
 
-            if (!string.IsNullOrEmpty(i.Contexts))
+            if (i != null)
             {
-                xml = XElement.Parse(i.Contexts);
-                i.ContextItems = xml.Elements("context")
-                    .Select(e => new LineageDiagramDataContext 
-                    { 
-                        Code = e.Attribute("code").Value,
-                        Lookup = e.Attribute("lookup").Value,
-                        Name = e.Attribute("name").Value 
+                if (!string.IsNullOrEmpty(i.Contexts))
+                {
+                    xml = XElement.Parse(i.Contexts);
+                    i.ContextItems = xml.Elements("context")
+                        .Select(e => new LineageDiagramDataContext
+                        {
+                            Code = e.Attribute("code").Value,
+                            Lookup = e.Attribute("lookup").Value,
+                            Name = e.Attribute("name").Value
+                        }).ToList();
+
+                }
+
+                if (!string.IsNullOrEmpty(i.TechnicalRelationships))
+                {
+                    xml = XElement.Parse(i.TechnicalRelationships);
+                    i.Relationships = xml.Elements("relationship")
+                        .Select(e => new LineageDiagramDataTechnicalRelationship
+                        {
+                            Attribute = e.Attribute("attribute").Value,
+                            Fusion = e.Attribute("fusion").Value,
+                            ID = int.Parse(e.Attribute("id").Value),
+                            Name = e.Attribute("name").Value,
+                            Type = e.Attribute("type").Value//,
+                                                            //Url = e.Attribute("url").Value
                     }).ToList();
 
-            }
+                }
 
-            if (!string.IsNullOrEmpty(i.TechnicalRelationships))
-            {
-                xml = XElement.Parse(i.TechnicalRelationships);
-                i.Relationships = xml.Elements("relationship")
-                    .Select(e => new LineageDiagramDataTechnicalRelationship
-                    {
-                        Attribute = e.Attribute("attribute").Value,
-                        Fusion = e.Attribute("fusion").Value,
-                        ID = int.Parse(e.Attribute("id").Value),
-                        Name = e.Attribute("name").Value,
-                        Type = e.Attribute("type").Value//,
-                        //Url = e.Attribute("url").Value
+                if (!string.IsNullOrEmpty(i.Transformations))
+                {
+                    xml = XElement.Parse(i.Transformations);
+                    i.TransformationItems = xml.Elements("transformation")
+                        .Select(e => new LineageDiagramDataTransformation
+                        {
+                            Description = e.Element("description").Value,
+                            ID = int.Parse(e.Attribute("id").Value),
+                            Type = e.Attribute("type").Value//,
+                                                            //Url = e.Attribute("url").Value
                     }).ToList();
-
-            }
-
-            if (!string.IsNullOrEmpty(i.Transformations))
-            {
-                xml = XElement.Parse(i.Transformations);
-                i.TransformationItems = xml.Elements("transformation")
-                    .Select(e => new LineageDiagramDataTransformation
-                    {
-                        Description = e.Element("description").Value,
-                        ID = int.Parse(e.Attribute("id").Value),
-                        Type = e.Attribute("type").Value//,
-                        //Url = e.Attribute("url").Value
-                    }).ToList();
+                }
             }
         }
 
@@ -400,6 +404,7 @@ from	h
 
             var root = items.SingleOrDefault(i => !i.ParentID.HasValue);
 
+            if (root != null)
             root.children = loadEnvironmentDetailDiagramChildren(items, root);
 
             return new JsonNetResult { Data = root, Formatting = Newtonsoft.Json.Formatting.None };
@@ -455,10 +460,11 @@ from	h
 
         #region Map Testing
 
-        [HttpGet, Route("maps/{id:int}")]
-        public ActionResult Map(int id)
+        [HttpGet, Route("maps/{type}/{id:int}")]
+        public ActionResult Map(string type, int id)
         {
-            ViewBag.MapID = id;
+            ViewBag.Type = type;
+            ViewBag.ID = id;
             return View();
         }
 
@@ -505,10 +511,11 @@ from	h
             public string text { get; set; }
         }
 
-        [HttpGet, Route("maps/{id:int}.json")]
-        public JsonNetResult MapJson(int id)
+        [HttpGet, Route("maps/{type}/{id:int}.json")]
+        public JsonNetResult MapJson(string type, int id)
         {
-            var list = Company.Query<DbMapItem>("GetMapDiagram @mapID", new { mapID = id }).ToList();
+            //var list = Company.Query<DbMapItem>("GetMapDiagram @mapID", new { mapID = id }).ToList();
+            var list = Company.Query<DbMapItem>("GetLineageDiagram @type, @id", new { type, id }).ToList();
 
             var nodes = new List<JsonNodeItem>();
             var links = new List<JsonLinkItem>();
