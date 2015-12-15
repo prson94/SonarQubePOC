@@ -108,9 +108,9 @@ namespace d360.fusion
             you can use utility.PromoteFusionAttributes, but copy this proc to be under the fusion schema, and pass a specific fusionID
             */
 
-            await companyConnection.ExecuteAsync(@"
-
-            ");
+            //await companyConnection.ExecuteAsync(@"
+            //
+            //");
 
         }
 
