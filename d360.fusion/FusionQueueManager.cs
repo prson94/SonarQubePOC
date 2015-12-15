@@ -23,8 +23,8 @@ namespace d360.workers.FusionWorkerRole
         {
             var acctName = constants.AZURE_STORAGE_NAME;
             var keyValue = constants.AZURE_STORAGE_KEY;
-            CloudStorageAccount storageAccount = new CloudStorageAccount(new StorageCredentials(acctName, keyValue), true);
-            _queueClient = storageAccount.CreateCloudQueueClient();
+            CloudStorageAccount storageAccount = new CloudStorageAccount(new StorageCredentials(acctName, keyValue), true);            
+            _queueClient = storageAccount.CreateCloudQueueClient();                        
         }
 
         // Puts a serialized fixit onto the queue.
@@ -44,25 +44,40 @@ namespace d360.workers.FusionWorkerRole
         {
             CloudQueue queue = _queueClient.GetQueueReference(constants.AZURE_FUSION_QUEUE);
             await queue.CreateIfNotExistsAsync();
+            
 
             while (true)
             {
                 CloudQueueMessage message = await queue.GetMessageAsync();
+                
                 if (message == null)
                 {
                     break;
                 }
                 FusionProcessingData fusion = JsonConvert.DeserializeObject<FusionProcessingData>(message.AsString);
-
+                
                 Trace.TraceInformation("FusionQueueManager loaded a message from the queue");
-
+                Trace.TraceInformation("Message info, dequeue count [{0}], insert time [{1}]", message.DequeueCount, message.InsertionTime);
                 // handle the fusion here
                 FusionProcessor fp = new FusionProcessor();
 
-                await fp.Process(fusion);
+                try
+                {
+                    await fp.Process(fusion);
 
-                Trace.TraceInformation("FusionQueueManager deleting message from queue");
-                await queue.DeleteMessageAsync(message);
+                    Trace.TraceInformation("Fusion Processing successful! FusionQueueManager deleting message from queue");
+                    await queue.DeleteMessageAsync(message);
+                }
+                catch (AggregateException exception)
+                {
+                    Trace.TraceError("FusionQueueManager encountered and error while running fusion job.");
+                    foreach (Exception ex in exception.InnerExceptions)
+                        Trace.TraceError("Exception details [{0}]", ex.Message);                    
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError("FusionQueueManager encountered and error while running fusion job.  Exception details [{0}]",ex.Message);                    
+                }
             }
         }
     }

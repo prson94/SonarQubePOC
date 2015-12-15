@@ -13,8 +13,9 @@ namespace d360.fusion
         {
             InSourceIDList = new List<string>();
             FusionAttributeTempValues = new List<FusionAttributeTempTableValue>();
-            FieldTempValues = new List<FusionFieldTempTableValue>();
-            ChangedValues = new List<FusionFieldTempTableValue>();
+            FieldTempValues = new List<FusionFieldTempTableValue>();            
+            Relationships = new FusionRelationshipWorkData();
+            Changes = new FusionChangeInfoWorkData();
         }
 
         public List<string> InSourceIDList { get; set; }
@@ -29,11 +30,10 @@ namespace d360.fusion
         public IEnumerable<FusionFieldIDAttributeIDMapping> FieldToAttributeMapping { get; set; }
 
         public List<FusionFieldTempTableValue> FieldTempValues { get; set; }
+        
 
-        public int AddCount { get; set; }
-        public int UpdateCount { get; set; }
-        public int DeleteCount { get; set; }
+        public FusionRelationshipWorkData Relationships { get; set; }
 
-        public List<FusionFieldTempTableValue> ChangedValues { get; set; }
+        public FusionChangeInfoWorkData Changes { get; set; }
     }
 }

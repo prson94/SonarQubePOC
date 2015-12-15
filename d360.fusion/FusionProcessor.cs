@@ -28,6 +28,7 @@ namespace d360.fusion
         private static string SourceIDAttribute = "SourceID";
 
         private static int MAX_FIELD_VALUE_LENGTH = 4000;
+        private static int MAX_SOURCEID_LENGTH = 250;
         public async Task Process(FusionProcessingData fusionData)
         {
             
@@ -83,7 +84,10 @@ namespace d360.fusion
                 await ProcessModels(companyConnection, data.Models);
 
                 //Process Relationships
-                await ProcessRelationships(data.Relationships);
+                await ProcessRelationships(companyConnection, data.Relationships);
+
+                //Promote Fusion ID
+                await PromoteFusion(companyConnection);
 
                 sw.Restart();
                 await SaveChangedValuesLog(companyConnection);
@@ -91,20 +95,36 @@ namespace d360.fusion
 
                 //Update the executionID to say this is done
                 await UpdateExecutionWithStats(companyConnection);
-
             }
+        }
+
+        private async Task PromoteFusion(SqlConnection companyConnection)
+        {
+            /*
+            right now utility.PromoteFusionAttributes promotes for everything, but we should modify to only call for a specific fusionID.that way we do not have to run it on a schedule - but instead only when data changes
+            Ken McNamee 12:58 PM:
+            is there a proc you want me to call after success?
+            Michael Pappas 12:59 PM:
+            you can use utility.PromoteFusionAttributes, but copy this proc to be under the fusion schema, and pass a specific fusionID
+            */
+
+            await companyConnection.ExecuteAsync(@"
+
+            ");
+
         }
 
         private async Task SaveChangedValuesLog(SqlConnection companyConnection)
         {
-            if (_workArea.ChangedValues.Count <= 0) return;
+            if (_workArea.Changes.ChangedValues.Count <= 0) return;
             // TODO: Save changed fields / values to [fusion].[result] table.  Right now this uses the guid from fusion queue...
             //[fusion].[ResultEx]
 
             //bulk sql insert to the resultex table
-            using (var bulkCopy = new SqlBulkCopy(companyConnection))
+            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock,null))
             {
-                bulkCopy.BatchSize = _workArea.ChangedValues.Count();
+                
+                bulkCopy.BatchSize = _workArea.Changes.ChangedValues.Count();
                 bulkCopy.DestinationTableName = "[fusion].[resultex]";
 
                 var table = new DataTable();
@@ -136,7 +156,7 @@ namespace d360.fusion
                 table.Columns.Add(columnName, typeof(string));
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                foreach (var item in _workArea.ChangedValues)
+                foreach (var item in _workArea.Changes.ChangedValues)
                 {
                     var row = table.NewRow();
 
@@ -173,11 +193,12 @@ namespace d360.fusion
                             [Updates] = @u,
                             [Deletes] = @d
                     where [id] = @id;
-                ",new { date = DateTime.UtcNow, id = ExecutionID, a = _workArea.AddCount, u = _workArea.UpdateCount, d = _workArea.DeleteCount });
+                ",new { date = DateTime.UtcNow, id = ExecutionID, a = _workArea.Changes.AddCount, u = _workArea.Changes.UpdateCount, d = _workArea.Changes.DeleteCount });
         }
 
         private async Task<int> LogExecution(SqlConnection companyConnection)
         {
+            //TODO : remove queueID from fusion.execution table or make it nullable.
             //insert a record into the fusion execution table that logs the start of this execution
             //insert into fusion.execution (queueID,fusionID,RawLogFileName,DateStarted)
             var result = await companyConnection.QueryAsync<int>(@"
@@ -195,11 +216,284 @@ namespace d360.fusion
         /// </summary>
         /// <param name="relationships"></param>
         /// <returns></returns>
-        private async Task ProcessRelationships(FusionRelationshipModels relationships)
+        private async Task ProcessRelationships(SqlConnection companyConnection, FusionRelationshipModels relationships)
         {
-            // TODO: Implement the relationship part
-            //  we need to create a temp table in memory and join on fusion attributes to determine which
-            // relatoinships exist dont exist...
+            //Load the intersect types
+            await LoadFusionIntersectTypes(companyConnection);
+
+            //build mapping of fusion attributes ids to intersect types
+            GenerateRelationshipInsertData(relationships);
+
+            // insert unresolved relations to the stagingrelationunresolved table
+            await DoUnresolvedRelationsInsert(companyConnection);
+
+            // determine which relations already exist and remove them
+            await DoResolvedRelationsInsert(companyConnection);
+        }
+
+        private async Task DoResolvedRelationsInsert(SqlConnection companyConnection)
+        {
+            // insert all the resolved relation into into a temp table
+            await companyConnection.ExecuteAsync(@"create table #tempResolvedRel([ID] INT IDENTITY(1,1) NOT NULL, IntersectTypeID int, SourceIntersectTypeID int, TargetIntersectTypeID int,  StartFusionAttributeID int, EndFusionAttributeID int)");
+
+            Trace.TraceInformation("WRITING {0} RESOLVED RELATIONSHIPS TO #TEMPRESOLVEDREL TEMP TABLE.", _workArea.Relationships.ResolvedRelationshipData.Count);
+
+            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
+            {
+                bulkCopy.BatchSize = _workArea.Relationships.ResolvedRelationshipData.Count;
+                bulkCopy.DestinationTableName = "#tempResolvedRel";
+
+                var table = new DataTable();
+                var columnName = "IntersectTypeID";
+                table.Columns.Add(columnName, typeof(int));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "SourceIntersectTypeID";
+                table.Columns.Add(columnName, typeof(int));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "TargetIntersectTypeID";
+                table.Columns.Add(columnName, typeof(int));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "StartFusionAttributeID";
+                table.Columns.Add(columnName, typeof(int));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "EndFusionAttributeID";
+                table.Columns.Add(columnName, typeof(int));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                foreach (var item in _workArea.Relationships.ResolvedRelationshipData)
+                {
+                    var row = table.NewRow();
+
+                    row["IntersectTypeID"] = item.IntersectTypeID;
+                    row["SourceIntersectTypeID"] = item.StartIntersectTypeID;
+                    row["TargetIntersectTypeID"] = item.EndIntersectTypeID;
+                    row["StartFusionAttributeID"] = item.StartFusionAttributeID;
+                    row["EndFusionAttributeID"] = item.EndFusionAttributeID;
+
+                    table.Rows.Add(row);
+                }
+
+                await bulkCopy.WriteToServerAsync(table);
+            }
+
+
+            // delete any relations that already exist from the temp table
+            // delete from temp table where 
+            var rowsDeleted = await companyConnection.ExecuteAsync(@"
+                            delete from #tempResolvedRel where 				
+				                [id] in(
+					                select 
+						                sr.id
+					                from
+						                intersectnode inode1
+						                inner join intersectnode inode2 on(inode1.IntersectID = inode2.IntersectID)
+						                inner join #tempResolvedRel sr on(inode1.ObjectID = sr.startfusionattributeid and inode2.ObjectID = sr.endfusionattributeid and inode1.IntersectTypeNodeID = sr.SourceIntersectTypeID and inode2.IntersectTypeNodeID = sr.TargetIntersectTypeID)
+					                where 
+						                inode1.objecttype = 'FusionAttribute'
+								                and
+						                inode2.objecttype = 'FusionAttribute');
+                        ");
+
+            Trace.TraceInformation("DELETED {0} RELATIONS FROM TEMPRESOLVEDREL TABLE AS PRE-EXISTING RELATIONSHIPS.", rowsDeleted);
+
+            // do the 3 inserts into the db using the temp table
+
+            await companyConnection.ExecuteAsync(@"
+                        Declare @IDList Table(IntersectID int,StageID Int);
+                        declare @Intersects IDTable;
+			
+                        -- INSERT INTERSECTS KEEP INSTANCE IN VARIABLE ABOVE WITH ID FROM TEMP TABLE 
+			            MERGE
+				            INTO    [Intersect] d
+				            USING   (
+						            SELECT sr.IntersectTypeID isectid , 2 as class,sr.ID as srID
+							            FROM #tempResolvedRel sr							            
+						            ) s
+				            ON      (1 = 0)
+				            WHEN NOT MATCHED THEN
+				            INSERT  (IntersectTypeID, Classification, Description)
+				            VALUES  (isectid, class, NULL)
+				            OUTPUT  INSERTED.ID, s.srID into @IDList;
+
+			            --insert start records into intersect node
+			            INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
+					            select sr.SourceIntersectTypeID, il.IntersectID, 'FusionAttribute',sr.StartFusionAttributeID from #tempResolvedRel sr inner join @IDList il on (sr.ID = il.StageID);
+
+			            --insert end records into intersect node
+			            INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
+					            select sr.TargetIntersectTypeID, il.IntersectID, 'FusionAttribute',sr.EndFusionAttributeID from #tempResolvedRel sr inner join @IDList il on (sr.ID = il.StageID);	
+
+                        insert into @Intersects select idl.intersectid from @IDList idl;
+
+                        declare @IntersectCount int
+			            select @IntersectCount = count(1) from @Intersects
+			            if @IntersectCount > 0 
+			            begin
+				            EXEC cache.SynchronizeRelationships @Intersects
+			            end
+            ");
+        }
+
+        /// <summary>
+        /// Insert relationships between start /end id's we cant figure out 
+        /// into the unresolved relations table
+        /// </summary>
+        /// <returns></returns>
+        private async Task DoUnresolvedRelationsInsert(SqlConnection companyConnection)
+        {
+            await companyConnection.ExecuteAsync(@"create table #tempUnresolvedRel(StartID varchar(250), EndID nvarchar(250))");
+
+            Trace.TraceInformation("INSERTING {0} UNRESOLVED RELATIONSHIPS INTO TEMPUNRESOLVEDREL TEMP TABLE.", _workArea.Relationships.UnresolvedRelationshipData.Count);
+
+            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
+            {
+                bulkCopy.BatchSize = _workArea.Relationships.UnresolvedRelationshipData.Count;
+                bulkCopy.DestinationTableName = "#tempUnresolvedRel";
+
+                var table = new DataTable();                
+                var columnName = "StartID";
+                table.Columns.Add(columnName, typeof(string));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                columnName = "EndID";
+                table.Columns.Add(columnName, typeof(string));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+                
+                foreach (var item in _workArea.Relationships.UnresolvedRelationshipData)
+                {
+                    var row = table.NewRow();
+                    
+                    row["StartID"] = item.StartSourceID;
+                    row["EndID"] = item.EndSourceID;
+
+                    table.Rows.Add(row);
+                }
+
+                await bulkCopy.WriteToServerAsync(table);
+            }
+
+            //merge with fusion.stagingrelationunresolved
+            await companyConnection.ExecuteAsync(@"
+                merge [fusion].[stagingrelationunresolved] as T
+                using (
+                    select StartID,
+                        EndID
+                    from #tempUnresolvedRel
+                ) as S
+                on T.StartID = S.StartID and T.EndID = S.EndID
+                when matched then
+                    update set T.CreatedOn = getdate()                                             
+                when not matched then
+                    insert (StartID, EndID, CreatedOn)
+                    values (S.StartID, S.EndID, getdate());
+            ");
+        }
+
+        private void GenerateRelationshipInsertData(FusionRelationshipModels relationships)
+        {
+            SortedList<string, FusionAttributeTempTableValue> sourceToIDMapping = new SortedList<string, FusionAttributeTempTableValue>();
+
+            foreach (var item in _workArea.FusionAttributeTempValues)
+            {                
+                sourceToIDMapping[item.SourceID] = item;
+            }
+            
+            //loop through relationships.  Look for the id of the fusion attribute that goes with the sourceid's
+            // if you cant find the id that goes with the sourceid stick the relationship in the unresolvedrelations collection
+            // if you mapp the relationship stick the relationship in the resolvedrelations collection
+            foreach (var item in relationships)
+            {
+                if(string.IsNullOrEmpty(item.StartID) || string.IsNullOrEmpty(item.EndID))
+                {
+                    Trace.WriteLine("FOUND INVALID RELATIONSHIP CONTAINING NULL START/END VALUE FOR STARTID [" + item.StartID + "] ENDID [" + item.EndID + "].  DISREGARDING AS INVALID");
+
+                    continue;
+                }
+
+                if(item.StartID.Length > MAX_SOURCEID_LENGTH)
+                {
+                    Trace.WriteLine("FOUND INVALID STARTID STARTID [" + item.StartID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
+
+                    continue;
+                }
+
+                if (item.EndID.Length > MAX_SOURCEID_LENGTH)
+                {
+                    Trace.WriteLine("FOUND INVALID ENDID STARTID [" + item.EndID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
+
+                    continue;
+                }
+                FusionRelationshipTableData relData = new FusionRelationshipTableData
+                {
+                    StartSourceID = item.StartID,
+                    EndSourceID = item.EndID
+                };
+
+                FusionAttributeTempTableValue fusionInfo = null;
+                var sourceAttributeTypeID = 0;
+                var targetAttributeTypeID = 0;
+                //TRY TO FIND THE FUSIONATTRIBUTE ID FOR BOTH THE START ID AND THE END ID
+                if (sourceToIDMapping.TryGetValue(item.StartID, out fusionInfo))
+                {
+                    if (fusionInfo == null) throw new Exception("INVALID FUSION ATTRIBUTE ENCOUNTERED");
+
+                    sourceAttributeTypeID = fusionInfo.FusionAttributeTypeID;
+                    relData.StartFusionAttributeID = fusionInfo.ID;
+                }
+                if (sourceToIDMapping.TryGetValue(item.EndID, out fusionInfo))
+                {
+                    if (fusionInfo == null) throw new Exception("INVALID FUSION ATTRIBUTE ENCOUNTERED");
+
+                    targetAttributeTypeID = fusionInfo.FusionAttributeTypeID;
+                    relData.EndFusionAttributeID = fusionInfo.ID;
+                }
+
+                if(relData.StartFusionAttributeID > 0 && relData.EndFusionAttributeID > 0)
+                {
+                    var intersectInfo = _workArea.Relationships.IntersectTypeMapping.FirstOrDefault(x => x.SourceObjectID == sourceAttributeTypeID && x.TargetObjectID == targetAttributeTypeID);
+
+                    if(intersectInfo == null)
+                    {
+                        Trace.TraceWarning("ENCOUNTERED INTERSECT MAPPING THAT DOESNT HAVE A RELATIONSHIP IN DB. SOURCE ATTRIBUTE TYPE ID [{0}] TARGET ATTRIBUTE TYPE ID [{1}]", sourceAttributeTypeID, targetAttributeTypeID);
+
+                        continue;
+                    }
+
+                    relData.EndIntersectTypeID = intersectInfo.TargetIntersectTypeNodeID;
+                    relData.StartIntersectTypeID = intersectInfo.SourceIntersectTypeNodeID;
+                    relData.IntersectTypeID = intersectInfo.IntersectTypeID;
+
+                    _workArea.Relationships.ResolvedRelationshipData.Add(relData);
+                }
+                else
+                {
+                    Trace.TraceWarning("FOUND UNRESOLVED RELATIONSHIP BETWEEN START SOURCEID:[{0}] AND END SOURCEID:[{1}]", item.StartID, item.EndID);
+
+                    _workArea.Relationships.UnresolvedRelationshipData.Add(relData);
+                }
+            }
+        }
+
+        private async Task LoadFusionIntersectTypes(SqlConnection companyConnection)
+        {
+            _workArea.Relationships.IntersectTypeMapping = await companyConnection.QueryAsync<FusionIntersectMapping>(@"
+                    select 
+	                    IntersectTypeID,
+	                    SourceIntersectTypeNodeID,
+	                    TargetIntersectTypeNodeID,
+	                    SourceObjectID,
+	                    TargetObjectID
+                    from 
+                        utility.RelationshipTypes 
+                    where 
+                        sourceobjecttype = 'FusionAttributeType'
+                ");
+
+            Trace.TraceInformation("LOADED {0} INTERSECT TYPE MAPPINGS FROM utility.RelationshipTypes.", _workArea.Relationships.IntersectTypeMapping.Count());
         }
 
         /// <summary>
@@ -286,18 +580,16 @@ namespace d360.fusion
 
                 oldFieldDict.Add(key, item.CurrentValue);
             }
-
-          //  Parallel.ForEach(_workArea.FieldTempValues, x =>
+            
             foreach( var x in _workArea.FieldTempValues)
-            {
-                //  var oldVal = _workArea.FieldValueCollection.FirstOrDefault(y => y.FieldTypeID == x.FieldTypeID && y.FusionAttributeID == x.FusionAttributeID);
+            {                
                 var key = string.Format("{0}_{1}", x.FieldTypeID, x.FusionAttributeID);
                 string oldValue = string.Empty;
 
                 if (!oldFieldDict.TryGetValue(key,out oldValue) && !string.IsNullOrEmpty(x.Value))
                 {
                     x.Action = "A";
-                    _workArea.AddCount++;
+                    _workArea.Changes.AddCount++;
                 }                
                 else if((string.IsNullOrEmpty(x.Value) && string.IsNullOrEmpty(oldValue)) || (oldValue == x.Value))
                 {
@@ -306,25 +598,26 @@ namespace d360.fusion
                 else
                 {
                     x.Action = "U";
-                    _workArea.UpdateCount++;
+                    _workArea.Changes.UpdateCount++;
                 }
 
-                _workArea.ChangedValues.Add(x);
-            }//);            
+                _workArea.Changes.ChangedValues.Add(x);
+            }  
         }
 
         private async Task MergeUpdatedParentIDValues(SqlConnection companyConnection)
         {
             await companyConnection.ExecuteAsync(@"create table #tempParentID([ID] int, [ParentID] int);");
 
-            //insert to the temp table
-            //await companyConnection.ExecuteAsync("insert into #tempParentID ([ID],[ParentID]) values(@ID,@ParentID)", _workArea.FusionAttributeTempValues);
-
+            //insert to the temp table            
             var parentsNeedingUpdates = _workArea.FusionAttributeTempValues.Where(x => x.ParentID > 0);
 
-            using (var bulkCopy = new SqlBulkCopy(companyConnection))
+            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
             {
-                bulkCopy.BatchSize = parentsNeedingUpdates.Count();
+                var count = parentsNeedingUpdates.Count();
+                Trace.TraceInformation("INSERTING {0} PARENT/CHILD RELATIONSHIP MAPPINGS INTO TEMPPARENTID TEMP TABLE.", count);
+
+                bulkCopy.BatchSize = count;
                 bulkCopy.DestinationTableName = "#tempParentID";
 
                 var table = new DataTable();
@@ -362,7 +655,7 @@ namespace d360.fusion
                 on T.ID = S.ID
                 when matched then
                     update set T.ParentID = S.ParentID;                                               
-            ", new { fus = FusionID });
+            ");
         }
 
         private void UpdateAttributesWithParentIDValues()
@@ -420,9 +713,10 @@ namespace d360.fusion
         {
             await companyConnection.ExecuteAsync(@"create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(4000))");
 
+            Trace.TraceInformation("INSERTING {0} FIELD VALUES TO TEMPFUSIONFIELDS TEMP TABLE.", _workArea.FieldTempValues.Count);
             //insert to the temp table
 
-            using (var bulkCopy = new SqlBulkCopy(companyConnection))
+            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
             {
                 bulkCopy.BatchSize = _workArea.FieldTempValues.Count;
                 bulkCopy.DestinationTableName = "#tempFusionFields";
@@ -547,9 +841,12 @@ namespace d360.fusion
         {
             await companyConnection.ExecuteAsync(@"create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250))");
 
+
+            Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE VALUES TO #tempFusionAttributes TEMP TABLE.", _workArea.FusionAttributeTempValues.Count);
+
             //insert to the temp table
-            
-            using (var bulkCopy = new SqlBulkCopy(companyConnection))
+
+            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
             {
                 bulkCopy.BatchSize = _workArea.FusionAttributeTempValues.Count;
                 bulkCopy.DestinationTableName = "#tempFusionAttributes";
@@ -658,13 +955,15 @@ namespace d360.fusion
                                                         create table #tempSourceID(SourceID varchar(250) not null)
                                                         set nocount off");
 
-                var columnName = "SourceID";
-                using (var bulkCopy = new SqlBulkCopy(companyConnection))
+                Trace.TraceInformation("INSERTING {0} FUSIONATTRIBUTE SOURCE IDS INTO #tempSourceID TEMP TABLE", _workArea.InSourceIDList.Count);
+                
+                using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
                 {
                     bulkCopy.BatchSize = _workArea.InSourceIDList.Count;
                     bulkCopy.DestinationTableName = "#tempSourceID";
 
                     var table = new DataTable();
+                    var columnName = "SourceID";
                     table.Columns.Add(columnName, typeof(string));
                     bulkCopy.ColumnMappings.Add(columnName, columnName);
 
@@ -677,18 +976,18 @@ namespace d360.fusion
                 }
 
                 _workArea.FieldValueCollection = await companyConnection.QueryAsync<FusionFieldValues>(@"
-                select 
-                    f.ID as 'FusionAttributeID',
-	                ft.ID as 'FieldTypeID',	                    		
-	                fi.Value as 'CurrentValue'                    
-                from 
-	                fusionattribute f
-	                inner join fieldtype ft on (f.fusionattributetypeid = ft.objectid and ft.[object] = 'FusionAttributeType')
-					left join field fi on (ft.id = fi.fieldtypeid and fi.objecttype = 'FusionAttribute' and f.id = fi.objectId)
-                where 
-	                f.sourceid in (select * from #tempSourceID)
-		                AND
-	                f.fusionid = @inFusionID
+                    select 
+                        f.ID as 'FusionAttributeID',
+	                    ft.ID as 'FieldTypeID',	                    		
+	                    fi.Value as 'CurrentValue'                    
+                    from 
+	                    fusionattribute f
+	                    inner join fieldtype ft on (f.fusionattributetypeid = ft.objectid and ft.[object] = 'FusionAttributeType')
+					    left join field fi on (ft.id = fi.fieldtypeid and fi.objecttype = 'FusionAttribute' and f.id = fi.objectId)
+                    where 
+	                    f.sourceid in (select * from #tempSourceID)
+		                    AND
+	                    f.fusionid = @inFusionID
                 ", new { inFusionID = FusionID });
 
 

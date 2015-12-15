@@ -40,10 +40,7 @@ namespace d360.workers.FusionWorkerRole
         {
             // Set the maximum number of concurrent connections
             ServicePointManager.DefaultConnectionLimit = 12;
-
-            // For information on handling configuration changes
-            // see the MSDN topic at http://go.microsoft.com/fwlink/?LinkId=166357.
-
+            
             bool result = base.OnStart();
 
             Trace.TraceInformation("d360.workers.FusionWorkerRole has been started");
