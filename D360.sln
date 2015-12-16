@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Extensions", "2. Extensi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Applications", "3. Applications", "{DCCC21C5-DB48-46F6-BD2C-ECF49D5C5615}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5. Tests", "5. Tests", "{313B4C9B-F3D7-4718-97A5-2F04A3B12589}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "6. Tests", "6. Tests", "{313B4C9B-F3D7-4718-97A5-2F04A3B12589}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0. Solution Items", "0. Solution Items", "{9E0D6764-2E58-4258-8D9B-B73D8D483C9A}"
 	ProjectSection(SolutionItems) = preProject
@@ -128,6 +128,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.AnalyzeCloudFusionData", "Jobs\d360.jobs.AnalyzeCloudFusionData\d360.jobs.AnalyzeCloudFusionData.csproj", "{1DD1C3BE-E814-41FF-87C7-47EA0E16AE9E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.ProcessDatabaseQueues", "Jobs\d360.jobs.ProcessDatabaseQueues\d360.jobs.ProcessDatabaseQueues.csproj", "{DFA4F44C-52B3-47B2-B313-E68C079F7CA2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5. Workers", "5. Workers", "{308C42E3-824D-4028-8C69-60FAD6754839}"
+EndProject
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "d360.worker.ProcessFusion", "d360.worker.ProcessFusion\d360.worker.ProcessFusion.ccproj", "{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workers.FusionWorkerRole", "d360.workers.FusionWorkerRole\d360.workers.FusionWorkerRole.csproj", "{23A76C7C-9489-4CA2-AA7B-6182924EC188}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.fusion", "d360.fusion\d360.fusion.csproj", "{0373748F-2BCE-4C69-8031-7D7907282B60}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -553,6 +561,42 @@ Global
 		{DFA4F44C-52B3-47B2-B313-E68C079F7CA2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{DFA4F44C-52B3-47B2-B313-E68C079F7CA2}.Release|x86.ActiveCfg = Release|Any CPU
 		{DFA4F44C-52B3-47B2-B313-E68C079F7CA2}.Release|x86.Build.0 = Release|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Debug|x86.Build.0 = Debug|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Release|x86.ActiveCfg = Release|Any CPU
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B}.Release|x86.Build.0 = Release|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Debug|x86.Build.0 = Debug|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Release|x86.ActiveCfg = Release|Any CPU
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188}.Release|x86.Build.0 = Release|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Debug|x86.Build.0 = Debug|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|x86.ActiveCfg = Release|Any CPU
+		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -596,9 +640,12 @@ Global
 		{31963CA1-1C0A-4A2D-874A-167380AEE134} = {DCCC21C5-DB48-46F6-BD2C-ECF49D5C5615}
 		{1DD1C3BE-E814-41FF-87C7-47EA0E16AE9E} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 		{DFA4F44C-52B3-47B2-B313-E68C079F7CA2} = {BA377137-34B5-4D67-86AA-5803B3D1957E}
+		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B} = {308C42E3-824D-4028-8C69-60FAD6754839}
+		{23A76C7C-9489-4CA2-AA7B-6182924EC188} = {308C42E3-824D-4028-8C69-60FAD6754839}
+		{0373748F-2BCE-4C69-8031-7D7907282B60} = {DF896E70-6A4C-4E11-B0AF-0780094E0BEF}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 36
+		SccNumberOfProjects = 39
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -742,6 +789,18 @@ Global
 		SccProjectTopLevelParentUniqueName35 = D360.sln
 		SccProjectName35 = Jobs/d360.jobs.ProcessDatabaseQueues
 		SccLocalPath35 = Jobs\\d360.jobs.ProcessDatabaseQueues
+		SccProjectUniqueName36 = d360.worker.ProcessFusion\\d360.worker.ProcessFusion.ccproj
+		SccProjectTopLevelParentUniqueName36 = D360.sln
+		SccProjectName36 = d360.worker.ProcessFusion
+		SccLocalPath36 = d360.worker.ProcessFusion
+		SccProjectUniqueName37 = d360.workers.FusionWorkerRole\\d360.workers.FusionWorkerRole.csproj
+		SccProjectTopLevelParentUniqueName37 = D360.sln
+		SccProjectName37 = d360.workers.FusionWorkerRole
+		SccLocalPath37 = d360.workers.FusionWorkerRole
+		SccProjectUniqueName38 = d360.fusion\\d360.fusion.csproj
+		SccProjectTopLevelParentUniqueName38 = D360.sln
+		SccProjectName38 = d360.fusion
+		SccLocalPath38 = d360.fusion
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi
