@@ -21,7 +21,7 @@ namespace d360.workers.FusionWorkerRole
     {
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly ManualResetEvent runCompleteEvent = new ManualResetEvent(false);
-
+        
         public override void Run()
         {
             Trace.TraceInformation("d360.workers.FusionWorkerRole is running");
@@ -83,9 +83,9 @@ namespace d360.workers.FusionWorkerRole
             
             while (!cancellationToken.IsCancellationRequested)
             {                
-                await queueManager.ProcessMessagesAsync();
+                await queueManager.ProcessMessagesAsync(GlobalStaticProperties.QueueMessageVisibilityTime);
             }
-        }
-        
+        }        
     }
+    
 }

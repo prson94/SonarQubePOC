@@ -40,7 +40,7 @@ namespace d360.workers.FusionWorkerRole
         }
 
         // Processes any messages on the queue.
-        public async Task ProcessMessagesAsync()
+        public async Task ProcessMessagesAsync(int messageReservationTime = 1800)
         {
             CloudQueue queue = _queueClient.GetQueueReference(constants.AZURE_FUSION_QUEUE);
             await queue.CreateIfNotExistsAsync();
@@ -48,7 +48,8 @@ namespace d360.workers.FusionWorkerRole
 
             while (true)
             {
-                CloudQueueMessage message = await queue.GetMessageAsync();
+                TimeSpan resevationTime = new TimeSpan(0,0,messageReservationTime);
+                CloudQueueMessage message = await queue.GetMessageAsync(resevationTime,null, null);
                 
                 if (message == null)
                 {
@@ -63,10 +64,16 @@ namespace d360.workers.FusionWorkerRole
 
                 try
                 {
-                    await fp.Process(fusion);
+                    Trace.TraceInformation("Starting new task to process this fusion.");
+                    
+                    var t = Task.Run(async delegate
+                    {
+                        await fp.Process(fusion);
 
-                    Trace.TraceInformation("Fusion Processing successful! FusionQueueManager deleting message from queue");
-                    await queue.DeleteMessageAsync(message);
+                        Trace.TraceInformation("Fusion Processing successful! FusionQueueManager deleting message from queue");
+                        await queue.DeleteMessageAsync(message);
+                    });
+
                 }
                 catch (AggregateException exception)
                 {

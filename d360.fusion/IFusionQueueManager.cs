@@ -5,7 +5,7 @@ namespace d360.workers.FusionWorkerRole
 {
     public interface IFusionQueueManager
     {
-        Task ProcessMessagesAsync();
+        Task ProcessMessagesAsync(int messageReservationTime = 1800);
         Task SendMessageAsync(FusionProcessingData fusion);
     }
 }

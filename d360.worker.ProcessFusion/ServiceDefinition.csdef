@@ -3,6 +3,7 @@
   <WorkerRole name="d360.workers.FusionWorkerRole" vmsize="Small">
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
+      <Setting name="QueueMessageVisibilityTime" />
     </ConfigurationSettings>
   </WorkerRole>
 </ServiceDefinition>

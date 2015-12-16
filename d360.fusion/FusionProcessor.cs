@@ -30,17 +30,19 @@ namespace d360.fusion
         private static int MAX_FIELD_VALUE_LENGTH = 4000;
         private static int MAX_SOURCEID_LENGTH = 250;
         public async Task Process(FusionProcessingData fusionData)
-        {
-            
-            ///TODO add fusion and company id to fusion data
-            //this needs to come from the fusion data
+        {         
             CompanyID = fusionData.CompanyID;
-
-            //this needs to come from the fusion data
+                     
             FusionID = fusionData.FusionID;
 
             LogFileName = fusionData.LogFileName;
 
+            if (CompanyID <= 0) throw new Exception("Invalid company id specified.");
+
+            if (string.IsNullOrEmpty(LogFileName)) throw new Exception("Error invalid or no file specified to process fusion data from");
+
+            if (FusionID <= 0) throw new Exception("Invalid fusion id specified.");
+            
             IStorageProvider storageProvider = new d360.extensions.storage.AzureStorageProvider();
             BulkFusionImport data = null;
             var folderName = string.Format("bulk-fusion-{0}", fusionData.CompanyID);
@@ -48,16 +50,10 @@ namespace d360.fusion
 
             Stopwatch sw = Stopwatch.StartNew();
             Trace.WriteLine("STARTING JSON DATA READ");
-            // TODO change azure read to async
-            //   using (var s = storageProvider.GetFile(folderName, fusionData.LogFileName))
-            {
-           //     using (StreamReader r = new StreamReader(s))
-                {
-                    string json = storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName);
-                    data = JsonConvert.DeserializeObject<BulkFusionImport>(json);
-                }
-            }
-
+                       
+            string json = storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName);
+            data = JsonConvert.DeserializeObject<BulkFusionImport>(json);
+            
             if (data == null) throw new Exception("UNABLE TO LOAD FUSION DATA FROM AZURE STORAGE / NULL FUSION DATA OBJECT.");
 
             Trace.WriteLine(string.Format("COMPLETED JSON DATA READ\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
@@ -840,12 +836,10 @@ namespace d360.fusion
         private async Task DoFusionAttributeMerge(SqlConnection companyConnection)
         {
             await companyConnection.ExecuteAsync(@"create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250))");
-
-
+            
             Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE VALUES TO #tempFusionAttributes TEMP TABLE.", _workArea.FusionAttributeTempValues.Count);
 
             //insert to the temp table
-
             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
             {
                 bulkCopy.BatchSize = _workArea.FusionAttributeTempValues.Count;
@@ -923,9 +917,7 @@ namespace d360.fusion
 
                 string parentSourceID = string.Empty;
 
-                x.TryGetValue("ParentSourceID", out parentSourceID);
-
-
+                x.TryGetValue("ParentSourceID", out parentSourceID);                
                 x.TryGetValue("Action", out actionString);
 
                 FusionAttributeTempTableValue val = new FusionAttributeTempTableValue
@@ -1002,7 +994,6 @@ namespace d360.fusion
         private async Task LoadCurrentFusionAttributeInfo(SqlConnection companyConnection)
         {
             //LOAD  FUSION ATTRIBUTE ID , FUSION ATTRIBUTE CURRENT NAME, FUSION ATTRIBUTE PARENT ID, FUSION ATTRIBUTE PARENT NAME
-
             _workArea.AttributeMappingCollection = await companyConnection.QueryAsync<FusionAttributeToParentMapping>(@"
                 select 
 	                f.id as 'ID',
