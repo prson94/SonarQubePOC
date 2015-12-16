@@ -22,13 +22,21 @@ namespace d360.fusion
         public int FusionID { get; private set; }
         public int ExecutionID { get; private set; }
         public string LogFileName { get; private set; }
+        public bool IsFirstRun { get; set; }
 
         private FusionWorkArea _workArea = new FusionWorkArea();
 
         private static string SourceIDAttribute = "SourceID";
+        private static string ParentSourceIDAttribute = "ParentSourceID";
+        private static string NameAttribute = "Name";
+        private static string ActionAttribute = "Action";
+        private static string FusionAttributeTypeIDAttribute = "FusionAttributeTypeID";
 
         private static int MAX_FIELD_VALUE_LENGTH = 4000;
         private static int MAX_SOURCEID_LENGTH = 250;
+        private static string FUSION_ATTRIBUTE_MISSING_NAME_NAME = "Name not resolved";
+        
+
         public async Task Process(FusionProcessingData fusionData)
         {         
             CompanyID = fusionData.CompanyID;
@@ -82,12 +90,13 @@ namespace d360.fusion
                 //Process Relationships
                 await ProcessRelationships(companyConnection, data.Relationships);
 
-                //Promote Fusion ID
-                await PromoteFusion(companyConnection);
-
+                
                 sw.Restart();
                 await SaveChangedValuesLog(companyConnection);
                 Trace.WriteLine(string.Format("SaveChangedValuesLog\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+
+                //Promote Fusion ID
+                await PromoteFusion(companyConnection);
 
                 //Update the executionID to say this is done
                 await UpdateExecutionWithStats(companyConnection);
@@ -132,6 +141,10 @@ namespace d360.fusion
                 table.Columns.Add(columnName, typeof(int));
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
 
+                columnName = "Body";
+                table.Columns.Add(columnName, typeof(string));
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
                 columnName = "FieldTypeID";
                 table.Columns.Add(columnName, typeof(int));
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
@@ -158,6 +171,9 @@ namespace d360.fusion
 
                     row["ExecutionID"] = ExecutionID;
                     row["FusionAttributeID"] = item.FusionAttributeID;
+
+                    if (item.Action == "D") row["Body"] = "Item removed from source.";
+
                     row["FieldTypeID"] = item.FieldTypeID;
                     var fieldInfo = _workArea.FieldToAttributeMapping.FirstOrDefault(x => x.FieldTypeID == item.FieldTypeID);
                     if(fieldInfo != null)
@@ -499,6 +515,9 @@ namespace d360.fusion
         /// <returns></returns>
         private async Task ProcessModels(SqlConnection companyConnection, List<Dictionary<string, string>> models)
         {
+            //CHECK IF THIS IS INITIAL MODEL RUN
+            await DoFirstRunCheck(companyConnection);
+
             Stopwatch sw = Stopwatch.StartNew();   
             // RUN QUERY TO GET FIELDS INFO FOR THE SAME
             await LoadCurrentFusionFieldInfo(companyConnection);
@@ -555,6 +574,22 @@ namespace d360.fusion
             Trace.WriteLine(string.Format("DetermineChangedFields TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
         }
 
+        private async Task DoFirstRunCheck(SqlConnection companyConnection)
+        {
+            var existingValues = (await companyConnection.QueryAsync<int>(@"
+                                            select 
+                                                count(1)
+                                            from
+                                                [FusionAttribute]
+                                            where
+                                                [FusionID] = @fus;
+                                        ", new { fus = FusionID })).FirstOrDefault();
+
+            IsFirstRun = existingValues == 0;
+
+            Trace.TraceInformation("FIRST RUN CHECK FOUND {0} EXISTING VALUES FOR FUSIONID {1} IN FUSIONATTRIBUTE TABLE", existingValues,FusionID);
+        }
+
         private async Task UpdateFusionAttributeTextPaths(SqlConnection companyConnection)
         {
             await companyConnection.ExecuteAsync(@"
@@ -566,6 +601,13 @@ namespace d360.fusion
 
         private void DetermineChangedFields()
         {
+            if(IsFirstRun)
+            {
+                Trace.TraceInformation("NOT LOGGING ANY CHANGE INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
+
+                return;
+            }
+
             SortedList<string, string> oldFieldDict = new SortedList<string, string>();
 
             foreach (var item in _workArea.FieldValueCollection)
@@ -778,9 +820,9 @@ namespace d360.fusion
                 // for each additonal field we need to add a new fusionfieldtemptablevalue
                 string actionString = string.Empty;
 
-                var sourceID = x["SourceID"];
-                var name = x["Name"];
-                var fusionTypeIDString = x["FusionAttributeTypeID"];
+                var sourceID = x[SourceIDAttribute];
+                var name = x[NameAttribute];
+                var fusionTypeIDString = x[FusionAttributeTypeIDAttribute];
                 
 
                 if(string.IsNullOrEmpty(fusionTypeIDString))
@@ -792,7 +834,7 @@ namespace d360.fusion
 
                 var fusionTypeID = Convert.ToInt32(fusionTypeIDString);
 
-                x.TryGetValue("Action", out actionString);
+                x.TryGetValue(ActionAttribute, out actionString);
 
                 //get existing fusionattributeid
                 var existingItem = _workArea.AttributeMappingCollection.FirstOrDefault(y => sourceID == y.SourceID);
@@ -802,7 +844,7 @@ namespace d360.fusion
 
                 foreach (var item in x)
                 {
-                    if (item.Key == "SourceID" || item.Key == "Name" || item.Key == "FusionAttributeTypeID" || item.Key == "ParentSourceID")
+                    if (item.Key == SourceIDAttribute || item.Key == NameAttribute || item.Key == FusionAttributeTypeIDAttribute || item.Key == ParentSourceIDAttribute)
                         continue;
 
                     if(string.IsNullOrEmpty(item.Key))
@@ -911,14 +953,16 @@ namespace d360.fusion
             {
                 string actionString = string.Empty;
 
-                var sourceID = x["SourceID"];
-                var name = x["Name"];
-                var fusionTypeID = Convert.ToInt32(x["FusionAttributeTypeID"]);
+                var sourceID = x[SourceIDAttribute];
+                var name = x[NameAttribute];
+                var fusionTypeID = Convert.ToInt32(x[FusionAttributeTypeIDAttribute]);
 
                 string parentSourceID = string.Empty;
 
-                x.TryGetValue("ParentSourceID", out parentSourceID);                
-                x.TryGetValue("Action", out actionString);
+                x.TryGetValue(ParentSourceIDAttribute, out parentSourceID);                
+                x.TryGetValue(ActionAttribute, out actionString);
+
+                if (string.IsNullOrEmpty(name)) name = FUSION_ATTRIBUTE_MISSING_NAME_NAME;
 
                 FusionAttributeTempTableValue val = new FusionAttributeTempTableValue
                 {
@@ -1037,10 +1081,10 @@ namespace d360.fusion
 
                 item[SourceIDAttribute] = sourceID.Replace(" ", string.Empty).ToUpper();
 
-                if(item.TryGetValue("ParentSourceID", out parentSourceID))
+                if(item.TryGetValue(ParentSourceIDAttribute, out parentSourceID))
                 {
                     if(!string.IsNullOrEmpty(parentSourceID))
-                        item["ParentSourceID"] = parentSourceID.Replace(" ", string.Empty).ToUpper();
+                        item[ParentSourceIDAttribute] = parentSourceID.Replace(" ", string.Empty).ToUpper();
                 }
 
                 _workArea.InSourceIDList.Add(sourceID);

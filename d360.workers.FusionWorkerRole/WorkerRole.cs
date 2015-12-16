@@ -46,17 +46,15 @@ namespace d360.workers.FusionWorkerRole
             Trace.TraceInformation("d360.workers.FusionWorkerRole has been started");
 
 #if DEBUG
-            FusionProcessingData fusionData = new FusionProcessingData();
             IFusionQueueManager queueManager = new FusionQueueManager();
-            using (StreamReader r = new StreamReader("c:\\test.json"))
-            {
-                string json = r.ReadToEnd();
-                BulkFusionImport items = JsonConvert.DeserializeObject<BulkFusionImport>(json);
 
-                fusionData.CompanyID = 4;
-                fusionData.FusionID = 45;
-                fusionData.LogFileName = "1.45.2015-12-10_07.28.12.json";
-            }
+            FusionProcessingData fusionData = new FusionProcessingData
+            {
+                CompanyID = 4,
+                FusionID = 46,
+                //   LogFileName = "1.45.2015-12-10_07.28.12.json"
+                LogFileName = "1.45.modifytest.json" // file contains one row deleted from base for fusion id 46.
+            };
 
             //save test data to queue
             queueManager.SendMessageAsync(fusionData).Wait();
