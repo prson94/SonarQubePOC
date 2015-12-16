@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace d360.fusion
 {
+    /// <summary>
+    /// Used to store values for insertion into dbo.[field] table
+    /// </summary>
     public class FusionFieldTempTableValue
-    {
-        //public string SourceID { get; set; }        
+    {        
         public int FusionAttributeID { get; set; }
         public int FieldTypeID { get; set; }
-        public string Value { get; set; }
-        public string OldValue { get; set;}
-        public string Action { get; set; }
+        public string Value { get; set; }        
     }
 }

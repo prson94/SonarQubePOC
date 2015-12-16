@@ -52,8 +52,8 @@ namespace d360.workers.FusionWorkerRole
             {
                 CompanyID = 4,
                 FusionID = 46,
-                //   LogFileName = "1.45.2015-12-10_07.28.12.json"
-                LogFileName = "1.45.modifytest.json" // file contains one row deleted from base for fusion id 46.
+                   LogFileName = "1.45.2015-12-10_07.28.12.json"
+             //   LogFileName = "1.45.modifytest.json" // file contains one row modified from base for fusion id 46.
             };
 
             //save test data to queue

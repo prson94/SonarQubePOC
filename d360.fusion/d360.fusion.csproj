@@ -80,6 +80,7 @@
     <Compile Include="FusionAttributeTempTableValue.cs" />
     <Compile Include="FusionAttributeToParentMapping.cs" />
     <Compile Include="FusionChangeInfoWorkData.cs" />
+    <Compile Include="FusionChangeTableValue.cs" />
     <Compile Include="FusionFieldIDAttributeIDMapping.cs" />
     <Compile Include="FusionFieldTempTableValue.cs" />
     <Compile Include="FusionFieldTypeCache.cs" />

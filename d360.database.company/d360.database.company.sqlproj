@@ -440,6 +440,11 @@
     <Build Include="fusion\Stored Procedures\ProcessEagleMCToEagleFieldRelations.sql" />
     <Build Include="dbo\Stored Procedures\GetMapDiagram.sql" />
     <Build Include="fusion\Stored Procedures\ConvertSQLServerFusionIDs.sql" />
+    <Build Include="fusion\Tables\StagingRelationUnresolved.sql" />
+    <Build Include="fusion\Stored Procedures\ProcessFusionRelationships.sql" />
+    <Build Include="fusion\Stored Procedures\ProcessUnprocessedRelations.sql" />
+    <Build Include="fusion\Stored Procedures\FindRelationships.sql" />
+    <Build Include="fusion\Stored Procedures\FindEagleToDBRelationships.sql" />
     <Build Include="queue\Tables\Task.sql" />
     <Build Include="queue\Functions\WriteIndexXml.sql" />
   </ItemGroup>

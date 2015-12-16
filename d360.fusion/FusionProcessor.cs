@@ -176,8 +176,11 @@ namespace d360.fusion
 
                     row["FieldTypeID"] = item.FieldTypeID;
                     var fieldInfo = _workArea.FieldToAttributeMapping.FirstOrDefault(x => x.FieldTypeID == item.FieldTypeID);
-                    if(fieldInfo != null)
+                    if (fieldInfo != null)
                         row["FieldName"] = fieldInfo.FieldTypeName;
+                    else
+                        row["FieldName"] = "Name";
+
                     row["Action"] = item.Action;
                     if(!string.IsNullOrEmpty(item.OldValue) && item.OldValue.Length > 250)
                         row["OldValue"] = item.OldValue.Substring(0,250);
@@ -514,14 +517,14 @@ namespace d360.fusion
         /// <param name="models"></param>
         /// <returns></returns>
         private async Task ProcessModels(SqlConnection companyConnection, List<Dictionary<string, string>> models)
-        {
-            //CHECK IF THIS IS INITIAL MODEL RUN
-            await DoFirstRunCheck(companyConnection);
-
+        {            
             Stopwatch sw = Stopwatch.StartNew();   
-            // RUN QUERY TO GET FIELDS INFO FOR THE SAME
+            // RUN QUERY TO GET FIELDS INFO FOR THE FIELDS IN THIS RUN
             await LoadCurrentFusionFieldInfo(companyConnection);
             Trace.WriteLine(string.Format("LOADCURRENTFUSIONFIELD INFO TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+
+            // RUN QUERY TO GET THE EXISTING FUSIONATTRIBUTES IN THIS RUN
+            await LoadCurrentFusionAttributeMap(companyConnection);
 
             //build a table that contains all the fusionattributes we need to insert
             sw.Restart();
@@ -563,7 +566,7 @@ namespace d360.fusion
             sw.Restart();
             await MergeUpdatedParentIDValues(companyConnection);
             Trace.WriteLine(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
-
+            
             sw.Restart();
             await UpdateFusionAttributeTextPaths(companyConnection);
             Trace.WriteLine(string.Format("UpdateFusionAttributeTextPaths TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
@@ -572,24 +575,17 @@ namespace d360.fusion
             sw.Restart();
             DetermineChangedFields();
             Trace.WriteLine(string.Format("DetermineChangedFields TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+
+            sw.Restart();
+            DetermineChangedFusionAttributes();
+            Trace.WriteLine(string.Format("DetermineChangedFusionAttributes TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
         }
 
-        private async Task DoFirstRunCheck(SqlConnection companyConnection)
-        {
-            var existingValues = (await companyConnection.QueryAsync<int>(@"
-                                            select 
-                                                count(1)
-                                            from
-                                                [FusionAttribute]
-                                            where
-                                                [FusionID] = @fus;
-                                        ", new { fus = FusionID })).FirstOrDefault();
-
-            IsFirstRun = existingValues == 0;
-
-            Trace.TraceInformation("FIRST RUN CHECK FOUND {0} EXISTING VALUES FOR FUSIONID {1} IN FUSIONATTRIBUTE TABLE", existingValues,FusionID);
-        }
-
+        /// <summary>
+        /// Update the fusionattribute table text path column this needs to be done after the parents are updated.
+        /// </summary>
+        /// <param name="companyConnection"></param>
+        /// <returns></returns>
         private async Task UpdateFusionAttributeTextPaths(SqlConnection companyConnection)
         {
             await companyConnection.ExecuteAsync(@"
@@ -599,11 +595,49 @@ namespace d360.fusion
             ", new { fus = FusionID });
         }
 
+        /// <summary>
+        /// Change values that have changed from previous run for fusionattribute table
+        /// </summary>
+        private void DetermineChangedFusionAttributes()
+        {
+            if (IsFirstRun)
+            {
+                Trace.TraceInformation("NOT LOGGING ANY CHANGED FUSION ATTRIBUTE INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
+
+                _workArea.ExistingFusionAttributeDictionary.Clear();
+
+                return;
+            }
+
+            //COMPARE FUSION ATTRIBUTE INITIAL VALUE TO NEW ONE
+            //_workArea.ExistingFusionAttributeDictionary
+            foreach (var x in _workArea.FusionAttributeTempValues)
+            {
+                
+                string oldValue = string.Empty;
+                string action = string.Empty;
+
+                DetermineItemChange(_workArea.ExistingFusionAttributeDictionary, x.Name, x.SourceID, out action, out oldValue);
+
+                if(!string.IsNullOrEmpty(action))
+                    _workArea.Changes.ChangedValues.Add(new FusionChangeTableValue(x,oldValue,action));
+            }
+
+            // OLD VALUE MAP CAN BE CLEARED NOW
+            _workArea.ExistingFusionAttributeDictionary.Clear();
+        }
+
+       
+        /// <summary>
+        /// Find values from the fields table that have changed since previous run
+        /// </summary>
         private void DetermineChangedFields()
         {
             if(IsFirstRun)
             {
-                Trace.TraceInformation("NOT LOGGING ANY CHANGE INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
+                Trace.TraceInformation("NOT LOGGING ANY CHANGED FIELD INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
+
+                _workArea.FieldValueCollection = null;
 
                 return;
             }
@@ -623,24 +657,41 @@ namespace d360.fusion
             {                
                 var key = string.Format("{0}_{1}", x.FieldTypeID, x.FusionAttributeID);
                 string oldValue = string.Empty;
+                string action = string.Empty;
 
-                if (!oldFieldDict.TryGetValue(key,out oldValue) && !string.IsNullOrEmpty(x.Value))
-                {
-                    x.Action = "A";
-                    _workArea.Changes.AddCount++;
-                }                
-                else if((string.IsNullOrEmpty(x.Value) && string.IsNullOrEmpty(oldValue)) || (oldValue == x.Value))
-                {
-                    continue;
-                }
-                else
-                {
-                    x.Action = "U";
-                    _workArea.Changes.UpdateCount++;
-                }
+                DetermineItemChange(oldFieldDict, x.Value, key, out action, out oldValue);
 
-                _workArea.Changes.ChangedValues.Add(x);
-            }  
+                if (!string.IsNullOrEmpty(action))
+                    _workArea.Changes.ChangedValues.Add(new FusionChangeTableValue(x,oldValue, action));
+            }
+
+            //free memory used by old values we dont need them anymore
+            _workArea.FieldValueCollection = null;
+        }
+
+        /// <summary>
+        /// Determines is a value has changed from its previous value
+        /// </summary>
+        /// <param name="sourceID"></param>
+        /// <param name="action"></param>
+        /// <param name="oldValue"></param>
+        private void DetermineItemChange(SortedList<string,string> oldValueList, string value, string sourceID, out string action, out string oldValue)
+        {            
+            if (!oldValueList.TryGetValue(sourceID, out oldValue) && !string.IsNullOrEmpty(value))
+            {
+                action = "A";
+                _workArea.Changes.AddCount++;
+            }
+            else if ((string.IsNullOrEmpty(value) && string.IsNullOrEmpty(oldValue)) || (oldValue == value))
+            {
+                action = string.Empty;
+                return;
+            }
+            else
+            {
+                action = "U";
+                _workArea.Changes.UpdateCount++;
+            }
         }
 
         private async Task MergeUpdatedParentIDValues(SqlConnection companyConnection)
@@ -1033,6 +1084,37 @@ namespace d360.fusion
                 Trace.WriteLine("SQL ERROR IN LoadCurrentFusionFieldInfo ERROR MESSAGE :" + sqE.Message);
                 throw sqE;
             }
+        }
+
+        private async Task LoadCurrentFusionAttributeMap(SqlConnection companyConnection)
+        {
+            //LOAD  FUSION ATTRIBUTE ID , FUSION ATTRIBUTE CURRENT NAME, FUSION ATTRIBUTE PARENT ID, FUSION ATTRIBUTE PARENT NAME
+            var results = await companyConnection.QueryAsync<FusionAttributeToParentMapping>(@"
+                select 	                
+	                f.name as 'Name',	                
+                    Upper(f.sourceId) as 'SourceID'	                
+                from 
+	                fusionattribute f	
+                where 	                
+	                f.fusionid = @inFusionID
+            ", new { inFusionID = FusionID });
+
+            IsFirstRun = true;
+
+            foreach (var item in results)
+            {
+                if (IsFirstRun)
+                {
+                    Trace.TraceInformation("FOUND EXISTING DATA FOR FUSION ID {0} SO THIS IS NOT THE FIRST RUN.", FusionID);
+                    IsFirstRun = false;
+                }
+
+                _workArea.ExistingFusionAttributeDictionary[item.SourceID] = item.Name;
+            }
+
+            if(IsFirstRun) Trace.TraceInformation("NO EXISTING DATA FOUND FOR FUSION ID {0}.  THIS IS THE FIRST RUN.", FusionID);
+
+            Trace.TraceInformation("LOADED {0} EXISTING FUSION ATTRIBUTE VALUES", _workArea.ExistingFusionAttributeDictionary.Count);
         }
 
         private async Task LoadCurrentFusionAttributeInfo(SqlConnection companyConnection)
