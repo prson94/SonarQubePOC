@@ -1,9 +1,6 @@
-﻿create procedure [dbo].[GetLineageDiagram]
---declare
+﻿create procedure [dbo].[FindExcludeMapIntersect]
 	@type varchar(50),
 	@id int
---set @object = 'Artifact'
---set @id = 972861--972859
 as
 begin
 
@@ -71,36 +68,49 @@ begin
 	)
 
 	insert into @rows
-		select * from d
+		select * from d;
 
-	select	R.ID,
-			R.MapID,
-			R.IntersectMapID,
-			R.[Level],
-			S.[Object] as Sub,
-			S.ObjectID as SubID,
-			S.[Object] + cast(S.ObjectID as varchar) as SubjectID,
-			case S.[Object] when 'FusionAttribute' then S.TextPath else S.Name end as [Subject],
-			S.ObjectTypeName as SubjectType,
-			S.IconBackColor as SubjectBackColor,
-			S.IconForeColor as SubjectForeColor,
-			O.[Object] as Obj,
-			O.ObjectID as ObjID,
-			O.[Object] + cast(O.ObjectID as varchar) as ObjectID,
-			case O.[Object] when 'FusionAttribute' then O.TextPath else O.Name end as [Object],
-			O.ObjectTypeName as ObjectType,
-			O.IconBackColor as ObjectBackColor,
-			O.IconForeColor as ObjectForeColor,
-			PP.Phrase as Predicate,
-			case when X.IntersectMapIDToExclude is null then
-				0
-			else
-				1
-			end as Exclude
-	from	@rows R
-			inner join cache.ObjectDetails S on S.[Object] = R.[Subject] and S.ObjectID = R.SubjectID
-			inner join cache.ObjectDetails O on O.[Object] = R.[Object] and O.ObjectID = R.ObjectID
-			inner join PredicatePhrase PP on PP.ID = R.PredicatePhraseID
-			inner join Predicate P on P.ID = PP.PredicateID
-			left join IntersectMapExclusion X on X.IntersectMapIDToExclude = R.IntersectMapID
+
+	--	select * from @rows;
+
+	with p as
+	(
+		select 
+			[subject],
+			subjectid,
+			[object],
+			objectid,
+			IntersectMapID
+		from @rows
+		where objectid = @id and [object] = @type
+		union all
+		select
+			r.[subject],
+			r.subjectid,
+			r.[object],
+			r.objectid,
+			r.IntersectMapID
+		from p
+		join @rows r on r.objectid = p.subjectid and r.[object] = p.[subject]
+	)
+
+	select distinct
+		intersectmapid 
+	from 
+		p
+	where 
+	 not exists
+		(select * from IntersectMapExclusion where IntersectMapID = p.intersectmapid and IntersectMapIDToExclude = p.intersectmapid)
+	
+	union all
+
+	select
+		intersectmapid
+	from @rows r
+	where
+		[subject] = @type and subjectid = @id
+	and not exists 
+		(select * from IntersectMapExclusion where IntersectMapID = r.intersectmapid and IntersectMapIDToExclude = r.intersectmapid);
+
+
 end

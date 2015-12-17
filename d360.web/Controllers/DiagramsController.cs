@@ -444,15 +444,12 @@ from	h
 
         public class DiagramChanges
         {
-            public List<DiagramNode> AddedNodes { get; set; }
-            public List<DiagramNode> ModifiedNodes { get; set; }
-            public List<DiagramNode> DeletedNodes { get; set; }
             public List<DiagramLink> AddedLinks { get; set; }
-            public List<DiagramLink> ModifiedLinks { get; set; }
-            public List<DiagramLink> DeletedLinks { get; set; }
+            public List<ObjectModel> ExclusionObjects { get; set; }
             public List<DiagramNode> AllNodes { get; set; }
             public List<DiagramLink> AllLinks { get; set; }
             public int MapID { get; set; }
+
         }
 
         public ActionResult LineageTest()
@@ -494,14 +491,11 @@ from	h
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-
         public JsonNetResult SaveChanges(DiagramChanges changes)
         {
-            string err = "";
-            
 
             if (changes.AddedLinks == null)
-                return null;
+                changes.AddedLinks = new List<DiagramLink>();
             foreach(DiagramLink l in changes.AddedLinks)
             {
                 l.ToNode = changes.AllNodes.Where(n => n.Key == l.To).FirstOrDefault();
@@ -530,6 +524,14 @@ from	h
                 });
 
             }
+
+            if (changes.ExclusionObjects == null)
+                changes.ExclusionObjects = new List<ObjectModel>();
+            foreach(ObjectModel d in changes.ExclusionObjects)
+            {
+                var z = Company.Query<dynamic>("EXEC [ExcludeMapIntersect] @MapID, @ObjectType, @ObjectID",
+                    new { MapID = changes.MapID, ObjectType = d.ObjectType, ObjectID = d.ObjectID});
+            }
             //TODO: return something useful here
             return null;
         }
@@ -538,6 +540,13 @@ from	h
         {
             var items = Company.Query<dynamic>("select pp.id, pp.predicateId, p.name, pp.phrase, cast(pp.ID as varchar(100)) + '_' + cast(p.ID as varchar(100)) as value, pp.Phrase + ' (' + p.Name + ') ' as displayName from predicatephrase pp join predicate p on p.id = pp.predicateid");
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult GetExclusionsByMapObject(SystemObjects type, int id, int mapId)
+        {
+            var ids = Company.Query<int>("EXEC FindExcludeMapIntersect @ObjectType, @ObjectID"
+                ,new { ObjectType = type.ToString(), ObjectID = id, MapID = mapId });
+            return new JsonNetResult { Data = ids, Formatting = Newtonsoft.Json.Formatting.None };
         }
         #endregion
 
@@ -573,6 +582,8 @@ from	h
             public string ObjectForeColor { get; set; }
 
             public string Predicate { get; set; }
+            public bool Exclude { get; set; }
+            public int IntersectMapID { get; set; }
         }
 
         public class JsonNodeItem
@@ -584,6 +595,8 @@ from	h
             public string name { get; set; }
             public string back { get; set; }
             public string fore { get; set; }
+            public bool exclude { get; set; }
+            public int intersectMapId { get; set; }
         }
 
         public class JsonLinkItem
@@ -607,9 +620,9 @@ from	h
             list.ForEach(mapItem =>
             {
                 if (!nodes.Any(i => i.key == mapItem.ObjectID))
-                    nodes.Add(new JsonNodeItem { key = mapItem.ObjectID, obj = mapItem.Obj, objid = mapItem.ObjID, name = mapItem.Object, type = mapItem.ObjectType, back = mapItem.ObjectBackColor, fore = mapItem.ObjectForeColor });
+                    nodes.Add(new JsonNodeItem { key = mapItem.ObjectID, obj = mapItem.Obj, objid = mapItem.ObjID, name = mapItem.Object, type = mapItem.ObjectType, back = mapItem.ObjectBackColor, fore = mapItem.ObjectForeColor, exclude = mapItem.Exclude, intersectMapId = mapItem.IntersectMapID });
                 if (!nodes.Any(i => i.key == mapItem.SubjectID))
-                    nodes.Add(new JsonNodeItem { key = mapItem.SubjectID, obj = mapItem.Sub, objid = mapItem.SubID, name = mapItem.Subject, type = mapItem.SubjectType, back = mapItem.SubjectBackColor, fore = mapItem.SubjectForeColor });
+                    nodes.Add(new JsonNodeItem { key = mapItem.SubjectID, obj = mapItem.Sub, objid = mapItem.SubID, name = mapItem.Subject, type = mapItem.SubjectType, back = mapItem.SubjectBackColor, fore = mapItem.SubjectForeColor, exclude = mapItem.Exclude, intersectMapId = mapItem.IntersectMapID });
                 links.Add(new JsonLinkItem { from = mapItem.SubjectID, to = mapItem.ObjectID, text = mapItem.Predicate });
             });
 

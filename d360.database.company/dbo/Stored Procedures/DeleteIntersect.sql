@@ -20,7 +20,7 @@ BEGIN
 			RAISERROR('Item does not exist.', 16, 1);
 		END
 
-		IF EXISTS(select 1 from IntersectNode where ObjectType = 'Interect' and ObjectID = @ID)
+		IF EXISTS(select 1 from IntersectNode where ObjectType = 'Intersect' and ObjectID = @ID)
 		BEGIN
 			RAISERROR('Item is used in other relationships.', 16, 1);
 		END

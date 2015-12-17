@@ -454,6 +454,9 @@
     <None Include="LocalCompare.scmp" />
     <None Include="dbo\Stored Procedures\AddMapRelationship.sql" />
     <None Include="dbo\Stored Procedures\GetLineageDiagram.sql" />
+    <None Include="dbo\Stored Procedures\ExcludeMapIntersect.sql" />
+    <None Include="dbo\Tables\IntersectMapExclusion.sql" />
+    <None Include="dbo\Stored Procedures\FindExcludeMapIntersect.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />
