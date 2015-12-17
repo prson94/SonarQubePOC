@@ -931,12 +931,12 @@ namespace d360.fusion
 
                     if(string.IsNullOrEmpty(item.Key))
                     {
-                        Trace.TraceInformation("INVALID KEY IN MODEL KEY VALUE COLLECTION");
+                        Trace.TraceInformation("ERROR NULL OR EMPTY FIELD NAME FOR FUSION ATTRIBUTE SOURCE ID : {0}", sourceID);
 
                         continue;
                     }
 
-                    var fieldInfo = _workArea.FieldToAttributeMapping.FirstOrDefault(z => z.FusionAttributeTypeID == fusionTypeID && z.FieldTypeName == item.Key);
+                    var fieldInfo = _workArea.FieldToAttributeMapping.FirstOrDefault(z => z.FusionAttributeTypeID == fusionTypeID && string.Compare(z.FieldTypeName,item.Key, true) == 0);
 
                     if(fieldInfo == null)
                     {
