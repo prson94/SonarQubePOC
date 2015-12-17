@@ -23,7 +23,7 @@ namespace d360.fusion
 
         public IEnumerable<FusionAttributeToParentMapping> AttributeMappingCollection { get; set; }
 
-        public IEnumerable<FusionFieldValues> FieldValueCollection { get; set; }
+        public IEnumerable<core.entities.Field> FieldValueCollection { get; set; }
 
         public List<FusionAttributeTempTableValue> FusionAttributeTempValues { get; set; }
         

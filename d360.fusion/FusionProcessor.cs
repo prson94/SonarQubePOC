@@ -646,11 +646,11 @@ namespace d360.fusion
 
             foreach (var item in _workArea.FieldValueCollection)
             {
-                if (string.IsNullOrEmpty(item.CurrentValue)) continue;
+                if (string.IsNullOrEmpty(item.Value)) continue;
 
-                var key = string.Format("{0}_{1}", item.FieldTypeID, item.FusionAttributeID);
+                var key = string.Format("{0}_{1}", item.FieldTypeID, item.ObjectID);
 
-                oldFieldDict.Add(key, item.CurrentValue);
+                oldFieldDict.Add(key, item.Value);
             }
             
             foreach( var x in _workArea.FieldTempValues)
@@ -1062,11 +1062,11 @@ namespace d360.fusion
                     await bulkCopy.WriteToServerAsync(table);
                 }
 
-                _workArea.FieldValueCollection = await companyConnection.QueryAsync<FusionFieldValues>(@"
+                _workArea.FieldValueCollection = await companyConnection.QueryAsync<Field>(@"
                     select 
-                        f.ID as 'FusionAttributeID',
+                        f.ID as 'ObjectID',
 	                    ft.ID as 'FieldTypeID',	                    		
-	                    fi.Value as 'CurrentValue'                    
+	                    fi.Value as 'Value'                    
                     from 
 	                    fusionattribute f
 	                    inner join fieldtype ft on (f.fusionattributetypeid = ft.objectid and ft.[object] = 'FusionAttributeType')

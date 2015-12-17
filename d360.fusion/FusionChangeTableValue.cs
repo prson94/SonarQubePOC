@@ -1,9 +1,7 @@
 ﻿namespace d360.fusion
 {
     public class FusionChangeTableValue
-    {
-        private FusionAttributeTempTableValue x;
-
+    {        
         public FusionChangeTableValue(FusionFieldTempTableValue fieldVal, string oldValue, string action)
         {
             FusionAttributeID = fieldVal.FusionAttributeID;
