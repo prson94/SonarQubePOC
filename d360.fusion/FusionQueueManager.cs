@@ -40,7 +40,10 @@ namespace d360.workers.FusionWorkerRole
         }
 
         // Processes any messages on the queue.
-        public async Task ProcessMessagesAsync(int messageReservationTime = 1800)
+        public async Task ProcessMessagesAsync(int messageReservationTime = 1800,
+                                                int bulkTimeout = 180,
+                                                int readTimeout = 180,
+                                                int executionTimeout = 180)
         {
             CloudQueue queue = _queueClient.GetQueueReference(constants.AZURE_FUSION_QUEUE);
             await queue.CreateIfNotExistsAsync();
@@ -70,7 +73,7 @@ namespace d360.workers.FusionWorkerRole
                     {
                         try
                         {
-                            await fp.Process(fusion);
+                            await fp.Process(fusion, bulkTimeout,readTimeout, executionTimeout);
 
                             Trace.TraceInformation("Fusion Processing successful! FusionQueueManager deleting message from queue");
                             await queue.DeleteMessageAsync(message);

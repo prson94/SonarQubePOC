@@ -48,22 +48,22 @@ namespace d360.workers.FusionWorkerRole
 #if DEBUG
             IFusionQueueManager queueManager = new FusionQueueManager();
 
-            FusionProcessingData fusionData = new FusionProcessingData
+            /*FusionProcessingData fusionData = new FusionProcessingData
             {
                 CompanyID = 4,
                 FusionID = 46,
                    LogFileName = "1.45.2015-12-10_07.28.12.json"
              //   LogFileName = "1.45.modifytest.json" // file contains one row modified from base for fusion id 46.
-            };
+            };*/
 
             //the biggest fusion job i can find 30.9 MB for Demo dev - gmo has a 35.3MB file in fusion-15 22 has 38.6mb
-        /*    FusionProcessingData fusionData = new FusionProcessingData
+            FusionProcessingData fusionData = new FusionProcessingData
             {
                 CompanyID = 4,
                 FusionID = 40,
                 LogFileName = "1.40.2015-12-07_10.47.01.json"
                 //   LogFileName = "1.45.modifytest.json" // file contains one row modified from base for fusion id 46.
-            };*/
+            };
 
 
             //save test data to queue
@@ -91,7 +91,10 @@ namespace d360.workers.FusionWorkerRole
             
             while (!cancellationToken.IsCancellationRequested)
             {                
-                await queueManager.ProcessMessagesAsync(GlobalStaticProperties.QueueMessageVisibilityTime);
+                await queueManager.ProcessMessagesAsync(GlobalStaticProperties.QueueMessageVisibilityTime,
+                                                        GlobalStaticProperties.DBBulkCopyTimeout,
+                                                        GlobalStaticProperties.DBReadQueryTimeout,
+                                                        GlobalStaticProperties.DBExecuteQueryTimeout);
             }
         }        
     }

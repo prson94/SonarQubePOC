@@ -22,7 +22,23 @@ namespace d360.fusion
         public int FusionID { get; private set; }
         public int ExecutionID { get; private set; }
         public string LogFileName { get; private set; }
-        public bool IsFirstRun { get; set; }
+        public bool IsFirstRun { get; private set; }
+
+        /// <summary>
+        /// Timeout in seconds to read data from database
+        /// </summary>
+        public int ReadQueryTimeout { get; set; }
+        /// <summary>
+        /// Timeout in seconds to execute queries against the database update/insert/create
+        /// </summary>
+        public int ExecuteQueryTimeout { get; set; }
+
+        /// <summary>
+        /// Number of seconds before bulk copy operations timeout
+        /// </summary>
+        public int BulkCopyTimeout { get; set; }
+
+
 
         private FusionWorkArea _workArea = new FusionWorkArea();
 
@@ -37,8 +53,12 @@ namespace d360.fusion
         private static string FUSION_ATTRIBUTE_MISSING_NAME_NAME = "Name not resolved";
         
 
-        public async Task Process(FusionProcessingData fusionData)
-        {         
+        public async Task Process(FusionProcessingData fusionData, int bulkTimeout, int readTimeout, int executeTimeout)
+        {
+            BulkCopyTimeout = bulkTimeout;
+            ReadQueryTimeout = readTimeout;
+            ExecuteQueryTimeout = executeTimeout;
+
             CompanyID = fusionData.CompanyID;
                      
             FusionID = fusionData.FusionID;
@@ -57,14 +77,14 @@ namespace d360.fusion
             //load json from azure
 
             Stopwatch sw = Stopwatch.StartNew();
-            Trace.WriteLine("STARTING JSON DATA READ");
+            Trace.TraceInformation("STARTING JSON DATA READ");
                        
             string json = storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName);
             data = JsonConvert.DeserializeObject<BulkFusionImport>(json);
             
             if (data == null) throw new Exception("UNABLE TO LOAD FUSION DATA FROM AZURE STORAGE / NULL FUSION DATA OBJECT.");
 
-            Trace.WriteLine(string.Format("COMPLETED JSON DATA READ\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("COMPLETED JSON DATA READ\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             // Sanitize data
             //remove spaces from values in models           
@@ -82,7 +102,7 @@ namespace d360.fusion
                 //Generate an execution id
                 sw.Restart();                
                 ExecutionID = await LogExecution(companyConnection);
-                Trace.WriteLine(string.Format("LogExecution\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+                Trace.TraceInformation(string.Format("LogExecution\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
                 //Process Models                
                 await ProcessModels(companyConnection, data.Models);
@@ -93,7 +113,7 @@ namespace d360.fusion
                 
                 sw.Restart();
                 await SaveChangedValuesLog(companyConnection);
-                Trace.WriteLine(string.Format("SaveChangedValuesLog\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+                Trace.TraceInformation(string.Format("SaveChangedValuesLog\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
                 //Promote Fusion ID
                 await PromoteFusion(companyConnection);
@@ -131,6 +151,7 @@ namespace d360.fusion
                 
                 bulkCopy.BatchSize = _workArea.Changes.ChangedValues.Count();
                 bulkCopy.DestinationTableName = "[fusion].[resultex]";
+                bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
                 var table = new DataTable();
                 var columnName = "ExecutionID";
@@ -208,7 +229,7 @@ namespace d360.fusion
                             [Updates] = @u,
                             [Deletes] = @d
                     where [id] = @id;
-                ",new { date = DateTime.UtcNow, id = ExecutionID, a = _workArea.Changes.AddCount, u = _workArea.Changes.UpdateCount, d = _workArea.Changes.DeleteCount });
+                ",new { date = DateTime.UtcNow, id = ExecutionID, a = _workArea.Changes.AddCount, u = _workArea.Changes.UpdateCount, d = _workArea.Changes.DeleteCount }, commandTimeout: ExecuteQueryTimeout);
         }
 
         private async Task<int> LogExecution(SqlConnection companyConnection)
@@ -221,7 +242,7 @@ namespace d360.fusion
                         into [fusion].[execution] ([queueID],[fusionID],[RawLogFileName],[DateStarted])
                         values('F4EEC459-9DEF-4A3D-BDCA-EC34849CAE08',@inFusionID,@log,@started);
                         SELECT CAST(SCOPE_IDENTITY() as int)
-            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow });
+            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow }, commandTimeout:ReadQueryTimeout);
 
             return result.FirstOrDefault();
         }
@@ -249,7 +270,7 @@ namespace d360.fusion
         private async Task DoResolvedRelationsInsert(SqlConnection companyConnection)
         {
             // insert all the resolved relation into into a temp table
-            await companyConnection.ExecuteAsync(@"create table #tempResolvedRel([ID] INT IDENTITY(1,1) NOT NULL, IntersectTypeID int, SourceIntersectTypeID int, TargetIntersectTypeID int,  StartFusionAttributeID int, EndFusionAttributeID int)");
+            await companyConnection.ExecuteAsync(@"create table #tempResolvedRel([ID] INT IDENTITY(1,1) NOT NULL, IntersectTypeID int, SourceIntersectTypeID int, TargetIntersectTypeID int,  StartFusionAttributeID int, EndFusionAttributeID int)", commandTimeout: ExecuteQueryTimeout);
 
             Trace.TraceInformation("WRITING {0} RESOLVED RELATIONSHIPS TO #TEMPRESOLVEDREL TEMP TABLE.", _workArea.Relationships.ResolvedRelationshipData.Count);
 
@@ -257,6 +278,7 @@ namespace d360.fusion
             {
                 bulkCopy.BatchSize = _workArea.Relationships.ResolvedRelationshipData.Count;
                 bulkCopy.DestinationTableName = "#tempResolvedRel";
+                bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
                 var table = new DataTable();
                 var columnName = "IntersectTypeID";
@@ -311,7 +333,7 @@ namespace d360.fusion
 						                inode1.objecttype = 'FusionAttribute'
 								                and
 						                inode2.objecttype = 'FusionAttribute');
-                        ");
+                        ", commandTimeout: ExecuteQueryTimeout);
 
             Trace.TraceInformation("DELETED {0} RELATIONS FROM TEMPRESOLVEDREL TABLE AS PRE-EXISTING RELATIONSHIPS.", rowsDeleted);
 
@@ -350,7 +372,7 @@ namespace d360.fusion
 			            begin
 				            EXEC cache.SynchronizeRelationships @Intersects
 			            end
-            ");
+            ", commandTimeout: ExecuteQueryTimeout);
         }
 
         /// <summary>
@@ -360,7 +382,7 @@ namespace d360.fusion
         /// <returns></returns>
         private async Task DoUnresolvedRelationsInsert(SqlConnection companyConnection)
         {
-            await companyConnection.ExecuteAsync(@"create table #tempUnresolvedRel(StartID varchar(250), EndID nvarchar(250))");
+            await companyConnection.ExecuteAsync(@"create table #tempUnresolvedRel(StartID varchar(250), EndID nvarchar(250))", commandTimeout: ExecuteQueryTimeout);
 
             Trace.TraceInformation("INSERTING {0} UNRESOLVED RELATIONSHIPS INTO TEMPUNRESOLVEDREL TEMP TABLE.", _workArea.Relationships.UnresolvedRelationshipData.Count);
 
@@ -368,6 +390,7 @@ namespace d360.fusion
             {
                 bulkCopy.BatchSize = _workArea.Relationships.UnresolvedRelationshipData.Count;
                 bulkCopy.DestinationTableName = "#tempUnresolvedRel";
+                bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
                 var table = new DataTable();                
                 var columnName = "StartID";
@@ -405,7 +428,7 @@ namespace d360.fusion
                 when not matched then
                     insert (StartID, EndID, CreatedOn)
                     values (S.StartID, S.EndID, getdate());
-            ");
+            ", commandTimeout: ExecuteQueryTimeout);
         }
 
         private void GenerateRelationshipInsertData(FusionRelationshipModels relationships)
@@ -424,21 +447,21 @@ namespace d360.fusion
             {
                 if(string.IsNullOrEmpty(item.StartID) || string.IsNullOrEmpty(item.EndID))
                 {
-                    Trace.WriteLine("FOUND INVALID RELATIONSHIP CONTAINING NULL START/END VALUE FOR STARTID [" + item.StartID + "] ENDID [" + item.EndID + "].  DISREGARDING AS INVALID");
+                    Trace.TraceInformation("FOUND INVALID RELATIONSHIP CONTAINING NULL START/END VALUE FOR STARTID [" + item.StartID + "] ENDID [" + item.EndID + "].  DISREGARDING AS INVALID");
 
                     continue;
                 }
 
                 if(item.StartID.Length > MAX_SOURCEID_LENGTH)
                 {
-                    Trace.WriteLine("FOUND INVALID STARTID STARTID [" + item.StartID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
+                    Trace.TraceInformation("FOUND INVALID STARTID STARTID [" + item.StartID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
 
                     continue;
                 }
 
                 if (item.EndID.Length > MAX_SOURCEID_LENGTH)
                 {
-                    Trace.WriteLine("FOUND INVALID ENDID STARTID [" + item.EndID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
+                    Trace.TraceInformation("FOUND INVALID ENDID STARTID [" + item.EndID + "] IS GREATER THAN MAX SOURCEID LENGTH OF [" + MAX_SOURCEID_LENGTH + "].  DISREGARDING AS INVALID.");
 
                     continue;
                 }
@@ -506,7 +529,7 @@ namespace d360.fusion
                         utility.RelationshipTypes 
                     where 
                         sourceobjecttype = 'FusionAttributeType'
-                ");
+                ", commandTimeout: ReadQueryTimeout);
 
             Trace.TraceInformation("LOADED {0} INTERSECT TYPE MAPPINGS FROM utility.RelationshipTypes.", _workArea.Relationships.IntersectTypeMapping.Count());
         }
@@ -521,7 +544,7 @@ namespace d360.fusion
             Stopwatch sw = Stopwatch.StartNew();   
             // RUN QUERY TO GET FIELDS INFO FOR THE FIELDS IN THIS RUN
             await LoadCurrentFusionFieldInfo(companyConnection);
-            Trace.WriteLine(string.Format("LOADCURRENTFUSIONFIELD INFO TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("LOADCURRENTFUSIONFIELD INFO TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             // RUN QUERY TO GET THE EXISTING FUSIONATTRIBUTES IN THIS RUN
             await LoadCurrentFusionAttributeMap(companyConnection);
@@ -529,56 +552,56 @@ namespace d360.fusion
             //build a table that contains all the fusionattributes we need to insert
             sw.Restart();
             GenerateFusionAttributeTableValues(models);
-            Trace.WriteLine(string.Format("GENERATEFUSIONATTRIBUTETABLEVALUES TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("GENERATEFUSIONATTRIBUTETABLEVALUES TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             // handle fusionattribute updates / inserts
             //we have two cases
             // items that 
             sw.Restart();
             await DoFusionAttributeMerge(companyConnection);
-            Trace.WriteLine(string.Format("DoFusionAttributeMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("DoFusionAttributeMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             // RUN QUERY TO GET FUSION ATTRIBUTE IDS
             sw.Restart();
             await LoadCurrentFusionAttributeInfo(companyConnection);
-            Trace.WriteLine(string.Format("LoadCurrentFusionAttributeInfo TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("LoadCurrentFusionAttributeInfo TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             // load all the fusionfield type ids
             sw.Restart();
             await LoadFusionAttributeToFieldTypeIDMap(companyConnection);
-            Trace.WriteLine(string.Format("LoadFusionAttributeToFieldTypeIDMap TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("LoadFusionAttributeToFieldTypeIDMap TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             // handle fields
             sw.Restart();
             GenerateFusionFieldTableValues(models);
-            Trace.WriteLine(string.Format("GenerateFusionFieldTableValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("GenerateFusionFieldTableValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             sw.Restart();
             await DoFusionFieldMerge(companyConnection);
-            Trace.WriteLine(string.Format("DoFusionFieldMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("DoFusionFieldMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             // fields and attributes now updated need to update any parent ids
             sw.Restart();
             UpdateAttributesWithParentIDValues();
-            Trace.WriteLine(string.Format("UpdateAttributesWithParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("UpdateAttributesWithParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             //update the parentids by doing a merge
             sw.Restart();
             await MergeUpdatedParentIDValues(companyConnection);
-            Trace.WriteLine(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             
             sw.Restart();
             await UpdateFusionAttributeTextPaths(companyConnection);
-            Trace.WriteLine(string.Format("UpdateFusionAttributeTextPaths TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("UpdateFusionAttributeTextPaths TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             //update old values with values we             
             sw.Restart();
             DetermineChangedFields();
-            Trace.WriteLine(string.Format("DetermineChangedFields TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("DetermineChangedFields TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
             sw.Restart();
             DetermineChangedFusionAttributes();
-            Trace.WriteLine(string.Format("DetermineChangedFusionAttributes TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            Trace.TraceInformation(string.Format("DetermineChangedFusionAttributes TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
         }
 
         /// <summary>
@@ -592,7 +615,7 @@ namespace d360.fusion
                 UPDATE     FusionAttribute
                 SET        TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
                 WHERE   FusionID = @fus
-            ", new { fus = FusionID });
+            ", new { fus = FusionID }, commandTimeout:ExecuteQueryTimeout);
         }
 
         /// <summary>
@@ -696,7 +719,7 @@ namespace d360.fusion
 
         private async Task MergeUpdatedParentIDValues(SqlConnection companyConnection)
         {
-            await companyConnection.ExecuteAsync(@"create table #tempParentID([ID] int, [ParentID] int);");
+            await companyConnection.ExecuteAsync(@"create table #tempParentID([ID] int, [ParentID] int);", commandTimeout: ExecuteQueryTimeout);
 
             //insert to the temp table            
             var parentsNeedingUpdates = _workArea.FusionAttributeTempValues.Where(x => x.ParentID > 0);
@@ -708,6 +731,7 @@ namespace d360.fusion
 
                 bulkCopy.BatchSize = count;
                 bulkCopy.DestinationTableName = "#tempParentID";
+                bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
                 var table = new DataTable();
                 var columnName = "ID";
@@ -744,11 +768,12 @@ namespace d360.fusion
                 on T.ID = S.ID
                 when matched then
                     update set T.ParentID = S.ParentID;                                               
-            ");
+            ", commandTimeout: ExecuteQueryTimeout);
         }
 
         private void UpdateAttributesWithParentIDValues()
         {
+            Trace.TraceInformation("UpdateAttributesWithParentIDValues - Updating fusionattributes with the parent id values from the insert process.");
             //fusionattributetempvalues doesnt have any id values need to get them from AttributeMappingCollection
             foreach (var item in _workArea.FusionAttributeTempValues)
             {
@@ -758,7 +783,7 @@ namespace d360.fusion
 
                 if(dbItem == null)
                 {
-                    Trace.WriteLine("Unable to resolve id of source id[" + item.SourceID + "] This should not happen as we should have inserted this already and reloaded.");
+                    Trace.TraceInformation("Unable to resolve id of source id[" + item.SourceID + "] This should not happen as we should have inserted this already and reloaded.");
 
                     continue;
                 }
@@ -770,7 +795,7 @@ namespace d360.fusion
 
                 if (parent == null)
                 {
-                    Trace.WriteLine("Unable to resolve parent of source id[" + item.SourceID + "], Parent[" + item.ParentSourceID + "]");
+                    Trace.TraceInformation("Unable to resolve parent of source id[" + item.SourceID + "], Parent[" + item.ParentSourceID + "]");
                 }
                 else
                 {
@@ -795,20 +820,21 @@ namespace d360.fusion
                  from 
                     fieldtype 
                 where [object] = 'FusionAttributeType'
-                ");
+                ", commandTimeout:ReadQueryTimeout);
         }
 
         private async Task DoFusionFieldMerge(SqlConnection companyConnection)
         {
-            await companyConnection.ExecuteAsync(@"create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(4000))");
+            await companyConnection.ExecuteAsync(@"create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(4000))", commandTimeout: ExecuteQueryTimeout);
 
-            Trace.TraceInformation("INSERTING {0} FIELD VALUES TO TEMPFUSIONFIELDS TEMP TABLE.", _workArea.FieldTempValues.Count);
+            Trace.TraceInformation("DoFusionFieldMerge - INSERTING {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", _workArea.FieldTempValues.Count);
             //insert to the temp table
 
             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
             {
                 bulkCopy.BatchSize = _workArea.FieldTempValues.Count;
                 bulkCopy.DestinationTableName = "#tempFusionFields";
+                bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
                 var table = new DataTable();
                 var columnName = "FusionAttributeID";
@@ -837,6 +863,9 @@ namespace d360.fusion
                 await bulkCopy.WriteToServerAsync(table);
             }
 
+            Trace.TraceInformation("DoFusionFieldMerge - INSERTED {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", _workArea.FieldTempValues.Count);
+
+            Trace.TraceInformation("DoFusionFieldMerge - Starting to merge #tempFusionFields with [dbo].[field]");
 
             //merge temp table with fields table
             await companyConnection.ExecuteAsync(@"
@@ -853,7 +882,9 @@ namespace d360.fusion
                 when not matched then
                     insert (FieldTypeID, ObjectType, ObjectID, Value)
                     values (S.FieldTypeID, 'FusionAttribute', S.ObjectID, S.Value);
-            ", new { fus = FusionID }, null,10000);
+            ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout);
+
+            Trace.TraceInformation("DoFusionFieldMerge - Completed merge of #tempFusionFields with [dbo].[field]");
         }
 
         private void GenerateFusionFieldTableValues(List<Dictionary<string, string>> models)
@@ -863,7 +894,7 @@ namespace d360.fusion
             {
                 if(x == null)
                 {
-                    Trace.WriteLine("INVALID MODEL IN MODELS COLLECTION");
+                    Trace.TraceInformation("INVALID MODEL IN MODELS COLLECTION");
 
                     continue;
                 }
@@ -878,7 +909,7 @@ namespace d360.fusion
 
                 if(string.IsNullOrEmpty(fusionTypeIDString))
                 {
-                    Trace.WriteLine("INVALID KEY IN MODEL KEY VALUE COLLECTION");
+                    Trace.TraceInformation("INVALID KEY IN MODEL KEY VALUE COLLECTION");
 
                     continue;
                 }
@@ -900,7 +931,7 @@ namespace d360.fusion
 
                     if(string.IsNullOrEmpty(item.Key))
                     {
-                        Trace.WriteLine("INVALID KEY IN MODEL KEY VALUE COLLECTION");
+                        Trace.TraceInformation("INVALID KEY IN MODEL KEY VALUE COLLECTION");
 
                         continue;
                     }
@@ -909,7 +940,7 @@ namespace d360.fusion
 
                     if(fieldInfo == null)
                     {
-                        Trace.WriteLine("Encountered unexpected field for a fusionattributetype.  Cannot find mapping for fusion attribute type id [" + fusionTypeID + "] to a field with the name [" + item.Key + "]");
+                        Trace.TraceInformation("Encountered unexpected field for a fusionattributetype.  Cannot find mapping for fusion attribute type id [" + fusionTypeID + "] to a field with the name [" + item.Key + "]");
 
                         continue;
                     }
@@ -928,7 +959,7 @@ namespace d360.fusion
 
         private async Task DoFusionAttributeMerge(SqlConnection companyConnection)
         {
-            await companyConnection.ExecuteAsync(@"create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250))");
+            await companyConnection.ExecuteAsync(@"create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250))", commandTimeout: ExecuteQueryTimeout);
             
             Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE VALUES TO #tempFusionAttributes TEMP TABLE.", _workArea.FusionAttributeTempValues.Count);
 
@@ -937,6 +968,7 @@ namespace d360.fusion
             {
                 bulkCopy.BatchSize = _workArea.FusionAttributeTempValues.Count;
                 bulkCopy.DestinationTableName = "#tempFusionAttributes";
+                bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
                 var table = new DataTable();
                 var columnName = "FusionAttributeTypeID";
@@ -992,7 +1024,7 @@ namespace d360.fusion
                 when not matched then
                     insert (FusionID, FusionAttributeTypeID, SourceID, Name, Deleted)
                     values (@fus, S.FusionAttributeTypeID, S.SourceID, S.Name, S.Deleted);
-            ", new { fus = FusionID });
+            ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout);
         }
 
         private void GenerateFusionAttributeTableValues(List<Dictionary<string, string>> models)
@@ -1040,7 +1072,7 @@ namespace d360.fusion
                 await companyConnection.ExecuteAsync(@"
                                                         set nocount on 
                                                         create table #tempSourceID(SourceID varchar(250) not null)
-                                                        set nocount off");
+                                                        set nocount off", commandTimeout: ExecuteQueryTimeout);
 
                 Trace.TraceInformation("INSERTING {0} FUSIONATTRIBUTE SOURCE IDS INTO #tempSourceID TEMP TABLE", _workArea.InSourceIDList.Count);
                 
@@ -1048,6 +1080,7 @@ namespace d360.fusion
                 {
                     bulkCopy.BatchSize = _workArea.InSourceIDList.Count;
                     bulkCopy.DestinationTableName = "#tempSourceID";
+                    bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
                     var table = new DataTable();
                     var columnName = "SourceID";
@@ -1075,13 +1108,13 @@ namespace d360.fusion
 	                    f.sourceid in (select * from #tempSourceID)
 		                    AND
 	                    f.fusionid = @inFusionID
-                ", new { inFusionID = FusionID });
+                ", new { inFusionID = FusionID },commandTimeout:ReadQueryTimeout);
 
 
             }
             catch (SqlException sqE)
             {
-                Trace.WriteLine("SQL ERROR IN LoadCurrentFusionFieldInfo ERROR MESSAGE :" + sqE.Message);
+                Trace.TraceInformation("SQL ERROR IN LoadCurrentFusionFieldInfo ERROR MESSAGE :" + sqE.Message);
                 throw sqE;
             }
         }
@@ -1097,7 +1130,7 @@ namespace d360.fusion
 	                fusionattribute f	
                 where 	                
 	                f.fusionid = @inFusionID
-            ", new { inFusionID = FusionID });
+            ", new { inFusionID = FusionID },commandTimeout:ReadQueryTimeout);
 
             IsFirstRun = true;
 
@@ -1135,7 +1168,7 @@ namespace d360.fusion
 	                f.sourceid in (select * from #tempSourceID)
 		                AND
 	                f.fusionid = @inFusionID
-            ", new { inFusionID = FusionID });
+            ", new { inFusionID = FusionID },commandTimeout:ReadQueryTimeout);
         }
 
         private void RemoveRelationSpaces(FusionRelationshipModels relationships)
@@ -1156,7 +1189,7 @@ namespace d360.fusion
                 //try to get the SourceID attribute 
                 if (!item.TryGetValue(SourceIDAttribute, out sourceID))
                 {
-                    Trace.WriteLine("RemoveModelSpaces found node in models with no SourceID value");
+                    Trace.TraceInformation("RemoveModelSpaces found node in models with no SourceID value");
 
                     continue;
                 }
