@@ -128,6 +128,9 @@ namespace d360.fusion
 
                     //Update the executionID to say this is done
                     await UpdateExecutionWithStats(companyConnection);
+
+                    //add a call to update the cache
+                    await UpdateCache(companyConnection);
                 }
                 catch (AggregateException exception)
                 {
@@ -150,6 +153,13 @@ namespace d360.fusion
                 }
             }
                         
+        }
+
+        private async Task UpdateCache(SqlConnection companyConnection)
+        {
+            await companyConnection.ExecuteAsync(@"
+                                        insert into [queue].[FusionCache] (FusionID) values (@f)
+                                ", new { f = FusionID });
         }
 
         private void LogFusionError(SqlConnection companyConnection, Exception ex)
