@@ -14,6 +14,7 @@ namespace d360.workers.FusionWorkerRole
         private static int _DBBulkCopyTimeout { get; set; }
         private static int _DBReadQueryTimeout { get; set; }
         private static int _DBExecuteQueryTimeout { get; set; }
+        private static int _MaximumRetries { get; set; }
         /// <summary>
         /// This is the amount of time the message remains invisible after being
         /// read from the queue, before it becomes visible again (unless it is deleted)
@@ -123,6 +124,33 @@ namespace d360.workers.FusionWorkerRole
                       + "Setting DBExecuteQueryTimeout to {0}", _DBExecuteQueryTimeout);
                 }
                 return _DBExecuteQueryTimeout;
+            }
+        }
+
+        
+        internal static int MaximumRetries
+        {
+            get
+            {
+                if (_MaximumRetries <= 0)
+                {
+                    //hasn't been loaded yet, so load it 
+                    string VisTime =
+                      RoleEnvironment.GetConfigurationSettingValue("MaximumRetries");
+                    int intTest = 0;
+                    bool success = int.TryParse(VisTime, out intTest);
+                    if (!success || intTest <= 0)
+                    {
+                        _MaximumRetries = 3;
+                    }
+                    else
+                    {
+                        _MaximumRetries = intTest;
+                    }
+                    Trace.TraceInformation("[d360.workers.FusionWorkerRole.GlobalStaticProperties] "
+                      + "Setting MaximumRetries to {0}", _MaximumRetries);
+                }
+                return _MaximumRetries;
             }
         }
     }

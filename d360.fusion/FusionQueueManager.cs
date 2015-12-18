@@ -39,7 +39,8 @@ namespace d360.fusion
         public async Task ProcessMessagesAsync(int messageReservationTime = 1800,
                                                 int bulkTimeout = 180,
                                                 int readTimeout = 180,
-                                                int executionTimeout = 180)
+                                                int executionTimeout = 180,
+                                                int maxRetries = 3)
         {
             CloudQueue queue = _queueClient.GetQueueReference(constants.AZURE_FUSION_QUEUE);
             await queue.CreateIfNotExistsAsync();
@@ -54,6 +55,15 @@ namespace d360.fusion
                 {
                     break;
                 }
+
+
+                if (message.DequeueCount > maxRetries)
+                {
+                    await queue.DeleteMessageAsync(message);
+
+                    Trace.TraceError("MESSAGE HAS EXCEEDED THE MAX NUMBER OF RETRIES AND IS BEING DELETED.  CONTENT: {0}", message.AsString);
+                }
+
                 FusionProcessingData fusion = JsonConvert.DeserializeObject<FusionProcessingData>(message.AsString);
                 
                 Trace.TraceInformation("FusionQueueManager loaded a message from the queue");

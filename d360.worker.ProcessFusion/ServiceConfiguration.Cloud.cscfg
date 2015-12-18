@@ -8,6 +8,7 @@
       <Setting name="DBExecuteQueryTimeout" value="600" />
       <Setting name="DBReadQueryTimeout" value="600"/>
       <Setting name="DBBulkCopyTimeout" value="300"/>
+      <Setting name="MaximumRetries" value="3"/>
     </ConfigurationSettings>
   </Role>
 </ServiceConfiguration>
