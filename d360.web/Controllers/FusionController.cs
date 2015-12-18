@@ -720,6 +720,8 @@ from	h", new { id = fusionID });
                     if (string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText = "P.[IntersectType0]";
                     if (string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText = "[IntersectType0]";
 
+                    if (columns.Contains("[type]"))
+                        columns = columns.Replace("[type]", "[_type]");
 
                     var querySql = string.Format(
 @"select A.ID, A.Name, 

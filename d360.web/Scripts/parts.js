@@ -1941,7 +1941,15 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
     }
 
     //#endregion
+    //modify type column
+    definition.Columns.forEach(function (item) {
+        if (item.datafield && item.datafield.toUpperCase() == 'TYPE') item.datafield = '_type';
+    });
 
+    definition.Fields.forEach(function(item){
+        if (item.name && item.name.toUpperCase() == 'TYPE') item.name = '_type';
+    });    
+    //add internal type
     definition.Fields.push({ name: 'Type', type: 'string' });
 
     var source = {
