@@ -69,7 +69,9 @@ namespace d360.fusion
                     {
                         try
                         {
+                            Stopwatch sw = Stopwatch.StartNew();
                             await fp.Process(fusion, bulkTimeout,readTimeout, executionTimeout);
+                            Trace.TraceInformation(string.Format("Fusion Processing Took\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
                             Trace.TraceInformation("Fusion Processing successful! FusionQueueManager deleting message from queue");
                             await queue.DeleteMessageAsync(message);

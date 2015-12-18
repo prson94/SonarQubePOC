@@ -4,9 +4,9 @@
     <Instances count="1" />
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
-      <Setting name="QueueMessageVisibilityTime" value="1800" />
-      <Setting name="DBExecuteQueryTimeout" value="300" />
-      <Setting name="DBReadQueryTimeout" value="300"/>
+      <Setting name="QueueMessageVisibilityTime" value="3600" />
+      <Setting name="DBExecuteQueryTimeout" value="600" />
+      <Setting name="DBReadQueryTimeout" value="600"/>
       <Setting name="DBBulkCopyTimeout" value="300"/>
     </ConfigurationSettings>
   </Role>

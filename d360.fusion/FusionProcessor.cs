@@ -36,8 +36,6 @@ namespace d360.fusion
         /// </summary>
         public int BulkCopyTimeout { get; set; }
 
-
-
         private FusionWorkArea _workArea = new FusionWorkArea();
 
         private static string SourceIDAttribute = "SourceID";
@@ -186,15 +184,13 @@ namespace d360.fusion
         private async Task SaveChangedValuesLog(SqlConnection companyConnection)
         {
             if (_workArea.Changes.ChangedValues.Count <= 0) return;
-            // TODO: Save changed fields / values to [fusion].[result] table.  Right now this uses the guid from fusion queue...
-            //[fusion].[ResultEx]
-
+            
             //bulk sql insert to the resultex table
             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock,null))
             {
                 
                 bulkCopy.BatchSize = _workArea.Changes.ChangedValues.Count();
-                bulkCopy.DestinationTableName = "[fusion].[resultex]";
+                bulkCopy.DestinationTableName = "[fusion].[result]";
                 bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
                 var table = new DataTable();
@@ -631,7 +627,7 @@ namespace d360.fusion
 
             //update the parentids by doing a merge
             sw.Restart();
-            await MergeUpdatedParentIDValues(companyConnection);
+            await UpdateFusionAttributeParentIDs(companyConnection);
             Trace.TraceInformation(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
             
             sw.Restart();
@@ -676,8 +672,7 @@ namespace d360.fusion
                 return;
             }
 
-            //COMPARE FUSION ATTRIBUTE INITIAL VALUE TO NEW ONE
-            //_workArea.ExistingFusionAttributeDictionary
+            //COMPARE FUSION ATTRIBUTE INITIAL VALUE TO NEW ONE           
             foreach (var x in _workArea.FusionAttributeTempValues)
             {
                 
@@ -761,16 +756,19 @@ namespace d360.fusion
             }
         }
 
-        private async Task MergeUpdatedParentIDValues(SqlConnection companyConnection)
+        private async Task UpdateFusionAttributeParentIDs(SqlConnection companyConnection)
         {
             await companyConnection.ExecuteAsync(@"create table #tempParentID([ID] int PRIMARY KEY, [ParentID] int);", commandTimeout: ExecuteQueryTimeout);
 
             //insert to the temp table            
             var parentsNeedingUpdates = _workArea.FusionAttributeTempValues.Where(x => x.ParentID > 0);
 
+            var count = parentsNeedingUpdates.Count();
+
+            if (count <= 0) return;
+
             using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
-            {
-                var count = parentsNeedingUpdates.Count();
+            {                
                 Trace.TraceInformation("INSERTING {0} PARENT/CHILD RELATIONSHIP MAPPINGS INTO TEMPPARENTID TEMP TABLE.", count);
 
                 bulkCopy.BatchSize = count;
@@ -801,6 +799,8 @@ namespace d360.fusion
 
                 await bulkCopy.WriteToServerAsync(table);
             }
+
+            Trace.TraceInformation("BULK COPY TO #tempParentID COMPLETED.  UPDATING FUSIONATTRIBUTE PARENTID COLUMN WITH NEW VALUES");
 
             await companyConnection.ExecuteAsync(@"
                 update	T

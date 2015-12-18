@@ -17,6 +17,7 @@ using d360.core.entities.api;
 using System.Text.RegularExpressions;
 using d360.core.exceptions;
 using d360.core.entities.Views;
+using d360.fusion;
 
 namespace d360.web.Controllers.Services
 {
@@ -528,6 +529,19 @@ where   ExecutionID = {0}", id);
                 fileName = string.Format("{0}.{1}.{2}.json", typeID, fusionID, date.ToString("yyyy-MM-dd_hh.mm.ss"));
                 Storage.CreateFile(folder, fileName, json);
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
+
+                Trace.TraceInformation("Enqueueing new fusion job on the queue.  Fusion ID: {0}, Company ID: {1}, Log:{2}",fusionID,Company.CurrentCompanyID, fileName);
+                var fusionQueue = new FusionQueueManager();
+
+                await fusionQueue.SendMessageAsync(new FusionProcessingData
+                {
+                    CompanyID = Company.CurrentCompanyID,
+                    FusionID = fusionID,
+                    LogFileName = fileName
+                });
+
+                Trace.TraceInformation("Done enqueueing the fusion job on the queue.");
+
             }
             catch (Exception ex)
             {
@@ -537,146 +551,7 @@ where   ExecutionID = {0}", id);
 
             json = null;
 
-            try
-            {
-                #region Serialize Raw Data
-
-                //try
-                //{
-                //    //var reader = new StreamReader(str);
-                //    //string content = reader.ReadToEnd();
-                //    string rawData = JsonConvert.SerializeObject(import);
-                //    ResourceService.AddRawApiMessage(SystemObjects.Fusion, fusionID, rawData);
-                //}
-                //catch (Exception ex)
-                //{
-                //    ResourceService.AddApiError(SystemObjects.Fusion, fusionID, ex);
-                //}
-
-                #endregion
-
-                var mXml = new XElement("ms");
-                var rowNumber = 1;
-                import.Models.ForEach(o =>
-                {
-                    var m = new XElement("m", new XAttribute("id", rowNumber));
-
-                    try
-                    {
-                        foreach (var k in o.Keys)
-                        {
-                            var value = (o[k] == null) ? "" : o[k];
-                            var key = _invalidXMLChars.Replace(k, "");
-
-                            if (value.Contains("<") || value.Contains(">"))
-                                m.Add(new XElement(key, new XCData(value)));
-                            else
-                            {
-                                m.Add(new XElement(key, _invalidXMLChars.Replace(value, "")));
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        //errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                        //Trace.TraceError("{0}{1}", prefix, errorMessage);
-                        SendException(ex, new Dictionary<string, string>() { 
-                            { "FusionID", fusionID.ToString() },
-                            { "Model Row", rowNumber.ToString() } 
-                        });
-                    }
-
-                    mXml.Add(m);
-                    rowNumber++;
-                });
-
-                var rXml = new XElement("rs");
-
-                try
-                {
-                    import.Relationships.ForEach(o =>
-                    {
-                        if (!string.IsNullOrEmpty(o.StartID) && !string.IsNullOrEmpty(o.EndID))
-                        {
-                            rXml.Add(new XElement("r", new XAttribute("s", o.StartID), new XAttribute("e", o.EndID), new XAttribute("a", string.IsNullOrEmpty(o.Action) ? "A" : o.Action)));                        
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    //errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                    //Trace.TraceError("{0}{1}", prefix, errorMessage);
-                    SendException(ex, new Dictionary<string, string>() { 
-                            { "FusionID", fusionID.ToString() }
-                    });
-                }
-
-                var doc = new XElement("import", mXml, rXml);
-
-                Trace.TraceInformation("{0}{1}", prefix, "Now saving queue item to database.");
-
-                var log = Company.Filter<FusionStatusLog>(i => i.FusionID == fusionID && i.DateCompleted.HasValue && i.Success).OrderByDescending(i => i.DateCompleted).Take(1).FirstOrDefault();
-
-                var queueItem = new QueueFusionItem { ID = ((log != null) ? log.ID : Guid.NewGuid()), FusionID = fusionID, Data = doc.ToString() };
-                Company.AddFusionQueueItem(queueItem);
-
-                try
-                {
-                    var execution = new FusionExecution { DateToUseForHistory = date, FusionID = fusionID, QueueID = queueItem.ID, RawLogFileName = fileName };
-                    Company.Add<FusionExecution>(execution);
-                }
-                catch (Exception ex)
-                {
-                    Trace.TraceError(ex.GetFullExceptionData());
-                }
-
-                Trace.TraceInformation("{0}{1}", prefix, "Finished saving queue item to database.");
-
-                Trace.TraceInformation("{0}{1}", prefix, "Starting to save xml to Azure blob.");
-                try
-                {
-                    var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
-                    Storage.CreateFolder(folder);
-                    fileName = string.Format("{0}.{1}.{2}.xml", typeID, fusionID, date.ToString("yyyy-MM-dd_hh.mm.ss"));
-                    Storage.CreateFile(folder, fileName, doc.ToString());
-                    Trace.TraceInformation("{0}{1}", prefix, "Saved transformed xml data to storage container.");
-                }
-                catch (Exception ex)
-                {
-                    errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                    Trace.TraceError("{0}{1}", prefix, errorMessage);
-                }
-
-                Trace.TraceInformation("{0}{1}", prefix, "Finished saving xml to Azure blob.");
-
-                return Request.CreateResponse<string>(HttpStatusCode.OK, "Now parsing items");
-            }
-            catch (BaseException ex)
-            {
-                //errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                //Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                SendException(ex, new Dictionary<string, string>() { 
-                            { "FusionID", fusionID.ToString() }
-                });
-
-                var msg = new HttpResponseMessage(ex.StatusCode);
-                msg.ReasonPhrase = ex.StatusDescription;
-                throw new HttpResponseException(msg);
-            }
-            catch (Exception ex)
-            {
-                //errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                //Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                SendException(ex, new Dictionary<string, string>() { 
-                            { "FusionID", fusionID.ToString() }
-                });
-
-                var msg = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                msg.ReasonPhrase = ex.InnerException != null ? ex.InnerException.Message.Replace(@"\n", "; ") : ex.Message.Replace(@"\n", "; ");
-                throw new HttpResponseException(msg);
-            }
+            return Request.CreateResponse<string>(HttpStatusCode.OK, "Now parsing items");
         }
 
         /// <summary>
