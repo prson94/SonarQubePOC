@@ -137,6 +137,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workers.FusionWorkerRo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.fusion", "d360.fusion\d360.fusion.csproj", "{0373748F-2BCE-4C69-8031-7D7907282B60}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.FusionRelationshipProcessing", "Jobs\d360.jobs.FusionRelationshipProcessing\d360.jobs.FusionRelationshipProcessing.csproj", "{E2D62185-65D3-461C-B0E2-479C1D3B8434}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -597,6 +599,18 @@ Global
 		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|x86.ActiveCfg = Release|Any CPU
 		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|x86.Build.0 = Release|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|x86.Build.0 = Debug|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|x86.ActiveCfg = Release|Any CPU
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -643,9 +657,10 @@ Global
 		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B} = {308C42E3-824D-4028-8C69-60FAD6754839}
 		{23A76C7C-9489-4CA2-AA7B-6182924EC188} = {308C42E3-824D-4028-8C69-60FAD6754839}
 		{0373748F-2BCE-4C69-8031-7D7907282B60} = {DF896E70-6A4C-4E11-B0AF-0780094E0BEF}
+		{E2D62185-65D3-461C-B0E2-479C1D3B8434} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 39
+		SccNumberOfProjects = 40
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -801,6 +816,10 @@ Global
 		SccProjectTopLevelParentUniqueName38 = D360.sln
 		SccProjectName38 = d360.fusion
 		SccLocalPath38 = d360.fusion
+		SccProjectUniqueName39 = Jobs\\d360.jobs.FusionRelationshipProcessing\\d360.jobs.FusionRelationshipProcessing.csproj
+		SccProjectTopLevelParentUniqueName39 = D360.sln
+		SccProjectName39 = Jobs/d360.jobs.FusionRelationshipProcessing
+		SccLocalPath39 = Jobs\\d360.jobs.FusionRelationshipProcessing
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi

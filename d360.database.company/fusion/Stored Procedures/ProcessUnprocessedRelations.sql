@@ -21,10 +21,10 @@ begin
 						E.ID,
 						S.FusionAttributeTypeID,
 						E.FusionAttributeTypeID,
-						RT.SourceIntersectTypeNodeID,
-						RT.TargetIntersectTypeNodeID,
-						RT.IntersectTypeID,
-						V.IntersectID
+						rel.SourceIntersectTypeNodeID,
+						rel.TargetIntersectTypeNodeID,
+						rel.IntersectTypeID,
+						null
 				from	(
 						select	srm.StartID,
 								srm.EndID
@@ -32,16 +32,10 @@ begin
 						) R
 						inner join FusionAttribute S on S.SourceID = R.StartID
 						inner join FusionAttribute E on E.SourceID = R.EndID
-						cross apply (
-									select	IntersectTypeID,
-											SourceIntersectTypeNodeID,
-											TargetIntersectTypeNodeID
-									from	utility.RelationshipTypes
-									where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = S.FusionAttributeTypeID 
-											and TargetObjectType = 'FusionAttributeType' and TargetObjectID = E.FusionAttributeTypeID
-									) RT
-						left join cache.Relationships V on V.SourceObject = 'FusionAttribute' and V.TargetObject = 'FusionAttribute' and V.SourceObjectID = S.ID and V.TargetObjectID = E.ID						
-				where	V.IntersectID is null --only get non-existent relationships
+						inner join utility.RelationshipTypes rel on (rel.SourceObjectID = S.FusionAttributeTypeID and rel.SourceObjectType = 'FusionAttributeType' and rel.TargetObjectType = 'FusionAttributeType' and rel.TargetObjectID = E.FusionAttributeTypeID)
+				WHERE  NOT EXISTS (select * from [intersect] i
+					inner join intersectnode inode on (i.id = inode.intersectid and inode.objectid = s.id and inode.objecttype = 'FusionAttribute')
+					inner join intersectnode inode2 on (i.id = inode2.intersectid and inode2.objectid = e.id and inode2.objecttype = 'FusionAttribute'))
 
 	-- process these relations as regular relations
 	exec [fusion].[ProcessFusionRelationships] @unprocessedRelationsExeId
