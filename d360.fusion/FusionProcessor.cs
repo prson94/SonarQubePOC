@@ -71,6 +71,9 @@ namespace d360.fusion
 
             if (FusionID <= 0) throw new Exception("Invalid fusion id specified.");
 
+            Trace.TraceInformation("====================================================================================================");
+            Trace.TraceInformation("STARTING FUSION JOB FOR FUSION ID: {0} COMPANY ID: {1} FILE: {2}", FusionID, CompanyID, LogFileName);
+            
             IStorageProvider storageProvider = new d360.extensions.storage.AzureStorageProvider();
                 
             var folderName = string.Format("bulk-fusion-{0}", fusionData.CompanyID);
@@ -86,10 +89,12 @@ namespace d360.fusion
 
             Trace.TraceInformation(string.Format("COMPLETED JSON DATA READ\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
+            Trace.TraceInformation("FUSION JOB HAS {0} MODELS, {1} RELATIONS", data.Models.Count, data.Relationships.Count);
+
             // Sanitize data
             //remove spaces from values in models           
             // this can be done in parrellel
-            var cTask = Task.Run(() => RemoveModelSpaces(data.Models));
+            var cTask = Task.Run(() => CleanModelData(data.Models));
             var fTask = Task.Run(() => RemoveRelationSpaces(data.Relationships));
 
             // wait for this to finish
@@ -309,7 +314,7 @@ namespace d360.fusion
         private async Task DoResolvedRelationsInsert(SqlConnection companyConnection)
         {
             // insert all the resolved relation into into a temp table
-            await companyConnection.ExecuteAsync(@"create table #tempResolvedRel([ID] INT IDENTITY(1,1) NOT NULL, IntersectTypeID int, SourceIntersectTypeID int, TargetIntersectTypeID int,  StartFusionAttributeID int, EndFusionAttributeID int)", commandTimeout: ExecuteQueryTimeout);
+            await companyConnection.ExecuteAsync(@"create table #tempResolvedRel([ID] INT IDENTITY(1,1) NOT NULL PRIMARY KEY, IntersectTypeID int, SourceIntersectTypeID int, TargetIntersectTypeID int,  StartFusionAttributeID int, EndFusionAttributeID int)", commandTimeout: ExecuteQueryTimeout);
 
             Trace.TraceInformation("WRITING {0} RESOLVED RELATIONSHIPS TO #TEMPRESOLVEDREL TEMP TABLE.", _workArea.Relationships.ResolvedRelationshipData.Count);
 
@@ -758,7 +763,7 @@ namespace d360.fusion
 
         private async Task MergeUpdatedParentIDValues(SqlConnection companyConnection)
         {
-            await companyConnection.ExecuteAsync(@"create table #tempParentID([ID] int, [ParentID] int);", commandTimeout: ExecuteQueryTimeout);
+            await companyConnection.ExecuteAsync(@"create table #tempParentID([ID] int PRIMARY KEY, [ParentID] int);", commandTimeout: ExecuteQueryTimeout);
 
             //insert to the temp table            
             var parentsNeedingUpdates = _workArea.FusionAttributeTempValues.Where(x => x.ParentID > 0);
@@ -798,15 +803,10 @@ namespace d360.fusion
             }
 
             await companyConnection.ExecuteAsync(@"
-                merge FusionAttribute as T
-                using (
-                    select ID,
-                        ParentID
-                    from #tempParentID
-                ) as S
-                on T.ID = S.ID
-                when matched then
-                    update set T.ParentID = S.ParentID;                                               
+                update	T
+			    set		T.ParentID = S.ParentID
+			    from	FusionAttribute T
+					    inner join #tempParentID S on T.ID = S.ID;
             ", commandTimeout: ExecuteQueryTimeout);
         }
 
@@ -864,7 +864,16 @@ namespace d360.fusion
 
         private async Task DoFusionFieldMerge(SqlConnection companyConnection)
         {
-            await companyConnection.ExecuteAsync(@"create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(4000))", commandTimeout: ExecuteQueryTimeout);
+            await companyConnection.ExecuteAsync(@"
+                    create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(4000),
+                        CONSTRAINT [PK_tempFusionFields] PRIMARY KEY CLUSTERED 
+                        (	                     
+	                        [FusionAttributeID] ASC,
+	                        [FieldTypeID] ASC
+                        )
+                    );
+            ", commandTimeout: ExecuteQueryTimeout);
+            
 
             Trace.TraceInformation("DoFusionFieldMerge - INSERTING {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", _workArea.FieldTempValues.Count);
             //insert to the temp table
@@ -998,7 +1007,14 @@ namespace d360.fusion
 
         private async Task DoFusionAttributeMerge(SqlConnection companyConnection)
         {
-            await companyConnection.ExecuteAsync(@"create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250))", commandTimeout: ExecuteQueryTimeout);
+            await companyConnection.ExecuteAsync(@"create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250),
+                                                        CONSTRAINT [PK_tempFusionAttributes] PRIMARY KEY CLUSTERED 
+                                                        (	                     
+	                                                        [FusionAttributeTypeID] ASC,
+	                                                        [SourceID] ASC
+                                                        )
+                                                       );
+                                                    ", commandTimeout: ExecuteQueryTimeout);
             
             Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE VALUES TO #tempFusionAttributes TEMP TABLE.", _workArea.FusionAttributeTempValues.Count);
 
@@ -1212,34 +1228,64 @@ namespace d360.fusion
 
         private void RemoveRelationSpaces(FusionRelationshipModels relationships)
         {
-            foreach (var item in relationships)
+            for (int i = relationships.Count - 1; i >= 0; i--)                
             {
-                item.EndID = item.EndID.Replace(" ", string.Empty).ToUpper();
-                item.StartID = item.StartID.Replace(" ", string.Empty).ToUpper();
-            }
-        }
+                relationships[i].EndID = relationships[i].EndID.Replace(" ", string.Empty).ToUpper();
+                relationships[i].StartID = relationships[i].StartID.Replace(" ", string.Empty).ToUpper();
 
-        private void RemoveModelSpaces(List<Dictionary<string, string>> models)
-        {
-            foreach (var item in models)
-            {
-                string sourceID = string.Empty;
-                string parentSourceID = string.Empty;
-                //try to get the SourceID attribute 
-                if (!item.TryGetValue(SourceIDAttribute, out sourceID))
+                if(string.IsNullOrEmpty(relationships[i].StartID))
                 {
-                    Trace.TraceInformation("RemoveModelSpaces found node in models with no SourceID value");
+                    Trace.TraceWarning("FUSION PROCESSING FOUND A RELATIONSHIP MISSING A VALID STARTID.  START ID:[{0}] END ID:[{1}]", relationships[i].StartID, relationships[i].EndID);
+
+                    relationships.RemoveAt(i);
 
                     continue;
                 }
 
-                item[SourceIDAttribute] = sourceID.Replace(" ", string.Empty).ToUpper();
+                if (string.IsNullOrEmpty(relationships[i].EndID))
+                {
+                    Trace.TraceWarning("FUSION PROCESSING FOUND A RELATIONSHIP MISSING A VALID ENDID.  START ID:[{0}] END ID:[{1}]", relationships[i].StartID, relationships[i].EndID);
 
-                if(item.TryGetValue(ParentSourceIDAttribute, out parentSourceID))
+                    relationships.RemoveAt(i);
+
+                    continue;
+                }
+            }
+        }
+
+        private void CleanModelData(List<Dictionary<string, string>> models)
+        {
+            SortedList<string, bool> existingSourceIDs = new SortedList<string, bool>();
+            
+            for (int i = models.Count - 1; i >= 0; i--)
+            {                
+                string sourceID = string.Empty;
+                string parentSourceID = string.Empty;
+                //try to get the SourceID attribute 
+                if (!models[i].TryGetValue(SourceIDAttribute, out sourceID))
+                {
+                    Trace.TraceWarning("FUSION PROCESSING FOUND A NODE MISSING A VALID SOURCE ID.  DATA:[{0}]", string.Join(";", models[i]));
+
+                    continue;
+                }
+
+                models[i][SourceIDAttribute] = sourceID.Replace(" ", string.Empty).ToUpper();
+
+                if(models[i].TryGetValue(ParentSourceIDAttribute, out parentSourceID))
                 {
                     if(!string.IsNullOrEmpty(parentSourceID))
-                        item[ParentSourceIDAttribute] = parentSourceID.Replace(" ", string.Empty).ToUpper();
+                        models[i][ParentSourceIDAttribute] = parentSourceID.Replace(" ", string.Empty).ToUpper();
                 }
+
+                //make sure this item doesnt exist more than once
+                if (existingSourceIDs.ContainsKey(sourceID))
+                {
+                    Trace.TraceWarning("INPUT FUSION DATA CONTAINS THE SAME SOURCEID VALUE MULTIPLE TIMES.  SOURCE ID:[{0}] MODEL:[{1}]", sourceID, string.Join(";", models[i]));
+
+                    models.RemoveAt(i);
+                }
+
+                existingSourceIDs[sourceID] = true;
 
                 _workArea.InSourceIDList.Add(sourceID);
             }
