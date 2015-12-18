@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using d360.core.entities;
 
-namespace d360.workers.FusionWorkerRole
+namespace d360.fusion
 {
     public interface IFusionQueueManager
     {

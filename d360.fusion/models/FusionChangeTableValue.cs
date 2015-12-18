@@ -1,10 +1,12 @@
-﻿namespace d360.fusion
+﻿using d360.core.entities;
+
+namespace d360.fusion
 {
     public class FusionChangeTableValue
     {        
-        public FusionChangeTableValue(FusionFieldTempTableValue fieldVal, string oldValue, string action)
+        public FusionChangeTableValue(Field fieldVal, string oldValue, string action)
         {
-            FusionAttributeID = fieldVal.FusionAttributeID;
+            FusionAttributeID = fieldVal.ObjectID;
             Value = fieldVal.Value;            
             Action = action;
             this.OldValue = oldValue;

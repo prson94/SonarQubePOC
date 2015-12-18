@@ -77,17 +77,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FusionAttributeTempTableValue.cs" />
-    <Compile Include="FusionAttributeToParentMapping.cs" />
+    <Compile Include="models\FusionAttributeTempTableValue.cs" />
+    <Compile Include="mappings\FusionAttributeToParentMapping.cs" />
     <Compile Include="FusionChangeInfoWorkData.cs" />
-    <Compile Include="FusionChangeTableValue.cs" />
-    <Compile Include="FusionFieldIDAttributeIDMapping.cs" />
-    <Compile Include="FusionFieldTempTableValue.cs" />
-    <Compile Include="FusionFieldTypeCache.cs" />
-    <Compile Include="FusionIntersectMapping.cs" />
+    <Compile Include="models\FusionChangeTableValue.cs" />
+    <Compile Include="mappings\FusionFieldIDAttributeIDMapping.cs" />
+    <Compile Include="mappings\FusionIntersectMapping.cs" />
     <Compile Include="FusionProcessor.cs" />
     <Compile Include="FusionQueueManager.cs" />
-    <Compile Include="FusionRelationshipTableData.cs" />
+    <Compile Include="models\FusionRelationshipTableData.cs" />
     <Compile Include="FusionRelationshipWorkData.cs" />
     <Compile Include="FusionWorkArea.cs" />
     <Compile Include="IFusionQueueManager.cs" />
@@ -119,6 +117,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

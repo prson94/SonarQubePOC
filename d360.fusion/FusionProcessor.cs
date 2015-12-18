@@ -8,9 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
-using System.Data.SqlTypes;
 using d360.extensions;
-using System.IO;
 using Newtonsoft.Json;
 using System.Data;
 
@@ -55,12 +53,14 @@ namespace d360.fusion
 
         public async Task Process(FusionProcessingData fusionData, int bulkTimeout, int readTimeout, int executeTimeout)
         {
+            BulkFusionImport data = null;
+
             BulkCopyTimeout = bulkTimeout;
             ReadQueryTimeout = readTimeout;
             ExecuteQueryTimeout = executeTimeout;
-
+            
             CompanyID = fusionData.CompanyID;
-                     
+
             FusionID = fusionData.FusionID;
 
             LogFileName = fusionData.LogFileName;
@@ -70,18 +70,18 @@ namespace d360.fusion
             if (string.IsNullOrEmpty(LogFileName)) throw new Exception("Error invalid or no file specified to process fusion data from");
 
             if (FusionID <= 0) throw new Exception("Invalid fusion id specified.");
-            
+
             IStorageProvider storageProvider = new d360.extensions.storage.AzureStorageProvider();
-            BulkFusionImport data = null;
+                
             var folderName = string.Format("bulk-fusion-{0}", fusionData.CompanyID);
             //load json from azure
 
             Stopwatch sw = Stopwatch.StartNew();
             Trace.TraceInformation("STARTING JSON DATA READ");
-                       
+
             string json = storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName);
             data = JsonConvert.DeserializeObject<BulkFusionImport>(json);
-            
+
             if (data == null) throw new Exception("UNABLE TO LOAD FUSION DATA FROM AZURE STORAGE / NULL FUSION DATA OBJECT.");
 
             Trace.TraceInformation(string.Format("COMPLETED JSON DATA READ\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
@@ -95,32 +95,71 @@ namespace d360.fusion
             // wait for this to finish
             await cTask;
             await fTask;
-
+            
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(CompanyID))
             {
-                companyConnection.Open();
-                //Generate an execution id
-                sw.Restart();                
-                ExecutionID = await LogExecution(companyConnection);
-                Trace.TraceInformation(string.Format("LogExecution\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+                try
+                {
+                    companyConnection.Open();
+                    //Generate an execution id
+                                        
+                    sw.Restart();
+                    ExecutionID = await LogExecution(companyConnection);
+                    Trace.TraceInformation(string.Format("LogExecution\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
-                //Process Models                
-                await ProcessModels(companyConnection, data.Models);
+                    Trace.TraceInformation("Processing fusion execution ID: [{0}]", ExecutionID);
+                    
+                    //Process Models                
+                    await ProcessModels(companyConnection, data.Models);
 
-                //Process Relationships
-                await ProcessRelationships(companyConnection, data.Relationships);
+                    //Process Relationships
+                    await ProcessRelationships(companyConnection, data.Relationships);
 
-                
-                sw.Restart();
-                await SaveChangedValuesLog(companyConnection);
-                Trace.TraceInformation(string.Format("SaveChangedValuesLog\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
-                //Promote Fusion ID
-                await PromoteFusion(companyConnection);
+                    sw.Restart();
+                    await SaveChangedValuesLog(companyConnection);
+                    Trace.TraceInformation(string.Format("SaveChangedValuesLog\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
-                //Update the executionID to say this is done
-                await UpdateExecutionWithStats(companyConnection);
+                    //Promote Fusion ID
+                    await PromoteFusion(companyConnection);
+
+                    //Update the executionID to say this is done
+                    await UpdateExecutionWithStats(companyConnection);
+                }
+                catch (AggregateException exception)
+                {
+                    Trace.TraceError("FusionProcessor::Process encountered and error while running fusion job.");
+                    foreach (Exception ex in exception.InnerExceptions)
+                    {
+                        Trace.TraceError("Exception details [{0}]", ex.Message);
+                        LogFusionError(companyConnection, ex);
+                    }
+                    
+                    throw exception;
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError("FusionProcessor::Process encountered and error while running fusion job.  Exception details [{0}]", ex.Message);
+
+                    LogFusionError(companyConnection, ex);
+
+                    throw ex;
+                }
             }
+                        
+        }
+
+        private void LogFusionError(SqlConnection companyConnection, Exception ex)
+        {
+            if (ex == null || ExecutionID <= 0)
+            {
+                Trace.TraceError("UNABLE TO LOG ERROR TO [FUSION].[ERROR] TABLE EXECUTION ID IS NULL OR EXCEPTION OBJECT IS NULL");
+
+                return;
+            }
+            companyConnection.Execute(@"
+                                            insert into [fusion].[error] ([ExecutionID],[Date],[Error]) values(@ID,CURRENT_TIMESTAMP,@message);
+                                        ", new { message = ex.ToString(), ID = ExecutionID });
         }
 
         private async Task PromoteFusion(SqlConnection companyConnection)
@@ -678,7 +717,7 @@ namespace d360.fusion
             
             foreach( var x in _workArea.FieldTempValues)
             {                
-                var key = string.Format("{0}_{1}", x.FieldTypeID, x.FusionAttributeID);
+                var key = string.Format("{0}_{1}", x.FieldTypeID, x.ObjectID);
                 string oldValue = string.Empty;
                 string action = string.Empty;
 
@@ -853,7 +892,7 @@ namespace d360.fusion
                 {
                     var row = table.NewRow();
 
-                    row["FusionAttributeID"] = item.FusionAttributeID;
+                    row["FusionAttributeID"] = item.ObjectID;
                     row["FieldTypeID"] = item.FieldTypeID;
                     row["Value"] = item.Value;                    
 
@@ -945,9 +984,9 @@ namespace d360.fusion
                         continue;
                     }
 
-                    FusionFieldTempTableValue fieldVal = new FusionFieldTempTableValue
+                    Field fieldVal = new Field
                     {
-                        FusionAttributeID = existingItem.ID,                        
+                        ObjectID = existingItem.ID,                        
                         Value = (item.Value.Length > MAX_FIELD_VALUE_LENGTH ? item.Value.Substring(0, MAX_FIELD_VALUE_LENGTH) : item.Value),
                         FieldTypeID = fieldInfo.FieldTypeID
                     };

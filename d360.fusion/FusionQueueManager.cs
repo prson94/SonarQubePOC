@@ -1,18 +1,14 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.fusion;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace d360.workers.FusionWorkerRole
+namespace d360.fusion
 {
     public class FusionQueueManager : IFusionQueueManager
     {

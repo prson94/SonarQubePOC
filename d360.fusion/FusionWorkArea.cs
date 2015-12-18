@@ -13,7 +13,7 @@ namespace d360.fusion
         {
             InSourceIDList = new List<string>();
             FusionAttributeTempValues = new List<FusionAttributeTempTableValue>();
-            FieldTempValues = new List<FusionFieldTempTableValue>();            
+            FieldTempValues = new List<core.entities.Field>();            
             Relationships = new FusionRelationshipWorkData();
             Changes = new FusionChangeInfoWorkData();
             ExistingFusionAttributeDictionary = new SortedList<string, string>();
@@ -31,7 +31,7 @@ namespace d360.fusion
 
         public SortedList<string, string> ExistingFusionAttributeDictionary { get; set; }
 
-        public List<FusionFieldTempTableValue> FieldTempValues { get; set; }       
+        public List<core.entities.Field> FieldTempValues { get; set; }       
 
         public FusionRelationshipWorkData Relationships { get; set; }
 
