@@ -2076,7 +2076,7 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
             path.forEach(function (item) {            
                 buildBreadcrumbLink('FusionAttributeType', item.typeid, item.typename, item.typeid, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttribute&parentID=' + item.parentID + '&parentFusionAttributeTypeID=' + item.typeid,false);
 
-                buildBreadcrumbLink('FusionAttribute', item.id, item.name, item.typeid, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + item.id + '&parentFusionAttributeID=' + item.parentID,true);
+                buildBreadcrumbLink('FusionAttribute', item.id, item.name, item.typeid, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + item.typeid + '&parentFusionAttributeID=' + item.id, true);
             });
         });
     }

@@ -1686,9 +1686,9 @@ order by A.FormattedValue
                                 select
                                     f.parentID as 'parentID', 
 	                                f.name as 'name', 
-	                                f.sourceid as 'id', 
+	                                f.id as 'id', 
 	                                f.fusionattributetypeid as 'typeid',
-	                                ft.name as 'typename'
+	                                ft.name as 'typename'                                    
                                 from fusionattribute f
                                 inner
                                 join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
