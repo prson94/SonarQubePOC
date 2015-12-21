@@ -1649,13 +1649,61 @@ order by A.FormattedValue
             return Company.GetById<Fusion>(id, i => i.FusionType);
         }
 
-        //[Route("fusion/{typeID:int}/configurations/{id:int}/attributes")]
-        //public List<FusionAttributeItem> GetAttributesByFusion(int typeID, int id)
-        //{
-        //    return Company.GetAttributesByFusion(id);
-        //}
+        [Route("fusion/{fusionAttributeID:int}/configurations/fromFusionAttribute")]
+        public HttpResponseMessage GetFusionConfigurationFromFusionAttribute(int fusionAttributeID)        
+        {
+            var fusionItemInfo = Company.Query<dynamic>(@"
+                            select
+	                            f.name as 'ItemName',
+	                            f.fusionID as 'ID',
+	                            f.parentID as 'ParentID',
+	                            f.fusionattributetypeid as 'FusionAttributeTypeID',
+	                            fu.fusiontypeid as 'FusionTypeID',
+	                            fu.name as 'Name',
+	                            fu.[description] as 'Description',
+                                f.id as 'SelectedID'
+                            from
+	                            fusionattribute f
+	                            inner join fusion fu on (f.fusionID = fu.id)
+	                            left outer join fusionattribute fp on (f.parentID = fp.id)
+                            where 
+	                            f.id = @fusAttrID
+                        ", new { fusAttrID = fusionAttributeID });
+                        
+            return Request.CreateResponse(HttpStatusCode.OK, fusionItemInfo);
+        }
 
+        [Route("fusion/selectedbreadcrumb/{selectedItemID:int}")]
+        public HttpResponseMessage GetSelectedFusionBreadcrumb(int selectedItemID)
+        {
+            var itemPathData = new List<dynamic>();
+                        
+            int itemID = selectedItemID;
+            
+            while(itemID > 0)
+            {
+                var currentItem = Company.Query<dynamic>(@"
+                                select
+                                    f.parentID as 'parentID', 
+	                                f.name as 'name', 
+	                                f.sourceid as 'id', 
+	                                f.fusionattributetypeid as 'typeid',
+	                                ft.name as 'typename'
+                                from fusionattribute f
+                                inner
+                                join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
+                                where f.id = @item", new { item = itemID }).FirstOrDefault();
 
+                if (currentItem == null) throw new Exception("invalid item id specified to generate breadcrumb from");
+
+                
+                itemID = currentItem.parentID ?? default(int);
+                itemPathData.Insert(0,currentItem);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, itemPathData);
+        }
+        
         [Route("fusion/ownership/ChildAttributeNodes"), HttpGet]
         public HttpResponseMessage GetOwnershipChildAttributeNodes(int fusionID, int targetFusionAttributeTypeID, int ruleID, int currentFusionAttributeTypeID = 0, int fusionAttributeID = 0)
         {

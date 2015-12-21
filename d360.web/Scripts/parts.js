@@ -1867,7 +1867,7 @@ function FieldsGrid(controlID, contextList, permissions, type, id, title) {
     //#endregion
 }
 
-function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefinition, definition, dataUri) {
+function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefinition, definition, dataUri,id) {
     var gridControlID = controlID + "_grid";
     controlID = '#' + controlID;
     $(controlID).html('<div id="' + gridControlID + '"></div>');
@@ -1875,11 +1875,11 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
 
     //#region Event Handlers
 
-    var doubleClick = function(event) {
+    var doubleClick = function (event) {        
         var args = event.args;
         var boundIndex = args.rowindex;     // row's bound index.
         var data = $(gridControlID).jqxGrid('getrowdata', boundIndex);
-
+        
         var dataUri = '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID;
 
         if (data.Type == 'FusionAttribute') {
@@ -1939,6 +1939,21 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
+
+    // in case where we dont have the definition we need to get it this happens on goto initial selected item
+    if(definition == null && id != null){        
+        $.ajax({
+            type:"GET",
+            url: "/api/FusionAttributeType/" + id + "/grid/definition",
+            async: false,
+            contentType:'application/json',
+            dataType: 'json',
+            success: function (data) {
+                definition = data;
+                definition.Fields.push({ name: 'FusionAttributeTypeID', type: 'number' });
+            }
+        });
+     }
 
     //#endregion
     //modify type column
@@ -2010,7 +2025,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
     }
 }
 
-function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusionID) {
+function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusionID,initialData) {
 
     var _innercontrolID = controlID + '_inner'; //stores original value.
     var breadcrumbControlID = controlID + "_breadcrumb";
@@ -2028,26 +2043,14 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
             { name: 'ParentFusionAttributeID', type: 'number' }
         ],
         Columns: [
-            { text: 'Name', dataField: 'Name' }//,
-            //{
-            //    text: '',
-            //    dataField: 'ID',
-            //    width: 40,
-            //    filterable: false,
-            //    sortable: false,
-            //    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-            //        var tools = [
-            //            { icon: 'pencil', urlprefix: '/form/EditFusionType?id={0}' }
-            //        ];
-            //        return renderToolsHtml(value, tools, contextList.FusionType);
-            //    }
-            //}
+            { text: 'Name', dataField: 'Name' }            
         ]
     };
 
     //#region Event Subscriptions
 
     function fusionItemSelected(data) {
+        console.log(data);
         var liID = 'H_' + data.type + '_' + data.id;
 
         $(breadcrumbControlID).append('<li class="separator">/</li><li id="' + liID + '">' + data.title + '</li>');
@@ -2063,8 +2066,41 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
             $(this).nextAll().remove();
             _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, $(this).data('definition'), $(this).data('uri'));
         });
-
+        
         _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, data.definition, data.uri);
+    }
+
+    function buildCurrentItemBreadcrumb(data) {        
+        //need to go from selected item to root and generate the breadcrumb
+        $.getJSON('/api/fusion/selectedbreadcrumb/' + data.SelectedID, function (path) {
+            path.forEach(function (item) {            
+                buildBreadcrumbLink('FusionAttributeType', item.typeid, item.typename, item.typeid, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttribute&parentID=' + item.parentID + '&parentFusionAttributeTypeID=' + item.typeid,false);
+
+                buildBreadcrumbLink('FusionAttribute', item.id, item.name, item.typeid, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + item.id + '&parentFusionAttributeID=' + item.parentID,true);
+            });
+        });
+    }
+
+    function buildBreadcrumbLink(type, id, name,typeid,uri,passdefault) {
+        var liID = 'H_' + type + '_' + id;
+        $(breadcrumbControlID).append('<li class="separator">/</li><li id="' + liID + '">' + name + '</li>');
+        $('#' + liID).data('type', type);
+        $('#' + liID).data('id', id);
+        $('#' + liID).data('uri', uri);
+
+        if (passdefault) {
+            var def = typeDefinition;
+            def.id = typeid;
+            def.title = name;
+            def.type = type;
+            $('#' + liID).data('definition', def);
+        }
+
+        $('#' + liID).prevAll('li').not('.separator').addClass('clickable');
+        $('#' + liID).on('click', function () {
+            $(this).nextAll().remove();
+            _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, passdefault ? $(this).data('definition') : null, $(this).data('uri'), typeid);
+        });
     }
 
     function rootLiClick() {
@@ -2085,8 +2121,14 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
     //#endregion
-
-    _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType');
+    if (initialData != null) {
+        // build the breadcrumb for current item
+        buildCurrentItemBreadcrumb(initialData);
+        
+        _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + initialData.FusionAttributeTypeID + '&parentFusionAttributeID=' + initialData.ParentID);
+    }
+    else
+        _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType');
 }
 
 function FusionAttributePromotionRulesGrid(controlID, contextList, permissions, typeID, fusionID) {

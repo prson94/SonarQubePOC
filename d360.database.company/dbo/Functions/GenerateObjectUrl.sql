@@ -15,7 +15,7 @@ BEGIN
 	WHEN 'ArtifactType' THEN '#/artifacts/' + CAST(@TypeID as varchar(15))
 	WHEN 'Domain' THEN '#/domains/' +  + CAST(@TypeID as varchar(15)) + '/' +  + CAST(@ObjectID as varchar(15))
 	WHEN 'DomainType' THEN '#/domains/' + CAST(@TypeID as varchar(15))
-	WHEN 'FusionAttribute' THEN '#/fusion/' + CAST(@TypeID as varchar(15)) + '/' + + CAST(@ObjectID as varchar(15))
+	WHEN 'FusionAttribute' THEN '#/fusion/item/' + CAST(@TypeID as varchar(15)) + '/' + CAST(@ObjectID as varchar(15))
 	WHEN 'Fusion' THEN '#/fusion/' + CAST(@TypeID as varchar(15)) + '/' + + CAST(@ObjectID as varchar(15))
 	WHEN 'FusionType' THEN '#/fusion/' + CAST(@TypeID as varchar(15))
 	WHEN 'Group' THEN '#/groups/' + CAST(@ObjectID as varchar(15))
