@@ -8189,6 +8189,380 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
         #endregion
 
+        #region Predicate
+
+        #region Field Generation
+
+        public JsonResult Predicate_AddFields()
+        {
+            if (!Company.HasPermission(SystemObjects.Predicate, 0, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PredicateID</param>
+        public JsonResult Predicate_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<Predicate>(id);
+            if (!Company.HasPermission(SystemObjects.Predicate, id, Claim.Delete))
+                return jsonException("You do not have permissions to delete this.", HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">PredicateID</param>
+        public JsonResult Predicate_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<Predicate>(id);
+
+            if (!Company.HasPermission(SystemObjects.Predicate, id, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddPredicate()
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.Predicate,
+                FieldUri = "/form/Predicate_AddFields",
+                FormTitle = "Add predicate",
+                FormUri = "/form/AddPredicate",
+                FormMethod = "POST"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddPredicate(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("predicate");
+
+                if (!Company.HasPermission(SystemObjects.Predicate, 0, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new Predicate
+                {
+                    Name = parseTextField(form, "Name", null, true)
+                };
+
+                Company.Add<Predicate>(a);
+
+                return jsonSuccess(a.Name + " successfully created.", string.Format("DomainGroup|{0}", a.ID), form["_context"], "add", HttpStatusCode.Created, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult DeletePredicate(int id)
+        {
+            var a = Company.GetById<Predicate>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.Predicate,
+                FieldUri = string.Format("/form/Predicate_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
+                FormUri = "/form/DeletePredicate",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeletePredicate(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("predicate");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<Predicate>(id);
+                if (model == null) throw new NotFoundException("predicate");
+
+                if (!Company.HasPermission(SystemObjects.Predicate, model.ID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<Predicate>(model);
+                return jsonSuccess("Item successfully removed.", null, form["_context"], "delete", HttpStatusCode.OK, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult EditPredicate(int id)
+        {
+            var a = Company.GetById<Predicate>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.Predicate,
+                FieldUri = string.Format("/form/Predicate_EditFields?id={0}", id),
+                FormTitle = "Edit " + a.Name,
+                FormUri = "/form/EditPredicate",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditPredicate(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("predicate");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<Predicate>(id);
+                if (model == null) throw new NotFoundException("predicate");
+
+                if (!Company.HasPermission(SystemObjects.Predicate, model.ID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name", null, true);
+                Company.Update<Predicate>(model);
+
+                return jsonSuccess(model.Name + " successfully updated.", string.Format("DomainGroup|{0}", id), form["_context"], "edit", HttpStatusCode.OK, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region PredicatePhrase
+
+        #region Field Generation
+
+        public JsonResult PredicatePhrase_AddFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.Predicate, 0, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "PredicateID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Phrase", Name = "Phrase", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Phrase", true, "", 1, 250) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">Predicate Phrase ID</param>
+        public JsonResult PredicatePhrase_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<PredicatePhrase>(id);
+            if (!Company.HasPermission(SystemObjects.Predicate, a.PredicateID, Claim.Delete))
+                return jsonException("You do not have permissions to delete this.", HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">Predicate Phrase ID</param>
+        public JsonResult PredicatePhrase_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<PredicatePhrase>(id);
+
+            if (!Company.HasPermission(SystemObjects.Predicate, a.PredicateID, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Phrase", Name = "Phrase", FieldType = DataType.Text.ToString(), Value = a.Phrase, Validations = checkAndAddValidation("Text", "Phrase", true, "", 1, 250) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddPredicatePhrase(int id)
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.PredicatePhrase,
+                FieldUri = $"/form/PredicatePhrase_AddFields?id={id}",
+                FormTitle = "Add predicate phrase",
+                FormUri = "/form/AddPredicatePhrase",
+                FormMethod = "POST"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPost]
+        public JsonResult AddPredicatePhrase(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("predicate phrase");
+
+                if (!Company.HasPermission(SystemObjects.Predicate, 0, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new PredicatePhrase
+                {
+                    PredicateID = parseIntField(form, "PredicateID"),
+                    Phrase = parseTextField(form, "Phrase", null, true)
+                };
+
+                Company.Add<PredicatePhrase>(a);
+
+                return jsonSuccess("Phrase successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult DeletePredicatePhrase(int id)
+        {
+            var a = Company.GetById<PredicatePhrase>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.PredicatePhrase,
+                FieldUri = string.Format("/form/PredicatePhrase_DeleteFields?id={0}", id),
+                FormTitle = "Remove predicate phrase?",
+                FormUri = "/form/DeletePredicatePhrase",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeletePredicatePhrase(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("predicate phrase");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<PredicatePhrase>(id);
+                if (model == null) throw new NotFoundException("predicate phrase");
+
+                if (!Company.HasPermission(SystemObjects.Predicate, model.PredicateID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<PredicatePhrase>(model);
+                return jsonSuccess("Item successfully removed.", null, form["_context"], "delete", HttpStatusCode.OK, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult EditPredicatePhrase(int id)
+        {
+            var a = Company.GetById<PredicatePhrase>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.PredicatePhrase,
+                FieldUri = string.Format("/form/PredicatePhrase_EditFields?id={0}", id),
+                FormTitle = "Edit phrase",
+                FormUri = "/form/EditPredicatePhrase",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditPredicatePhrase(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("predicate phrase");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<PredicatePhrase>(id);
+                if (model == null) throw new NotFoundException("predicate");
+
+                if (!Company.HasPermission(SystemObjects.Predicate, model.ID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Phrase = parseTextField(form, "Phrase", null, true);
+                Company.Update<PredicatePhrase>(model);
+
+                return jsonSuccess("Phrase successfully updated.", string.Format("DomainGroup|{0}", id), form["_context"], "edit", HttpStatusCode.OK, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
         #region Report
 
         #region Field Generation

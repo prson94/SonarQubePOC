@@ -1,4 +1,4 @@
-﻿create procedure [fusion].[ProcessFusionInQueue]
+﻿CREATE procedure [fusion].[ProcessFusionInQueue]
 --declare
 	@queueID uniqueidentifier
 --set @queueID = '25921D75-6190-430A-A2DC-DC0D360F108A'
@@ -54,11 +54,13 @@ begin
 	begin
 		begin try			
 
-			insert into fusion.StagingItem (ExecutionID, RowID, Name, Value)
+			insert into fusion.StagingItem (ExecutionID, RowID, Name, Value, ValueAsShortChar,ValueAsInt)
 				SELECT @executionID,
 					T.c.value('./@id', 'int') as RowID,
 					P.p.value('local-name(.)', 'nvarchar(250)') as Name,
-					P.p.value('(./text())[1]', 'nvarchar(4000)') as Value
+					P.p.value('(./text())[1]', 'nvarchar(4000)') as Value,
+					P.p.value('(./text())[1]', 'varchar(250)') as ValueAsShortChar,
+					P.p.value('(./text())[1]', 'int') as ValueAsInt
 				FROM [queue].[Fusion] fus
 					CROSS APPLY data.nodes('/import/ms/m') as T(c)
 					cross apply T.c.nodes('*') P(p)
@@ -105,8 +107,21 @@ begin
 									) RT
 						left join cache.Relationships V on V.SourceObject = @objectType and V.TargetObject = @objectType and V.SourceObjectID = S.ID and V.TargetObjectID = E.ID						
 				where	V.IntersectID is null --only get non-existent relationships
-							
-			
+				
+			-- insert any unresolved relations to the unresolved relation table so they can be processed later			
+			insert into [fusion].[StagingRelationUnresolved] (startid,endid)
+				select 
+					startid, endid
+				from 
+					[fusion].[StagingRelationMapping] 
+				where 
+					ExecutionID = -1 
+						and
+					ID not in (select	
+									srm.ID
+								from	[fusion].[StagingRelationMapping] srm							
+										inner join fusion.stagingrelation S on S.executionid = -1 and S.StartID = srm.StartID and S.EndID = srm.EndID)
+
 
 			insert into fusion.StepStatistic values (@executionID, 1, DATEDIFF(ss, @start, getutcdate()))
 			set @nextStep = @nextStep + 1
@@ -129,7 +144,7 @@ begin
 					and Name in ('SourceID', 'ParentSourceID')
 
 			update	s
-			set		s.FusionAttributeTypeID = cast(fat_t.Value as int),
+			set		s.FusionAttributeTypeID = fat_t.ValueAsInt,
 					s.SourceID = src_t.Value,
 					s.ParentSourceID = psrc_t.Value,
 					s.FusionAttributeID = FA.ID,
@@ -153,15 +168,15 @@ begin
 					inner join fusion.StagingItem src_t on s.ExecutionID = @executionID and src_t.ExecutionID = s.ExecutionID and src_t.Name = 'SourceID' and src_t.RowID = s.RowID
 					left join fusion.StagingItem psrc_t on s.ExecutionID = @executionID and psrc_t.ExecutionID = s.ExecutionID and psrc_t.Name = 'ParentSourceID' and psrc_t.RowID = s.RowID
 					left join fusion.StagingItem da_t on s.ExecutionID = @executionID and da_t.ExecutionID = s.ExecutionID and da_t.Name = 'Action' and da_t.RowID = s.RowID and da_t.Value = 'D'
-					left join FusionAttribute FA on FA.FusionID = @fusionID and FA.SourceID = src_t.Value
-					left join FusionAttribute PFA on PFA.FusionID = @fusionID and PFA.SourceID = psrc_t.Value
+					left join FusionAttribute FA on FA.FusionID = @fusionID and FA.SourceID = src_t.ValueAsShortChar
+					left join FusionAttribute PFA on PFA.FusionID = @fusionID and PFA.SourceID = psrc_t.ValueAsShortChar
 					left join	(
 								select	ID,
 										ObjectID,
 										Name
 								from	FieldType
 								where	[Object] = 'FusionAttributeType'
-								) ft on ft.ObjectID = cast(fat_t.Value as int) and ft.Name = s.Name
+								) ft on ft.ObjectID = fat_t.ValueAsInt and ft.Name = s.Name
 					left join Field F on F.FieldTypeID = ft.ID and F.ObjectType = @objectType and F.ObjectID = FA.ID
 
 			insert into fusion.StepStatistic values (@executionID, 2, DATEDIFF(ss, @start, getutcdate()))
@@ -340,68 +355,9 @@ begin
 	-- STEP 8. Process Relations
 	if @nextStep = 8 and @continue = 1
 	begin
-		declare @Intersects IDTable
-		
+				
 		begin try		
-			-- delete any relations we already have that was already added from stagingrelation table so we dont duplicate
-			delete from fusion.stagingrelation where 
-				executionid = @executionID
-					and
-				id in(
-					select 
-						sr.id
-					from
-						intersectnode inode1
-						inner join intersectnode inode2 on(inode1.IntersectID = inode2.IntersectID)
-						inner join fusion.stagingrelation sr on(inode1.ObjectID = sr.startfusionattributeid and inode2.ObjectID = sr.endfusionattributeid and inode1.IntersectTypeNodeID = sr.startintersecttypenodeid and inode2.IntersectTypeNodeID = sr.endintersecttypenodeid)
-					where 
-						inode1.objecttype = @objectType
-								and
-						inode2.objecttype = @objectType);
-					
-			Declare @IDList Table(IntersectID int,StageID Int);
-			
-			--insert intersect records and save there id's
-			-- trick is to use merge to keep the sequence id and staging row ids
-			-- http://stackoverflow.com/questions/15614261/using-output-clause-to-insert-value-not-in-inserted
-			MERGE
-				INTO    [Intersect] d
-				USING   (
-						SELECT sr.IntersectTypeID isectid , 2 as class,sr.ID as srID
-							FROM [fusion].stagingrelation sr
-							where sr.ExecutionID = @executionID and sr.IntersectID is null
-						) s
-				ON      (1 = 0)
-				WHEN NOT MATCHED THEN
-				INSERT  (IntersectTypeID, Classification, Description)
-				VALUES  (isectid, class, NULL)
-				OUTPUT  INSERTED.ID, s.srID into @IDList;
-
-			--insert start records into intersect node
-			INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-					select sr.StartIntersectTypeNodeID, il.IntersectID, 'FusionAttribute',sr.StartFusionAttributeID from [fusion].[StagingRelation] sr inner join @IDList il on (sr.ID = il.StageID)
-						where	sr.ExecutionID = @executionID and sr.IntersectID is null;
-
-			--insert end records into intersect node
-			INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-					select sr.EndIntersectTypeNodeID, il.IntersectID, 'FusionAttribute',sr.EndFusionAttributeID from [fusion].[StagingRelation] sr inner join @IDList il on (sr.ID = il.StageID)
-						where	sr.ExecutionID = @executionID and sr.IntersectID is null;
-	
-			--update staginrelation to have the id's we used in intersect table
-			UPDATE	[fusion].[StagingRelation]
-					SET		IntersectID = idl.intersectid
-					from @IDList idl
-					WHERE	ExecutionID = @executionID and ID = idl.stageid;
-										
-			insert into @Intersects select idl.intersectid from @IDList idl;
-			
-			declare @IntersectCount int
-			select @IntersectCount = count(1) from @Intersects
-			if @IntersectCount > 0 
-			begin
-				EXEC cache.SynchronizeRelationships @Intersects
-			end
-
+			exec [fusion].[ProcessFusionRelationships] @executionID
 			insert into fusion.StepStatistic values (@executionID, 8, DATEDIFF(ss, @start, getutcdate()))
 			set @nextStep = @nextStep + 1
 			set @start = getutcdate()

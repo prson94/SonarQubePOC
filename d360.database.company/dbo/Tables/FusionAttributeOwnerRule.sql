@@ -14,34 +14,39 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_FusionAttributeOwnerRule_FusionID]
     ON [dbo].[FusionAttributeOwnerRule]([FusionID] ASC);
 
 
 GO
+
 CREATE TRIGGER [dbo].[FusionAttributeOwnerRule_AfterDelete]
    ON  [dbo].[FusionAttributeOwnerRule] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Fusion', FusionID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'FusionAttributeOwnerRule', ID from deleted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'Fusion', FusionID, coalesce(UpdatedBy, 0)), 'FusionAttributeOwnerRule', ID from deleted
 
 GO
+
 CREATE TRIGGER [dbo].[FusionAttributeOwnerRule_AfterInsert]
    ON  [dbo].[FusionAttributeOwnerRule] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Fusion', FusionID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'FusionAttributeOwnerRule', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'Fusion', FusionID, coalesce(UpdatedBy, 0)), 'FusionAttributeOwnerRule', ID from inserted
 
 GO
+
 CREATE TRIGGER [dbo].[FusionAttributeOwnerRule_AfterUpdate]
    ON  [dbo].[FusionAttributeOwnerRule] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Fusion', FusionID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'FusionAttributeOwnerRule', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'Fusion', FusionID, coalesce(UpdatedBy, 0)), 'FusionAttributeOwnerRule', ID from inserted

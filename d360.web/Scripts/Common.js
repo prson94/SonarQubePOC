@@ -35,6 +35,23 @@ $.extend($.gritter.options, {
 
 //#region Template Helpers
 
+Handlebars.getTemplate = function (name) {
+    if (Handlebars.templates === undefined || Handlebars.templates[name] === undefined) {
+        $.ajax({
+            url: '/content/templates/parts/' + name + '.html',
+            cache: true,
+            success: function (data) {
+                if (Handlebars.templates === undefined) {
+                    Handlebars.templates = {};
+                }
+                Handlebars.templates[name] = Handlebars.compile(data);
+            },
+            async: false
+        });
+    }
+    return Handlebars.templates[name];
+};
+
 Handlebars.registerHelper('formatIsCompleteBool', function (obj) {
     var text = "";
     if (obj)

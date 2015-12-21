@@ -23,6 +23,8 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_FieldType_Object]
     ON [dbo].[FieldType]([Object] ASC, [ObjectID] ASC);
@@ -40,12 +42,9 @@ AS
 
 GO
 
-
 CREATE TRIGGER [dbo].[FieldType_AfterDelete]
    ON  [dbo].[FieldType] 
    AFTER DELETE
 AS 
-		DELETE	O
-		FROM	Field O
-				inner join deleted d
-		ON		O.FieldTypeID = d.ID
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'FieldType', ID, 0), 'FieldType', ID from deleted

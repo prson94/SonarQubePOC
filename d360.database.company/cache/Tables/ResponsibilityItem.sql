@@ -1,33 +1,22 @@
-﻿CREATE TABLE [cache].[Responsibilities] (
+﻿CREATE TABLE [cache].[ResponsibilityItem] (
     [ResponsibilityID]        INT            NOT NULL,
     [ResponsibilityTypeID]    INT            NOT NULL,
     [ResponsibilityType]      NVARCHAR (250) NOT NULL,
     [AssigningItem]           VARCHAR (50)   NOT NULL,
     [AssigningItemID]         INT            NOT NULL,
-    [AssigningItemName]       NVARCHAR (250) NULL,
-    [AssigningItemUrl]        VARCHAR (250)  NULL,
-    [AssigningItemType]       VARCHAR (50)   NULL,
-    [AssigningItemTypeID]     INT            NULL,
-    [AssigningTypeName]       NVARCHAR (250) NULL,
     [Object]                  VARCHAR (50)   NOT NULL,
     [ObjectID]                INT            NOT NULL,
-    [ObjectName]              NVARCHAR (250) NULL,
-    [ObjectType]              VARCHAR (50)   NULL,
-    [ObjectTypeID]            INT            NULL,
-    [ObjectTypeName]          NVARCHAR (250) NULL,
-    [ObjectUrl]               VARCHAR (250)  NULL,
     [ResponsibleObject]       VARCHAR (50)   NOT NULL,
     [ResponsibleObjectID]     INT            NOT NULL,
-    [ResponsibleObjectName]   NVARCHAR (250) NULL,
-    [ResponsibleObjectUrl]    VARCHAR (250)  NULL,
     [ContextHash]             VARCHAR (50)   NOT NULL,
     [ResponsibilityTypeGroup] INT            NOT NULL,
     [Visible]                 BIT            CONSTRAINT [DF_CacheResponsibilities_Visible] DEFAULT ((1)) NOT NULL,
     [TargetResponsibilityID]  INT            NULL,
     CONSTRAINT [PK_CacheResponsibilities] PRIMARY KEY CLUSTERED ([ResponsibilityID] ASC, [AssigningItem] ASC, [AssigningItemID] ASC, [Object] ASC, [ObjectID] ASC, [ContextHash] ASC)
 );
-GO
 
-CREATE NONCLUSTERED INDEX [IX_CacheResponsibilities_ResponsibleObject]
-    ON [cache].[Responsibilities]([ResponsibleObject] ASC, [ResponsibleObjectID] ASC);
+
 GO
+CREATE NONCLUSTERED INDEX [IX_CacheResponsibility_ResponsibleObject]
+    ON [cache].[ResponsibilityItem]([ResponsibleObject] ASC, [ResponsibleObjectID] ASC);
+

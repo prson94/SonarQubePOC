@@ -17,34 +17,39 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_FusionAttributePromotionRule_FusionID]
     ON [dbo].[FusionAttributePromotionRule]([FusionID] ASC);
 
 
 GO
+
 CREATE TRIGGER [dbo].[FusionAttributePromotionRule_AfterDelete]
    ON  [dbo].[FusionAttributePromotionRule] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Fusion', FusionID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'FusionAttributePromotionRule', ID from deleted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'Fusion', FusionID, coalesce(UpdatedBy, 0)), 'FusionAttributePromotionRule', ID from deleted
 
 GO
+
 CREATE TRIGGER [dbo].[FusionAttributePromotionRule_AfterInsert]
    ON  [dbo].[FusionAttributePromotionRule] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Fusion', FusionID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'FusionAttributePromotionRule', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'Fusion', FusionID, coalesce(UpdatedBy, 0)), 'FusionAttributePromotionRule', ID from inserted
 
 GO
+
 CREATE TRIGGER [dbo].[FusionAttributePromotionRule_AfterUpdate]
    ON  [dbo].[FusionAttributePromotionRule] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Fusion', FusionID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'FusionAttributePromotionRule', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'Fusion', FusionID, coalesce(UpdatedBy, 0)), 'FusionAttributePromotionRule', ID from inserted

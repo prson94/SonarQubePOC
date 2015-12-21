@@ -175,8 +175,8 @@
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Web.RedisSessionStateProvider, Version=1.6.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Web.RedisSessionStateProvider.1.6.5\lib\net40\Microsoft.Web.RedisSessionStateProvider.dll</HintPath>
+    <Reference Include="Microsoft.Web.RedisSessionStateProvider, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Web.RedisSessionStateProvider.2.0.1\lib\net40\Microsoft.Web.RedisSessionStateProvider.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.WindowsAzure.Configuration, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -207,7 +207,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
-      <HintPath>..\packages\Swashbuckle.Core.5.0.0\lib\net40\Swashbuckle.Core.dll</HintPath>
+      <HintPath>..\packages\Swashbuckle.Core.5.2.2\lib\net40\Swashbuckle.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -299,7 +299,7 @@
     <Reference Include="System.EnterpriseServices" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
-      <HintPath>..\packages\WebActivatorEx.2.0.6\lib\net40\WebActivatorEx.dll</HintPath>
+      <HintPath>..\packages\WebActivatorEx.2.1.0\lib\net40\WebActivatorEx.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -452,6 +452,7 @@
     <Content Include="Content\styles\apps.min.css">
       <DependentUpon>apps.css</DependentUpon>
     </Content>
+    <Content Include="Content\templates\parts\LineageDiagram.html" />
     <Content Include="Content\templates\rules.list.html" />
     <Content Include="Content\templates\policies.list.html" />
     <Content Include="Content\templates\policies.admin.html" />
@@ -899,6 +900,7 @@
     <None Include="Properties\PublishProfiles\d3s-ui-central.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-central__Development.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-central__Test.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-Nightly - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui__Development.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui__Test.pubxml" />
@@ -1308,8 +1310,8 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\BuildBundlerMinifier.1.5.134\build\BuildBundlerMinifier.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildBundlerMinifier.1.5.134\build\BuildBundlerMinifier.targets'))" />
-    <Error Condition="!Exists('..\packages\BuildWebCompiler.1.8.277\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildWebCompiler.1.8.277\build\BuildWebCompiler.targets'))" />
+    <Error Condition="!Exists('..\packages\BuildWebCompiler.1.8.282\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildWebCompiler.1.8.282\build\BuildWebCompiler.targets'))" />
   </Target>
   <Import Project="..\packages\BuildBundlerMinifier.1.5.134\build\BuildBundlerMinifier.targets" Condition="Exists('..\packages\BuildBundlerMinifier.1.5.134\build\BuildBundlerMinifier.targets')" />
-  <Import Project="..\packages\BuildWebCompiler.1.8.277\build\BuildWebCompiler.targets" Condition="Exists('..\packages\BuildWebCompiler.1.8.277\build\BuildWebCompiler.targets')" />
+  <Import Project="..\packages\BuildWebCompiler.1.8.282\build\BuildWebCompiler.targets" Condition="Exists('..\packages\BuildWebCompiler.1.8.282\build\BuildWebCompiler.targets')" />
 </Project>

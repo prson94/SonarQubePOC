@@ -139,7 +139,7 @@ namespace d360.web
                 if (!string.IsNullOrEmpty(token))                   Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
                 if (context.Request.User.Identity.IsAuthenticated)  Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
                 if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated) return;
-                context.Response.Write("User Not Found For Company");
+                //context.Response.Write("User Not Found For Company");
             }
 
             await _next.Invoke(environment);

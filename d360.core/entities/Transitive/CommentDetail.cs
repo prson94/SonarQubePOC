@@ -114,9 +114,16 @@ namespace d360.core.entities
         {
             if (!string.IsNullOrEmpty(TagsXml))
             {
-                Tags.AddRange(
-                    XElement.Parse(TagsXml).Elements("tag").Select(i => new CommentDetailTag { Object = i.Element("Object").Value, ObjectID = int.Parse(i.Element("ObjectID").Value), ObjectTypeName = i.Element("ObjectTypeName").Value, TextPath = i.Element("TextPath").Value, Url = i.Element("Url").Value, IconBackColor = i.Element("IconBackColor").Value, IconForeColor = i.Element("IconForeColor").Value })
-                );
+                try
+                {
+                    Tags.AddRange(
+                        XElement.Parse(TagsXml).Elements("tag").Select(i => new CommentDetailTag { Object = i.Element("Object").Value, ObjectID = int.Parse(i.Element("ObjectID").Value), ObjectTypeName = i.Element("ObjectTypeName").Value, TextPath = i.Element("TextPath").Value, Url = i.Element("Url").Value, IconBackColor = i.Element("IconBackColor").Value, IconForeColor = i.Element("IconForeColor").Value })
+                    );
+                }
+                catch (Exception ex)
+                {
+
+                }
             }
         }
 

@@ -2,19 +2,35 @@
     <div class="ui segment">
         @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.SourceToTarget, Description = "", Name = "Add Source" })
 
-        <div class="FieldNameRequired">Source?</div>
-        <div id="SubjectDropdown"></div>
-
-        <div class="FieldNameRequired">Target?</div>
-        <div id="ObjectDropdown"></div>
-
-        <div class="FieldNameRequired">What Role Is This Source?</div>
-        <div id="PredicateDropdown"></div>
+        <div class="row">
+            <div class="col l4 m4 s6">
+                <div class="FieldNameRequired">Source</div>
+                <div id="SubjectDropdown"></div>
+            </div>
+            <div class="col l4 m4 s6">
+                <div class="FieldNameRequired">Role</div>
+                <div id="PredicateDropdown"></div>
+            </div>
+            <div class="col l4 m4 s6">
+                <div class="FieldNameRequired">Target</div>
+                <div id="ObjectDropdown"></div>
+            </div>
+        </div>
+        @*<div class="FieldNameRequired">Source Or Target?</div>
+        <div id="SourceOrTargetButton">
+            <button style="padding:4px 16px;">Source</button>
+            <button style="padding:4px 16px;">Target</button>
+        </div>*@
+        <div id="ResultWrapper" style="visibility: hidden">
+            <div class="FieldName">Result</div>
+            <div id="Result"></div>
+        </div>
     </div>
 </div>
 <script type="text/javascript">
-    var Source = "@(ViewBag.Type)";
-    var SourceID = "@(ViewBag.ID)";
+    var objectName = "@(ViewBag.ObjectName)";
+    var object = "@(ViewBag.Object)";
+    var objectID = "@(ViewBag.ObjectID)";
 
     var FormValidationException = function (message) {
         this.message = message;
@@ -23,51 +39,92 @@
         }
     };
 
-    var AddRelationshipDestroy = function () {
-        $("#ItemsGrid").jqxGrid('destroy');
-        $('#ItemsDropdown').jqxDropDownButton('destroy');
-        $('#RoleDropdown').jqxDropDownButton('destroy');
-        $('#Description').redactor('destroy');
-        $('#ImportanceDropdown').jqxDropDownList('destroy');
+    var AddSourceDestroy = function () {
+        //$('#SubjectDropdown').jqxDropDownList('destroy');
+        //$('#SourceOrTargetButton').jqxButtonGroup('destroy');
+        //$('#PredicateDropdown').jqxDropDownList('destroy');
+    }
+
+    var createResultText = function () {
+        //var index = $('#SourceOrTargetButton').jqxButtonGroup('getSelection');
+
+        var stValue = $("#SubjectDropdown").jqxDropDownList('val');
+        var otValue = $("#ObjectDropdown").jqxDropDownList('val');
+        var prValue = $("#PredicateDropdown").jqxDropDownList('val');
+        var resultHtml = "";
+
+        if (stValue && otValue && prValue) {
+            var st = $("#SubjectDropdown").jqxDropDownList('getItemByValue', stValue);
+            var ot = $("#ObjectDropdown").jqxDropDownList('getItemByValue', otValue);
+            var predicate = $("#PredicateDropdown").jqxDropDownList('getItemByValue', prValue);
+            
+            resultHtml = "<u>" + st.label + "</u> " + predicate.label + " " + "<u>" + ot.label + "</u>";
+            //switch (index) {
+            //    case 0:
+            //        resultHtml = "<u>" + st.label + "</u> " + predicate.label + " " + "<u>" + objectName + "</u>";
+
+            //        break;
+            //    default:
+            //        resultHtml = "<u>" + objectName + "</u> " + predicate.label + " " + "<u>" + st.label + "</u>";
+            //        break;
+            //}
+        }
+
+        $('#Result').html(resultHtml);
+        $('#ResultWrapper').css("visibility", (resultHtml != "") ? "visible" : "hidden");
     }
 
     $(function () {
 
-        //#region Subjects
+        //#region Subject
 
-        var SubjectsSource = {
+        var SubjectSource = {
             datafields: [
+                //{ name: 'IntersectID' },
+                //{ name: 'TargetObjectType' },
+                //{ name: 'TargetObjectID' },
+                //{ name: 'TargetName' }
                 { name: 'Object' },
                 { name: 'ObjectID' },
-                { name: 'Name' },
-                { name: 'Url' }
+                { name: 'Name' }
             ],
             datatype: "json",
-            url: '/relations/PossibleRelationshipsBySource?source=' + Source + '&id=' + SourceID + '&targetType=' + TargetType + '&targetTypeID=' + TargetTypeID
+            url: '/api/allitems'
+            //url: '/api/' + object + '/' + objectID + '/relations'
         };
 
-        var SubjectsAdapter = new $.jqx.dataAdapter(SubjectsSource);
+        var SubjectAdapter = new $.jqx.dataAdapter(
+            SubjectSource,
+            {
+                beforeLoadComplete: function (records) {
+                    for (var i = 0; i < records.length; i++) {
+                        var record = records[i];
+                        record.Value = record.Object + '|' + record.ObjectID;
+                        //record.Value = record.IntersectID + '|' + record.TargetObjectType + '|' + record.TargetObjectID;
+                    }
+                    return records;
+                }
+            }
+        );
 
-        $("#SubjectDropdown").jqxDropDownList({ theme: theme, source: SubjectsAdapter, width: field_width, height: field_height, valueMember: 'lastName', displayMember: 'firstName' });
+        $("#SubjectDropdown").jqxDropDownList({
+            theme: theme,
+            source: SubjectAdapter,
+            width: field_width,
+            height: field_height,
+            valueMember: 'Value',
+            displayMember: 'Name',
+            filterable: true,
+            dropDownWidth: 400,
+            searchMode: 'containsignorecase'
+        });
 
         //#endregion
 
-        //#region Objects
+        //#region SourceTargetButton
 
-        var ObjectsSource = {
-            datafields: [
-                { name: 'Object' },
-                { name: 'ObjectID' },
-                { name: 'Name' },
-                { name: 'Url' }
-            ],
-            datatype: "json",
-            url: '/relations/PossibleRelationshipsBySource?source=' + Source + '&id=' + SourceID + '&targetType=' + TargetType + '&targetTypeID=' + TargetTypeID// + '&intersectTypeID=' + IntersectTypeID
-        };
-
-        var ObjectsAdapter = new $.jqx.dataAdapter(ObjectsSource);
-
-        $("#ObjectDropdown").jqxDropDownList({ theme: theme, source: ObjectsAdapter, width: field_width, height: field_height, valueMember: 'lastName', displayMember: 'firstName' });
+        //$('#SourceOrTargetButton').jqxButtonGroup({ theme: theme, mode: 'radio', enableHover: true });
+        //$('#SourceOrTargetButton').jqxButtonGroup('setSelection', 0);
 
         //#endregion
 
@@ -75,18 +132,61 @@
 
         var PredicatesSource = {
             datafields: [
-                { name: 'Object' },
-                { name: 'ObjectID' },
-                { name: 'Name' },
-                { name: 'Url' }
+                { name: 'value' },
+                { name: 'group' },
+                { name: 'text' }
             ],
             datatype: "json",
-            url: '/relations/PossibleRelationshipsBySource?source=' + Source + '&id=' + SourceID + '&targetType=' + TargetType + '&targetTypeID=' + TargetTypeID// + '&intersectTypeID=' + IntersectTypeID
+            url: '/relations/sources/predicates'
         };
 
         var PredicatesAdapter = new $.jqx.dataAdapter(PredicatesSource);
 
-        $("#PredicateDropdown").jqxDropDownList({ theme: theme, source: PredicatesAdapter, width: field_width, height: field_height, valueMember: 'lastName', displayMember: 'firstName' });
+        $("#PredicateDropdown").jqxDropDownList({ theme: theme, source: PredicatesAdapter, width: field_width, height: field_height, valueMember: 'value', displayMember: 'text' });
+
+        //#endregion
+
+        //#region Object
+
+        var ObjectSource = {
+            datafields: [
+                //{ name: 'IntersectID' },
+                //{ name: 'TargetObjectType' },
+                //{ name: 'TargetObjectID' },
+                //{ name: 'TargetName' }
+                { name: 'Object' },
+                { name: 'ObjectID' },
+                { name: 'Name' }
+            ],
+            datatype: "json",
+            url: '/api/allitems'
+            //url: '/api/' + object + '/' + objectID + '/relations'
+        };
+
+        var ObjectAdapter = new $.jqx.dataAdapter(
+            ObjectSource,
+            {
+                beforeLoadComplete: function (records) {
+                    for (var i = 0; i < records.length; i++) {
+                        var record = records[i];
+                        record.Value = record.Object + '|' + record.ObjectID;
+                    }
+                    return records;
+                }
+            }
+        );
+
+        $("#ObjectDropdown").jqxDropDownList({
+            theme: theme,
+            source: ObjectAdapter,
+            width: field_width,
+            height: field_height,
+            valueMember: 'Value',
+            displayMember: 'Name',
+            filterable: true,
+            dropDownWidth: 400,
+            searchMode: 'containsignorecase'
+        });
 
         //#endregion
 
@@ -99,39 +199,128 @@
 
             try {
 
-                $.ajax('/api/' + Source + '/' + SourceID + '/relationships', {
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        Subject: $("#SubjectDropdown").val(),
-                        Object: $("#ObjectDropdown").val(),
-                        Predicate: $("#PredicateDropdown").val()
-                    },
-                    error: function (xhr, textStatus, error) {
-                        amplify.publish("RelationshipFormStatus", { title: 'Error When Adding Source', message: xhr.statusText + xhr.responseText, success: false });
-                        $('#EditableFormSaveButton').removeAttr('disabled');
-                        $('#progress').html('');
-                    },
-                    success: function (data, statusText, xhr) {
-                        AddRelationshipDestroy();
-                        amplify.publish("RelationshipFormStatus", { title: 'Successfully Added Source', message: xhr.statusText + xhr.responseText, success: true });
-                        amplify.publish("RelationshipSave", { action: 'Add', technical: (Source == 'Intersect'), targets: model.Targets });
-                        $('#EditableFormSaveButton').removeAttr('disabled');
-                        $('#progress').html('');
-                    }
-                });
+                var model = {
+                    Subject: "",
+                    SubjectID: 0,
+                    Object: '',
+                    ObjectID: 0,
+                    PredicatePhraseID: 0,
+                    IntersectID: 0
+                }
 
+                //var index = $('#SourceOrTargetButton').jqxButtonGroup('getSelection');
+                var stValue = $("#SubjectDropdown").jqxDropDownList('val');
+                var otValue = $("#ObjectDropdown").jqxDropDownList('val');
+                var prValue = $("#PredicateDropdown").jqxDropDownList('val');
+
+                if (stValue && otValue && prValue) {
+                    var st = $("#SubjectDropdown").jqxDropDownList('getItemByValue', stValue);
+                    var ot = $("#ObjectDropdown").jqxDropDownList('getItemByValue', otValue);
+                    var predicate = $("#PredicateDropdown").jqxDropDownList('getItemByValue', prValue);
+
+
+                    var stArray = st.value.split('|');
+                    //var IntersectID = stArray[0];
+                    var _subject = stArray[0];//[1];
+                    var _subjectID = stArray[1];//[2];
+
+                    var otArray = ot.value.split('|');
+                    var _object = otArray[0];//[1];
+                    var _objectID = otArray[1];//[2];
+
+                    model.Subject = _subject;
+                    model.SubjectID = _subjectID;
+                    model.Object = _object;
+                    model.ObjectID = _objectID;
+
+                    //switch (index) {
+                    //    case 0: // Source
+                    //        model.Subject = TargetObjectType;
+                    //        model.SubjectID = TargetObjectID;
+
+                    //        model.Object = object;
+                    //        model.ObjectID = objectID;
+                    //        break;
+                    //    default: // Target
+                    //        model.Subject = object;
+                    //        model.SubjectID = objectID;
+
+                    //        model.Object = TargetObjectType;
+                    //        model.ObjectID = TargetObjectID;
+                    //        break;
+                    //}
+                    //model.IntersectID = IntersectID;
+                    model.PredicatePhraseID = predicate.value;
+
+                    $.ajax('/relations/sources', {
+                        type: 'POST',
+                        dataType: 'json',
+                        data: model,
+                        error: function (xhr, textStatus, error) {
+                            amplify.publish("SourceFormStatus", { title: 'Error When Adding Source', message: xhr.statusText + xhr.responseText, success: false });
+                        },
+                        success: function (data, statusText, xhr) {
+                            AddSourceDestroy();
+                            amplify.publish("SourceFormStatus", {
+                                title: ((data.success) ? 'Successfully Added Source' : 'Error When Adding Source'),
+                                message: data.message,
+                                success: data.success
+                            });
+                            if (data.success) {
+                                AddSourceDestroy();
+                                amplify.publish("SourceSave");
+                            }
+                        }
+                    }).always(function () {
+                        $('#EditableFormSaveButton').removeAttr('disabled');
+                        $('#progress').html('');
+                    });
+                }
+                else {
+                    amplify.publish("RelationshipFormStatus", { title: 'Error When Adding Source', message: "You have not filled out the form completely.", success: false });
+                    $('#progress').html('');
+                }
             } catch (e) {
-                amplify.publish("RelationshipFormStatus", { title: 'Validation Error', message: e, success: false });
+                amplify.publish("SourceFormStatus", { title: 'Validation Error', message: e, success: false });
                 $('#EditableFormSaveButton').removeAttr('disabled');
                 $('#progress').html('');
             }
         });
 
         $('#EditableFormCancelButton').on('click', function () {
-            AddRelationshipDestroy();
-            amplify.publish("RelationshipCancel");
+            AddSourceDestroy();
+            amplify.publish("SourceCancel");
         });
+
+        $('#SubjectDropdown').on('change', function (event) {
+            createResultText();
+        });
+
+        $('#SubjectDropdown').one('bindingComplete', function (event) {
+            var item = $("#SubjectDropdown").jqxDropDownList('getItemByValue', object + '|' + objectID);
+            if (item) {
+                $("#SubjectDropdown").jqxDropDownList('selectItem', item);
+            }
+        });
+
+        $('#PredicateDropdown').on('change', function () {
+            createResultText();
+        });
+
+        $('#ObjectDropdown').on('change', function (event) {
+            createResultText();
+        });
+
+        $('#ObjectDropdown').one('bindingComplete', function (event) {
+            var item = $("#ObjectDropdown").jqxDropDownList('getItemByValue', object + '|' + objectID);
+            if (item) {
+                $("#ObjectDropdown").jqxDropDownList('selectItem', item);
+            }
+        });
+
+        //$('#SourceOrTargetButton').on('buttonclick', function () {
+        //    createResultText();
+        //});
 
         //#endregion
 

@@ -12,40 +12,40 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_DomainGroup_DomainTypeID]
     ON [dbo].[DomainGroup]([DomainTypeID] ASC);
 
 
 GO
+
+
 CREATE TRIGGER [dbo].[DomainGroup_AfterDelete]
    ON  [dbo].[DomainGroup] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'DomainType', DomainTypeID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'DomainGroup', ID from deleted
-		union
-		select 'DomainGroup', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'DomainGroup', ID from deleted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'DomainType', ID, coalesce(UpdatedBy, 0)), 'DomainGroup', ID from deleted
 
 GO
+
 CREATE TRIGGER [dbo].[DomainGroup_AfterInsert]
    ON  [dbo].[DomainGroup] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'DomainType', DomainTypeID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'DomainGroup', ID from inserted
-		union
-		select 'DomainGroup', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'DomainGroup', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'DomainType', DomainTypeID, coalesce(UpdatedBy, 0)), 'DomainGroup', ID from inserted
 
 GO
+
 CREATE TRIGGER [dbo].[DomainGroup_AfterUpdate]
    ON  [dbo].[DomainGroup] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'DomainType', DomainTypeID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'DomainGroup', ID from inserted
-		union
-		select 'DomainGroup', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'DomainGroup', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'DomainType', DomainTypeID, coalesce(UpdatedBy, 0)), 'DomainGroup', ID from inserted

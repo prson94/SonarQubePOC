@@ -1,0 +1,42 @@
+﻿<table>
+    <tbody>
+        <tr style="vertical-align:top;height:520px">
+            <td>
+                <div id="{{control}}_wrapper" style="height:520px;resize:vertical; overflow: auto">
+                    <div id="{{control}}_dgm" style="height:500px; overflow: no-display"></div>
+                </div>
+            </td>
+            <td style="width:350px;vertical-align:top;height:100%">
+                <div id="{{control}}_sidebar" style="height:100%; overflow-y: scroll;">
+                    <div id="{{control}}_controls">
+                        <div><i class="fa fa-gear"></i> Diagram Controls</div>
+                        <div style="padding-bottom: 10px">
+                            <h4>Zoom</h4>
+                            <div id="{{control}}_controls_zoom" style="display: inline-block; width: 75%"></div>
+                            <span id="zoomDisplay" style="display: inline-block; width: 25%">100% </span>
+                            <br/><br />
+                            <button onclick="$('#{{control}}_controls_zoom').val(1500);"> zoom to 100%</button>
+                            <button onclick="myDiagram.zoomToFit();"> zoom to fit</button>
+                            <button id="{{control}}_controls_reset">reset </button>
+                            <!--<button onclick="reOrderLayout();">reorganize </button>-->
+                            <!--| <button onclick="toggleFullscreen(isFullscreen);">toggle fullscreen</button>-->
+                            <!--| spacing: <input id="txtSpacing" type="text" value="25" maxlength="3" style="width:40px" onkeyup="changeSpacing($(this).val())" />-->
+                            <!--<button onclick="rotateDiagram();">rotate</button>-->
+                            <!--<button id="saveBtn" class="btn red" onclick="saveChanges();" style="float:right"><i class="fa fa-save"></i> Save Changes</button>-->
+                        </div>
+                    </div>
+                    <div id="{{control}}_actions"  style="display:none">
+                        <div><i class="fa fa-plus"></i> Actions</div>
+                        <div style="padding: 10px">
+                            <button>Remove</button>
+                        </div>
+                    </div>
+                    <div id="{{control}}_info">
+                        <div><i class="fa fa-info-circle"></i> Info</div>
+                        <div style="padding: 10px" id="{{control}}_info_body"></div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>

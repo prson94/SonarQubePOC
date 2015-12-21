@@ -11,29 +11,34 @@
 );
 
 
+
+
 GO
+
 CREATE TRIGGER [dbo].[StatisticType_AfterUpdate]
    ON  [dbo].[StatisticType] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'StatisticType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'StatisticType', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Update', [queue].WriteIndexXml('', 'StatisticType', ID, coalesce(UpdatedBy, 0)), 'StatisticType', ID from inserted
 
 GO
+
 CREATE TRIGGER [dbo].[StatisticType_AfterDelete]
    ON  [dbo].[StatisticType] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'StatisticType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'StatisticType', ID from deleted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'StatisticType', ID, coalesce(UpdatedBy, 0)), 'StatisticType', ID from deleted
 
 GO
+
 CREATE TRIGGER [dbo].[StatisticType_AfterInsert]
    ON  [dbo].[StatisticType] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'StatisticType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'StatisticType', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Add', [queue].WriteIndexXml('', 'StatisticType', ID, coalesce(UpdatedBy, 0)), 'StatisticType', ID from inserted

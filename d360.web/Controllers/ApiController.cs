@@ -1083,7 +1083,7 @@ namespace d360.web.Controllers
                     #region Actions
                     addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
                     addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityType, Icon = "lock", Title = ResponsibilityTypeGroup.People.ToString() + " Type", Uri = string.Format("/form/AddResponsibilityType?Group=1") });
-                    addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityType, Icon = "database", Title = ResponsibilityTypeGroup.Sourcing.ToString() + " Type", Uri = string.Format("/form/AddResponsibilityType?Group=2") });
+                    //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityType, Icon = "database", Title = ResponsibilityTypeGroup.Sourcing.ToString() + " Type", Uri = string.Format("/form/AddResponsibilityType?Group=2") });
                     if (id > 0)
                     {
                         //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityTypeClaim, Icon = "key", Title = Resources.Actions.AddClaim_Text, Uri = string.Format("/form/AddResponsibilityTypeClaim?id={0}", id) });
@@ -1986,6 +1986,18 @@ inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID", new { i
         #endregion
 
         #region Lookup Methods
+
+        [Route("allitems")]
+        public IEnumerable<dynamic> GetAllItems()
+        {
+            return Company.Query<dynamic>(@"select		[Object], 
+			ObjectID, 
+			ObjectTypeName + ': ' + TextPath as Name
+from		cache.ObjectDetails 
+where		[Object] in ('Artifact', 'Rule', 'Policy', 'Domain') 
+			and ObjectID <> 0
+order by	Name");
+        }
 
         [Route("AttributeTypeCategories")]
         public IQueryable<AttributeTypeCategory> GetAttributeTypeCategories()

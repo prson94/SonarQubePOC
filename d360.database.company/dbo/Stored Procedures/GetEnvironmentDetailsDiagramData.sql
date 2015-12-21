@@ -74,7 +74,7 @@ begin
 										TN.ObjectID as "@id",
 										FT.Name as "@attribute",
 										coalesce(F.Name, '') "@fusion",
-										FA.TextPath as "@name",
+										coalesce(FA.TextPath, FA.Name) as "@name",
 										'#/fusion/' + CAST(FT.FusionTypeID as varchar(15)) + '/' + + CAST(FA.FusionID as varchar(15)) as "@url"
 								from	IntersectNode SN
 										inner join IntersectNode TN on 

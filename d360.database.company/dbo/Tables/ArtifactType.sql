@@ -13,44 +13,18 @@
 );
 
 
-GO
 
+
+GO
 
 CREATE TRIGGER [dbo].[ArtifactType_AfterDelete]
    ON  [dbo].[ArtifactType] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	declare @type varchar(50) = 'ArtifactType'
-
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select @type, ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', @type, ID from deleted
-
-	insert into [queue].[ObjectIndex] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select @type, ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'D', @type, ID from deleted
-
-	DELETE	R
-	FROM	AttributeTypeRelation R
-			INNER JOIN deleted D on R.ObjectType = @type AND R.ObjectID = D.ID
-
-	DELETE	R
-	FROM	[FieldType] R
-			INNER JOIN deleted D on R.[Object] = @type AND R.ObjectID = D.ID
-
-	delete Responsibility where ObjectType = @type and ObjectID in (select ID from deleted)
-
-	delete ResponsibilityTypeRelation where ObjectType = @type and ObjectID in (select ID from deleted)
-	delete ResponsibilityTypeObjectClaim where ObjectType = @type and ObjectID in (select ID from deleted)
-	delete ResponsibilityTypeRelation where ObjectType = @type and ObjectID in (select ID from deleted)
-	delete ResponsibilityTypeSourceType where ObjectType = @type and ObjectID in (select ID from deleted)
-
-	delete StatisticTypeRelation where ObjectType = @type and ObjectID in (select ID from deleted)
-	delete WorkflowTypeRelation where [Object] = @type and ObjectID in (select ID from deleted)
-
-	DELETE	O
-	FROM	cache.ObjectDetails O
-			inner join deleted d
-	ON		O.[Object] = @type and O.ObjectID = d.ID
+	declare @ot varchar(50) = 'ArtifactType'
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Delete', [queue].WriteIndexXml('Removed', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from deleted
 
 
 GO
@@ -59,25 +33,22 @@ CREATE TRIGGER [dbo].[ArtifactType_AfterInsert]
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'ArtifactType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'ArtifactType', ID from inserted
+	declare @ot varchar(50) = 'ArtifactType'
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted
 
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'ArtifactType', @thisID
-		--exec utility.CalculateStatistics 'ArtifactType', @thisID
-		set @current = @current + 1
-	end
+	merge	[cache].[Object] as T
+	using	(
+			select	'ArtifactType' as [Object],
+					ID as ObjectID,
+					'ArtifactType' as ObjectType,
+					ID as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	not matched then
+			insert	( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
+			values	( S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID] );
 
 GO
 CREATE TRIGGER [dbo].[ArtifactType_AfterUpdate]
@@ -85,22 +56,22 @@ CREATE TRIGGER [dbo].[ArtifactType_AfterUpdate]
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'ArtifactType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'ArtifactType', ID from inserted
+	declare @ot varchar(50) = 'ArtifactType'
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted
 
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'ArtifactType', @thisID
-		--exec utility.CalculateStatistics 'ArtifactType', @thisID
-		set @current = @current + 1
-	end
+	merge	[cache].[Object] as T
+	using	(
+			select	'ArtifactType' as [Object],
+					ID as ObjectID,
+					'ArtifactType' as ObjectType,
+					ID as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
+			values	( S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID] );

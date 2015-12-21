@@ -61,7 +61,7 @@
 
                         PolicyStatusKpi('StatusTile', contextList, permissions, iID);
                         PeopleResponsibilityTile('Responsibilities', contextList, permissions, iType, iID, '');
-                        environment_diagram('SourcingTile', permissions, iType, iID);
+                        LineageDiagram('SourcingTile', iType, iID, null, true);
                         RelationshipAggregatesTile('AggregatesTileContainer', iType, iID, permissions);
                     }
                     permissions.GetPermissionsForObject(iType, iID).then(loadPermissionsDependentTiles);
@@ -77,8 +77,8 @@
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTileContainer', type, policyID, permissions);
                             break;
-                        case contextList.SourcingResponsibility:
-                            environment_diagram('SourcingTile', permissions, type, policyID);
+                        case contextList.SourceToTarget:
+                            LineageDiagram('SourcingTile', type, policyID, null, true);
                             break;
                         case contextList.Policy:
                             $("#PolicyGrid").jqxTreeGrid('updateBoundData');

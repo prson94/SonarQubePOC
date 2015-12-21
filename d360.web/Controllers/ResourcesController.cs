@@ -156,7 +156,7 @@ namespace d360.web.Controllers
                         {
                             //if (intersect.IntersectType.AllowSourcing)
                             //{
-                                common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionResponsibility, Icon = "plus", Title = "Select source", Type = "local", Uri = "/form/AddSourcingResponsibility?type=Intersect&id=" + id });
+                            //    common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionResponsibility, Icon = "plus", Title = "Select source", Type = "local", Uri = "/form/AddSourcingResponsibility?type=Intersect&id=" + id });
                             //}
 
                             var add = new ContextToolbarItem { Context = "null", Icon = "", Title = "Associate Child Items", Type = "local", Uri = "#" };

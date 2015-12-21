@@ -15,19 +15,23 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Comment_ParentID]
     ON [dbo].[Comment]([ParentID] ASC);
 
 
 GO
+
 CREATE TRIGGER [dbo].[Comment_AfterInsert]
    ON  [dbo].[Comment] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[Notification] (NotificationType, [Object], ObjectID)
-		select	1,
+	insert into [queue].[Task] ([Action], [Custom], [Object], ObjectID)
+		select	'Notify',
+				'1',
 				'Comment',
 				ID
 		from	inserted

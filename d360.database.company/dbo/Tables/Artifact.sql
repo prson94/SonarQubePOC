@@ -18,6 +18,8 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Artifact_ArtifactTypeID]
     ON [dbo].[Artifact]([ArtifactTypeID] ASC)
@@ -45,195 +47,91 @@ CREATE TRIGGER [dbo].[Artifact_AfterInsert]
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Artifact'
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted
 	
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Artifact', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'Artifact', ID from inserted
-	insert into [queue].[ObjectIndex] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Artifact', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'A', 'Artifact', ID from deleted
-	
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'Artifact', @thisID
-		exec utility.CalculateStatistics 'Artifact', @thisID
-		set @current = @current + 1
-	end
-
 	update	T
-	set		T.TextPath = utility.GetBreadcrumbStringWrapper('Artifact', S.ID, '/'),
-			T.[Path] = utility.GetBreadcrumbWrapper('Artifact', S.ID)
+	set		T.TextPath = utility.GetBreadcrumbStringWrapper(@ot, S.ID, '/'),
+			T.[Path] = utility.GetBreadcrumbWrapper(@ot, S.ID)
 	from	Artifact T
 			inner join inserted S on S.ID = T.ID
 
-GO
+	merge	[cache].[Object] as T
+	using	(
+			select	'Artifact' as [Object],
+					ID as ObjectID,
+					--Name as Name,
+					--TextPath as TextPath,
+					'ArtifactType' as ObjectType,
+					ArtifactTypeID as ObjectTypeID--,
+					--[dbo].[GenerateObjectUrl]('Artifact', ArtifactTypeID, ID) as Url
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]--,
+						--T.[Name] = S.[Name],
+						--T.[TextPath] = S.[TextPath]
+	when	not matched then
+			insert	(
+					[Object], [ObjectID], [ObjectType], [ObjectTypeID]--, [Name], [TextPath], [Url]
+					)
+			values	(
+					S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID]--, S.[Name], S.[TextPath], S.[Url]
+					);
 
+GO
 CREATE TRIGGER [dbo].[Artifact_AfterUpdate]
    ON  [dbo].[Artifact] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Artifact', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'Artifact', ID from inserted
-	insert into [queue].[ObjectIndex] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Artifact', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'U', 'Artifact', ID from deleted
-	
-	begin try
-		declare @tblCache table (RowID int identity, ID int)
-		insert into @tblCache 
-			select ID from inserted
-
-		declare @current int = 1,
-				@max int,
-				@thisID int
-		select @max = max(RowID) from @tblCache
-
-		while @current <= @max
-		begin
-			select @thisID = ID from @tblCache where RowID = @current
-			exec [cache].[SynchronizeObjectDetails] 'Artifact', @thisID
-			exec utility.CalculateStatistics 'Artifact', @thisID
-			set @current = @current + 1
-		end
-	end try
-	begin catch
-
-	end catch
-
-	--UPDATE	R
-	--SET		R.SourceObjectName = A.Name
-	--FROM	cache.Relationships R INNER JOIN inserted A ON R.SourceObject = 'Artifact' and R.SourceObjectID = A.ID
-
-	--UPDATE	R
-	--SET		R.TargetObjectName = A.Name
-	--FROM	cache.Relationships R INNER JOIN inserted A ON R.TargetObject = 'Artifact' and R.TargetObjectID = A.ID
-
-	--UPDATE	F
-	--set		F.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value)
-	--FROM	Field F
-	--		inner join FieldType FT on FT.ID = F.FieldTypeID and FT.LookupObjectType = 'Artifact' 
-	--		inner join inserted A on A.ID = FT.LookupObjectID
-
-	declare @tbl1 table (ID int);
-
-	with d AS
-	(
-		SELECT	ParentID, 
-				ID
-		FROM	inserted	
-		UNION ALL
-		SELECT	C.ParentID, 
-				C.ID
-		FROM	Artifact	C
-				INNER JOIN d AS P ON P.ID = C.ParentID
-	)
-
-	insert into @tbl1
-		select ID from d
-
+	declare @ot varchar(50) = 'Artifact'
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted
 	update	T
-	set		T.TextPath = utility.GetBreadcrumbStringWrapper('Artifact', S.ID, '/'),
-			T.[Path] = utility.GetBreadcrumbWrapper('Artifact', S.ID)
+	set		T.TextPath = utility.GetBreadcrumbStringWrapper(@ot, S.ID, '/'),
+			T.[Path] = utility.GetBreadcrumbWrapper(@ot, S.ID)
 	from	Artifact T
-			inner join @tbl1 S on S.ID = T.ID
+			inner join inserted S on S.ID = T.ID;
 
-	update	T
-	set		T.TextPath = utility.GetBreadcrumbStringWrapper('Artifact', S.ID, '/')
-	from	cache.ObjectDetails T
-			inner join @tbl1 S on T.[Object] = 'Artifact' and S.ID = T.ObjectID
-
-	UPDATE	R
-	SET		R.SourceObjectName = A.Name
-	FROM	cache.Relationships R INNER JOIN inserted A ON R.SourceObject = 'Artifact' and R.SourceObjectID = A.ID
-
-	UPDATE	R
-	SET		R.TargetObjectName = A.Name
-	FROM	cache.Relationships R INNER JOIN inserted A ON R.TargetObject = 'Artifact' and R.TargetObjectID = A.ID
-
-	UPDATE	F
-	set		F.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value)
-	FROM	Field F
-			inner join FieldType FT on FT.ID = F.FieldTypeID and FT.LookupObjectType = 'Artifact' 
-			inner join inserted A on A.ID = FT.LookupObjectID
+	merge	[cache].[Object] as T
+	using	(
+			select	'Artifact' as [Object],
+					ID as ObjectID,
+					--Name as Name,
+					--TextPath as TextPath,
+					'ArtifactType' as ObjectType,
+					ArtifactTypeID as ObjectTypeID--,
+					--[dbo].[GenerateObjectUrl]('Artifact', ArtifactTypeID, ID) as Url
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]--,
+						--T.[Name] = S.[Name],
+						--T.[TextPath] = S.[TextPath]
+	when	not matched then
+			insert	(
+					[Object],[ObjectID], --[Name], [TextPath], 
+					[ObjectType], [ObjectTypeID]--, [Url]
+					)
+			values	(
+					S.[Object], S.[ObjectID], --S.[Name], S.[TextPath], 
+					S.[ObjectType], S.[ObjectTypeID]--, S.[Url]
+					);
 
 GO
+
 CREATE TRIGGER [dbo].[Artifact_AfterDelete]
 	ON [dbo].[Artifact]
 	AFTER DELETE
-	AS
-	BEGIN
-		SET NOCOUNT ON;
-
-		declare @type varchar(50) = 'Artifact'
-
-		DELETE	F
-		FROM	Field as F
-				INNER JOIN deleted AS d
-		ON		F.ObjectType = @type and F.ObjectID = d.ID
-
-		DELETE	A
-		FROM	Attribute as A
-				INNER JOIN deleted AS d
-		ON		A.ObjectType = @type and A.ObjectID = d.ID
-
-		DELETE	C
-		FROM	CommentRelation as C
-				INNER JOIN deleted AS d
-		ON		C.ObjectType = @type and C.ObjectID = d.ID
-
-		DELETE	F
-		FROM	Follow as F
-				INNER JOIN deleted AS d
-		ON		F.ObjectType = @type and F.ObjectID = d.ID
-
-		DELETE	RA
-		FROM	RelatedArtifact as RA
-				INNER JOIN deleted AS d
-		ON		RA.ArtifactID = d.ID
-
-		DELETE	O
-		FROM	cache.ObjectDetails O
-				inner join deleted d
-		ON		O.[Object] = @type and O.ObjectID = d.ID
-
-		insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-			select 'Artifact', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'Artifact', ID from deleted
-
-		insert into [queue].[ObjectIndex] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-			select 'Artifact', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'D', 'Artifact', ID from deleted
-
-		DELETE	O
-		FROM	cache.Relationships O
-				inner join deleted d
-		ON		(O.[SourceObject] = @type and O.SourceObjectID = d.ID) OR (O.[TargetObject] = @type and O.TargetObjectID = d.ID)
-
-		BEGIN TRY
-			DECLARE @tblIntersectIDs table (ID int)
-
-			INSERT INTO @tblIntersectIDs
-				SELECT	N.IntersectID
-				FROM	IntersectNode N
-						INNER JOIN deleted AS d ON N.ObjectType = @type and N.ObjectID = d.ID
-
-			DELETE	N
-			FROM	IntersectNode N
-					INNER JOIN @tblIntersectIDs I ON N.IntersectID = I.ID
-
-			DELETE	II
-			FROM	[Intersect] II
-					INNER JOIN @tblIntersectIDs I ON II.ID = I.ID
-		END TRY
-		BEGIN CATCH
-
-		END CATCH
-	END
+AS
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Delete', [queue].WriteIndexXml('Removed', 'ArtifactType', ArtifactTypeID, coalesce(UpdatedBy, 0)), 'Artifact', ID from deleted
 
 

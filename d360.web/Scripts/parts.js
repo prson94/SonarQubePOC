@@ -4870,12 +4870,42 @@ function YourWorkflowTasks(controlID, title, showTitle) {
     //#endregion
 }
 
-function LineageDiagram(controlID, type, id, permissions) {
-    var dataUri = '/diagrams/maps/' + type + '/' + id + '.json';
+function LineageDiagram(controlID, type, id, permissions, readonly) {
+    var originalObject = type;
+    var originalObjectID = id;
+
+    var tmpl = Handlebars.getTemplate('LineageDiagram');
+    $('#' + controlID).html(tmpl({ control: controlID }));
+
+    var controlID_wrapper = controlID + '_wrapper';
+    var controlID_diagram = controlID + '_dgm';
+    var controlID_sidebar = controlID + '_sidebar';
+    var controlID_controls = controlID + '_controls';
+    var controlID_controls_zoom = controlID + '_controls_zoom';
+    var controlID_controls_reset = controlID + '_controls_reset';
+    var controlID_actions = controlID + '_actions';
+    var controlID_info = controlID + '_info';
+    var controlID_info_body = controlID + '_info_body';
+    
+    $("#" + controlID_controls).jqxExpander({ theme: theme });
+    $("#" + controlID_info).jqxExpander({ theme: theme });
+    $("#" + controlID_controls_zoom).jqxScrollBar({ theme: theme, width: 280, height: 18, min: 750, max: 2250, value: 1500 });
+
+    if (readonly) {
+        $("#" + controlID_actions).hide();
+    }
+    else {
+        $("#" + controlID_actions).jqxExpander({ theme: theme });
+    }
+
+    var oldHeight = $('#' + controlID_wrapper).height();
+    var oldWidth = $('#' + controlID_wrapper).width();
 
     var newId = -1;
     var temp = null;
     var relationshipLabels = null;
+
+    //#region methods
 
     function createLinkModel() {
         return {
@@ -4885,66 +4915,12 @@ function LineageDiagram(controlID, type, id, permissions) {
             text: null
         };
     };
-
-    var g = go.GraphObject.make;
-
-    myDiagram = g(go.Diagram, controlID, {
-        initialContentAlignment: go.Spot.Left,
-        //autoScale: go.Diagram.UniformToFill,
-        allowDrop: true,
-        initialAutoScale: go.Diagram.Uniform,//ToFill,
-        scrollMode: go.Diagram.DocumentScroll,
-        //initialPosition: Point(125, 200),
-        layout: g(go.LayeredDigraphLayout, { direction: 0 }),
-        "undoManager.isEnabled": true
-    });
-
-    function handleScale() {
-        var s = myDiagram.scale;
-        var h = 500;
-        if (s > 1) {
-            h = h * s;
-        }
-        $('#' + controlID).css('height', h);
-    }
-
     function layoutCompleted() {
         console.log(myDiagram.documentBounds.height);
         console.log(myDiagram.viewportBounds.height);
 
-        var height = $('#' + controlID).height($(window).innerHeight());
+        var height = $('#' + controlID_diagram).height($(window).innerHeight());
     }
-
-    //function onSelectionChange(e) {
-    //    var node = e.diagram.selection.first();
-    //    if (node == null) {
-    //        return;
-    //    }
-
-    //    var data = node.data;
-
-    //    $.ajax({
-    //        url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
-    //        data: null,
-    //        success: function (data) {
-    //            $('#ObjectDetail').html(data);
-
-    //        },
-    //        async: true
-    //    });
-    //}
-
-    myDiagram.addDiagramListener('ViewportBoundsChanged', handleScale);
-    //myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
-
-    myDiagram.addDiagramListener('LayoutCompleted', layoutCompleted);
-    
-
-    myDiagram.grid.visible = false;
-    myDiagram.grid.gridCellSize = new go.Size(8, 8);
-    myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
-    myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
-
     function makePort(name, leftside) {
         var port = g(go.Shape, "Rectangle", {
             fill: "gray",
@@ -4982,9 +4958,12 @@ function LineageDiagram(controlID, type, id, permissions) {
         }
         return panel;
     }
-
     function makeTemplate(obj, w, h, fontSize, inports, outports) {
         var node = g(go.Node, "Spot",
+        {
+            mouseEnter: mouseEnter,
+            mouseLeave: mouseLeave
+        },
         g(go.Panel, "Auto", {
             width: w,
             height: h
@@ -5042,6 +5021,129 @@ function LineageDiagram(controlID, type, id, permissions) {
 
         myDiagram.nodeTemplateMap.add(obj, node);
     }
+    function mouseEnter(e, node) {
+        node.isShadowed = true;
+    };
+    function mouseLeave(e, node) {
+        node.isShadowed = false;
+    };
+    function onDoubleClick(e) {
+        var obj = e.diagram.selection.first().data;
+        if (obj != null) {
+
+            type = obj.obj;
+            id = obj.objid;
+
+            popDiagram();
+        }
+    }
+    function onSelectionChange(e) {
+        var node = e.diagram.selection.first();
+
+        if (node == null) {
+            //$('#preview').html('');
+            //$("#jqxExpander0").jqxExpander('collapse');
+            return;
+        }
+
+        var data = node.data;
+
+        if (data.obj) { //node selected
+            $.ajax({
+                url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
+                data: null,
+                success: function (data) {
+                    $('#' + controlID_info_body).html(data);
+                    //$("#jqxExpander0").jqxExpander('expand');
+                },
+                async: true
+            });
+        } else if (data.diagramObjectType == "Link") { //link selected
+            //$("#jqxExpander0").jqxExpander('collapse');
+        }
+    }
+    function onViewportBoundsChanged() {
+        var s = myDiagram.scale;
+        var h = 500;
+        if (s > 1) {
+            h = h * s;
+        }
+        $('#' + controlID_controls_zoom).val(Math.round(myDiagram.scale * 1500));
+    };
+    function popDiagram() {
+        var dataUri = '/diagrams/maps/' + type + '/' + id + '.json';
+
+        $.getJSON(dataUri, function (data) {
+            myDiagram.model = go.Model.fromJson({
+                "class": "go.GraphLinksModel",
+                "nodeCategoryProperty": "obj",
+                "linkFromPortIdProperty": "frompid",
+                "linkToPortIdProperty": "topid",
+                "nodeDataArray": data.nodes,
+                "linkDataArray": data.links
+            });
+        });
+    }
+    function reOrderLayout() {
+        //myDiagram.layout.isValidLayout = false;
+        // myDiagram.layout.isOngoing = true;
+        myDiagram.layout.invalidateLayout(); //isValidLayout = false;
+        myDiagram.requestUpdate();
+        // myDiagram.layout.isOngoing = false;
+    }
+    function rotateDiagram() {
+        myDiagram.startTransaction("rotate");
+        digraphDirection = (digraphDirection + 90) % 360;
+        myDiagram.layout.direction = digraphDirection;
+        myDiagram.layout.setsPortSpots = true;
+        myDiagram.commitTransaction("rotate");
+    }
+
+    //#endregion
+
+    var g = go.GraphObject.make;
+
+    myDiagram = g(go.Diagram, controlID_diagram, {
+        initialContentAlignment: go.Spot.Left,
+        //autoScale: go.Diagram.UniformToFill,
+        allowDrop: true,
+        initialAutoScale: go.Diagram.UniformToFill,
+        //scrollMode: go.Diagram.DocumentScroll,
+        //initialPosition: Point(125, 200),
+        layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 100, layerSpacing: 100 }),
+        "undoManager.isEnabled": true
+    });
+
+    $('#' + controlID_wrapper).on('mouseup', function () {
+        var height = $('#' + controlID_wrapper).height();
+        if (height != oldHeight) {
+            $('#' + controlID_diagram).height(height - 20);
+            oldHeight = height;
+            myDiagram.requestUpdate();
+        }
+    });
+
+    $('#' + controlID_controls_reset).on('click', function () {
+        type = originalObject;
+        id = originalObjectID;
+        popDiagram();
+    });
+
+    $("#" + controlID_controls_zoom).on('valueChanged', function (event) {
+        var val = parseInt(event.currentValue);
+        $('#zoomDisplay').text(Math.round((val / 1500) * 100) + '%');
+        myDiagram.scale = (val / 1500);
+    });
+
+    myDiagram.addDiagramListener('ViewportBoundsChanged', onViewportBoundsChanged);
+    myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
+    myDiagram.addDiagramListener('ObjectDoubleClicked', onDoubleClick);
+    myDiagram.addDiagramListener('LayoutCompleted', layoutCompleted);
+
+    myDiagram.grid.visible = false;
+    myDiagram.grid.gridCellSize = new go.Size(8, 8);
+    myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
+    myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
     makeTemplate("Artifact", 225, 105, 10, [makePort("", true)], [makePort("OUT", false)]);
     makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
@@ -5061,14 +5163,5 @@ function LineageDiagram(controlID, type, id, permissions) {
         )
     );
 
-    $.getJSON(dataUri, function (data) {
-        myDiagram.model = go.Model.fromJson({
-            "class": "go.GraphLinksModel",
-            "nodeCategoryProperty": "obj",
-            "linkFromPortIdProperty": "frompid",
-            "linkToPortIdProperty": "topid",
-            "nodeDataArray": data.nodes,
-            "linkDataArray": data.links
-        });
-    });
+    popDiagram();
 }

@@ -49,7 +49,10 @@ public static class ContextList
         public const string PolicyTypeClass = "policytypeclassform";
         public const string PolicyTypeLevel = "policytypelevelform";
 
-        public const string QuestionType = "questiontypeform";
+        public const string Predicate = "predicateform";
+        public const string PredicatePhrase = "predicatephraseform";
+
+    public const string QuestionType = "questiontypeform";
 
         public const string Report = "reportform";
         public const string ReportTile = "reporttileform";

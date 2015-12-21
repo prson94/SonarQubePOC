@@ -28,12 +28,12 @@ begin
 		StyleTypeID int not null
 	);
 
-	declare @ShouldRecacheIntersectTypes bit = 0,
-			@ShouldRecacheIntersects bit = 0,
-			@ShouldRecacheResponsibility bit = 0,
-			@ShouldRecacheResponsibilityTypeName bit = 0,
-			@ShouldRecacheResponsibilityResourceInfo bit = 0,
-			@ShouldRecacheRelationships bit = 0
+	--declare @ShouldRecacheIntersectTypes bit = 0,
+	--		@ShouldRecacheIntersects bit = 0,
+	--		@ShouldRecacheResponsibility bit = 0,
+	--		@ShouldRecacheResponsibilityTypeName bit = 0,
+	--		@ShouldRecacheResponsibilityResourceInfo bit = 0,
+	--		@ShouldRecacheRelationships bit = 0
 
 	if @type = 'Artifact'
 	begin
@@ -50,33 +50,33 @@ begin
 					INNER JOIN ArtifactType T ON O.ArtifactTypeID = T.ID and O.ID = @id
 					left join Artifact P on P.ID = O.ParentID;
 
-		with artifactHierarchy as (
-			select	A.ID,
-					A.Name,
-					A.ParentID,
-					A.TextPath,
-					P.Name as ParentName
-			from	Artifact A
-					left join Artifact P on P.ID = A.ParentID
-			where	A.ParentID = @id
-			union all
-			select	C.ID,
-					C.Name,
-					C.ParentID,
-					C.TextPath,
-					P.Name
-			from	Artifact C
-					inner join artifactHierarchy P on P.ID = C.ParentID
-		)
-		update	T
-		set		T.TextPath = S.TextPath,
-				T.ParentName = S.ParentName
-		from	cache.ObjectDetails T
-				inner join artifactHierarchy S on T.[Object] = 'Artifact' and T.ObjectID = S.ID;
+		--with artifactHierarchy as (
+		--	select	A.ID,
+		--			A.Name,
+		--			A.ParentID,
+		--			A.TextPath,
+		--			P.Name as ParentName
+		--	from	Artifact A
+		--			left join Artifact P on P.ID = A.ParentID
+		--	where	A.ParentID = @id
+		--	union all
+		--	select	C.ID,
+		--			C.Name,
+		--			C.ParentID,
+		--			C.TextPath,
+		--			P.Name
+		--	from	Artifact C
+		--			inner join artifactHierarchy P on P.ID = C.ParentID
+		--)
+		--update	T
+		--set		T.TextPath = S.TextPath,
+		--		T.ParentName = S.ParentName
+		--from	cache.ObjectDetails T
+		--		inner join artifactHierarchy S on T.[Object] = 'Artifact' and T.ObjectID = S.ID;
 
-		set @ShouldRecacheIntersects = 1;
-		set @ShouldRecacheResponsibility = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersects = 1;
+		--set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'ArtifactType'
@@ -94,14 +94,14 @@ begin
 					left join ArtifactType P on P.ID = O.ParentID
 			WHERE	O.ID = @id;
 
-		update	T
-		set		T.ObjectTypeName = S.Name
-		from	cache.ObjectDetails T
-				inner join @item S on T.[Object] = 'Artifact' and T.ObjectTypeID = S.ObjectID;
+		--update	T
+		--set		T.ObjectTypeName = S.Name
+		--from	cache.ObjectDetails T
+		--		inner join @item S on T.[Object] = 'Artifact' and T.ObjectTypeID = S.ObjectID;
 
-		set @ShouldRecacheIntersectTypes = 1;
-		set @ShouldRecacheResponsibility = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersectTypes = 1;
+		--set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	--if @type = 'Attribute'
@@ -130,10 +130,10 @@ begin
 					left join AttributeType P on P.ID = O.ParentID
 			WHERE	O.ID = @id;
 
-		update	T
-		set		T.ObjectTypeName = S.Name
-		from	cache.ObjectDetails T
-				inner join @item S on T.[Object] = 'Attribute' and T.ObjectTypeID = S.ObjectID
+		--update	T
+		--set		T.ObjectTypeName = S.Name
+		--from	cache.ObjectDetails T
+		--		inner join @item S on T.[Object] = 'Attribute' and T.ObjectTypeID = S.ObjectID
 	end;
 
 	if @type = 'Domain'
@@ -147,9 +147,9 @@ begin
 			FROM	Domain O
 					INNER JOIN DomainType T ON O.DomainTypeID = T.ID and O.ID = @id;
 
-		set @ShouldRecacheIntersects = 1;
-		set @ShouldRecacheResponsibility = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersects = 1;
+		--set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'DomainType'
@@ -163,14 +163,14 @@ begin
 			FROM	DomainType
 			WHERE	ID = @id;
 
-		update	T
-		set		T.ObjectTypeName = S.Name
-		from	cache.ObjectDetails T
-				inner join @item S on T.[Object] = 'Domain' and T.ObjectTypeID = S.ObjectID;
+		--update	T
+		--set		T.ObjectTypeName = S.Name
+		--from	cache.ObjectDetails T
+		--		inner join @item S on T.[Object] = 'Domain' and T.ObjectTypeID = S.ObjectID;
 
-		set @ShouldRecacheIntersectTypes = 1;
-		set @ShouldRecacheResponsibility = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersectTypes = 1;
+		--set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'Group'
@@ -184,8 +184,8 @@ begin
 			FROM	[Group]
 			WHERE	ID = @id;
 		
-		set @ShouldRecacheResponsibilityResourceInfo = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheResponsibilityResourceInfo = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'GroupType'
@@ -211,8 +211,8 @@ begin
 			FROM	[Intersect] O
 					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id;
 
-		set @ShouldRecacheIntersects = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersects = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'IntersectType'
@@ -226,23 +226,23 @@ begin
 			FROM	IntersectType
 			WHERE	ID = @id;
 
-		with intersectTypeHierarchy as (
-			select	I.ID,
-					I.Name,
-					T.Name as ObjectTypeName
-			from	[Intersect] I
-					inner join @item T on T.ObjectID = I.IntersectTypeID
-			where	IntersectTypeID = @id
-		)
+		--with intersectTypeHierarchy as (
+		--	select	I.ID,
+		--			I.Name,
+		--			T.Name as ObjectTypeName
+		--	from	[Intersect] I
+		--			inner join @item T on T.ObjectID = I.IntersectTypeID
+		--	where	IntersectTypeID = @id
+		--)
 
-		update	T
-		set		T.ObjectTypeName = S.ObjectTypeName,
-				T.Name = S.Name
-		from	cache.ObjectDetails T
-				inner join intersectTypeHierarchy S on T.[Object] = 'Intersect' and T.ObjectID = S.ID;
+		--update	T
+		--set		T.ObjectTypeName = S.ObjectTypeName,
+		--		T.Name = S.Name
+		--from	cache.ObjectDetails T
+		--		inner join intersectTypeHierarchy S on T.[Object] = 'Intersect' and T.ObjectID = S.ID;
 
-		set @ShouldRecacheIntersectTypes = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersectTypes = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'Event'
@@ -270,19 +270,19 @@ begin
 					inner join [Rule] R on R.ID = O.RuleID
 			WHERE	O.ID = @id;
 
-		with eventGroupHierarchy as (
-			select	I.ID,
-					T.Name as ParentName,
-					T.TextPath + ' event' as TextPath
-			from	[Event] I
-					inner join @item T on T.ObjectID = I.EventGroupID
-		)
+		--with eventGroupHierarchy as (
+		--	select	I.ID,
+		--			T.Name as ParentName,
+		--			T.TextPath + ' event' as TextPath
+		--	from	[Event] I
+		--			inner join @item T on T.ObjectID = I.EventGroupID
+		--)
 
-		update	T
-		set		T.ParentName = S.ParentName,
-				T.TextPath = S.TextPath
-		from	cache.ObjectDetails T
-				inner join eventGroupHierarchy S on T.[Object] = 'Event' and T.ObjectID = S.ID
+		--update	T
+		--set		T.ParentName = S.ParentName,
+		--		T.TextPath = S.TextPath
+		--from	cache.ObjectDetails T
+		--		inner join eventGroupHierarchy S on T.[Object] = 'Event' and T.ObjectID = S.ID
 	end;
 
 	if @type = 'Lookup'
@@ -308,10 +308,10 @@ begin
 			FROM	LookupType
 			WHERE	ID = @id;
 
-		update	T
-		set		T.ObjectTypeName = S.Name
-		from	cache.ObjectDetails T
-				inner join @item S on T.[Object] = 'Lookup' and T.ObjectTypeID = @id
+		--update	T
+		--set		T.ObjectTypeName = S.Name
+		--from	cache.ObjectDetails T
+		--		inner join @item S on T.[Object] = 'Lookup' and T.ObjectTypeID = @id
 	end;
 
 	if @type = 'Fusion'
@@ -325,7 +325,7 @@ begin
 			FROM	Fusion O
 					INNER JOIN FusionType T ON O.FusionTypeID = T.ID and O.ID = @id;
 		
-		set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheResponsibility = 1;
 	end;
 
 	if @type = 'FusionType'
@@ -339,16 +339,16 @@ begin
 			FROM	FusionType
 			WHERE	ID = @id;
 
-		update	T
-		set		T.ObjectTypeName = S.Name
-		from	cache.ObjectDetails T
-				inner join @item S on T.[Object] = 'Fusion' and T.ObjectTypeID = S.ObjectID;
-		update	T
-		set		T.ObjectTypeName = S.Name
-		from	cache.ObjectDetails T
-				inner join @item S on T.[Object] = 'FusionAttributeType' and T.ObjectTypeID = S.ObjectID;
+		--update	T
+		--set		T.ObjectTypeName = S.Name
+		--from	cache.ObjectDetails T
+		--		inner join @item S on T.[Object] = 'Fusion' and T.ObjectTypeID = S.ObjectID;
+		--update	T
+		--set		T.ObjectTypeName = S.Name
+		--from	cache.ObjectDetails T
+		--		inner join @item S on T.[Object] = 'FusionAttributeType' and T.ObjectTypeID = S.ObjectID;
 
-		set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheResponsibility = 1;
 	end;
 
 	if @type = 'FusionAttribute'
@@ -367,32 +367,32 @@ begin
 					INNER JOIN FusionAttributeType T ON O.FusionAttributeTypeID = T.ID and O.ID = @id
 					INNER JOIN FusionType FT ON T.FusionTypeID = FT.ID;
 
-		with fusionAttributeHierarchy as (
-			select	A.ID,
-					A.Name,
-					A.ParentID,
-					A.TextPath,
-					P.Name as ParentName
-			from	FusionAttribute A
-					left join FusionAttribute P on P.ID = A.ParentID
-			where	A.ParentID = @id
-			union all
-			select	C.ID,
-					C.Name,
-					C.ParentID,
-					C.TextPath,
-					P.Name
-			from	FusionAttribute C
-					inner join fusionAttributeHierarchy P on P.ID = C.ParentID
-		)
-		update	T
-		set		T.TextPath = S.TextPath,
-				T.ParentName = S.ParentName
-		from	cache.ObjectDetails T
-				inner join fusionAttributeHierarchy S on T.[Object] = 'FusionAttribute' and T.ObjectID = S.ID;
+		--with fusionAttributeHierarchy as (
+		--	select	A.ID,
+		--			A.Name,
+		--			A.ParentID,
+		--			A.TextPath,
+		--			P.Name as ParentName
+		--	from	FusionAttribute A
+		--			left join FusionAttribute P on P.ID = A.ParentID
+		--	where	A.ParentID = @id
+		--	union all
+		--	select	C.ID,
+		--			C.Name,
+		--			C.ParentID,
+		--			C.TextPath,
+		--			P.Name
+		--	from	FusionAttribute C
+		--			inner join fusionAttributeHierarchy P on P.ID = C.ParentID
+		--)
+		--update	T
+		--set		T.TextPath = S.TextPath,
+		--		T.ParentName = S.ParentName
+		--from	cache.ObjectDetails T
+		--		inner join fusionAttributeHierarchy S on T.[Object] = 'FusionAttribute' and T.ObjectID = S.ID;
 
-		set @ShouldRecacheIntersects = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersects = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'FusionAttributeType'
@@ -410,37 +410,37 @@ begin
 					INNER JOIN FusionType T ON O.FusionTypeID = T.ID and O.ID = @id
 					LEFT JOIN FusionAttributeType P on P.ID = O.ParentID;
 
-		update	T
-		set		T.ObjectTypeName = S.Name
-		from	cache.ObjectDetails T
-				inner join @item S on T.[Object] = 'FusionAttribute' and T.ObjectTypeID = S.ObjectID;
+		--update	T
+		--set		T.ObjectTypeName = S.Name
+		--from	cache.ObjectDetails T
+		--		inner join @item S on T.[Object] = 'FusionAttribute' and T.ObjectTypeID = S.ObjectID;
 
-		with fusionAttributeTypeHierarchy as (
-			select	A.ID,
-					A.Name,
-					A.ParentID,
-					A.TextPath,
-					P.Name as ParentName
-			from	FusionAttributeType A
-					left join FusionAttributeType P on P.ID = A.ParentID
-			where	A.ParentID = @id
-			union all
-			select	C.ID,
-					C.Name,
-					C.ParentID,
-					C.TextPath,
-					P.Name
-			from	FusionAttributeType C
-					inner join fusionAttributeTypeHierarchy P on P.ID = C.ParentID
-		)
-		update	T
-		set		T.TextPath = S.TextPath,
-				T.ParentName = S.ParentName
-		from	cache.ObjectDetails T
-				inner join fusionAttributeTypeHierarchy S on T.[Object] = 'FusionAttributeType' and T.ObjectID = S.ID;
+		--with fusionAttributeTypeHierarchy as (
+		--	select	A.ID,
+		--			A.Name,
+		--			A.ParentID,
+		--			A.TextPath,
+		--			P.Name as ParentName
+		--	from	FusionAttributeType A
+		--			left join FusionAttributeType P on P.ID = A.ParentID
+		--	where	A.ParentID = @id
+		--	union all
+		--	select	C.ID,
+		--			C.Name,
+		--			C.ParentID,
+		--			C.TextPath,
+		--			P.Name
+		--	from	FusionAttributeType C
+		--			inner join fusionAttributeTypeHierarchy P on P.ID = C.ParentID
+		--)
+		--update	T
+		--set		T.TextPath = S.TextPath,
+		--		T.ParentName = S.ParentName
+		--from	cache.ObjectDetails T
+		--		inner join fusionAttributeTypeHierarchy S on T.[Object] = 'FusionAttributeType' and T.ObjectID = S.ID;
 
-		set @ShouldRecacheIntersectTypes = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersectTypes = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'Policy'
@@ -470,33 +470,33 @@ begin
 							inner join PolicyType T on T.ID = O.PolicyTypeID
 					WHERE	O.ID = @id;
 
-				with policyHierarchy as (
-					select	A.ID,
-							A.Name,
-							A.ParentID,
-							A.TextPath,
-							P.Name as ParentName
-					from	Policy A
-							left join Policy P on P.ID = A.ParentID
-					where	A.ParentID = @id
-					union all
-					select	C.ID,
-							C.Name,
-							C.ParentID,
-							C.TextPath,
-							P.Name
-					from	Policy C
-							inner join policyHierarchy P on P.ID = C.ParentID
-				)
-				update	T
-				set		T.TextPath = S.TextPath,
-						T.ParentName = S.ParentName
-				from	cache.ObjectDetails T
-						inner join policyHierarchy S on T.[Object] = 'Policy' and T.ObjectID = S.ID;
+				--with policyHierarchy as (
+				--	select	A.ID,
+				--			A.Name,
+				--			A.ParentID,
+				--			A.TextPath,
+				--			P.Name as ParentName
+				--	from	Policy A
+				--			left join Policy P on P.ID = A.ParentID
+				--	where	A.ParentID = @id
+				--	union all
+				--	select	C.ID,
+				--			C.Name,
+				--			C.ParentID,
+				--			C.TextPath,
+				--			P.Name
+				--	from	Policy C
+				--			inner join policyHierarchy P on P.ID = C.ParentID
+				--)
+				--update	T
+				--set		T.TextPath = S.TextPath,
+				--		T.ParentName = S.ParentName
+				--from	cache.ObjectDetails T
+				--		inner join policyHierarchy S on T.[Object] = 'Policy' and T.ObjectID = S.ID;
 			end
 
-		set @ShouldRecacheResponsibility = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'PolicyType'
@@ -516,9 +516,9 @@ begin
 		from	cache.ObjectDetails T
 				inner join @item S on T.[Object] = 'Policy' and T.ObjectTypeID = S.ObjectID;
 
-		set @ShouldRecacheIntersectTypes = 1;
-		set @ShouldRecacheResponsibility = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersectTypes = 1;
+		--set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'Resource'
@@ -532,8 +532,8 @@ begin
 			from	reporting.Global_Resource 
 			where	ResourceID = @id;
 
-		set @ShouldRecacheResponsibilityResourceInfo = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheResponsibilityResourceInfo = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'ResourceType'
@@ -557,7 +557,9 @@ begin
 			FROM	ResponsibilityType
 			WHERE	ID = @id;
 
-		set @ShouldRecacheResponsibilityTypeName = 1;
+		UPDATE	T
+		SET		T.ResponsibilityType = S.Name
+		FROM	cache.ResponsibilityItem T INNER JOIN @item S ON S.[Object] = @type and S.ObjectID = T.ResponsibilityTypeID
 	end;
 
 	if @type = 'Rule'
@@ -582,18 +584,18 @@ begin
 					FROM	[Rule] O
 					WHERE	O.ID = @id;
 
-				update	T
-				set		T.ObjectTypeName = S.Name
-				from	cache.ObjectDetails T
-						inner join @item S on T.[Object] = 'EventGroup' and T.ObjectTypeID = S.ObjectID;
-				update	T
-				set		T.ObjectTypeName = S.Name
-				from	cache.ObjectDetails T
-						inner join @item S on T.[Object] = 'Event' and T.ObjectTypeID = S.ObjectID;
+				--update	T
+				--set		T.ObjectTypeName = S.Name
+				--from	cache.ObjectDetails T
+				--		inner join @item S on T.[Object] = 'EventGroup' and T.ObjectTypeID = S.ObjectID;
+				--update	T
+				--set		T.ObjectTypeName = S.Name
+				--from	cache.ObjectDetails T
+				--		inner join @item S on T.[Object] = 'Event' and T.ObjectTypeID = S.ObjectID;
 			end
 
-		set @ShouldRecacheResponsibility = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'Taxonomy'
@@ -612,33 +614,33 @@ begin
 					inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
 					left join Taxonomy P on P.ID = O.ParentID;
 
-		with taxonomyHierarchy as (
-			select	A.ID,
-					A.Name,
-					A.ParentID,
-					A.TextPath,
-					P.Name as ParentName
-			from	Taxonomy A
-					left join Taxonomy P on P.ID = A.ParentID
-			where	A.ParentID = @id
-			union all
-			select	C.ID,
-					C.Name,
-					C.ParentID,
-					C.TextPath,
-					P.Name
-			from	Taxonomy C
-					inner join taxonomyHierarchy P on P.ID = C.ParentID
-		)
-		update	T
-		set		T.TextPath = S.TextPath,
-				T.ParentName = S.ParentName
-		from	cache.ObjectDetails T
-				inner join taxonomyHierarchy S on T.[Object] = 'Taxonomy' and T.ObjectID = S.ID;
+		--with taxonomyHierarchy as (
+		--	select	A.ID,
+		--			A.Name,
+		--			A.ParentID,
+		--			A.TextPath,
+		--			P.Name as ParentName
+		--	from	Taxonomy A
+		--			left join Taxonomy P on P.ID = A.ParentID
+		--	where	A.ParentID = @id
+		--	union all
+		--	select	C.ID,
+		--			C.Name,
+		--			C.ParentID,
+		--			C.TextPath,
+		--			P.Name
+		--	from	Taxonomy C
+		--			inner join taxonomyHierarchy P on P.ID = C.ParentID
+		--)
+		--update	T
+		--set		T.TextPath = S.TextPath,
+		--		T.ParentName = S.ParentName
+		--from	cache.ObjectDetails T
+		--		inner join taxonomyHierarchy S on T.[Object] = 'Taxonomy' and T.ObjectID = S.ID;
 
-		set @ShouldRecacheIntersects = 1;
-		set @ShouldRecacheResponsibility = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersects = 1;
+		--set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	if @type = 'TaxonomyType'
@@ -653,14 +655,14 @@ begin
 					inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
 			WHERE	T.ID = @id;
 
-		update	T
-		set		T.ObjectTypeName = S.Name
-		from	cache.ObjectDetails T
-				inner join @item S on T.[Object] = 'Taxonomy' and T.ObjectTypeID = S.ObjectID;
+		--update	T
+		--set		T.ObjectTypeName = S.Name
+		--from	cache.ObjectDetails T
+		--		inner join @item S on T.[Object] = 'Taxonomy' and T.ObjectTypeID = S.ObjectID;
 
-		set @ShouldRecacheIntersectTypes = 1;
-		set @ShouldRecacheResponsibility = 1;
-		set @ShouldRecacheRelationships = 1;
+		--set @ShouldRecacheIntersectTypes = 1;
+		--set @ShouldRecacheResponsibility = 1;
+		--set @ShouldRecacheRelationships = 1;
 	end;
 
 	-- update style for object regardless of its type.
@@ -672,7 +674,7 @@ begin
 			left join ObjectStyle S ON S.ObjectType = T.StyleType and S.ObjectID = T.StyleTypeID;
 
 	-- upsert the individual object into the cache table.
-	merge	cache.ObjectDetails as T
+	merge	cache.[Object] as T--Details as T
 	using	(
 			SELECT	*
 			FROM	@item
@@ -710,84 +712,77 @@ begin
 					S.IconBackColor, S.IconForeColor, S.IconText
 					);
 
-	if @ShouldRecacheIntersectTypes = 1
-	begin
-		with intersectTypeRecacheHierarchy as (
-			select	O.ID,
-					O.Name
-			from	IntersectTypeNode N
-					inner join [IntersectType] O on O.ID = N.IntersectTypeID and N.ObjectType = @type and N.ObjectID = @id
-		)
-		update	T
-		set		T.Name = S.Name
-		from	cache.ObjectDetails T
-				inner join intersectTypeRecacheHierarchy S on T.[Object] = 'IntersectType' and T.ObjectID = S.ID
-	end
+	--if @ShouldRecacheIntersectTypes = 1
+	--begin
+	--	with intersectTypeRecacheHierarchy as (
+	--		select	O.ID,
+	--				O.Name
+	--		from	IntersectTypeNode N
+	--				inner join [IntersectType] O on O.ID = N.IntersectTypeID and N.ObjectType = @type and N.ObjectID = @id
+	--	)
+	--	update	T
+	--	set		T.Name = S.Name
+	--	from	cache.ObjectDetails T
+	--			inner join intersectTypeRecacheHierarchy S on T.[Object] = 'IntersectType' and T.ObjectID = S.ID
+	--end
 
-	if @ShouldRecacheIntersects = 1
-	begin
-		with intersectRecacheHierarchy as (
-			select	O.ID,
-					O.Name
-			from	IntersectNode N
-					inner join [Intersect] O on O.ID = N.IntersectID and N.ObjectType = @type and N.ObjectID = @id
-		)
-		update	T
-		set		T.Name = S.Name
-		from	cache.ObjectDetails T
-				inner join intersectRecacheHierarchy S on T.[Object] = 'Intersect' and T.ObjectID = S.ID
-	end
+	--if @ShouldRecacheIntersects = 1
+	--begin
+	--	with intersectRecacheHierarchy as (
+	--		select	O.ID,
+	--				O.Name
+	--		from	IntersectNode N
+	--				inner join [Intersect] O on O.ID = N.IntersectID and N.ObjectType = @type and N.ObjectID = @id
+	--	)
+	--	update	T
+	--	set		T.Name = S.Name
+	--	from	cache.ObjectDetails T
+	--			inner join intersectRecacheHierarchy S on T.[Object] = 'Intersect' and T.ObjectID = S.ID
+	--end
 
-	if @ShouldRecacheResponsibility = 1
-	begin
-		UPDATE	T
-		SET		T.AssigningItemName = S.Name
-		FROM	cache.Responsibilities T INNER JOIN @item S ON	T.AssigningItem = S.[Object]		and T.AssigningItemID = S.ObjectID
+	--if @ShouldRecacheResponsibility = 1
+	--begin
+	--	UPDATE	T
+	--	SET		T.AssigningItemName = S.Name
+	--	FROM	cache.Responsibilities T INNER JOIN @item S ON	T.AssigningItem = S.[Object]		and T.AssigningItemID = S.ObjectID
 
-		UPDATE	T
-		SET		T.AssigningTypeName = S.Name
-		FROM	cache.Responsibilities T INNER JOIN @item S ON	T.AssigningItemType = S.[Object]	and T.AssigningItemTypeID = S.ObjectID
+	--	UPDATE	T
+	--	SET		T.AssigningTypeName = S.Name
+	--	FROM	cache.Responsibilities T INNER JOIN @item S ON	T.AssigningItemType = S.[Object]	and T.AssigningItemTypeID = S.ObjectID
 
-		UPDATE	T
-		SET		T.ObjectName = S.Name
-		FROM	cache.Responsibilities T INNER JOIN @item S ON	T.[Object] = S.[Object]				and T.ObjectID = S.ObjectID
+	--	UPDATE	T
+	--	SET		T.ObjectName = S.Name
+	--	FROM	cache.Responsibilities T INNER JOIN @item S ON	T.[Object] = S.[Object]				and T.ObjectID = S.ObjectID
 
-		UPDATE	T
-		SET		T.ObjectTypeName = S.Name
-		FROM	cache.Responsibilities T INNER JOIN @item S ON	T.ObjectType = S.[Object]			and T.ObjectTypeID = S.ObjectID
-	end
+	--	UPDATE	T
+	--	SET		T.ObjectTypeName = S.Name
+	--	FROM	cache.Responsibilities T INNER JOIN @item S ON	T.ObjectType = S.[Object]			and T.ObjectTypeID = S.ObjectID
+	--end
 
-	if @ShouldRecacheResponsibilityTypeName = 1
-	begin
-		UPDATE	T
-		SET		T.ResponsibilityType = S.Name
-		FROM	cache.Responsibilities T INNER JOIN @item S ON S.ObjectID = T.ResponsibilityTypeID
-	end
+	--if @ShouldRecacheResponsibilityResourceInfo = 1
+	--begin
+	--	UPDATE	T
+	--	SET		T.ResponsibleObjectName = S.Name
+	--	FROM	cache.Responsibilities T INNER JOIN @item S ON	T.ResponsibleObject = S.[Object]	and T.ResponsibleObjectID = S.ObjectID
+	--end
 
-	if @ShouldRecacheResponsibilityResourceInfo = 1
-	begin
-		UPDATE	T
-		SET		T.ResponsibleObjectName = S.Name
-		FROM	cache.Responsibilities T INNER JOIN @item S ON	T.ResponsibleObject = S.[Object]	and T.ResponsibleObjectID = S.ObjectID
-	end
+	--if @ShouldRecacheRelationships = 1
+	--begin
+	--	UPDATE	R
+	--	SET		R.SourceObjectName = S.Name
+	--	FROM	cache.Relationships R INNER JOIN @item S ON R.SourceObject = S.[Object] and R.SourceObjectID = S.ObjectID
 
-	if @ShouldRecacheRelationships = 1
-	begin
-		UPDATE	R
-		SET		R.SourceObjectName = S.Name
-		FROM	cache.Relationships R INNER JOIN @item S ON R.SourceObject = S.[Object] and R.SourceObjectID = S.ObjectID
+	--	UPDATE	R
+	--	SET		R.SourceTypeName = S.Name
+	--	FROM	cache.Relationships R INNER JOIN @item S ON R.SourceType = S.[Object] and R.SourceTypeID = S.ObjectID
 
-		UPDATE	R
-		SET		R.SourceTypeName = S.Name
-		FROM	cache.Relationships R INNER JOIN @item S ON R.SourceType = S.[Object] and R.SourceTypeID = S.ObjectID
+	--	UPDATE	R
+	--	SET		R.TargetObjectName = S.Name
+	--	FROM	cache.Relationships R INNER JOIN @item S ON R.TargetObject = S.[Object] and R.TargetObjectID = S.ObjectID
 
-		UPDATE	R
-		SET		R.TargetObjectName = S.Name
-		FROM	cache.Relationships R INNER JOIN @item S ON R.TargetObject = S.[Object] and R.TargetObjectID = S.ObjectID
-
-		UPDATE	R
-		SET		R.TargetTypeName = S.Name
-		FROM	cache.Relationships R INNER JOIN @item S ON R.TargetType = S.[Object] and R.TargetTypeID = S.ObjectID
-	end
+	--	UPDATE	R
+	--	SET		R.TargetTypeName = S.Name
+	--	FROM	cache.Relationships R INNER JOIN @item S ON R.TargetType = S.[Object] and R.TargetTypeID = S.ObjectID
+	--end
 end
 GO

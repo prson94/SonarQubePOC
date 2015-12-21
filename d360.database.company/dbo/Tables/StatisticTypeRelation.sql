@@ -8,16 +8,17 @@
 );
 
 
-GO
 
+
+GO
 
 CREATE TRIGGER [dbo].[StatisticTypeRelation_AfterUpsert]
    ON  [dbo].[StatisticTypeRelation] 
    AFTER INSERT, UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[Analytic] (ID)
-		select newid() from inserted
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID])
+		select 'Analytic', 'StatisticTypeRelation', StatisticTypeID from inserted
 
 GO
 
@@ -26,5 +27,5 @@ CREATE TRIGGER [dbo].[StatisticTypeRelation_AfterDelete]
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[Analytic] (ID)
-		select newid() from deleted
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID])
+		select 'Analytic', 'StatisticTypeRelation', StatisticTypeID from deleted

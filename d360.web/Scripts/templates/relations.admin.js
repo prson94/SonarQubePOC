@@ -15,25 +15,46 @@
 
         var IntersectTypeSource;
         var IntersectTypeAdapter;
+        var PredicateSource;
+        var PredicateAdapter;
+        var PredicatePhraseSource;
+        var PredicatePhraseAdapter;
 
         //#region Event Handlers
 
-        function listBindingComplete(event) {
-            var rowCount = $('#List').jqxGrid('getdisplayrows').length;
-            if (rowCount > 0) {
-                $('#List').jqxGrid('selectrow', 0);
-            }
-        }
+        //function listBindingComplete(event) {
+        //    var rowCount = $('#List').jqxGrid('getdisplayrows').length;
+        //    if (rowCount > 0) {
+        //        $('#List').jqxGrid('selectrow', 0);
+        //    }
+        //}
 
-        function listRowSelect(event) {
+        //function listRowSelect(event) {
+        //    var args = event.args;
+        //    var row = args.rowindex;
+        //    var data = $("#List").jqxGrid('getrowdata', row);
+        //    amplify.publish(AmplifyActions.TileUnsubscribe, {});
+        //    intersectTypeID = data.ID;
+        //    $('#SideIcons').PageTools("reload", type, intersectTypeID);
+        //    IntersectTypeRolesGrid('RolesTile', contextList, permissions, intersectTypeID);
+        //}
+
+
+        function predicatesRowSelect(event) {
             var args = event.args;
             var row = args.rowindex;
-            var data = $("#List").jqxGrid('getrowdata', row);
-            amplify.publish(AmplifyActions.TileUnsubscribe, {});
-            intersectTypeID = data.ID;
-            $('#SideIcons').PageTools("reload", type, intersectTypeID);
-            IntersectTypeRolesGrid('RolesTile', contextList, permissions, intersectTypeID);
-            //DetailTile('DetailTile', contextList, permissions, type, intersectTypeID);
+            var data = $("#Predicates").jqxGrid('getrowdata', row);
+
+            //amplify.publish(AmplifyActions.TileUnsubscribe, {});
+            PredicatePhraseSource.url = '/relations/PredicatePhrases?id=' + data.ID;
+            $("#PredicatePhrases").jqxGrid('updatebounddata');
+
+
+            var predicatePhrasesTools = [];
+            if (permissions.HasPermission("Root", "Create")) {
+                predicatePhrasesTools.push({ icon: 'plus', uri: '/form/AddPredicatePhrase?id=' + data.ID, context: contextList.PredicatePhrase, title: 'Add predicate phrase' });
+            }
+            TileTools('#PredicatePhraseTools', predicatePhrasesTools);
         }
 
         function saveAction(data) {
@@ -42,8 +63,12 @@
                     case contextList.IntersectType:
                         $('#List').jqxGrid('updatebounddata');
                         break;
-                    case contextList.IntersectTypeRole:
-                        IntersectTypeRolesGrid('RolesTile', contextList, permissions, intersectTypeID);
+                    case contextList.Predicate:
+                        console.log('pred updated');
+                        $('#Predicates').jqxGrid('updatebounddata');
+                        break;
+                    case contextList.PredicatePhrase:
+                        $('#PredicatePhrases').jqxGrid('updatebounddata');
                         break;
                 }
             } catch (e) { }
@@ -52,9 +77,14 @@
         function unsubscribe(data) {
             IntersectTypeAdapter = null;
             IntersectTypeSource = null;
+            PredicatePhraseAdapter = null;
+            PredicatePhraseSource = null;
+            PredicateAdapter = null;
+            PredicateSource = null;
 
-            $("#List").off("rowselect", listRowSelect);
-            $("#List").off("bindingcomplete", listBindingComplete);
+            //$("#List").off("rowselect", listRowSelect);
+            //$("#List").off("bindingcomplete", listBindingComplete);
+            $("#Predicates").off("rowselect", predicatesRowSelect);
             amplify.unsubscribe('SaveAction', saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
@@ -70,13 +100,14 @@
                 $('#SideIcons').PageTools({ type: type, id: 0 });
 
                 var loadAfterPermissionsRetrieved = function () {
-                    var tools = [];
-                    if (permissions.HasPermission("Root", "Create")) {
-                        tools.push({ icon: 'plus', uri: '/form/AddIntersectType', context: contextList.IntersectType, title: 'Add relationship type' });
-                    }
-                    TileTools('#ListTools', tools);
 
                     //#region Grid
+
+                    var listTools = [];
+                    if (permissions.HasPermission("Root", "Create")) {
+                        listTools.push({ icon: 'plus', uri: '/form/AddIntersectType', context: contextList.IntersectType, title: 'Add relationship type' });
+                    }
+                    TileTools('#ListTools', listTools);
  
                     IntersectTypeSource = {
                         datatype: 'json',
@@ -142,10 +173,119 @@
 
                     //#endregion
 
+                    //#region PredicateGrid
+
+                    var predicateTools = [];
+                    if (permissions.HasPermission("Root", "Create")) {
+                        predicateTools.push({ icon: 'plus', uri: '/form/AddPredicate', context: contextList.Predicate, title: 'Add predicate' });
+                    }
+                    TileTools('#PredicateTools', predicateTools);
+
+                    PredicateSource = {
+                        datatype: 'json',
+                        url: '/relations/Predicates',
+                        datafields:
+                        [
+                            { name: 'ID' },
+                            { name: 'Name' }
+                        ]
+                    };
+
+                    PredicateAdapter = new $.jqx.dataAdapter(PredicateSource);
+
+                    $("#Predicates").jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        pagesizeoptions: ['10', '20', '50'],
+                        pagesize: 20,
+                        autoheight: true,
+                        sortable: true,
+                        filterable: true,
+                        showfilterrow: true,
+                        pageable: true,
+                        source: PredicateAdapter,
+                        theme: theme,
+                        columns: [
+                            { datafield: "Name", text: "Name" },
+                            {
+                                text: '',
+                                dataField: 'ID',
+                                width: 80,
+                                filterable: false,
+                                cellsrenderer: function (row, column, value) {
+
+                                    var tools = [];
+                                    if (permissions.HasPermission('Root', 'Update')) {
+                                        tools = [
+                                            { icon: 'pencil', urlprefix: '/form/EditPredicate?id={0}' },
+                                            { icon: 'trash-o', urlprefix: '/form/DeletePredicate?id={0}' }
+                                        ];
+                                    }
+
+                                    return renderToolsHtml(value, tools, contextList.Predicate);
+                                }
+                            }
+                        ]
+                    });
+
+                    //#endregion
+
+                    //#region PredicatePhrasesGrid
+
+                    PredicatePhraseSource = {
+                        datatype: 'json',
+                        url: null,//'/relations/PredicatePhrases',
+                        datafields:
+                        [
+                            { name: 'ID' },
+                            { name: 'Phrase' }
+                        ]
+                    };
+
+                    PredicatePhraseAdapter = new $.jqx.dataAdapter(PredicatePhraseSource);
+
+                    $("#PredicatePhrases").jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        pagesizeoptions: ['10', '20', '50'],
+                        pagesize: 20,
+                        autoheight: true,
+                        sortable: true,
+                        filterable: true,
+                        showfilterrow: true,
+                        pageable: true,
+                        source: PredicatePhraseAdapter,
+                        theme: theme,
+                        columns: [
+                            { datafield: "Phrase", text: "Phrase" },
+                            {
+                                text: '',
+                                dataField: 'ID',
+                                width: 80,
+                                filterable: false,
+                                cellsrenderer: function (row, column, value) {
+
+                                    var tools = [];
+                                    if (permissions.HasPermission('Root', 'Update')) {
+                                        tools = [
+                                            { icon: 'pencil', urlprefix: '/form/EditPredicatePhrase?id={0}' },
+                                            { icon: 'trash-o', urlprefix: '/form/DeletePredicatePhrase?id={0}' }
+                                        ];
+                                    }
+
+                                    return renderToolsHtml(value, tools, contextList.PredicatePhrase);
+                                }
+                            }
+                        ]
+                    });
+
+                    //#endregion
+
                     //#region Event Subscriptions
 
-                    $("#List").on("rowselect", listRowSelect);
-                    $("#List").one("bindingcomplete", listBindingComplete);
+                    //$("#List").on("rowselect", listRowSelect);
+                    $("#Predicates").on("rowselect", predicatesRowSelect);
+                    //$("#List").one("bindingcomplete", listBindingComplete);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 

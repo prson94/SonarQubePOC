@@ -408,7 +408,13 @@ BEGIN
 			from	Artifact
 			where	ID = @ID
 
+			insert into @tbl
+			select	'Path', TextPath
+			from	Artifact
+			where	ID = @ID
+
 			set @html = @html + '<div><b>Status:</b> {Status}</div>'
+			set @html = @html + '<div><b>Path:</b> {Path}</div>'
 
 			set @hasDynamicFields = 1
 		end;

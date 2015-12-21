@@ -14,6 +14,8 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Responsibility_ObjectType-ObjectID]
     ON [dbo].[Responsibility]([ObjectType] ASC, [ObjectID] ASC);
@@ -30,23 +32,12 @@ CREATE TRIGGER [dbo].[Responsibility_AfterDelete]
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select ObjectType, ObjectID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'Responsibility', ID from deleted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Responsibility', ID from deleted
 
-	--declare @tbl table (RowID int identity, ID int)
-	--insert into @tbl 
-	--	select ID from deleted
-
-	--declare @current int = 1,
-	--		@max int,
-	--		@rID int
-	--select @max = MAX(RowID) from @tbl
-	--while @current<= @max
-	--begin
-	--	select @rID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeResponsibilities]
-	--	set @current = @current + 1
-	--end
+	delete	T
+	from	cache.ResponsibilityItem T
+			inner join deleted R on R.ID = T.ResponsibilityID
 
 GO
 CREATE TRIGGER [dbo].[Responsibility_AfterInsert]
@@ -54,23 +45,30 @@ CREATE TRIGGER [dbo].[Responsibility_AfterInsert]
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select ObjectType, ObjectID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'Responsibility', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Add', [queue].WriteIndexXml('', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Responsibility', ID from inserted
 
-	--declare @tbl table (RowID int identity, ID int)
-	--insert into @tbl 
-	--	select ID from inserted
-
-	--declare @current int = 1,
-	--		@max int,
-	--		@rID int
-	--select @max = MAX(RowID) from @tbl
-	--while @current<= @max
-	--begin
-	--	select @rID = ID from @tbl where RowID = @current
-	exec [cache].[SynchronizeResponsibilities]
-	--	set @current = @current + 1
-	--end
+	INSERT INTO [cache].[ResponsibilityItem]
+				(
+				[ResponsibilityID],[ResponsibilityTypeID], [ResponsibilityType], [AssigningItem], [AssigningItemID], [Object], [ObjectID],
+				[ResponsibleObject], [ResponsibleObjectID],
+				[ContextHash], [ResponsibilityTypeGroup], [Visible], [TargetResponsibilityID]
+				)
+		select	R.ID, 
+				R.ResponsibilityTypeID, 
+				T.Name, 
+				R.[ObjectType], 
+				R.[ObjectID], 
+				R.[ObjectType], 
+				R.[ObjectID], 
+				R.[ResponsibleObjectType],
+				R.[ResponsibleObjectID], 
+				utility.GetResponsibilityContextHashWrapper(R.ID), 
+				T.[ResponsibilityTypeGroup], 
+				R.[Visible], 
+				R.[TargetResponsibilityID]
+		from	inserted R
+				inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID
 
 GO
 CREATE TRIGGER [dbo].[Responsibility_AfterUpdate]
@@ -78,20 +76,39 @@ CREATE TRIGGER [dbo].[Responsibility_AfterUpdate]
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select ObjectType, ObjectID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'Responsibility', ID from inserted
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+			select 'Update', [queue].WriteIndexXml('', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Responsibility', ID from inserted
 
-	--declare @tbl table (RowID int identity, ID int)
-	--insert into @tbl 
-	--	select ID from inserted
-
-	--declare @current int = 1,
-	--		@max int,
-	--		@rID int
-	--select @max = MAX(RowID) from @tbl
-	--while @current<= @max
-	--begin
-	--	select @rID = ID from @tbl where RowID = @current
-	exec [cache].[SynchronizeResponsibilities]-- @rID, 0
-	--	set @current = @current + 1
-	--end
+		merge	[cache].[ResponsibilityItem] as T
+		using	(
+				select	R.ID as ResponsibilityID, 
+						R.ResponsibilityTypeID, 
+						T.Name as [ResponsibilityType], 
+						R.[ObjectType] as [AssigningItem], R.[ObjectID] as [AssigningItemID], 
+						R.[ObjectType] as [Object], R.[ObjectID], 
+						R.[ResponsibleObjectType] as [ResponsibleObject], R.[ResponsibleObjectID], 
+						utility.GetResponsibilityContextHashWrapper(R.ID) as [ContextHash], 
+						T.[ResponsibilityTypeGroup], 
+						R.[Visible], 
+						R.[TargetResponsibilityID]
+				from	inserted R
+						inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID
+				) as S
+		on		T.ResponsibilityID = S.ResponsibilityID and T.[AssigningItem] = S.[AssigningItem] and T.[AssigningItemID] = S.[AssigningItemID] and T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+		when	matched then
+				update set	T.[ResponsibleObject] = S.[ResponsibleObject],
+							T.[ResponsibleObjectID] = S.[ResponsibleObjectID],
+							T.[ContextHash] = S.[ContextHash],
+							T.[Visible] = S.[Visible],
+							T.[TargetResponsibilityID] = S.[TargetResponsibilityID]
+		when	not matched then
+				insert	(
+						[ResponsibilityID],[ResponsibilityTypeID], [ResponsibilityType], [AssigningItem], [AssigningItemID], [Object], [ObjectID],
+						[ResponsibleObject], [ResponsibleObjectID],
+						[ContextHash], [ResponsibilityTypeGroup], [Visible], [TargetResponsibilityID]
+						)
+				values	(
+						S.[ResponsibilityID], S.[ResponsibilityTypeID], S.[ResponsibilityType], S.[AssigningItem], S.[AssigningItemID], S.[Object], S.[ObjectID],
+						S.[ResponsibleObject], S.[ResponsibleObjectID],
+						S.[ContextHash], S.[ResponsibilityTypeGroup], S.[Visible], S.[TargetResponsibilityID]				
+						);

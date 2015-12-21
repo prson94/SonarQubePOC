@@ -1,5 +1,5 @@
 ﻿-- CONVERT ALL SOURCE ID'S FOR SQL SERVER THAT DONT CONTAIN DB NAME / SCHEMA NAME TO CONTAIN THEM
-create procedure [fusion].[ConvertSQLServerFusionIDs]
+CREATE procedure [fusion].[ConvertSQLServerFusionIDs]
 	@infusionID int
 as
 begin
@@ -73,7 +73,10 @@ begin
 	--	 New format id = <db name>.<schema name>.<function_name>
 	-- 11 = DB View
 	--	 Old format id = <schema_id>_<view_name>
-	--	 New format id = <db name>.<schema name>.<view_name>	
+	--	 New format id = <db name>.<schema name>.<view_name>
+	-- 12 = DB Trigger
+	--	 Old format id = <schema_id>_<trigger_name>
+	--	 New format id = <db name>.<schema name>.<trigger_name>
 	update 
 		fa
 	set 
@@ -135,21 +138,6 @@ begin
 	-- 6 = DB Permissions
 	-- left as is
 	
-	-- 12 = DB Trigger
-	--	 Old format id = <schema_id>_<trigger_name>
-	--	 New format id = <db name>.<schema name>.<trigger_name>
-	update 
-		fa
-	set 
-		fa.sourceid = @dbName + '.' + upper(fa3.Name) + '.' + fa2.Name + '_' + fa.Name
-	from 
-		fusionattribute fa 
-		inner join fusionattribute fa2 on (fa.parentID = fa2.id)
-		inner join fusionattribute fa3 on (fa2.parentID = fa3.id)
-	where fa.fusionattributetypeid = 12
-		and fa.sourceid not like @dbName + '.%'
-		and fa.fusionid = @fusionID;
-
 	-- 13 = DB Constraints
 	--	 Old format id = <schema_id>_<constraint_name>
 	--	 New format id = <db name>.<schema name>.<constraint_name>

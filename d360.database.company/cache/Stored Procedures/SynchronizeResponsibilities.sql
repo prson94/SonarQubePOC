@@ -566,7 +566,7 @@ begin
 	end;
 
 
-	merge	cache.Responsibilities as T
+	merge	cache.ResponsibilityItem as T
 	using	(
 			select	distinct
 					TR.ResponsibilityID,
@@ -574,22 +574,22 @@ begin
 					RT.Name as ResponsibilityType,
 					TR.AssigningItem,
 					TR.AssigningItemID,
-					AI.Name as AssigningItemName,
-					AI.Url as AssigningItemUrl,
-					AI.ObjectType as AssigningItemType,
-					AI.ObjectTypeID as AssigningItemTypeID,
-					AI.ObjectTypeName as AssigningTypeName,
+					--AI.Name as AssigningItemName,
+					--AI.Url as AssigningItemUrl,
+					--AI.ObjectType as AssigningItemType,
+					--AI.ObjectTypeID as AssigningItemTypeID,
+					--AI.ObjectTypeName as AssigningTypeName,
 					TR.[Object],
 					TR.ObjectID,
-					OI.Name as ObjectName,
-					OI.ObjectType,
-					OI.ObjectTypeID,
-					OI.ObjectTypeName,
-					OI.Url as ObjectUrl,
+					--OI.Name as ObjectName,
+					--OI.ObjectType,
+					--OI.ObjectTypeID,
+					--OI.ObjectTypeName,
+					--OI.Url as ObjectUrl,
 					R.ResponsibleObjectType as ResponsibleObject,
 					R.ResponsibleObjectID,
-					RI.Name as ResponsibleObjectName,
-					RI.Url as ResponsibleObjectUrl,
+					--RI.Name as ResponsibleObjectName,
+					--RI.Url as ResponsibleObjectUrl,
 					TR.ContextHash,
 					TR.Visible,
 					RT.ResponsibilityTypeGroup,
@@ -597,9 +597,9 @@ begin
 			from	#Responsibilities TR
 					inner join Responsibility R on R.ID = TR.ResponsibilityID
 					inner join ResponsibilityType RT on RT.ID = R.ResponsibilityTypeID
-					inner join cache.ObjectDetails AI on AI.[Object] = TR.[AssigningItem] and AI.ObjectID = TR.AssigningItemID
-					inner join cache.ObjectDetails OI on OI.[Object] = TR.[Object] and OI.ObjectID = TR.ObjectID
-					inner join cache.ObjectDetails RI on RI.[Object] = R.ResponsibleObjectType and RI.ObjectID = R.ResponsibleObjectID
+					--inner join cache.ObjectDetails AI on AI.[Object] = TR.[AssigningItem] and AI.ObjectID = TR.AssigningItemID
+					--inner join cache.ObjectDetails OI on OI.[Object] = TR.[Object] and OI.ObjectID = TR.ObjectID
+					--inner join cache.ObjectDetails RI on RI.[Object] = R.ResponsibleObjectType and RI.ObjectID = R.ResponsibleObjectID
 			) as S
 	on		(
 			T.ResponsibilityID  = S.ResponsibilityID 
@@ -611,36 +611,36 @@ begin
 			)
 	when	matched then
 			update	
-			set		T.AssigningItemName = S.AssigningItemName,
-					T.AssigningItemUrl = S.AssigningItemUrl,
-					T.AssigningItemType = S.AssigningItemType,
-					T.AssigningItemTypeID = S.AssigningItemTypeID,
-					T.AssigningTypeName = S.AssigningTypeName,
-					T.ObjectName = S.ObjectName,
-					T.ObjectType = S.ObjectType,
-					T.ObjectTypeID = S.ObjectTypeID,
-					T.ObjectTypeName = S.ObjectTypeName,
-					T.ObjectUrl = S.ObjectUrl,
+			set		--T.AssigningItemName = S.AssigningItemName,
+					--T.AssigningItemUrl = S.AssigningItemUrl,
+					--T.AssigningItemType = S.AssigningItemType,
+					--T.AssigningItemTypeID = S.AssigningItemTypeID,
+					--T.AssigningTypeName = S.AssigningTypeName,
+					--T.ObjectName = S.ObjectName,
+					--T.ObjectType = S.ObjectType,
+					--T.ObjectTypeID = S.ObjectTypeID,
+					--T.ObjectTypeName = S.ObjectTypeName,
+					--T.ObjectUrl = S.ObjectUrl,
 					T.ResponsibleObject = S.ResponsibleObject,
 					T.ResponsibleObjectID = S.ResponsibleObjectID,
-					T.ResponsibleObjectName = S.ResponsibleObjectName,
-					T.ResponsibleObjectUrl = S.ResponsibleObjectUrl,
+					--T.ResponsibleObjectName = S.ResponsibleObjectName,
+					--T.ResponsibleObjectUrl = S.ResponsibleObjectUrl,
 					T.TargetResponsibilityID = S.TargetResponsibilityID,
 					T.Visible = S.Visible
 	when	not matched by target then
 			INSERT	(
 					[ResponsibilityID], [ResponsibilityTypeID], [ResponsibilityType], 
-					[AssigningItem], [AssigningItemID], [AssigningItemName], [AssigningItemUrl], [AssigningItemType], [AssigningItemTypeID], [AssigningTypeName], 
-					[Object], [ObjectID], [ObjectName], [ObjectType], [ObjectTypeID], [ObjectTypeName], [ObjectUrl], 
-					[ResponsibleObject], [ResponsibleObjectID], [ResponsibleObjectName], [ResponsibleObjectUrl], 
+					[AssigningItem], [AssigningItemID], --[AssigningItemName], [AssigningItemUrl], [AssigningItemType], [AssigningItemTypeID], [AssigningTypeName], 
+					[Object], [ObjectID], --[ObjectName], [ObjectType], [ObjectTypeID], [ObjectTypeName], [ObjectUrl], 
+					[ResponsibleObject], [ResponsibleObjectID], --[ResponsibleObjectName], [ResponsibleObjectUrl], 
 					[ContextHash], [ResponsibilityTypeGroup], Visible,
 					TargetResponsibilityID
 					)
 			VALUES	(
 					S.[ResponsibilityID], S.[ResponsibilityTypeID], S.[ResponsibilityType], 
-					S.[AssigningItem], S.[AssigningItemID], S.[AssigningItemName], S.[AssigningItemUrl], S.[AssigningItemType], S.[AssigningItemTypeID], S.[AssigningTypeName], 
-					S.[Object], S.[ObjectID], S.[ObjectName], S.[ObjectType], S.[ObjectTypeID], S.[ObjectTypeName], S.[ObjectUrl], 
-					S.[ResponsibleObject], S.[ResponsibleObjectID], S.[ResponsibleObjectName], S.[ResponsibleObjectUrl], 
+					S.[AssigningItem], S.[AssigningItemID], --S.[AssigningItemName], S.[AssigningItemUrl], S.[AssigningItemType], S.[AssigningItemTypeID], S.[AssigningTypeName], 
+					S.[Object], S.[ObjectID], --S.[ObjectName], S.[ObjectType], S.[ObjectTypeID], S.[ObjectTypeName], S.[ObjectUrl], 
+					S.[ResponsibleObject], S.[ResponsibleObjectID], --S.[ResponsibleObjectName], S.[ResponsibleObjectUrl], 
 					S.[ContextHash], S.[ResponsibilityTypeGroup], S.Visible,
 					S.TargetResponsibilityID
 					)

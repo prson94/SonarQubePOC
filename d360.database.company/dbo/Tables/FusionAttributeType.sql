@@ -14,92 +14,39 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_FusionAttributeType_FusionTypeID]
     ON [dbo].[FusionAttributeType]([FusionTypeID] ASC);
 
 
 GO
+
 CREATE TRIGGER [dbo].[FusionAttributeType_AfterDelete]
    ON  [dbo].[FusionAttributeType] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-
-	declare @type varchar(50) = 'FusionAttributeType'
-
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'FusionType', FusionTypeID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'FusionAttributeType', ID from deleted
-		union
-		select 'FusionAttributeType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'FusionAttributeType', ID from deleted
-
-	DELETE	R
-	FROM	AttributeTypeRelation R
-			INNER JOIN deleted D on R.ObjectType = @type AND R.ObjectID = D.ID
-
-	DELETE	R
-	FROM	FieldType R
-			INNER JOIN deleted D on R.[Object] = @type AND R.ObjectID = D.ID
-
-	DELETE	R
-	FROM	StatisticTypeRelation R
-			INNER JOIN deleted D on R.ObjectType = @type AND R.ObjectID = D.ID
-
-	DELETE	O
-	FROM	cache.ObjectDetails O
-			inner join deleted d
-	ON		O.[Object] = @type and O.ObjectID = d.ID
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'FusionType', FusionTypeID, coalesce(UpdatedBy, 0)), 'FusionAttributeType', ID from deleted
 
 GO
+
 CREATE TRIGGER [dbo].[FusionAttributeType_AfterInsert]
    ON  [dbo].[FusionAttributeType] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'FusionType', FusionTypeID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'FusionAttributeType', ID from inserted
-		union
-		select 'FusionAttributeType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'FusionAttributeType', ID from inserted
-
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'FusionAttributeType', @thisID
-		set @current = @current + 1
-	end
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'FusionType', FusionTypeID, coalesce(UpdatedBy, 0)), 'FusionAttributeType', ID from inserted
 
 GO
+
 CREATE TRIGGER [dbo].[FusionAttributeType_AfterUpdate]
    ON  [dbo].[FusionAttributeType] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'FusionType', FusionTypeID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'FusionAttributeType', ID from inserted
-		union
-		select 'FusionAttributeType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'FusionAttributeType', ID from inserted
-
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'FusionAttributeType', @thisID
-		set @current = @current + 1
-	end
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'FusionType', FusionTypeID, coalesce(UpdatedBy, 0)), 'FusionAttributeType', ID from inserted

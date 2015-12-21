@@ -118,7 +118,11 @@ namespace d360.core
         [Description("Workflow Relation"), AllowSurvey(false)]
         WorkflowTypeRelation = 55,
         [Description("Taxonomy Type Class"), AllowSurvey(false)]
-        TaxonomyTypeClass = 56
+        TaxonomyTypeClass = 56,
+        [Description("Predicate"), AllowSurvey(false)]
+        Predicate = 57,
+        [Description("Predicate Phrase"), AllowSurvey(false)]
+        PredicatePhrase = 58
     }
 
     public class SystemObjectInfo

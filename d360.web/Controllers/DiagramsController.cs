@@ -25,30 +25,35 @@ namespace d360.web.Controllers
 
         public ContentResult DiagramRelationshipsTooltip(string type, int id)
         {
-            var html = Company.Query<string>(@"
-declare @html nvarchar(max)
-
-set @html = '<div style=""max-height: 300px; overflow-y: scroll""><table class=""table-striped table-condensed"" style=""width:100%"">'
-set @html = @html + '<thead><th>Type</th><th>Name</th><th>Classification</th><th>Has Technical Relationships?</th></thead>'
-set @html = @html + '<tbody>'
-
-select		@html =	@html + 
-					'<tr>' +
-					'<td>' + TargetTypeName + '</td>' +
-					'<td><a href=""' + TargetUrl + '"" data-context=""Preview"" data-type=""' + TargetObjectType + '"" data-id=""' + cast(TargetObjectID as varchar(15)) + '"">' + TargetName + '</a></td>' +
-					'<td>' + case Classification when 1 then 'Critical' else  'Normal' end + '</td>' +
-					'<td>' + case HasTechnicalRelationships when 1 then 'Yes' else 'No' end + '</td>' +
-					'</tr>'
-from		Relationship 
-where		SourceObjectType = @type 
+            var list = Company.Query<dynamic>(@"
+select	    TargetTypeName,
+		    TargetObject,
+		    TargetObjectID,
+		    TargetObjectName,
+		    dbo.GenerateObjectUrl(TargetObject, TargetTypeID, TargetObjectID) as TargetUrl,
+		    case Classification when 1 then 'Critical' else  'Normal' end as Classification
+from		cache.Relationships
+where		SourceObject = @type
 			and SourceObjectID = @id
 order by	TargetTypeName,
-			TargetName
-set @html = @html + '</tbody>'
-set @html = @html + '</table></div>'
+			TargetObjectName", new { type = type, id = id }).ToList();
 
-select @html", new { type = type, id = id }).Single();
+            var html = @"
+<div style=""max-height: 300px; overflow-y: scroll"">
+<table class=""table-striped table-condensed"" style=""width:100%"">
+<thead><th>Type</th><th>Name</th><th>Classification</th></thead>
+<tbody>
+";
+            list.ForEach(i =>
+            {
 
+                html += string.Format(@"<tr>
+<td>{0}</td>
+<td><a href='{1}' data-context='Preview' data-type='{2}' data-id='{3}'>{4}</a></td>
+<td>{5}</td>
+</tr>", i.TargetTypeName, i.TargetUrl, i.TargetObject, i.TargetObjectID, i.TargetObjectName, i.Classification);
+            });
+            html += @"</tbody></table></div>";
             return Content(html);
         }
 

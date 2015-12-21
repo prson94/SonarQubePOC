@@ -169,7 +169,9 @@ namespace d360.model
         public DbSet<FusionType> FusionTypes { get; set; }
 
         public DbSet<Group> Groups { get; set; }
-        
+
+        public DbSet<IntersectMap> IntersectMaps { get; set; }
+
         public DbSet<Intersect> Intersects { get; set; }
 
         public DbSet<IntersectNode> IntersectNodes { get; set; }
@@ -211,6 +213,10 @@ namespace d360.model
         public DbSet<PolicyTypeClass> PolicyTypeClasses { get; set; }
 
         public DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
+
+        public DbSet<PredicatePhrase> PredicatePhrases { get; set; }
+
+        public DbSet<Predicate> Predicates { get; set; }
 
         public DbSet<QueueFusionItem> QueueFusionItems { get; set; }
 
@@ -1313,22 +1319,29 @@ order by Name");
 
         public void AddRelationship(SystemObjects type, int id, SystemObjects targetType, int targetID, IntersectClassification classification, int? roleID, string description)
         {
+            AddRelationship(type.ToString(), id, targetType.ToString(), targetID, classification, roleID, description);
+        }
+
+        public void AddRelationship(string type, int id, string targetType, int targetID, IntersectClassification classification, int? roleID, string description)
+        {
             if (!roleID.HasValue) roleID = 0;
 
             Database.Connection.Execute(
                 "AddRelationship @ResourceID, @Date, @Type, @ID, @Classification, @IntersectRole, @Description, @TargetType, @TargetID",
-                new {
+                new
+                {
                     ResourceID = CurrentResourceID,
                     Date = DateTime.UtcNow,
-                    Type = type.ToString(),
+                    Type = type,
                     ID = id,
                     Classification = (int)classification,
                     IntersectRole = roleID,
                     Description = description,
-                    TargetType = targetType.ToString(),
+                    TargetType = targetType,
                     TargetID = targetID
                 });
         }
+
 
         public void AddRelationships(SystemObjects type, int id, IntersectClassification classification, int? roleID, string description, List<ObjectModel> objects)
         {

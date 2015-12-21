@@ -10,86 +10,44 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Event_EventGroupID]
     ON [dbo].[Event]([EventGroupID] ASC);
 
 
 GO
+
 CREATE TRIGGER [dbo].[Event_AfterDelete]
 	ON [dbo].[Event]
 	AFTER DELETE
-	AS
-	BEGIN
-		SET NOCOUNT ON;
+AS
+	SET NOCOUNT ON;
 		
-		declare @type varchar(50) = 'Event'
-
-		DELETE	O
-		FROM	cache.ObjectDetails O
-				inner join deleted d
-		ON		O.[Object] = @type and O.ObjectID = d.ID
-
-		DELETE	F
-		FROM	Field as F
-				INNER JOIN deleted AS d
-		ON		F.ObjectType = @type and F.ObjectID = d.ID
-	END
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'Event', ID, 0), 'Event', ID from deleted
 
 
 
 GO
+
 CREATE TRIGGER [dbo].[Event_AfterInsert]
 	ON [dbo].[Event]
 	FOR INSERT
 AS
-	BEGIN
-		SET NOCOUNT ON;
-
-		--insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		--	select 'Event', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Added', 'Event', ID from deleted
-
-		declare @tbl table (RowID int identity, ID int)
-		insert into @tbl 
-			select ID from inserted
-
-		declare @current int = 1,
-				@max int,
-				@thisID int
-		select @max = max(RowID) from @tbl
-
-		while @current <= @max
-		begin
-			select @thisID = ID from @tbl where RowID = @current
-			exec [cache].[SynchronizeObjectDetails] 'Event', @thisID
-			set @current = @current + 1
-		end
-	END
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'Event', ID, 0), 'Event', ID from inserted
 
 GO
+
 CREATE TRIGGER [dbo].[Event_AfterUpdate]
 	ON [dbo].[Event]
 	FOR UPDATE
-	AS
-	BEGIN
-		SET NOCOUNT ON;
-
-		--insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		--	select 'Event', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'Event', ID from deleted
-
-		declare @tbl table (RowID int identity, ID int)
-		insert into @tbl 
-			select ID from inserted
-
-		declare @current int = 1,
-				@max int,
-				@thisID int
-		select @max = max(RowID) from @tbl
-
-		while @current <= @max
-		begin
-			select @thisID = ID from @tbl where RowID = @current
-			exec [cache].[SynchronizeObjectDetails] 'Event', @thisID
-			set @current = @current + 1
-		end
-	END
+AS
+BEGIN
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'Event', ID, 0), 'Event', ID from inserted
+END

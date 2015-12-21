@@ -1,4 +1,4 @@
-﻿create procedure [dbo].[GetMapDiagram]
+﻿CREATE procedure [dbo].[GetMapDiagram]
 --declare
 	@mapID int
 --set @mapID = 1
@@ -20,13 +20,14 @@ begin
 			ED.ObjectTypeName as ObjectType,
 			ED.IconBackColor as ObjectBackColor,
 			ED.IconForeColor as ObjectForeColor,
-			P.Phrase as Predicate 
+			PP.Phrase as Predicate 
 	from	IntersectMap IM
 			inner join IntersectNode SN on SN.ID = IM.SubjectIntersectNodeID
 			inner join cache.ObjectDetails SD on SD.[Object] = SN.ObjectType and SD.ObjectID = SN.ObjectID
 			inner join IntersectNode EN on EN.ID = IM.ObjectIntersectNodeID
 			inner join cache.ObjectDetails ED on ED.[Object] = EN.ObjectType and ED.ObjectID = EN.ObjectID
-			inner join Predicate P on P.ID = IM.PredicateID
+			inner join PredicatePhrase PP on PP.ID = IM.PredicatePhraseID
+			inner join Predicate P on P.ID = PP.PredicateID
 	where	IM.MapID = @mapID
 end
 GO

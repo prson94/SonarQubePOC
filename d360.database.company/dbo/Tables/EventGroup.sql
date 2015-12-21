@@ -10,26 +10,17 @@
 );
 
 
+
+
 GO
+
 CREATE TRIGGER [dbo].[EventGroup_AfterDelete]
    ON  [dbo].[EventGroup] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	declare @type varchar(50) = 'EventGroup'
-
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Rule', RuleID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', @type, ID from deleted
-
-	DELETE	O
-	FROM	cache.ObjectDetails O
-			inner join deleted d
-	ON		O.[Object] = @type and O.ObjectID = d.ID
-
-	DELETE	O
-	FROM	[Event] O
-			INNER JOIN deleted d
-	ON		O.EventGroupID = d.ID
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'Rule', RuleID, coalesce(UpdatedBy, 0)), 'EventGroup', ID from deleted
 
 GO
 
@@ -38,8 +29,8 @@ CREATE TRIGGER [dbo].[EventGroup_AfterInsert]
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Rule', RuleID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'EventGroup', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'Rule', RuleID, coalesce(UpdatedBy, 0)), 'EventGroup', ID from inserted
 
 	declare @tbl table (RowID int identity, ID int, RuleID int, Name nvarchar(500))
 	insert into @tbl 
@@ -68,33 +59,16 @@ AS
 			)
 		set @commentID = SCOPE_IDENTITY()
 		insert into CommentRelation (CommentID, ObjectType, ObjectID, [Date]) values (@commentID, 'Rule', @ruleID, getutcdate())
-
-		exec [cache].[SynchronizeObjectDetails] 'EventGroup', @thisID
 		set @current = @current + 1
 	end
 
 
 GO
+
 CREATE TRIGGER [dbo].[EventGroup_AfterUpdate]
    ON  [dbo].[EventGroup] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Rule', RuleID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'EventGroup', ID from inserted
-
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'EventGroup', @thisID
-		set @current = @current + 1
-	end
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'Rule', RuleID, coalesce(UpdatedBy, 0)), 'EventGroup', ID from inserted

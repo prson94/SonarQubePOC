@@ -8,7 +8,7 @@ CREATE PROCEDURE [Fusion].[ProcessEagleMCToBloombergRelations]
 AS
 BEGIN	
 	SET NOCOUNT ON;
-
+	
 	
 	declare		@eagleStreamID int;				
 	declare @IntersectCount int;
@@ -41,12 +41,12 @@ BEGIN
 				@fieldSourceIntersectTypeNodeID = SourceIntersectTypeNodeID,
 				@fieldTargetIntersectTypeNodeID = TargetIntersectTypeNodeID
 		 from	utility.RelationshipTypes
-				where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = 301
+				where	SourceObjectType = 'FusionAttributeType' and SourceObjectID = 301					
 					and TargetObjectType = 'FusionAttributeType' and TargetObjectID = 205;
 
 		if @fieldToBBIntersectTypeID is null or @fieldSourceIntersectTypeNodeID is null or @fieldTargetIntersectTypeNodeID is null
 		begin
-			raiserror('ERROR : UNABLE TO LOCATE INTERSECT TYPE IDS', 15, 1);
+			raiserror('ERROR : UNABLE TO LOCATE INTERSECT TYPE IDS FOR EAGLE TO BLOOMBERG INTERSECT', 15, 1);
 			return;
 		end;
 

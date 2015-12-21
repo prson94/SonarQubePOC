@@ -156,12 +156,14 @@
         $('#main-rel').hide();
         $('#lineage').show();
         setBreadCrumb('#lineage','Lineage');
-        if (aggregateRelationsModel.TargetType == 'TaxonomyType') {
-            information_catalog_diagram('DiagramTile', aggregateRelationsModel.TargetID);
-        }
-        else {
-            lineage_diagram('DiagramTile', aggregateRelationsModel.TargetID);
-        }
+        LineageDiagram('DiagramTile', 'Intersect', aggregateRelationsModel.TargetID, null);
+
+        //if (aggregateRelationsModel.TargetType == 'TaxonomyType') {
+        //    information_catalog_diagram('DiagramTile', aggregateRelationsModel.TargetID);
+        //}
+        //else {
+        //    lineage_diagram('DiagramTile', aggregateRelationsModel.TargetID);
+        //}
     }
 
     function fusionShow(event) {

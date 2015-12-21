@@ -8,49 +8,32 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Lookup_LookupTypeID]
     ON [dbo].[Lookup]([LookupTypeID] ASC);
 
 
 GO
+
 CREATE TRIGGER [dbo].[Lookup_AfterDelete]
    ON  [dbo].[Lookup] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'LookupType', LookupTypeID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'Lookup', ID from deleted
-
-	DELETE	O
-	FROM	cache.ObjectDetails O
-			inner join deleted d
-	ON		O.[Object] = 'LookupType' and O.ObjectID = d.ID
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'LookupType', LookupTypeID, coalesce(UpdatedBy, 0)), 'Lookup', ID from deleted
 
 GO
+
 CREATE TRIGGER [dbo].[Lookup_AfterInsert]
    ON  [dbo].[Lookup] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'LookupType', LookupTypeID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'Lookup', ID from inserted
-
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'Lookup', @thisID
-		set @current = @current + 1
-	end
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'LookupType', LookupTypeID, coalesce(UpdatedBy, 0)), 'Lookup', ID from inserted
 
 	UPDATE	F
 	set		F.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value)
@@ -59,29 +42,14 @@ AS
 			inner join inserted A on A.LookupTypeID = FT.LookupObjectID and cast(A.ID as nvarchar(15)) = F.Value
 
 GO
+
 CREATE TRIGGER [dbo].[Lookup_AfterUpdate]
    ON  [dbo].[Lookup] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'LookupType', LookupTypeID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'Lookup', ID from inserted
-
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'Lookup', @thisID
-		set @current = @current + 1
-	end
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'LookupType', LookupTypeID, coalesce(UpdatedBy, 0)), 'Lookup', ID from inserted
 
 	UPDATE	F
 	set		F.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value)

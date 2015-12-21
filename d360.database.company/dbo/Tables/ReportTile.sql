@@ -12,29 +12,34 @@
 );
 
 
+
+
 GO
+
 CREATE TRIGGER [dbo].[ReportTile_AfterDelete]
    ON  [dbo].[ReportTile] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Report', ReportID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'ReportTile', ID from deleted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'Report', ReportID, coalesce(UpdatedBy, 0)), 'ReportTile', ID from deleted
 
 GO
+
 CREATE TRIGGER [dbo].[ReportTile_AfterInsert]
    ON  [dbo].[ReportTile] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Report', ReportID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'ReportTile', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Add', [queue].WriteIndexXml('', 'Report', ReportID, coalesce(UpdatedBy, 0)), 'ReportTile', ID from inserted
 
 GO
+
 CREATE TRIGGER [dbo].[ReportTile_AfterUpdate]
    ON  [dbo].[ReportTile] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Report', ReportID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'ReportTile', ID from inserted
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Update', [queue].WriteIndexXml('', 'Report', ReportID, coalesce(UpdatedBy, 0)), 'Report', ID from inserted

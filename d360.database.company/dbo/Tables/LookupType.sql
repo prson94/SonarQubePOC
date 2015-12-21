@@ -7,66 +7,34 @@
 );
 
 
+
+
 GO
+
 CREATE TRIGGER [dbo].[LookupType_AfterDelete]
    ON  [dbo].[LookupType] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'LookupType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', 'LookupType', ID from deleted
-
-	DELETE	O
-	FROM	cache.ObjectDetails O
-			inner join deleted d
-	ON		O.[Object] = 'LookupType' and O.ObjectID = d.ID
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'LookupType', ID, coalesce(UpdatedBy, 0)), 'LookupType', ID from deleted
 
 GO
+
 CREATE TRIGGER [dbo].[LookupType_AfterInsert]
    ON  [dbo].[LookupType] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'LookupType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'LookupType', ID from inserted
-
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'LookupType', @thisID
-		set @current = @current + 1
-	end
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'LookupType', ID, coalesce(UpdatedBy, 0)), 'LookupType', ID from inserted
 
 GO
+
 CREATE TRIGGER [dbo].[LookupType_AfterUpdate]
    ON  [dbo].[LookupType] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].[ObjectVersion] ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'LookupType', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'LookupType', ID from inserted
-
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'LookupType', @thisID
-		set @current = @current + 1
-	end
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'LookupType', ID, coalesce(UpdatedBy, 0)), 'LookupType', ID from inserted

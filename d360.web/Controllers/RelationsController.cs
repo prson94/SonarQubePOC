@@ -46,18 +46,41 @@ namespace d360.web.Controllers
             return Json(model, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
         public JsonResult Classifications()
         {
             return Json(Company.GetClassifications().Select(i => new { ID = i.Key, Name = i.Value }), JsonRequestBehavior.AllowGet);
         }
 
-        public JsonResult Roles(int IntersectTypeID)
+        [HttpGet]
+        public JsonNetResult Predicates()
         {
-            var models = Company.Filter<IntersectTypeRoleRelation>(i => i.IntersectTypeID == IntersectTypeID, i => i.IntersectTypeRole)
-                .OrderBy(i => i.IntersectTypeRole.Name)
-                .Select(i => new { ID = i.IntersectTypeRoleID, Name = i.IntersectTypeRole.Name });
-            return Json(models, JsonRequestBehavior.AllowGet);
+
+            return new JsonNetResult
+            {
+                Data = Company.Table<Predicate>().OrderBy(i => i.Name),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
+
+        [HttpGet]
+        public JsonNetResult PredicatePhrases(int id)
+        {
+
+            return new JsonNetResult
+            {
+                Data = Company.Filter<PredicatePhrase>(i => i.PredicateID == id).OrderBy(i=>i.Phrase),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        //public JsonResult Roles(int IntersectTypeID)
+        //{
+        //    var models = Company.Filter<IntersectTypeRoleRelation>(i => i.IntersectTypeID == IntersectTypeID, i => i.IntersectTypeRole)
+        //        .OrderBy(i => i.IntersectTypeRole.Name)
+        //        .Select(i => new { ID = i.IntersectTypeRoleID, Name = i.IntersectTypeRole.Name });
+        //    return Json(models, JsonRequestBehavior.AllowGet);
+        //}
 
         public class IntersectTypeListViewModel
         {
@@ -279,176 +302,125 @@ order by D.TextPath";
             return Json(types, JsonRequestBehavior.AllowGet);
         }
 
-        //public JsonResult RelationshipTypesForAdding(string type, int typeID, int intersectID = 0)
-        //{
-        //    var types = Company.GetAllowedIntersectionTypes(type, typeID, intersectID);
-        //    return Json(
-        //        types.Select(i => new { 
-        //            Name = i.TargetName, 
-        //            Value = string.Format("{0}|{1}|{2}", i.IntersectTypeID, i.TargetType, i.TargetTypeID), 
-        //            ParentIntersectID = i.ParentIntersectID
-        //        }), 
-        //        JsonRequestBehavior.AllowGet
-        //        );
-        //}
+        [HttpGet, Route("sources/predicates")]
+        public JsonNetResult GetPredicates()
+        {
+            var list = Company.Query<dynamic>(@"select P.ID as [value], R.Name as [group], P.Phrase as [text]
+from Predicate R inner join PredicatePhrase P on P.PredicateID = R.ID
+order by R.Name, P.Phrase");
 
-        //internal class SimpleHierarchyDbViewModel
-        //{
-        //    public int ID { get; set; }
-        //    public int? ParentID { get; set; }
-        //    public int IntersectFlowID { get; set; }
-        //    public string FlowTypeName { get; set; }
-
-        //    public int FromIntersectNodeID { get; set; }
-        //    public string FromObjectType { get; set; }
-        //    public int FromObjectID { get; set; }
-        //    public string FromObjectName { get; set; }
-        //    public string FromObjectUrl { get; set; }
-
-        //    public int ToIntersectNodeID { get; set; }
-        //    public string ToObjectType { get; set; }
-        //    public int ToObjectID { get; set; }
-        //    public string ToObjectName { get; set; }
-        //    public string ToObjectUrl { get; set; }
-        //}
-
-        //internal class SimpleHierarchyJsonViewModel
-        //{
-        //    public SimpleHierarchyJsonViewModel()
-        //    {
-        //        Items = new List<SimpleHierarchyJsonViewModel>();   
-        //    }
-
-        //    public int IntersectFlowID { get; set; }
-        //    public string FlowTypeName { get; set; }
-        //    public string ObjectType { get; set; }
-        //    public int ObjectID { get; set; }
-        //    public string ObjectName { get; set; }
-        //    public string ObjectUrl { get; set; }
-        //    public List<SimpleHierarchyJsonViewModel> Items { get; set; }
-        //}
-
-//        public JsonNetResult SimpleHierarchies(SystemObjects type, int id)
-//        {
-//            var list = Company.Query<SimpleHierarchyDbViewModel>(@"
-//declare @Flows table (ID int, FlowTypeName nvarchar(250))
-
-//insert into @Flows
-//	select	F.ID,
-//            FT.Name
-//	from	IntersectFlow F
-//            inner join IntersectFlowType FT on FT.ID = F.IntersectFlowTypeID and FT.IntersectFlowConfiguration = 1
-//			inner join IntersectFlowItem I on I.IntersectFlowID = F.ID
-//			inner join IntersectNode N on (N.ID = I.FromIntersectNodeID or N.ID = I.ToIntersectNodeID) and N.ObjectType = @type and N.ObjectID = @id;
-
-//with flows as
-//	(
-//	select	I.*,
-//			1 as [Level]
-//	from	IntersectFlowItem I
-//			inner join @Flows F on F.ID = I.IntersectFlowID and I.ParentID is null
-//	union all
-//	select	I.*,
-//			P.[Level] + 1 as [Level]
-//	from	IntersectFlowItem I
-//			inner join flows P on I.ParentID = P.ID
-//	)
-//select	F.ID,
-//        F.ParentID,
-//        F.IntersectFlowID,
-//        FT.FlowTypeName,
-//        F.FromIntersectNodeID,
-//        FN.ObjectType as FromObjectType,
-//        FN.ObjectID as FromObjectID,
-//        FD.Name as FromObjectName,
-//        FD.Url as FromObjectUrl,
-//        F.ToIntersectNodeID,
-//        TN.ObjectType as ToObjectType,
-//        TN.ObjectID as ToObjectID,
-//        TD.Name as ToObjectName,
-//        TD.Url as ToObjectUrl
-//from	flows F
-//        inner join @Flows FT on FT.ID = F.IntersectFlowID
-//		inner join IntersectNode FN on FN.ID = F.FromIntersectNodeID
-//        inner join cache.ObjectDetails FD on FD.[Object] =  FN.ObjectType and FD.ObjectID = FN.ObjectID
-//		inner join IntersectNode TN on TN.ID = F.ToIntersectNodeID
-//		inner join cache.ObjectDetails TD on TD.[Object] =  TN.ObjectType and TD.ObjectID = TN.ObjectID", new { type = type.ToString(), id }).ToList();
-
-//            var models = new List<SimpleHierarchyJsonViewModel>();
-
-//            //The distinct IDs we are getting here represent different flows altogether, meaning different hierarchies.
-//            var distinctFlowIDs = list.Select(i => i.IntersectFlowID).Distinct().ToList();
-
-//            distinctFlowIDs.ForEach(flowID =>
-//            {
-//                var flowItems = list.Where(i => i.IntersectFlowID == flowID).ToList();
-//                parseSimpleHierarchyJsonViewModel(models, flowItems);
-//            });
-
-//            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-//        }
-
-//        void parseSimpleHierarchyJsonViewModel(List<SimpleHierarchyJsonViewModel> models, List<SimpleHierarchyDbViewModel> flowItems, int? parentID = null, SimpleHierarchyJsonViewModel parent = null)
-//        {
-//            bool shouldAddToModelCollection = false;
-
-//            foreach (var flowItem in flowItems.Where(i => i.ParentID == parentID))
-//            {
-//                SimpleHierarchyJsonViewModel model = null;
-
-//                if (parent == null)
-//                {
-//                    // We should only be in this loop the first time we cycle through to generate the hierarchy.
-//                    parent = new SimpleHierarchyJsonViewModel
-//                    {
-//                        FlowTypeName = flowItem.FlowTypeName,
-//                        IntersectFlowID = flowItem.IntersectFlowID,
-//                        ObjectID = flowItem.FromObjectID,
-//                        ObjectName = flowItem.FromObjectName,
-//                        ObjectType = flowItem.FromObjectType,
-//                        ObjectUrl = flowItem.FromObjectUrl
-//                    };
-//                    shouldAddToModelCollection = true;
-//                }
-
-//                model = new SimpleHierarchyJsonViewModel
-//                {
-//                    FlowTypeName = flowItem.FlowTypeName,
-//                    IntersectFlowID = flowItem.IntersectFlowID,
-//                    ObjectID = flowItem.ToObjectID,
-//                    ObjectName = flowItem.ToObjectName,
-//                    ObjectType = flowItem.ToObjectType,
-//                    ObjectUrl = flowItem.ToObjectUrl
-//                };
-//                parseSimpleHierarchyJsonViewModel(models, flowItems, flowItem.ID, model);   // Recurse
-//                parent.Items.Add(model);                                                    // Add to parent Items collection.
-//            }
-
-//            if (shouldAddToModelCollection)
-//            {
-//                models.Add(parent);         // We only add this to the model collections once per hierarchy flow.
-//            }
-//        }
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
 
         #endregion
 
         #region Partials
 
-        public ActionResult AddRelationship(SystemObjects source, int sourceID, SystemObjects target, int targetID) //, int intersectTypeID
+        public ActionResult AddRelationship(SystemObjects source, int sourceID, SystemObjects target, int targetID)
         {
             ViewData.Add("Source", source.ToString());
             ViewData.Add("SourceID", sourceID);
-            //ViewData.Add("IntersectTypeID", intersectTypeID);
             ViewData.Add("TargetType", target.ToString());
             ViewData.Add("TargetTypeID", targetID);
             return PartialView();
         }
 
+        [HttpGet, Route("sources/{type}/{id:int}/add")]
         public ActionResult AddSource(SystemObjects type, int id)
         {
-            ViewBag.Type = type.ToString();
-            ViewBag.ID = id;
+            var dtl = Company.GetObjectDetail(type, id);
+            ViewBag.ObjectName = dtl.Name;
+            ViewBag.Object = type.ToString();
+            ViewBag.ObjectID = id;
+            dtl = null;
             return PartialView();
+        }
+
+        public class AddSourcePostModel
+        {
+            public string Subject { get; set; }
+            public int SubjectID { get; set; }
+            public string Object { get; set; }
+            public int ObjectID { get; set; }
+            public int PredicatePhraseID { get; set; }
+            public int IntersectID { get; set; }
+        }
+
+        public class IntersectLookupModel
+        {
+            public int IntersectID { get; set; }
+            public int SubjectNodeID { get; set; }
+            public string Subject { get; set; }
+            public int SubjectID { get; set; }
+            public int ObjectNodeID { get; set; }
+            public string Object { get; set; }
+            public int ObjectID { get; set; }
+        }
+
+        [HttpPost, Route("sources")]
+        public JsonNetResult AddSourcePost(AddSourcePostModel model)
+        {
+            var message = "";
+            var success = false;
+
+            if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
+            {
+                message = $"The Subject you provided is invalid.";
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
+                {
+                    message = $"The Object you provided is invalid.";
+                }
+                else
+                {
+                    if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+                    {
+                        message = $"A source may not map to itself directly.";
+                    }
+                    else
+                    {
+                        Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                        var intersect = Company.Query<IntersectLookupModel>(@"select S.IntersectID,
+S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
+O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
+from [IntersectNode] S 
+inner join IntersectNode O on O.IntersectID = S.IntersectID 
+and S.[ObjectType] = @s and S.ObjectID = @sid 
+and O.[ObjectType] = @o and O.ObjectID = @oid",
+    new { s = model.Subject, sid = model.SubjectID, o = model.Object, oid = model.ObjectID }
+    ).SingleOrDefault();
+                        if (intersect != null)
+                        {
+                            // If we got here, we are all good.
+
+                            var intersectMap = new IntersectMap
+                            {
+                                MapID = 0,
+                                ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
+                                PredicatePhraseID = model.PredicatePhraseID,
+                                SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
+                                Type = MapType.SourceToTarget
+                            };
+                            Company.Add<IntersectMap>(intersectMap);
+                            success = true;
+                        }
+                        else
+                        {
+                            message = $"The Subject or Object did not match up with the Relationship you provided.";
+                        }
+                    }
+                }
+            }
+
+            return new JsonNetResult {
+                Data = new {
+                    message = message,
+                    success = success
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
 
         public ActionResult EditRelationship(int id)

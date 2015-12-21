@@ -16,78 +16,39 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Fusion_FusionTypeID]
     ON [dbo].[Fusion]([FusionTypeID] ASC);
 
 
 GO
+
 CREATE TRIGGER [dbo].[Fusion_AfterDelete]
    ON  [dbo].[Fusion] 
    AFTER DELETE
 AS 
 	SET NOCOUNT ON;
-	declare @type varchar(50) = 'Fusion'
-
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select @type, ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Removed', @type, ID from deleted
-
-	DELETE	O
-	FROM	cache.ObjectDetails O
-			inner join deleted d
-	ON		O.[Object] = @type and O.ObjectID = d.ID
-
-	DELETE	F
-	FROM	Field as F
-			INNER JOIN deleted AS d
-	ON		F.ObjectType = @type and F.ObjectID = d.ID
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'Fusion', ID, coalesce(UpdatedBy, 0)), 'Fusion', ID from deleted
 
 GO
+
 CREATE TRIGGER [dbo].[Fusion_AfterInsert]
    ON  [dbo].[Fusion] 
    AFTER INSERT
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Fusion', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Created', 'Fusion', ID from inserted
-
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'Fusion', @thisID
-		set @current = @current + 1
-	end
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'Fusion', ID, coalesce(UpdatedBy, 0)), 'Fusion', ID from inserted
 
 GO
+
 CREATE TRIGGER [dbo].[Fusion_AfterUpdate]
    ON  [dbo].[Fusion] 
    AFTER UPDATE
 AS 
 	SET NOCOUNT ON;
-	insert into [queue].ObjectVersion ([Object], ObjectID, ResourceID, [Date], [Action], ActionObject, ActionObjectID)
-		select 'Fusion', ID, coalesce(UpdatedBy, 0), coalesce(UpdatedOn, getutcdate()), 'Updated', 'Fusion', ID from inserted
-
-	declare @tbl table (RowID int identity, ID int)
-	insert into @tbl 
-		select ID from inserted
-
-	declare @current int = 1,
-			@max int,
-			@thisID int
-	select @max = max(RowID) from @tbl
-
-	while @current <= @max
-	begin
-		select @thisID = ID from @tbl where RowID = @current
-		exec [cache].[SynchronizeObjectDetails] 'Fusion', @thisID
-		set @current = @current + 1
-	end
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'Fusion', ID, coalesce(UpdatedBy, 0)), 'Fusion', ID from inserted
