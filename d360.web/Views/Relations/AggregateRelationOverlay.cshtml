@@ -301,8 +301,7 @@
             return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + value + "</div>";
         }
 
-        var multipleFieldColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
-            console.log(data);
+        var multipleFieldColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {            
             return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ?  "<div data-context='Preview' data-type='fieldvalues' data-id='" + data.IntersectID + "/" + column.datafield + "' >" + value + " <i class='fusion fa fa-info-circle'></i></div></div>" : "") + "</div>";
         }
 
