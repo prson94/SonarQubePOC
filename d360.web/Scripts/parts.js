@@ -2049,8 +2049,7 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
 
     //#region Event Subscriptions
 
-    function fusionItemSelected(data) {
-        console.log(data);
+    function fusionItemSelected(data) {        
         var liID = 'H_' + data.type + '_' + data.id;
 
         $(breadcrumbControlID).append('<li class="separator">/</li><li id="' + liID + '">' + data.title + '</li>');
