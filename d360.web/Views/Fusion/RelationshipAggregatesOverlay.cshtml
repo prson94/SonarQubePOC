@@ -79,10 +79,10 @@
             default:
                 columns.push({ datafield: "TargetTypeName", text: "Target Type", width: '20%', filtertype: 'checkedlist' });
                 columns.push({
-                    datafield: "TargetName", text: "Target Name", width: '40%'//,
-                    //cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                    //    return previewLinkRenderer(data.TargetType, data.TargetID, data.TargetUrl, data.TargetName);
-                    //}
+                    datafield: "TargetName", text: "Target Name", width: '40%',
+                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return previewLinkRenderer(data.TargetType, data.TargetID, data.TargetUrl, data.TargetName);
+                    }
                 });
                 break;
         }
