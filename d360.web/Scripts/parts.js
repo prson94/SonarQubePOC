@@ -4920,17 +4920,29 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     var controlID_wrapper = controlID + '_wrapper';
     var controlID_diagram = controlID + '_dgm';
+    var controlID_palette = controlID + '_palette';
     var controlID_sidebar = controlID + '_sidebar';
+
     var controlID_controls = controlID + '_controls';
     var controlID_controls_zoom = controlID + '_controls_zoom';
     var controlID_controls_reset = controlID + '_controls_reset';
+
     var controlID_actions = controlID + '_actions';
+
     var controlID_info = controlID + '_info';
     var controlID_info_body = controlID + '_info_body';
-    
+
+    var controlID_add = controlID + '_add';
+    var controlID_add_search_text = controlID + '_add_search_text';
+    var controlID_add_search = controlID + '_add_search';
+    var controlID_add_artifact_type = controlID + '_add_artifact_type';
+    var controlID_ovr_predicates = controlID + '_ovr_predicates';
+
     $("#" + controlID_controls).jqxExpander({ theme: theme });
     $("#" + controlID_info).jqxExpander({ theme: theme });
+    $("#" + controlID_add).jqxExpander({ theme: theme });
     $("#" + controlID_controls_zoom).jqxScrollBar({ theme: theme, width: 280, height: 18, min: 750, max: 2250, value: 1500 });
+
 
     if (readonly) {
         $("#" + controlID_actions).hide();
@@ -4953,12 +4965,37 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             from: null,
             frompid: "OUT",
             to: null,
-            text: null
+            text: null,
+            phrase: null,
+            predicateName: null,
+            isDeletable: true,
+            exclude: 'false',
+            diagramObjectType: "Link"
         };
     };
+
+    function createArtifactModel() {
+        return {
+            key: null,
+            id: null,
+            parentId: null,
+            name: null,
+            type: null,
+            typeName: null,
+            backColor: null,
+            foreColor: null,
+            isDeletable: true,
+            exclude: 'false',
+            highlightColor: null,
+            diagramObjectType: "Node",
+            template: "Artifact",
+            intersectMapId: null
+        };
+    };
+
     function layoutCompleted() {
-        console.log(myDiagram.documentBounds.height);
-        console.log(myDiagram.viewportBounds.height);
+        //console.log(myDiagram.documentBounds.height);
+        //console.log(myDiagram.viewportBounds.height);
 
         var height = $('#' + controlID_diagram).height($(window).innerHeight());
     }
@@ -5016,7 +5053,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             spot2: go.Spot.BottomRight,
             name: "NodeShape"
         },
-        new go.Binding("fill", "back").makeTwoWay()
+        new go.Binding("fill", "backColor").makeTwoWay()
        ),
         g(go.Panel, "Table",
             g(go.TextBlock, {
@@ -5028,7 +5065,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 font: "bold " + fontSize + "pt sans-serif"
             },
                 new go.Binding("text", "name").makeTwoWay(),
-                new go.Binding("stroke", "fore").makeTwoWay()
+                new go.Binding("stroke", "foreColor").makeTwoWay()
             ),
             g(go.TextBlock, {
                 row: 1,
@@ -5036,8 +5073,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 maxSize: new go.Size(180, NaN),
                 font: (fontSize - 2) + "pt sans-serif"
             },
-                new go.Binding("stroke", "fore").makeTwoWay(),
-                new go.Binding("text", "type").makeTwoWay()
+                new go.Binding("stroke", "foreColor").makeTwoWay(),
+                new go.Binding("text", "typeName").makeTwoWay()
             )//,
             //g(go.TextBlock, {
             //    row: 2,
@@ -5062,6 +5099,43 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         myDiagram.nodeTemplateMap.add(obj, node);
     }
+    function makeSearchTemplate() {
+        var node = g(go.Node, "Spot",
+               {
+                   mouseEnter: mouseEnter,
+                   mouseLeave: mouseLeave
+               },
+           g(go.Panel, "Auto", {
+               width: 125,
+               height: 50,
+               name: "NodePanel"
+           },
+           g(go.Shape, "RoundedRectangle", {
+               stroke: 'transparent',
+               strokeWidth: 2,
+               spot1: go.Spot.TopLeft,
+               spot2: go.Spot.BottomRight,
+               name: "NodeShape"
+           },
+               new go.Binding("fill", "backColor").makeTwoWay()
+          ),
+           g(go.Panel, "Table",
+               g(go.TextBlock, {
+                   row: 0,
+                   margin: 3,
+                   alignment: go.Spot.Top,
+                   editable: false,
+                   maxSize: new go.Size(180, 50),
+                   font: "8pt sans-serif"
+               },
+                   new go.Binding("text", "name").makeTwoWay()
+                   , new go.Binding("stroke", "foreColor").makeTwoWay()
+               ))
+           ));
+
+        myPalette.nodeTemplateMap.add("Artifact", node);
+    }
+    
     function mouseEnter(e, node) {
         node.isShadowed = true;
     };
@@ -5075,7 +5149,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             type = obj.obj;
             id = obj.objid;
 
-            popDiagram();
+            populateDiagram();
         }
     }
     function onSelectionChange(e) {
@@ -5089,9 +5163,9 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         var data = node.data;
 
-        if (data.obj) { //node selected
+        if (data.diagramObjectType == 'Node') { //node selected
             $.ajax({
-                url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
+                url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
                 data: null,
                 success: function (data) {
                     $('#' + controlID_info_body).html(data);
@@ -5111,20 +5185,25 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
         $('#' + controlID_controls_zoom).val(Math.round(myDiagram.scale * 1500));
     };
-    function popDiagram() {
-        var dataUri = '/diagrams/maps/' + type + '/' + id + '.json';
+    //function popDiagram() {
+    //    var dataUri = '/diagrams/maps/' + type + '/' + id + '.json';
 
-        $.getJSON(dataUri, function (data) {
-            myDiagram.model = go.Model.fromJson({
-                "class": "go.GraphLinksModel",
-                "nodeCategoryProperty": "obj",
-                "linkFromPortIdProperty": "frompid",
-                "linkToPortIdProperty": "topid",
-                "nodeDataArray": data.nodes,
-                "linkDataArray": data.links
-            });
-        });
-    }
+    //    $.getJSON(dataUri, function (data) {
+    //        for (var i = 0; i < data.nodes.length; i++) {
+    //            data.nodes[i].template = 'Artifact';
+    //        }
+    //        myDiagram.model = go.Model.fromJson({
+    //            "class": "go.GraphLinksModel",
+    //            "nodeCategoryProperty": "template",
+    //            "linkFromPortIdProperty": "frompid",
+    //            "linkToPortIdProperty": "topid",
+    //            "nodeDataArray": data.nodes,
+    //            "linkDataArray": data.links
+    //        });
+    //    });
+    //}
+
+
     function reOrderLayout() {
         //myDiagram.layout.isValidLayout = false;
         // myDiagram.layout.isOngoing = true;
@@ -5151,9 +5230,17 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         initialAutoScale: go.Diagram.UniformToFill,
         //scrollMode: go.Diagram.DocumentScroll,
         //initialPosition: Point(125, 200),
-        layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 100, layerSpacing: 100 }),
+        layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 10, layerSpacing: 10 }),
         "undoManager.isEnabled": true
     });
+    myDiagram.model.class = go.GraphLinksModel;
+    myDiagram.model.nodeCategoryProperty = "template";
+    myDiagram.model.linkFromPortIdProperty = "frompid";
+    myDiagram.model.linkToPortIdProperty = "topid";
+    myDiagram.model.nodeDataArray = [];
+    myDiagram.model.linkDataArray = [];
+
+
 
     $('#' + controlID_wrapper).on('mouseup', function () {
         var height = $('#' + controlID_wrapper).height();
@@ -5187,7 +5274,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
     makeTemplate("Artifact", 225, 105, 10, [makePort("", true)], [makePort("OUT", false)]);
-    makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
+    //makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
 
     myDiagram.linkTemplate = g(
         go.Link, { routing: go.Link.Orthogonal, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel
@@ -5203,6 +5290,161 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
              )
         )
     );
+    
 
-    popDiagram();
+    myPalette = g(go.Palette, controlID_palette, {
+        contentAlignment: go.Spot.BottomCenter
+        , allowDrop: true
+        , initialAutoScale: go.Diagram.Uniform
+        , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
+    })
+    {
+        myPalette.model.nodeCategoryProperty = 'template';
+        myPalette.model.nodeDataArray = [];
+        myPalette.model.class = 'go.GraphLinksModel';
+    }
+    makeSearchTemplate();
+
+    function parseData(data) {
+
+        myDiagram.startTransaction("load_all_data");
+        myDiagram.model.nodeDataArray = [];
+        myDiagram.model.linkDataArray = [];
+        var modelList = [];
+        var linkList = [];
+        for (var i = 0; i < data.nodes.length; i++) {
+            var d = data.nodes[i];
+            var model = createArtifactModel();
+            model.key = d.key;
+            model.id = d.objid;
+            model.type = d.obj;
+            model.name = d.name;
+            model.typeName = d.type;
+            model.foreColor = d.fore;
+            model.backColor = d.back;
+            model.diagramObjectType = "Node";
+            model.exclude = d.exclude.toString();
+            model.intersectMapId = d.intersectMapId;
+
+            //for (var j = 0; j < pendingExclusionNodes.length; j++) {
+            //    if (pendingExclusionNodes[j].intersectMapId == model.intersectMapId) {
+            //        model.exclude = 'true';
+            //    }
+            //}
+            modelList.push(model);
+        }
+
+        for (var i = 0; i < data.links.length; i++) {
+            var d = data.links[i];
+            var link = createLinkModel();
+            link.from = d.from;
+            link.to = d.to;
+            link.text = d.text;
+            link.diagramObjectType = "Link";
+            linkList.push(link);
+        }
+
+        myDiagram.model.nodeDataArray = modelList;
+        myDiagram.model.linkDataArray = linkList;
+
+        myDiagram.commitTransaction("load_all_data");
+        reOrderLayout();
+
+    }
+
+
+    function populateDiagram() {
+        var results = $.ajax({
+            url: '/diagrams/maps/' + type + '/' + id + '.json',
+            data: null,
+            success: function (data) {
+                //console.log(data);
+                parseData(data);
+                //populateNodeSelectList();
+                myDiagram.zoomToFit();
+            }
+        });
+    }
+    populateDiagram();
+
+
+    function populateTypeSelectList() {
+
+        $.ajax({
+            url: '/Diagrams/GetArtifactTypes',
+            data: null,
+            success: function (data) {
+                $('#' + controlID_add_artifact_type).html('');
+                var output = [];
+                for (var i = 0; i < data.length; i++) {
+                    output.push('<option value="' + data[i].id + '">' + data[i].name + '</option>');
+                }
+                $('#' + controlID_add_artifact_type).html(output.join(''));
+            }
+        });
+    }
+    populateTypeSelectList();
+
+
+    function getArtifact() {
+        var data = {
+            id: $('#' + controlID_add_artifact_type).val(),
+            search: $('#' + controlID_add_search_text).val()
+        };
+
+        $.ajax({
+            url: '/Diagrams/getArtifact',
+            data: data,
+            success: function (data) {
+
+                myPalette.model.nodeDataArray = [];
+                temp = data[0];
+                for (var i = 0; i < data.length; i++) {
+                    data[i].template = "Artifact";
+                    data[i].key = data[i].type + data[i].id.toString();
+                    data[i].isDeletable = true;
+                    myPalette.model.addNodeData(data[i]);
+                }
+            },
+            async: false
+        });
+
+        if (temp == null) {
+            return;
+        }
+        var data = {
+            type1: $('#' + controlID_add_artifact_type + ' option:selected').text(),
+            type2: ''
+        };
+
+        //for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
+        //    if (myDiagram.model.nodeDataArray[i].key == $('#ddlRel').val()) {
+        //        data.type2 = myDiagram.model.nodeDataArray[i].type;
+        //        break;
+        //    }
+        //}
+        populatePredicateList();
+    }
+
+    $('#' + controlID_add_search).on('click', getArtifact);
+
+    function populatePredicateList() {
+        $.ajax({
+            url: '/diagrams/getpredicateinfo',
+            success: function (data) {
+                //console.log(data);
+                var output = [];
+                predicates = [];
+                output.push('<option value="0">(No Choice)</option>');
+                for (var i = 0; i < data.length; i++) {
+                    data[i].id = data[i].intersecttypeid + '_' + data[i].intersecttyperoleid
+                    output.push('<option value="' + data[i].value + '">' + data[i].displayName + '</option>');
+                    predicates.push(data[i]);
+                }
+                $('#' + controlID_ovr_predicates).html(output.join(''));
+            }
+        });
+    }
+
+
 }

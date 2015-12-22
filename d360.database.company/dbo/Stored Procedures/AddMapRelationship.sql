@@ -1,7 +1,6 @@
-﻿
-create procedure [dbo].[AddMapRelationship]
+﻿create procedure [dbo].[AddMapRelationship]
 --declare
-	@MapID int,
+	--@MapID int,
 	@ResourceID int,
 	@Date datetime,
 	@ObjectType varchar(50),			-- The start object type.
@@ -37,10 +36,8 @@ begin
 		set @IntersectRole = null
 	end
 
-	if @MapID = 0
-	begin
-		set @MapID = null
-	end
+	declare @MapID int;
+	set @MapID = 1;
 
 	declare @current int,
 			@max int,

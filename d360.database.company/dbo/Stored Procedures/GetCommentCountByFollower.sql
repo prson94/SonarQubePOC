@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [dbo].[GetCommentCountByFollower]
+﻿CREATE PROCEDURE [dbo].[GetCommentCountByFollower]
 	@resourceID int,
 	@dateStart datetime = null,
 	@dateEnd datetime = null,
@@ -22,7 +21,7 @@ BEGIN
 		0
 	end as IsVisible
 	from comment c
-	left join FollowWithChildren f on f.objectid = c.ownerobjectid and f.objecttype = c.ownerobjecttype
+	left join FollowWithChildren f on f.objectid = c.ownerobjectid and f.objecttype = c.ownerobjecttype and f.resourceId = c.creatingResourceId
 	where c.ID in 
 	(
 		select commentid as id from FollowWithChildren f
@@ -110,5 +109,3 @@ BEGIN
 		) i on i.CommentTypeName = u.CommentTypeName
 
 END
-
-

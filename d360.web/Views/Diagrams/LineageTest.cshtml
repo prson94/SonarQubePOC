@@ -156,7 +156,6 @@
         var isFullscreen = false;
         var initialNodes = [];
         var initialLinks = [];
-        var mapId = 0;
         var digraphDirection = 0;
         var fromPortAlignment = go.Spot.LeftCenter;
         var toPortAlignment = go.Spot.RightCenter;
@@ -440,8 +439,7 @@
         function markPendingExclusions(node) {
             var data = {
                 type: node.type,
-                id: node.id,
-                mapId: mapId
+                id: node.id
             };
             pendingExclusionObjects.push({
                 ObjectType: node.type,
@@ -769,7 +767,6 @@
                 url: '/diagrams/maps/Artifact/' + data.id + '.json',
                 data: null,
                 success: function (data) {
-                    mapId = data.mapId;
                     //console.log(data);
                     parseData(data);
                     populateNodeSelectList();
@@ -789,8 +786,7 @@
                 AddedLinks: linkChanges.added,
                 ExclusionObjects: pendingExclusionObjects,
                 AllNodes: myDiagram.model.nodeDataArray,
-                AllLinks: myDiagram.model.linkDataArray,
-                MapID: mapId
+                AllLinks: myDiagram.model.linkDataArray
             }
 
             $.ajax({

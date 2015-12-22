@@ -453,7 +453,6 @@ from	h
             public List<ObjectModel> ExclusionObjects { get; set; }
             public List<DiagramNode> AllNodes { get; set; }
             public List<DiagramLink> AllLinks { get; set; }
-            public int MapID { get; set; }
 
         }
 
@@ -511,10 +510,9 @@ from	h
                     //TODO: error handling here
                 }
 
-                var r = Company.Query<dynamic>("EXEC AddMapRelationship @MapID, @ResourceID, @Date, @ObjectType, @ObjectID, @Classification, @IntersectRole, @Description, @SubjectType, @SubjectID, @PredicateName, @PredicatePhrase"
+                var r = Company.Query<dynamic>("EXEC AddMapRelationship @ResourceID, @Date, @ObjectType, @ObjectID, @Classification, @IntersectRole, @Description, @SubjectType, @SubjectID, @PredicateName, @PredicatePhrase"
                 , new
                 {
-                    MapID = changes.MapID,
                     ResourceID = Company.CurrentResourceID,
                     Date = DateTime.UtcNow,
                     ObjectType = l.FromNode.ObjectType,
@@ -534,8 +532,8 @@ from	h
                 changes.ExclusionObjects = new List<ObjectModel>();
             foreach(ObjectModel d in changes.ExclusionObjects)
             {
-                var z = Company.Query<dynamic>("EXEC [ExcludeMapIntersect] @MapID, @ObjectType, @ObjectID",
-                    new { MapID = changes.MapID, ObjectType = d.ObjectType, ObjectID = d.ObjectID});
+                var z = Company.Query<dynamic>("EXEC [ExcludeMapIntersect] @ObjectType, @ObjectID",
+                    new { ObjectType = d.ObjectType, ObjectID = d.ObjectID});
             }
             //TODO: return something useful here
             return null;
@@ -547,10 +545,10 @@ from	h
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public JsonNetResult GetExclusionsByMapObject(SystemObjects type, int id, int mapId)
+        public JsonNetResult GetExclusionsByMapObject(SystemObjects type, int id)
         {
             var ids = Company.Query<int>("EXEC FindExcludeMapIntersect @ObjectType, @ObjectID"
-                ,new { ObjectType = type.ToString(), ObjectID = id, MapID = mapId });
+                ,new { ObjectType = type.ToString(), ObjectID = id });
             return new JsonNetResult { Data = ids, Formatting = Newtonsoft.Json.Formatting.None };
         }
         #endregion

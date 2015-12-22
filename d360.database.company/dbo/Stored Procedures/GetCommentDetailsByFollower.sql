@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [dbo].[GetCommentDetailsByFollower]
+﻿CREATE PROCEDURE [dbo].[GetCommentDetailsByFollower]
 --declare
 	@resourceID int,
 	@skip int,
@@ -30,7 +29,7 @@ BEGIN
 		0
 	end as IsVisible
 	from comment c
-	left join FollowWithChildren f on f.objectid = c.ownerobjectid and f.objecttype = c.ownerobjecttype
+	left join FollowWithChildren f on f.objectid = c.ownerobjectid and f.objecttype = c.ownerobjecttype and f.ResourceID = c.CreatingResourceID
 	where c.ID in 
 	(
 		select commentid as id from FollowWithChildren f
@@ -71,7 +70,7 @@ BEGIN
 	OFFSET		@skip ROWS 
 	FETCH NEXT	@take ROWS ONLY
 	)
-	
+
 	select a.*,
 		a.OwnerObjectType as ObjectType,
 		a.OwnerObjectId as ObjectId,
