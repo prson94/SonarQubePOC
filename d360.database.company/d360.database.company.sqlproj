@@ -455,7 +455,6 @@
     <Build Include="cache\Views\Relationships.sql" />
     <Build Include="cache\Views\ObjectDetails.sql" />
     <Build Include="queue\Functions\WriteDeleteXml.sql" />
-    <Build Include="fusion\Stored Procedures\FindEagleToDBRelationships_1.sql" />
     <Build Include="dbo\Stored Procedures\GetLineageDiagram_1.sql" />
     <Build Include="dbo\Stored Procedures\FindExcludeMapIntersect_1.sql" />
     <Build Include="dbo\Stored Procedures\ExcludeMapIntersect_1.sql" />
