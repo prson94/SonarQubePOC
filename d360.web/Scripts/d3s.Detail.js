@@ -256,8 +256,15 @@
                             "' data-id='" + v.TooltipID + "'>" +
                             v.Value + "</div>");
                     }
-                    else {
-                        cpnl.append("<div>" + v.Value + "</div>");
+                    else {                        
+                        if (v.Value != null && v.Value.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})/)) 
+                        {
+                            v.Value = v.Value.replace(/["]/g, "");
+                            var d = new Date(v.Value);
+                            cpnl.append("<div>" + d.toLocaleString() + "</div>");
+                        }
+                        else
+                            cpnl.append("<div>" + v.Value + "</div>");
                     }
                 });
             }

@@ -147,8 +147,8 @@
                     columns: [
                         { text: 'Type', datafield: 'FusionType', filtertype: 'checkedlist', width: '20%' },
                         { text: 'Configuration', datafield: 'Fusion', filtertype: 'checkedlist', width: '20%' },
-                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '15%' },
-                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '15%' },
+                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '15%' },
+                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '15%' },
                         { text: 'Agent', datafield: 'MachineQueuedOn', filtertype: 'checkedlist', width: '20%' },
                         { text: 'Success?', datafield: 'Success', columntype: 'checkbox', filtertype: 'bool', width: '10%' }
                     ]
@@ -196,8 +196,8 @@
                     columns: [
                         { text: 'Type', datafield: 'FusionType', filtertype: 'checkedlist', width: '20%' },
                         { text: 'Configuration', datafield: 'Fusion', filtertype: 'checkedlist', width: '20%' },
-                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '17%' },
-                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '18%' },
+                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '17%' },
+                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '18%' },
                         { text: '# Errors', datafield: 'ErrorCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         { text: '# Results', datafield: 'ResultCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         {
