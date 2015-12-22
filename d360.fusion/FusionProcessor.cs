@@ -106,6 +106,7 @@ namespace d360.fusion
                     companyConnection.Open();
                     //Generate an execution id
                                         
+
                     sw.Restart();
                     ExecutionID = await LogExecution(companyConnection);
                     Trace.TraceInformation(string.Format("LogExecution\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
@@ -883,66 +884,72 @@ namespace d360.fusion
                         )
                     );
             ", commandTimeout: ExecuteQueryTimeout);
-            
 
-            Trace.TraceInformation("DoFusionFieldMerge - INSERTING {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", _workArea.FieldTempValues.Count);
-            //insert to the temp table
 
-            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
+            using (var trans = companyConnection.BeginTransaction())
             {
-                bulkCopy.BatchSize = _workArea.FieldTempValues.Count;
-                bulkCopy.DestinationTableName = "#tempFusionFields";
-                bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
-                var table = new DataTable();
-                var columnName = "FusionAttributeID";
-                table.Columns.Add(columnName, typeof(int));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
+                Trace.TraceInformation("DoFusionFieldMerge - INSERTING {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", _workArea.FieldTempValues.Count);
+                //insert to the temp table
 
-                columnName = "FieldTypeID";
-                table.Columns.Add(columnName, typeof(int));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                columnName = "Value";
-                table.Columns.Add(columnName, typeof(string));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-                
-                foreach (var item in _workArea.FieldTempValues)
+                using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
                 {
-                    var row = table.NewRow();
+                    bulkCopy.BatchSize = _workArea.FieldTempValues.Count;
+                    bulkCopy.DestinationTableName = "#tempFusionFields";
+                    bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
-                    row["FusionAttributeID"] = item.ObjectID;
-                    row["FieldTypeID"] = item.FieldTypeID;
-                    row["Value"] = item.Value;                    
+                    var table = new DataTable();
+                    var columnName = "FusionAttributeID";
+                    table.Columns.Add(columnName, typeof(int));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                    table.Rows.Add(row);
+                    columnName = "FieldTypeID";
+                    table.Columns.Add(columnName, typeof(int));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    columnName = "Value";
+                    table.Columns.Add(columnName, typeof(string));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    foreach (var item in _workArea.FieldTempValues)
+                    {
+                        var row = table.NewRow();
+
+                        row["FusionAttributeID"] = item.ObjectID;
+                        row["FieldTypeID"] = item.FieldTypeID;
+                        row["Value"] = item.Value;
+
+                        table.Rows.Add(row);
+                    }
+
+                    await bulkCopy.WriteToServerAsync(table);
                 }
 
-                await bulkCopy.WriteToServerAsync(table);
+                Trace.TraceInformation("DoFusionFieldMerge - INSERTED {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", _workArea.FieldTempValues.Count);
+
+                Trace.TraceInformation("DoFusionFieldMerge - Starting to merge #tempFusionFields with [dbo].[field]");
+
+                //merge temp table with fields table
+                await companyConnection.ExecuteAsync(@"
+                        merge Field as T
+                        using (
+                            select FusionAttributeID as ObjectID,
+                                FieldTypeID,
+                                Value                        
+                            from #tempFusionFields
+                        ) as S
+                        on T.ObjectType = 'FusionAttribute' and T.ObjectID = S.ObjectID and T.FieldTypeID = S.FieldTypeID
+                        when matched then
+                            update set T.Value = S.Value                                
+                        when not matched then
+                            insert (FieldTypeID, ObjectType, ObjectID, Value)
+                            values (S.FieldTypeID, 'FusionAttribute', S.ObjectID, S.Value);
+                    ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction:trans);
+
+                trans.Commit();
+
+                Trace.TraceInformation("DoFusionFieldMerge - Completed merge of #tempFusionFields with [dbo].[field]");
             }
-
-            Trace.TraceInformation("DoFusionFieldMerge - INSERTED {0} FIELD VALUES TO #tempFusionFields TEMP TABLE.", _workArea.FieldTempValues.Count);
-
-            Trace.TraceInformation("DoFusionFieldMerge - Starting to merge #tempFusionFields with [dbo].[field]");
-
-            //merge temp table with fields table
-            await companyConnection.ExecuteAsync(@"
-                merge Field as T
-                using (
-                    select FusionAttributeID as ObjectID,
-                        FieldTypeID,
-                        Value                        
-                    from #tempFusionFields
-                ) as S
-                on T.ObjectType = 'FusionAttribute' and T.ObjectID = S.ObjectID and T.FieldTypeID = S.FieldTypeID
-                when matched then
-                    update set T.Value = S.Value                                
-                when not matched then
-                    insert (FieldTypeID, ObjectType, ObjectID, Value)
-                    values (S.FieldTypeID, 'FusionAttribute', S.ObjectID, S.Value);
-            ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout);
-
-            Trace.TraceInformation("DoFusionFieldMerge - Completed merge of #tempFusionFields with [dbo].[field]");
         }
 
         private void GenerateFusionFieldTableValues(List<Dictionary<string, string>> models)
@@ -1028,68 +1035,73 @@ namespace d360.fusion
             
             Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE VALUES TO #tempFusionAttributes TEMP TABLE.", _workArea.FusionAttributeTempValues.Count);
 
-            //insert to the temp table
-            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, null))
+            using (var trans = companyConnection.BeginTransaction())
             {
-                bulkCopy.BatchSize = _workArea.FusionAttributeTempValues.Count;
-                bulkCopy.DestinationTableName = "#tempFusionAttributes";
-                bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
-
-                var table = new DataTable();
-                var columnName = "FusionAttributeTypeID";
-                table.Columns.Add(columnName, typeof(int));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                columnName = "SourceID";
-                table.Columns.Add(columnName, typeof(string));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                columnName = "Name";
-                table.Columns.Add(columnName, typeof(string));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                columnName = "Deleted";
-                table.Columns.Add(columnName, typeof(bool));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                columnName = "ParentSourceID";
-                table.Columns.Add(columnName, typeof(string));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                foreach (var item in _workArea.FusionAttributeTempValues)
+                //insert to the temp table
+                using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
                 {
-                    var row = table.NewRow();
+                    bulkCopy.BatchSize = _workArea.FusionAttributeTempValues.Count;
+                    bulkCopy.DestinationTableName = "#tempFusionAttributes";
+                    bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
-                    row["FusionAttributeTypeID"] = item.FusionAttributeTypeID;
-                    row["SourceID"] = item.SourceID;
-                    row["Name"] = item.Name;
-                    row["Deleted"] = item.IsDeleted();
-                    row["ParentSourceID"] = item.ParentSourceID;
+                    var table = new DataTable();
+                    var columnName = "FusionAttributeTypeID";
+                    table.Columns.Add(columnName, typeof(int));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                    table.Rows.Add(row);
+                    columnName = "SourceID";
+                    table.Columns.Add(columnName, typeof(string));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    columnName = "Name";
+                    table.Columns.Add(columnName, typeof(string));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    columnName = "Deleted";
+                    table.Columns.Add(columnName, typeof(bool));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    columnName = "ParentSourceID";
+                    table.Columns.Add(columnName, typeof(string));
+                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                    foreach (var item in _workArea.FusionAttributeTempValues)
+                    {
+                        var row = table.NewRow();
+
+                        row["FusionAttributeTypeID"] = item.FusionAttributeTypeID;
+                        row["SourceID"] = item.SourceID;
+                        row["Name"] = item.Name;
+                        row["Deleted"] = item.IsDeleted();
+                        row["ParentSourceID"] = item.ParentSourceID;
+
+                        table.Rows.Add(row);
+                    }
+
+                    await bulkCopy.WriteToServerAsync(table);
                 }
 
-                await bulkCopy.WriteToServerAsync(table);
-            }
+                //merge temp table with fusion attributes table
+                await companyConnection.ExecuteAsync(@"
+                    merge FusionAttribute as T
+                    using (
+                        select FusionAttributeTypeID,
+                            SourceID,
+                            Name,
+                            Deleted
+                        from #tempFusionAttributes
+                    ) as S
+                    on T.FusionID = @fus and T.FusionAttributeTypeID = S.FusionAttributeTypeID and T.SourceID = S.SourceID
+                    when matched then
+                        update set T.Name = S.Name,
+                                    T.Deleted = S.Deleted
+                    when not matched then
+                        insert (FusionID, FusionAttributeTypeID, SourceID, Name, Deleted)
+                        values (@fus, S.FusionAttributeTypeID, S.SourceID, S.Name, S.Deleted);
+                    ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-            //merge temp table with fusion attributes table
-            await companyConnection.ExecuteAsync(@"
-                merge FusionAttribute as T
-                using (
-                    select FusionAttributeTypeID,
-                        SourceID,
-                        Name,
-                        Deleted
-                    from #tempFusionAttributes
-                ) as S
-                on T.FusionID = @fus and T.FusionAttributeTypeID = S.FusionAttributeTypeID and T.SourceID = S.SourceID
-                when matched then
-                    update set T.Name = S.Name,
-                                T.Deleted = S.Deleted
-                when not matched then
-                    insert (FusionID, FusionAttributeTypeID, SourceID, Name, Deleted)
-                    values (@fus, S.FusionAttributeTypeID, S.SourceID, S.Name, S.Deleted);
-            ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout);
+                trans.Commit();
+            }
         }
 
         private void GenerateFusionAttributeTableValues(List<Dictionary<string, string>> models)
