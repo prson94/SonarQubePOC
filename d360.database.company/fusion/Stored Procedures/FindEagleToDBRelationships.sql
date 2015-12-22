@@ -4,6 +4,7 @@ begin
 	set NOCOUNT, ANSI_PADDING ON;
 	SET ANSI_WARNINGS ON;
 
+	Declare @RelationshipList Table(StartID int,EndID Int);
 	Declare @StartID int;
 	Declare @EndID int;
 
@@ -30,6 +31,14 @@ begin
 					inner join fusionattribute sfa2 on (sfa2.id = si2.objectid and si2.objecttype = 'FusionAttribute' and sfa2.fusionattributetypeid = 204) 
 				where 
 					sfa.sourceid = f.sourceid and sfa2.sourceid = F2.sourceid)
+			and not exists
+				(	select 
+						1
+					from
+						fusion.stagingrelationunresolved sru
+					where
+						sru.startid = f.sourceid and sru.endid = f2.sourceid
+				)
 
 	-- Eagle Field Attribute to SQL Server DB Column field attribute type = 201, sql server column type = 3
 	insert into [fusion].[StagingRelationUnresolved]
@@ -61,5 +70,13 @@ begin
 					inner join fusionattribute sfa2 on (sfa2.id = si2.objectid and si2.objecttype = 'FusionAttribute' and sfa2.fusionattributetypeid = 3) 
 				where 
 					sfa.sourceid = fa.sourceid and sfa2.sourceid = faSQLCol.sourceid)
+			and not exists
+				(	select 
+						1
+					from
+						fusion.stagingrelationunresolved sru
+					where
+						sru.startid = fa.sourceid and sru.endid = faSQLCol.sourceid
+				)
 
 end

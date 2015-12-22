@@ -8,12 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.Diagnostics;
 using Microsoft.WindowsAzure.ServiceRuntime;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Queue;
-using Newtonsoft.Json;
-using d360.core;
 using d360.core.entities;
 using System.IO;
+using d360.fusion;
 
 namespace d360.workers.FusionWorkerRole
 {
@@ -48,14 +45,14 @@ namespace d360.workers.FusionWorkerRole
 #if DEBUG
             IFusionQueueManager queueManager = new FusionQueueManager();
 
-            /*FusionProcessingData fusionData = new FusionProcessingData
+       /*     FusionProcessingData fusionData = new FusionProcessingData
             {
                 CompanyID = 4,
                 FusionID = 46,
-                   LogFileName = "1.45.2015-12-10_07.28.12.json"
-             //   LogFileName = "1.45.modifytest.json" // file contains one row modified from base for fusion id 46.
+               //    LogFileName = "1.45.2015-12-10_07.28.12.json"
+                LogFileName = "1.45.modifytest.json" // file contains one row modified from base for fusion id 46.
             };*/
-
+            
             //the biggest fusion job i can find 30.9 MB for Demo dev - gmo has a 35.3MB file in fusion-15 22 has 38.6mb
             FusionProcessingData fusionData = new FusionProcessingData
             {
