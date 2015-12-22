@@ -10,6 +10,9 @@ begin
 
 	-- delete any unprocessed relations older than 3 days
 	delete from [fusion].[StagingRelationUnresolved] where DATEDIFF(day,getdate(),CreatedOn) < -3
+
+	-- delete any unprocessed relations from any prior run that may be hanging around
+	delete from [fusion].[StagingRelation] where executionid = @unprocessedRelationsExeId
 			
 	-- load the unprocessed relations for now across all fusion types /ids
 
