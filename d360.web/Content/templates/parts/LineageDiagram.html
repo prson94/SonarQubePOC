@@ -1,7 +1,7 @@
 ﻿<div id="{{control}}_overlay" style="display:none; background-color:rgba(0, 0, 0, 0.1); width:100%;height:100%;position:absolute;z-index:100000;top:0;left:0;">
     <div id="overlayModal" style="background-color:white;border-radius:5px;width:33%;min-width:500px;vertical-align:middle;margin:15px auto;padding:25px;box-shadow:10px 10px 5px rgba(0,0,0,.3);border:1px solid lightgray">
         <div style="width:100%;text-align:center;">
-            <div id="newRelDisplay"></div><br />
+            <div id="{{control}}_overlay_relationship"></div><br />
         </div>
         <table>
             <tbody>
@@ -15,7 +15,7 @@
                         Predicate:
                     </td>
                     <td>
-                        <select id="{{control}}_ovr_predicates"></select>
+                        <select id="{{control}}_overlay_predicates"></select>
                     </td>
                 </tr>
             </tbody>
@@ -32,7 +32,7 @@
                         Predicate Name:
                     </td>
                     <td>
-                        <input type="text" id="newPredicateName" />
+                        <input type="text" id="{{control}}_overlay_pname" />
                     </td>
                 </tr>
                 <tr style="padding-bottom:2px">
@@ -40,15 +40,15 @@
                         Phrase:
                     </td>
                     <td>
-                        <input type="text" id="newPredicatePhrase" />
+                        <input type="text" id="{{control}}_overlay_pphrase" />
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <button id="AddNewRel" style="display:none;" class="btn white-text" onclick="addRelationship($('#ddlPredicate').val());">OK</button>
+                        <button id="{{control}}_overlay_add" style="display:none;" class="btn white-text">OK</button>
                     </td>
                     <td>
-                        <button id="CancelNewRel" class="btn red darken-3 white-text" onclick="cancelAddLink();">Cancel</button>
+                        <button id="{{control}}_overlay_cancel" class="btn red darken-3 white-text">Cancel</button>
                     </td>
                 </tr>
             </tbody>
