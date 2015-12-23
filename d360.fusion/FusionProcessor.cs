@@ -715,7 +715,7 @@ namespace d360.fusion
                 return;
             }
 
-            SortedList<string, string> oldFieldDict = new SortedList<string, string>();
+            Dictionary<string, string> oldFieldDict = new Dictionary<string, string>();
 
             foreach (var item in _workArea.FieldValueCollection)
             {
@@ -748,7 +748,7 @@ namespace d360.fusion
         /// <param name="sourceID"></param>
         /// <param name="action"></param>
         /// <param name="oldValue"></param>
-        private void DetermineItemChange(SortedList<string,string> oldValueList, string value, string sourceID, out string action, out string oldValue)
+        private void DetermineItemChange(Dictionary<string,string> oldValueList, string value, string sourceID, out string action, out string oldValue)
         {            
             if (!oldValueList.TryGetValue(sourceID, out oldValue) && !string.IsNullOrEmpty(value))
             {
@@ -1024,14 +1024,12 @@ namespace d360.fusion
 
         private async Task DoFusionAttributeMerge(SqlConnection companyConnection)
         {
-            await companyConnection.ExecuteAsync(@"create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250),
-                                                        CONSTRAINT [PK_tempFusionAttributes] PRIMARY KEY CLUSTERED 
-                                                        (	                     
-	                                                        [FusionAttributeTypeID] ASC,
-	                                                        [SourceID] ASC
-                                                        )
-                                                       );
-                                                    ", commandTimeout: ExecuteQueryTimeout);
+            Random rnd = new Random(DateTime.Now.Millisecond);
+
+            //need to add random number to constraint name cause it needs to be unique across sessions
+            var sql = "create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250),CONSTRAINT [PK_tempFusionAttributes " + rnd.Next(0, 1000).ToString() + "] PRIMARY KEY CLUSTERED ([FusionAttributeTypeID] ASC,[SourceID] ASC ) );";
+            
+            await companyConnection.ExecuteAsync(sql, commandTimeout: ExecuteQueryTimeout);
             
             Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE VALUES TO #tempFusionAttributes TEMP TABLE.", _workArea.FusionAttributeTempValues.Count);
 
@@ -1277,7 +1275,8 @@ namespace d360.fusion
 
         private void CleanModelData(List<Dictionary<string, string>> models)
         {
-            SortedList<string, bool> existingSourceIDs = new SortedList<string, bool>();
+            //SortedList<string, bool> existingSourceIDs = new SortedList<string, bool>();
+            HashSet<string> existingSourceIDs = new HashSet<string>();
             
             for (int i = models.Count - 1; i >= 0; i--)
             {                
@@ -1300,14 +1299,14 @@ namespace d360.fusion
                 }
 
                 //make sure this item doesnt exist more than once
-                if (existingSourceIDs.ContainsKey(sourceID))
+                if (existingSourceIDs.Contains(sourceID))
                 {
                     Trace.TraceWarning("INPUT FUSION DATA CONTAINS THE SAME SOURCEID VALUE MULTIPLE TIMES.  SOURCE ID:[{0}] MODEL:[{1}]", sourceID, string.Join(";", models[i]));
 
                     models.RemoveAt(i);
                 }
 
-                existingSourceIDs[sourceID] = true;
+                existingSourceIDs.Add(sourceID);                
 
                 _workArea.InSourceIDList.Add(sourceID);
             }

@@ -54,7 +54,7 @@ namespace d360.workers.FusionWorkerRole
             };
             
             //the biggest fusion job i can find 30.9 MB for Demo dev - gmo has a 35.3MB file in fusion-15 22 has 38.6mb
-        /*    FusionProcessingData fusionData = new FusionProcessingData
+       /*     FusionProcessingData fusionData = new FusionProcessingData
             {
                 CompanyID = 4,
                 FusionID = 40,
