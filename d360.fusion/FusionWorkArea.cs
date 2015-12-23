@@ -17,11 +17,12 @@ namespace d360.fusion
             Relationships = new FusionRelationshipWorkData();
             Changes = new FusionChangeInfoWorkData();
             ExistingFusionAttributeDictionary = new Dictionary<string, string>();
+            FusionSourceToIDMap = new Dictionary<string, int>();
         }
 
         public List<string> InSourceIDList { get; set; }
-
-        public IEnumerable<FusionAttributeToParentMapping> AttributeMappingCollection { get; set; }
+        
+        public Dictionary<string,int> FusionSourceToIDMap { get; set; }
 
         public IEnumerable<core.entities.Field> FieldValueCollection { get; set; }
 

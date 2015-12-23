@@ -829,27 +829,26 @@ namespace d360.fusion
             {
                 if (string.IsNullOrEmpty(item.ParentSourceID)) continue; // only add this mapping for items that have parent / child relations
 
-                var dbItem = _workArea.AttributeMappingCollection.FirstOrDefault(y => y.SourceID == item.SourceID);
-
-                if(dbItem == null)
+                int id = 0;
+                if (!_workArea.FusionSourceToIDMap.TryGetValue(item.SourceID, out id))
                 {
                     Trace.TraceInformation("Unable to resolve id of source id[" + item.SourceID + "] This should not happen as we should have inserted this already and reloaded.");
 
                     continue;
                 }
 
-                item.ID = dbItem.ID; //sets the id of this guy
+                item.ID = id; //sets the id of this guy
 
-                //AttributeMappingCollection HAS THE ID AND PARENT ID
-                var parent = _workArea.AttributeMappingCollection.FirstOrDefault(y => y.SourceID == item.ParentSourceID);
+                //AttributeMappingCollection HAS THE ID AND PARENT ID                
+                int parentId = 0;
 
-                if (parent == null)
+                if (!_workArea.FusionSourceToIDMap.TryGetValue(item.ParentSourceID, out parentId))
                 {
                     Trace.TraceInformation("Unable to resolve parent of source id[" + item.SourceID + "], Parent[" + item.ParentSourceID + "]");
                 }
                 else
                 {
-                    item.ParentID = parent.ID;
+                    item.ParentID = parentId;
                 }
             }//);
         }
@@ -876,13 +875,8 @@ namespace d360.fusion
         private async Task DoFusionFieldMerge(SqlConnection companyConnection)
         {
             await companyConnection.ExecuteAsync(@"
-                    create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(4000),
-                        CONSTRAINT [PK_tempFusionFields] PRIMARY KEY CLUSTERED 
-                        (	                     
-	                        [FusionAttributeID] ASC,
-	                        [FieldTypeID] ASC
-                        )
-                    );
+                    create table #tempFusionFields(FusionAttributeID int, FieldTypeID int, Value nvarchar(4000));
+                    CREATE UNIQUE CLUSTERED INDEX PK_tempFusionFields ON #tempFusionFields ([FusionAttributeID] ASC,[FieldTypeID] ASC);
             ", commandTimeout: ExecuteQueryTimeout);
 
 
@@ -953,8 +947,7 @@ namespace d360.fusion
         }
 
         private void GenerateFusionFieldTableValues(List<Dictionary<string, string>> models)
-        {            
-            //Parallel.ForEach(models, x =>
+        {               
             foreach(var x in models)
             {
                 if(x == null)
@@ -984,10 +977,10 @@ namespace d360.fusion
                 x.TryGetValue(ActionAttribute, out actionString);
 
                 //get existing fusionattributeid
-                var existingItem = _workArea.AttributeMappingCollection.FirstOrDefault(y => sourceID == y.SourceID);
-
+                
+                int id = 0;
                 //if existingItem is null something is wrong
-                if (existingItem == null) throw new Exception("UNABLE TO LOAD FUSIONATTRIBUTE ID FOR CURRENT ITEM.");
+                if (!_workArea.FusionSourceToIDMap.TryGetValue(sourceID, out id)) throw new Exception("UNABLE TO LOAD FUSIONATTRIBUTE ID FOR CURRENT ITEM.");
 
                 foreach (var item in x)
                 {
@@ -1012,7 +1005,7 @@ namespace d360.fusion
 
                     Field fieldVal = new Field
                     {
-                        ObjectID = existingItem.ID,                        
+                        ObjectID = id,                        
                         Value = (item.Value.Length > MAX_FIELD_VALUE_LENGTH ? item.Value.Substring(0, MAX_FIELD_VALUE_LENGTH) : item.Value),
                         FieldTypeID = fieldInfo.FieldTypeID
                     };
@@ -1023,11 +1016,9 @@ namespace d360.fusion
         }
 
         private async Task DoFusionAttributeMerge(SqlConnection companyConnection)
-        {
-            Random rnd = new Random(DateTime.Now.Millisecond);
-
-            //need to add random number to constraint name cause it needs to be unique across sessions
-            var sql = "create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250),CONSTRAINT [PK_tempFusionAttributes " + rnd.Next(0, 1000).ToString() + "] PRIMARY KEY CLUSTERED ([FusionAttributeTypeID] ASC,[SourceID] ASC ) );";
+        {               
+            var sql = @"create table #tempFusionAttributes(FusionAttributeTypeID int, SourceID varchar(250), Name nvarchar(250), Deleted bit, ParentSourceID varchar(250));
+                        CREATE UNIQUE CLUSTERED INDEX PK_tempFusionAttributes ON #tempFusionAttributes ([FusionAttributeTypeID] ASC,[SourceID] ASC);";
             
             await companyConnection.ExecuteAsync(sql, commandTimeout: ExecuteQueryTimeout);
             
@@ -1105,8 +1096,7 @@ namespace d360.fusion
         private void GenerateFusionAttributeTableValues(List<Dictionary<string, string>> models)
         {
             //we need to know which models to update / vs insert
-            // build in memory table that we will generate temp table from
-            //Parallel.ForEach(models, x =>  //parallel for is slower with about 10 k models due to need for concurent bag
+            // build in memory table that we will generate temp table from            
             foreach (var x in models)
             {
                 string actionString = string.Empty;
@@ -1228,22 +1218,22 @@ namespace d360.fusion
         private async Task LoadCurrentFusionAttributeInfo(SqlConnection companyConnection)
         {
             //LOAD  FUSION ATTRIBUTE ID , FUSION ATTRIBUTE CURRENT NAME, FUSION ATTRIBUTE PARENT ID, FUSION ATTRIBUTE PARENT NAME
-            _workArea.AttributeMappingCollection = await companyConnection.QueryAsync<FusionAttributeToParentMapping>(@"
+            IEnumerable<FusionAttributeToParentMapping> fusionAttributeInfo  = await companyConnection.QueryAsync<FusionAttributeToParentMapping>(@"
                 select 
-	                f.id as 'ID',
-	                f.name as 'Name',
-	                f.parentId as 'ParentID',
-                    Upper(f.sourceId) as 'SourceID',                    
-	                fP.Name as 'ParentName'
+	                f.id as 'ID',	                                
+                    Upper(f.sourceId) as 'SourceID'                    	                
                 from 
-	                fusionattribute f
-	                left join fusionattribute fP on f.ParentID = fP.ID
-	
+	                fusionattribute f	                	
                 where 
 	                f.sourceid in (select * from #tempSourceID)
 		                AND
 	                f.fusionid = @inFusionID
             ", new { inFusionID = FusionID },commandTimeout:ReadQueryTimeout);
+
+            foreach (var item in fusionAttributeInfo)
+            {
+                _workArea.FusionSourceToIDMap[item.SourceID] = item.ID;
+            }
         }
 
         private void RemoveRelationSpaces(FusionRelationshipModels relationships)
@@ -1274,8 +1264,7 @@ namespace d360.fusion
         }
 
         private void CleanModelData(List<Dictionary<string, string>> models)
-        {
-            //SortedList<string, bool> existingSourceIDs = new SortedList<string, bool>();
+        {            
             HashSet<string> existingSourceIDs = new HashSet<string>();
             
             for (int i = models.Count - 1; i >= 0; i--)
