@@ -425,6 +425,7 @@
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Controllers\TooltipsController.cs" />
     <Compile Include="Controllers\TilesController.cs" />
+    <Compile Include="Filters\ValidateHttpAntiForgeryTokenAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

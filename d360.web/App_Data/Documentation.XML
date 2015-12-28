@@ -2833,6 +2833,11 @@
             Allows JSON serialization of Expando objects into expected results (e.g., "x: 1, y: 2") instead of the default dictionary serialization.
             </summary>
         </member>
+        <member name="T:d360.web.Filters.ValidateHttpAntiForgeryTokenAttribute">
+            <summary>
+            Validates antiforgery tokens, plus also checks for http header version used in ajax forms.
+            </summary>
+        </member>
         <member name="T:System.Net.Http.HttpRequestMessageExtensions">
             <summary>
             Extends the HttpRequestMessage collection

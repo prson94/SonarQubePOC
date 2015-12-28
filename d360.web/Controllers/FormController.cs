@@ -18,6 +18,7 @@ using d360.core.entities.Views;
 using d360.workflow.models;
 using d360.workflow;
 using d360.workflow.entities;
+using d360.web.Filters;
 
 namespace d360.web.Controllers
 {
@@ -664,6 +665,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddArtifact(FormCollection form)
         {
@@ -846,6 +848,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost]
         public JsonResult RequestCertification(FormCollection form)
         {
@@ -918,6 +921,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult SuggestNewArtifact(FormCollection form)
         {
@@ -1013,6 +1017,7 @@ namespace d360.web.Controllers
             return PartialView("ArtifactTypeEditForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddArtifactType(FormCollection form)
         {
@@ -1254,6 +1259,7 @@ namespace d360.web.Controllers
             return PartialView("AttributeEditForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddAttribute(FormCollection form)
         {
@@ -1452,7 +1458,8 @@ namespace d360.web.Controllers
 
             return PartialView("AttributeTypeEditForm", model);
         }
-
+        
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddAttributeType(FormCollection form)
         {
@@ -1692,6 +1699,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddAttributeTypeCategory(FormCollection form)
         {
@@ -1853,6 +1861,7 @@ namespace d360.web.Controllers
 
             var relation = new AttributeTypeRelation();
 
+
             list.Add(new EditableField { FieldName = "AttributeTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
             list.Add(new EditableField
             {
@@ -1926,6 +1935,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddAttributeTypeRelation(FormCollection form)
         {
@@ -2373,6 +2383,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddDomain(FormCollection form)
         {
@@ -2582,6 +2593,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddDomainGroup(FormCollection form)
         {
@@ -2788,6 +2800,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddDomainItem(FormCollection form)
         {
@@ -2992,6 +3005,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddDomainType(FormCollection form)
         {
@@ -3200,6 +3214,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddEmailTemplate(FormCollection form)
         {
@@ -3537,6 +3552,7 @@ namespace d360.web.Controllers
             return PartialView("FieldTypeEditForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFieldType(FormCollection form)
         {
@@ -3866,6 +3882,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusion(FormCollection form)
         {
@@ -4086,6 +4103,7 @@ namespace d360.web.Controllers
             return PartialView("OverlayEditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionFilter(FormCollection form)
         {
@@ -4252,6 +4270,7 @@ namespace d360.web.Controllers
             return PartialView("FusionAttributeOwnerRuleEditForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionOwnerRule(FormCollection form)//(FusionOwnerEditListModel model)
         {
@@ -4419,6 +4438,7 @@ namespace d360.web.Controllers
             return PartialView("FusionAttributeOwnershipRuleItemEditForm", editorModel);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionAttributeOwnerRuleItem(FormCollection form)
         {
@@ -4542,6 +4562,7 @@ namespace d360.web.Controllers
             return PartialView("FusionAttributePromotionRuleEditForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionPromotionRule(FormCollection form)//(FusionPromotionEditListModel model)
         {
@@ -4722,6 +4743,7 @@ namespace d360.web.Controllers
             return PartialView("FusionAttributePromotionRuleItemEditForm", editorModel);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionAttributePromotionRuleItem(FormCollection form)
         {
@@ -4979,6 +5001,7 @@ namespace d360.web.Controllers
             return PartialView("FusionAttributePromotionRuleMappingEditForm", editorModel);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionAttributePromotionRuleMapping(FormCollection form)
         {
@@ -5199,6 +5222,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionType(FormCollection form)
         {
@@ -5415,6 +5439,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionAttributeType(FormCollection form)
         {
@@ -5554,6 +5579,7 @@ namespace d360.web.Controllers
 
         #region Intersect/Other Relationships
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, Route("RelatedArtifact/{s:int}/{t:int}")]
         public JsonResult AddRelatedArtifact(int s, int t)
         {
@@ -5792,6 +5818,7 @@ namespace d360.web.Controllers
             return PartialView("IntersectTypeEditForm");
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddIntersectType(IntersectTypeEditorModel formModel)
         {
@@ -6055,6 +6082,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost]
         public JsonResult AddIntersectTypeRole(FormCollection form)
         {
@@ -6379,6 +6407,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddGroup(FormCollection form)
         {
@@ -6445,6 +6474,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddGroupUser(FormCollection form)
         {
@@ -6775,6 +6805,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return PartialView();
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost]
         public JsonResult AddLoadFile(LoadFilePostModel model)
         {
@@ -6960,6 +6991,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddLookup(FormCollection form)
         {
@@ -7155,6 +7187,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddLookupType(FormCollection form)
         {
@@ -7367,6 +7400,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddPolicy(FormCollection form)
         {
@@ -7600,6 +7634,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddPolicyType(FormCollection form)
         {
@@ -7830,6 +7865,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return PartialView("OverlayEditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddPolicyTypeClass(FormCollection form)
         {
@@ -8056,6 +8092,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddPolicyTypeLevel(FormCollection form)
         {
@@ -8251,6 +8288,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddPredicate(FormCollection form)
         {
@@ -8438,6 +8476,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost]
         public JsonResult AddPredicatePhrase(FormCollection form)
         {
@@ -8655,6 +8694,7 @@ order by    Name
             return PartialView("ReportEditForm", o);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddReport(FormCollection form)
         {
@@ -8891,6 +8931,7 @@ order by    Name
             return PartialView("ReportTileEditForm", o);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddReportTile(FormCollection form)
         {
@@ -9540,7 +9581,8 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
             return PartialView("PeopleResponsibilityEditForm", model);
         }
-        
+
+        [ValidateHttpAntiForgeryToken]
         [HttpPost]
         public JsonResult AddPeopleResponsibility(FormCollection form)
         {
@@ -9604,7 +9646,8 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
             return PartialView("SourcingResponsibilityEditForm", model);
         }
-        
+
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddSourcingResponsibility(FormCollection form)
         {
@@ -10002,6 +10045,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddResponsibilityTransformation(FormCollection form)
         {
@@ -10260,6 +10304,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", pModel);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddResponsibilityType(FormCollection form)
         {
@@ -10657,6 +10702,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddResponsibilityTypeHierarchy(FormCollection form)
         {
@@ -10828,6 +10874,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView(model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost]
         public JsonResult AddResponsibilityTypeClaims(FormCollection form)
         {
@@ -11020,6 +11067,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddQuestionType(FormCollection form)
         {
@@ -11173,6 +11221,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView(flag);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false), Route("{type}/{id:int}/redflag")]
         public JsonResult UpdateRedFlag(SystemObjects type, int id, FormCollection form)
         {
@@ -11279,6 +11328,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
         #region Form Get/Post
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddResolution(FormCollection form)
         {
@@ -11509,6 +11559,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddResource(FormCollection form)
         {
@@ -11916,6 +11967,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddResourceType(FormCollection form)
         {
@@ -12086,6 +12138,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddResponseType(FormCollection form)
         {
@@ -12260,6 +12313,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddResponseTypeOption(FormCollection form)
         {
@@ -12457,6 +12511,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddRule(FormCollection form)
         {
@@ -12838,6 +12893,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("StatisticTypeEditForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddStatisticType(FormCollection form)
         {
@@ -13177,6 +13233,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddStatisticTypeRelation(FormCollection form)
         {
@@ -13373,6 +13430,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddSurveyType(FormCollection form)
         {
@@ -13614,6 +13672,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddTaxonomy(FormCollection form)
         {
@@ -13865,6 +13924,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddTaxonomyType(FormCollection form)
         {
@@ -14097,6 +14157,7 @@ order by TextPath
             return PartialView("OverlayEditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddTaxonomyTypeClass(FormCollection form)
         {
@@ -14323,6 +14384,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddTaxonomyTypeLevel(FormCollection form)
         {
@@ -14532,6 +14594,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddTooltipTemplate(FormCollection form)
         {
@@ -14739,6 +14802,7 @@ order by TextPath
             return PartialView("WorkflowTypeRelationEditForm", model);
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddWorkflowAllocation(FormCollection form)
         {
