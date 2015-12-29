@@ -61,16 +61,6 @@ BEGIN
 		FieldTypeID int, 
 		Value nvarchar(4000)
 	);
-
-	IF OBJECT_ID('tempdb..#promotions') IS NOT NULL
-		DROP TABLE #promotions;
-
-	create table #promotions (
-		FusionAttributeID int, 
-		ObjectType varchar(25), 
-		ObjectID int, 
-		RuleID int
-	);
 	
 	
 	insert into #rules
@@ -206,7 +196,6 @@ from	#rules R
 	set		@currentID = 1
 	select	@maxID = MAX(ID) from #attributes
 
-	begin tran
 	
 	while (@currentID <= @maxID)
 	begin
@@ -374,7 +363,22 @@ from	#rules R
 					if @PromotedType is not null and @PromotedID is not null
 						begin
 							-- Insert/Update the FusionAttributePromotion table to keep track of previously promoted objects.
-							insert into #promotions (FusionAttributeID, ObjectType, ObjectID, RuleID) values(@FusionAttributeID, @PromotedType, @PromotedID, @RuleID)							
+							
+							MERGE	FusionAttributePromotion AS T
+							USING	(
+									SELECT	@FusionAttributeID as FusionAttributeID, 
+											@PromotedType as ObjectType, 
+											@PromotedID as ObjectID, 
+											@RuleID as RuleID
+									) as S
+							ON		T.FusionAttributeID = S.FusionAttributeID 
+									and T.ObjectType = S.ObjectType 
+									and T.ObjectID = S.ObjectID
+							WHEN	MATCHED THEN
+									UPDATE SET T.FusionAttributePromotionRuleID = S.RuleID
+							WHEN	NOT MATCHED THEN
+									INSERT (FusionAttributeID, ObjectType, ObjectID, FusionAttributePromotionRuleID) 
+									VALUES (S.FusionAttributeID, S.ObjectType, S.ObjectID, S.RuleID);
 						end
 
 					-- Add/Update the dynamic fields involved.
@@ -446,7 +450,10 @@ from	#rules R
 
 									if @shouldInsert = 1
 										begin
-											insert into #fieldValues (ObjectType, ObjectID, FieldTypeID, Value) values(@PromotedType, @PromotedID, @targetFieldTypeID, @fieldValue)
+											If not EXISTS (SELECT 1 FROM #fieldValues where ObjectType = @PromotedType and ObjectID = @PromotedID and FieldTypeID = @targetFieldTypeID) --avoid duplicates this happens in gmo
+											begin
+												insert into #fieldValues (ObjectType, ObjectID, FieldTypeID, Value) values(@PromotedType, @PromotedID, @targetFieldTypeID, @fieldValue)
+											end
 										end
 						
 									-- Delete the field we just finished processing.
@@ -465,36 +472,18 @@ from	#rules R
 		set @currentID = @currentID + 1
 	end
 
-	commit tran
-
-	if exists (select 1 from #promotions )
-	begin
-		MERGE	FusionAttributePromotion AS T
-							USING	(
-									SELECT	FusionAttributeID, 
-											ObjectType, 
-											ObjectID, 
-											RuleID
-									from #promotions
-									) as S
-							ON		T.FusionAttributeID = S.FusionAttributeID 
-									and T.ObjectType = S.ObjectType 
-									and T.ObjectID = S.ObjectID
-							WHEN	MATCHED THEN
-									UPDATE SET T.FusionAttributePromotionRuleID = S.RuleID
-							WHEN	NOT MATCHED THEN
-									INSERT (FusionAttributeID, ObjectType, ObjectID, FusionAttributePromotionRuleID) 
-									VALUES (S.FusionAttributeID, S.ObjectType, S.ObjectID, S.RuleID);
-	end
 
 	-- write the field values from the temp table to the field table
 	-- the field table has a trigger doing this once outside the loop causes the trigger to only fire this one time.
 		
 	If EXISTS (SELECT 1 FROM #fieldValues)		
 	begin
+		--debug shows values 
+		--select * from #fieldValues
+
 		merge	Field as T
 				using	(
-					select	f.ObjectType as ObjectType,
+					select f.ObjectType as ObjectType,
 							f.ObjectID as ObjectID,
 							f.FieldTypeID as FieldTypeID,
 							f.Value as Value
