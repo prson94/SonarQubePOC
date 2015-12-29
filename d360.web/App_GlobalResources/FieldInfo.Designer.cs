@@ -151,6 +151,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to To enable the promotion rule, check the enabled check box.  This will enable the promotion rule within Data3Sixty..
+        /// </summary>
+        internal static string FusionPromotionEnable_ToolTip {
+            get {
+                return ResourceManager.GetString("FusionPromotionEnable_ToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select a destination where you would like the fusion item to be promoted to..
+        /// </summary>
+        internal static string FusionPromotionTo_ToolTip {
+            get {
+                return ResourceManager.GetString("FusionPromotionTo_ToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select a parent for the item since the selected Promote To value has multiple levels..
+        /// </summary>
+        internal static string FusionPromotionUnder_ToolTip {
+            get {
+                return ResourceManager.GetString("FusionPromotionUnder_ToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You can choose from a variety of field types, including Lookup..
         /// </summary>
         internal static string InputType_Description {

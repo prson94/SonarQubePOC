@@ -147,6 +147,15 @@
   <data name="FriendlyName_Name" xml:space="preserve">
     <value>Friendly Name</value>
   </data>
+  <data name="FusionPromotionEnable_ToolTip" xml:space="preserve">
+    <value>To enable the promotion rule, check the enabled check box.  This will enable the promotion rule within Data3Sixty.</value>
+  </data>
+  <data name="FusionPromotionTo_ToolTip" xml:space="preserve">
+    <value>Please select a destination where you would like the fusion item to be promoted to.</value>
+  </data>
+  <data name="FusionPromotionUnder_ToolTip" xml:space="preserve">
+    <value>Please select a parent for the item since the selected Promote To value has multiple levels.</value>
+  </data>
   <data name="InputType_Description" xml:space="preserve">
     <value>You can choose from a variety of field types, including Lookup.</value>
   </data>

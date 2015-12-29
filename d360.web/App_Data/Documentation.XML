@@ -336,6 +336,21 @@
               Looks up a localized string similar to Friendly Name.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.FusionPromotionEnable_ToolTip">
+            <summary>
+              Looks up a localized string similar to To enable the promotion rule, check the enabled check box.  This will enable the promotion rule within Data3Sixty..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.FusionPromotionTo_ToolTip">
+            <summary>
+              Looks up a localized string similar to Please select a destination where you would like the fusion item to be promoted to..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.FusionPromotionUnder_ToolTip">
+            <summary>
+              Looks up a localized string similar to Please select a parent for the item since the selected Promote To value has multiple levels..
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.InputType_Description">
             <summary>
               Looks up a localized string similar to You can choose from a variety of field types, including Lookup..
