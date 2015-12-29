@@ -2,7 +2,7 @@
 AS
 BEGIN
 	SET NOCOUNT ON;
- 
+
 	declare @d datetime = getutcdate(),
 			@r int = 0,
 			@RuleID int,
@@ -52,6 +52,17 @@ BEGIN
 		Value nvarchar(4000)
 	);
 
+	IF OBJECT_ID('tempdb..#fieldValues') IS NOT NULL
+		DROP TABLE #fieldValues;
+
+	create table #fieldValues (
+		ObjectType varchar(50), 
+		ObjectID int, 
+		FieldTypeID int, 
+		Value nvarchar(4000)
+	);
+	
+	
 	insert into #rules
 		select	R.ID,
 				R.FusionID,
@@ -140,6 +151,7 @@ BEGIN
 		set @currentID = @currentID + 1
 	end
 
+
 	-- Load field values we are working with, first starting with the Name.
 	insert into #fields
 		select	A.ID,
@@ -184,9 +196,11 @@ from	#rules R
 	set		@currentID = 1
 	select	@maxID = MAX(ID) from #attributes
 
+	
 	while (@currentID <= @maxID)
 	begin
 		begin try
+
 			declare @FusionAttributeTypeID int,
 					@PromotedType varchar(50),
 					@PromotedID int
@@ -349,6 +363,7 @@ from	#rules R
 					if @PromotedType is not null and @PromotedID is not null
 						begin
 							-- Insert/Update the FusionAttributePromotion table to keep track of previously promoted objects.
+							
 							MERGE	FusionAttributePromotion AS T
 							USING	(
 									SELECT	@FusionAttributeID as FusionAttributeID, 
@@ -435,30 +450,45 @@ from	#rules R
 
 									if @shouldInsert = 1
 										begin
-											merge	Field as T
-											using	(
-														select	@PromotedType as ObjectType,
-																@PromotedID as ObjectID,
-																@targetFieldTypeID as FieldTypeID,
-																@fieldValue as Value
-													) as S
-											on		T.ObjectType = S.ObjectType and T.ObjectID = S.ObjectID and T.FieldTypeID = S.FieldTypeID
-											when	matched then
-													update set T.Value = S.Value
-											when	not matched then
-													insert (ObjectTYpe, OBjectID, FieldTypeID, Value)
-													values (S.ObjectType, S.ObjectID, S.FieldTypeID, S.Value);
+											insert into #fieldValues (ObjectType, ObjectID, FieldTypeID, Value) values(@PromotedType, @PromotedID, @targetFieldTypeID, @fieldValue)
 										end
-
+						
 									-- Delete the field we just finished processing.
 									delete @fields where TargetFieldTypeID = @targetFieldTypeID
 								end 
 						end
 				end -- Check to see if Target Field called NAME is present
+								
 		end try
 		begin catch
+			--SELECT 
+				--ERROR_NUMBER() AS ErrorNumber
+				--,ERROR_MESSAGE() AS ErrorMessage;
 		end catch
 
 		set @currentID = @currentID + 1
+	end
+
+
+
+	-- write the field values from the temp table to the field table
+	-- the field table has a trigger doing this once outside the loop causes the trigger to only fire this one time.
+		
+	If EXISTS (SELECT 1 FROM #fieldValues)		
+	begin
+		merge	Field as T
+				using	(
+					select	f.ObjectType as ObjectType,
+							f.ObjectID as ObjectID,
+							f.FieldTypeID as FieldTypeID,
+							f.Value as Value
+					from #fieldValues f inner join dbo.FieldType ft on (ft.ID = f.FieldTypeID)
+				) as S
+				on		T.ObjectType = S.ObjectType and T.ObjectID = S.ObjectID and T.FieldTypeID = S.FieldTypeID
+				when	matched then
+					update set T.Value = S.Value
+				when	not matched then
+					insert (ObjectTYpe, OBjectID, FieldTypeID, Value)
+					values (S.ObjectType, S.ObjectID, S.FieldTypeID, S.Value);
 	end
 END
