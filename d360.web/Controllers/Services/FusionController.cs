@@ -687,5 +687,37 @@ where   ExecutionID = {0}", id);
 
             return Ok();
         }
+
+        public class PromotionHistoryApiModel
+        {
+            public int ID { get; set; }            
+            public DateTime DateStarted { get; set; }
+            public DateTime? DateCompleted { get; set; }
+            public int PromotedTaxonomies { get; set; }
+            public int PromotedDomainItems { get; set; }
+            public int PromotedDomains { get; set; }
+            public int PromotedArtifacts { get; set; }
+            public int TotalNewPromotions { get; set; }
+            public int AttributesConsidered { get; set; }
+            public string NumberOfRules { get; set; }            
+        }
+
+        [Route("promotionhistory")]
+        public IQueryable<PromotionHistoryApiModel> GetPromotionHistory()
+        {
+            return Company.Query<PromotionHistoryApiModel>(
+                    @"select	ID,
+		                        DateStarted,
+		                        DateCompleted,
+		                        PromotedTaxonomies,
+		                        PromotedDomainItems,
+		                        PromotedDomains,
+		                        PromotedArtifacts,
+		                        TotalNewPromotions,
+		                        AttributesConsidered,
+                                NumberOfRules
+                    from	    [dbo].[FusionAttributePromotionLogSummary]
+                    order by    DateStarted desc").AsQueryable();
+        }
     }
 }

@@ -11,8 +11,25 @@ BEGIN
 			@PromotionParentObjectType varchar(50),
 			@PromotionParentObjectID int,
 			@FusionID int,
-			@FusionAttributeID int
-					
+			@FusionAttributeID int,
+			@ExecutionID int,
+			@NumberOfRules int,			
+			@NumberOfNewTaxonomies int,
+			@NumberOfNewDomainItems int,
+			@NumberOfNewDomains int,
+			@NumberOfNewArtifacts int,
+			@NumberOfAttributesTotal int
+
+	set	@NumberOfRules = 0;	
+	set @NumberOfNewTaxonomies = 0;
+	set @NumberOfNewDomainItems = 0;
+	set @NumberOfNewDomains = 0;
+	set @NumberOfNewArtifacts = 0;
+	--Log this run get a new id from the fusion.promotion table
+	insert into [dbo].[FusionAttributePromotionLogSummary] ( DateStarted )
+									values ( CURRENT_TIMESTAMP)
+
+	select @ExecutionID =  SCOPE_IDENTITY()
 
 	IF OBJECT_ID('tempdb..#rules') IS NOT NULL
 		DROP TABLE #rules;
@@ -78,11 +95,14 @@ BEGIN
 				inner join FusionAttributePromotionRuleItem I on I.FusionAttributePromotionRuleID = R.ID and R.[Enabled] = 1
 				left join FusionAttribute A on A.ID = I.FusionAttributeID
 
+	
 	declare	@currentID int,
 			@maxID int
 
 	set		@currentID = 1
 	select	@maxID = MAX(ID) from #rules
+
+	set @NumberOfRules = @maxID - @currentID;
 
 	while (@currentID <= @maxID)
 	begin
@@ -196,6 +216,7 @@ from	#rules R
 	set		@currentID = 1
 	select	@maxID = MAX(ID) from #attributes
 
+	set @NumberOfAttributesTotal = @maxID;
 	
 	while (@currentID <= @maxID)
 	begin
@@ -256,6 +277,8 @@ from	#rules R
 									values ( @PromotionParentObjectID, @PromotionObjectID, @modelTypeID, @name, @description, 'Draft', getutcdate(), 0 )
 
 									select @PromotedID =  SCOPE_IDENTITY()
+
+									set @NumberOfNewArtifacts = @NumberOfNewArtifacts +1;
 								end
 							else
 							  begin
@@ -289,6 +312,8 @@ from	#rules R
 											values ( @PromotionObjectID, @name, @description )
 
 											select @PromotedID =  SCOPE_IDENTITY()
+
+											set @NumberOfNewDomains = @NumberOfNewDomains +1;
 										end
 									else
 										begin
@@ -325,6 +350,8 @@ from	#rules R
 											values ( @PromotionParentObjectID, @name, coalesce(@code, @name), @description )
 
 											select @PromotedID =  SCOPE_IDENTITY()
+
+											set @NumberOfNewDomainItems = @NumberOfNewDomainItems +1;
 										end
 								end
 						end
@@ -348,6 +375,8 @@ from	#rules R
 									values					( @PromotionParentObjectID, @PromotionObjectID, @name, @description )
 
 									select @PromotedID =  SCOPE_IDENTITY()
+
+									set @NumberOfNewTaxonomies = @NumberOfNewTaxonomies +1;
 								end
 							else
 								begin
@@ -496,4 +525,18 @@ from	#rules R
 					insert (ObjectTYpe, OBjectID, FieldTypeID, Value)
 					values (S.ObjectType, S.ObjectID, S.FieldTypeID, S.Value);
 	end
+
+	
+	--Log this run done
+	update [dbo].[FusionAttributePromotionLogSummary]
+	set DateCompleted = CURRENT_TIMESTAMP, 
+		[PromotedTaxonomies] = @NumberOfNewTaxonomies, 
+		[PromotedDomainItems] = @NumberOfNewDomainItems,  
+		[PromotedDomains] = @NumberOfNewDomains,
+		[PromotedArtifacts] = @NumberOfNewArtifacts,
+		[TotalNewPromotions] = (@NumberOfNewTaxonomies + @NumberOfNewDomainItems + @NumberOfNewDomains + @NumberOfNewArtifacts),
+		[AttributesConsidered]= @NumberOfAttributesTotal,
+		[NumberOfRules] = @NumberOfRules 
+	where ID = @ExecutionID;
+	
 END

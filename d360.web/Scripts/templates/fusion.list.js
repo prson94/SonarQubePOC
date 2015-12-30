@@ -36,6 +36,8 @@
             ExecutionHistoryGridSource = null;
             FusionAdapter = null;
             FusionSource = null;
+            PromotionHistoryGridSource = null;
+            PromotionHistoryGridAdapter = null;
 
             $('#List').off('rowdoubleclick', listRowDoubleClick);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
@@ -194,16 +196,16 @@
                     theme: list_theme,
                     groupable: false,
                     columns: [
-                        { text: 'Type', datafield: 'FusionType', filtertype: 'checkedlist', width: '20%' },
+                        { text: 'Type', datafield: 'FusionType', filtertype: 'checkedlist', width: '18%' },
                         { text: 'Configuration', datafield: 'Fusion', filtertype: 'checkedlist', width: '20%' },
-                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '17%' },
-                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '18%' },
+                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '19%' },
+                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '19%' },
                         { text: '# Errors', datafield: 'ErrorCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         { text: '# Results', datafield: 'ResultCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         {
                             text: '',
                             dataField: 'ID',
-                            width: '5%',
+                            width: '4%',
                             filterable: false,
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                                 var tools = [];
@@ -211,6 +213,56 @@
                                 return renderToolsHtml(value, tools, "openexceptiondetailsdlg", data);
                             }
                         }
+                    ]
+                });
+
+                //#endregion
+
+                //#region ExecutionHistory Grid Configuration
+
+                PromotionHistoryGridSource = {
+                    datatype: 'json',
+                    url: '/services/fusion/promotionhistory?$top=100&$orderby=DateStarted desc',
+                    datafields: [
+                        { name: "ID", type: "number" },
+                        { name: "DateStarted", type: "date" },
+                        { name: "DateCompleted", type: "date" },
+                        { name: "PromotedTaxonomies", type: "number" },                        
+                        { name: "PromotedDomainItems", type: "number" },
+                        { name: "PromotedDomains", type: "number" },
+                        { name: "PromotedArtifacts", type: "number" },
+                        { name: "TotalNewPromotions", type: "number" },
+                        { name: "AttributesConsidered", type: "number" },
+                        { name: "NumberOfRules", type: "number" }
+                    ]
+                };
+
+                PromotionHistoryGridAdapter = new $.jqx.dataAdapter(PromotionHistoryGridSource);
+
+                $("#PromotionHistoryGrid").jqxGrid({
+                    altrows: true,
+                    width: grid_width,
+                    autoheight: true,
+                    sortable: true,
+                    filterable: true,
+                    showfilterrow: true,
+                    pageable: true,
+                    pagesizeoptions: ['5', '10', '20'],
+                    pagesize: 5,
+                    columnsresize: true,
+                    source: PromotionHistoryGridAdapter,
+                    theme: list_theme,
+                    groupable: false,
+                    columns: [                        
+                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '20%' },
+                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '20%' },
+                        { text: '# New Promotions', datafield: 'TotalNewPromotions', columntype: 'numberinput', filtertype: 'number', width: 125 },
+                        { text: '# New Artifacts', datafield: 'PromotedArtifacts', columntype: 'numberinput', filtertype: 'number', width: 100 },
+                        { text: '# New Domains', datafield: 'PromotedDomains', columntype: 'numberinput', filtertype: 'number', width: 100 },
+                        { text: '# New Domain Items', datafield: 'PromotedDomainItems', columntype: 'numberinput', filtertype: 'number', width: 135 },
+                        { text: '# New Taxonomies', datafield: 'PromotedTaxonomies', columntype: 'numberinput', filtertype: 'number', width: 125 },                                            
+                        { text: '# Rules', datafield: 'NumberOfRules', columntype: 'numberinput', filtertype: 'number', width: 100 },
+                        { text: '# Attributes Considered', datafield: 'AttributesConsidered', columntype: 'numberinput', filtertype: 'number', width: 150 }                      
                     ]
                 });
 
