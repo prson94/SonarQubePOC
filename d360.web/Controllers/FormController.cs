@@ -19,6 +19,7 @@ using d360.workflow.models;
 using d360.workflow;
 using d360.workflow.entities;
 using d360.web.Filters;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
@@ -1458,7 +1459,7 @@ namespace d360.web.Controllers
 
             return PartialView("AttributeTypeEditForm", model);
         }
-        
+
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddAttributeType(FormCollection form)
@@ -6800,6 +6801,31 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return new JsonNetResult { Data = getFieldNamesByType(type, id), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [FileDownload]
+        public FileResult Load_ExpectedColumns_ToExcel(string type, int id)
+        {
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            var columns = getFieldNamesByType(type, id);
+
+            #region Header
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                document.SetCellValue(1, i, columns[i]);
+            }
+
+            #endregion
+
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.ms-excel", "Load.xls");
+        }
+
+
         public ActionResult AddLoad()
         {
             return PartialView();
@@ -9392,94 +9418,6 @@ order by    Name
             }
         }
 
-        //public ActionResult AddSourcingResponsibility(SystemObjects type, int id)
-        //{
-        //    var artifacts = (
-        //                    from a in Company.Table<Artifact>()
-        //                    join rt in Company.Filter<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == 0) on a.ArtifactTypeID equals rt.ObjectID
-        //                    join t in Company.Table<ArtifactType>() on rt.ObjectID equals t.ID
-        //                    orderby t.Name
-        //                    orderby a.Name
-        //                    select new SelectListItem
-        //                    {
-        //                        Group = t.Name,
-        //                        Group2 = rt.ResponsibilityTypeID.ToString(),
-        //                        Text = a.Name,
-        //                        Value = a.ID.ToString()
-        //                    }
-        //                    ).ToList();
-        //    var contexts = (
-        //                    from l in Company.GetMasterLists().Where(i => i.Items.Count > 0)
-        //                    from i in l.Items
-        //                    orderby l.DomainType.Name
-        //                    orderby l.Name
-        //                    select new { DomainType = l.DomainType.Name, List = l.Name, i.Code, i.Name, i.ID })
-        //                    .ToList()
-        //                    .Select(i => new SelectListItem
-        //                    {
-        //                        Group = string.Format("{0} : {1}", i.DomainType, i.List),
-        //                        Text = string.Format("{0} : {1}", i.Code, i.Name),
-        //                        Value = i.ID.ToString()
-        //                    }).ToList();
-
-        //    var oModel = new SourcingResponsibilityEditorModel
-        //    {
-        //        ObjectID = id,
-        //        ObjectType = type,
-        //        Artifacts = artifacts,
-        //        Contexts = contexts,
-        //        ID = 0
-        //    };
-        //    return PartialView(oModel);
-        //}
-
-        //public ActionResult AddResponsibility(int responsibilityTypeID, SystemObjects type, int id, string context = ContextList.Responsibility)
-        //{
-        //    var responsibilityType = Company.GetById<ResponsibilityType>(responsibilityTypeID);
-
-        //    if (responsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People)
-        //    {
-        //        var pModel = new EditableForm
-        //        {
-        //            Context = context,
-        //            FieldUri = string.Format("/form/PeopleResponsibility_AddFields?type={0}&id={1}&responsibilityTypeID={2}", type.ToString(), id, responsibilityTypeID),
-        //            FormTitle = string.Format("Add {0}", responsibilityType.Name),
-        //            FormUri = "/form/AddPeopleResponsibility",
-        //            FormMethod = "POST"
-        //        };
-
-        //        return PartialView("EditableForm", pModel);
-        //    }
-        //    else
-        //    {
-        //        var pModel = new EditableForm
-        //        {
-        //            Context = context,
-        //            FieldUri = string.Format("/form/SourcingResponsibility_AddFields?type={0}&id={1}&responsibilityTypeID={2}", type.ToString(), id, responsibilityTypeID),
-        //            FormTitle = string.Format("Add {0}", responsibilityType.Name),
-        //            FormUri = "/form/AddSourcingResponsibility",
-        //            FormMethod = "POST"
-        //        };
-
-        //        return PartialView("EditableForm", pModel);
-        //    }
-        //}
-
-        List<SelectListItem> getArtifactsForSourcing(int responsibilityTypeID, int selectedID = 0)
-        {
-            return
-                (
-                Company.Query<dynamic>(@"select	A.ID, A.Name, AT.Name as ArtifactType from Artifact A
-inner join ResponsibilityTypeSourceType R on R.ResponsibilityTypeID = @t and R.ObjectID = A.ArtifactTypeID
-inner join ArtifactType AT on R.ObjectID = AT.ID
-order by AT.Name, A.Name", new { t = responsibilityTypeID }).Select(t => new SelectListItem {
-                    Group = new SelectListGroup { Name = t.ArtifactType },
-                    Text = t.Name,
-                    Value = t.ID.ToString(),
-                    Selected = (t.ID == selectedID)
-                }).ToList()
-                );
-        }
         List<SelectListItem> getContextSelectList(List<int> contextIDs = null)
         {
             if (contextIDs == null) contextIDs = new List<int>();
@@ -9581,7 +9519,7 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
             return PartialView("PeopleResponsibilityEditForm", model);
         }
-
+        
         [ValidateHttpAntiForgeryToken]
         [HttpPost]
         public JsonResult AddPeopleResponsibility(FormCollection form)
@@ -9646,124 +9584,15 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
 
             return PartialView("SourcingResponsibilityEditForm", model);
         }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddSourcingResponsibility(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("responsibility");
-
-                var objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), form["ObjectType"]);
-                var responsiblePartyID = parseIntField(form, "ResponsibleObject");
-                var o = new Responsibility
-                {
-                    ResponsibilityTypeID = parseIntField(form, "ResponsibilityType"),
-                    ObjectType = objectType.ToString(),
-                    ObjectID = parseIntField(form, "ObjectID"),
-                    ResponsibleObjectType = "Artifact",
-                    ResponsibleObjectID = responsiblePartyID,
-                    Visible = true,
-                    TargetResponsibilityID =  parseNullableIntField(form, "TargetResponsibility")
-                };
-
-                if (!Company.Table<Responsibility>().Any(i => 
-                    i.ObjectType == o.ObjectType && 
-                    i.ObjectID == o.ObjectID && 
-                    i.ResponsibilityTypeID == o.ResponsibilityTypeID && 
-                    i.ResponsibleObjectType == o.ResponsibleObjectType && 
-                    i.ResponsibleObjectID == o.ResponsibleObjectID)
-                    )
-                {
-                    Company.Add<Responsibility>(o);
-
-                    processContextFormFieldForResponsibility(o.ID, form);
-
-                    Company.Update<Responsibility>(o);  //Call this again so we can re-cache via trigger.
-
-                    try
-                    {
-                        if (objectType != SystemObjects.Intersect)
-                        {
-                            var bt = parseTextField(form, "BusinessTransformation");
-                            if (!string.IsNullOrEmpty(bt) && bt != "<p></p>")
-                            {
-                                var brt = new ResponsibilityTransformation { Description = bt, ResponsibilityID = o.ID, ResponsibilityTransformationType = ResponsibilityTransformationType.Business };
-                                Company.Add<ResponsibilityTransformation>(brt);
-                            }
-
-                            var tt = parseTextField(form, "TechnicalTransformation");
-                            if (!string.IsNullOrEmpty(tt) && tt != "<p></p>")
-                            {
-                                var trt = new ResponsibilityTransformation { Description = tt, ResponsibilityID = o.ID, ResponsibilityTransformationType = ResponsibilityTransformationType.Technical };
-                                Company.Add<ResponsibilityTransformation>(trt);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        SendException(ex);
-                    }
-
-                    #region Now figure out the object to create an intersect for (if required)
-
-                    if (objectType == SystemObjects.Intersect)
-                    { 
-                        // Figure out which side to relate to the responsible object.
-                        var intersect = Company.GetById<Intersect>(o.ObjectID, i => i.Nodes, i => i.IntersectType.Nodes);
-                        if (intersect != null)
-                        {
-                            var sourcingTypeSide = intersect.IntersectType.Nodes.FirstOrDefault(i => i.Order == 2);
-                            if (sourcingTypeSide != null)
-                            {
-                                var sourcingSide = intersect.Nodes.FirstOrDefault(i => i.IntersectTypeNodeID == sourcingTypeSide.ID);
-                                if (sourcingSide != null)
-                                {
-                                    var objs = new List<ObjectModel>();
-                                    objs.Add(new ObjectModel { ObjectType = sourcingSide.ObjectType, ObjectID = sourcingSide.ObjectID });
-                                    var classification = intersect.Classification.HasValue ? intersect.Classification.Value : IntersectClassification.Normal;
-                                    var description = intersect.Description + "";
-                                    Company.AddRelationship(
-                                        SystemObjects.Artifact, responsiblePartyID, 
-                                        (SystemObjects)Enum.Parse(typeof(SystemObjects), sourcingSide.ObjectType), sourcingSide.ObjectID, 
-                                        classification, null, description);
-
-                                    sourcingSide = null;
-                                }
-                                sourcingTypeSide = null;
-                            }
-                        
-                            intersect = null;
-                        }
-                    }
-
-                    #endregion
-                }
-
-                return jsonSuccess("Item successfully created.", o.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { ObjectType = o.ObjectType.ToString(), ObjectID = o.ObjectID.ToString() });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+       
 
         public ActionResult DeleteResponsibility(int id)
         {
             var responsibility = Company.GetById<Responsibility>(id, i => i.ResponsibilityType);
 
-            var context = (responsibility.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People) ? ContextList.PeopleResponsibility : ContextList.SourcingResponsibility;
-            if (responsibility.ObjectType == "Intersect") context = ContextList.IntersectSourcingResponsibility;
-
             var model = new EditableForm
             {
-                Context = context,
+                Context = ContextList.PeopleResponsibility,
                 FieldUri = string.Format("/form/Responsibility_DeleteFields?id={0}", id),
                 FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this owner"),
                 FormUri = "/form/DeleteResponsibility",
@@ -9852,129 +9681,6 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             }
         }
 
-        public JsonNetResult SourcesByResponsibilityType(int id)
-        {
-            return new JsonNetResult { Data = getArtifactsForSourcing(id), Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        public ActionResult EditSourcingResponsibility(int id)
-        {
-            var r = Company.GetById<Responsibility>(id, i => i.ResponsibilityType, i => i.ResponsibilityContextItems, i => i.ResponsibilityTransformations);
-            if (r == null) return HttpNotFound();
-
-            var model = new SourcingResponsibilityEditorModel
-            {
-                FormName = "Edit Source",
-                FormUri = "/form/EditSourcingResponsibility",
-                FormMethod = "PUT",
-                Artifacts = getArtifactsForSourcing(r.ResponsibilityTypeID, r.ResponsibleObjectID),
-                Contexts = getContextSelectList(r.ResponsibilityContextItems.Select(i => i.ObjectID).ToList()),
-                FormDescription = "",
-                Responsibility = r,
-                ResponsibilityTypes = getResponsibilityTypeSelectList((SystemObjects)Enum.Parse(typeof(SystemObjects), r.ObjectType), r.ObjectID, ResponsibilityTypeGroup.Sourcing, r.ResponsibilityTypeID),
-                SourceResponsibilities = getSourceResponsibilitiesSelectList(r.ObjectType, r.ObjectID, r.TargetResponsibilityID)
-        };
-
-            if (r.ResponsibilityTransformations.Count > 0)
-            {
-                var bt = r.ResponsibilityTransformations.FirstOrDefault(i => i.ResponsibilityTransformationType == ResponsibilityTransformationType.Business);
-                if (bt != null)
-                {
-                    model.BusinessTransformation = bt.Description;
-                }
-
-                var tt = r.ResponsibilityTransformations.FirstOrDefault(i => i.ResponsibilityTransformationType == ResponsibilityTransformationType.Technical);
-                if (tt != null)
-                {
-                    model.TechnicalTransformation = tt.Description;
-                }
-            }
-
-            return PartialView("SourcingResponsibilityEditForm", model);
-        }
-
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditSourcingResponsibility(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("responsibility");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Responsibility>(id);
-                if (model == null) throw new NotFoundException("responsibility");
-
-                model.ResponsibleObjectID = parseIntField(form, "ResponsibleObject");
-                model.TargetResponsibilityID = parseNullableIntField(form, "TargetResponsibility");
-
-                processContextFormFieldForResponsibility(id, form, false);
-
-                Company.Update<Responsibility>(model);  //Do this after context so the trigger will properly re-cache with the contextxs.
-
-                try
-                {
-                    if (model.ObjectType != SystemObjects.Intersect.ToString())
-                    {
-                        var transformations = Company.Filter<ResponsibilityTransformation>(i => i.ResponsibilityID == id).ToList();
-                        var bt = parseTextField(form, "BusinessTransformation");
-                        ResponsibilityTransformation brt = transformations.FirstOrDefault(i => i.ResponsibilityTransformationType == ResponsibilityTransformationType.Business);
-                        if (bt != "<p></p>" && !string.IsNullOrEmpty(bt))
-                        {
-                            if (brt == null)
-                            {
-                                brt = new ResponsibilityTransformation { Description = bt, ResponsibilityID = id, ResponsibilityTransformationType = ResponsibilityTransformationType.Business };
-                                Company.Add<ResponsibilityTransformation>(brt);
-                            }
-                            else 
-                            {
-                                brt.Description = bt;
-                                Company.Update<ResponsibilityTransformation>(brt);
-                            }
-                        }
-                        else
-                        {
-                            if (brt != null) Company.Delete<ResponsibilityTransformation>(brt);
-                        }
-
-                        var tt = parseTextField(form, "TechnicalTransformation");
-                        ResponsibilityTransformation trt = transformations.FirstOrDefault(i => i.ResponsibilityTransformationType == ResponsibilityTransformationType.Technical);
-                        if (tt != "<p></p>" && !string.IsNullOrEmpty(tt))
-                        {
-                            if (trt == null)
-                            {
-                                trt = new ResponsibilityTransformation { Description = tt, ResponsibilityID = id, ResponsibilityTransformationType = ResponsibilityTransformationType.Technical };
-                                Company.Add<ResponsibilityTransformation>(trt);
-                            }
-                            else
-                            {
-                                trt.Description = tt;
-                                Company.Update<ResponsibilityTransformation>(trt);
-                            }
-                        }
-                        else 
-                        {
-                            if (trt != null) Company.Delete<ResponsibilityTransformation>(trt);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    SendException(ex);
-                }
-
-                return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         #endregion
 
         #endregion
@@ -10045,7 +9751,6 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddResponsibilityTransformation(FormCollection form)
         {
