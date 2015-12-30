@@ -13,12 +13,13 @@ namespace d360.fusion
     public class FusionQueueManager : IFusionQueueManager
     {
         private CloudQueueClient _queueClient;
-        
+        private string _queueName;
 
-        public FusionQueueManager()
+        public FusionQueueManager(string queueName)
         {
             var acctName = constants.AZURE_STORAGE_NAME;
             var keyValue = constants.AZURE_STORAGE_KEY;
+            _queueName = queueName;
             CloudStorageAccount storageAccount = new CloudStorageAccount(new StorageCredentials(acctName, keyValue), true);            
             _queueClient = storageAccount.CreateCloudQueueClient();                        
         }
@@ -26,7 +27,7 @@ namespace d360.fusion
         // Puts a serialized fixit onto the queue.
         public async Task SendMessageAsync(FusionProcessingData fusion)
         {
-            CloudQueue queue = _queueClient.GetQueueReference(constants.AZURE_FUSION_QUEUE);
+            CloudQueue queue = _queueClient.GetQueueReference(_queueName);
             await queue.CreateIfNotExistsAsync();
 
             var fusionJson = JsonConvert.SerializeObject(fusion);
@@ -40,9 +41,10 @@ namespace d360.fusion
                                                 int bulkTimeout = 180,
                                                 int readTimeout = 180,
                                                 int executionTimeout = 180,
-                                                int maxRetries = 3)
+                                                int maxRetries = 3,
+                                                int queueCheckFrequency = 5000)
         {
-            CloudQueue queue = _queueClient.GetQueueReference(constants.AZURE_FUSION_QUEUE);
+            CloudQueue queue = _queueClient.GetQueueReference(_queueName);
             await queue.CreateIfNotExistsAsync();
             
 
@@ -52,7 +54,9 @@ namespace d360.fusion
                 CloudQueueMessage message = await queue.GetMessageAsync(resevationTime,null, null);
                 
                 if (message == null)
-                {
+                {                    
+                    await Task.Delay(queueCheckFrequency);
+
                     break;
                 }
 

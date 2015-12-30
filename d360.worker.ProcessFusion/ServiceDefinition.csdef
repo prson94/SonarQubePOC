@@ -4,6 +4,8 @@
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
       <Setting name="QueueMessageVisibilityTime" />
+      <Setting name="QueueName" />
+      <Setting name="QueueCheckFrequency" />
       <Setting name="DBExecuteQueryTimeout" />
       <Setting name="DBReadQueryTimeout" />
       <Setting name="DBBulkCopyTimeout" />

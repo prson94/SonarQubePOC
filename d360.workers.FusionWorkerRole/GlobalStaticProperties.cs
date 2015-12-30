@@ -15,6 +15,8 @@ namespace d360.workers.FusionWorkerRole
         private static int _DBReadQueryTimeout { get; set; }
         private static int _DBExecuteQueryTimeout { get; set; }
         private static int _MaximumRetries { get; set; }
+        private static string _QueueName { get; set; }
+        private static int _QueueCheckFrequency { get; set; }
         /// <summary>
         /// This is the amount of time the message remains invisible after being
         /// read from the queue, before it becomes visible again (unless it is deleted)
@@ -153,5 +155,49 @@ namespace d360.workers.FusionWorkerRole
                 return _MaximumRetries;
             }
         }
+
+        internal static string QueueName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_QueueName))
+                {
+                    //hasn't been loaded yet, so load it 
+                    _QueueName =
+                      RoleEnvironment.GetConfigurationSettingValue("QueueName");
+                    
+                    Trace.TraceInformation("[d360.workers.FusionWorkerRole.GlobalStaticProperties] "
+                      + "Setting QueueName to {0}", _QueueName);
+                }
+                return _QueueName;
+            }
+        }
+
+        internal static int QueueCheckFrequency
+        {
+            get
+            {
+                if (_QueueCheckFrequency <= 0)
+                {
+                    //hasn't been loaded yet, so load it 
+                    string queueCheckFrequency =
+                      RoleEnvironment.GetConfigurationSettingValue("QueueCheckFrequency");
+                    int intTest = 0;
+                    bool success = int.TryParse(queueCheckFrequency, out intTest);
+                    if (!success || intTest <= 0)
+                    {
+                        _QueueCheckFrequency = 5000;
+                    }
+                    else
+                    {
+                        _QueueCheckFrequency = intTest;
+                    }
+                    Trace.TraceInformation("[d360.workers.FusionWorkerRole.GlobalStaticProperties] "
+                      + "Setting QueueCheckFrequency to {0}", _QueueCheckFrequency);
+                }
+                return _QueueCheckFrequency;
+            }
+        }
+        
     }
 }

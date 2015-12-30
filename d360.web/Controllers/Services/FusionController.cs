@@ -531,7 +531,7 @@ where   ExecutionID = {0}", id);
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 
                 Trace.TraceInformation("Enqueueing new fusion job on the queue.  Fusion ID: {0}, Company ID: {1}, Log:{2}",fusionID,Company.CurrentCompanyID, fileName);
-                var fusionQueue = new FusionQueueManager();
+                var fusionQueue = new FusionQueueManager(constants.AZURE_FUSION_QUEUE);
 
                 await fusionQueue.SendMessageAsync(new FusionProcessingData
                 {
