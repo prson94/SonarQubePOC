@@ -892,7 +892,6 @@
     <Content Include="Content\templates\attributes.admin.html" />
     <Content Include="Content\templates\artifacts.admin.html" />
     <Content Include="Content\templates\_content.header.html" />
-    <Content Include="lineage-test.html" />
     <Content Include="node-test.html" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
@@ -1081,7 +1080,6 @@
     <Content Include="Views\Form\AddLoad.cshtml" />
     <Content Include="Views\Overlays\TaxonomyTypeDiagram_Catalog.cshtml" />
     <Content Include="Views\Form\EditorTemplates\LoadTypeRuleEditorModel.cshtml" />
-    <Content Include="Views\Form\AddLoadTypeRule.cshtml" />
     <Content Include="Views\Form\EditLoadTypeRule.cshtml" />
     <Content Include="Views\Form\EditorTemplates\ClaimsMatrixEditorModel.cshtml" />
     <Content Include="Views\Form\AddResponsibilityTypeClaims.cshtml" />
@@ -1115,7 +1113,6 @@
     <Content Include="Views\Shared\FormHeader.cshtml" />
     <Content Include="Views\Form\ArtifactTypeEditForm.cshtml" />
     <Content Include="Views\Form\PeopleResponsibilityEditForm.cshtml" />
-    <Content Include="Views\Form\SourcingResponsibilityEditForm.cshtml" />
     <Content Include="Views\Overlays\ArtifactListMetricsDashboard.cshtml" />
     <Content Include="Views\Overlays\AttributeTypeCategories.cshtml" />
     <Content Include="Views\Overlays\ResponsibilityTypeHierarchies.cshtml" />

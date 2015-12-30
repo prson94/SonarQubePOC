@@ -8,6 +8,7 @@ using d360.web.Models;
 using d360.core.entities;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using Resources;
 
 namespace d360.web.Controllers
 {
@@ -338,6 +339,16 @@ order by R.Name, P.Phrase");
 
         public class AddSourcePostModel
         {
+            /// <summary>
+            /// The current object that we are creating sources for.
+            /// </summary>
+            public string Target { get; set; }
+
+            /// <summary>
+            /// The current object's ID that we are creating sources for.
+            /// </summary>
+            public int TargetID { get; set; }
+
             public string Subject { get; set; }
             public int SubjectID { get; set; }
             public string Object { get; set; }
@@ -363,52 +374,62 @@ order by R.Name, P.Phrase");
             var message = "";
             var success = false;
 
-            if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
+            if (string.IsNullOrEmpty(model.Target) || model.TargetID <= 0)
             {
-                message = $"The Subject you provided is invalid.";
+                message = $"The Target, or current object, you provided is invalid.";
             }
             else
             {
-                if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
+                if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
                 {
-                    message = $"The Object you provided is invalid.";
+                    message = $"The Subject you provided is invalid.";
                 }
                 else
                 {
-                    if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+                    if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
                     {
-                        message = $"A source may not map to itself directly.";
+                        message = $"The Object you provided is invalid.";
                     }
                     else
                     {
-                        Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-                        var intersect = Company.Query<IntersectLookupModel>(@"select S.IntersectID,
+                        if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+                        {
+                            message = $"A source may not map to itself directly.";
+                        }
+                        else
+                        {
+                            Company.AddRelationship(model.Target, model.TargetID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
+                            Company.AddRelationship(model.Target, model.TargetID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+
+                            Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                            var intersect = Company.Query<IntersectLookupModel>(@"select S.IntersectID,
 S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
 O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
 from [IntersectNode] S 
 inner join IntersectNode O on O.IntersectID = S.IntersectID 
 and S.[ObjectType] = @s and S.ObjectID = @sid 
 and O.[ObjectType] = @o and O.ObjectID = @oid",
-    new { s = model.Subject, sid = model.SubjectID, o = model.Object, oid = model.ObjectID }
-    ).SingleOrDefault();
-                        if (intersect != null)
-                        {
-                            // If we got here, we are all good.
-
-                            var intersectMap = new IntersectMap
+        new { s = model.Subject, sid = model.SubjectID, o = model.Object, oid = model.ObjectID }
+        ).SingleOrDefault();
+                            if (intersect != null)
                             {
-                                MapID = 0,
-                                ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
-                                PredicatePhraseID = model.PredicatePhraseID,
-                                SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                Type = MapType.SourceToTarget
-                            };
-                            Company.Add<IntersectMap>(intersectMap);
-                            success = true;
-                        }
-                        else
-                        {
-                            message = $"The Subject or Object did not match up with the Relationship you provided.";
+                                // If we got here, we are all good.
+
+                                var intersectMap = new IntersectMap
+                                {
+                                    MapID = 0,
+                                    ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
+                                    PredicatePhraseID = model.PredicatePhraseID,
+                                    SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
+                                    Type = MapType.SourceToTarget
+                                };
+                                Company.Add<IntersectMap>(intersectMap);
+                                success = true;
+                            }
+                            else
+                            {
+                                message = $"The Subject or Object did not match up with the Relationship you provided.";
+                            }
                         }
                     }
                 }
@@ -416,6 +437,48 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
 
             return new JsonNetResult {
                 Data = new {
+                    message = message,
+                    success = success
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpDelete, Route("{target}/{targetID:int}/sources/{id:int}")]
+        public JsonNetResult DeleteSource(SystemObjects target, int targetID, int id)
+        {
+            var message = "";
+            var success = false;
+
+            if (id <= 0)
+            {
+                message = $"The source ID ({id}) is invalid.";
+            }
+            else
+            {
+                var model = Company.GetById<IntersectMap>(id);
+                if (model == null)
+                {
+                    message = $"The source with ID ({id}) could not be found.";
+                }
+                else
+                {
+                    if (!Company.HasPermission(target, targetID, Claim.Delete, ClaimObject.Relationship))
+                    {
+                        message = FormInfo.Permisions_Error_Delete;
+                    }
+                    else
+                    {
+                        Company.Delete<IntersectMap>(model);
+                        success = true;
+                    }
+                }
+            }
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
                     message = message,
                     success = success
                 },

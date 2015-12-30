@@ -3,12 +3,12 @@
   <Role name="d360.workers.FusionWorkerRole">
     <Instances count="1" />
     <ConfigurationSettings>
-      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=processfusionworker;AccountKey=IHKnGB0H1WIUTaIsLZeL+EdQwelDNZHpJgFRwKyGzKOUkV48eB+46C3Hoekab8g52OGOoPFrKxH13CIzh+D03g==" />
       <Setting name="QueueMessageVisibilityTime" value="3600" />
       <Setting name="DBExecuteQueryTimeout" value="600" />
-      <Setting name="DBReadQueryTimeout" value="600"/>
-      <Setting name="DBBulkCopyTimeout" value="300"/>
-      <Setting name="MaximumRetries" value="3"/>
+      <Setting name="DBReadQueryTimeout" value="600" />
+      <Setting name="DBBulkCopyTimeout" value="300" />
+      <Setting name="MaximumRetries" value="3" />
     </ConfigurationSettings>
   </Role>
 </ServiceConfiguration>

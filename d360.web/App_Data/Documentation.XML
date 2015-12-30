@@ -2213,6 +2213,12 @@
             </summary>
             <returns>A list of artifacts.</returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactsByTypeAndSearchModel(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Gets all artifacts based on a given type ID and a set of search criteria that roughly matches the field layout of the type.
+            </summary>
+            <returns>A list of artifacts.</returns>
+        </member>
         <member name="M:d360.web.Controllers.Services.GlossaryController.AddArtifact(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
             <summary>
             Add an artifact.
@@ -2656,12 +2662,6 @@
         <member name="M:d360.web.Controllers.FormController.Responsibility_DeleteFields(System.Int32)">
             <param name="id">ResponsibilityID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.ResponsibilityTransformation_DeleteFields(System.Int32)">
-            <param name="id">ResponsibilityTransformationID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponsibilityTransformation_EditFields(System.Int32)">
-            <param name="id">ResponsibilityTransformationID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.ResponsibilityType_DeleteFields(System.Int32)">
             <param name="id">ResponsibilityTypeID</param>
         </member>
@@ -2803,6 +2803,16 @@
             </summary>
             <param name="id">The target IntersectID</param>
             <returns>JSON Data</returns>
+        </member>
+        <member name="P:d360.web.Controllers.RelationsController.AddSourcePostModel.Target">
+            <summary>
+            The current object that we are creating sources for.
+            </summary>
+        </member>
+        <member name="P:d360.web.Controllers.RelationsController.AddSourcePostModel.TargetID">
+            <summary>
+            The current object's ID that we are creating sources for.
+            </summary>
         </member>
         <member name="M:d360.web.Models.Attributes.FileDownloadAttribute.CheckAndHandleFileResult(System.Web.Mvc.ActionExecutedContext)">
             <summary>

@@ -1051,6 +1051,8 @@ function LoadViewModel(data) {
         return (self.TypeOptions().length == 0);
     }, self);
 
+    self.TemplateDownloadUrl = ko.observable("#");
+
     //#endregion
 
     //#region List Properties
@@ -1095,6 +1097,7 @@ function LoadViewModel(data) {
     self.Type.subscribe(function (value) {
         if (value) {
             var typeInfo = value.split('|');
+            self.TemplateDownloadUrl('/form/Load_ExpectedColumns_ToExcel?type=' + typeInfo[0] + '&id=' + typeInfo[1]);
             $.getJSON(
                 '/form/Load_ExpectedColumns',
                 { type: typeInfo[0], id: typeInfo[1] },

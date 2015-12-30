@@ -70,6 +70,48 @@ where A.ArtifactTypeID = @id", columns, joins);
         }
 
         /// <summary>
+        /// Gets all artifacts based on a given type ID and a set of search criteria that roughly matches the field layout of the type.
+        /// </summary>
+        /// <returns>A list of artifacts.</returns>
+        [Route("artifacts/{id:int}"), HttpPost]
+        public IQueryable<dynamic> GetArtifactsByTypeAndSearchModel(int id, Dictionary<string, string> model)
+        {
+            var joins = "";
+            var columns = "";
+            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns);
+
+            var querySql = string.Format(@"select	A.ID,
+		A.Name,
+		A.Description,
+        A.ParentID,
+		P.Name as Parent,
+        dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
+		A.Status,
+        A.DateLastCertified,
+        {0}
+		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+from	Artifact A 
+left join Artifact P on P.ID = A.ParentID {1}
+where A.ArtifactTypeID = @id", columns, joins);
+
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+            if (model != null)
+            {
+                foreach (string key in model.Keys)
+                {
+                    if (key == "Name") sql += $"A.Name like '{model[key].Replace("'", "''")}%'";
+                    if (key == "Description") sql += $"A.Description like '%{model[key].Replace("'", "''")}%'";
+                    if (key == "Parent") sql += $"A.Parent like '{model[key].Replace("'", "''")}%'";
+                    if (key == "Status") sql += $"A.Status like '{model[key].Replace("'", "''")}%'";
+                    //if ()
+                }
+            }
+
+            return Company.Query<dynamic>(sql, new { id = id }).AsQueryable();
+        }
+
+        /// <summary>
         /// Add an artifact.
         /// </summary>
         /// <param name="id">The type ID</param>

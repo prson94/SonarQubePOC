@@ -474,11 +474,11 @@ from	h
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public JsonNetResult GetArtifactTypes()
-        {
-            var items = Company.Query<dynamic>("select id,name from artifacttype");
-            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+        //public JsonNetResult GetArtifactTypes()
+        //{
+        //    var items = Company.Query<dynamic>("select id,name from artifacttype");
+        //    return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        //}
 
         public JsonNetResult GetArtifact(int id, string search)
         {
@@ -565,9 +565,6 @@ from	h
 
         public class DbMapItem
         {
-            public int ID { get; set; }
-            public int MapID { get; set; }
-
             public string Sub { get; set; }
             public int SubID { get; set; }
             public string SubjectID { get; set; }
@@ -604,6 +601,7 @@ from	h
 
         public class JsonLinkItem
         {
+            public int id { get; set; }
             public string from { get; set; }
             public string frompid { get { return "OUT"; } }
             public string to { get; set; }
@@ -618,7 +616,7 @@ from	h
 
             var nodes = new List<JsonNodeItem>();
             var links = new List<JsonLinkItem>();
-            var mapId = (list.Count() == 0 ? 0 : list.First().MapID);
+            //var mapId = (list.Count() == 0 ? 0 : list.First().MapID);
 
             list.ForEach(mapItem =>
             {
@@ -626,11 +624,11 @@ from	h
                     nodes.Add(new JsonNodeItem { key = mapItem.ObjectID, obj = mapItem.Obj, objid = mapItem.ObjID, name = mapItem.Object, type = mapItem.ObjectType, back = mapItem.ObjectBackColor, fore = mapItem.ObjectForeColor, exclude = mapItem.Exclude, intersectMapId = mapItem.IntersectMapID });
                 if (!nodes.Any(i => i.key == mapItem.SubjectID))
                     nodes.Add(new JsonNodeItem { key = mapItem.SubjectID, obj = mapItem.Sub, objid = mapItem.SubID, name = mapItem.Subject, type = mapItem.SubjectType, back = mapItem.SubjectBackColor, fore = mapItem.SubjectForeColor, exclude = mapItem.Exclude, intersectMapId = mapItem.IntersectMapID });
-                links.Add(new JsonLinkItem { from = mapItem.SubjectID, to = mapItem.ObjectID, text = mapItem.Predicate });
+                links.Add(new JsonLinkItem { id = mapItem.IntersectMapID, from = mapItem.SubjectID, to = mapItem.ObjectID, text = mapItem.Predicate });
             });
 
             return new JsonNetResult {
-                Data = new { nodes, links, mapId },
+                Data = new { nodes, links },//, mapId },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

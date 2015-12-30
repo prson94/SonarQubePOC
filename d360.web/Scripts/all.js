@@ -38212,6 +38212,8 @@ function LoadViewModel(data) {
         return (self.TypeOptions().length == 0);
     }, self);
 
+    self.TemplateDownloadUrl = ko.observable("#");
+
     //#endregion
 
     //#region List Properties
@@ -38256,6 +38258,7 @@ function LoadViewModel(data) {
     self.Type.subscribe(function (value) {
         if (value) {
             var typeInfo = value.split('|');
+            self.TemplateDownloadUrl('/form/Load_ExpectedColumns_ToExcel?type=' + typeInfo[0] + '&id=' + typeInfo[1]);
             $.getJSON(
                 '/form/Load_ExpectedColumns',
                 { type: typeInfo[0], id: typeInfo[1] },
@@ -41605,8 +41608,15 @@ function ClickGridTool(event) {
                             "' data-id='" + v.TooltipID + "'>" +
                             v.Value + "</div>");
                     }
-                    else {
-                        cpnl.append("<div>" + v.Value + "</div>");
+                    else {                        
+                        if (v.Value != null && v.Value.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})/)) 
+                        {
+                            v.Value = v.Value.replace(/["]/g, "");
+                            var d = new Date(v.Value);
+                            cpnl.append("<div>" + d.toLocaleString() + "</div>");
+                        }
+                        else
+                            cpnl.append("<div>" + v.Value + "</div>");
                     }
                 });
             }
@@ -44921,7 +44931,7 @@ function FieldsGrid(controlID, contextList, permissions, type, id, title) {
     //#endregion
 }
 
-function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefinition, definition, dataUri) {
+function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefinition, definition, dataUri,id) {
     var gridControlID = controlID + "_grid";
     controlID = '#' + controlID;
     $(controlID).html('<div id="' + gridControlID + '"></div>');
@@ -44929,11 +44939,11 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
 
     //#region Event Handlers
 
-    var doubleClick = function(event) {
+    var doubleClick = function (event) {        
         var args = event.args;
         var boundIndex = args.rowindex;     // row's bound index.
         var data = $(gridControlID).jqxGrid('getrowdata', boundIndex);
-
+        
         var dataUri = '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID;
 
         if (data.Type == 'FusionAttribute') {
@@ -44993,6 +45003,21 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
+
+    // in case where we dont have the definition we need to get it this happens on goto initial selected item
+    if(definition == null && id != null){        
+        $.ajax({
+            type:"GET",
+            url: "/api/FusionAttributeType/" + id + "/grid/definition",
+            async: false,
+            contentType:'application/json',
+            dataType: 'json',
+            success: function (data) {
+                definition = data;
+                definition.Fields.push({ name: 'FusionAttributeTypeID', type: 'number' });
+            }
+        });
+     }
 
     //#endregion
     //modify type column
@@ -45064,7 +45089,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
     }
 }
 
-function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusionID) {
+function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusionID,initialData) {
 
     var _innercontrolID = controlID + '_inner'; //stores original value.
     var breadcrumbControlID = controlID + "_breadcrumb";
@@ -45082,26 +45107,13 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
             { name: 'ParentFusionAttributeID', type: 'number' }
         ],
         Columns: [
-            { text: 'Name', dataField: 'Name' }//,
-            //{
-            //    text: '',
-            //    dataField: 'ID',
-            //    width: 40,
-            //    filterable: false,
-            //    sortable: false,
-            //    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-            //        var tools = [
-            //            { icon: 'pencil', urlprefix: '/form/EditFusionType?id={0}' }
-            //        ];
-            //        return renderToolsHtml(value, tools, contextList.FusionType);
-            //    }
-            //}
+            { text: 'Name', dataField: 'Name' }            
         ]
     };
 
     //#region Event Subscriptions
 
-    function fusionItemSelected(data) {
+    function fusionItemSelected(data) {        
         var liID = 'H_' + data.type + '_' + data.id;
 
         $(breadcrumbControlID).append('<li class="separator">/</li><li id="' + liID + '">' + data.title + '</li>');
@@ -45117,8 +45129,41 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
             $(this).nextAll().remove();
             _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, $(this).data('definition'), $(this).data('uri'));
         });
-
+        
         _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, data.definition, data.uri);
+    }
+
+    function buildCurrentItemBreadcrumb(data) {        
+        //need to go from selected item to root and generate the breadcrumb
+        $.getJSON('/api/fusion/selectedbreadcrumb/' + data.SelectedID, function (path) {
+            path.forEach(function (item) {            
+                buildBreadcrumbLink('FusionAttributeType', item.typeid, item.typename, item.typeid, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttribute&parentID=' + item.parentID + '&parentFusionAttributeTypeID=' + item.typeid,false);
+
+                buildBreadcrumbLink('FusionAttribute', item.id, item.name, item.typeid, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + item.typeid + '&parentFusionAttributeID=' + item.id, true);
+            });
+        });
+    }
+
+    function buildBreadcrumbLink(type, id, name,typeid,uri,passdefault) {
+        var liID = 'H_' + type + '_' + id;
+        $(breadcrumbControlID).append('<li class="separator">/</li><li id="' + liID + '">' + name + '</li>');
+        $('#' + liID).data('type', type);
+        $('#' + liID).data('id', id);
+        $('#' + liID).data('uri', uri);
+
+        if (passdefault) {
+            var def = typeDefinition;
+            def.id = typeid;
+            def.title = name;
+            def.type = type;
+            $('#' + liID).data('definition', def);
+        }
+
+        $('#' + liID).prevAll('li').not('.separator').addClass('clickable');
+        $('#' + liID).on('click', function () {
+            $(this).nextAll().remove();
+            _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, passdefault ? $(this).data('definition') : null, $(this).data('uri'), typeid);
+        });
     }
 
     function rootLiClick() {
@@ -45139,8 +45184,14 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
     //#endregion
-
-    _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType');
+    if (initialData != null) {
+        // build the breadcrumb for current item
+        buildCurrentItemBreadcrumb(initialData);
+        
+        _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + initialData.FusionAttributeTypeID + '&parentFusionAttributeID=' + initialData.ParentID);
+    }
+    else
+        _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType');
 }
 
 function FusionAttributePromotionRulesGrid(controlID, contextList, permissions, typeID, fusionID) {
@@ -47933,17 +47984,45 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     var controlID_wrapper = controlID + '_wrapper';
     var controlID_diagram = controlID + '_dgm';
+    var controlID_palette = controlID + '_palette';
     var controlID_sidebar = controlID + '_sidebar';
+    var controlID_overlay = controlID + '_overlay';
+
     var controlID_controls = controlID + '_controls';
     var controlID_controls_zoom = controlID + '_controls_zoom';
+    var controlID_controls_zoom_zoomDisplay = controlID + '_zoomDisplay';
+
+    var controlID_controls_zoom100 = controlID + '_controls_zoom100';
+    var controlID_controls_zoomfit = controlID + '_controls_zoomfit';
     var controlID_controls_reset = controlID + '_controls_reset';
+
+    $("#" + controlID_controls_zoom100).jqxButton({ theme: theme });
+    $("#" + controlID_controls_zoomfit).jqxButton({ theme: theme });
+    $("#" + controlID_controls_reset).jqxButton({ theme: theme });
+
     var controlID_actions = controlID + '_actions';
+    var controlID_actions_remove = controlID + '_actions_remove';
+
     var controlID_info = controlID + '_info';
     var controlID_info_body = controlID + '_info_body';
-    
+
+    var controlID_add = controlID + '_add';
+    var controlID_add_search_text = controlID + '_add_search_text';
+    var controlID_add_search = controlID + '_add_search';
+    var controlID_add_artifact_type = controlID + '_add_artifact_type';
+
+    var controlID_overlay_relationship = controlID + '_overlay_relationship';
+    var controlID_overlay_predicates = controlID + '_overlay_predicates';
+    var controlID_overlay_cancel = controlID + '_overlay_cancel';
+    var controlID_overlay_add = controlID + '_overlay_add';
+    var controlID_overlay_pname = controlID + '_overlay_pname';
+    var controlID_overlay_phrase = controlID + '_overlay_phrase';
+
     $("#" + controlID_controls).jqxExpander({ theme: theme });
     $("#" + controlID_info).jqxExpander({ theme: theme });
+    //$("#" + controlID_add).jqxExpander({ theme: theme });
     $("#" + controlID_controls_zoom).jqxScrollBar({ theme: theme, width: 280, height: 18, min: 750, max: 2250, value: 1500 });
+
 
     if (readonly) {
         $("#" + controlID_actions).hide();
@@ -47958,20 +48037,48 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var newId = -1;
     var temp = null;
     var relationshipLabels = null;
+    var newLink = null;
+    var predicates = [];
 
     //#region methods
 
     function createLinkModel() {
         return {
+            id: null,
             from: null,
             frompid: "OUT",
             to: null,
-            text: null
+            text: null,
+            phrase: null,
+            predicateName: null,
+            isDeletable: true,
+            exclude: 'false',
+            diagramObjectType: "Link"
         };
     };
+
+    function createNodeModel() {
+        return {
+            key: null,
+            id: null,
+            parentId: null,
+            name: null,
+            type: null,
+            typeName: null,
+            backColor: null,
+            foreColor: null,
+            isDeletable: true,
+            exclude: 'false',
+            highlightColor: null,
+            diagramObjectType: "Node",
+            template: "Artifact",
+            intersectMapId: null
+        };
+    };
+
     function layoutCompleted() {
-        console.log(myDiagram.documentBounds.height);
-        console.log(myDiagram.viewportBounds.height);
+        //console.log(myDiagram.documentBounds.height);
+        //console.log(myDiagram.viewportBounds.height);
 
         var height = $('#' + controlID_diagram).height($(window).innerHeight());
     }
@@ -48029,7 +48136,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             spot2: go.Spot.BottomRight,
             name: "NodeShape"
         },
-        new go.Binding("fill", "back").makeTwoWay()
+        new go.Binding("fill", "backColor").makeTwoWay()
        ),
         g(go.Panel, "Table",
             g(go.TextBlock, {
@@ -48041,7 +48148,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 font: "bold " + fontSize + "pt sans-serif"
             },
                 new go.Binding("text", "name").makeTwoWay(),
-                new go.Binding("stroke", "fore").makeTwoWay()
+                new go.Binding("stroke", "foreColor").makeTwoWay()
             ),
             g(go.TextBlock, {
                 row: 1,
@@ -48049,8 +48156,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 maxSize: new go.Size(180, NaN),
                 font: (fontSize - 2) + "pt sans-serif"
             },
-                new go.Binding("stroke", "fore").makeTwoWay(),
-                new go.Binding("text", "type").makeTwoWay()
+                new go.Binding("stroke", "foreColor").makeTwoWay(),
+                new go.Binding("text", "typeName").makeTwoWay()
             )//,
             //g(go.TextBlock, {
             //    row: 2,
@@ -48075,24 +48182,65 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         myDiagram.nodeTemplateMap.add(obj, node);
     }
+    function makeSearchTemplate() {
+        var node = g(go.Node, "Spot",
+               {
+                   mouseEnter: mouseEnter,
+                   mouseLeave: mouseLeave
+               },
+           g(go.Panel, "Auto", {
+               width: 125,
+               height: 50,
+               name: "NodePanel"
+           },
+           g(go.Shape, "RoundedRectangle", {
+               stroke: 'transparent',
+               strokeWidth: 2,
+               spot1: go.Spot.TopLeft,
+               spot2: go.Spot.BottomRight,
+               name: "NodeShape"
+           },
+               new go.Binding("fill", "backColor").makeTwoWay()
+          ),
+           g(go.Panel, "Table",
+               g(go.TextBlock, {
+                   row: 0,
+                   margin: 3,
+                   alignment: go.Spot.Top,
+                   editable: false,
+                   maxSize: new go.Size(180, 50),
+                   font: "8pt sans-serif"
+               },
+                   new go.Binding("text", "name").makeTwoWay()
+                   , new go.Binding("stroke", "foreColor").makeTwoWay()
+               ))
+           ));
+
+        myPalette.nodeTemplateMap.add("Artifact", node);
+    }
+    
     function mouseEnter(e, node) {
         node.isShadowed = true;
     };
+
     function mouseLeave(e, node) {
         node.isShadowed = false;
     };
+
     function onDoubleClick(e) {
         var obj = e.diagram.selection.first().data;
         if (obj != null) {
+            type = obj.type;
+            id = obj.id;
 
-            type = obj.obj;
-            id = obj.objid;
-
-            popDiagram();
+            populateDiagram();
         }
     }
+
     function onSelectionChange(e) {
         var node = e.diagram.selection.first();
+
+        $("#" + controlID_actions_remove).hide();
 
         if (node == null) {
             //$('#preview').html('');
@@ -48102,9 +48250,9 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         var data = node.data;
 
-        if (data.obj) { //node selected
+        if (data.diagramObjectType == 'Node') { //node selected
             $.ajax({
-                url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
+                url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
                 data: null,
                 success: function (data) {
                     $('#' + controlID_info_body).html(data);
@@ -48113,9 +48261,28 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 async: true
             });
         } else if (data.diagramObjectType == "Link") { //link selected
+            $('#' + controlID_info_body).html('');
             //$("#jqxExpander0").jqxExpander('collapse');
+            if (!readonly) {
+                $("#" + controlID_actions_remove).show();
+                $("#" + controlID_actions_remove).jqxButton({ theme: theme });
+                $("#" + controlID_actions_remove).one('click', function () {
+                    $.ajax({
+                        method: 'DELETE',
+                        url: '/relations/' + type + '/' + id + '/sources/' + data.id
+                    }).done(function (data, status, xhr) {
+                        if (data.success) {
+                            populateDiagram();
+                            amplify.publish("SourceSave");
+                        }
+                    }).fail(function (xhr, status, error) {
+                        amplify.publish("SourceFormStatus", { title: 'Error When Adding Source', message: xhr.statusText + xhr.responseText, success: false });
+                    });
+                });
+            }
         }
     }
+
     function onViewportBoundsChanged() {
         var s = myDiagram.scale;
         var h = 500;
@@ -48124,27 +48291,39 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
         $('#' + controlID_controls_zoom).val(Math.round(myDiagram.scale * 1500));
     };
-    function popDiagram() {
-        var dataUri = '/diagrams/maps/' + type + '/' + id + '.json';
 
-        $.getJSON(dataUri, function (data) {
-            myDiagram.model = go.Model.fromJson({
-                "class": "go.GraphLinksModel",
-                "nodeCategoryProperty": "obj",
-                "linkFromPortIdProperty": "frompid",
-                "linkToPortIdProperty": "topid",
-                "nodeDataArray": data.nodes,
-                "linkDataArray": data.links
-            });
-        });
-    }
+    function onLinkDrawn(e) {
+        $('#' + controlID_overlay).show();
+
+        newLink = e.subject.data;
+        newLink.diagramObjectType = "Link";
+        var from = e.subject.data.from;
+        var to = e.subject.data.to;
+        var toNode = null;
+        var fromNode = null;
+        //console.log(e.subject.data);
+        toNode = myDiagram.model.findNodeDataForKey(to);
+        fromNode = myDiagram.model.findNodeDataForKey(from);
+
+
+        $('#' + controlID_overlay_relationship).html('<span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: ' + (fromNode.foreColor || 'black') + ';background-color: ' + (fromNode.backColor || 'white') + ';" >' + fromNode.typeName + '</span><span style="font-size:1.5rem;font-weight:800;color:grey">&#8594;</span><span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: ' +
+     (toNode.foreColor || 'black') + ';background-color: ' + (toNode.backColor || 'white') + ';">' + toNode.typeName + '</span>');
+        $('#' + controlID_overlay_add).show();
+
+        var data = {
+            type1: fromNode.typeName,
+            type2: toNode.typeName
+        };
+        populatePredicateList();
+    };
+
     function reOrderLayout() {
         //myDiagram.layout.isValidLayout = false;
         // myDiagram.layout.isOngoing = true;
-        myDiagram.layout.invalidateLayout(); //isValidLayout = false;
+        myDiagram.layout.invalidateLayout();
         myDiagram.requestUpdate();
-        // myDiagram.layout.isOngoing = false;
     }
+
     function rotateDiagram() {
         myDiagram.startTransaction("rotate");
         digraphDirection = (digraphDirection + 90) % 360;
@@ -48167,6 +48346,14 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 100, layerSpacing: 100 }),
         "undoManager.isEnabled": true
     });
+    myDiagram.model.class = go.GraphLinksModel;
+    myDiagram.model.nodeCategoryProperty = "template";
+    myDiagram.model.linkFromPortIdProperty = "frompid";
+    myDiagram.model.linkToPortIdProperty = "topid";
+    myDiagram.model.nodeDataArray = [];
+    myDiagram.model.linkDataArray = [];
+
+
 
     $('#' + controlID_wrapper).on('mouseup', function () {
         var height = $('#' + controlID_wrapper).height();
@@ -48177,15 +48364,23 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
     });
 
+    $('#' + controlID_controls_zoom100).on('click', function () {
+        $('#' + controlID_controls_zoom).val(1500);
+    });
+
+    $('#' + controlID_controls_zoomfit).on('click', function () {
+        myDiagram.zoomToFit();
+    });
+
     $('#' + controlID_controls_reset).on('click', function () {
         type = originalObject;
         id = originalObjectID;
-        popDiagram();
+        populateDiagram();
     });
 
     $("#" + controlID_controls_zoom).on('valueChanged', function (event) {
         var val = parseInt(event.currentValue);
-        $('#zoomDisplay').text(Math.round((val / 1500) * 100) + '%');
+        $('#' + controlID_controls_zoom_zoomDisplay).text(Math.round((val / 1500) * 100) + '%');
         myDiagram.scale = (val / 1500);
     });
 
@@ -48193,6 +48388,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
     myDiagram.addDiagramListener('ObjectDoubleClicked', onDoubleClick);
     myDiagram.addDiagramListener('LayoutCompleted', layoutCompleted);
+    myDiagram.addDiagramListener('LinkDrawn', onLinkDrawn);
 
     myDiagram.grid.visible = false;
     myDiagram.grid.gridCellSize = new go.Size(8, 8);
@@ -48200,7 +48396,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
     makeTemplate("Artifact", 225, 105, 10, [makePort("", true)], [makePort("OUT", false)]);
-    makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
+    //makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
 
     myDiagram.linkTemplate = g(
         go.Link, { routing: go.Link.Orthogonal, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel
@@ -48216,8 +48412,232 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
              )
         )
     );
+    
 
-    popDiagram();
+    myPalette = g(go.Palette, controlID_palette, {
+        contentAlignment: go.Spot.BottomCenter
+        , allowDrop: true
+        , initialAutoScale: go.Diagram.Uniform
+        , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
+    })
+    {
+        myPalette.model.nodeCategoryProperty = 'template';
+        myPalette.model.nodeDataArray = [];
+        myPalette.model.class = 'go.GraphLinksModel';
+    }
+    makeSearchTemplate();
+
+    function parseData(data) {
+
+        myDiagram.startTransaction("load_all_data");
+        myDiagram.model.nodeDataArray = [];
+        myDiagram.model.linkDataArray = [];
+        var modelList = [];
+        var linkList = [];
+        for (var i = 0; i < data.nodes.length; i++) {
+            var d = data.nodes[i];
+            var model = createNodeModel();
+            model.key = d.key;
+            model.id = d.objid;
+            model.type = d.obj;
+            model.name = d.name;
+            model.typeName = d.type;
+            model.foreColor = d.fore;
+            model.backColor = d.back;
+            model.diagramObjectType = "Node";
+            model.exclude = d.exclude.toString();
+            model.intersectMapId = d.intersectMapId;
+
+            //for (var j = 0; j < pendingExclusionNodes.length; j++) {
+            //    if (pendingExclusionNodes[j].intersectMapId == model.intersectMapId) {
+            //        model.exclude = 'true';
+            //    }
+            //}
+            modelList.push(model);
+        }
+
+        for (var i = 0; i < data.links.length; i++) {
+            var d = data.links[i];
+            var link = createLinkModel();
+            link.id = d.id;
+            link.from = d.from;
+            link.to = d.to;
+            link.text = d.text;
+            link.diagramObjectType = "Link";
+            linkList.push(link);
+        }
+
+        myDiagram.model.nodeDataArray = modelList;
+        myDiagram.model.linkDataArray = linkList;
+
+        myDiagram.commitTransaction("load_all_data");
+        reOrderLayout();
+
+    }
+
+
+    function populateDiagram() {
+        var results = $.ajax({
+            url: '/diagrams/maps/' + type + '/' + id + '.json',
+            data: null,
+            success: function (data) {
+                //console.log(data);
+                parseData(data);
+                //populateNodeSelectList();
+                myDiagram.zoomToFit();
+            }
+        });
+    }
+    populateDiagram();
+
+
+    function populateTypeSelectList() {
+
+        $.ajax({
+            url: '/services/glossary/artifacts',
+            data: null,
+            success: function (data) {
+                $('#' + controlID_add_artifact_type).html('');
+                var output = [];
+                for (var i = 0; i < data.length; i++) {
+                    output.push('<option value="' + data[i].ID + '">' + data[i].Name + '</option>');
+                }
+                $('#' + controlID_add_artifact_type).html(output.join(''));
+            }
+        });
+    }
+    populateTypeSelectList();
+
+
+    function getArtifact() {
+        var data = {
+            id: $('#' + controlID_add_artifact_type).val(),
+            search: $('#' + controlID_add_search_text).val()
+        };
+
+        $.ajax({
+            url: '/Diagrams/getArtifact',
+            data: data,
+            success: function (data) {
+
+                myPalette.model.nodeDataArray = [];
+                temp = data[0];
+                for (var i = 0; i < data.length; i++) {
+                    data[i].template = "Artifact";
+                    data[i].key = data[i].type + data[i].id.toString();
+                    data[i].isDeletable = true;
+                    myPalette.model.addNodeData(data[i]);
+                }
+            },
+            async: false
+        });
+
+        if (temp == null) {
+            return;
+        }
+        var data = {
+            type1: $('#' + controlID_add_artifact_type + ' option:selected').text(),
+            type2: ''
+        };
+
+        //for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
+        //    if (myDiagram.model.nodeDataArray[i].key == $('#ddlRel').val()) {
+        //        data.type2 = myDiagram.model.nodeDataArray[i].type;
+        //        break;
+        //    }
+        //}
+        populatePredicateList();
+    }
+
+    $('#' + controlID_add_search).on('click', getArtifact);
+    $('#' + controlID_overlay_cancel).on('click', cancelAddLink);
+    $('#' + controlID_overlay_add).on('click', addRelationship);
+
+    function populatePredicateList() {
+        $.ajax({
+            url: '/diagrams/getpredicateinfo',
+            success: function (data) {
+                //console.log(data);
+                var output = [];
+                predicates = [];
+                output.push('<option value="0">(No Choice)</option>');
+                for (var i = 0; i < data.length; i++) {
+                    data[i].id = data[i].intersecttypeid + '_' + data[i].intersecttyperoleid
+                    output.push('<option value="' + data[i].value + '">' + data[i].displayName + '</option>');
+                    predicates.push(data[i]);
+                }
+                $('#' + controlID_overlay_predicates).html(output.join(''));
+            }
+        });
+    }
+
+    function cancelAddLink() {
+        if (newLink != null) {
+            myDiagram.startTransaction("remLink");
+            myDiagram.model.removeLinkData(newLink);
+            myDiagram.commitTransaction("remLink");
+            newLink = null;
+        }
+        $('#' + controlID_overlay).hide();
+        //$("#jqxExpander2").jqxExpander('collapse');
+
+    };
+
+    function addRelationship(id) {
+        var id = ($('#' + controlID_overlay_predicates).val() || '');
+        var rel = null;
+        if (id != '' && id != 0) {
+            for (var i = 0; i < predicates.length; i++) {
+                if (predicates[i].value == id) {
+
+                    rel = {
+                        name: predicates[i].name,
+                        phrase: predicates[i].phrase
+                    };
+                }
+            }
+
+        }
+        else {
+            rel = {
+                name: $('#' + controlID_overlay_pname).val(),
+                phrase: $('#' + controlID_overlay_phrase).val()
+            };
+        }
+        newLink.predicateName = rel.name;
+        newLink.phrase = rel.phrase;
+        newLink.text = rel.phrase;
+        newLink.diagramObjectType = "Link";
+
+        myDiagram.startTransaction("nameRel")
+        var index = -1;
+
+        for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
+            if (myDiagram.model.linkDataArray[i].from == newLink.from &&
+                myDiagram.model.linkDataArray[i].to == newLink.to) {
+                myDiagram.model.removeLinkData(myDiagram.model.linkDataArray[i]);
+                break;
+            }
+        }
+        newLink.isDeletable = true;
+        myDiagram.model.addLinkData(newLink);
+        myDiagram.commitTransaction("nameRel");
+        $('#' + controlID_overlay).hide();
+        //myDiagram.isEnabled = true;
+        //newRelationships.push(newLink);
+        newLink = null;
+
+
+        $('#' + controlID_overlay_pname).text('');
+        $('#' + controlID_overlay_phrase).text('');
+        $('#' + controlID_overlay_relationship).text('');
+        $('#' + controlID_overlay_add).hide();
+        //$("#jqxExpander2").jqxExpander('collapse');
+
+    };
+
+
+
 }
 
 function home(app, pageViewModel, templatePath, contextList, currentResourceID) {
@@ -50650,10 +51070,21 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
         var id = context.params['id'];
         var executionID = context.params['executionid'];
         //var tab = context.params['tab'];
-        //var fusionAttributeID = context.params['fusionattributeid'];
+        var fusionAttributeID = context.params['fusionattributeid'];
+        var fusionAttributeIDType = context.params['fusionattributetypeid'];
+
         var permissions = new PermissionsModel();
 
-        $.getJSON('/api/fusion/' + typeID + '/configurations/' + id, function (json) {
+        var url = '/api/fusion/' + typeID + '/configurations/' + id;
+
+        if (fusionAttributeID != null)
+            url = '/api/fusion/' + fusionAttributeID + '/configurations/fromFusionAttribute';
+
+        $.getJSON(url, function (json) {
+
+            if (Array.isArray(json)) {                
+                json = json[0];
+            }
 
             pageViewModel.Title = json.Name;
             pageViewModel.Directions = json.Description;
@@ -50664,6 +51095,13 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
 
             context.title(pageViewModel.Title);
 
+            if (typeID == null || id == null)
+            {
+                typeID = json.FusionTypeID;
+                id = json.ID;
+            }
+
+            
             //#region Event Handlers
 
             function fusionAttributeRowSelected(data) {
@@ -50700,7 +51138,7 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                     permissions.GetPermissionsForObject(type, id);
 
                     $('#SideIcons').PageTools({ type: type, id: id });
-                    FusionItemsGrid('ItemsTile', contextList, permissions, typeID, id);
+                    FusionItemsGrid('ItemsTile', contextList, permissions, typeID, id, (fusionAttributeID != null) ? json : null);
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '', false);
 
                     //#region Events
@@ -50710,6 +51148,11 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //#endregion
+
+                    if (fusionAttributeID != null) {
+                        var item = { ID: fusionAttributeID, Name: json.ItemName };
+                        fusionAttributeRowSelected(item);                        
+                    }
 
                     if (executionID) {
                         amplify.publish("ToolAction", { uri: '/fusion/FusionExecution?id=' + executionID, context: null });
@@ -50722,6 +51165,7 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
     //app.get('#/fusion/:typeid/:id/:tab/:fusionattributeid', fi);
     //app.get('#/fusion/:typeid/:id/:tab', fi);
     app.get('#/fusion/:typeid/:id', fi);
+    app.get('#/fusion/item/:fusionattributetypeid/:fusionattributeid', fi);
 }
 function fusion_list(app, pageViewModel, templatePath, contextList) {
     app.get('#/fusion', function (context) {
@@ -50872,8 +51316,8 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                     columns: [
                         { text: 'Type', datafield: 'FusionType', filtertype: 'checkedlist', width: '20%' },
                         { text: 'Configuration', datafield: 'Fusion', filtertype: 'checkedlist', width: '20%' },
-                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '15%' },
-                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '15%' },
+                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '15%' },
+                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '15%' },
                         { text: 'Agent', datafield: 'MachineQueuedOn', filtertype: 'checkedlist', width: '20%' },
                         { text: 'Success?', datafield: 'Success', columntype: 'checkbox', filtertype: 'bool', width: '10%' }
                     ]
@@ -50921,8 +51365,8 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                     columns: [
                         { text: 'Type', datafield: 'FusionType', filtertype: 'checkedlist', width: '20%' },
                         { text: 'Configuration', datafield: 'Fusion', filtertype: 'checkedlist', width: '20%' },
-                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '17%' },
-                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy HH:mm:ss', filtertype: 'range', width: '18%' },
+                        { text: 'Started On', datafield: 'DateStarted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '17%' },
+                        { text: 'Completed On', datafield: 'DateCompleted', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: '18%' },
                         { text: '# Errors', datafield: 'ErrorCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         { text: '# Results', datafield: 'ResultCount', columntype: 'numberinput', filtertype: 'number', width: '10%' },
                         {

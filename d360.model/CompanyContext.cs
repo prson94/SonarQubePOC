@@ -2293,7 +2293,7 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     { 
                         case EntityState.Added:
-                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
                             var any = false;
@@ -2301,7 +2301,7 @@ order by Name", new { workflowType, type, id });
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
                             break;
                         case EntityState.Modified:
-                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
 

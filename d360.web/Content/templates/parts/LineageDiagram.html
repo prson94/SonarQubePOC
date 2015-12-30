@@ -15,7 +15,7 @@
                         Predicate:
                     </td>
                     <td>
-                        <select id="{{control}}_overlay_predicates"></select>
+                        <select id="{{control}}_overlay_predicates" class="browser-default"></select>
                     </td>
                 </tr>
             </tbody>
@@ -40,7 +40,7 @@
                         Phrase:
                     </td>
                     <td>
-                        <input type="text" id="{{control}}_overlay_pphrase" />
+                        <input type="text" id="{{control}}_overlay_phrase" />
                     </td>
                 </tr>
                 <tr>
@@ -60,46 +60,47 @@
     <tbody>
         <tr style="vertical-align:top;height:520px">
             <td>
-                <div id="{{control}}_wrapper" style="height:520px;resize:vertical; overflow: auto">
-                    <div id="{{control}}_dgm" style="height:500px; overflow: no-display"></div>
+                <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
+                    <div id="{{control}}_dgm" style="height:400px; overflow: no-display"></div>
                 </div>
             </td>
             <td style="width:350px;vertical-align:top;height:100%">
                 <div id="{{control}}_sidebar" style="height:100%; overflow-y: scroll;">
                     <div id="{{control}}_controls">
                         <div><i class="fa fa-gear"></i> Diagram Controls</div>
-                        <div style="padding-bottom: 10px">
+                        <div style="padding: 10px">
                             <h4>Zoom</h4>
-                            <div id="{{control}}_controls_zoom" style="display: inline-block; width: 75%"></div>
-                            <span id="zoomDisplay" style="display: inline-block; width: 25%">100% </span>
-                            <br/><br />
-                            <button onclick="$('#{{control}}_controls_zoom').val(1500);"> zoom to 100%</button>
-                            <button onclick="myDiagram.zoomToFit();"> zoom to fit</button>
-                            <button id="{{control}}_controls_reset">reset </button>
+                            <div id="{{control}}_controls_zoom" style="display: inline-block; width: 70%"></div>
+                            <span id="{{control}}_zoomDisplay" style="display: inline-block; width: 30%">100% </span>
+                            <br /><br />
+                            <button id="{{control}}_controls_zoom100">zoom to 100%</button>
+                            <button id="{{control}}_controls_zoomfit">zoom to fit</button>
+                            <button id="{{control}}_controls_reset">reset</button>
                             <!--<button onclick="reOrderLayout();">reorganize </button>-->
                             <!--| <button onclick="toggleFullscreen(isFullscreen);">toggle fullscreen</button>-->
                             <!--| spacing: <input id="txtSpacing" type="text" value="25" maxlength="3" style="width:40px" onkeyup="changeSpacing($(this).val())" />-->
                             <!--<button onclick="rotateDiagram();">rotate</button>-->
-                            <!--<button id="saveBtn" class="btn red" onclick="saveChanges();" style="float:right"><i class="fa fa-save"></i> Save Changes</button>-->
-                        </div>
-                    </div>
-                    <div id="{{control}}_actions"  style="display:none">
-                        <div><i class="fa fa-plus"></i> Actions</div>
-                        <div style="padding: 10px">
-                            <button>Remove</button>
                         </div>
                     </div>
                     <div id="{{control}}_info">
                         <div><i class="fa fa-info-circle"></i> Info</div>
                         <div style="padding: 10px" id="{{control}}_info_body"></div>
                     </div>
-                    <div id="{{control}}_add">
-                        <div><i class="fa fa-plus"></i> Add a new node</div>
+                    <div id="{{control}}_actions">
+                        <div><i class="fa fa-pencil"></i> Actions</div>
                         <div style="padding: 10px">
-                                Type: <select data-bind="value: NodeType" class="select-dropdown" id="{{control}}_add_artifact_type" ></select><br />
-                                Search: <input id="{{control}}_add_search_text" type="text" />
-                                <button id="{{control}}_add_search">Search</button>
-                                <div id="{{control}}_palette" style="height:300px"></div>
+                            <button id="{{control}}_actions_remove" style="display:none">Remove</button>
+
+                            <div id="{{control}}_add" style="display:none">
+                                <h4>Add a new node</h4>
+                                <div style="padding: 10px">
+                                    Type: <select data-bind="value: NodeType" class="browser-default" id="{{control}}_add_artifact_type"></select><br />
+                                    Search: <input id="{{control}}_add_search_text" type="text" />
+                                    <button id="{{control}}_add_search">Search</button>
+                                    <div id="{{control}}_palette" style="height:300px"></div>
+                                </div>
+                                <button id="saveBtn" class="btn red" onclick="saveChanges();" style="float:right"><i class="fa fa-save"></i> Save Changes</button>
+                            </div>
                         </div>
                     </div>
                 </div>
