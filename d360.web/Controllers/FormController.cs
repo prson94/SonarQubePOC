@@ -9153,127 +9153,6 @@ order by    Name
 
         #region Field Generation
 
-        //public JsonResult PeopleResponsibility_AddFields(SystemObjects type, int id)//, int responsibilityTypeID)
-        //{
-        //    //if (type == SystemObjects.Artifact)
-        //    //{
-        //    //    if (!Company.GetAllowedResponsibilityTypesByObject(type, id).Any(i => i.ID == responsibilityTypeID))
-        //    //        return jsonException("You may not assign any responsibilities to this item.  All responsibilities must be defined elsewhere.", HttpStatusCode.Forbidden);                
-        //    //}
-
-        //    var list = new List<EditableField>();
-
-        //    list.Add(new EditableField { FieldName = "ObjectType", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
-        //    list.Add(new EditableField { FieldName = "ObjectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-        //    var responsibilityTypes = Company.GetAllowedResponsibilityTypesByObject(type, id)
-        //        .Where(i => i.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People)
-        //        .OrderBy(i => i.Name)
-        //        .Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() })
-        //        .ToList();
-        //    list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ResponsibilityTypeID", Name = "Responsibility Type ", FieldType = DataType.Lookup.ToString(), Items = responsibilityTypes });
-        //    //list.Add(new EditableField { FieldName = "ResponsibilityTypeID", FieldType = DataType.Hidden.ToString(), Value = responsibilityTypeID.ToString() });
-
-        //    var resList = GetCompanyResources()
-        //        .Select(i => new { ID = i.ID, i.FirstName, i.LastName })
-        //        .ToList()
-        //        .Select(i => new SelectListItem
-        //        {
-        //            Text = string.Format("{0}, {1}", i.LastName, i.FirstName),
-        //            Value = string.Format("Resource|{0}", i.ID)
-        //        })
-        //        .ToList();
-        //    resList.AddRange(
-        //        Company.Table<Group>()
-        //        .Select(i => new { i.ID, i.Name })
-        //        .ToList()
-        //        .Select(i => new SelectListItem
-        //        {
-        //            Text = i.Name,
-        //            Value = string.Format("Group|{0}", i.ID)
-        //        }).ToList()
-        //    );
-        //    resList.Insert(0, new SelectListItem { Text = "Please select", Value = "" });
-        //    list.Add(new EditableField { Row = 2, Column = 1, FieldName = "ResponsibleObject", Name = "Responsible Party", FieldType = DataType.Lookup.ToString(), Items = resList });
-
-        //    var contexts = (
-        //        from l in Company.GetMasterLists().Where(i => i.Items.Count > 0)
-        //        from i in l.Items
-        //        orderby l.DomainType.Name
-        //        orderby l.Name
-        //        select new { DomainType = l.DomainType.Name, List = l.Name, i.Code, i.Name, i.ID })
-        //        .ToList()
-        //        .Select(i => new SelectListItem
-        //        {
-        //            Group = string.Format("{0} : {1}", i.DomainType, i.List),
-        //            Text = string.Format("{0} : {1}", i.Code, i.Name),
-        //            Value = i.ID.ToString()
-        //        }).OrderBy(i => i.Group).ThenBy(i => i.Text).ToList();
-
-        //    list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Context", Name = "Context", MultiSelect = true, FieldType = DataType.Lookup.ToString(), Items = contexts });
-
-        //    if (type.ToString().EndsWith("Type"))
-        //        list.Add(new EditableField { Row = 4, Column = 1, FieldName = "Visible", Name = "Is Visible?", FieldDescription = "This responsibility is displayed to the user.", FieldType = DataType.Boolean.ToString(), Value = "false" });
-        //    else
-        //        list.Add(new EditableField { FieldName = "Visible", FieldType = DataType.Hidden.ToString(), Value = "true" });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        //public JsonResult SourcingResponsibility_AddFields(SystemObjects type, int id)//, int responsibilityTypeID)
-        //{
-        //    var list = new List<EditableField>();
-
-        //    list.Add(new EditableField { FieldName = "ObjectType", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
-        //    list.Add(new EditableField { FieldName = "ObjectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-        //    //list.Add(new EditableField { FieldName = "ResponsibilityTypeID", FieldType = DataType.Hidden.ToString(), Value = responsibilityTypeID.ToString() });
-
-        //    var responsibilityTypes = Company.GetAllowedResponsibilityTypesByObject(type, id)
-        //        .Where(i => i.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People)
-        //        .OrderBy(i => i.Name)
-        //        .Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() })
-        //        .ToList();
-        //    list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ResponsibilityTypeID", Name = "Responsibility Type ", FieldType = DataType.Lookup.ToString(), Items = responsibilityTypes });
-
-        //    var artifacts = (
-        //                    from a in Company.Table<Artifact>()
-        //                    join rt in Company.Filter<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == responsibilityTypeID) on a.ArtifactTypeID equals rt.ObjectID
-        //                    join t in Company.Table<ArtifactType>() on rt.ObjectID equals t.ID
-        //                    orderby t.Name
-        //                    orderby a.Name
-        //                    select new SelectListItem
-        //                    {
-        //                        Group = t.Name,
-        //                        Text = a.Name,
-        //                        Value = a.ID.ToString()
-        //                    }
-        //                    ).OrderBy(i => i.Group).ThenBy(i => i.Text).ToList();
-        //    var contexts = (
-        //                   from l in Company.GetMasterLists().Where(i => i.Items.Count > 0)
-        //                   from i in l.Items
-        //                   orderby l.DomainType.Name
-        //                   orderby l.Name
-        //                   select new { DomainType = l.DomainType.Name, List = l.Name, i.Code, i.Name, i.ID })
-        //                   .ToList()
-        //                   .Select(i => new SelectListItem
-        //                   {
-        //                       Group = string.Format("{0} : {1}", i.DomainType, i.List),
-        //                       Text = string.Format("{0} : {1}", i.Code, i.Name),
-        //                       Value = i.ID.ToString()
-        //                   }).OrderBy(i => i.Group).ThenBy(i => i.Text).ToList();
-
-        //    list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Artifact", Name = "Artifact to Source From", Required = true, FieldType = DataType.Lookup.ToString(), Items = artifacts });
-        //    list.Add(new EditableField { Row = 1, Column = 2, FieldName = "Context", Name = "Contexts", Required = true, MultiSelect = true, FieldType = DataType.Lookup.ToString(), Items = contexts });
-
-        //    if (type != SystemObjects.Intersect)
-        //    {
-        //        list.Add(new EditableField { Row = 2, Column = 1, FieldName = "BusinessTransformation", Name = "Business Transformation", Required = false, FieldType = DataType.Html.ToString() });
-        //        list.Add(new EditableField { Row = 2, Column = 2, FieldName = "TechnicalTransformation", Name = "Technical Transformation", Required = false, FieldType = DataType.Html.ToString() });
-        //    }
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
         /// <param name="id">ResponsibilityID</param>
         public JsonResult Responsibility_DeleteFields(int id)
         {
@@ -9284,106 +9163,6 @@ order by    Name
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        ///// <param name="id">ResponsibilityID</param>
-        //public JsonResult PeopleResponsibility_EditFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var a = Company.GetById<Responsibility>(id);
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-        //    list.Add(
-        //        new EditableField
-        //        {
-        //            Row = 1,
-        //            Column = 1,
-        //            FieldName = "ResponsibilityTypeID",
-        //            Name = "Responsibility",
-        //            FieldType = DataType.Lookup.ToString(),
-        //            Items = Company.Filter<ResponsibilityType>(i => i.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(),
-        //            Value = a.ResponsibilityTypeID.ToString()
-        //        }
-        //    );
-
-        //    var selectedContexts = Company.Filter<ResponsibilityContextItem>(i => i.ResponsibilityID == id).Select(i => i.ObjectID).ToList();
-        //    var contexts = (
-        //                   from l in Company.GetMasterLists().Where(i => i.Items.Count > 0)
-        //                   from i in l.Items
-        //                   orderby l.DomainType.Name
-        //                   orderby l.Name
-        //                   select new { DomainType = l.DomainType.Name, List = l.Name, i.Code, i.Name, i.ID })
-        //                   .ToList()
-        //                   .Select(i => new SelectListItem
-        //                   {
-        //                       Group = string.Format("{0} : {1}", i.DomainType, i.List),
-        //                       Text = string.Format("{0} : {1}", i.Code, i.Name),
-        //                       Value = i.ID.ToString(),
-        //                       Selected = selectedContexts.Contains(i.ID)
-        //                   }).OrderBy(i => i.Group).ThenBy(i => i.Text).ToList();
-        //    selectedContexts = null;
-
-        //    list.Add(new EditableField { Row = 1, Column = 2, FieldName = "Context", Name = "Context", MultiSelect = true, FieldType = DataType.Lookup.ToString(), Items = contexts });
-
-        //    if (a.ObjectType.ToString().EndsWith("Type"))
-        //        list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Visible", Name = "Is Visible?", FieldDescription = "This responsibility is displayed to the user.", FieldType = DataType.Boolean.ToString(), Value = a.Visible.ToString() });
-        //    else
-        //        list.Add(new EditableField { FieldName = "Visible", FieldType = DataType.Hidden.ToString(), Value = "true" });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        ///// <param name="id">ResponsibilityID</param>
-        //public JsonResult SourcingResponsibility_EditFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var model = Company.GetById<Responsibility>(id);
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
-
-        //    var artifacts = (
-        //        from a in Company.Table<Artifact>()
-        //        join rt in Company.Filter<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == model.ResponsibilityTypeID) on a.ArtifactTypeID equals rt.ObjectID
-        //        join t in Company.Table<ArtifactType>() on rt.ObjectID equals t.ID
-        //        orderby t.Name
-        //        orderby a.Name
-        //        select new SelectListItem
-        //        {
-        //            Group = t.Name,
-        //            Text = a.Name,
-        //            Value = a.ID.ToString(),
-        //            Selected = (a.ID == model.ResponsibleObjectID)
-        //        }
-        //    ).OrderBy(i => i.Group).ThenBy(i => i.Text).ToList();
-        //    var selectedContexts = Company.Filter<ResponsibilityContextItem>(i => i.ResponsibilityID == model.ID).Select(i => i.ObjectID).ToList();
-        //    var contexts = (
-        //                   from l in Company.GetMasterLists().Where(i => i.Items.Count > 0)
-        //                   from i in l.Items
-        //                   orderby l.DomainType.Name
-        //                   orderby l.Name
-        //                   select new { DomainType = l.DomainType.Name, List = l.Name, i.Code, i.Name, i.ID })
-        //                   .ToList()
-        //                   .Select(i => new SelectListItem
-        //                   {
-        //                       Group = string.Format("{0} : {1}", i.DomainType, i.List),
-        //                       Text = string.Format("{0} : {1}", i.Code, i.Name),
-        //                       Value = i.ID.ToString(),
-        //                       Selected = selectedContexts.Contains(i.ID)
-        //                   }).OrderBy(i => i.Group).ThenBy(i => i.Text).ToList();
-        //    selectedContexts = null;
-
-        //    list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Artifact", Name = "Artifact to Source From", Required = true, FieldType = DataType.Lookup.ToString(), Items = artifacts, Value = model.ResponsibleObjectID.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 2, FieldName = "Context", Name = "Contexts", Required = true, MultiSelect = true, FieldType = DataType.Lookup.ToString(), Items = contexts });
-
-        //    if (model.ObjectType != "Intersect")
-        //    {
-        //        var transformations = Company.Filter<ResponsibilityTransformation>(i => i.ResponsibilityID == id).ToList();
-
-        //        list.Add(new EditableField { Row = 2, Column = 1, FieldName = "BusinessTransformation", Name = "Business Transformation", Required = false, FieldType = DataType.Html.ToString(), Value = (transformations.Any(i => i.ResponsibilityTransformationType == ResponsibilityTransformationType.Business) ? transformations.First(i => i.ResponsibilityTransformationType == ResponsibilityTransformationType.Business).Description : "") });
-        //        list.Add(new EditableField { Row = 2, Column = 2, FieldName = "TechnicalTransformation", Name = "Technical Transformation", Required = false, FieldType = DataType.Html.ToString(), Value = (transformations.Any(i => i.ResponsibilityTransformationType == ResponsibilityTransformationType.Technical) ? transformations.First(i => i.ResponsibilityTransformationType == ResponsibilityTransformationType.Technical).Description : "") });
-        //    }
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
 
         #endregion
 
@@ -9422,13 +9201,6 @@ order by    Name
         {
             if (contextIDs == null) contextIDs = new List<int>();
 
-//            var sql = @"select	T.Name + ' : ' + D.Name as [Group], I.Code + ' : ' + I.Name as [Text], I.ID as Value, I.ID  
-//from	DomainItem I
-//		inner join Domain D on D.ID = I.DomainID
-//		inner join DomainType T on T.ID = D.DomainTypeID
-//		inner join DomainGroup G on G.MasterListID = D.ID
-//order by	T.Name, D.Name, I.Code, I.Name";
-
             var sql = @"select	D.Name + ' : ' + I.Name as [Text], I.ID as Value, I.ID  
 from	DomainItem I
 		inner join Domain D on D.ID = I.DomainID
@@ -9445,21 +9217,6 @@ order by	D.Name, I.Name";
                     Selected = contextIDs.Contains(i.ID)
                 })
                 .ToList();
-        }
-
-        List<SelectListItem> getSourceResponsibilitiesSelectList(string type, int id, int? selectedID = null)
-        {
-            var models = Company.Query<SelectListItem>(@"select 
-ResponsibilityType + ' : ' + ResponsibleObjectName as Text, 
-cast(ResponsibilityID as varchar) as Value, 
-case when ResponsibilityID = @s then cast(1 as bit) else cast(0 as bit) end as Selected
-from cache.Responsibilities
-where ResponsibilityTypeGroup = 2 and [Object] = @t and ObjectID = @i
-order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = type, i = id }).ToList();
-
-            models.Insert(0, new SelectListItem { Text = "None", Value = "" });
-
-            return models;
         }
 
         List<SelectListItem> getResponsibilityTypeSelectList(SystemObjects type, int id, ResponsibilityTypeGroup group, int selectedID = 0) 
@@ -9557,32 +9314,6 @@ order by ResponsibilityType, ResponsibleObjectName", new { s = selectedID, t = t
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        public ActionResult AddSourcingResponsibility(SystemObjects type, int id)
-        {
-            var model = new SourcingResponsibilityEditorModel
-            {
-                FormName = string.Format("Add Source"),
-                FormUri = "/form/AddSourcingResponsibility",
-                FormMethod = "POST",
-                Contexts = getContextSelectList(),
-                FormDescription = "", 
-                Responsibility = new Responsibility { ObjectType = type.ToString(), ObjectID = id, Visible = true }
-            };
-
-            if (type == SystemObjects.Intersect)
-            {
-                model.ResponsibilityTypes = new List<SelectListItem>();
-                model.Artifacts = getArtifactsForSourcing(0);
-            }
-            else 
-            {
-                model.ResponsibilityTypes = getResponsibilityTypeSelectList(type, id, ResponsibilityTypeGroup.Sourcing);
-                model.SourceResponsibilities = getSourceResponsibilitiesSelectList(type.ToString(), id);
-            }
-
-            return PartialView("SourcingResponsibilityEditForm", model);
         }
        
 
