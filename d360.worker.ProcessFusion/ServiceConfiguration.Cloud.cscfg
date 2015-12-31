@@ -6,7 +6,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=data3sixty;AccountKey=akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==" />
       <Setting name="QueueMessageVisibilityTime" value="3600" />
       <Setting name="QueueName" value="fusion-queue" />
-      <Setting name="QueueCheckFrequency" value="30000" />
+      <Setting name="QueueCheckFrequency" value="60000" />
       <Setting name="DBExecuteQueryTimeout" value="600" />
       <Setting name="DBReadQueryTimeout" value="600" />
       <Setting name="DBBulkCopyTimeout" value="300" />

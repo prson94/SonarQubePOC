@@ -88,12 +88,15 @@ namespace d360.workers.FusionWorkerRole
             
             while (!cancellationToken.IsCancellationRequested)
             {                
+                // check the queue
                 await queueManager.ProcessMessagesAsync(GlobalStaticProperties.QueueMessageVisibilityTime,
                                                         GlobalStaticProperties.DBBulkCopyTimeout,
                                                         GlobalStaticProperties.DBReadQueryTimeout,
                                                         GlobalStaticProperties.DBExecuteQueryTimeout, 
-                                                        GlobalStaticProperties.MaximumRetries,
-                                                        GlobalStaticProperties.QueueCheckFrequency);
+                                                        GlobalStaticProperties.MaximumRetries);
+
+                // wait some time so we arent constantly polling the queue
+                await Task.Delay(GlobalStaticProperties.QueueCheckFrequency);
             }
         }        
     }

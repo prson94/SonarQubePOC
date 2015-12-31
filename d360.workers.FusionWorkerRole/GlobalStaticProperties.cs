@@ -186,7 +186,7 @@ namespace d360.workers.FusionWorkerRole
                     bool success = int.TryParse(queueCheckFrequency, out intTest);
                     if (!success || intTest <= 0)
                     {
-                        _QueueCheckFrequency = 5000;
+                        _QueueCheckFrequency = 60000;
                     }
                     else
                     {

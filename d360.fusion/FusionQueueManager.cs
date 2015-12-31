@@ -41,8 +41,7 @@ namespace d360.fusion
                                                 int bulkTimeout = 180,
                                                 int readTimeout = 180,
                                                 int executionTimeout = 180,
-                                                int maxRetries = 3,
-                                                int queueCheckFrequency = 5000)
+                                                int maxRetries = 3)
         {
             CloudQueue queue = _queueClient.GetQueueReference(_queueName);
             await queue.CreateIfNotExistsAsync();
@@ -54,10 +53,8 @@ namespace d360.fusion
                 CloudQueueMessage message = await queue.GetMessageAsync(resevationTime,null, null);
                 
                 if (message == null)
-                {                    
-                    await Task.Delay(queueCheckFrequency);
-
-                    break;
+                {   
+                    break; // no more messages to process exit
                 }
 
 
