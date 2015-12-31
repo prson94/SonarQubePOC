@@ -218,7 +218,7 @@
 
                 //#endregion
 
-                //#region ExecutionHistory Grid Configuration
+                //#region PromotionHistory Grid Configuration
 
                 PromotionHistoryGridSource = {
                     datatype: 'json',
@@ -233,7 +233,8 @@
                         { name: "PromotedArtifacts", type: "number" },
                         { name: "TotalNewPromotions", type: "number" },
                         { name: "AttributesConsidered", type: "number" },
-                        { name: "NumberOfRules", type: "number" }
+                        { name: "NumberOfRules", type: "number" },
+                        { name: "RelationshipsAdded", type: "number" }
                     ]
                 };
 
@@ -260,7 +261,8 @@
                         { text: '# New Artifacts', datafield: 'PromotedArtifacts', columntype: 'numberinput', filtertype: 'number', width: 100 },
                         { text: '# New Domains', datafield: 'PromotedDomains', columntype: 'numberinput', filtertype: 'number', width: 100 },
                         { text: '# New Domain Items', datafield: 'PromotedDomainItems', columntype: 'numberinput', filtertype: 'number', width: 135 },
-                        { text: '# New Taxonomies', datafield: 'PromotedTaxonomies', columntype: 'numberinput', filtertype: 'number', width: 125 },                                            
+                        { text: '# New Taxonomies', datafield: 'PromotedTaxonomies', columntype: 'numberinput', filtertype: 'number', width: 125 },
+                        { text: '# New Relationships', datafield: 'RelationshipsAdded', columntype: 'numberinput', filtertype: 'number', width: 135 },
                         { text: '# Rules', datafield: 'NumberOfRules', columntype: 'numberinput', filtertype: 'number', width: 100 },
                         { text: '# Attributes Considered', datafield: 'AttributesConsidered', columntype: 'numberinput', filtertype: 'number', width: 150 }                      
                     ]

@@ -18,7 +18,8 @@ BEGIN
 			@NumberOfNewDomainItems int,
 			@NumberOfNewDomains int,
 			@NumberOfNewArtifacts int,
-			@NumberOfAttributesTotal int
+			@NumberOfAttributesTotal int,
+			@NumberOfNewRelations int
 
 	set	@NumberOfRules = 0;	
 	set @NumberOfNewTaxonomies = 0;
@@ -526,7 +527,9 @@ from	#rules R
 					values (S.ObjectType, S.ObjectID, S.FieldTypeID, S.Value);
 	end
 
-	
+	-- Add new relations as needed
+	exec [utility].[PromoteFusionAttributesRelations] @NumberOfNewRelations output
+		
 	--Log this run done
 	update [dbo].[FusionAttributePromotionLogSummary]
 	set DateCompleted = CURRENT_TIMESTAMP, 
@@ -536,7 +539,8 @@ from	#rules R
 		[PromotedArtifacts] = @NumberOfNewArtifacts,
 		[TotalNewPromotions] = (@NumberOfNewTaxonomies + @NumberOfNewDomainItems + @NumberOfNewDomains + @NumberOfNewArtifacts),
 		[AttributesConsidered]= @NumberOfAttributesTotal,
-		[NumberOfRules] = @NumberOfRules 
+		[NumberOfRules] = @NumberOfRules ,
+		[RelationshipsAdded] = @NumberOfNewRelations
 	where ID = @ExecutionID;
 	
 END

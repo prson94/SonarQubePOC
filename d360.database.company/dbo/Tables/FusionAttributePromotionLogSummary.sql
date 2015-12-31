@@ -8,5 +8,6 @@
 	[PromotedArtifacts]	  INT			   NULL,
     [TotalNewPromotions]  INT              NULL,  
 	[AttributesConsidered] INT			   NULL,  
-	[NumberOfRules]		  INT			   NULL	
+	[NumberOfRules]		  INT			   NULL,
+	[RelationshipsAdded]	INT			   NULL	
 );

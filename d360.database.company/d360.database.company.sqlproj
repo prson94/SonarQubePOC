@@ -464,6 +464,7 @@
     <Build Include="dbo\Stored Procedures\AddMapRelationship_1.sql" />
     <Build Include="cache\Stored Procedures\SynchronizeResponsibilitiesForObject.sql" />
     <Build Include="dbo\Tables\FusionAttributePromotionLogSummary.sql" />
+    <Build Include="utility\Stored Procedures\PromoteFusionAttributesRelations.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

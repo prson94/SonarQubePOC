@@ -699,7 +699,8 @@ where   ExecutionID = {0}", id);
             public int PromotedArtifacts { get; set; }
             public int TotalNewPromotions { get; set; }
             public int AttributesConsidered { get; set; }
-            public string NumberOfRules { get; set; }            
+            public string NumberOfRules { get; set; }
+            public int RelationshipsAdded { get; set; }
         }
 
         [Route("promotionhistory")]
@@ -715,7 +716,8 @@ where   ExecutionID = {0}", id);
 		                        PromotedArtifacts,
 		                        TotalNewPromotions,
 		                        AttributesConsidered,
-                                NumberOfRules
+                                NumberOfRules,
+                                RelationshipsAdded
                     from	    [dbo].[FusionAttributePromotionLogSummary]
                     order by    DateStarted desc").AsQueryable();
         }
