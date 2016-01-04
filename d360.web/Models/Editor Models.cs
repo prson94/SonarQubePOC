@@ -428,6 +428,8 @@ namespace d360.web.Models
         public FusionAttributePromotionRule Rule { get; set; }
 
         public List<FusionAttributeType> AttributeTypes { get; set; }
+
+        public int ParentTypeID { get; set; }
     }
 
     public class FusionPromotionRuleItemEditorModel

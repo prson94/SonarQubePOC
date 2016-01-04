@@ -4648,6 +4648,26 @@ namespace d360.web.Controllers
             var a = Company.GetById<FusionAttributePromotionRule>(id, i => i.Fusion);
             if (a == null) return HttpNotFound();
 
+            int parentTypeID = -1;
+            //get the type id of the parent object if there is one since we do not store it in the table.
+            if (a.PromotionParentObjectID.HasValue)
+            {
+                switch (a.PromotionParentObjectType)
+                {
+                    case "Artifact":
+                        parentTypeID = Company.GetById<Artifact>(a.PromotionParentObjectID.Value).ArtifactTypeID;
+                        break;
+                    case "Taxonomy":
+                        parentTypeID = Company.GetById<Taxonomy>(a.PromotionParentObjectID.Value).TaxonomyTypeID;
+                        break;
+                    case "Domain":
+                        parentTypeID = Company.GetById<Domain>(a.PromotionParentObjectID.Value).DomainTypeID;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            
             var model = new FusionPromotionRuleEditorModel
             {
                 FusionID = a.FusionID,
@@ -4656,6 +4676,7 @@ namespace d360.web.Controllers
                 FormMethod = "PUT",
                 FormName = "Update Promotion Rule",
                 Rule = a,
+                ParentTypeID = parentTypeID,
                 AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).ToList()
             };
 

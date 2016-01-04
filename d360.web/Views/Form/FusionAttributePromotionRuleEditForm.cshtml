@@ -17,7 +17,7 @@
             <div id="PrOptionsParentDropdown" name="PrOptionsParentDropdown"></div>
         </div>
         <div class="input-field">
-            <input type="checkbox" id="Enabled" name="Enabled" value="@(Model.Rule.Enabled)" />
+            <input type="checkbox" id="Enabled" name="Enabled" @(Model.Rule.Enabled ? "checked" : "") />
             <label id='ItemsTip' for="Enabled">Enabled?</label>
         </div>
     }
@@ -147,7 +147,7 @@
             if (items) {
                 $.each(items, function () {
                     console.log(this.value);
-                    if (this.value == "@(string.Format("{0}|{1}|{2}", Model.Rule.PromotionObjectType, Model.Rule.PromotionObjectID, ((Model.Rule.PromotionParentObjectID.HasValue) ? Model.Rule.PromotionObjectID.ToString() : "null")))") {
+                    if (this.value == "@(string.Format("{0}|{1}|{2}", Model.Rule.PromotionObjectType, Model.Rule.PromotionObjectID, ((Model.ParentTypeID > 0) ? Model.ParentTypeID.ToString() : "null")))") {
                         $("#PrOptionsDropdown").jqxDropDownList('selectItem', this);
                     }
                 });
@@ -155,7 +155,7 @@
         });
 
         $("#PrOptionsParentDropdown").on('bindingComplete', function (event) {
-            var items = $("#PrOptionsParentDropdown").jqxDropDownList('getItems');
+            var items = $("#PrOptionsParentDropdown").jqxDropDownList('getItems');            
             if (items) {
                 $.each(items, function () {
                     console.log(this.value);
