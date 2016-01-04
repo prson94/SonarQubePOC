@@ -46,6 +46,7 @@ insert into #relations
 			inner join intersectnode inodEx on (fapEx.ObjectID = inodEx.IntersectID and fapEx.ObjectType = 'Intersect' and inodEx.ObjectID = fap.ObjectID and inodEx.ObjectType = fap.ObjectType)
 			inner join intersectnode inodEx2 on (inodEx.intersectID = inodEx2.intersectID and inodEx2.ObjectID = fap2.ObjectID and inodEx2.ObjectType = fap2.ObjectType)			
 		)
+		and fap.ObjectID != fap2.ObjectID
 
 	-- there will be two relations for each intersect on with either field starting .  Take just one.
 	delete from #relations where ID in (
