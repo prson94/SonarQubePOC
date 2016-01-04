@@ -103,7 +103,7 @@ BEGIN
 	set		@currentID = 1
 	select	@maxID = MAX(ID) from #rules
 
-	set @NumberOfRules = @maxID - @currentID;
+	select @NumberOfRules = count(1) from FusionAttributePromotionRule where [Enabled] = 1;
 
 	while (@currentID <= @maxID)
 	begin
