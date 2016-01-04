@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace d360.extensions
 {
@@ -26,6 +27,7 @@ namespace d360.extensions
         string GetFileSecureUrl(string folderName, string fileName);
 
         string GetFileContentsAsString(string folderName, string fileName);
+        string GetFileContentsAsString(string folderName, string fileName, Encoding encoding);
 
         List<string> ListFilenamesByPrefix(string folderName, string prefix);
 

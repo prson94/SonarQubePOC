@@ -89,12 +89,17 @@ namespace d360.extensions.storage
 
         public string GetFileContentsAsString(string folderName, string fileName)
         {
+            return GetFileContentsAsString(folderName, fileName, Encoding.Default);            
+        }
+
+        public string GetFileContentsAsString(string folderName, string fileName, Encoding encoding)
+        {
             string str = null;
             using (var stream = new MemoryStream())
             {
                 var c = getContainer(folderName);
                 CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
-                str = blockBlob.DownloadText(Encoding.Default);
+                str = blockBlob.DownloadText(encoding);
             }
             return str;
         }

@@ -80,7 +80,7 @@ namespace d360.fusion
             Stopwatch sw = Stopwatch.StartNew();
             Trace.TraceInformation("STARTING JSON DATA READ");
 
-            string json = storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName);
+            string json = storageProvider.GetFileContentsAsString(folderName, fusionData.LogFileName, Encoding.UTF8);
             data = JsonConvert.DeserializeObject<BulkFusionImport>(json);
 
             if (data == null) throw new Exception("UNABLE TO LOAD FUSION DATA FROM AZURE STORAGE / NULL FUSION DATA OBJECT.");
