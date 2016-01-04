@@ -307,17 +307,17 @@ namespace d360.fusion
         {
             //Load the intersect types
             await LoadFusionIntersectTypes(companyConnection);
-
+                        
             //build mapping of fusion attributes ids to intersect types
             GenerateRelationshipInsertData(relationships);
-
+            
             // insert unresolved relations to the stagingrelationunresolved table
             await DoUnresolvedRelationsInsert(companyConnection);
 
             // determine which relations already exist and remove them
             await DoResolvedRelationsInsert(companyConnection);
         }
-
+        
         private async Task DoResolvedRelationsInsert(SqlConnection companyConnection)
         {
             // insert all the resolved relation into into a temp table
@@ -484,11 +484,27 @@ namespace d360.fusion
 
         private void GenerateRelationshipInsertData(FusionRelationshipModels relationships)
         {
-            SortedList<string, FusionAttributeTempTableValue> sourceToIDMapping = new SortedList<string, FusionAttributeTempTableValue>();
+            Dictionary<string, FusionAttributeTempTableValue> sourceToIDMapping = new Dictionary<string, FusionAttributeTempTableValue>();
 
+            //existing fusion values, there may be some that we didnt update 
+            foreach (var item in _workArea.ExistingFusionAttributes)
+            {
+                sourceToIDMapping[item.Key] = item.Value;
+            }
+
+            // this is the id's of the updated items / new items
             foreach (var item in _workArea.FusionAttributeTempValues)
-            {                
-                sourceToIDMapping[item.SourceID] = item;
+            {
+                FusionAttributeTempTableValue temp;
+                if (sourceToIDMapping.TryGetValue(item.SourceID, out temp))
+                {
+                    if(item.ID > 0)
+                        temp.ID = item.ID;                    
+                }
+                else
+                {
+                    sourceToIDMapping[item.SourceID] = item;
+                }
             }
             
             //loop through relationships.  Look for the id of the fusion attribute that goes with the sourceid's
@@ -678,8 +694,6 @@ namespace d360.fusion
             {
                 Trace.TraceInformation("NOT LOGGING ANY CHANGED FUSION ATTRIBUTE INFO AS THIS IS THE FIRST RUN FOR THIS FUSION ID.");
 
-                _workArea.ExistingFusionAttributeDictionary.Clear();
-
                 return;
             }
 
@@ -690,14 +704,12 @@ namespace d360.fusion
                 string oldValue = string.Empty;
                 string action = string.Empty;
 
-                DetermineItemChange(_workArea.ExistingFusionAttributeDictionary, x.Name, x.SourceID, out action, out oldValue);
+                DetermineItemChange(_workArea.ExistingFusionAttributes, x.Name, x.SourceID, out action, out oldValue);
 
                 if(!string.IsNullOrEmpty(action))
                     _workArea.Changes.ChangedValues.Add(new FusionChangeTableValue(x,oldValue,action));
             }
 
-            // OLD VALUE MAP CAN BE CLEARED NOW
-            _workArea.ExistingFusionAttributeDictionary.Clear();
         }
 
        
@@ -756,6 +768,36 @@ namespace d360.fusion
                 _workArea.Changes.AddCount++;
             }
             else if ((string.IsNullOrEmpty(value) && string.IsNullOrEmpty(oldValue)) || (oldValue == value))
+            {
+                action = string.Empty;
+                return;
+            }
+            else
+            {
+                action = "U";
+                _workArea.Changes.UpdateCount++;
+            }
+        }
+
+        /// <summary>
+        /// Determines is a value has changed from its previous value
+        /// </summary>
+        /// <param name="sourceID"></param>
+        /// <param name="action"></param>
+        /// <param name="oldValue"></param>
+        private void DetermineItemChange(Dictionary<string, FusionAttributeTempTableValue> oldValueList, string value, string sourceID, out string action, out string oldValue)
+        {
+            FusionAttributeTempTableValue temp;
+            if (!oldValueList.TryGetValue(sourceID, out temp) && !string.IsNullOrEmpty(value))
+            {
+                action = "A";
+                _workArea.Changes.AddCount++;
+                oldValue = string.Empty;
+                return;
+            }
+
+            oldValue = temp.Name;
+            if ((string.IsNullOrEmpty(value) && string.IsNullOrEmpty(oldValue)) || (oldValue == value))
             {
                 action = string.Empty;
                 return;
@@ -1187,10 +1229,12 @@ namespace d360.fusion
         private async Task LoadCurrentFusionAttributeMap(SqlConnection companyConnection)
         {
             //LOAD  FUSION ATTRIBUTE ID , FUSION ATTRIBUTE CURRENT NAME, FUSION ATTRIBUTE PARENT ID, FUSION ATTRIBUTE PARENT NAME
-            var results = await companyConnection.QueryAsync<FusionAttributeToParentMapping>(@"
+            var results = await companyConnection.QueryAsync<FusionAttributeTempTableValue>(@"
                 select 	                
 	                f.name as 'Name',	                
-                    Upper(f.sourceId) as 'SourceID'	                
+                    Upper(f.sourceId) as 'SourceID',
+                    f.ID as 'ID',
+                    f.FusionAttributeTypeID as 'FusionAttributeTypeID'
                 from 
 	                fusionattribute f	
                 where 	                
@@ -1206,13 +1250,13 @@ namespace d360.fusion
                     Trace.TraceInformation("FOUND EXISTING DATA FOR FUSION ID {0} SO THIS IS NOT THE FIRST RUN.", FusionID);
                     IsFirstRun = false;
                 }
-
-                _workArea.ExistingFusionAttributeDictionary[item.SourceID] = item.Name;
+                               
+                _workArea.ExistingFusionAttributes[item.SourceID] = item;
             }
 
             if(IsFirstRun) Trace.TraceInformation("NO EXISTING DATA FOUND FOR FUSION ID {0}.  THIS IS THE FIRST RUN.", FusionID);
 
-            Trace.TraceInformation("LOADED {0} EXISTING FUSION ATTRIBUTE VALUES", _workArea.ExistingFusionAttributeDictionary.Count);
+            Trace.TraceInformation("LOADED {0} EXISTING FUSION ATTRIBUTE VALUES", _workArea.ExistingFusionAttributes.Count);
         }
 
         private async Task LoadCurrentFusionAttributeInfo(SqlConnection companyConnection)
@@ -1298,7 +1342,7 @@ namespace d360.fusion
                 existingSourceIDs.Add(sourceID);                
 
                 _workArea.InSourceIDList.Add(sourceID);
-            }
+            }            
         }
     }
 }
