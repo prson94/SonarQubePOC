@@ -1,6 +1,6 @@
 ﻿<div class="small-overlay">
     <div class="ui segment">
-        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.SourceToTarget, Description = "", Name = "Add Source" })
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.SourceToTarget, Description = string.Format("Relationships will be created between the source and target below, and between {0} and the objects below,  if they do not yet exist.", ViewBag.ObjectName), Name = string.Format("Add Source for {0}", ViewBag.ObjectName) })
 
         <div class="row">
             <div class="col l4 m4 s6">
@@ -262,15 +262,14 @@
                             amplify.publish("SourceFormStatus", { title: 'Error When Adding Source', message: xhr.statusText + xhr.responseText, success: false });
                         },
                         success: function (data, statusText, xhr) {
-                            AddSourceDestroy();
                             amplify.publish("SourceFormStatus", {
                                 title: ((data.success) ? 'Successfully Added Source' : 'Error When Adding Source'),
                                 message: data.message,
                                 success: data.success
                             });
                             if (data.success) {
-                                AddSourceDestroy();
                                 amplify.publish("SourceSave");
+                                AddSourceDestroy();
                             }
                         }
                     }).always(function () {

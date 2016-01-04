@@ -5,7 +5,7 @@
 function gridExists(controlID) {
     try {
         var state = $(controlID).jqxGrid('getstate');
-        return (state != null);
+        return (state !== null);
     } catch (e) {
         return false;
     }
@@ -40,7 +40,7 @@ function PermissionsModel() {
         var has = false;
         for (var i = 0; i < self.permissions.length; i++) {
             var p = self.permissions[i];
-            if (p.ClaimObject == claimObject && p.Claim == claim) {
+            if (p.ClaimObject === claimObject && p.Claim === claim) {
                 has = true;
                 break;
             }
@@ -88,7 +88,7 @@ function drawKpi(controlID, title, total, available, isPercentage) {
     };
 
     settings.drawBefore = function (renderer, rect) {
-        var text = ((total == null) ? '-' : total + (isPercentage ? "%" : ""));
+        var text = ((total === null) ? '-' : total + (isPercentage ? "%" : ""));
         sz = renderer.measureText(text, 0, { 'class': 'kpi-inner-text' });
         
         renderer.text(
@@ -210,7 +210,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
                     menu.bind('itemclick', function (event) {
                         var li = event.args;
 
-                        if ($(li).data("uri") == null)
+                        if ($(li).data("uri") === null)
                             return;
 
                         attributeSwitchToEditor($(li).data("uri"));
@@ -229,7 +229,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
 
                 $.each(data, function (idx, t) {
                     html += "<li data-uri='" + t.Uri + "'><i class='fa fa-" + t.Icon + "'";
-                    if (t.Title != "" && t.Title) {
+                    if (t.Title !== "" && t.Title) {
                         html += " title='" + encodeURI(t.Title) + "'></i>" + t.Title
                     }
                     else {
@@ -330,7 +330,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             try {
                 var rows = $(treeControlID).jqxTreeGrid('getRows');
                 if (rows.length > 0) {                    
-                    $(treeControlID).jqxTreeGrid('selectRow', (rows[0].Items[0] != null ? rows[0].Items[0].uid : rows[0].uid));
+                    $(treeControlID).jqxTreeGrid('selectRow', (rows[0].Items[0] !== null ? rows[0].Items[0].uid : rows[0].uid));
                 }
             } catch (e) {
                 console.log(e);
@@ -440,7 +440,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             var attributeID = null;
             var targetType = row.TargetObjectType;
 
-            if (t == 'Attribute') {
+            if (t === 'Attribute') {
                 attributeID = i;
             }
 
@@ -456,7 +456,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             loadToolbar(t, i, roottype, rootid, attributeID);
 
             attributeSwitchToViewer(targetType, row.TargetObjectID);
-            if (detailid && detailtype == "Attribute") {
+            if (detailid && detailtype === "Attribute") {
                 $(detailControlID).Detail('reload', detailtype, detailid);
             }
             else {
@@ -742,7 +742,6 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
     var _SynonymsSubTile = '#SynonymsSubTile';
     var _AttributesSubTile = '#AttributesSubTile';
 
-    var source;
     var source = shouldHideSynonyms ? $("#detailTileNoSynonymsTmpl").html() : $("#detailTileTmpl").html();
     var template = Handlebars.compile(source);
     $(controlID).html(template({}));
@@ -762,7 +761,7 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
         self.A_TargetID = -1;
 
         self.updateRibbonData = function (selectedIndex) {
-            if (selectedIndex != undefined)
+            if (selectedIndex !== undefined)
                 self.RibbonIndex = selectedIndex;
 
             switch (self.RibbonIndex) {
@@ -795,7 +794,7 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
         }
     };
 
-    $('#DetailTileTabs').tabs();
+    //$('#DetailTileTabs').tabs();
 
     var m = new model();
 
@@ -808,6 +807,8 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
     //#region Synonyms Grid
 
     if (!shouldHideSynonyms) {
+        $('#SynonymsExpander').jqxExpander({ theme: theme, expanded: false });
+
         var srcSynonym = {
             datatype: 'json',
             url: '/api/' + type + '/' + id + '/synonyms',
@@ -845,6 +846,7 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
 
     //#endregion
 
+    $('#AttributesExpander').jqxExpander({ theme: theme, expanded: false });
     AttributesTile('AttributesSubTile', contextList, permissions, type, id, '', false);
 
     //#region Events
@@ -872,10 +874,11 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
                     break;
                 case contextList.Attribute:
                     if (data.custom) {
-                        if (data.custom.AttributeTypeID == 1) {
+                        if (data.custom.AttributeTypeID === 1) {
                             $(_SynonymsSubTile).jqxGrid('updatebounddata');
                         }
                     }
+                    break;
                 case contextList.Synonym:
                     if (!shouldHideSynonyms) {
                         $(_SynonymsSubTile).jqxGrid('updatebounddata');
@@ -897,7 +900,7 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
         amplify.unsubscribe("SaveAction", saveAction);
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
-        $('#DetailTileTabs > li > a').off('click', ribbonSelect);
+        //$('#DetailTileTabs > li > a').off('click', ribbonSelect);
     }
 
     //amplify.subscribe("CommandExecuted", commandExecuted);
@@ -905,11 +908,10 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
     amplify.subscribe("SaveAction", saveAction);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-    $('#DetailTileTabs > li > a').on('click', ribbonSelect);
+    //$('#DetailTileTabs > li > a').on('click', ribbonSelect);
 
     if (!shouldHideSynonyms) {
         $(_SynonymsSubTile).on('bindingcomplete', function (event) {
-            var badge = $('#DetailsTile_SynonymBadge');
             var count = 0;
             try {
                 count = $(_SynonymsSubTile).jqxGrid('getrows').length;
@@ -917,12 +919,10 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
                 count = 0;
             }
             if (count > 0) {
-                badge.show();
-                badge.text(count);
+                $('#SynonymsCount').html("&#160;(<b>" + count + "</b>)")
             }
             else {
-                badge.text('');
-                badge.hide();
+                $('#SynonymsCount').html("")
             }
         });
     }
@@ -959,7 +959,7 @@ function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
                 $.each(sections, function (idx, v) {
                     html += '<li class="tab col s3">';
                     html += '<a';
-                    if (idx == 0) {
+                    if (idx === 0) {
                         html += ' class="active"';
                     }
                     html += ' href="#Section' + v.ID + '">' + v.Name + '</a>';
@@ -979,7 +979,7 @@ function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
         var html = "";
 
         $.each(fields, function (idx, f) {
-            if (f.Row == row && f.Column == column) {
+            if (f.Row === row && f.Column === column) {
                 html += "<div id='" + fieldControlPrefix + f.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + sectionID + "_" + f.FieldName + "'>" + f.Name + "</span></div>";
                 if (f.TooltipContext && f.TooltipID && f.TooltipType && f.TooltipUrl) {
                     html += "<div><a href='" + f.TooltipUrl +
@@ -1013,7 +1013,7 @@ function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
                 var tabMatrixItem = null;
                 $.each(section.Fields, function (idx, v) {
                     if (v.Row) {
-                        if (v.Row != currentRow) {
+                        if (v.Row !== currentRow) {
                             if (tabMatrixItem) tableMatrix.push(tabMatrixItem);
                             currentRow = v.Row;
                             tabMatrixItem = { Row: currentRow, Columns: 0, ColumnCount: 0 };
@@ -1067,7 +1067,7 @@ function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
 
                 $.each(section.Fields, function (idx, field) {
 
-                    if (field.FieldDescription && field.FieldDescription != '') {
+                    if (field.FieldDescription && field.FieldDescription !== '') {
                         $('#Tip_' + section.ID + '_' + field.FieldName).qtip({
                             content: {
                                 text: field.FieldDescription,
@@ -1292,7 +1292,7 @@ function EventAgeBreakdownChart(controlID, contextList, type, id, timescale) {
     var src = {
         datatype: 'json',
         type: 'get',
-        url: '/queries/' + type + '/' + id + '/EventAgeBreakdown' + ((timescale != '' && timescale) ? "?maxHistoryDays=" + timescale : ""),
+        url: '/queries/' + type + '/' + id + '/EventAgeBreakdown' + ((timescale !== '' && timescale) ? "?maxHistoryDays=" + timescale : ""),
         datafields:
         [
             { name: 'Date', type: 'date' },//{ name: 'Status', type: 'string' },
@@ -1387,7 +1387,7 @@ function EventCriticalityBreakdownChart(controlID, contextList, type, id, timesc
     var src = {
         datatype: 'json',
         type: 'get',
-        url: '/queries/' + type + '/' + id + '/EventCriticalityBreakdown' + ((timescale != '' && timescale) ? "?maxHistoryDays=" + timescale : ""),
+        url: '/queries/' + type + '/' + id + '/EventCriticalityBreakdown' + ((timescale !== '' && timescale) ? "?maxHistoryDays=" + timescale : ""),
         datafields:
         [
             { name: 'Criticality', type: 'string' },
@@ -1918,7 +1918,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
         var args = event.args;              // event arguments.
         var rowBoundIndex = args.rowindex;  // row's bound index.
         var rowData = args.row;             // row's data.
-        if (rowData.Type == 'FusionAttribute') {
+        if (rowData.Type === 'FusionAttribute') {
             amplify.publish('FusionAttributeRowSelected', {
                 ID: rowData.ID,
                 Name: rowData.Name
@@ -1941,7 +1941,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
     }
 
     // in case where we dont have the definition we need to get it this happens on goto initial selected item
-    if(definition == null && id != null){        
+    if(definition === null && id !== null){        
         $.ajax({
             type:"GET",
             url: "/api/FusionAttributeType/" + id + "/grid/definition",
@@ -1958,11 +1958,11 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
     //#endregion
     //modify type column
     definition.Columns.forEach(function (item) {
-        if (item.datafield && item.datafield.toUpperCase() == 'TYPE') item.datafield = '_type';
+        if (item.datafield && item.datafield.toUpperCase() === 'TYPE') item.datafield = '_type';
     });
 
     definition.Fields.forEach(function(item){
-        if (item.name && item.name.toUpperCase() == 'TYPE') item.name = '_type';
+        if (item.name && item.name.toUpperCase() === 'TYPE') item.name = '_type';
     });    
     //add internal type
     definition.Fields.push({ name: 'Type', type: 'string' });
@@ -5007,6 +5007,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             exclude: 'false',
             highlightColor: null,
             diagramObjectType: "Node",
+            level: null,
             template: "Artifact",
             intersectMapId: null
         };
@@ -5018,6 +5019,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         var height = $('#' + controlID_diagram).height($(window).innerHeight());
     }
+
     function makePort(name, leftside) {
         var port = g(go.Shape, "Rectangle", {
             fill: "gray",
@@ -5055,7 +5057,9 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
         return panel;
     }
-    function makeTemplate(obj, w, h, fontSize, inports, outports) {
+
+    function makeTemplate(obj, w, h, borderColor, fontSize, inports, outports) {
+
         var node = g(go.Node, "Spot",
         {
             mouseEnter: mouseEnter,
@@ -5066,7 +5070,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             height: h
         },
         g(go.Shape, "RoundedRectangle", {
-            stroke: 'transparent',
+            stroke: borderColor,
             strokeWidth: 2,
             spot1: go.Spot.TopLeft,
             spot2: go.Spot.BottomRight,
@@ -5118,6 +5122,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         myDiagram.nodeTemplateMap.add(obj, node);
     }
+
     function makeSearchTemplate() {
         var node = g(go.Node, "Spot",
                {
@@ -5278,7 +5283,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         allowDrop: true,
         initialAutoScale: go.Diagram.UniformToFill,
         //scrollMode: go.Diagram.DocumentScroll,
-        //initialPosition: Point(125, 200),
+        initialPosition: new go.Point(125, 125),
         layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 100, layerSpacing: 100 }),
         "undoManager.isEnabled": true
     });
@@ -5289,7 +5294,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.model.nodeDataArray = [];
     myDiagram.model.linkDataArray = [];
 
-
+    //#region Event Handlers
 
     $('#' + controlID_wrapper).on('mouseup', function () {
         var height = $('#' + controlID_wrapper).height();
@@ -5320,6 +5325,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         myDiagram.scale = (val / 1500);
     });
 
+    //#endregion
+
     myDiagram.addDiagramListener('ViewportBoundsChanged', onViewportBoundsChanged);
     myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
     myDiagram.addDiagramListener('ObjectDoubleClicked', onDoubleClick);
@@ -5331,7 +5338,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
     myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-    makeTemplate("Artifact", 225, 105, 10, [makePort("", true)], [makePort("OUT", false)]);
+    makeTemplate("FocalArtifact", 275, 150, '#000000', 14, [makePort("", true)], [makePort("OUT", false)]);
+    makeTemplate("Artifact", 225, 105, 'transparent', 10, [makePort("", true)], [makePort("OUT", false)]);
     //makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
 
     myDiagram.linkTemplate = g(
@@ -5371,11 +5379,17 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         var modelList = [];
         var linkList = [];
         for (var i = 0; i < data.nodes.length; i++) {
+
             var d = data.nodes[i];
             var model = createNodeModel();
+
+            var isFocalPoint = (d.obj == type && d.objid == id);// && d.level == 0);
+
+            model.template = isFocalPoint ? "FocalArtifact" : "Artifact";
             model.key = d.key;
             model.id = d.objid;
             model.type = d.obj;
+            model.level = d.level;
             model.name = d.name;
             model.typeName = d.type;
             model.foreColor = d.fore;

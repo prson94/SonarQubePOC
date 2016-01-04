@@ -108,16 +108,16 @@
 
                 <div data-bind="jqxCheckBox: {checked: DisableCommunityPosting, theme: theme, width: '120px'}">Disable Discussion Posts</div>
                 @*<div class="directions">
-                    Disable the ability for users to post new comments to the boards of other users and assets.  Users will still be able to see any system-generated comments.
-                </div>*@
+                        Disable the ability for users to post new comments to the boards of other users and assets.  Users will still be able to see any system-generated comments.
+                    </div>*@
                 <div data-bind="jqxCheckBox: {checked: DisableIssuePosting, theme: theme, width: '120px'}">Disable Issue Posts</div>
                 @*<div class="directions">
-                    Disable the ability for users to post new issues to the boards of other users and assets.  Users will still be able to see any system-generated issues.
-                </div>*@
+                        Disable the ability for users to post new issues to the boards of other users and assets.  Users will still be able to see any system-generated issues.
+                    </div>*@
                 <div data-bind="jqxCheckBox: {checked: DisableQuestionPosting, theme: theme, width: '120px'}">Disable Question Posts</div>
                 @*<div class="directions">
-                    Disable the ability for users to post new questions to the boards of other users and assets.  Users will still be able to see any system-generated questions.
-                </div>*@
+                        Disable the ability for users to post new questions to the boards of other users and assets.  Users will still be able to see any system-generated questions.
+                    </div>*@
                 <div class="directions">
                     Disable the ability for users to post new comments or replies to the boards of other users and assets.  Users will still be able to see any system-generated comments.
                 </div>
@@ -170,40 +170,34 @@
 
 <script id="detailTileTmpl" type="text/x-handlebars-template">
     <header>Definition</header>
-    <div class="row">
-        <div class="col s12">
-            <ul id="DetailTileTabs" class="tabs">
-                <li class="tab col s4"><a class="active" href="#D_SubTile" data-index="0" style="position: relative">Details</a></li>
-                <li class="tab col s4"><a href="#S_SubTile" data-index="1" style="position: relative">Synonyms<span id="DetailsTile_SynonymBadge" class="badge"></span></a></li>
-                <li class="tab col s4"><a href="#A_SubTile" data-index="2" style="position: relative">Attributes<span id="DetailsTile_AttributeBadge" class="badge"></span></a></li>
-            </ul>
+
+    <div id="DetailSubTile" style="margin-top: 20px"></div>
+
+    <div id="SynonymsExpander" style="margin: 20px 10px 0 10px;">
+        <div>Synonyms<span id="SynonymsCount"></span></div>
+        <div>
+            <div id="SynonymsSubTile"></div>
         </div>
-        <div id="D_SubTile" class="col s12 active" style="background-color: #fff;">
-            <div id="DetailSubTile" style="margin-top: 20px"></div>
+    </div>
+
+    <div id="AttributesExpander" style="margin: 20px 10px 0 10px;">
+        <div>Attributes<span id="AttributesCount"></span></div>
+        <div>
+            <div id="AttributesSubTile"></div>
         </div>
-        <div id="S_SubTile" class="col s12" style="background-color: #fff;">
-            <div class="root-tile">
-                <header><div id="SynonymsSubTileTools"></div></header>
-                <div id="SynonymsSubTile" style="margin-top: 20px"></div>
-            </div>
-        </div>
-        <div id="A_SubTile" class="col s12" style="background-color: #fff;"><div id="AttributesSubTile" style="margin-top: 20px"></div></div>
     </div>
 </script>
 
 <script id="detailTileNoSynonymsTmpl" type="text/x-handlebars-template">
     <header>Definition</header>
-    <div class="row">
-        <div class="col s12">
-            <ul id="DetailTileTabs" class="tabs">
-                <li class="tab col s4"><a class="active" href="#D_SubTile" data-index="0" style="position: relative">Details</a></li>
-                <li class="tab col s4"><a href="#A_SubTile" data-index="2" style="position: relative">Attributes<span id="DetailsTile_AttributeBadge" class="badge"></span></a></li>
-            </ul>
+
+    <div id="DetailSubTile" style="margin-top: 20px"></div>
+
+    <div id="AttributesExpander" style="margin-top: 20px">
+        <div>Attributes<div id="AttributesCount"></div></div>
+        <div>
+            <div id="AttributesSubTile"></div>
         </div>
-        <div id="D_SubTile" class="col s12 active" style="background-color: #fff;">
-            <div id="DetailSubTile" style="margin-top: 20px"></div>
-        </div>
-        <div id="A_SubTile" class="col s12" style="background-color: #fff;"><div id="AttributesSubTile" style="margin-top: 20px"></div></div>
     </div>
 </script>
 
@@ -634,9 +628,9 @@
         <div class="Board-Spacer"></div>
 
         <p class="error" style="color:red" data-bind="text: error"></p>
-        <div class="notification" data-bind="visible: newComments().length > 0"><a data-bind="    click: loadNewComments"> <span data-bind="text: newComments().length"></span> new post(s)</a></div>
+        <div class="notification" data-bind="visible: newComments().length > 0"><a data-bind=" click loadNewComments"> <span data-bind="text: newComments().length"></span> new post(s)</a></div>
         <div data-bind="visible: IsProcessing() && !moreComments()" style="width:100%">
-            <i class="fa fa-spinner fa-spin fa-2x grey-text"  style="width:100%;text-align:center;"></i>
+            <i class="fa fa-spinner fa-spin fa-2x grey-text" style="width:100%;text-align:center;"></i>
         </div>
         <!-- ko template: {name: 'commentTmpl', foreach: comments } -->
         <!-- /ko -->
@@ -656,7 +650,7 @@
     </div>
 </script>
 <script id="commentTagTmpl" type="text/html">
-    <div style="display: inline-block; margin-top:5px; padding: 0 3px 3px 1px; border-radius: 2px;" data-bind=" style: {'backgroundColor': IconBackColor }">
+    <div style="display: inline-block; margin-top:5px; padding: 0 3px 3px 1px; border-radius: 2px;" data-bind=" style {'backgroundColor' IconBackColor }">
         <i class="fa fa-tag" data-bind="style : {'color' : IconForeColor}" style="display:inline; font-size:10pt; opacity:.2; z-index:1; position:relative; top:1px; left:2px;"></i>
         <div style="display:inline-block">
             <a data-bind="attr: {href: Url, 'data-type': Object, 'data-context': 'Preview', 'data-id': ObjectID}, text: TextPath, style: {'color': IconForeColor }" style="font-size: 75%; font-weight: 600;"></a>
@@ -756,9 +750,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>
-
-                            </td>
+                            <td></td>
                             <td>
                                 <button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: updateComment, disable: IsProcessing" style="float:right;width:70px; margin: 0 5px 5px 0; padding:0 6px;"><i class="fa fa-edit" title="Edit" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
                                 <button class="btn btn-small grey white-text waves-effect waves-light" type="button" data-bind="click: hideEdit, disable: IsProcessing" style="float:right;width:70px; margin: 0 5px 5px 0; padding:0 6px;">Cancel</button>
@@ -801,9 +793,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>
-
-                            </td>
+                            <td></td>
                             <td>
                                 <button class="btn btn-small grey white-text waves-effect waves-light" type="button" data-bind="click: hideReply, disable: IsProcessing" style="width:70px; margin: 0 5px 5px 0; padding:0 6px;">Cancel</button>
                                 <button class="btn btn-small blue white-text waves-effect waves-light" type="button" data-bind="click: addComment, disable: (IsProcessing() || DisableReply())" style="width:70px; margin: 0 5px 5px 0; padding:0 6px;"><i class="fa fa-reply" title="Reply" data-bind="visible: !IsProcessing()"></i><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing"></i></button>
@@ -843,7 +833,7 @@
             </tr>
             <tr>
                 <td colspan="2" class="ChildComments">
-                    <a class="commentNotification" data-bind="click: loadNewComments, visible: NewComments().length > 0"> <span data-bind="    text: NewComments().length"></span> new comment(s)</a>
+                    <a class="commentNotification" data-bind="click: loadNewComments, visible: NewComments().length > 0"> <span data-bind=" text NewComments().length"></span> new comment(s)</a>
                     <div data-bind="template: {name: 'subCommentTmpl', foreach: Comments }"></div>
                 </td>
             </tr>

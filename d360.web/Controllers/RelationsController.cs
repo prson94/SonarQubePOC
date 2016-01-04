@@ -149,15 +149,15 @@ from	(
 				ID,
 				Name,
 				'Glossary' as Menu,
-				'Artifacts' as SubMenu
+				NULL as SubMenu
 		from	ArtifactType 
 		union
 		SELECT	1 as SortOrder,
 				'TaxonomyType' as [Type],
 				T.ID,
 				T.Name as Name, --C.Name + ' : ' + 
-				'Glossary' as Menu,
-				'Models' as SubMenu
+				'Models' as Menu,
+				NULL as SubMenu
 		FROM	TaxonomyType T
 				--inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
 		union
@@ -402,7 +402,8 @@ order by R.Name, P.Phrase");
                             Company.AddRelationship(model.Target, model.TargetID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
 
                             Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-                            var intersect = Company.Query<IntersectLookupModel>(@"select S.IntersectID,
+                            var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
+S.IntersectID,
 S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
 O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
 from [IntersectNode] S 
@@ -417,7 +418,6 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
 
                                 var intersectMap = new IntersectMap
                                 {
-                                    MapID = 0,
                                     ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
                                     PredicatePhraseID = model.PredicatePhraseID,
                                     SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,

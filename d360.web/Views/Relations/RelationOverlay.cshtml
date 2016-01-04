@@ -177,7 +177,7 @@
 
     function sourceFormStatus(data) {
         try {
-            amplify.publish("ShowMessage", { type: (data.success ? 'confirm' : 'error'), title: data.title || 'Modifying Source', message: data.message });
+            amplify.publish("ShowMessage", { type: (data.success ? 'confirm' : 'error'), title: data.title || 'Modifying Source', message: data.message || "Modified source." });
         } catch (e) {
             logError("RelationOverlay : SourceFormStatus", e);
         }
@@ -186,7 +186,9 @@
     function sourceSave(data) {
         try {
             switchToViewer();
-            LineageDiagram('TreeGridLineage', type, typeID, null);
+            $('#RelationshipLineageTile').show();
+            $('#ViewNonLineage').hide();
+            LineageDiagram('TreeGridLineage', type, typeID, null, false);
             amplify.publish('SaveAction', { context: contextList.SourceToTarget });
         } catch (e) {
             logError("RelationOverlay : SourceSave", e);
@@ -227,7 +229,7 @@
                     $('#TechnicalRelationshipsGrid').jqxGrid('updatebounddata');
                     break;
                 case 'Lineage': // Refresh lineage
-                    LineageDiagram('TreeGridLineage', type, typeID, null);
+                    LineageDiagram('TreeGridLineage', type, typeID, null, false);
                     break;
             }
 
@@ -363,7 +365,7 @@
                                 case 'Lineage':
                                     $('#RelationshipLineageTile').show();
                                     $('#ViewNonLineage').hide();
-                                    LineageDiagram('TreeGridLineage', type, typeID, null);
+                                    LineageDiagram('TreeGridLineage', type, typeID, null, false);
                                     break;
                             }
                         }
