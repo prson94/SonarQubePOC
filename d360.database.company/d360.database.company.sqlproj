@@ -475,6 +475,8 @@
     <None Include="dbo\Stored Procedures\ExcludeMapIntersect.sql" />
     <None Include="dbo\Tables\IntersectMapExclusion.sql" />
     <None Include="dbo\Stored Procedures\FindExcludeMapIntersect.sql" />
+    <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByIntersect.sql" />
+    <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByObject.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using d360.web.Models;
 using System.Xml.Linq;
 using d360.workflow;
+using d360.web.Filters;
 
 namespace d360.web.Controllers.Services
 {
@@ -19,7 +20,7 @@ namespace d360.web.Controllers.Services
         public CommunityController(CommunityContext community, CompanyContext company) : base(community, company) { }
 
         #endregion
-
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, Route("edit")]
         public dynamic EditComment(CommentData comment)
         {
@@ -70,6 +71,7 @@ namespace d360.web.Controllers.Services
             return dtl;
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, Route("comment")]
         public dynamic AddComment(CommentData comment)
         {
@@ -139,7 +141,7 @@ namespace d360.web.Controllers.Services
             return dtl;
         }
 
-
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, Route("counts")]
         public List<CommentCount> GetCommentCounts(CommentRequestData pageData)
         {
@@ -156,6 +158,7 @@ namespace d360.web.Controllers.Services
             return counts;
         }
 
+        [ValidateHttpAntiForgeryToken]
         [HttpPost,Route("vote")]
         public List<CommentVote> VoteComment(CommentVote vote)
         {
@@ -172,6 +175,8 @@ namespace d360.web.Controllers.Services
             return commentVotes.ToList();
 
         }
+
+        [ValidateHttpAntiForgeryToken]
         [HttpPost, Route("comments")]
         public List<CommentDetail> GetComments(CommentRequestData pageData)
         {

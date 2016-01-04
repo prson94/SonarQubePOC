@@ -3,39 +3,34 @@
         <div style="width:100%;text-align:center;">
             <div id="{{control}}_overlay_relationship"></div><br />
         </div>
-        <table>
+        <div id="{{control}}_overlay_radio_existing">Choose an existing predicate</div>
+        <table id="{{control}}_overlay_existing" style="margin-top:5px;">
             <tbody>
                 <tr>
-                    <td colspan="2" style="font-weight:bold">
-                        Choose a Predicate
-                    </td>
-                </tr>
-                <tr>
+                    <td style="width:27px;"></td>
                     <td>
                         Predicate:
                     </td>
                     <td>
-                        <select id="{{control}}_overlay_predicates" class="browser-default"></select>
+                        <select id="{{control}}_overlay_predicates" class="select-dropdown browser-default" style="height:100%"></select>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <table>
+        <div id="{{control}}_overlay_radio_new">Create a new predicate</div>
+        <table id="{{control}}_overlay_new" style="display:none;margin-top:5px;">
             <tbody>
                 <tr>
-                    <td colspan="2" style="font-weight:bold">
-                        Create a new Predicate
-                    </td>
-                </tr>
-                <tr style="padding-bottom:2px">
-                    <td>
+                    <td style="width:27px;"></td>
+                    <td style="padding-bottom:5px">
                         Predicate Name:
                     </td>
                     <td>
                         <input type="text" id="{{control}}_overlay_pname" />
                     </td>
                 </tr>
-                <tr style="padding-bottom:2px">
+                <tr>
+                    <td style="width:27px;"></td>
                     <td>
                         Phrase:
                     </td>
@@ -43,9 +38,13 @@
                         <input type="text" id="{{control}}_overlay_phrase" />
                     </td>
                 </tr>
+            </tbody>
+        </table>
+        <table style="margin-top:5px;">
+            <tbody>
                 <tr>
                     <td>
-                        <button id="{{control}}_overlay_add" style="display:none;" class="btn white-text">OK</button>
+                        <button id="{{control}}_overlay_add" style="display:none;" class="btn white-text" disabled>OK</button>
                     </td>
                     <td>
                         <button id="{{control}}_overlay_cancel" class="btn red darken-3 white-text">Cancel</button>
@@ -55,7 +54,6 @@
         </table>
     </div>
 </div>
-
 <table>
     <tbody>
         <tr style="vertical-align:top;height:520px">
@@ -76,10 +74,12 @@
                             <button id="{{control}}_controls_zoom100">zoom to 100%</button>
                             <button id="{{control}}_controls_zoomfit">zoom to fit</button>
                             <button id="{{control}}_controls_reset">reset</button>
+                            <div style="margin-top:5px;width:100%;text-align:center;"><button id="{{control}}_controls_save" class="btn btn-flat red white-text">Save Changes</button></div>
                             <!--<button onclick="reOrderLayout();">reorganize </button>-->
                             <!--| <button onclick="toggleFullscreen(isFullscreen);">toggle fullscreen</button>-->
                             <!--| spacing: <input id="txtSpacing" type="text" value="25" maxlength="3" style="width:40px" onkeyup="changeSpacing($(this).val())" />-->
                             <!--<button onclick="rotateDiagram();">rotate</button>-->
+                            <!--<button id="saveBtn" class="btn red" onclick="saveChanges();" style="float:right"><i class="fa fa-save"></i> Save Changes</button>-->
                         </div>
                     </div>
                     <div id="{{control}}_info">
@@ -90,17 +90,55 @@
                         <div><i class="fa fa-pencil"></i> Actions</div>
                         <div style="padding: 10px">
                             <button id="{{control}}_actions_remove" style="display:none">Remove</button>
-
-                            <div id="{{control}}_add" style="display:none">
-                                <h4>Add a new node</h4>
-                                <div style="padding: 10px">
-                                    Type: <select data-bind="value: NodeType" class="browser-default" id="{{control}}_add_artifact_type"></select><br />
-                                    Search: <input id="{{control}}_add_search_text" type="text" />
-                                    <button id="{{control}}_add_search">Search</button>
-                                    <div id="{{control}}_palette" style="height:300px"></div>
-                                </div>
-                                <button id="saveBtn" class="btn red" onclick="saveChanges();" style="float:right"><i class="fa fa-save"></i> Save Changes</button>
-                            </div>
+                        </div>
+                    </div>
+                    <div id="{{control}}_add">
+                        <div><i class="fa fa-plus"></i> Add a new node</div>
+                        <div style="padding: 10px">
+                            Type: <select data-bind="value: NodeType" class="select-dropdown browser-default" id="{{control}}_add_artifact_type" style="height:100%"></select><br />
+                            Search: <input id="{{control}}_add_search_text" type="text" />
+                            <button id="{{control}}_add_search">Search</button>
+                            <div id="{{control}}_palette" style="height:300px"></div>
+                        </div>
+                    </div>
+                    <div id="{{control}}_fusion">
+                        <div><i class="fa fa-database"></i> Fusion Relationships</div>
+                        <div style="padding:10px" id="{{control}}_fusion_body">
+                            <table id="{{control}}_fusion_table" style="display:none;padding:2px;font-size:smaller">
+                                <tbody>
+                                    <tr style="background-color:lightslategray;color:white;">
+                                        <th style="border-radius:0;padding:2px;">
+                                            Attribute
+                                        </th>
+                                        <th style="border-radius:0;padding:2px;">
+                                            Fusion
+                                        </th>
+                                        <th style="border-radius:0;padding:2px;">
+                                            Name
+                                        </th>
+                                        <th style="border-radius:0;padding:2px;">
+                                            Type
+                                        </th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="{{control}}_responsibilities">
+                        <div><i class="fa fa-retweet"></i> Responsibilities</div>
+                        <div style="padding:10px">
+                            <table id="{{control}}_responsibilities_table" style="display:none;padding:2px;font-size:smaller">
+                                <tbody>
+                                    <tr style="background-color:lightslategray;color:white;">
+                                        <th style="border-radius:0;padding:2px;">
+                                            Type
+                                        </th>
+                                        <th style="border-radius:0;padding:2px;">
+                                            Description
+                                        </th>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

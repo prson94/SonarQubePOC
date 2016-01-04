@@ -429,7 +429,7 @@ from	h
             public string ID { get; set; }
             public string Key { get; set; }
             public int ParentID { get; set; }
-            public string ObjectType { get; set; }
+            public string Type { get; set; }
             public string ObjectID { get; set; }
             public string TypeName { get; set; }
         }
@@ -515,12 +515,12 @@ from	h
                 {
                     ResourceID = Company.CurrentResourceID,
                     Date = DateTime.UtcNow,
-                    ObjectType = l.FromNode.ObjectType,
+                    ObjectType = l.FromNode.Type,
                     ObjectID = l.FromNode.ID,
                     Classification = (int?)null,
                     IntersectRole = (int?)null,
                     Description = (string)null,
-                    SubjectType = l.ToNode.ObjectType,
+                    SubjectType = l.ToNode.Type,
                     SubjectID = l.ToNode.ID,
                     PredicateName = l.PredicateName,
                     PredicatePhrase = l.Phrase

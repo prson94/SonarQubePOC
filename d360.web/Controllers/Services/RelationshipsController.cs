@@ -165,5 +165,45 @@ from	FusionAttribute FA
 
             return Company.Query<dynamic>(sql, new { type = targetType.ToString(), id = targetID }).AsQueryable();
         }
+
+        [Route("technical/{type}/{id:int}/{targetType}/{targetID}")]
+        public IQueryable<dynamic> GetTechnicalRelationships(SystemObjects type, int id, SystemObjects targetType, int targetID)
+        {
+            return Company.Query<dynamic>("EXEC GetTechnicalRelationshipsByObject @ResponsibleObjectType, @ResponsibleObjectID, @ObjectType, @ObjectID"
+                , new
+                {
+                    ResponsibleObjectType = type.ToString(),
+                    ResponsibleObjectID = id,
+                    ObjectType = targetType.ToString(),
+                    ObjectID = targetID
+                }).AsQueryable();
+           // return null;
+        }
+
+        [Route("technical/{intersectId:int}")]
+        public IQueryable<dynamic> GetTechnicalRelationships(int intersectId)
+        {
+            return Company.Query<dynamic>("EXEC GetTechnicalRelationshipsByIntersect @IntersectID"
+            , new
+            {
+                IntersectID = intersectId
+            }).AsQueryable();
+        }
+
+        [Route("responsibilities/{type}/{id:int}")]
+        public IQueryable<dynamic> GetResponsibilities(SystemObjects type, int id)
+        {
+            return Company.Query<dynamic>(@"select	
+	                                        case ResponsibilityTransformationType
+                                                when 1 then 'Business Transformation'
+		                                        else 'Technical Transformation'
+                                            end as [Type],
+                                            ID,
+                                            [Description]
+                                        from ResponsibilityTransformation T
+                                        join cache.Responsibilities S on S.ResponsibilityID = T.ResponsibilityID
+                                        where S.[Object] = @ObjectType and S.ObjectID = @ObjectID and S.[ResponsibilityTypeGroup] = 2",
+                                        new { ObjectType = type.ToString(), ObjectID = id }).AsQueryable();
+        }
     }
 }
