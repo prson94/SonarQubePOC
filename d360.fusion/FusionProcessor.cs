@@ -575,8 +575,8 @@ namespace d360.fusion
                     _workArea.Relationships.ResolvedRelationshipData.Add(relData);
                 }
                 else
-                {
-                    Trace.TraceWarning("FOUND UNRESOLVED RELATIONSHIP BETWEEN START SOURCEID:[{0}] AND END SOURCEID:[{1}]", item.StartID, item.EndID);
+                {                    
+                    Trace.TraceInformation("FOUND UNRESOLVED RELATIONSHIP BETWEEN START SOURCEID:[{0}] AND END SOURCEID:[{1}]", item.StartID, item.EndID);
 
                     _workArea.Relationships.UnresolvedRelationshipData.Add(relData);
                 }
@@ -1289,7 +1289,7 @@ namespace d360.fusion
 
                 if(string.IsNullOrEmpty(relationships[i].StartID))
                 {
-                    Trace.TraceWarning("FUSION PROCESSING FOUND A RELATIONSHIP MISSING A VALID STARTID.  START ID:[{0}] END ID:[{1}]", relationships[i].StartID, relationships[i].EndID);
+                    Trace.TraceWarning("FUSION PROCESSING FOUND A RELATIONSHIP MISSING A VALID STARTID.  START ID:[{0}] END ID:[{1}] - IGNORING", relationships[i].StartID, relationships[i].EndID);
 
                     relationships.RemoveAt(i);
 
@@ -1298,7 +1298,16 @@ namespace d360.fusion
 
                 if (string.IsNullOrEmpty(relationships[i].EndID))
                 {
-                    Trace.TraceWarning("FUSION PROCESSING FOUND A RELATIONSHIP MISSING A VALID ENDID.  START ID:[{0}] END ID:[{1}]", relationships[i].StartID, relationships[i].EndID);
+                    Trace.TraceWarning("FUSION PROCESSING FOUND A RELATIONSHIP MISSING A VALID ENDID.  START ID:[{0}] END ID:[{1}] - IGNORING", relationships[i].StartID, relationships[i].EndID);
+
+                    relationships.RemoveAt(i);
+
+                    continue;
+                }
+
+                if(relationships[i].StartID == relationships[i].EndID)
+                {
+                    Trace.TraceWarning("FUSION PROCESSING FOUND A RELATIONSHIP THAT REFERENCES ITSELF.  START ID:[{0}] END ID:[{1}] - IGNORING", relationships[i].StartID, relationships[i].EndID);
 
                     relationships.RemoveAt(i);
 

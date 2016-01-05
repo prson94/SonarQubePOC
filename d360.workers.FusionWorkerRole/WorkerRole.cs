@@ -50,7 +50,7 @@ namespace d360.workers.FusionWorkerRole
                 CompanyID = 4,
                 FusionID = 46,
            //     LogFileName = "no_models.json"
-                LogFileName = "special_char.json"
+                LogFileName = "SELF_REFERENCE.JSON"
            //      LogFileName = "1.45.2015-12-10_07.28.12.json"
                 // LogFileName = "1.45.modifytest.json" // file contains one row modified from base for fusion id 46.
             };
