@@ -5,14 +5,26 @@
     <input type="hidden" id="ID" name="ID" value="@(Model.Item.ID)" />
     <input type="hidden" id="FusionAttributePromotionRuleID" name="FusionAttributePromotionRuleID" value="@(Model.Item.FusionAttributePromotionRuleID)" />
     <div class="row">
+        @Html.CheckBox("isConstantValue", Model.Item.IsConstantValue)        
+        <label id="isConstantValueLabel" for="IsConstantValue">Store a fixed source value</label>
+    </div>
+    <div class="row">
         <div class="col s12 m12 l6">
-            <div id='SourceTip' class="FieldNameRequired">Source</div>
+            <div id='SourceTip' class="FieldNameRequired">
+                Source
+            </div>
             <div id="PrOptionsDropdown"></div>
             @Html.DropDownList("Source", Model.SourceFields, new { @class = "browser-default" })
+            @Html.TextBox("ConstantValue",Model.Item.ConstantValue)
         </div>
         <div class="col s12 m12 l6">
             <div id='TargetTip' class="FieldNameRequired">Target</div>
             @Html.DropDownList("Target", Model.TargetFields, new { @class = "browser-default" })
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12 m12 l6">
+
         </div>
     </div>
 }
@@ -24,7 +36,7 @@
 
         $("#Source").jqxDropDownList({ theme: theme, width: field_width, height: field_height });
         $("#Target").jqxDropDownList({ theme: theme, width: field_width, height: field_height });
-
+        $("#ConstantValue").jqxInput({ width: field_width, theme: theme, height: 25 });
         //#endregion
 
         //#region Tooltips
@@ -67,5 +79,19 @@
         });
 
         $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        $('@(Model.Item.IsConstantValue ? "#Source" : "#ConstantValue")').hide();
+
+        $("#isConstantValue").click(function () {
+            if ($(this).is(":checked")) {
+                $("#ConstantValue").show();
+                $("#Source").hide();
+            } else {
+                $("#Source").show();
+                $("#ConstantValue").hide();
+            }
+        });
     });
+
+
 </script>

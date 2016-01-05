@@ -4915,10 +4915,13 @@ namespace d360.web.Controllers
                 }
             }
 
-            sourceFields.ForEach(i =>
+            if (selectedID != null)
             {
-                i.Selected = i.Value.Contains(selectedID);
-            });
+                sourceFields.ForEach(i =>
+                {
+                    i.Selected = i.Value.Contains(selectedID);
+                });
+            }
 
             return sourceFields;
         }
@@ -5018,7 +5021,7 @@ namespace d360.web.Controllers
                 FormName = "Add Promotion Field Mapping",
                 Item = new FusionAttributePromotionRuleMapping { FusionAttributePromotionRuleID = id },
                 SourceFields = loadSourceItemOptions(rule),
-                TargetFields = loadTargetItemOptions(rule)
+                TargetFields = loadTargetItemOptions(rule)                
             };
             return PartialView("FusionAttributePromotionRuleMappingEditForm", editorModel);
         }
@@ -5036,6 +5039,8 @@ namespace d360.web.Controllers
 
                 var source = form["Source"].Split('|');
                 var target = form["Target"].Split('|');
+                var constantValue = form["ConstantValue"];
+                var isConstantValue = form["isConstantValue"];
 
                 if (source[1] == "0")
                 {
@@ -5052,6 +5057,20 @@ namespace d360.web.Controllers
                 }
                 else
                     model.TargetFieldTypeID = int.Parse(target[1]);
+
+
+                if (!string.IsNullOrEmpty(isConstantValue) && isConstantValue.Contains("true"))
+                {
+                    model.IsConstantValue = true;
+                    model.SourceFieldTypeID = 0;
+                    model.ConstantValue = constantValue;
+                    model.SourceFieldName = null;
+                }
+                else
+                {
+                    model.IsConstantValue = false;
+                    model.ConstantValue = string.Empty;
+                }
 
                 Company.Add<FusionAttributePromotionRuleMapping>(model);
 
@@ -5138,6 +5157,8 @@ namespace d360.web.Controllers
 
                 var source = form["Source"].Split('|');
                 var target = form["Target"].Split('|');
+                var constantValue = form["ConstantValue"];
+                var isConstantValue = form["isConstantValue"];
 
                 if (source[1] == "0")
                 {
@@ -5154,6 +5175,18 @@ namespace d360.web.Controllers
                 }
                 else
                     model.TargetFieldTypeID = int.Parse(target[1]);
+
+                if (!string.IsNullOrEmpty(isConstantValue) && isConstantValue.Contains("true"))
+                {
+                    model.IsConstantValue = true;
+                    model.SourceFieldTypeID = 0;
+                    model.ConstantValue = constantValue;                    
+                }
+                else
+                {
+                    model.IsConstantValue = false;
+                    model.ConstantValue = null;
+                }
 
                 Company.Update<FusionAttributePromotionRuleMapping>(model);
 

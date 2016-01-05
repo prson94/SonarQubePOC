@@ -5,6 +5,8 @@
     [SourceFieldTypeID]              INT            NOT NULL,
     [TargetFieldName]                NVARCHAR (250) NULL,
     [TargetFieldTypeID]              INT            NOT NULL,
+    [IsConstantValue]				 BIT NOT NULL DEFAULT 0, 
+    [ConstantValue]					 NVARCHAR(250) NULL, 
     CONSTRAINT [PK_FusionAttributePromotionRuleMapping] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 

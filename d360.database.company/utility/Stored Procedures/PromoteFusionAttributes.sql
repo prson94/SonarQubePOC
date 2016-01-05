@@ -181,8 +181,9 @@ BEGIN
 				M.TargetFieldName,
 				M.TargetFieldTypeID,
 				case 
-					when M.SourceFieldName = 'Name' then FA.Name
-				end
+					when M.SourceFieldName = 'Name' then FA.Name					
+					when M.IsConstantValue = 1 then M.ConstantValue
+				end				
 		from	FusionAttributePromotionRuleMapping M
 				inner join #attributes A on A.RuleID = M.FusionAttributePromotionRuleID
 				inner join FusionAttribute FA on FA.ID = A.FusionAttributeID 

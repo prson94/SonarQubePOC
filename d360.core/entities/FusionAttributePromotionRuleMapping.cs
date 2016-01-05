@@ -24,6 +24,12 @@ namespace d360.core.entities
         [DataMember]
         public int TargetFieldTypeID { get; set; }
 
+        [DataMember]
+        public bool IsConstantValue { get; set; }
+
+        [DataMember]
+        public string ConstantValue { get; set; }
+
         #endregion
 
         [IgnoreDataMember, ForeignKey("FusionAttributePromotionRuleID")]
