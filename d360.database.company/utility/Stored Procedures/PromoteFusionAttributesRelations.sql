@@ -56,6 +56,23 @@ insert into #relations
 							#relations a 
 							inner join( select distinct intersectid, min(id) as id from #relations group by intersectid ) as b on (a.id = b.id) ) ;
 
+	-- delete any duplicated relations if there are any
+	delete from #relations where ID in (
+						select 
+							a.ID 
+						from 
+							#relations a 
+							inner join( select
+												StartFusionAttributeID,
+												StartPromotedObjectType,
+												StartPromotedObjectID,
+												StartIntersectTypeNodeID,
+												EndFusionAttributeID,
+												EndPromotedObjectType,
+												EndPromotedObjectID,
+												EndIntersectTypeNodeID,
+												IntersectTypeID, min(id) as id from #relations group by StartFusionAttributeID, StartPromotedObjectType, StartPromotedObjectID, StartIntersectTypeNodeID, EndFusionAttributeID, EndPromotedObjectType, EndPromotedObjectID, EndIntersectTypeNodeID, IntersectTypeID  having count(1) > 1) as b on (a.id = b.id) ) ;
+
 		
 	select @numberNewRelations = count(1) from #relations
 	-- remove any existing relations from the relations table so we dont dup them
