@@ -19,13 +19,28 @@ BEGIN
 			@NumberOfNewDomains int,
 			@NumberOfNewArtifacts int,
 			@NumberOfAttributesTotal int,
-			@NumberOfNewRelations int
+			@NumberOfNewRelations int,
+			@promotionNeedsToRun bit
+	
 
 	set	@NumberOfRules = 0;	
 	set @NumberOfNewTaxonomies = 0;
 	set @NumberOfNewDomainItems = 0;
 	set @NumberOfNewDomains = 0;
 	set @NumberOfNewArtifacts = 0;
+	set @promotionNeedsToRun = 0;
+
+	--First check if there is anything to do
+
+	EXEC @promotionNeedsToRun = [utility].[ShouldPromotionRun]
+
+	if(@promotionNeedsToRun <= 0)
+	BEGIN
+		PRINT 'NO REASON TO RUN THE PROMOTION RULES WAS DETECTED';
+		return;
+	END;
+
+
 	--Log this run get a new id from the fusion.promotion table
 	insert into [dbo].[FusionAttributePromotionLogSummary] ( DateStarted )
 									values ( CURRENT_TIMESTAMP)

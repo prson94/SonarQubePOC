@@ -466,6 +466,7 @@
     <Build Include="dbo\Tables\FusionAttributePromotionLogSummary.sql" />
     <Build Include="utility\Stored Procedures\PromoteFusionAttributesRelations.sql" />
     <Build Include="dbo\Stored Procedures\AddRelationshipTypesBulk.sql" />
+    <Build Include="utility\Functions\ShouldPromotionRun.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
