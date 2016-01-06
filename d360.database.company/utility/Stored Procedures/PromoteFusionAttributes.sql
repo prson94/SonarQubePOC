@@ -400,16 +400,17 @@ from	#rules R
 									SELECT	@FusionAttributeID as FusionAttributeID, 
 											@PromotedType as ObjectType, 
 											@PromotedID as ObjectID, 
-											@RuleID as RuleID
+											@RuleID as RuleID,
+											@PromotionObjectID as PromotedObjectTypeID
 									) as S
 							ON		T.FusionAttributeID = S.FusionAttributeID 
 									and T.ObjectType = S.ObjectType 
 									and T.ObjectID = S.ObjectID
 							WHEN	MATCHED THEN
-									UPDATE SET T.FusionAttributePromotionRuleID = S.RuleID
+									UPDATE SET T.FusionAttributePromotionRuleID = S.RuleID, ObjectTypeID = S.PromotedObjectTypeID
 							WHEN	NOT MATCHED THEN
-									INSERT (FusionAttributeID, ObjectType, ObjectID, FusionAttributePromotionRuleID) 
-									VALUES (S.FusionAttributeID, S.ObjectType, S.ObjectID, S.RuleID);
+									INSERT (FusionAttributeID, ObjectType, ObjectID, FusionAttributePromotionRuleID, ObjectTypeID) 
+									VALUES (S.FusionAttributeID, S.ObjectType, S.ObjectID, S.RuleID, S.PromotedObjectTypeID);
 						end
 
 					-- Add/Update the dynamic fields involved.

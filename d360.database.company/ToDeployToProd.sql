@@ -16,4 +16,7 @@ go
 ALTER TABLE [dbo].[FusionAttributePromotionRuleMapping]
 ADD ConstantValue nvarchar(250)
 
+ALTER TABLE [dbo].[FusionAttributePromotion]
+ADD [ObjectTypeID] INT NOT NULL DEFAULT(-1)
+
 go

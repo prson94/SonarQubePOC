@@ -465,6 +465,7 @@
     <Build Include="cache\Stored Procedures\SynchronizeResponsibilitiesForObject.sql" />
     <Build Include="dbo\Tables\FusionAttributePromotionLogSummary.sql" />
     <Build Include="utility\Stored Procedures\PromoteFusionAttributesRelations.sql" />
+    <Build Include="dbo\Stored Procedures\AddRelationshipTypesBulk.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -477,6 +478,7 @@
     <None Include="dbo\Stored Procedures\FindExcludeMapIntersect.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByIntersect.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByObject.sql" />
+    <None Include="dbo\User Defined Types\RelationshipTypeTable.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />
