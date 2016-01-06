@@ -825,7 +825,7 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
 
         $(_SynonymsSubTile).jqxGrid({
             source: adapterSynonym,
-            width: grid_width,
+            width: overlay_grid_width,
             pagesizeoptions: ['5', '10', '20'],
             pagesize: 5,
             autoheight: true,
@@ -847,9 +847,19 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
     //#endregion
 
     $('#AttributesExpander').jqxExpander({ theme: theme, expanded: false });
-    AttributesTile('AttributesSubTile', contextList, permissions, type, id, '', false);
+    //AttributesTile('AttributesSubTile', contextList, permissions, type, id, '', false);
 
     //#region Events
+
+    function attributesExpanded() {
+        AttributesTile('AttributesSubTile', contextList, permissions, type, id, '', false);
+    }
+
+    function synonymsExpanded() {
+        if (!shouldHideSynonyms) {
+            $(_SynonymsSubTile).jqxGrid('updatebounddata');
+        }
+    }
 
     function pageResized() {
         try {
@@ -901,6 +911,10 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         //$('#DetailTileTabs > li > a').off('click', ribbonSelect);
+        $('#AttributesExpander').off('expanded', attributesExpanded)
+        if (!shouldHideSynonyms) {
+            $('#SynonymsExpander').off('expanded', synonymsExpanded);
+        }
     }
 
     //amplify.subscribe("CommandExecuted", commandExecuted);
@@ -908,9 +922,11 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
     amplify.subscribe("SaveAction", saveAction);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    $('#AttributesExpander').on('expanded', attributesExpanded);
     //$('#DetailTileTabs > li > a').on('click', ribbonSelect);
 
     if (!shouldHideSynonyms) {
+        $('#SynonymsExpander').on('expanded', synonymsExpanded);
         $(_SynonymsSubTile).on('bindingcomplete', function (event) {
             var count = 0;
             try {

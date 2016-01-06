@@ -15,6 +15,7 @@ using System.Dynamic;
 using d360.core.exceptions;
 using d360.core.enums;
 using d360.web.Models.Attributes;
+using d360.web.Models;
 
 namespace d360.web.Controllers.Services
 {
@@ -137,11 +138,27 @@ namespace d360.web.Controllers.Services
 
             try
             {
-                var rule = new Rule
+                if (model == null)
+                {
+                    throw new MissingPropertiesException("Rule");
+                }
+
+                Rule rule = null;
+                if (!string.IsNullOrEmpty(model.SourceID))
+                {
+                    rule = Company.Filter<Rule>(i => i.SourceID == model.SourceID).FirstOrDefault();
+                    if (rule != null)
+                    {
+                        throw new ConflictException("Rule already exists", $"A rule with the source ID of {model.SourceID} already exists.");
+                    }
+                }
+
+                rule = new Rule
                 {
                     Description = model.Description,
                     Name = model.Name,
-                    RuleType = model.RuleType
+                    RuleType = model.RuleType,
+                    SourceID = model.SourceID
                 };
 
                 Company.Add<Rule>(rule);
@@ -161,11 +178,32 @@ namespace d360.web.Controllers.Services
         /// <summary>
         /// Add one or more events to a rule.
         /// </summary>
+        /// <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
+        /// <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
+        /// <returns></returns>
+        [Route("sourcerules/{sourceID}/events"), HttpPost]
+        public HttpResponseMessage AddSourceRuleEvents(string sourceID, CreateEventsModelRequest model)           
+        {
+            var rule = Company.Filter<Rule>(i => i.SourceID == sourceID).FirstOrDefault();
+
+            if (rule != null)
+            {
+                return AddRuleEvents(rule.ID, model);
+            }
+            else
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule could not be located based on the Source ID: {sourceID}.");
+            }
+        }
+
+        /// <summary>
+        /// Add one or more events to a rule.
+        /// </summary>
         /// <param name="id">The ID of the rule to add events to.</param>
         /// <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
         /// <returns></returns>
-        [Route("rules/{id}/events"), HttpPost]
-        public HttpResponseMessage AddEvents(int id, CreateEventsModelRequest model)
+        [Route("rules/{id:int}/events"), HttpPost]
+        public HttpResponseMessage AddRuleEvents(int id, CreateEventsModelRequest model)
         {
             if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add events to this rule.");
@@ -346,6 +384,83 @@ namespace d360.web.Controllers.Services
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
             }
         }
+        
+        /// <summary>
+        /// Add one or more relationships to a rule based on the source ID from an underlying system that originally created the rule.
+        /// </summary>
+        /// <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
+        /// <param name="models">A collection of relationships.</param>
+        /// <returns></returns>
+        [Route("sourcerules/{sourceID}/relationships"), HttpPost]
+        public HttpResponseMessage AddSourceRuleRelationships(string sourceID, List<ObjectModel> models)
+        {
+            var rule = Company.Filter<Rule>(i => i.SourceID == sourceID).FirstOrDefault();
+
+            if (rule != null)
+            {
+                return addRuleRelationships(rule.ID, models, rule);
+            }
+            else
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule could not be located based on the Source ID: {sourceID}.");
+            }
+        }
+
+        /// <summary>
+        /// Add one or more relationships to a rule.
+        /// </summary>
+        /// <param name="id">The ID of the rule to add events to.</param>
+        /// <param name="models">A collection of relationships.</param>
+        /// <returns></returns>
+        [Route("rules/{id:int}/relationships"), HttpPost]
+        public HttpResponseMessage AddRuleRelationships(int id, List<ObjectModel> models)
+        {
+            return addRuleRelationships(id, models);
+        }
+
+        HttpResponseMessage addRuleRelationships(int id, List<ObjectModel> models, Rule rule = null)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
+                    return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add relationships to this rule.");
+
+                if (models == null)
+                {
+                    throw new MissingPropertiesException("Rule Relationships");
+                }
+                else
+                {
+                    if (models.Count == 0)
+                    {
+                        throw new MissingPropertiesException("Rule Relationships");
+                    }
+                }
+
+                if (rule == null) //If no rule sent in, do a lookup.
+                {
+                    rule = Company.GetById<Rule>(id);
+                }
+
+                if (rule == null)
+                {
+                    throw new NotFoundException("Rule");
+                }
+
+                Company.AddRelationships(SystemObjects.Rule, id, IntersectClassification.Normal, null, null, models);
+
+                return Request.CreateResponse(HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return Request.CreateErrorResponse(ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
+            }
+        }
+
 
         /// <summary>
         /// 
@@ -353,7 +468,7 @@ namespace d360.web.Controllers.Services
         /// <param name="id">The ID of the rule to retrieve attributes for.</param>
         /// <param name="typeID">The ID of the attribute type to get.</param>
         /// <returns></returns>
-        [Route("rules/{id}/attributes/{typeID}"), HttpGet]
+        [Route("rules/{id:int}/attributes/{typeID:int}"), HttpGet]
         public HttpResponseMessage GetAttributesByAttributeType(int id, int typeID)
         {
             HttpResponseMessage response = null;

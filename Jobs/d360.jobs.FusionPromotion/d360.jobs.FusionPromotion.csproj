@@ -93,6 +93,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\d360-consumer-api - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-jobs - Web Deploy.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>

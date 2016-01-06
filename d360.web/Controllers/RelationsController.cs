@@ -266,9 +266,12 @@ order by	SortOrder, Menu, SubMenu, Name";
 from	cache.ObjectDetails D
 		inner join FusionAttribute FA on D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID and FA.ID = D.ObjectID
 		inner join Fusion F on F.ID = FA.FusionID
-where	not exists  (
+where	D.ObjectTypeID <> D.ObjectID 
+        and D.ObjectTypeID <> 0
+        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+        and not exists  (
 					select	1 
-					from	[cache].[Relationships] R 
+					from	[cache].[Relationship] R 
 					where	R.SourceObject = @source 
 							and R.SourceObjectID = @id
 							and R.TargetObject = D.[Object] 
@@ -280,10 +283,13 @@ order by F.Name, D.TextPath";
             {
                 sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name, D.Url
 from	cache.ObjectDetails D
-where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID
+where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
+        and D.ObjectTypeID <> D.ObjectID 
+        and D.ObjectTypeID <> 0
+        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
 		and not exists (
 						select	1 
-						from	[cache].[Relationships] R 
+						from	[cache].[Relationship] R 
 						where	R.SourceObject = @source 
 								and R.SourceObjectID = @id
 								and R.TargetObject = D.[Object] 
@@ -398,8 +404,11 @@ order by R.Name, P.Phrase");
                         }
                         else
                         {
-                            Company.AddRelationship(model.Target, model.TargetID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
-                            Company.AddRelationship(model.Target, model.TargetID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                            if ($"{model.Target}{model.TargetID}" != $"{model.Subject}{model.SubjectID}")
+                                Company.AddRelationship(model.Target, model.TargetID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
+
+                            if ($"{model.Target}{model.TargetID}" != $"{model.Object}{model.ObjectID}")
+                                Company.AddRelationship(model.Target, model.TargetID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
 
                             Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
                             var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
@@ -414,17 +423,29 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
         ).SingleOrDefault();
                             if (intersect != null)
                             {
-                                // If we got here, we are all good.
+                                var existingSourceRecordCount = Company.Query<int>(
+                                    "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicatePhraseID = @p", 
+                                    new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicatePhraseID }
+                                ).Single();
 
-                                var intersectMap = new IntersectMap
+                                if (existingSourceRecordCount <= 0)
                                 {
-                                    ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
-                                    PredicatePhraseID = model.PredicatePhraseID,
-                                    SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                    Type = MapType.SourceToTarget
-                                };
-                                Company.Add<IntersectMap>(intersectMap);
-                                success = true;
+                                    // If we got here, we are all good.
+
+                                    var intersectMap = new IntersectMap
+                                    {
+                                        ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
+                                        PredicatePhraseID = model.PredicatePhraseID,
+                                        SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
+                                        Type = MapType.SourceToTarget
+                                    };
+                                    Company.Add<IntersectMap>(intersectMap);
+                                    success = true;
+                                }
+                                else
+                                {
+                                    message = $"There is already an existing source with this role.";
+                                }
                             }
                             else
                             {

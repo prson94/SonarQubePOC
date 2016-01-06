@@ -3,11 +3,6 @@
     <div class="ui segment">
         @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.Intersect, Description = "Please provide as much detail as possible in the form below.", Name = "Edit Relationship" })
 
-        <div id="RoleDropdownWrapper">
-            <div class="FieldNameRequired">What Role Is This Relationship?</div>
-            <div id="RoleDropdown"></div>
-       </div>
-
         <div class="FieldNameRequired">How Important Is This Relationship?</div>
         <div id="ImportanceDropdown"></div>
 
@@ -28,39 +23,13 @@
     };
 
     var EditRelationshipDestroy = function () {
-        $('#RoleDropdown').jqxDropDownButton('destroy');
         $('#Description').redactor('destroy');
         $('#ImportanceDropdown').jqxDropDownList('destroy');
     }
 
     $(function () {
 
-
-        //#region Question 1
-
-        var RoleSource = {
-            datatype: "json",
-            datafields: [
-                { name: 'Name' },
-                { name: 'ID' }
-            ],
-            url: '/relations/Roles?IntersectTypeID=' + IntersectTypeID,
-            async: false
-        };
-
-        var RoleAdapter = new $.jqx.dataAdapter(RoleSource, {
-            loadComplete: function (records) {
-                if (records.length == 0) {
-                    $('#RoleDropdownWrapper').hide();
-                }
-            }
-        });
-
-        $('#RoleDropdown').jqxDropDownList({ theme: theme, placeHolder: 'Choose Role...', source: RoleAdapter, displayMember: 'Name', valueMember: 'ID', width: field_width, height: field_height, dropDownWidth: 250 });
-
-        //#endregion
-
-        //#region Question 2
+        //#region Importance
 
         var ImportanceSource = {
             datatype: "json",
@@ -94,7 +63,6 @@
 
             var model = {
                 Classification: $('#ImportanceDropdown').val(),
-                Role: $('#RoleDropdown').val(),
                 Description: $('#Description').val()
             };
 
@@ -135,6 +103,5 @@
 
         // Set Current Values
         $('#ImportanceDropdown').val("@((int)Model.Classification)");
-        $('#RoleDropdown').val("@(Model.Role)");
     });
 </script>

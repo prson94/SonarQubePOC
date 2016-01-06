@@ -82,9 +82,6 @@
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTileContainer', type, selectedID, permissions);
                             break;
-                        case contextList.SourceToTarget:
-                            LineageDiagram('SourcingTile', type, selectedID, null, true);
-                            break;
                         case contextList.Synonym:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;
@@ -138,7 +135,6 @@
                             DetailsTile('DetailTile', contextList, permissions, type, selectedID, contextList.Taxonomy);
                             ObjectStatisticsTile('StatisticsTile', type, selectedID);
                             PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, selectedID, '', false);
-                            LineageDiagram('SourcingTile', type, selectedID, null, true);
                             RelationshipAggregatesTile('AggregatesTileContainer', type, selectedID, permissions);
                         }
 

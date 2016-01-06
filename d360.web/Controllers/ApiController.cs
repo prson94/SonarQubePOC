@@ -473,43 +473,29 @@ namespace d360.web.Controllers
 
         void loadResponsiblityTypeAddMenu(SystemObjects type, int id, PageActionItem addItem, bool peopleOnly = false)
         {
-            var RTs = Company.GetAllowedResponsibilityTypesByObject(type, id);// GovernanceService.GetAllowedAndUnallocatedResponsibilityTypesByObject(type, id).OrderBy(i => i.ResponsibilityTypeGroup).AsQueryable();
+            var RTs = Company.GetAllowedResponsibilityTypesByObject(type, id);
             if (peopleOnly)
             {
                 RTs = RTs.Where(i => i.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People);
             }
 
             var addPeopleItem = new PageActionItem { Title = ResponsibilityTypeGroup.People.ToString() };
-            var addSourcingItem = new PageActionItem { Title = ResponsibilityTypeGroup.Sourcing.ToString() };
             foreach (var r in RTs)
             {
                 var rItem = new PageActionItem { Context = ContextList.Responsibility, Title = string.Format("{0}", r.Name), Uri = string.Format("/form/AddResponsibility?responsibilityTypeID={0}&type={1}&id={2}", r.ID, type.ToString(), id) };
-                switch (r.ResponsibilityTypeGroup)
-                {
-                    case ResponsibilityTypeGroup.People:
-                        addPeopleItem.Items.Add(rItem);
-                        break;
-                    default:
-                        addSourcingItem.Items.Add(rItem);
-                        break;
-                }
+                addPeopleItem.Items.Add(rItem);
             }
 
             if (addPeopleItem.Items.Count > 0)
                 addItem.Items.Add(addPeopleItem);
             else
                 addPeopleItem = null;
-
-            if (addSourcingItem.Items.Count > 0)
-                addItem.Items.Add(addSourcingItem);
-            else
-                addSourcingItem = null;
         }
 
         // '/form/EditWorkflowAllocation?workflowType={0}&type=' + type + '&id=' + id
         void loadWorkflowAllocationAddMenu(SystemObjects type, int id, PageActionItem addItem)
         {
-            var workflows = type.GetAllowedWorkflows();
+            var workflows = type.GetAllowedWorkflows().Where(i => i.ID != WorkflowType.WorkIssue).ToList();
 
             var sType = type.ToString();
             var currentItems = Company.Filter<WorkflowTypeRelation>(i => i.Object == sType && i.ObjectID == id).ToList();
@@ -3995,9 +3981,11 @@ from	A
         #region Taxonomy
 
         [Route("catalogs")]
-        public IQueryable<TaxonomyType> GetTaxonomyTypes()
+        public HttpResponseMessage GetTaxonomyTypes()
         {
-            return Company.Table<TaxonomyType>();
+            return Request.CreateResponse<dynamic>(HttpStatusCode.OK, 
+                Company.Table<TaxonomyType>().OrderBy(i => i.Name).Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, TaxonomyTypeClass = i.TaxonomyTypeClass.Name })
+            );
         }
 
         [Route("TaxonomyType/{id:int}/levels")]

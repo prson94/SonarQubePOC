@@ -53,7 +53,7 @@
                     statisticsTileVm.GetStatistics();
 
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, ruleID, '');
-                    environment_diagram('SourcingTile', permissions, type, ruleID);
+                    LineageDiagram('SourcingTile', type, ruleID, permissions, true);
                     RelationshipAggregatesTile('AggregatesTileContainer', type, ruleID, permissions);
 
                     EventStatusBreakdownChart('EventStatusChart', contextList, type, ruleID, timescale);

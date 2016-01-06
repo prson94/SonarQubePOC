@@ -34,7 +34,7 @@
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
                 $('#SideIcons').PageTools("reload", type, data.ID);
-                DetailTile('DetailTile', contextList, permissions, type, data.ID);
+                //DetailTile('DetailTile', contextList, permissions, type, data.ID);
                 TaxonomyTypeLevelsGrid('LevelsTile', contextList, permissions, data.ID);
                 FieldsGrid("FieldsTile", contextList, permissions, type, data.ID, 'Model Definition');
                 $('#ClaimsTile').load('/parts/ResponsibilityTypeObjectClaimGrid?type=' + type + '&id=' + data.ID);
@@ -111,7 +111,9 @@
                         datafields: [
                             { name: 'ID' },
                             { name: 'Name' },
-                            { name: 'Description' }
+                            { name: 'Description' },
+                            { name: 'TaxonomyTypeClass' },
+                            { name: 'MaximumDepth' }
                         ]
                     };
 
@@ -131,6 +133,8 @@
                         theme: list_theme,
                         columns: [
                             { datafield: "Name", text: "Name" },
+                            { datafield: "TaxonomyTypeClass", text: "Classification", filtertype: 'checkedlist', width: 120 },
+                            { datafield: "MaximumDepth", text: "Maximum Depth", filtertype: 'checkedlist', width: 100 },
                             {
                                 text: '',
                                 dataField: 'ID',

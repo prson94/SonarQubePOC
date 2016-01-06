@@ -894,22 +894,22 @@ order by	ColumnIndex", new { id });
             return ObjectStyles.SingleOrDefault(i => i.ObjectType == sType && i.ObjectID == id);
         }
         
-        public IEnumerable<NonIntersectionPoint> GetPossibleRelationshipsBySourceAndTargetType(SystemObjects source, int sourceID, SystemObjects targetType, int targetTypeID, int intersectTypeID)
-        {
-            return
-                Database.Connection.Query<NonIntersectionPoint>(
-                    "EXEC GetNonIntersections @SourceID, @TargetTypeID, @SourceType, @TargetType, @Prefix, @IntersectTypeID",
-                    new
-                    {
-                        SourceID = sourceID,
-                        TargetTypeID = targetTypeID,
-                        SourceType = source.ToString(),
-                        TargetType = targetType.ToString(),
-                        Prefix = "",
-                        IntersectTypeID = intersectTypeID
-                    }, null, true, 120
-                );
-        }
+        //public IEnumerable<NonIntersectionPoint> GetPossibleRelationshipsBySourceAndTargetType(SystemObjects source, int sourceID, SystemObjects targetType, int targetTypeID, int intersectTypeID)
+        //{
+        //    return
+        //        Database.Connection.Query<NonIntersectionPoint>(
+        //            "EXEC GetNonIntersections @SourceID, @TargetTypeID, @SourceType, @TargetType, @Prefix, @IntersectTypeID",
+        //            new
+        //            {
+        //                SourceID = sourceID,
+        //                TargetTypeID = targetTypeID,
+        //                SourceType = source.ToString(),
+        //                TargetType = targetType.ToString(),
+        //                Prefix = "",
+        //                IntersectTypeID = intersectTypeID
+        //            }, null, true, 120
+        //        );
+        //}
 
         public XElement GetRandomSurveyQuestionForUser(SystemObjects type, int id)
         {

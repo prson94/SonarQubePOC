@@ -2180,12 +2180,36 @@
             <param name="model">A rule</param>
             <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new rule is also returned.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.AddEvents(System.Int32,d360.web.Controllers.Services.EventsController.CreateEventsModelRequest)">
+        <member name="M:d360.web.Controllers.Services.EventsController.AddSourceRuleEvents(System.String,d360.web.Controllers.Services.EventsController.CreateEventsModelRequest)">
+            <summary>
+            Add one or more events to a rule.
+            </summary>
+            <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
+            <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.AddRuleEvents(System.Int32,d360.web.Controllers.Services.EventsController.CreateEventsModelRequest)">
             <summary>
             Add one or more events to a rule.
             </summary>
             <param name="id">The ID of the rule to add events to.</param>
             <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.AddSourceRuleRelationships(System.String,System.Collections.Generic.List{d360.core.entities.ObjectModel})">
+            <summary>
+            Add one or more relationships to a rule based on the source ID from an underlying system that originally created the rule.
+            </summary>
+            <param name="sourceID">The underlying source ID of the system the the rule originated from.</param>
+            <param name="models">A collection of relationships.</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.AddRuleRelationships(System.Int32,System.Collections.Generic.List{d360.core.entities.ObjectModel})">
+            <summary>
+            Add one or more relationships to a rule.
+            </summary>
+            <param name="id">The ID of the rule to add events to.</param>
+            <param name="models">A collection of relationships.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.Services.EventsController.GetAttributesByAttributeType(System.Int32,System.Int32)">

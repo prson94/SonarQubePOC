@@ -159,7 +159,9 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class ObjectModel: BaseObject
     {
+        [DataMember]
         public string ObjectType { get; set; }
+        [DataMember]
         public int ObjectID { get; set; }
     }
 

@@ -7,11 +7,6 @@
             <div id="ItemsGrid"></div>
         </div>
 
-        <div id="RoleDropdownWrapper">
-            <div class="FieldNameRequired">What Role Is This Relationship?</div>
-            <div id="RoleDropdown"></div>
-        </div>
-
         <div class="FieldNameRequired">How Important Is This Relationship?</div>
         <div id="ImportanceDropdown"></div>
 
@@ -36,7 +31,6 @@
     var AddRelationshipDestroy = function () {
         $("#ItemsGrid").jqxGrid('destroy');
         $('#ItemsDropdown').jqxDropDownButton('destroy');
-        $('#RoleDropdown').jqxDropDownButton('destroy');
         $('#Description').redactor('destroy');
         $('#ImportanceDropdown').jqxDropDownList('destroy');
     }
@@ -100,30 +94,6 @@
 
         //#endregion
 
-        //#region Question 2
-
-        //var RoleSource = {
-        //    datatype: "json",
-        //    datafields: [
-        //        { name: 'Name' },
-        //        { name: 'ID' }
-        //    ],
-        //    //url: '/relations/Roles?IntersectTypeID=' + IntersectTypeID,
-        //    async: false
-        //};
-
-        //var RoleAdapter = new $.jqx.dataAdapter(RoleSource, {
-        //    loadComplete: function (records) {
-        //        if (records.length == 0) {
-        //            $('#RoleDropdownWrapper').hide();
-        //        }
-        //    }
-        //});
-
-        //$('#RoleDropdown').jqxDropDownList({ theme: theme, placeHolder: 'Choose Role...', source: RoleAdapter, displayMember: 'Name', valueMember: 'ID', width: field_width, height: field_height, dropDownWidth: 250 });
-
-        //#endregion
-
         //#region Question 3
 
         var ImportanceSource = {
@@ -161,7 +131,6 @@
             var model = {
                 Targets: [],
                 Classification: $('#ImportanceDropdown').val(),
-                //Role: $('#RoleDropdown').val(),
                 Description: $('#Description').val()
             };
 
