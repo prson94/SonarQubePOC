@@ -1,148 +1,247 @@
-﻿<div id="{{control}}_overlay" style="display:none; background-color:rgba(0, 0, 0, 0.1); width:100%;height:100%;position:absolute;z-index:100000;top:0;left:0;">
-    <div id="overlayModal" style="background-color:white;border-radius:5px;width:33%;min-width:500px;vertical-align:middle;margin:15px auto;padding:25px;box-shadow:10px 10px 5px rgba(0,0,0,.3);border:1px solid lightgray">
-        <div style="width:100%;text-align:center;">
-            <div id="{{control}}_overlay_relationship"></div><br />
+﻿<div id="{{control}}_wrapper_fullscreen" style="z-index:1000000;background-color:white;">
+    <div id="{{control}}_overlay" style="display:none; background-color:rgba(0, 0, 0, 0.1); width:100%;height:100%;position:absolute;z-index:100000;top:0;left:0;">
+        <div id="overlayModal" style="background-color:white;border-radius:5px;width:33%;min-width:500px;vertical-align:middle;margin:15px auto;padding:25px;box-shadow:10px 10px 5px rgba(0,0,0,.3);border:1px solid lightgray">
+            <div style="width:100%;text-align:center;">
+                <div id="{{control}}_overlay_relationship"></div><br />
+            </div>
+            <div id="{{control}}_overlay_radio_existing">Choose an existing predicate</div>
+            <table id="{{control}}_overlay_existing" style="margin-top:5px;">
+                <tbody>
+                    <tr>
+                        <td style="width:27px;"></td>
+                        <td>
+                            Predicate:
+                        </td>
+                        <td>
+                            <select id="{{control}}_overlay_predicates" class="select-dropdown browser-default" style="height:100%"></select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="{{control}}_overlay_radio_new">Create a new predicate</div>
+            <table id="{{control}}_overlay_new" style="display:none;margin-top:5px;">
+                <tbody>
+                    <tr>
+                        <td style="width:27px;"></td>
+                        <td style="padding-bottom:5px">
+                            Predicate Name:
+                        </td>
+                        <td>
+                            <input type="text" id="{{control}}_overlay_pname" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:27px;"></td>
+                        <td>
+                            Phrase:
+                        </td>
+                        <td>
+                            <input type="text" id="{{control}}_overlay_phrase" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table style="margin-top:5px;">
+                <tbody>
+                    <tr>
+                        <td>
+                            <button id="{{control}}_overlay_add" style="display:none;" class="btn white-text" disabled>OK</button>
+                        </td>
+                        <td>
+                            <button id="{{control}}_overlay_cancel" class="btn red darken-3 white-text">Cancel</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div id="{{control}}_overlay_radio_existing">Choose an existing predicate</div>
-        <table id="{{control}}_overlay_existing" style="margin-top:5px;">
-            <tbody>
-                <tr>
-                    <td style="width:27px;"></td>
-                    <td>
-                        Predicate:
-                    </td>
-                    <td>
-                        <select id="{{control}}_overlay_predicates" class="select-dropdown browser-default" style="height:100%"></select>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div id="{{control}}_overlay_radio_new">Create a new predicate</div>
-        <table id="{{control}}_overlay_new" style="display:none;margin-top:5px;">
-            <tbody>
-                <tr>
-                    <td style="width:27px;"></td>
-                    <td style="padding-bottom:5px">
-                        Predicate Name:
-                    </td>
-                    <td>
-                        <input type="text" id="{{control}}_overlay_pname" />
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width:27px;"></td>
-                    <td>
-                        Phrase:
-                    </td>
-                    <td>
-                        <input type="text" id="{{control}}_overlay_phrase" />
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table style="margin-top:5px;">
-            <tbody>
-                <tr>
-                    <td>
-                        <button id="{{control}}_overlay_add" style="display:none;" class="btn white-text" disabled>OK</button>
-                    </td>
-                    <td>
-                        <button id="{{control}}_overlay_cancel" class="btn red darken-3 white-text">Cancel</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
     </div>
+    <div id="{{control}}_ribbon_expander" style="width:100%;">
+        <div style="font-size:1.1em;">
+            <i class="fa fa-gear"></i> Diagram Controls
+        </div>
+        <div style="width: 100%;height:120px" id="{{control}}_ribbon">
+            <ul>
+                <li>
+                    <!--<i class="fa fa-eye"></i>--> View
+                </li>
+                <li>
+                    <!--<i class="fa fa-edit"></i>--> Edit
+                </li>
+            </ul>
+            <div>
+                <!-- div ribbon container -->
+                <div>
+                    <!-- 0-View -->
+                    <table style="width:auto;height:115px;">
+                        <tbody>
+                            <tr style="font-size:.8em;padding-top:2px;height:15px;">
+                                <td colspan="2" style="padding-left:5px;">
+                                    Overview
+                                </td>
+                                <td colspan="2" style="padding-left:5px;">
+                                    Zoom
+                                </td>
+                                <td colspan="2" style="padding-left:5px;">
+                                    Other
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:5px;">
+                                    <div style="border: 1px solid #ccc;margin:2px;">
+                                        <div id="{{control}}_overview" style="width:100px;height:80px"></div>
+                                    </div>
+                                </td>
+                                <td style="width:1px;border-left:1px solid #ccc;"></td>
+                                <td style="padding:0 5px 0 5px">
+                                    <table style="height:80px;">
+                                        <tbody>
+                                            <tr>
+                                                <td style="text-align: center;">
+                                                    <button id="{{control}}_ribbon_zoom_100"><i class="fa fa-search"></i> 100%</button>
+                                                    <button id="{{control}}_ribbon_zoom_fit"><i class="fa fa-expand"></i> Fit</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <button id="{{control}}_ribbon_zoom_out"><i class="fa fa-search-minus"></i></button>
+                                                    <input id="{{control}}_ribbon_zoom_slider" type="range" max="2250" min="750" value="1500" style="width:150px; display:inline-block;" />
+                                                    <button id="{{control}}_ribbon_zoom_in" style="display:inline-block"><i class="fa fa-search-plus"></i></button>
+                                                    <span id="{{control}}_ribbon_zoom_text" style="display: inline-block;">100%</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                                <td style="width:1px;border-left:1px solid #ccc;"></td>
+                                <td style="padding:5px;vertical-align:top;">
+                                    <button id="{{control}}_ribbon_fullscreen" style="vertical-align:top;"><i class="fa fa-2x fa-arrows-alt"></i><br />Fullscreen</button>
+                                    <button id="{{control}}_ribbon_reset"><i class="fa fa-2x fa-refresh"></i><br />Reset</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <!-- 1-Edit -->
+                    <table style="width:auto;height:115px;">
+                        <tbody>
+                            <tr style="font-size:.8em;padding-top:2px;height:15px;">
+                                <td colspan="2" style="padding-left:5px;">
+                                </td>
+                                <td colspan="2" style="padding-left:5px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:5px;">
+                                    <button id="{{control}}_ribbon_undo"><i class="fa fa-2x fa-undo"></i><br />Undo</button>
+                                    <button id="{{control}}_ribbon_redo"><i class="fa fa-2x fa-repeat"></i><br />Redo</button>
+                                    <button id="{{control}}_ribbon_remove"><i class="fa fa-2x fa-remove"></i><br />Remove</button>
+                                    <!-- not sure why valign top is needed here -->
+                                    <button style="vertical-align: top;" id="{{control}}_ribbon_add"><i class="fa fa-2x fa-plus"></i><br />Insert a Node</button>
+                                </td>
+                                <td style="width:1px;border-left:1px solid #ccc;"></td>
+                                <td style="padding:5px;">
+                                    <button id="{{control}}_ribbon_save"><i class="fa fa-2x fa-save"></i><br />Save Changes</button>
+                                </td>
+                                <td style="width:1px;border-left:1px solid #ccc;"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--<div id="{{control}}_ribbon_spacer" style="height:8px">
+    </div>-->
+    <table>
+        <tbody>
+            <tr style="vertical-align:top;height:520px">
+                <td>
+                    <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
+                        <div id="{{control}}_dgm" style="height:400px; overflow: no-display"></div>
+                    </div>
+                </td>
+                <td style="width:350px;vertical-align:top;height:100%">
+                    <div id="{{control}}_sidebar" style="height:100%; overflow-y: scroll;">
+                        <!--<div id="{{control}}_controls">
+                            <div><i class="fa fa-gear"></i> Diagram Controls</div>
+                            <div style="padding: 10px">
+                                <h4>Zoom</h4>
+                                <div id="{{control}}_controls_zoom" style="display: inline-block; width: 70%"></div>
+                                <span id="{{control}}_zoomDisplay" style="display: inline-block; width: 30%">100% </span>
+                                <br /><br />
+                                <button id="{{control}}_controls_zoom100">zoom to 100%</button>
+                                <button id="{{control}}_controls_zoomfit">zoom to fit</button>
+                                <button id="{{control}}_controls_reset">reset</button>
+
+                                <button onclick="reOrderLayout();">reorganize </button>
+                                | <button onclick="toggleFullscreen(isFullscreen);">toggle fullscreen</button>
+                                | spacing: <input id="txtSpacing" type="text" value="25" maxlength="3" style="width:40px" onkeyup="changeSpacing($(this).val())" />
+                                <button onclick="rotateDiagram();">rotate</button>
+                                <button id="saveBtn" class="btn red" onclick="saveChanges();" style="float:right"><i class="fa fa-save"></i> Save Changes</button>
+                            </div>
+                        </div>-->
+                        <div id="{{control}}_info">
+                            <div><i class="fa fa-info-circle"></i> Info</div>
+                            <div style="padding: 10px" id="{{control}}_info_body"></div>
+                        </div>
+                        <!--<div id="{{control}}_actions">
+                            <div><i class="fa fa-pencil"></i> Actions</div>
+                            <div style="padding: 10px">
+                            </div>
+                        </div>-->
+                        <div id="{{control}}_add">
+                            <div><i class="fa fa-plus"></i> Add a new node</div>
+                            <div style="padding: 10px">
+                                Type: <select data-bind="value: NodeType" class="select-dropdown browser-default" id="{{control}}_add_artifact_type" style="height:100%"></select><br />
+                                Search: <input id="{{control}}_add_search_text" type="text" />
+                                <button id="{{control}}_add_search">Search</button>
+                                <div id="{{control}}_palette" style="height:300px"></div>
+                            </div>
+                        </div>
+                        <div id="{{control}}_fusion">
+                            <div><i class="fa fa-database"></i> Fusion Relationships</div>
+                            <div style="padding:10px" id="{{control}}_fusion_body">
+                                <table id="{{control}}_fusion_table" style="display:none;padding:2px;font-size:smaller">
+                                    <tbody>
+                                        <tr style="background-color:lightslategray;color:white;">
+                                            <th style="border-radius:0;padding:2px;">
+                                                Attribute
+                                            </th>
+                                            <th style="border-radius:0;padding:2px;">
+                                                Fusion
+                                            </th>
+                                            <th style="border-radius:0;padding:2px;">
+                                                Name
+                                            </th>
+                                            <th style="border-radius:0;padding:2px;">
+                                                Type
+                                            </th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="{{control}}_responsibilities">
+                            <div><i class="fa fa-retweet"></i> Responsibilities</div>
+                            <div style="padding:10px">
+                                <table id="{{control}}_responsibilities_table" style="display:none;padding:2px;font-size:smaller">
+                                    <tbody>
+                                        <tr style="background-color:lightslategray;color:white;">
+                                            <th style="border-radius:0;padding:2px;">
+                                                Type
+                                            </th>
+                                            <th style="border-radius:0;padding:2px;">
+                                                Description
+                                            </th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>
-<table>
-    <tbody>
-        <tr style="vertical-align:top;height:520px">
-            <td>
-                <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
-                    <div id="{{control}}_dgm" style="height:400px; overflow: no-display"></div>
-                </div>
-            </td>
-            <td style="width:350px;vertical-align:top;height:100%">
-                <div id="{{control}}_sidebar" style="height:100%; overflow-y: scroll;">
-                    <div id="{{control}}_controls">
-                        <div><i class="fa fa-gear"></i> Diagram Controls</div>
-                        <div style="padding: 10px">
-                            <h4>Zoom</h4>
-                            <div id="{{control}}_controls_zoom" style="display: inline-block; width: 70%"></div>
-                            <span id="{{control}}_zoomDisplay" style="display: inline-block; width: 30%">100% </span>
-                            <br /><br />
-                            <button id="{{control}}_controls_zoom100">zoom to 100%</button>
-                            <button id="{{control}}_controls_zoomfit">zoom to fit</button>
-                            <button id="{{control}}_controls_reset">reset</button>
-                            <div style="margin-top:5px;width:100%;text-align:center;"><button id="{{control}}_controls_save" class="btn btn-flat red white-text">Save Changes</button></div>
-                            <!--<button onclick="reOrderLayout();">reorganize </button>-->
-                            <!--| <button onclick="toggleFullscreen(isFullscreen);">toggle fullscreen</button>-->
-                            <!--| spacing: <input id="txtSpacing" type="text" value="25" maxlength="3" style="width:40px" onkeyup="changeSpacing($(this).val())" />-->
-                            <!--<button onclick="rotateDiagram();">rotate</button>-->
-                            <!--<button id="saveBtn" class="btn red" onclick="saveChanges();" style="float:right"><i class="fa fa-save"></i> Save Changes</button>-->
-                        </div>
-                    </div>
-                    <div id="{{control}}_info">
-                        <div><i class="fa fa-info-circle"></i> Info</div>
-                        <div style="padding: 10px" id="{{control}}_info_body"></div>
-                    </div>
-                    <div id="{{control}}_actions">
-                        <div><i class="fa fa-pencil"></i> Actions</div>
-                        <div style="padding: 10px">
-                            <button id="{{control}}_actions_remove" style="display:none">Remove</button>
-                        </div>
-                    </div>
-                    <div id="{{control}}_add">
-                        <div><i class="fa fa-plus"></i> Add a new node</div>
-                        <div style="padding: 10px">
-                            Type: <select data-bind="value: NodeType" class="select-dropdown browser-default" id="{{control}}_add_artifact_type" style="height:100%"></select><br />
-                            Search: <input id="{{control}}_add_search_text" type="text" />
-                            <button id="{{control}}_add_search">Search</button>
-                            <div id="{{control}}_palette" style="height:300px"></div>
-                        </div>
-                    </div>
-                    <div id="{{control}}_fusion">
-                        <div><i class="fa fa-database"></i> Fusion Relationships</div>
-                        <div style="padding:10px" id="{{control}}_fusion_body">
-                            <table id="{{control}}_fusion_table" style="display:none;padding:2px;font-size:smaller">
-                                <tbody>
-                                    <tr style="background-color:lightslategray;color:white;">
-                                        <th style="border-radius:0;padding:2px;">
-                                            Attribute
-                                        </th>
-                                        <th style="border-radius:0;padding:2px;">
-                                            Fusion
-                                        </th>
-                                        <th style="border-radius:0;padding:2px;">
-                                            Name
-                                        </th>
-                                        <th style="border-radius:0;padding:2px;">
-                                            Type
-                                        </th>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div id="{{control}}_responsibilities">
-                        <div><i class="fa fa-retweet"></i> Responsibilities</div>
-                        <div style="padding:10px">
-                            <table id="{{control}}_responsibilities_table" style="display:none;padding:2px;font-size:smaller">
-                                <tbody>
-                                    <tr style="background-color:lightslategray;color:white;">
-                                        <th style="border-radius:0;padding:2px;">
-                                            Type
-                                        </th>
-                                        <th style="border-radius:0;padding:2px;">
-                                            Description
-                                        </th>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </tbody>
-</table>
