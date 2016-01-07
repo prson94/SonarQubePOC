@@ -1046,11 +1046,13 @@ namespace d360.fusion
                     }
 
                     Field fieldVal = new Field
-                    {
-                        ObjectID = id,                        
-                        Value = (item.Value.Length > MAX_FIELD_VALUE_LENGTH ? item.Value.Substring(0, MAX_FIELD_VALUE_LENGTH) : item.Value),
+                    {                    
+                        ObjectID = id,                                                
                         FieldTypeID = fieldInfo.FieldTypeID
                     };
+
+                    if (!string.IsNullOrEmpty(item.Value))
+                        fieldVal.Value = (item.Value.Length > MAX_FIELD_VALUE_LENGTH ? item.Value.Substring(0, MAX_FIELD_VALUE_LENGTH) : item.Value);
 
                     _workArea.FieldTempValues.Add(fieldVal);
                 }                
