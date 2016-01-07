@@ -469,7 +469,7 @@ namespace d360.fusion
             await companyConnection.ExecuteAsync(@"
                 merge [fusion].[stagingrelationunresolved] as T
                 using (
-                    select StartID,
+                    select distinct StartID,
                         EndID
                     from #tempUnresolvedRel
                 ) as S
