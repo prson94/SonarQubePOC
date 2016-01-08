@@ -88,7 +88,7 @@ BEGIN
 		R.EndIntersectTypeNodeID = RelTypes.TargetIntersectTypeNodeID,
 		R.IntersectTypeID = RelTypes.IntersectTypeID
 	from #relations as R
-	inner join utility.RelationshipTypes RelTypes on (RelTypes.SourceObjectType = R.StartPromotedObjectType and RelTypes.TargetObjectType = R.EndPromotedObjectType and RelTypes.SourceObjectID = R.StartPromotedObjectTypeID and RelTypes.TargetObjectID = R.EndPromotedObjectTypeID)
+	inner join utility.RelationshipTypes RelTypes on (RelTypes.SourceObjectType = R.StartPromotedObjectType + 'Type' and RelTypes.TargetObjectType = R.EndPromotedObjectType + 'Type' and RelTypes.SourceObjectID = R.StartPromotedObjectTypeID and RelTypes.TargetObjectID = R.EndPromotedObjectTypeID)
 		
 	
 	-- create an relations that we still have -1 start / end type node ids
@@ -106,7 +106,7 @@ BEGIN
 		R.EndIntersectTypeNodeID = RelTypes.TargetIntersectTypeNodeID,
 		R.IntersectTypeID = RelTypes.IntersectTypeID
 	from #relations as R
-	inner join utility.RelationshipTypes RelTypes on (RelTypes.SourceObjectType = R.StartPromotedObjectType and RelTypes.TargetObjectType = R.EndPromotedObjectType and RelTypes.SourceObjectID = R.StartPromotedObjectTypeID and RelTypes.TargetObjectID = R.EndPromotedObjectTypeID)
+	inner join utility.RelationshipTypes RelTypes on (RelTypes.SourceObjectType = R.StartPromotedObjectType + 'Type' and RelTypes.TargetObjectType = R.EndPromotedObjectType + 'Type' and RelTypes.SourceObjectID = R.StartPromotedObjectTypeID and RelTypes.TargetObjectID = R.EndPromotedObjectTypeID)
 		
 
 	select @numberNewRelations = count(1) from #relations
