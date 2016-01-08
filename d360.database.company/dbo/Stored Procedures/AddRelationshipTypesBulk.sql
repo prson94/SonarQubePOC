@@ -1,4 +1,4 @@
-﻿create procedure [dbo].[AddRelationshipTypesBulk]
+﻿CREATE procedure [dbo].[AddRelationshipTypesBulk]
 	@unresolvedrelations RelationshipTypeTable readonly
 as
 begin
@@ -6,6 +6,7 @@ begin
 
 	if exists(select 1 from @unresolvedrelations)
 	begin
+			
 			-- Relationship does not yet exist, so CREATE.
 			Declare @UnResIDList Table(IntersectTypeID int,UnresID Int);
 			
@@ -26,12 +27,12 @@ begin
 
 		
 		INSERT INTO IntersectTypeNode	(IntersectTypeID, ObjectType, ObjectID, [Order]) 
-			select il.IntersectTypeID, ur.startpromotedobjecttype, ur.startpromotedobjecttypeid, 1 from @unresolvedrelations ur inner join @UnResIDList il on (ur.ID = il.UnresID);
+			select il.IntersectTypeID, ur.startpromotedobjecttype + 'Type', ur.startpromotedobjecttypeid, 1 from @unresolvedrelations ur inner join @UnResIDList il on (ur.ID = il.UnresID);
 				
 
 		
 		INSERT INTO IntersectTypeNode	(IntersectTypeID, ObjectType, ObjectID, [Order]) 
-			select il.IntersectTypeID, ur.endpromotedobjecttype, ur.endpromotedobjecttypeid, 2 from @unresolvedrelations ur inner join @UnResIDList il on (ur.ID = il.UnresID);
+			select il.IntersectTypeID, ur.endpromotedobjecttype + 'Type', ur.endpromotedobjecttypeid, 2 from @unresolvedrelations ur inner join @UnResIDList il on (ur.ID = il.UnresID);
 				
 	end
 
