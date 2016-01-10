@@ -180,12 +180,6 @@ namespace d360.model
 
         public DbSet<IntersectTypeNode> IntersectTypeNodes { get; set; }
 
-        public DbSet<IntersectTypeRoleRelation> IntersectTypeRoleRelations { get; set; }
-
-        public DbSet<IntersectTypeRole> IntersectTypeRoles { get; set; }
-
-        public DbSet<LeafFusionAttribute> LeafFusionAttributes { get; set; }                                /* VIEW */
-
         public DbSet<Load> Loads { get; set; }
 
         public DbSet<LoadItem> LoadItems { get; set; }
@@ -257,8 +251,6 @@ namespace d360.model
         public DbSet<ResponsibilityDetail> ResponsibilityDetails { get; set; }                              /* VIEW */
 
         public DbSet<ResponsibilitySummaryDetail> ResponsibilitySummaryDetails { get; set; }                /* VIEW */
-
-        public DbSet<ResponsibilityTransformation> ResponsibilityTransformations { get; set; }
 
         public DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
 
@@ -2225,15 +2217,11 @@ order by Name", new { workflowType, type, id });
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<FusionAttributePromotion>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotions).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<FusionAttributePromotionRuleMapping>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleMappings).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<FusionAttributePromotionRuleItem>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleItems).HasForeignKey(k => k.FusionAttributePromotionRule).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectTypeNode>().HasRequired(t => t.IntersectType).WithMany(t => t.Nodes).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
             //modelBuilder.Entity<IntersectFlowMapping>().HasMany<DomainItem>(i => i.Contexts).WithMany(i => i.Mappings).Map(i =>
             //{
             //    i.MapLeftKey("IntersectFlowMappingID").MapRightKey("DomainItemID").ToTable("IntersectFlowMappingContextItem");
             //});
-            modelBuilder.Entity<IntersectTypeRoleRelation>().HasRequired(t => t.IntersectTypeRole).WithMany(t => t.RoleRelations).HasForeignKey(k => k.IntersectTypeRoleID).WillCascadeOnDelete(true);
 
             base.OnModelCreating(modelBuilder);
         }

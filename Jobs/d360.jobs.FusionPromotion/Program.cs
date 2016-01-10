@@ -49,7 +49,7 @@ namespace d360.jobs.FusionPromotion
                         while (writeStatus)
                         {
                             Console.WriteLine(".");
-                            System.Threading.Thread.Sleep(45000);
+                            System.Threading.Thread.Sleep(15000);
                         }
 
                         Console.WriteLine("Company: {0}. Finished executing FusionPromotion procedure", companyID);

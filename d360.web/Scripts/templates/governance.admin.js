@@ -65,10 +65,6 @@
 
                 $('#SideIcons').PageTools({ type: type, id: 0 });
 
-                permissions.GetPermissionsForObject(type, 0);
-
-                //#region Grid
-
                 GovernanceSource =
                             {
                                 datatype: 'json',
@@ -76,53 +72,61 @@
                                 datafields:
                                 [
                                     { name: 'ID' },
-                                    { name: 'ResponsibilityTypeGroup' },
                                     { name: 'Name' }
                                 ]
                             };
 
                 GovernanceAdapter = new $.jqx.dataAdapter(GovernanceSource);
 
-                $("#AdminResponsibilityTypeGrid").jqxGrid({
-                    altrows: true,
-                    width: grid_width,
-                    pagesizeoptions: ['10', '20', '50'],
-                    pagesize: 20,
-                    autoheight: true,
-                    sortable: true,
-                    filterable: true,
-                    showfilterrow: true,
-                    pageable: true,
-                    groupable: false,
-                    source: GovernanceAdapter,
-                    theme: list_theme,
-                    columns: [
-                        { datafield: "Name", text: "Name" },
-                        { datafield: "ResponsibilityTypeGroup", filtertype: 'list', filteritems: ['People','Sourcing'], text: "Group", width: 125 },
-                        {
-                            text: '',
-                            dataField: 'ID',
-                            width: 80,
-                            filterable: false,
-                            cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                var loadAfterPermissionsRetrieved = function () {
 
-                                var tools = [];
+                    var tools = [];
+                    if (permissions.HasPermission("Root", "Create")) {
+                        tools.push({ icon: 'plus', uri: '/form/AddResponsibilityType?Group=1', context: contextList.ResponsibilityType, title: 'Add responsibility type' });
+                    }
+                    TileTools('#AdminResponsibilityTypeGridTools', tools);
 
-                                if (permissions.HasPermission('Root', 'Update')) {
-                                    tools.push({ icon: 'pencil', urlprefix: '/form/EditResponsibilityType?id={0}' });
+                    $("#AdminResponsibilityTypeGrid").jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        pagesizeoptions: ['10', '20', '50'],
+                        pagesize: 20,
+                        autoheight: true,
+                        sortable: true,
+                        filterable: true,
+                        showfilterrow: true,
+                        pageable: true,
+                        groupable: false,
+                        source: GovernanceAdapter,
+                        theme: list_theme,
+                        columns: [
+                            { datafield: "Name", text: "Name" },
+                            {
+                                text: '',
+                                dataField: 'ID',
+                                width: 80,
+                                filterable: false,
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+
+                                    var tools = [];
+
+                                    if (permissions.HasPermission('Root', 'Update')) {
+                                        tools.push({ icon: 'pencil', urlprefix: '/form/EditResponsibilityType?id={0}' });
+                                    }
+
+                                    if (permissions.HasPermission('Root', 'Delete')) {
+                                        tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibilityType?id={0}' });
+                                    }
+
+                                    return renderToolsHtml(value, tools, contextList.OwnershipType);
                                 }
-                                
-                                if (permissions.HasPermission('Root', 'Delete')) {
-                                    tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibilityType?id={0}' });
-                                }
-
-                                return renderToolsHtml(value, tools, contextList.OwnershipType);
                             }
-                        }
-                    ]
-                });
+                        ]
+                    });
 
-                //#endregion
+                };
+
+                permissions.GetPermissionsForObject(type, 0).then(loadAfterPermissionsRetrieved);
 
                 //#region Event Subscriptions
 

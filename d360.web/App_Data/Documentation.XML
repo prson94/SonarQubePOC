@@ -2609,17 +2609,6 @@
         <member name="M:d360.web.Controllers.FormController.IntersectType_DeleteFields(System.Int32)">
             <param name="id">IntersectTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.IntersectTypeRole_AddFields(System.Int32)">
-            <param name="intersectTypeID">The ID of the Intersect Type</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.IntersectTypeRole_DeleteFields(System.Int32,System.Int32)">
-            <param name="id">The ID of the Role</param>
-            <param name="intersectTypeID">The ID of the Intersect Type</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.IntersectTypeRole_EditFields(System.Int32,System.Int32)">
-            <param name="id">The ID of the Role</param>
-            <param name="intersectTypeID">The ID of the Intersect Type</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Group_DeleteFields(System.Int32)">
             <param name="id">GroupID</param>
         </member>
@@ -2686,20 +2675,11 @@
         <member name="M:d360.web.Controllers.FormController.Responsibility_DeleteFields(System.Int32)">
             <param name="id">ResponsibilityID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.ResponsibilityTransformation_DeleteFields(System.Int32)">
-            <param name="id">ResponsibilityTransformationID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponsibilityTransformation_EditFields(System.Int32)">
-            <param name="id">ResponsibilityTransformationID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.ResponsibilityType_DeleteFields(System.Int32)">
             <param name="id">ResponsibilityTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.ResponsibilityType_EditFields(System.Int32)">
             <param name="id">ResponsibilityTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponsibilityTypeHierarchy_DeleteFields(System.Int32,System.Nullable{System.Int32})">
-            <param name="id">ResponsibilityTypeHierarchy ID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.QuestionType_AddFields(System.Int32)">
             <param name="id">SurveyTypeID</param>
@@ -2834,16 +2814,6 @@
             <param name="id">The target IntersectID</param>
             <returns>JSON Data</returns>
         </member>
-        <member name="P:d360.web.Controllers.RelationsController.AddSourcePostModel.Target">
-            <summary>
-            The current object that we are creating sources for.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.RelationsController.AddSourcePostModel.TargetID">
-            <summary>
-            The current object's ID that we are creating sources for.
-            </summary>
-        </member>
         <member name="M:d360.web.Models.Attributes.FileDownloadAttribute.CheckAndHandleFileResult(System.Web.Mvc.ActionExecutedContext)">
             <summary>
             If the current response is a FileResult (an MVC base class for files) then write a
@@ -2854,6 +2824,16 @@
         <member name="T:d360.web.Models.AddRelationshipsModel">
             <summary>
             Serves as the base editor model for all forms.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.AddSourcePostModel.Target">
+            <summary>
+            The current object that we are creating sources for.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.AddSourcePostModel.TargetID">
+            <summary>
+            The current object's ID that we are creating sources for.
             </summary>
         </member>
         <member name="P:d360.web.Models.FieldValidationModel.message">

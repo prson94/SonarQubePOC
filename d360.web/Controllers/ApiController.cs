@@ -245,10 +245,15 @@ namespace d360.web.Controllers
             int staticFieldCount = 0;
             ObjectDetail detail = null;
 
+            Dictionary<string, string> settings = null;
+
             switch (type)
             { 
                 case SystemObjects.ArtifactType:
                     #region
+
+                    settings = Community.GetCompanySettings();
+
                     var taxonomyTypes = Company.Table<TaxonomyType>().Select(i => i.Name).ToList();
                     var artifactType = Company.GetById<ArtifactType>(id);
                     var hasParentType = false;
@@ -267,7 +272,7 @@ namespace d360.web.Controllers
 
                     parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
 
-                    columns.Add(new GridColumn { text = Resources.FieldInfo.TaxonomyType_Name, datafield = "TaxonomyType", width = calculateStaticColumnWidth(14, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = taxonomyTypes });
+                    columns.Add(new GridColumn { text = settings["ArtifactType_TaxonomyTypeID"], datafield = "TaxonomyType", width = calculateStaticColumnWidth(14, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = taxonomyTypes });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", width = calculateStaticColumnWidth(9, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string>() { "Draft", "Under Review", "Certified" } });
 
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -386,6 +391,8 @@ namespace d360.web.Controllers
                     break;
                     #endregion
             }
+
+            settings = null;
 
             return Request.CreateResponse(HttpStatusCode.OK, new {
                 Title = (detail != null) ? detail.PluralizedName : "Child Items",
@@ -1067,16 +1074,16 @@ namespace d360.web.Controllers
                     break;
                 case SystemObjects.ResponsibilityType:
                     #region Actions
-                    addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
-                    addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityType, Icon = "lock", Title = ResponsibilityTypeGroup.People.ToString() + " Type", Uri = string.Format("/form/AddResponsibilityType?Group=1") });
+                    //addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
+                    //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityType, Icon = "lock", Title = ResponsibilityTypeGroup.People.ToString() + " Type", Uri = string.Format("/form/AddResponsibilityType?Group=1") });
                     //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityType, Icon = "database", Title = ResponsibilityTypeGroup.Sourcing.ToString() + " Type", Uri = string.Format("/form/AddResponsibilityType?Group=2") });
-                    if (id > 0)
-                    {
+                    //if (id > 0)
+                    //{
                         //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityTypeClaim, Icon = "key", Title = Resources.Actions.AddClaim_Text, Uri = string.Format("/form/AddResponsibilityTypeClaim?id={0}", id) });
                         //list.Add(addItem);
-                    }
-                    list.Add(addItem);
-                    list.Add(new PageActionItem { Context = "ResponsibilityTypeHierarchies", Icon = "tags", Title = "Type Order", Uri = "/overlays/ResponsibilityTypeHierarchies" });
+                    //}
+                    //list.Add(addItem);
+                    //list.Add(new PageActionItem { Context = "ResponsibilityTypeHierarchies", Icon = "tags", Title = "Type Order", Uri = "/overlays/ResponsibilityTypeHierarchies" });
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                     #endregion
@@ -1318,7 +1325,7 @@ namespace d360.web.Controllers
                     {
                         addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
 
-                        var workflows = WorkflowType.CertifyArtifact.GetWorkflowTypeEnumList();
+                        var workflows = WorkflowType.CertifyArtifact.GetWorkflowTypeEnumList().Where(i => i.ID != WorkflowType.WorkIssue).ToList();
 
                         foreach (var r in workflows)
                         {
@@ -2075,24 +2082,6 @@ from	    ResponsibilityTypeHierarchy H
 
         #region Relationships
 
-        [HttpGet, Route("relationshiptypes/{id}/roles")]
-        public HttpResponseMessage GetRolesByIntersectType(int id)
-        {
-            return Request.CreateResponse(HttpStatusCode.OK, (from o in Company.IntersectTypeRoles
-                    join r in Company.IntersectTypeRoleRelations
-                    on o.ID equals r.IntersectTypeRoleID
-                    where r.IntersectTypeID == id
-                    orderby o.Name
-                    select new
-                    {
-                        o.ID,
-                        r.IntersectTypeID,
-                        o.Name,
-                        r.Side1Label,
-                        r.Side2Label
-                    }));
-        }
-
         [HttpGet, Route("RelationshipObjectsByType")]
         public List<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id)//, SystemObjects targetObject)
         {
@@ -2337,12 +2326,6 @@ from	    ResponsibilityTypeHierarchy H
             {
                 return Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == resourceID && i.ObjectType == type && i.ObjectTypeID == id);
             }
-        }
-
-        [Route("{type}/{id:int}/sources/{relatedType}/{relatedID:int}")]
-        public List<SourcingResponsibilityDetail> GetSourcingResponsibilitiesByCollection(SystemObjects type, int id, SystemObjects relatedType, int relatedID)
-        {
-            return Company.GetRelatedObjectContextMap(type, id, relatedType, relatedID, 1);
         }
 
         [Route("ownership/types")]
@@ -2798,7 +2781,7 @@ from	    ResponsibilityTypeHierarchy H
                         }
 
                         //list.Add(new ReadOnlyField { Row = row, Column = 1, Name = artifact.GetName(i => i.ArtifactTypeID), FieldName = "ArtifactArtifactType", FieldDescription = artifact.GetDescription(i => i.ArtifactTypeID), Value = artifact.ArtifactType.Name });
-                        list.Add(new ReadOnlyField { Row = row, Column = 1, Name = Resources.FieldInfo.TaxonomyType_Name, FieldName = "ArtifactTaxonomyType", FieldDescription = artifact.GetDescription(i => i.TaxonomyTypeID), Value = artifact.TaxonomyType.Name });
+                        list.Add(new ReadOnlyField { Row = row, Column = 1, Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "ArtifactTaxonomyType", FieldDescription = artifact.GetDescription(i => i.TaxonomyTypeID), Value = artifact.TaxonomyType.Name });
                         var nodes = "None assigned";
                         var owningModels = Company.Filter<Relationship>(i => i.SourceObjectType == "Artifact" && i.SourceObjectID == id && i.TargetType == "TaxonomyType" && i.TargetTypeID == artifact.TaxonomyTypeID).Select(i => new { i.TargetUrl, i.TargetName, i.TargetObjectID }).OrderBy(i => i.TargetName).ToList();
                         if (owningModels.Count > 0)
@@ -2809,7 +2792,7 @@ from	    ResponsibilityTypeHierarchy H
                                 nodes += string.Format("<div><a data-context='Preview' data-type='Taxonomy' data-id='{2}' href='{0}'>{1}</a></div>", i.TargetUrl, i.TargetName, i.TargetObjectID);
                             });
                         }
-                        list.Add(new ReadOnlyField { Row = row, Column = 2, Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = nodes });
+                        list.Add(new ReadOnlyField { Row = row, Column = 2, Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeIDNodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = nodes });
 
                         row++;
 
@@ -3051,13 +3034,10 @@ from	    ResponsibilityTypeHierarchy H
                     #endregion
                 case SystemObjects.Intersect:
                     #region Fields                    
-                    var intersect = Company.GetById<Intersect>(id, i => i.IntersectTypeRole);
+                    var intersect = Company.GetById<Intersect>(id);
                     if (intersect != null)
                     {
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = intersect.GetName(i => i.Classification), FieldName = "IntersectClassification", FieldDescription = intersect.GetDescription(i => i.Classification), Value = (Enum.IsDefined(typeof(IntersectClassification), intersect.Classification.GetValueOrDefault(IntersectClassification.Normal)) ? intersect.Classification.GetValueOrDefault(IntersectClassification.Normal).ToString() : IntersectClassification.Normal.ToString()) });
-                        if (intersect.IntersectTypeRoleID.HasValue)
-                            list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = Resources.FieldInfo.Role_Name, FieldName = "IntersectRole", FieldDescription = "", Value = intersect.IntersectTypeRole.Name });
-
                         list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = intersect.GetName(i => i.Description), FieldName = "IntersectDescription", FieldDescription = intersect.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(intersect.Description) ? "None provided" : intersect.Description });
                     }
                     intersect = null;
@@ -3151,7 +3131,7 @@ from	    ResponsibilityTypeHierarchy H
                     if (responsibilityType != null)
                     {
                         list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = responsibilityType.GetName(i => i.Name), FieldName = "Name", FieldDescription = responsibilityType.GetDescription(i => i.Name), Value = responsibilityType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = responsibilityType.GetName(i => i.ResponsibilityTypeGroup), FieldName = "ResponsibilityTypeGroup", FieldDescription = responsibilityType.GetDescription(i => i.ResponsibilityTypeGroup), Value = responsibilityType.ResponsibilityTypeGroup.ToString() });
+                        //list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = responsibilityType.GetName(i => i.ResponsibilityTypeGroup), FieldName = "ResponsibilityTypeGroup", FieldDescription = responsibilityType.GetDescription(i => i.ResponsibilityTypeGroup), Value = responsibilityType.ResponsibilityTypeGroup.ToString() });
                         int nextRow = 2;
                         if (!string.IsNullOrEmpty(responsibilityType.Description))
                         {
@@ -3715,96 +3695,6 @@ from	    ResponsibilityTypeHierarchy H
         public IQueryable<dynamic> GetRedFlagsByTypeAndResource(SystemObjects type, int id)
         {
             return Company.GetRedFlagsByTypeAndCurrentResource(type, id).AsQueryable();
-        }
-
-        [Route("{type}/{id:int}/sources")]
-        public IQueryable<SourcingResponsibilityDetail> GetSourcingResponsibilitiesByObject(SystemObjects type, int id)
-        {
-            try
-            {
-                var sType = type.ToString();
-                return Company.Filter<SourcingResponsibilityDetail>(i => i.ObjectType == sType && i.ObjectID == id);
-            }
-            catch (SqlException ex)
-            {
-                throw Company.CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        [Route("{type}/{id:int}/sources/actual")]
-        public IQueryable<SourcingResponsibilityDetail> GetActualSourcingResponsibilitiesByObject(SystemObjects type, int id)
-        {
-            try
-            {
-                var sType = type.ToString();
-                return Company.Filter<SourcingResponsibilityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.Actual == true);
-            }
-            catch (SqlException ex)
-            {
-                throw Company.CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public class ResponsibilityTransformationDetail
-        {
-            public int ID { get; set; }
-            public int ResponsibilityID { get; set; }
-            public ResponsibilityTransformationType ResponsibilityTransformationType { get; set; }
-            public string ResponsibilityTransformationTypeName { get; set; }
-            public string Description { get; set; }
-        }
-
-        [Route("{type}/{id:int}/sources/actual/{responsiblityID:int}/transformations")]
-        public IQueryable<ResponsibilityTransformationDetail> GetTransformationsByResponsibility(SystemObjects type, int id, int responsiblityID)
-        {
-            try
-            {
-                return
-                    Company.Filter<ResponsibilityTransformation>(i => i.ResponsibilityID == responsiblityID).ToList().Select(i =>
-                        new ResponsibilityTransformationDetail
-                        {
-                            Description = i.Description,
-                            ID = i.ID,
-                            ResponsibilityID = i.ResponsibilityID,
-                            ResponsibilityTransformationType = i.ResponsibilityTransformationType,
-                            ResponsibilityTransformationTypeName = i.ResponsibilityTransformationType.GetDisplayName()
-                        }
-                    ).AsQueryable();
-            }
-            catch (SqlException ex)
-            {
-                throw Company.CheckAndTranslateSqlException(ex, "Responsibility Transformation");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        [Route("{type}/{id:int}/sources/ideal")]
-        public IQueryable<SourcingResponsibilityDetail> GetIdealSourcingResponsibilitiesByObject(SystemObjects type, int id)
-        {
-            try
-            {
-                var sType = type.ToString();
-                return Company.Filter<SourcingResponsibilityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.Actual == false);
-            }
-            catch (SqlException ex)
-            {
-                throw Company.CheckAndTranslateSqlException(ex, "Responsibility");
-            }
-            catch
-            {
-                throw;
-            }
         }
 
         [Route("{type}/{id:int}/social/statistics")]

@@ -1,33 +1,81 @@
 ﻿@model d360.core.entities.ObjectDetail
+
 <div id='TreeGridItemViewer' class="large-overlay">
     <div class="ui segment">
 
-        <div class="form-header-info">
+        <div class="form-header-info" style="width:98%">
             <h4>Relationships for @Model.Name</h4>
-            <p>All relationships for the @Model.Name @Model.TypeName are displayed below.  To add a new relationship please select a type of relationship to the right.</p>
+            <p>All relationships for the @Model.Name @Model.TypeName.ToLower() are displayed below.  To add a new relationship please select a type of relationship in the menu below.</p>
         </div>
-        <div id="AddRelationshipMenu"></div>
-        <div id="RelationshipLineageTile" class="tile" style="display:none; margin-top:20px">
-            <h2>Lineage</h2>
-            <div id="TreeGridLineage"></div>
+        <div id="RelationshipOverlayMenu"></div>
+        <div id="ViewNonLineage" style="margin-top:20px">
+            <div id="TreeGrid"></div>
         </div>
-        <div id="ViewNonLineage" class="row" style="margin-top:20px">
-            <div class="col l3 m4">
-                <div id="TreeGrid"></div>
-            </div>
-            <div class="col l9 m8">
-                <div id="Attributes" style="display:none;" class="col s12">
-                    <h2>Attributes</h2>
-                    <div id="RelationshipDetailTile" class="tile"></div>
-                    <div id="RelationshipAttributesTile" class="tile"></div>
+        <div id="ViewSelectionDetail" style="display:none">
+            <div class="container-fluid" id="Lineage" style="display:none;">
+                <div class="row" style="margin-top: 20px">
+                    <div class="col l11 m11">
+                        <ol class="breadcrumb" style="padding:0;">
+                            <li class="breadcrumb-name"></li>
+                            <li class="active">Lineage</li>
+                        </ol>
+                    </div>
+                    <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
                 </div>
-                <div id="Fusion" class="col s12">
-                    <h2>Technical Relationships</h2>
-                    <div id="TechnicalRelationshipsTile" class="tile">
-                        <div id="TechnicalRelationshipsGrid"></div>
+                <div id="DiagramTile"></div>
+            </div>
+            <div class="container-fluid" id="Attributes" style="display:none;">
+                <div class="row" style="margin-top: 20px">
+                    <div class="col l11 m11">
+                        <ol class="breadcrumb" style="padding:0;">
+                            <li class="breadcrumb-name"></li>
+                            <li class="active">Business Attributes</li>
+                        </ol>
+                    </div>
+                    <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                </div>
+                <div id="RelationshipAttributesTile" class="tile"></div>
+            </div>
+            <div class="container-fluid" id="Fusion" style="display:none;">
+                <div class="row" style="margin-top: 20px">
+                    <div class="col l11 m11">
+                        <ol class="breadcrumb" style="padding:0;">
+                            <li class="breadcrumb-name"></li>
+                            <li class="active">Relationships</li>
+                        </ol>
+                    </div>
+                    <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                </div>
+                <div class="pull-left" style="width: 49%">
+                    <div class="tile">
+                        <article id="TechnicalRelationsGrid"></article>
                     </div>
                 </div>
+                <div class="pull-right" style="width: 49%">
+                    <div class="pull-left" style="width: 38%">
+                        <div id="TechnicalRelationActionWrapper" class="tile">
+                            <header id="TechnicalRelationActionHeader">Actions</header>
+                            <div class="tile-detail" id="TechnicalRelationAction"></div>
+                        </div>
+                    </div>
+                    <div class="pull-right" style="width: 60%">
+                        <div id="TechnicalRelationIntersectDetailWrapper" class="tile" style="display:none;">
+                            <header id="TechnicalRelationIntersectDetailHeader"></header>
+                            <article id="TechnicalRelationIntersectDetail"></article>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+
+                    <div id="TechnicalRelationDetailWrapper" class="tile" style="display:none;">
+                        <header id="TechnicalRelationDetailHeader"></header>
+                        <article id="TechnicalRelationDetail"></article>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
             </div>
+        </div>
+        <div id="ViewLineage" class="tile" style="display:none; margin-top:20px">
+            <div id="TreeGridLineage"></div>
         </div>
     </div>
 </div>
@@ -41,24 +89,22 @@
 
     var RelationshipsSource;
     var RelationshipsAdapter;
-    var TechnicalRelationshipsGridSource;
-    var TechnicalRelationshipsGridAdapter;
+    var technicalRelationsSource;
+    var technicalRelationsAdapter;
 
     //#region Amplify Methods
 
-    function cancelAction(data) {
-        try {
-            switch (data.context) {
-                case contextList.ResponsibilityTransformation:
-                case contextList.IntersectSourcingResponsibility:
-                case contextList.SourceToTarget:
-                    switchToViewer();
-                    break;
-            }
-        } catch (e) {
-            logError("RelationOverlay : CancelAction", e);
-        }
-    }
+    //function cancelAction(data) {
+    //    try {
+    //        switch (data.context) {
+    //            case contextList.SourceToTarget:
+    //                switchToViewer();
+    //                break;
+    //        }
+    //    } catch (e) {
+    //        logError("RelationOverlay : CancelAction", e);
+    //    }
+    //}
 
     function commandExecuted(data) {
         try {
@@ -74,6 +120,10 @@
                     $("#TreeGrid").jqxGrid('updatebounddata');
                     amplify.publish('SaveAction', { context: "intersectform" });
                     break;
+                case "deletetechnicalrelation":
+                    $("#TechnicalRelationsGrid").jqxGrid('updatebounddata');
+                    amplify.publish('SaveAction', { context: "intersectform" });
+                    break;
             }
         } catch (e) {
             logError("RelationOverlay : CommandExecuted", e);
@@ -86,12 +136,9 @@
                 case contextList.ActionLink:
                     location.assign(data.uri);
                     break;
-                case contextList.IntersectSourcingResponsibility:
-                case contextList.ActionResponsibility:
+                case "edittechnicalrelation":
                 case contextList.ActionEditRelate:
                 case contextList.ActionRelate:
-                case contextList.ResponsibilityTransformation:
-                case contextList.SourceToTarget:
                     switchToEditor(data.uri);
                     break;
             }
@@ -121,7 +168,7 @@
             switchToViewer();
             if (data.action == 'Add') {
                 if (data.technical) {
-                    $("#TechnicalRelationshipsGrid").jqxGrid('updatebounddata');
+                    $("#TechnicalRelationsGrid").jqxGrid('updatebounddata');
                 }
                 else {
                     $('#TreeGrid').one('bindingcomplete', function (event) {
@@ -156,8 +203,8 @@
                     });
                     $("#TreeGrid").jqxGrid('updatebounddata');
 
-                    TechnicalRelationshipsGridSource.url = null;
-                    $("#TechnicalRelationshipsGrid").jqxGrid('updatebounddata');
+                    technicalRelationsSource.url = null;
+                    $("#TechnicalRelationsGrid").jqxGrid('updatebounddata');
                     $('#TreeGridAttributesDetail').html('');
                 }
             }
@@ -195,17 +242,17 @@
         }
     }
 
-    function saveAction(data) {
-        try {
-            switch (data.context) {
-                case contextList.SourceToTarget:
-                    switchToViewer();
-                    break;
-            }
-        } catch (e) {
-            logError("RelationOverlay : SaveAction", e);
-        }
-    }
+    //function saveAction(data) {
+    //    try {
+    //        switch (data.context) {
+    //            case contextList.SourceToTarget:
+    //                switchToViewer();
+    //                break;
+    //        }
+    //    } catch (e) {
+    //        logError("RelationOverlay : SaveAction", e);
+    //    }
+    //}
 
     //#endregion
 
@@ -217,34 +264,55 @@
     }
 
     function treeGridRowSelect(event) {
-        var row = event.args.row;
-        try {
-            intersectID = row.IntersectID;
-            switch (selectedView) {
-                case 'Attributes':
-                    AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", intersectID, 'Business Attributes');
-                    break;
-                case 'Fusion':
-                    TechnicalRelationshipsGridSource.url = '/api/Intersect/' + intersectID + '/relations';
-                    $('#TechnicalRelationshipsGrid').jqxGrid('updatebounddata');
-                    break;
-                case 'Lineage': // Refresh lineage
-                    LineageDiagram('TreeGridLineage', type, typeID, null, false);
-                    break;
-            }
+        //var row = event.args.row;
+        //try {
+        //    intersectID = row.IntersectID;
+        //    switch (selectedView) {
+        //        case 'Attributes':
+        //            AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", intersectID, 'Business Attributes');
+        //            break;
+        //        case 'Fusion':
+        //            technicalRelationsSource.url = '/api/Intersect/' + intersectID + '/relations';
+        //            $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
+        //            break;
+        //        case 'Lineage': // Refresh lineage
+        //            LineageDiagram('TreeGridLineage', type, typeID, null, false);
+        //            break;
+        //    }
 
-            //relationsModel.TargetType = row.TargetType;
-            //relationsModel.TargetID = (row.TargetType == 'TaxonomyType') ? row.TargetTypeID : row.IntersectID;
+        //    //relationsModel.TargetType = row.TargetType;
+        //    //relationsModel.TargetID = (row.TargetType == 'TaxonomyType') ? row.TargetTypeID : row.IntersectID;
+        //}
+        //catch (e) {
+        //    logError("RelationOverlay : TreeGrid.rowSelect", e);
+        //    console.log('IDs no longer exist.');
+        //}
+    }
+
+    function technicalRelationsGridBindingComplete(event) {
+        if ($("#TechnicalRelationsGrid").jqxGrid('getdisplayrows').length > 0) {
+            $('#TechnicalRelationDetailWrapper').fadeIn(100);
+            $('#TechnicalRelationIntersectDetailWrapper').fadeIn(100);
+            $("#TechnicalRelationsGrid").jqxGrid('selectrow', 0);
         }
-        catch (e) {
-            logError("RelationOverlay : TreeGrid.rowSelect", e);
-            console.log('IDs no longer exist.');
+        else {
+            $('#TechnicalRelationDetailWrapper').fadeOut(100);
+            $('#TechnicalRelationIntersectDetailWrapper').fadeOut(100);
         }
     }
 
+    function technicalRelationsGridRowSelect(event) {
+        var row = event.args.row;
+        $('#TechnicalRelationDetailHeader').text(row.TargetTypeName + ' Information');
+        $('#TechnicalRelationDetail').load('/parts/' + row.TargetObjectType + '/' + row.TargetObjectID + '/detail');
+
+        $('#TechnicalRelationIntersectDetailHeader').text('Relationship Information');
+        $('#TechnicalRelationIntersectDetail').load('/parts/Intersect/' + row.IntersectID + '/detail');
+    }
+
     function unsubscribe(data) {
-        TechnicalRelationshipsGridAdapter = null;
-        TechnicalRelationshipsGridSource = null;
+        technicalRelationsAdapter = null;
+        technicalRelationsSource = null;
         RelationshipsAdapter = null;
         RelationshipsSource = null;
 
@@ -256,13 +324,21 @@
         amplify.unsubscribe("SourceCancel", sourceCancel);
         amplify.unsubscribe("SourceSave", sourceSave);
 
-        amplify.unsubscribe('CancelAction', cancelAction);
-        amplify.unsubscribe('SaveAction', saveAction);
+        //amplify.unsubscribe('CancelAction', cancelAction);
+        //amplify.unsubscribe('SaveAction', saveAction);
         amplify.unsubscribe('CommandExecuted', commandExecuted);
         amplify.unsubscribe(AmplifyActions.Local, localAction);
 
         $('#TreeGrid').off('rowselect', treeGridRowSelect);
         $('#TreeGrid').off('rowdoubleclick', treeGridRowDoubleClick);
+
+        $('#TechnicalRelationsGrid').off('rowselect', technicalRelationsGridRowSelect);
+        $("#TechnicalRelationsGrid").off("bindingcomplete", technicalRelationsGridBindingComplete);
+
+        $("#TreeGrid").off("click", ".lineage", activateIconTool);
+        $("#TreeGrid").off("click", ".fusion", activateIconTool);
+        $("#TreeGrid").off("click", ".attribute", activateIconTool);
+        $("div.large-overlay").off("click", ".detailclose", closeDetailTab);
 
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
@@ -271,27 +347,13 @@
 
     //#region Utility Methods
 
-    var addNodeToTree = function (attTree, data, parentNodeID) {
-        try {
-            var elementByID = null;
-            if (parentNodeID) elementByID = attTree.find(parentNodeID)[0];
-            $(data).each(function () {
-                var html = '<span class="node" data-type="' + this.ObjectType + '" data-typeid="' + this.ObjectID + '" data-owner="' + this.ParentObjectType + '" data-ownerid="' + this.ParentObjectID + '">' + '<b>' + this.ObjectTypeName + ' : </b>' + this.Name + '</span>';
-                if (elementByID)
-                    attTree.jqxTree('addTo', { expanded: true, id: this.ObjectType + this.ObjectID, html: html }, elementByID);
-                else
-                    attTree.jqxTree('addTo', { expanded: true, id: this.ObjectType + this.ObjectID, html: html });
-
-                if (this.Items) {
-                    addNodeToTree(attTree, this.Items, '#' + this.ObjectType + this.ObjectID);
-                }
-            });
-        } catch (e) {
-            logError("RelationOverlay : addNodeToTree", e);
-        }
+    function closeDetailTab(event) {
+        $(event.target).closest('div.container-fluid').hide();
+        $('#ViewSelectionDetail').hide();
+        $('#ViewNonLineage').show();
     }
 
-    var loadAddRelationDropdown = function () {
+    var loadRelationshipOverlayMenu = function () {
         try {
             var relationUri = '/relations/OptionsToRelate';
 
@@ -303,9 +365,8 @@
                     { html: '<span data-a="Source">Add Source</span>' },
                     {
                         html: '<span>Views</span>', items: [
-                            { html: '<span data-a="Attributes">Attributes</span>' },
-                            { html: '<span data-a="Fusion">Technical Relationships</span>' },
-                            { html: '<span data-a="Lineage">Lineage</span>' }
+                            { html: '<span data-a="Relationships">All Relationships</span>' },
+                            { html: '<span data-a="Lineage">Full Lineage</span>' }
                         ]
                     }
                     //{
@@ -315,14 +376,14 @@
                     //}
                 ];
 
-                $('#AddRelationshipMenu').jqxMenu({
+                $('#RelationshipOverlayMenu').jqxMenu({
                     source: items,//data,
                     theme: theme,
                     width: '100%',
                     animationHideDelay: 1000
                 });
 
-                $('#AddRelationshipMenu').on('itemclick', function (event) {
+                $('#RelationshipOverlayMenu').on('itemclick', function (event) {
                     var li = $(event.args);
                     var span = $(li.find('span'));
                     selectedView = span.data('a');
@@ -346,24 +407,15 @@
                             $('#TreeGridRelationshipEditor').load(url);
                         }
                         else {
+                            $('#ViewSelectionDetail').hide();
+
                             switch (selectedView) {
-                                case 'Attributes':
-                                    $('#RelationshipLineageTile').hide();
+                                case 'Relationships':
                                     $('#ViewNonLineage').show();
-                                    $('#Attributes').show();
-                                    $('#Fusion').hide();
-                                    AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", intersectID, 'Business Attributes');
-                                    break;
-                                case 'Fusion':
-                                    $('#RelationshipLineageTile').hide();
-                                    $('#ViewNonLineage').show();
-                                    $('#Fusion').show();
-                                    $('#Attributes').hide();
-                                    TechnicalRelationshipsGridSource.url = '/api/Intersect/' + intersectID + '/relations';
-                                    $('#TechnicalRelationshipsGrid').jqxGrid('updatebounddata');
+                                    $('#ViewLineage').hide();
                                     break;
                                 case 'Lineage':
-                                    $('#RelationshipLineageTile').show();
+                                    $('#ViewLineage').show();
                                     $('#ViewNonLineage').hide();
                                     LineageDiagram('TreeGridLineage', type, typeID, null, false);
                                     break;
@@ -373,37 +425,7 @@
                 });
             });
         } catch (e) {
-            logError("RelationOverlay : loadAddRelationDropdown", e);
-        }
-    }
-
-    var performAttributeSelectNodeAction = function (selectedNode) {
-        try {
-            var owner = null;
-            var ownerid = null;
-            owner = selectedNode.data("owner");
-            ownerid = selectedNode.data("ownerid");
-
-            var type = null;
-            var typeid = null;
-            type = selectedNode.data("type");
-            typeid = selectedNode.data("typeid");
-
-            var attributeID = null;
-            if (type == "Attribute") {
-                attributeID = typeid;
-            }
-
-            $('#TreeGridAttributeToolbar').AttributeToolbar('loadTools', type, typeid, owner, ownerid, attributeID);
-
-            if (type == "Attribute") {
-                $('#TreeGridAttributesDetail').Detail('reload', type, typeid);
-            }
-            else {
-                $('#TreeGridAttributesDetail').Detail('clear');
-            }
-        } catch (e) {
-            logError("RelationOverlay : performAttributeSelectNodeAction", e);
+            logError("RelationOverlay : loadRelationshipOverlayMenu", e);
         }
     }
 
@@ -428,11 +450,61 @@
         }
     }
 
+    function setBreadCrumb(parent, row) {
+        $(parent).find('.breadcrumb-name').html(row.TargetName);
+    }
+
+    var activateIconTool = function (tool) {
+        var $icon = $(this);
+
+        $('#ViewNonLineage').hide();
+        $('#ViewSelectionDetail').show();
+
+        var getselectedrowindexes = $('#TreeGrid').jqxGrid('getselectedrowindexes');
+
+        if (getselectedrowindexes.length > 0) {
+            var row = $('#TreeGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
+            if ($icon.hasClass('attribute')) {
+                $('#Attributes').show();
+                setBreadCrumb('#Attributes', row);
+                AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.IntersectID, 'Business Attributes');
+            }
+            else if ($icon.hasClass('fusion')) {
+                $('#Fusion').show();
+                setBreadCrumb('#Fusion', row);
+                $('#TechnicalRelationsGrid').jqxGrid('clearselection');
+                technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
+                $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
+
+                $.getJSON('/relations/PossibleRelationshipsByIntersect?id=' + row.IntersectID, function (itemsData) {
+                    var html = "<ul>";
+                    $.each(itemsData, function () {
+                        //Context, Icon, Title, Type, Uri
+                        html += "<li><button style='border:none; background-color:transparent; margin-left: 5px; padding-left: 5px' title='" + this.Title + "' data-context='" + this.Context + "' data-" + this.Type + " data-uri='" + this.Uri + "'><i class='fa fa-" + this.Icon + "'></i>" + this.Title + "</button></li>"
+                    });
+                    html += "</ul>";
+                    $('#TechnicalRelationAction').html(html);
+                });
+            }
+            else if ($icon.hasClass('lineage')) {
+                $('#Lineage').show();
+                setBreadCrumb('#Lineage', row);
+                LineageDiagram('DiagramTile', 'Intersect', row.IntersectID, null);
+            }
+        }
+    }
+
     //#endregion
 
     $(function () {
 
         $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        loadRelationshipOverlayMenu();
+
+        var iconAttributes = '@Resources.Actions.Attributes_Icon';
+        var iconFusion = '@Resources.Actions.Fusion_Icon';
+        var iconLineage = '@Resources.Actions.Lineage_Icon';
 
         //#region Relations Tree Grid
 
@@ -450,22 +522,22 @@
                 { name: 'TargetType' },
                 { name: 'TargetTypeName' },
                 { name: 'Classification' },
-                { name: 'TargetUrl' }
+                { name: 'TargetUrl' },
+                { name: 'HasTechnicalRelationships' }
             ]
         };
-        RelationshipsAdapter = new $.jqx.dataAdapter(RelationshipsSource);
+        RelationshipsAdapter = new $.jqx.dataAdapter(RelationshipsSource, {
+            beforeLoadComplete: function (records) {
+                $.each(records, function () {
+                    this.Classification = (this.Classification === 1 ? 'Critical' : 'Normal');
+                });
+                records[0]['firstname'] = "Michael";
+                return records;
+            }
+        });
 
         $("#TreeGrid").jqxGrid({
             groupable: false,
-            //groupsrenderer: function (text, group, expanded, data) {
-            //    var style = "background-color: " + data.subItems[0].IconBackColor + "; color: " + data.subItems[0].IconForeColor;
-            //    var html = "";
-            //    html += "<h2>";
-            //    html += group;
-            //    html += "</h2>";
-            //    return html;
-            //},
-            //groupsexpandedbydefault: false,
             autoheight: true,
             autorowheight: true,
             altrows: true,
@@ -473,27 +545,36 @@
             source: RelationshipsAdapter,
             theme: theme,
             selectionmode: 'singlerow',
-            height: '500px',
             width: grid_width,
             filterable: true,
-            //filtermode: 'excel',
             sortable: true,
             pageable: true,
-            //groups: ['TypeName'],
             columns: [
-                { text: 'Type', groupable: true, datafield: 'TargetTypeName', width: '100px', filtertype: 'checkedlist' }, //, hidden: true
-                { text: 'Name', groupable: false, datafield: 'TargetName' },
-                { text: 'Role', groupable: false, datafield: 'Role', width: '100px', filtertype: 'checkedlist' },
+                { text: 'Type', datafield: 'TargetTypeName', width: '150px', filtertype: 'checkedlist' }, //, hidden: true
+                { text: 'Name', width: '250px', datafield: 'TargetName' },
+                { text: 'Criticality', width: '125px', datafield: 'Classification', filtertype: 'checkedlist' },
+                { text: 'Description', datafield: 'Description' },
+                //{ text: 'Role', datafield: 'Role', width: '100px', filtertype: 'checkedlist' },
                 {
                     text: '',
                     groupable: false,
                     datafield: 'IntersectID',
-                    width: '22px',
+                    width: '100px',
                     filterable: false,
                     sortable: false,
                     cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
                         if (data.IntersectID) {
-                            return gearsRenderer("Intersect", data.IntersectID);
+                            var html = "";
+
+                            html += "<div class='RowMultiTools'>";
+                            //html += (data.HasLineage ? "<i class='lineage fa fa-" + iconLineage + "' title='Lineage'></i> " : "");
+                            html += "<i class='fusion fa fa-" + iconFusion + "' title='Fusion'></i> ";
+                            html += "<i class='attribute fa fa-" + iconAttributes + "' title='Attributes'></i>";
+                            html += "<a title='Edit relationship' data-context='editrelation' data-local data-uri='/relations/EditRelationship?id=" + data.IntersectID + "'><i class='fa fa-pencil'></i></a>";
+                            html += "<a title='Remove relationship' data-context='deleterelation' data-command data-method='DELETE' data-uri='/api/relationships/" + data.IntersectID + "'><i class='fa fa-trash-o'></i></a>";
+                            html += "</div>";
+
+                            return html;
                         }
                         else {
                             return previewIconRenderer(data.TargetObjectType, data.TargetObjectID, data.TargetUrl);
@@ -503,17 +584,11 @@
             ]
         });
 
-        $("#TreeGrid").one("bindingcomplete", function (event) {
-            if ($("#TreeGrid").jqxGrid('getdisplayrows').length > 0) {
-                $("#TreeGrid").jqxGrid('selectrow', 0);
-            }
-        });
-
         //#endregion
 
         //#region Technical Relationship Grid Configuration
 
-        TechnicalRelationshipsGridSource = {
+        technicalRelationsSource = {
             datatype: 'json',
             url: null,
             datafields: [
@@ -530,9 +605,9 @@
             ]
         };
 
-        TechnicalRelationshipsGridAdapter = new $.jqx.dataAdapter(TechnicalRelationshipsGridSource);
+        technicalRelationsAdapter = new $.jqx.dataAdapter(technicalRelationsSource);
 
-        $("#TechnicalRelationshipsGrid").jqxGrid({
+        $("#TechnicalRelationsGrid").jqxGrid({
             width: grid_width,
             autoheight: true,
             sortable: true,
@@ -544,31 +619,33 @@
             pageable: true,
             autorowheight: true,
             columnsresize: true,
-            source: TechnicalRelationshipsGridAdapter,
+            source: technicalRelationsAdapter,
             theme: list_theme,
             groupable: false,
             columns: [
-                { text: 'Type', groupable: true, datafield: 'TargetTypeName', width: '100px' }, //, hidden: true
-                { text: 'Name', groupable: false, datafield: 'TargetName', width: '300px' },
-                { text: 'Description', groupable: false, datafield: 'Description' },
+                { text: 'Type', groupable: true, datafield: 'TargetTypeName' },
+                { text: 'Name', groupable: false, datafield: 'TargetName' },
                 {
                     text: '',
                     groupable: false,
                     datafield: 'IntersectID',
-                    width: '30px',
+                    width: '60px',
                     filterable: false,
                     cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                        return gearsRenderer("Intersect", data.IntersectID);
+                        var html = "";
+
+                        html += "<div class='RowMultiTools'>";
+                        html += "<a title='Edit relationship' data-context='edittechnicalrelation' data-local data-uri='/relations/EditRelationship?id=" + data.IntersectID + "'><i class='fa fa-pencil'></i></a>";
+                        html += "<a title='Remove relationship' data-context='deletetechnicalrelation' data-command data-method='DELETE' data-uri='/api/relationships/" + data.IntersectID + "'><i class='fa fa-trash-o'></i></a>";
+                        html += "</div>";
+
+                        return html;
                     }
                 }
             ]
         });
 
         //#endregion
-
-        loadAddRelationDropdown();
-
-        $('#RelationshipDetailTile').Detail();
 
         //#region Event Registration
 
@@ -580,12 +657,20 @@
         amplify.subscribe("SourceFormStatus", sourceFormStatus);
         amplify.subscribe("SourceCancel", sourceCancel);
         amplify.subscribe("SourceSave", sourceSave);
-        amplify.subscribe("CancelAction", cancelAction);
-        amplify.subscribe("SaveAction", saveAction);
+        //amplify.subscribe("CancelAction", cancelAction);
+        //amplify.subscribe("SaveAction", saveAction);
         amplify.subscribe("CommandExecuted", commandExecuted);
         amplify.subscribe(AmplifyActions.Local, localAction);
         amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
         amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+
+        $('#TechnicalRelationsGrid').on('rowselect', technicalRelationsGridRowSelect);
+        $("#TechnicalRelationsGrid").on("bindingcomplete", technicalRelationsGridBindingComplete);
+
+        $("#TreeGrid").on("click", ".lineage", activateIconTool);
+        $("#TreeGrid").on("click", ".fusion", activateIconTool);
+        $("#TreeGrid").on("click", ".attribute", activateIconTool);
+        $("div.large-overlay").on("click", ".detailclose", closeDetailTab);
 
         //#endregion
     });

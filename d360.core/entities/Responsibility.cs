@@ -44,8 +44,5 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual ICollection<ResponsibilityContextItem> ResponsibilityContextItems { get; set; }
-
-        [IgnoreDataMember]
-        public virtual ICollection<ResponsibilityTransformation> ResponsibilityTransformations { get; set; }
     }
 }

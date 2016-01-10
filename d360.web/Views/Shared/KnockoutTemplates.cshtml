@@ -105,22 +105,26 @@
                     Community
                     <div class="TileTools"></div>
                 </header>
-
-                <div data-bind="jqxCheckBox: {checked: DisableCommunityPosting, theme: theme, width: '120px'}">Disable Discussion Posts</div>
-                @*<div class="directions">
-                    Disable the ability for users to post new comments to the boards of other users and assets.  Users will still be able to see any system-generated comments.
-                </div>*@
-                <div data-bind="jqxCheckBox: {checked: DisableIssuePosting, theme: theme, width: '120px'}">Disable Issue Posts</div>
-                @*<div class="directions">
-                    Disable the ability for users to post new issues to the boards of other users and assets.  Users will still be able to see any system-generated issues.
-                </div>*@
-                <div data-bind="jqxCheckBox: {checked: DisableQuestionPosting, theme: theme, width: '120px'}">Disable Question Posts</div>
-                @*<div class="directions">
-                    Disable the ability for users to post new questions to the boards of other users and assets.  Users will still be able to see any system-generated questions.
-                </div>*@
                 <div class="directions">
                     Disable the ability for users to post new comments or replies to the boards of other users and assets.  Users will still be able to see any system-generated comments.
                 </div>
+                <div data-bind="jqxCheckBox: {checked: DisableCommunityPosting, theme: theme, width: '120px'}">Disable Discussion Posts</div>
+                <div data-bind="jqxCheckBox: {checked: DisableIssuePosting, theme: theme, width: '120px'}">Disable Issue Posts</div>
+                <div data-bind="jqxCheckBox: {checked: DisableQuestionPosting, theme: theme, width: '120px'}">Disable Question Posts</div>
+            </div>
+            <div class="tile tile-detail">
+                <header>Global Fields</header>
+                <div class="directions">
+                    Disable the ability for users to post new comments or replies to the boards of other users and assets.  Users will still be able to see any system-generated comments.
+                </div>
+
+                <div class="FieldName">Subject Area Friendly Name</div>
+                <div class="directions">This allows for the renaming of the Subject Area field for all artifact types. The default is "Subject Area."  After changing this value, if you wish to use the default value, simply remove the value in the field below.</div>
+                <input data-bind="jqxInput: {width: '99%', height: 25, theme: theme, value: ArtifactType_TaxonomyTypeID}" />
+
+                <div class="FieldName">Subject Area Nodes Friendly Name</div>
+                <div class="directions">This allows for the renaming of Subject Area Nodes field. The default is "Subject Area Nodes."  After changing this value, if you wish to use the default value, simply remove the value in the field below.</div>
+                <input data-bind="jqxInput: {width: '99%', height: 25, theme: theme, value: ArtifactType_TaxonomyTypeIDNodes}" />
             </div>
         </div>
         <div class="col s12 m12 l2">
@@ -169,14 +173,14 @@
 </script>
 
 <script id="detailTileTmpl" type="text/x-handlebars-template">
-    <div id="DetailSubTile" style="margin-top: 20px"></div>
-    <div id="SynonymsExpander" style="margin: 20px 10px 0 10px;">
+    <div id="DetailSubTile"></div>
+    <div id="SynonymsExpander" style="margin: 10px 10px 0 10px;">
         <div>Synonyms<span id="SynonymsCount"></span></div>
         <div>
             <div id="SynonymsSubTile"></div>
         </div>
     </div>
-    <div id="AttributesExpander" style="margin: 20px 10px 0 10px;">
+    <div id="AttributesExpander" style="margin: 10px 10px 0 10px;">
         <div>Attributes<span id="AttributesCount"></span></div>
         <div>
             <div id="AttributesSubTile"></div>
@@ -185,8 +189,8 @@
 </script>
 
 <script id="detailTileNoSynonymsTmpl" type="text/x-handlebars-template">
-    <div id="DetailSubTile" style="margin-top: 20px"></div>
-    <div id="AttributesExpander" style="margin: 20px 10px 0 10px;">
+    <div id="DetailSubTile"></div>
+    <div id="AttributesExpander" style="margin: 10px 10px 0 10px;">
         <div>Attributes<div id="AttributesCount"></div></div>
         <div>
             <div id="AttributesSubTile"></div>

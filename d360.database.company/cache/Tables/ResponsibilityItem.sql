@@ -10,9 +10,9 @@
     [ResponsibleObjectID]     INT            NOT NULL,
     [ContextHash]             VARCHAR (50)   NOT NULL,
     [ResponsibilityTypeGroup] INT            NOT NULL,
-    [Visible]                 BIT            CONSTRAINT [DF_CacheResponsibilities_Visible] DEFAULT ((1)) NOT NULL,
+    [Visible]                 BIT            CONSTRAINT [DF_CacheResponsibilityItem_Visible] DEFAULT ((1)) NOT NULL,
     [TargetResponsibilityID]  INT            NULL,
-    CONSTRAINT [PK_CacheResponsibilities] PRIMARY KEY CLUSTERED ([ResponsibilityID] ASC, [AssigningItem] ASC, [AssigningItemID] ASC, [Object] ASC, [ObjectID] ASC, [ContextHash] ASC)
+    CONSTRAINT [PK_CacheResponsibilityItem] PRIMARY KEY CLUSTERED ([ResponsibilityID] ASC, [AssigningItem] ASC, [AssigningItemID] ASC, [Object] ASC, [ObjectID] ASC, [ContextHash] ASC)
 );
 
 

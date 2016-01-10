@@ -14,7 +14,7 @@
       "Scripts/diagrams/lineage.js",
       "Scripts/diagrams/environment.js",
       "Scripts/knockout-3.3.0.js",
-      "Scripts/materialize/materialize.js",//{ "$ref": "#" },
+      "Scripts/materialize/materialize.js", //{ "$ref": "#" },
       "Scripts/colorpicker-color.js",
       "Scripts/colorpicker.js",
       "Scripts/redactor.js",

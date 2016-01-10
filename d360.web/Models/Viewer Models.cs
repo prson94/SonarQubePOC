@@ -38,12 +38,6 @@ namespace d360.web.Models
         public List<ClaimsMatrixEditorItemModel> Items { get; set; }
     }
 
-    public class CommentTag
-    {
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-    }
-
     public class CommentData
     {
         public string ObjectType { get; set; }
@@ -70,30 +64,10 @@ namespace d360.web.Models
         public string SearchFilter { get; set; }
     }
 
-    public class DomainHierarchyItem
+    public class CommentTag
     {
-        public DomainHierarchyItem()
-        {
-            expanded = true;
-        }
-
-        public string Type { get; set; }
-        public int ID { get; set; }
-        public string HierarchyID { get; set; }
-        public string ParentHierarchyID { get; set; }
-        public string Name { get; set; }
-        public bool expanded { get; set; }
-    }
-
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class FilterObjectItem
-    {
-        [DataMember]
-        public string Name { get; set; }
-        [DataMember]
-        public string Type { get; set; }
-        [DataMember]
-        public int ID { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
@@ -124,6 +98,21 @@ namespace d360.web.Models
 
         public string Type { get; set; }
         public NameValueCollection Options { get; set; }
+    }
+
+    public class DomainHierarchyItem
+    {
+        public DomainHierarchyItem()
+        {
+            expanded = true;
+        }
+
+        public string Type { get; set; }
+        public int ID { get; set; }
+        public string HierarchyID { get; set; }
+        public string ParentHierarchyID { get; set; }
+        public string Name { get; set; }
+        public bool expanded { get; set; }
     }
 
     public class FieldLoader
@@ -243,7 +232,18 @@ namespace d360.web.Models
     {
 
     }
-    
+
+    [DataContract(Namespace = constants.NAMESPACE)]
+    public class FilterObjectItem
+    {
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string Type { get; set; }
+        [DataMember]
+        public int ID { get; set; }
+    }  
+      
     [DataContract]
     public class GridColumn
     {
@@ -316,15 +316,7 @@ namespace d360.web.Models
         public string description { get; set; }
         public int fieldCount { get; set; }
     }
-    
-    public class RelationAttributeValue
-    {
-        public int AttributeTypeID { get; set; }
-        public string Name { get; set; }
-        public string Value { get; set; }
-        public int TargetID { get; set; }        
-    }   
-    
+
     public class GridLayout
     {
         public GridLayout(List<FieldType> types)
@@ -368,6 +360,43 @@ namespace d360.web.Models
         public List<GridField> Fields { get; set; }
     }
 
+    public class IntersectLookupModel
+    {
+        public int IntersectID { get; set; }
+        public int SubjectNodeID { get; set; }
+        public string Subject { get; set; }
+        public int SubjectID { get; set; }
+        public int ObjectNodeID { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+    }
+
+    public class IntersectTypeListViewModel
+    {
+        public int ID { get; set; }
+        public string Source { get; set; }
+        public int SourceID { get; set; }
+        public string SourceName { get; set; }
+        public string Target { get; set; }
+        public int TargetID { get; set; }
+        public string TargetName { get; set; }
+    }
+
+    public class OptionsToRelateDbModel
+    {
+        public string Menu { get; set; }
+        public string SubMenu { get; set; }
+        public string Type { get; set; }
+        public int ID { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class OptionsToRelateJsonModel
+    {
+        public string html { get; set; }
+        public List<OptionsToRelateJsonModel> items { get; set; }
+    }
+
     [DataContract(Namespace = constants.NAMESPACE)]
     public class ReadOnlyField
     {
@@ -376,6 +405,9 @@ namespace d360.web.Models
 
         [DataMember]
         public string FieldName { get; set; }
+
+        [DataMember]
+        public string ScriptProperty { get; set; }
 
         [DataMember]
         public string Value { get; set; }
@@ -420,6 +452,14 @@ namespace d360.web.Models
         [DataMember]
         public List<ReadOnlyField> Fields { get; set; }
     }
+
+    public class RelationAttributeValue
+    {
+        public int AttributeTypeID { get; set; }
+        public string Name { get; set; }
+        public string Value { get; set; }
+        public int TargetID { get; set; }        
+    }   
 
     public class ReportOverlayModel : ObjectModel
     {

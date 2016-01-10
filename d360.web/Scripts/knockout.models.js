@@ -1188,355 +1188,6 @@ var RedFlagSummaryMicroTileItem = function (data) {
     }
 }
 
-function SourceToTargetDropdownOption(data) {
-    var self = this;
-    data = data || {};
-    self.Value = data.Value;
-    self.Text = data.Text;
-    return self;
-}
-
-function SourceToTargetItem(data, parent) {
-    var self = this;
-    data = data || {};
-
-    //#region KO properties
-
-    self.SourceSystemIndex = ko.observable(-1);
-    self.SourceSystem = ko.observable(data.SourceSystem);
-
-    self.SourceObjectIndex = ko.observable(-1);
-    self.SourceObject = ko.observable(data.SourceObject || "");
-
-    self.SourceFusionAttributeIndex = ko.observable(-1);
-    self.SourceFusionAttribute = ko.observable(data.SourceFusionAttribute || "");
-
-    self.TargetSystemIndex = ko.observable(-1);
-    self.TargetSystem = ko.observable(data.TargetSystem);
-
-    self.TargetObjectIndex = ko.observable(-1);
-    self.TargetObject = ko.observable(data.TargetObject || "");
-
-    self.TargetFusionAttributeIndex = ko.observable(-1);
-    self.TargetFusionAttribute = ko.observable(data.TargetFusionAttribute || "");
-
-    //#endregion
-
-    //#region KO Lists
-
-    self.Contexts = ko.observableArray();
-
-    self.SourceObjectOptions = ko.observableArray();
-    self.SourceFusionAttributeOptions = ko.observableArray();
-    self.TargetObjectOptions = ko.observableArray();
-    self.TargetFusionAttributeOptions = ko.observableArray();
-
-    //#endregion
-
-    self.SourceSystem.subscribe(function (value) {
-        self.SourceObjectOptions.removeAll();
-        self.SourceFusionAttributeOptions.removeAll();
-        if (value) {
-            $.getJSON(
-                '/form/SourceToTarget_SourcingObjectOptions',
-                { type: 'Artifact', id: value },
-                function (relData) {
-                    //var options = $.map(relData, function (item) { return new SourceToTargetDropdownOption({ Text: item.group + " : " + item.title, Value: item.value }); });
-                    self.SourceObjectOptions(relData);
-                    var indexToSelect = -1;
-                    $.each(relData, function (ix, item) {
-                        if (item.value.indexOf(parent.Object() + '|' + parent.ObjectID()) > -1) {
-                            indexToSelect = ix;
-                        }
-                    });
-                    self.SourceObjectIndex(indexToSelect);
-                }
-            );
-
-            $.getJSON(
-                '/form/SourceToTarget_SourcingAttributeOptions',
-                { type: 'Artifact', id: value },
-                function (relData) {
-                    //var options = $.map(relData, function (item) { return new SourceToTargetDropdownOption({ Text: item.group + " : " + item.title, Value: item.value }); });
-                    self.SourceFusionAttributeOptions(relData);
-                }
-            );
-        }
-    });
-
-    self.TargetSystem.subscribe(function (value) {
-        self.TargetObjectOptions.removeAll();
-        self.TargetFusionAttributeOptions.removeAll();
-
-        if (value) {
-            $.getJSON(
-                '/form/SourceToTarget_SourcingObjectOptions',
-                { type: 'Artifact', id: value },
-                function (relData) {
-                    //var options = $.map(relData, function (item) { return new SourceToTargetDropdownOption({ Text: item.group + " : " + item.title, Value: item.value }); });
-                    self.TargetObjectOptions(relData);
-                    var indexToSelect = -1;
-                    $.each(relData, function (ix, item) {
-                        if (item.value.indexOf(parent.Object() + '|' + parent.ObjectID()) > -1) {
-                            indexToSelect = ix;
-                        }
-                    });
-                    self.TargetObjectIndex(indexToSelect);
-                }
-            );
-
-            $.getJSON(
-                '/form/SourceToTarget_SourcingAttributeOptions',
-                { type: 'Artifact', id: value },
-                function (relData) {
-                    //var options = $.map(relData, function (item) { return new SourceToTargetDropdownOption({ Text: item.group + " : " + item.title, Value: item.value }); });
-                    self.TargetFusionAttributeOptions(relData);
-                }
-            );
-        }
-    });
-
-    return self;
-}
-
-function SourceToTargetEnvironment(data) {
-    var self = this;
-    data = data || {};
-    self.Object = ko.observable(data.Object);
-    self.Group = ko.observable(data.Group || "");
-    self.Timing = ko.observable(data.Timing || "");
-
-    return self;
-}
-
-function SourceToTargetGroup(data, root) {
-    var self = this;
-    data = data || {};
-    //self.Name = ko.observable(data.Name);
-    self.Formula = ko.observable(data.Formula || "");
-    self.Definition = ko.observable(data.Definition || "");
-    self.Items = ko.observableArray();
-
-    self.Systems = ko.observableArray(root.Relationships());
-
-    self.addItem = function () {
-        self.Items.push(
-            new SourceToTargetItem({
-                SourceSystem: '',
-                SourceObject: '',
-                SourceFusionAttribute: 0,
-                TargetSystem: '',
-                TargetObject: '',
-                TargetFusionAttribute: 0
-            }, root)
-        );
-    };
-
-    self.deleteItem = function () {
-        self.Items.remove(this);
-    };
-
-    return self;
-}
-
-function SourceToTargetRelationship(data) {
-    var self = this;
-    data = data || {};
-    self.Object = ko.observable(data.Object);
-    self.ObjectID = ko.observable(data.ObjectID);
-    self.ObjectName = ko.observable(data.ObjectName);
-}
-
-function SourceToTargetViewModel(data) {
-    var self = this;
-    data = data || {};
-
-    //#region Simple Properties
-
-    self.Object = ko.observable(data.Object);
-    self.ObjectID = ko.observable(data.ObjectID);
-    self.ObjectName = ko.observable(data.ObjectName);
-    self.Context = ko.observable(data.Context);
-    self.InProgress = ko.observable(false);
-
-    //#endregion
-
-    //#region Computed Properties
-
-    self.Step1Title = ko.pureComputed(function () {
-        return 'Define Relationships for ' + self.ObjectName();
-    }, self);
-
-    self.GroupsNotPresent = ko.pureComputed(function () {
-        if (self.Groups().length > 0) {
-            var isBad = false;
-
-            for (var g = 0; g < self.Groups().length; g++) {
-                if (self.Groups()[g].Items().length > 0) {
-                    for (var i = 0; i < self.Groups()[g].Items().length; i++) {
-                        if (self.Groups()[g].Items()[i].SourceSystemIndex() == -1 || self.Groups()[g].Items()[i].TargetSystemIndex() == -1) {
-                            isBad = true;
-                        }
-                    }
-                }
-            }
-
-            return isBad;
-        }
-
-        return true;   //If you got this far, then no proper rows present.
-    }, self);
-
-    self.RelationshipOptionsLoading = ko.pureComputed(function () {
-        return self.RelationshipOptions().length == 0;
-    }, self);
-
-    self.RelationshipsLoaded = ko.pureComputed(function () {
-        return self.Relationships().length > 0;
-    }, self);
-
-    //#endregion
-
-    //#region List Properties
-
-    self.Environments = ko.observableArray();
-    self.Groups = ko.observableArray();
-    self.Relationships = ko.observableArray();
-
-    self.RelationshipOptions = ko.observableArray();
-
-    //#endregion
-
-    //#region Methods
-
-    self.addEnvironment = function () {
-        self.Environments.push(
-            new SourceToTargetEnvironment({
-                Object: '',
-                Group: '',
-                Timing: ''
-            })
-        );
-    };
-
-    self.addGroup = function () {
-       // var newGroupName = 'Group ' + (self.Groups().length + 1);
-        var group = new SourceToTargetGroup({
-           // Name: newGroupName,
-            Formula: '',
-            Definition: 'The business definition'// for ' + newGroupName
-        }, self);
-
-        group.addItem(new SourceToTargetItem({}, group));
-
-        self.Groups.push(group);
-    };
-
-    self.addRelationship = function (data) {
-        self.Relationships.push(
-            new SourceToTargetRelationship({
-                Object: data.Object,
-                ObjectID: data.ObjectID,
-                ObjectName: data.ObjectName
-            })
-        );
-    };
-
-    self.cancel = function () {
-        amplify.publish("CancelAction", { context: self.Context() });
-    };
-
-    self.deleteGroup = function () {
-        self.Groups.remove(this);
-    };
-
-    self.deleteEnvironment = function () {
-        self.Environments.remove(this);
-    };
-
-    self.deleteRelationship = function (data) {
-        self.Relationships.remove(function(item){ item.ObjectID == data.ObjectID });
-    };
-
-    self.getRelationshipOptions = function () {
-        $.getJSON('/form/SourceToTarget_Step1', function (relData) {
-            self.RelationshipOptions(relData);
-        });
-    };
-
-    self.save = function () {
-        self.InProgress(true);
-
-        var postModel = {
-            Object: self.Object(),
-            ObjectID: self.ObjectID(),
-            Relationships: [],
-            Groups: [],
-            Environments: []
-        }
-
-        for (var r = 0; r < self.Relationships().length; r++) {
-            var relationship = {
-                Object: self.Relationships()[r].Object(),
-                ObjectID: self.Relationships()[r].ObjectID()
-            };
-            postModel.Relationships.push(relationship);
-        }
-
-        for (var g = 0; g < self.Groups().length; g++) {
-            var group = {
-                Formula: self.Groups()[g].Formula(),
-                Definition: self.Groups()[g].Definition(),
-                Items: []
-            };
-
-            for (var i = 0; i < self.Groups()[g].Items().length; i++) {
-                var item = {
-                    SourceSystem: self.Groups()[g].Items()[i].SourceSystem,
-                    SourceObject: self.Groups()[g].Items()[i].SourceObject,
-                    SourceFusionAttribute: self.Groups()[g].Items()[i].SourceFusionAttribute,
-                    TargetSystem: self.Groups()[g].Items()[i].TargetSystem,
-                    TargetObject: self.Groups()[g].Items()[i].TargetObject,
-                    TargetFusionAttribute: self.Groups()[g].Items()[i].TargetFusionAttribute
-                };
-                group.Items.push(item);
-            }
-
-            postModel.Groups.push(group);
-        }
-
-        $.ajax('/form/AddSourceToTarget', {
-            data: postModel,
-            dataType: 'json',
-            method: 'POST'
-        }).done(function (data, status, xhr) {
-            amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
-            amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Mappings successfully created.' });
-        }).fail(function (xhr, status, error) {
-            amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
-        }).always(function (data, status, error) {
-            self.InProgress(false);
-        });
-    };
-
-    //#endregion
-
-    return self;
-}
-
-
-function IntersectTypeRole(data, root) {
-    var self = this;
-    data = data || {};
-
-    self.RoleIndex = ko.observable(data.RoleIndex || -1);
-    self.RoleID = ko.observable(data.RoleID || "");
-    self.NewRoleName = ko.observable(data.NewRoleName || "");
-    self.Side1Label = ko.observable(data.Side1Label || "");
-    self.Side2Label = ko.observable(data.Side2Label || "");
-
-    return self;
-}
 
 function IntersectTypeViewModel(data) {
     var self = this;
@@ -1579,9 +1230,6 @@ function IntersectTypeViewModel(data) {
 
     //#region List Properties
 
-    self.Roles = ko.observableArray();
-
-    self.RoleOptions = ko.observableArray();
     self.Side1Options = ko.observableArray();
     self.Side2Options = ko.observableArray();
 
@@ -1626,75 +1274,41 @@ function IntersectTypeViewModel(data) {
 
     //#region Methods
 
-    self.addRole = function () {
-        self.Roles.push(new IntersectTypeRole({}, self));
-    };
-
     self.cancel = function () {
         amplify.publish("CancelAction", { context: self.Context() });
-    };
-
-    self.deleteRole = function () {
-        self.Roles.remove(this);
     };
 
     self.loadCurrentIntersectType = function () {
         // Step 1
         $.getJSON('/form/IntersectType_Side1Options', function (relData) {
             self.Side1Options(relData);
-        }).then(function(){
+        }).then(function () {
             // Step 2
-            $.getJSON('/form/IntersectType_RoleOptions', function (relData) {
-                self.RoleOptions(relData);
-            }).then(function () {
-                // Step 3
-                $.getJSON(
-                    '/form/IntersectType_FormData',
-                    { id: self.ID() },
-                    function (relData) {
+            $.getJSON(
+                '/form/IntersectType_FormData',
+                { id: self.ID() },
+                function (relData) {
 
-                        //Side2 needs to be first, here.
-                        self.Side2(relData.Side2);
-                        self.Side2DisplayText(relData.Side2DisplayText);
-                        self.Side1(relData.Side1);
-                        self.Side1DisplayText(relData.Side1DisplayText);
+                    //Side2 needs to be first, here.
+                    self.Side2(relData.Side2);
+                    self.Side2DisplayText(relData.Side2DisplayText);
+                    self.Side1(relData.Side1);
+                    self.Side1DisplayText(relData.Side1DisplayText);
 
-                        self.LimitedChangesOnly(relData.LimitedChangesOnly);
+                    self.LimitedChangesOnly(relData.LimitedChangesOnly);
 
-                        var indexToSelect = -1;
+                    var indexToSelect = -1;
 
-                        $.each(self.Side1Options(), function (ix, item) {
-                            if (item.value == relData.Side1) {
-                                indexToSelect = ix;
-                            }
-                        });
-                        self.Side1Index(indexToSelect);
-
-                        $.each(relData.Roles, function (roIx, roItem) {
-                            var roleIndexToSelect = -1;
-                            $.each(self.RoleOptions(), function (ix, item) {
-                                if (item.ID == roItem.RoleID) {
-                                    roleIndexToSelect = ix;
-                                }
-                            });
-
-                            self.Roles.push(
-                                    new IntersectTypeRole({
-                                        RoleIndex: roleIndexToSelect,
-                                        RoleID: roItem.RoleID,
-                                        Side1Label: roItem.Side1Label,
-                                        Side2Label: roItem.Side2Label
-                                    }, self)
-                                );
-
-                        });
-                    }
-                );
-            });
+                    $.each(self.Side1Options(), function (ix, item) {
+                        if (item.value == relData.Side1) {
+                            indexToSelect = ix;
+                        }
+                    });
+                    self.Side1Index(indexToSelect);
+                }
+            );
         });
     };
-
-
 
     self.save = function () {
         self.InProgress(true);
@@ -1704,18 +1318,7 @@ function IntersectTypeViewModel(data) {
             Side1: self.Side1(),
             Side1DisplayText: self.Side1DisplayText(),
             Side2: self.Side2(),
-            Side2DisplayText: self.Side2DisplayText(),
-            Roles: []
-        }
-
-        for (var r = 0; r < self.Roles().length; r++) {
-            var role = {
-                RoleID: self.Roles()[r].RoleID(),
-                NewRoleName: self.Roles()[r].NewRoleName(),
-                Side1Label: self.Roles()[r].Side1Label(),
-                Side2Label: self.Roles()[r].Side2Label()
-            };
-            postModel.Roles.push(role);
+            Side2DisplayText: self.Side2DisplayText()
         }
 
         var uri = '';
@@ -1748,7 +1351,6 @@ function IntersectTypeViewModel(data) {
     return self;
 }
 
-
 function CompanySettingIpRestiction(data) {
     var self = this;
     data = data || {};
@@ -1760,7 +1362,6 @@ function CompanySettingIpRestiction(data) {
     return self;
 }
 
-
 function CompanySettingsViewModel(data) {
     var self = this;
     data = data || {};
@@ -1769,6 +1370,8 @@ function CompanySettingsViewModel(data) {
     self.DisableCommunityPosting = ko.observable(data.DisableCommunityPosting);
     self.DisableIssuePosting = ko.observable(data.DisableIssuePosting);
     self.DisableQuestionPosting = ko.observable(data.DisableQuestionPosting);
+    self.ArtifactType_TaxonomyTypeID = ko.observable(data.ArtifactType_TaxonomyTypeID);
+    self.ArtifactType_TaxonomyTypeIDNodes = ko.observable(data.ArtifactType_TaxonomyTypeIDNodes);
     self.SetIconToDefault = ko.observable(data.SetLogoToDefault);
     self.SetLogoToDefault = ko.observable(data.SetLogoToDefault);
 
@@ -1844,7 +1447,8 @@ function CompanySettingsViewModel(data) {
             self.DisableIssuePosting(relData.DisableIssuePosting);
             self.DisableQuestionPosting(relData.DisableQuestionPosting);
 
-            console.log(self.CurrentCompanyLogoPath());
+            self.ArtifactType_TaxonomyTypeID(relData.ArtifactType_TaxonomyTypeID);
+            self.ArtifactType_TaxonomyTypeIDNodes(relData.ArtifactType_TaxonomyTypeIDNodes);
 
             $.each(relData.IpRestrictions, function (roIx, roItem) {
                 self.IpRestrictions.push(
@@ -1870,6 +1474,8 @@ function CompanySettingsViewModel(data) {
             CompanyLogo: self.CompanyLogo().dataURL(),
             SetIconToDefault: self.SetIconToDefault(),
             CompanyIcon: self.CompanyIcon().dataURL(),
+            ArtifactType_TaxonomyTypeID: self.ArtifactType_TaxonomyTypeID(),
+            ArtifactType_TaxonomyTypeIDNodes: self.ArtifactType_TaxonomyTypeIDNodes(),
             IpRestrictions: []
         }
 

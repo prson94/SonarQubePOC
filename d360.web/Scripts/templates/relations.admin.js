@@ -22,24 +22,6 @@
 
         //#region Event Handlers
 
-        //function listBindingComplete(event) {
-        //    var rowCount = $('#List').jqxGrid('getdisplayrows').length;
-        //    if (rowCount > 0) {
-        //        $('#List').jqxGrid('selectrow', 0);
-        //    }
-        //}
-
-        //function listRowSelect(event) {
-        //    var args = event.args;
-        //    var row = args.rowindex;
-        //    var data = $("#List").jqxGrid('getrowdata', row);
-        //    amplify.publish(AmplifyActions.TileUnsubscribe, {});
-        //    intersectTypeID = data.ID;
-        //    $('#SideIcons').PageTools("reload", type, intersectTypeID);
-        //    IntersectTypeRolesGrid('RolesTile', contextList, permissions, intersectTypeID);
-        //}
-
-
         function predicatesRowSelect(event) {
             var args = event.args;
             var row = args.rowindex;
@@ -82,8 +64,6 @@
             PredicateAdapter = null;
             PredicateSource = null;
 
-            //$("#List").off("rowselect", listRowSelect);
-            //$("#List").off("bindingcomplete", listBindingComplete);
             $("#Predicates").off("rowselect", predicatesRowSelect);
             amplify.unsubscribe('SaveAction', saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
@@ -115,13 +95,11 @@
                         datafields:
                         [
                             { name: 'ID' },
-                            { name: 'SourceType' },
+                            { name: 'Source' },
                             { name: 'SourceID' },
-                            { name: 'SourceTypeName' },
                             { name: 'SourceName' },
-                            { name: 'TargetType' },
+                            { name: 'Target' },
                             { name: 'TargetID' },
-                            { name: 'TargetTypeName' },
                             { name: 'TargetName' }
                         ]
                     };
@@ -146,9 +124,9 @@
                                 { text: 'Relationship Side 2', align: 'center', name: 'S2' }
                             ],
                         columns: [
-                            { datafield: "SourceTypeName", text: "Type", columngroup: 'S1', filtertype: 'checkedlist', width: '150px' },
+                            { datafield: "Source", text: "Type", columngroup: 'S1', filtertype: 'checkedlist', width: '150px' },
                             { datafield: "SourceName", text: "Name", columngroup: 'S1', filtertype: 'checkedlist' },
-                            { datafield: "TargetTypeName", text: "Type", columngroup: 'S2', filtertype: 'checkedlist', width: '150px' },
+                            { datafield: "Target", text: "Type", columngroup: 'S2', filtertype: 'checkedlist', width: '150px' },
                             { datafield: "TargetName", text: "Name", columngroup: 'S2', filtertype: 'checkedlist' },
                             {
                                 text: '',
@@ -283,9 +261,7 @@
 
                     //#region Event Subscriptions
 
-                    //$("#List").on("rowselect", listRowSelect);
                     $("#Predicates").on("rowselect", predicatesRowSelect);
-                    //$("#List").one("bindingcomplete", listBindingComplete);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 

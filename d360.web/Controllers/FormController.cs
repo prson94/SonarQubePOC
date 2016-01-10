@@ -531,6 +531,7 @@ namespace d360.web.Controllers
                 Required = true,
                 FieldName = "TaxonomyTypeID",
                 Name = Resources.FieldInfo.TaxonomyType_Name,
+                ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID",
                 FieldDescription = Resources.FieldInfo.TaxonomyType_Description,
                 FieldType = DataType.Lookup.ToString(),
                 Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(),
@@ -585,7 +586,7 @@ namespace d360.web.Controllers
             }
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Value = a.TaxonomyTypeID.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Value = a.TaxonomyTypeID.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
 
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
@@ -636,7 +637,7 @@ namespace d360.web.Controllers
             }
 
             list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
+            list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "TaxonomyTypeID", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
             row++;
             list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
             row++;
@@ -2093,6 +2094,8 @@ namespace d360.web.Controllers
                     model.IpRestrictions.AddRange(ips);
                 }
             }
+            model.ArtifactType_TaxonomyTypeID = (settings.Any(i => i.SettingID == 7) ? settings.Single(i => i.SettingID == 7).Value : "");
+            model.ArtifactType_TaxonomyTypeIDNodes = (settings.Any(i => i.SettingID == 8) ? settings.Single(i => i.SettingID == 8).Value : "");
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -2237,6 +2240,54 @@ namespace d360.web.Controllers
                 {
                     socialSetting.Value = formModel.DisableQuestionPosting.ToString().ToLower();
                     Community.SaveChanges();
+                }
+
+                #endregion
+
+                #region global fields
+
+                var subjectAreaSetting = settings.FirstOrDefault(i => i.SettingID == 7);
+                if (subjectAreaSetting == null)
+                {
+                    if (!string.IsNullOrEmpty(formModel.ArtifactType_TaxonomyTypeID))
+                    {
+                        subjectAreaSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 7, Value = formModel.ArtifactType_TaxonomyTypeID };
+                        Community.Add<CompanySetting>(subjectAreaSetting);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(formModel.ArtifactType_TaxonomyTypeID))
+                    {
+                        Community.Delete<CompanySetting>(subjectAreaSetting);
+                    }
+                    else
+                    {
+                        subjectAreaSetting.Value = formModel.ArtifactType_TaxonomyTypeID;
+                        Community.SaveChanges();
+                    }
+                }
+
+                var subjectAreaNodesSetting = settings.FirstOrDefault(i => i.SettingID == 8);
+                if (subjectAreaNodesSetting == null)
+                {
+                    if (!string.IsNullOrEmpty(formModel.ArtifactType_TaxonomyTypeIDNodes))
+                    {
+                        subjectAreaNodesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 8, Value = formModel.ArtifactType_TaxonomyTypeIDNodes };
+                        Community.Add<CompanySetting>(subjectAreaNodesSetting);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(formModel.ArtifactType_TaxonomyTypeIDNodes))
+                    {
+                        Community.Delete<CompanySetting>(subjectAreaNodesSetting);
+                    }
+                    else
+                    {
+                        subjectAreaNodesSetting.Value = formModel.ArtifactType_TaxonomyTypeIDNodes;
+                        Community.SaveChanges();
+                    }
                 }
 
                 #endregion
@@ -5750,12 +5801,6 @@ namespace d360.web.Controllers
             {
                 ID = id,
                 LimitedChangesOnly = currentIntersects,
-                Roles = Company.Filter<IntersectTypeRoleRelation>(i => i.IntersectTypeID == id, i => i.IntersectTypeRole)
-                .Select(i => new IntersectTypeRoleEditorModel {
-                    RoleID = i.IntersectTypeRoleID,
-                    Side1Label = i.Side1Label,
-                    Side2Label = i.Side2Label
-                }).ToList(),
                 Side1 = string.Format("{0}|{1}", first.ObjectType, first.ObjectID),
                 Side1DisplayText = first.MenuDisplayText,
                 Side2 = string.Format("{0}|{1}", last.ObjectType, last.ObjectID),
@@ -5763,15 +5808,6 @@ namespace d360.web.Controllers
             };
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        public JsonNetResult IntersectType_RoleOptions()
-        {
-            var models = Company.Table<IntersectTypeRole>()
-                .OrderBy(i => i.Name)
-                .Select(i => new { i.Name, ID = i.ID });
-
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         public JsonNetResult IntersectType_Side1Options()
@@ -5790,82 +5826,6 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        void saveIntersectTypeRoles(IntersectTypeEditorModel formModel, List<IntersectTypeRoleRelation> existingRoles = null)
-        {
-            var globalRoles = Company.Table<IntersectTypeRole>().ToList();
-
-            if (existingRoles == null)  // If NULL, set as 0-sized list.
-            {
-                existingRoles = new List<IntersectTypeRoleRelation>();
-            }
-
-            if (formModel.Roles != null)
-            {
-                foreach (var roleModel in formModel.Roles)
-                {
-                    IntersectTypeRoleRelation roleRelation = null;
-                    IntersectTypeRole newRole = null;
-
-                    if (!string.IsNullOrEmpty(roleModel.NewRoleName))
-                    {
-                        if (globalRoles.Any(i => i.Name.ToLower() == roleModel.NewRoleName.Trim().ToLower()))
-                        {
-                            newRole = globalRoles.FirstOrDefault(i => i.Name.ToLower() == roleModel.NewRoleName.Trim().ToLower());
-                        }
-                        else
-                        {
-                            newRole = new IntersectTypeRole { Name = roleModel.NewRoleName };
-                            Company.Add<IntersectTypeRole>(newRole);
-
-                            roleModel.RoleID = newRole.ID;
-                        }
-                    }
-                    else
-                    {
-                        if (roleModel.RoleID.HasValue)
-                        {
-                            roleRelation = new IntersectTypeRoleRelation { IntersectTypeRoleID = roleModel.RoleID.Value };
-
-                            if (globalRoles.Any(i => i.ID == roleModel.RoleID.Value))
-                            {
-                                newRole = globalRoles.FirstOrDefault(i => i.ID == roleModel.RoleID.Value);
-                            }
-                        }
-                    }
-
-                    if (newRole != null)
-                    {
-                        if (existingRoles.Any(i => i.IntersectTypeRoleID == newRole.ID))
-                        {
-                            roleRelation = existingRoles.FirstOrDefault(i => i.IntersectTypeRoleID == newRole.ID);
-                            roleRelation.Side1Label = roleModel.Side1Label;
-                            roleRelation.Side2Label = roleModel.Side2Label;
-                            Company.Update<IntersectTypeRoleRelation>(roleRelation);
-                        }
-                        else
-                        {
-                            roleRelation = new IntersectTypeRoleRelation { IntersectTypeRoleID = newRole.ID, IntersectTypeID = formModel.ID, Side1Label = roleModel.Side1Label, Side2Label = roleModel.Side2Label };
-                            Company.Add<IntersectTypeRoleRelation>(roleRelation);
-                            existingRoles.Add(roleRelation);
-                        }
-                    }
-                }
-            }
-
-            var saveForRemovals = false;
-            foreach (var existingRole in existingRoles)
-            {
-                if (!formModel.Roles.Any(i => i.RoleID == existingRole.IntersectTypeRoleID))
-                {
-                    Company.IntersectTypeRoleRelations.Remove(existingRole);
-                    saveForRemovals = true;
-                }
-            }
-            if (saveForRemovals)
-            {
-                Company.SaveChanges();
-            }
-        }
 
         public ActionResult AddIntersectType()
         {
@@ -6033,287 +5993,6 @@ namespace d360.web.Controllers
                 Company.Update<IntersectTypeNode>(existingSide2Node);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region IntersectTypeRole
-
-        #region Field Generation
-
-        /// <param name="intersectTypeID">The ID of the Intersect Type</param>
-        public JsonResult IntersectTypeRole_AddFields(int intersectTypeID)
-        {
-            if (!Company.HasPermission(SystemObjects.IntersectType, intersectTypeID, Claim.Update, ClaimObject.Root))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            var type = Company.GetById<IntersectType>(intersectTypeID);
-            var roles = Company.Table<IntersectTypeRole>().OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-            roles.Insert(0, new SelectListItem { Text = "-New Role-", Value = "" });
-
-            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = intersectTypeID.ToString() });
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ExistingRole", Name = "Existing Role", FieldDescription = Resources.FieldInfo.IntersectTypeRole_ExistingRole_Description, FieldType = DataType.Lookup.ToString(), Items = roles });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "NewRole", Name = "New Role", FieldDescription = Resources.FieldInfo.IntersectTypeRole_NewRole_Description, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", false, "", 0, 250) });
-
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Side1Label", Name = "Side 1 Label", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Side 1 Label", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Side2Label", Name = "Side 2 Label", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Side 2 Label", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">The ID of the Role</param>
-        /// <param name="intersectTypeID">The ID of the Intersect Type</param>
-        public JsonResult IntersectTypeRole_DeleteFields(int id, int intersectTypeID)
-        {
-            if (!Company.HasPermission(SystemObjects.IntersectType, intersectTypeID, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            if (Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && i.IntersectTypeRoleID == id).Count() > 0)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = intersectTypeID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">The ID of the Role</param>
-        /// <param name="intersectTypeID">The ID of the Intersect Type</param>
-        public JsonResult IntersectTypeRole_EditFields(int id, int intersectTypeID)
-        {
-            if (!Company.HasPermission(SystemObjects.IntersectType, intersectTypeID, Claim.Update, ClaimObject.Root))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            var relation = Company.Filter<IntersectTypeRoleRelation>(i => i.IntersectTypeID == intersectTypeID && i.IntersectTypeRoleID == id, i => i.IntersectTypeRole).SingleOrDefault();
-
-            if (relation == null)
-                return jsonException("Role not found", HttpStatusCode.NotFound);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = intersectTypeID.ToString() });
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ExistingRole", Name = "Existing Role Name", FieldDescription = Resources.FieldInfo.IntersectTypeRole_ExistingRole_ChangeWarning, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), Value = relation.IntersectTypeRole.Name });
-
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Side1Label", Name = "Side 1 Label", FieldType = DataType.Text.ToString(), Value = relation.Side1Label, Validations = checkAndAddValidation("Text", "Side 1 Label", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Side2Label", Name = "Side 2 Label", FieldType = DataType.Text.ToString(), Value = relation.Side2Label, Validations = checkAndAddValidation("Text", "Side 2 Label", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddIntersectTypeRole(int intersectTypeID)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.IntersectTypeRole,
-                FieldUri = string.Format("/form/IntersectTypeRole_AddFields?intersectTypeID={0}", intersectTypeID),
-                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Role"),
-                FormUri = "/form/AddIntersectTypeRole",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost]
-        public JsonResult AddIntersectTypeRole(FormCollection form)
-        {
-            try
-            {
-                if (form == null) throw new NoFormDataException("Role");
-
-                var intersectTypeID = parseIntField(form, "IntersectTypeID");
-                var existingRoleID = parseNullableIntField(form, "ExistingRole");
-                var newRole = parseTextField(form, "NewRole");
-                var side1Label = parseTextField(form, "Side1Label");
-                var side2Label = parseTextField(form, "Side2Label");
-
-                IntersectTypeRole role = null;
-                if (!string.IsNullOrEmpty(newRole))
-                {
-                    var lowerName = newRole.ToLower();
-                    role = Company.Filter<IntersectTypeRole>(i => i.Name.ToLower() == lowerName).SingleOrDefault();
-                    if (role == null)
-                    {
-                        role = new IntersectTypeRole { Name = newRole };
-                        Company.Add<IntersectTypeRole>(role);
-                    }
-                }
-                else
-                {
-                    if (existingRoleID.HasValue)
-                    {
-                        role = Company.GetById<IntersectTypeRole>(existingRoleID.Value, i => i.RoleRelations);
-                        if (role == null)
-                            throw new NotFoundException("Role");
-
-                        if (role.RoleRelations.Any(i => i.IntersectTypeID == intersectTypeID))
-                            throw new ConflictException("Conflict Found", "The relationship type is already using this role");
-                    }
-                    else
-                    {
-                        throw new NoFormDataException("Role");
-                    }
-                }
-
-                if (role == null) throw new NotFoundException("Role");
-
-                Company.Add<IntersectTypeRoleRelation>(new IntersectTypeRoleRelation { IntersectTypeID = intersectTypeID, IntersectTypeRoleID = role.ID, Side1Label = side1Label, Side2Label = side2Label });
-
-                return jsonSuccess("Role successfully created.", "0", form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult DeleteIntersectTypeRole(int id, int intersectTypeID)
-        {
-            var role = Company.GetById<IntersectTypeRole>(id, i => i.RoleRelations);
-            if (role == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.IntersectTypeRole,
-                FieldUri = string.Format("/form/IntersectTypeRole_DeleteFields?id={0}&intersectTypeID={1}", id, intersectTypeID),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Role"),
-                FormUri = "/form/DeleteIntersectTypeRole",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteIntersectTypeRole(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("relationship type role");
-
-                var id = parseIntField(form, "ID");
-                var intersectTypeID = parseIntField(form, "IntersectTypeID");
-                
-                if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (Company.Filter<Intersect>(i => i.IntersectTypeRoleID == id && i.IntersectTypeID ==  intersectTypeID).Count() > 0)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
-
-                var model = Company.GetById<IntersectTypeRole>(id, i => i.RoleRelations);
-                if (model == null) throw new NotFoundException("relationship type role");
-
-                if (model.RoleRelations.Count >= 1)
-                {
-                    var relation = model.RoleRelations.SingleOrDefault(i => i.IntersectTypeID == intersectTypeID);
-                    if (relation != null)
-                    {
-                        Company.Delete<IntersectTypeRoleRelation>(relation);
-                    }
-                    else
-                    {
-                        throw new NotFoundException("relationship type role");
-                    }
-                }
-                else
-                {
-                    Company.Delete<IntersectTypeRole>(model);
-                }
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult EditIntersectTypeRole(int id, int intersectTypeID)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.IntersectTypeRole,
-                FieldUri = string.Format("/form/IntersectTypeRole_EditFields?id={0}&intersectTypeID={1}", id, intersectTypeID),
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Role"),
-                FormUri = "/form/EditIntersectTypeRole",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut]
-        public JsonResult EditIntersectTypeRole(FormCollection form)
-        {
-            try
-            {
-                if (form == null) throw new NoFormDataException("relationship type role");
-
-                var intersectTypeID = parseIntField(form, "IntersectTypeID");
-                var roleID = parseIntField(form, "ID");
-                var existingRole = parseTextField(form, "ExistingRole");
-                var side1Label = parseTextField(form, "Side1Label");
-                var side2Label = parseTextField(form, "Side2Label");
-
-                IntersectTypeRole role = null;
-                role = Company.GetById<IntersectTypeRole>(roleID, i => i.RoleRelations);
-                if (role == null)
-                    throw new NotFoundException("Role");
-
-                var relation = role.RoleRelations.SingleOrDefault(i => i.IntersectTypeID == intersectTypeID);
-
-                if (relation == null)
-                    throw new NotFoundException("Role Relation");
-
-                if (!role.Name.Equals(existingRole))
-                {
-                    role.Name = existingRole;
-                    Company.Update<IntersectTypeRole>(role);
-                }
-
-                if (!relation.Side1Label.Equals(side1Label) || !relation.Side2Label.Equals(side2Label))
-                {
-                    relation.Side1Label = side1Label;
-                    relation.Side2Label = side2Label;
-                    Company.Update<IntersectTypeRoleRelation>(relation);
-                }
-
-                return jsonSuccess("Role successfully updated.", "0", form["_context"], "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -6868,7 +6547,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
             for (int i = 0; i < columns.Count; i++)
             {
-                document.SetCellValue(1, i, columns[i]);
+                document.SetCellValue(1, i+1, columns[i]);
             }
 
             #endregion
@@ -9470,220 +9149,6 @@ order by	D.Name, I.Name";
 
         #endregion
 
-        #region ResponsibilityTransformation
-
-        #region Field Generation
-
-        public JsonResult ResponsibilityTransformation_AddFields(int responsibilityID)
-        {
-            var model = new ResponsibilityTransformation();
-            //if (!Company.HasPermission(SystemObjects.Rule, 0, Claim.Create, ClaimObject.Root))
-            //    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ResponsibilityID", FieldType = DataType.Hidden.ToString(), Value = responsibilityID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ResponsibilityTransformationType", Name = model.GetName(i => i.ResponsibilityTransformationType), FieldDescription = model.GetDescription(i => i.ResponsibilityTransformationType), Items = ResponsibilityTransformationType.Business.GetEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList(), FieldType = DataType.Lookup.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResponsibilityTransformationID</param>
-        public JsonResult ResponsibilityTransformation_DeleteFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResponsibilityTransformationID</param>
-        public JsonResult ResponsibilityTransformation_EditFields(int id)
-        {
-            //if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update))
-            //    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var model = Company.GetById<ResponsibilityTransformation>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ResponsibilityTransformationType", Name = model.GetName(i => i.ResponsibilityTransformationType), FieldDescription = model.GetDescription(i => i.ResponsibilityTransformationType), Items = ResponsibilityTransformationType.Business.GetEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList(), FieldType = DataType.Lookup.ToString(), Value = ((int)model.ResponsibilityTransformationType).ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = model.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddResponsibilityTransformation(int responsibilityID)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponsibilityTransformation,
-                FieldUri = "/form/ResponsibilityTransformation_AddFields?responsibilityID=" + responsibilityID,
-                FormTitle = Resources.FormInfo.Add_ResponsibilityTransformation_Title,
-                FormDescription = Resources.FormInfo.Add_ResponsibilityTransformation_Directions,
-                FormUri = "/form/AddResponsibilityTransformation",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddResponsibilityTransformation(FormCollection form)
-        {
-            try
-            {
-                //if (!Company.HasPermission(SystemObjects.Rule, 0, Claim.Create, ClaimObject.Root))
-                //    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("Responsibility Transformation");
-
-                var model = new ResponsibilityTransformation
-                {
-                    ResponsibilityTransformationType = (ResponsibilityTransformationType)Enum.Parse(typeof(ResponsibilityTransformationType), form["ResponsibilityTransformationType"]),
-                    Description = parseTextField(form, "Description"),
-                    ResponsibilityID = parseIntField(form, "ResponsibilityID")
-                };
-
-                Company.Add<ResponsibilityTransformation>(model);
-
-                dynamic custom = new
-                {
-                    action = "add",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Transformation successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult DeleteResponsibilityTransformation(int id)
-        {
-            var a = Company.GetById<ResponsibilityTransformation>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponsibilityTransformation,
-                FieldUri = string.Format("/form/ResponsibilityTransformation_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Transformation"),
-                FormUri = "/form/DeleteResponsibilityTransformation",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteResponsibilityTransformation(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Responsibility Transformation");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ResponsibilityTransformation>(id);
-                if (model == null) throw new NotFoundException("Responsibility Transformation");
-
-                //if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Delete))
-                //    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(model);
-
-                dynamic custom = new
-                {
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Transformation successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult EditResponsibilityTransformation(int id)
-        {
-            if (!Company.Exists<ResponsibilityTransformation>(id)) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponsibilityTransformation,
-                FieldUri = string.Format("/form/ResponsibilityTransformation_EditFields?id={0}", id),
-                FormTitle = Resources.FormInfo.Edit_ResponsibilityTransformation_Title,
-                FormDescription = Resources.FormInfo.Edit_ResponsibilityTransformation_Directions,
-                FormUri = "/form/EditResponsibilityTransformation",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditResponsibilityTransformation(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Responsibility Transformation");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ResponsibilityTransformation>(id);
-                if (model == null) throw new NotFoundException("Responsibility Transformation");
-
-                //if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update))
-                //    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Description = parseTextField(form, "Description");
-                model.ResponsibilityTransformationType = (ResponsibilityTransformationType)Enum.Parse(typeof(ResponsibilityTransformationType), form["ResponsibilityTransformationType"]);
-
-                Company.Update<ResponsibilityTransformation>(model);
-
-                dynamic custom = new
-                {
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Transformation successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region ResponsibilityType
 
         #region Field Generation
@@ -10139,148 +9604,6 @@ order by	D.Name, I.Name";
 
         #endregion
 
-        #region ResponsibilityTypeHierarchy
-
-        #region Field Generation
-
-        public JsonResult ResponsibilityTypeHierarchy_AddFields()
-        {
-            var o = new AttributeTypeCategory();
-            if (!Company.HasPermission(SystemObjects.ResponsibilityType, 0, Claim.Create, ClaimObject.Root))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var models = Company.Filter<ResponsibilityType>(i => i.ResponsibilityTypeGroup == ResponsibilityTypeGroup.Sourcing).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-            models.Insert(0, new SelectListItem { Text = "None", Value = "" });
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Start", Name = "Start", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = models });
-            list.Add(new EditableField { Row = 1, Column = 2, FieldName = "End", Name = "End", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = models });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResponsibilityTypeHierarchy ID</param>
-        public JsonResult ResponsibilityTypeHierarchy_DeleteFields(int s, int? e)
-        {
-            if (!Company.HasPermission(SystemObjects.ResponsibilityType, 0, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "Start", FieldType = DataType.Hidden.ToString(), Value = s.ToString() });
-            list.Add(new EditableField { FieldName = "End", FieldType = DataType.Hidden.ToString(), Value = ((e.HasValue) ? e.Value.ToString() : "") });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddResponsibilityTypeHierarchy()
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponsibilityTypeHierarchy,
-                FieldUri = "/form/ResponsibilityTypeHierarchy_AddFields",
-                FormTitle = "Add a Responsibility Type Order",
-                FormDescription = "Add an order between two sourcing responsibility types to indicate the direction or flow of data.",
-                FormUri = "/form/AddResponsibilityTypeHierarchy",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddResponsibilityTypeHierarchy(FormCollection form)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.AttributeTypeCategory, 0, Claim.Create, ClaimObject.Root))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("responsibility type hierarchy");
-
-                var start = parseIntField(form, "Start");
-                var end = parseNullableIntField(form, "End");
-
-                var parameters = new List<System.Data.SqlClient.SqlParameter>();
-                parameters.Add(new System.Data.SqlClient.SqlParameter("s", System.Data.SqlDbType.Int, start));
-                if (end.HasValue)
-                {
-                    Company.ExecuteNonQueryCommand(string.Format(@"insert into ResponsibilityTypeHierarchy values ({0}, {1})", start, end.Value), new List<System.Data.SqlClient.SqlParameter>());
-                }
-                else
-                {
-                    Company.ExecuteNonQueryCommand(string.Format(@"insert into ResponsibilityTypeHierarchy values ({0}, null)", start), new List<System.Data.SqlClient.SqlParameter>());
-                }
-
-                return jsonSuccess("Order successfully created.", "0", form["_context"], "add", HttpStatusCode.Created, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult DeleteResponsibilityTypeHierarchy(int s, int? e)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponsibilityTypeHierarchy,
-                FieldUri = string.Format("/form/ResponsibilityTypeHierarchy_DeleteFields?s={0}&e={1}", s, e),
-                FormTitle = "Remove this Responsibility Type Order",
-                FormUri = "/form/DeleteResponsibilityTypeHierarchy",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteResponsibilityTypeHierarchy(FormCollection form)
-        {
-            try
-            {
-                if (!Company.HasPermission(SystemObjects.ResponsibilityType, 0, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                var start = parseIntField(form, "Start");
-                var end = parseNullableIntField(form, "End");
-
-                if (end.HasValue)
-                {
-                    Company.ExecuteNonQueryCommand(string.Format(@"delete ResponsibilityTypeHierarchy where ID = {0} and ParentID = {1}", start, end.Value), new List<System.Data.SqlClient.SqlParameter>());
-                }
-                else
-                {
-                    Company.ExecuteNonQueryCommand(string.Format(@"delete ResponsibilityTypeHierarchy where ID = {0} and ParentID is null", start), new List<System.Data.SqlClient.SqlParameter>());
-                }
-
-                return jsonSuccess("Item successfully removed.", "0", form["_context"], "delete", HttpStatusCode.OK, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region ResponsibilityTypeObjectClaim
 
         #region Field Generation
@@ -10682,62 +10005,6 @@ order by	D.Name, I.Name";
         }
 
         #endregion
-
-        #endregion
-
-        #region RedFlag
-
-        [Route("{type}/{id:int}/redflag")]
-        public ActionResult UpdateRedFlag(SystemObjects type, int id)
-        {
-            var flag = Company.GetActiveAlertFlagByObject(type, id);
-            var comment = "";
-            if (flag != null)
-            {
-                try
-                {
-                    var c = Company.GetCommentDetail(flag.CommentID).SingleOrDefault();
-                    if (c != null)
-                    {
-                        comment = c.Body;
-                    }
-                }
-                catch
-                { }
-            }
-            ViewData.Add("Comment", comment);
-            ViewData.Add("Type", type);
-            ViewData.Add("ID", id);
-            return PartialView(flag);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false), Route("{type}/{id:int}/redflag")]
-        public JsonResult UpdateRedFlag(SystemObjects type, int id, FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("red flag");
-
-                var flag = Company.GetActiveAlertFlagByObject(type, id);
-                
-                if (flag != null)
-                    Company.CloseActiveAlertFlag(type, id, form["Comment"]);
-                else
-                    Company.AddActiveAlertFlag(type, id, form["Comment"]);
-
-                return jsonSuccess("Note successfully set.", "0", form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
 
         #endregion
 

@@ -75,64 +75,24 @@ namespace d360.web.Controllers
             };
         }
 
-        //public JsonResult Roles(int IntersectTypeID)
-        //{
-        //    var models = Company.Filter<IntersectTypeRoleRelation>(i => i.IntersectTypeID == IntersectTypeID, i => i.IntersectTypeRole)
-        //        .OrderBy(i => i.IntersectTypeRole.Name)
-        //        .Select(i => new { ID = i.IntersectTypeRoleID, Name = i.IntersectTypeRole.Name });
-        //    return Json(models, JsonRequestBehavior.AllowGet);
-        //}
-
-        public class IntersectTypeListViewModel
-        {
-            public int ID { get; set; }
-            public string SourceType { get; set; }
-            public int SourceID { get; set; }
-            public string SourceTypeName { get; set; }
-            public string SourceName { get; set; }
-            public string TargetType { get; set; }
-            public int TargetID { get; set; }
-            public string TargetTypeName { get; set; }
-            public string TargetName { get; set; }
-        }
-
         public JsonResult _IntersectTypes()
         {
             var models = Company.Query<IntersectTypeListViewModel>(
 @"select    I.ID,
-			S.ObjectType as SourceType,
+			S.ObjectType as Source,
 			S.ObjectID as SourceID,
-			SD.ObjectTypeName as SourceTypeName,
-			SD.TextPath as SourceName,
-			T.ObjectType as TargetType,
+			SD.Name as SourceName,
+			T.ObjectType as Target,
 			T.ObjectID as TargetID,
-			TD.ObjectTypeName as TargetTypeName,
-			TD.TextPath as TargetName
+			TD.Name as TargetName
 from		IntersectType I
 			inner join IntersectTypeNode S on S.IntersectTypeID = I.ID and S.[Order] = 1
 			inner join IntersectTypeNode T on T.IntersectTypeID = I.ID and T.ID <> S.ID
 			left join cache.ObjectDetails SD on SD.[Object] = S.ObjectType and SD.ObjectID = S.ObjectID
 			left join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID
-order by	SD.ObjectTypeName,
-			SD.TextPath,
-			TD.ObjectTypeName,
-			TD.TextPath");
+order by	SD.Name,
+			TD.Name");
             return Json(models, JsonRequestBehavior.AllowGet);
-        }
-
-        public class OptionsToRelateDbModel
-        {
-            public string Menu { get; set; }
-            public string SubMenu { get; set; }
-            public string Type { get; set; }
-            public int ID { get; set; }
-            public string Name { get; set; }
-        }
-
-        public class OptionsToRelateJsonModel
-        {
-            public string html { get; set; }
-            public List<OptionsToRelateJsonModel> items { get; set; }
         }
 
         public JsonNetResult OptionsToRelate()
@@ -319,6 +279,19 @@ order by R.Name, P.Phrase");
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [HttpGet]
+        public JsonNetResult PossibleRelationshipsByIntersect(int id)
+        {
+            var list = Company.Query<AllowedIntersectionType>("GetAllowedIntersectionTypesByIntersect @intersectID", new { intersectID = id }).ToList().Select(i => new ContextToolbarItem {
+                Context = ContextList.ActionRelate,
+                Icon = "plus",
+                Title = i.TargetName,
+                Type = "local",
+                Uri = "/Relations/AddRelationship?source=Intersect&sourceID=" + i.ParentIntersectID + "&intersectTypeID=" + i.IntersectTypeID + "&target=" + i.TargetType + "&targetID=" + i.TargetTypeID
+            });
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
         #endregion
 
         #region Partials
@@ -341,37 +314,6 @@ order by R.Name, P.Phrase");
             ViewBag.ObjectID = id;
             dtl = null;
             return PartialView();
-        }
-
-        public class AddSourcePostModel
-        {
-            /// <summary>
-            /// The current object that we are creating sources for.
-            /// </summary>
-            public string Target { get; set; }
-
-            /// <summary>
-            /// The current object's ID that we are creating sources for.
-            /// </summary>
-            public int TargetID { get; set; }
-
-            public string Subject { get; set; }
-            public int SubjectID { get; set; }
-            public string Object { get; set; }
-            public int ObjectID { get; set; }
-            public int PredicatePhraseID { get; set; }
-            public int IntersectID { get; set; }
-        }
-
-        public class IntersectLookupModel
-        {
-            public int IntersectID { get; set; }
-            public int SubjectNodeID { get; set; }
-            public string Subject { get; set; }
-            public int SubjectID { get; set; }
-            public int ObjectNodeID { get; set; }
-            public string Object { get; set; }
-            public int ObjectID { get; set; }
         }
 
         [HttpPost, Route("sources")]
@@ -444,7 +386,8 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
                                 }
                                 else
                                 {
-                                    message = $"There is already an existing source with this role.";
+                                    success = true;
+                                    //message = $"There is already an existing source with this role.";
                                 }
                             }
                             else
@@ -514,8 +457,7 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
             var model = new EditRelationshipModel {
                 Classification = intersect.Classification ?? 0,
                 Description = intersect.Description,
-                IntersectTypeID = intersect.IntersectTypeID,
-                Role = intersect.IntersectTypeRoleID
+                IntersectTypeID = intersect.IntersectTypeID
             };
             intersect = null;
             return PartialView(model);

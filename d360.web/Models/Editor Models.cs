@@ -74,6 +74,26 @@ namespace d360.web.Models
         public List<ObjectModel> Targets { get; set; }
     }
 
+    public class AddSourcePostModel
+    {
+        /// <summary>
+        /// The current object that we are creating sources for.
+        /// </summary>
+        public string Target { get; set; }
+
+        /// <summary>
+        /// The current object's ID that we are creating sources for.
+        /// </summary>
+        public int TargetID { get; set; }
+
+        public string Subject { get; set; }
+        public int SubjectID { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public int PredicatePhraseID { get; set; }
+        public int IntersectID { get; set; }
+    }
+
     public class ArtifactTypeEditorModel : BaseEditorModel
     {
         public ArtifactType ArtifactType { get; set; }
@@ -137,6 +157,9 @@ namespace d360.web.Models
         public string CompanyIcon { get; set; }
         public bool SetIconToDefault { get; set; }
         public string CurrentCompanyIconPath { get; set; }
+
+        public string ArtifactType_TaxonomyTypeID { get; set; }
+        public string ArtifactType_TaxonomyTypeIDNodes { get; set; }
 
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
     }
@@ -396,23 +419,6 @@ namespace d360.web.Models
         public int? ParentObjectID { get; set; }
     }
 
-    //public class FusionPromotionEditListModel
-    //{
-    //    public int FusionID { get; set; }
-
-    //    public string PromotionObjectType { get; set; }
-
-    //    public int PromotionObjectID { get; set; }
-
-    //    public string PromotionParentObjectType { get; set; }
-
-    //    public int PromotionParentObjectID { get; set; }
-
-    //    public bool Enabled { get; set; }
-
-    //    public List<FusionPromotionEditModel> Items { get; set; }
-    //}
-
     public class FusionPromotionRuleEditorModel
     {
         public int FusionTypeID { get; set; }
@@ -462,21 +468,8 @@ namespace d360.web.Models
         public FusionAttributePromotionRuleMapping Item { get; set; }
     }
 
-    public class IntersectTypeRoleEditorModel
-    {
-        public int? RoleID { get; set; }
-        public string NewRoleName { get; set; }
-        public string Side1Label { get; set; }
-        public string Side2Label { get; set; }
-    }
-
     public class IntersectTypeEditorModel
     {
-        public IntersectTypeEditorModel()
-        {
-            Roles = new List<IntersectTypeRoleEditorModel>();
-        }
-
         public int ID { get; set; }
 
         public string Side1 { get; set; }
@@ -485,27 +478,12 @@ namespace d360.web.Models
         public string Side2 { get; set; }
         public string Side2DisplayText { get; set; }
 
-        public List<IntersectTypeRoleEditorModel> Roles { get; set; }
-
         /// <summary>
         /// Should certain fields be made read-only based on whether any 
         /// relationships exist for this type.
         /// </summary>
         public bool LimitedChangesOnly { get; set; }
     }
-    
-    //public class LoadTypeRuleEditorModel
-    //{
-    //    public int? ID { get; set; }
-    //    public int LoadTypeID { get; set; }
-
-    //    public bool LookupTypeRuleGroupsEnabled { get; set; }
-    //    public List<SelectListItem> LookupTypeRuleGroups { get; set; }
-
-    //    public List<SelectListItem> Objects { get; set; }
-
-    //    public List<SelectListItem> Fields { get; set; }
-    //}
 
     public class LoginModel
     {
@@ -575,81 +553,6 @@ namespace d360.web.Models
         public List<ReportSchemaModel> SchemaItems { get; set; }
 
         public List<SelectListItem> ObjectTypes { get; set; }
-    }
-
-    public class SourcingResponsibilityEditorModel : BaseResponsibilityEditorModel
-    {
-        public SourcingResponsibilityEditorModel()
-        {
-            Artifacts = new List<SelectListItem>();
-            SourceResponsibilities = new List<SelectListItem>();
-        }
-
-        public List<SelectListItem> Artifacts { get; set; }
-
-        public List<SelectListItem> SourceResponsibilities { get; set; }
-
-        public int BusinessTransformationID { get; set; }
-        public string BusinessTransformation { get; set; }
-
-        public int TechnicalTransformationID { get; set; }
-        public string TechnicalTransformation { get; set; }
-    }
-
-    //public class SourcingResponsibilityTypeEditorModel
-    //{
-    //    public int ID { get; set; }
-
-    //    public string Name { get; set; }
-
-    //    public string Description { get; set; }
-
-    //    public ResponsibilityTypeGroup ResponsibilityTypeGroup { get; set; }
-
-    //    public List<EditableFieldItem> ArtifactTypes { get; set; }
-    //}
-
-    public class SourceToTargetEditForm : EditableForm
-    {
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-        public string ObjectName { get; set; }
-    }
-
-    public class SourceToTargetEnvironmentEditModel
-    {
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-    }
-    public class SourceToTargetGroupEditModel
-    {
-        public string Definition { get; set; }
-        public string Formula { get; set; }
-        public List<SourceToTargetGroupItemEditModel> Items { get; set; }
-    }
-    public class SourceToTargetGroupItemEditModel
-    {
-        public string SourceSystem { get; set; }
-        public string SourceObject { get; set; }
-        public int SourceFusionAttribute { get; set; }
-
-        public string TargetSystem { get; set; }
-        public string TargetObject { get; set; }
-        public int TargetFusionAttribute { get; set; }
-    }
-    public class SourceToTargetRelationshipEditModel
-    {
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-    }
-
-    public class SourceToTargetEditModel
-    {
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-        public List<SourceToTargetEnvironmentEditModel> Environments { get; set; }
-        public List<SourceToTargetGroupEditModel> Groups { get; set; }
-        public List<SourceToTargetRelationshipEditModel> Relationships { get; set; }
     }
 
     public class StatisticTypeEditorModel : BaseEditorModel

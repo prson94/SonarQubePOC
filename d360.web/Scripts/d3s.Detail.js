@@ -44,10 +44,7 @@
             return this.each(function () {
                 var $this = $(this),
                     data = $this.data('Detail');
-
-                //data.Detail.remove();
                 $this.removeData('Detail');
-                //$(window).unbind('.tooltip');
             });
         },
 
@@ -55,8 +52,7 @@
             return this.each(function () {
 
                 var $this = $(this),
-                    data = $this.data('Detail')//,
-                    //Detail = data.Detail;
+                    data = $this.data('Detail');
 
                 var options = data.Options;
                 options.type = null;
@@ -229,8 +225,14 @@
 
                 $.each(fields, function (idx, v) {
                     var cpnl = $('#det' + controlID + options.prefix + options.type + options.id + 'col_' + v.Row + '_' + v.Column);
+
+                    var fieldFriendlyName = v.Name;
+                    if (v.ScriptProperty) {
+                        fieldFriendlyName = eval(v.ScriptProperty);
+                    }
+
                     if (v.FieldDescription && v.FieldDescription != '') {
-                        cpnl.append("<div id='" + controlID + v.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + controlID + v.FieldName + "'>" + v.Name + "</span></div>");
+                        cpnl.append("<div id='" + controlID + v.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + controlID + v.FieldName + "'>" + fieldFriendlyName + "</span></div>");
                         $('#Tip_' + controlID + v.FieldName).qtip({
                             content: {
                                 text: v.FieldDescription,
@@ -247,10 +249,11 @@
                         });
                     }
                     else {
-                        cpnl.append("<div class='FieldName FieldDisplayName'>" + v.Name + "</div>");
+                        cpnl.append("<div class='FieldName FieldDisplayName'>" + fieldFriendlyName + "</div>");
                     }
+
                     if (v.TooltipContext && v.TooltipID && v.TooltipType && v.TooltipUrl) {
-                        cpnl.append("<div><a href='" + v.TooltipUrl +
+                        cpnl.append("<div class='FieldContent'><a href='" + v.TooltipUrl +
                             "' data-type='" + v.TooltipType +
                             "' data-context='" + v.TooltipContext +
                             "' data-id='" + v.TooltipID + "'>" +
@@ -261,10 +264,10 @@
                         {
                             v.Value = v.Value.replace(/["]/g, "");
                             var d = new Date(v.Value);
-                            cpnl.append("<div>" + d.toLocaleString() + "</div>");
+                            cpnl.append("<div class='FieldContent'>" + d.toLocaleString() + "</div>");
                         }
                         else
-                            cpnl.append("<div>" + v.Value + "</div>");
+                            cpnl.append("<div class='FieldContent'>" + v.Value + "</div>");
                     }
                 });
             }

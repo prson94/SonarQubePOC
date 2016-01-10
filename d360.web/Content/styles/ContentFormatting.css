@@ -89,12 +89,8 @@ h6 {
 }
 .FieldNameRequired,
 .FieldName {
-  clear: both;
-  display: table;
-  margin-bottom: 1px;
-  margin-top: 10px;
-  font-size: 115%;
   font-weight: 600;
+  display: inline-block;
 }
 .FieldNameRequired {
   color: #51a6dc;
@@ -103,8 +99,10 @@ h6 {
   color: #51a6dc;
 }
 .FieldDisplayName {
-  font-size: 115%;
   font-weight: 600;
+}
+.FieldContent {
+  margin-bottom: 10px;
 }
 /*input[type=checkbox][disabled]{
     color: @d3s-blue-1;

@@ -101,7 +101,8 @@ END",
         public void DeployDatabaseChanges()
         {
             #region SQL
-            var sql = @"alter table [dbo].[Rule] add SourceID varchar(250) null";
+            var sql = @"";
+
             #endregion
             var list = getCompanies(true).ToList();
             list.ForEach(id =>

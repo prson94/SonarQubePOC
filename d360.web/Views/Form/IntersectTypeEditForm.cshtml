@@ -1,40 +1,8 @@
 ﻿@{ 
     var id = (int)ViewBag.ID;
-    var title = (id == 0) ? "Add Relationships Type" : "Edit Relationship Type";
+    var title = (id == 0) ? "Add Relationship Type" : "Edit Relationship Type";
     var description = (id == 0) ?  Resources.FormInfo.Add_RelationshipType_Directions : Resources.FormInfo.Edit_RelationshipType_Directions;
 }
-<script id="intersectTypeRoleTmpl" type="text/html">
-    <tr style="margin-bottom: 10px">
-        <td style="vertical-align: top">
-            <div>
-                <div data-bind="intersectTypeRoleFilteredDropdown, jqxDropDownList: {
-                 width: field_width98,
-                 dropDownWidth: 600,
-                 theme: theme,
-                 filterable: true,
-                 source: $parent.RoleOptions,
-                 selectedIndex: RoleIndex,
-                 displayMember: 'Name',
-                 valueMember: 'ID',
-                 searchMode: 'containsignorecase'
-                 }"></div>
-            </div>
-            <div>
-                <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme, placeHolder: 'Or add new role', value: NewRoleName}" />
-            </div>
-        </td>
-        <td style="vertical-align: top">
-            <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme, value: Side1Label}" />
-        </td>
-        <td style="vertical-align: top">
-            <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme, value: Side2Label}" />
-        </td>
-        <td style="width: 20px; text-align: right; vertical-align: top">
-            <a style="padding: 0 .5rem;" class="waves-effect waves-teal btn-flat" title="Remove this role" data-bind="click:$parent.deleteRole"><i class="fa fa-trash"></i></a>
-        </td>
-    </tr>
-</script>
-
 <script id="intersectTypeTmpl" type="text/html">
     <div class="left form-header-info">
         <h4>@(title)</h4>
@@ -89,29 +57,6 @@
         </div>
     </div>
 
-    <div class="row" style="display:none">
-        <div class="col s12">
-            <div class="tile root-tile">
-                <header>
-                    Available Roles
-                    <div class="TileTools">
-                        <button type="button" alt="Add role" data-bind="click:addRole" class="btn-floating waves-effect waves-light brown lighten-1"><i class="fa fa-plus"></i></button>
-                    </div>
-                </header>
-                <table class="responsive-table">
-                    <thead>
-                        <tr>
-                            <th>Role</th>
-                            <th>Side 1 Label</th>
-                            <th>Side 2 Label</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody data-bind="template: {name: 'intersectTypeRoleTmpl', foreach: Roles }"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
 </script>
 
 <div class="small-overlay">

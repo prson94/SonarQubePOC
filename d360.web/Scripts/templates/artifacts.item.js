@@ -110,10 +110,7 @@
                         //Relationship_SimpleHierarchyTile('SimpleHierarchyTile', contextList, permissions, type, id);
 
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
-                        
-                        //environment_diagram('SourcingTile', permissions, type, id);
                         LineageDiagram('SourcingTile', type, id, null, true);
-
                         CertificationNotificationTile('CertificationNotification', id);
 
                         if (json.AllowRelatedArtifacts) {

@@ -83,7 +83,6 @@
     <Compile Include="entities\IntersectMap.cs" />
     <Compile Include="entities\CommentVote.cs" />
     <Compile Include="entities\CommentCount.cs" />
-    <Compile Include="entities\IntersectTypeRoleRelation.cs" />
     <Compile Include="entities\FusionAttributeOwnerRuleItem.cs" />
     <Compile Include="entities\FusionAttributePromotionRuleItem.cs" />
     <Compile Include="entities\Queues\BulkLoadQueue.cs" />
@@ -98,7 +97,6 @@
     <Compile Include="entities\QueueFusionItem.cs" />
     <Compile Include="entities\Setting.cs" />
     <Compile Include="entities\FusionExecution.cs" />
-    <Compile Include="entities\ResponsibilityTransformation.cs" />
     <Compile Include="entities\Rule.cs" />
     <Compile Include="entities\Policy.cs" />
     <Compile Include="entities\AttributeTypeCategory.cs" />
@@ -142,7 +140,6 @@
     <Compile Include="entities\FusionAttributeOwnerRule.cs" />
     <Compile Include="entities\FusionAttributePromotionRule.cs" />
     <Compile Include="entities\IntersectNode.cs" />
-    <Compile Include="entities\IntersectTypeRole.cs" />
     <Compile Include="entities\Transitive\ChildArtifactStatisticsByObject.cs" />
     <Compile Include="entities\Transitive\CriticalRelationshipsByObject.cs" />
     <Compile Include="entities\Transitive\FieldNameByObjectType.cs" />

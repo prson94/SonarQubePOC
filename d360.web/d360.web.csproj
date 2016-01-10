@@ -947,8 +947,8 @@
     <None Include="Scripts\diagrams\lineage.js" />
     <None Include="Scripts\diagrams\information.catalog.js" />
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
-    <Content Include="Scripts\go-1.5.12-debug.js" />
-    <Content Include="Scripts\go-1.5.12.js" />
+    <Content Include="Scripts\GoJS\GoJS-1-5-18-debug.js" />
+    <Content Include="Scripts\GoJS\GoJS-1-5-18.js" />
     <Content Include="Scripts\jquery-2.1.4.js" />
     <Content Include="Scripts\jquery.signalR-2.2.0.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
@@ -960,7 +960,6 @@
     <None Include="Scripts\jqx\3.6.0\jqxgrid.selection.js" />
     <None Include="Scripts\jqx\3.6.0\jqxgrid.sort.js" />
     <None Include="Scripts\jqx\3.7.1\jqx-all.js" />
-    <None Include="Scripts\knockout.models.js" />
     <None Include="Scripts\parts.js" />
     <None Include="Scripts\redactor.js" />
     <None Include="Scripts\sammy-0.7.5.js" />
@@ -979,6 +978,7 @@
     <Content Include="Scripts\jqx\3.8.2\jqx-all.js" />
     <Content Include="Scripts\knockout-3.3.0.js" />
     <Content Include="Scripts\knockout-file-bindings.js" />
+    <Content Include="Scripts\knockout.models.js" />
     <Content Include="Scripts\materialize\materialize.js" />
     <Content Include="Scripts\moment-with-locales.js" />
     <Content Include="Scripts\moment.js" />
@@ -1074,7 +1074,6 @@
     <Content Include="Views\Overlays\ChildArtifacts.cshtml" />
     <Content Include="Views\Overlays\Comments.cshtml" />
     <Content Include="Views\Parts\CriticalRelationshipsByObject.cshtml" />
-    <Content Include="Views\Form\UpdateRedFlag.cshtml" />
     <Content Include="Views\Overlays\RedFlags.cshtml" />
     <Content Include="Views\Tooltips\RedFlags.cshtml" />
     <Content Include="Views\Form\AddLoad.cshtml" />

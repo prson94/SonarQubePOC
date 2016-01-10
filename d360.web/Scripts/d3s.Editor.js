@@ -162,15 +162,21 @@
     }
 
     function addLabel(panel, field, materializeLabel) {
+
+        var fieldFriendlyName = field.Name;
+        if (field.ScriptProperty) {
+            fieldFriendlyName = eval(field.ScriptProperty);
+        }
+
         materializeLabel = false; //Hard-coded to always be false for now.  Checkboxes not showing up correctly in the case of true.
         if (materializeLabel) {
             panel.addClass('input-field');
 
             var activeClassSetting = (field.Value != '') ? 'class="active"' : '';
-            panel.append("<label id='Tip_" + field.FieldName + "' for='" + field.FieldName + "' " + activeClassSetting + ">" + field.Name + "</label>");
+            panel.append("<label id='Tip_" + field.FieldName + "' for='" + field.FieldName + "' " + activeClassSetting + ">" + fieldFriendlyName + "</label>");
         }
         else {
-            panel.append("<div id='Tip_" + field.FieldName + "' class='FieldName'>" + field.Name + "</div>");
+            panel.append("<div id='Tip_" + field.FieldName + "' class='FieldName'>" + fieldFriendlyName + "</div>");
         }
 
         if (field.FieldDescription && field.FieldDescription != '') {

@@ -13,9 +13,6 @@ namespace d360.core.entities
         [DataMember]
         public int IntersectTypeID { get; set; }
 
-        [DataMember]
-        public int? IntersectTypeRoleID { get; set; }
-
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string Name { get; set; }
 
@@ -27,9 +24,6 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual IntersectType IntersectType { get; set; }
-
-        [IgnoreDataMember]
-        public virtual IntersectTypeRole IntersectTypeRole { get; set; }
 
         [IgnoreDataMember, ForeignKey("IntersectID")]
         public virtual ICollection<IntersectNode> Nodes { get; set; }

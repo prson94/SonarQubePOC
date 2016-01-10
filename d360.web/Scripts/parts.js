@@ -4935,6 +4935,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var tmpl = Handlebars.getTemplate('LineageDiagram');
     $('#' + controlID).html(tmpl({ control: controlID }));
 
+    var controlID_header = controlID + "_header";
     var controlID_wrapper = controlID + '_wrapper';
     var controlID_diagram = controlID + '_dgm';
     var controlID_palette = controlID + '_palette';
@@ -4956,16 +4957,16 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_add_search = controlID + '_add_search';
     var controlID_add_artifact_type = controlID + '_add_artifact_type';
 
-    var controlID_overlay_radio_existing = controlID + '_overlay_radio_existing';
-    var controlID_overlay_radio_new = controlID + '_overlay_radio_new';
+    //var controlID_overlay_radio_existing = controlID + '_overlay_radio_existing';
+    //var controlID_overlay_radio_new = controlID + '_overlay_radio_new';
     var controlID_overlay_existing = controlID + '_overlay_existing';
     var controlID_overlay_new = controlID + '_overlay_new';
     var controlID_overlay_relationship = controlID + '_overlay_relationship';
     var controlID_overlay_predicates = controlID + '_overlay_predicates';
     var controlID_overlay_cancel = controlID + '_overlay_cancel';
     var controlID_overlay_add = controlID + '_overlay_add';
-    var controlID_overlay_pname = controlID + '_overlay_pname';
-    var controlID_overlay_phrase = controlID + '_overlay_phrase';
+    //var controlID_overlay_pname = controlID + '_overlay_pname';
+    //var controlID_overlay_phrase = controlID + '_overlay_phrase';
 
     var controlID_responsibilities = controlID + '_responsibilities';
     var controlID_responsibilities_table = controlID + '_responsibilities_table';
@@ -5011,8 +5012,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme}).jqxExpander('collapse');
 
     //$("#" + controlID_controls_zoom).jqxScrollBar({ theme: theme, width: 280, height: 18, min: 750, max: 2250, value: 1500 });
-    $("#" + controlID_overlay_radio_existing).jqxRadioButton({theme: theme}).jqxRadioButton('check');
-    $("#" + controlID_overlay_radio_new).jqxRadioButton({ theme: theme });
+    //$("#" + controlID_overlay_radio_existing).jqxRadioButton({theme: theme}).jqxRadioButton('check');
+    //$("#" + controlID_overlay_radio_new).jqxRadioButton({ theme: theme });
 
     $('#' + controlID_ribbon).jqxRibbon({
         width: "100%",
@@ -5446,6 +5447,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         //console.log('vpchanged');
         $('#' + controlID_ribbon_zoom_text).text(Math.round(myDiagram.scale * 100) + '%');
         $('#' + controlID_ribbon_zoom_slider).val(Math.round(myDiagram.scale * 1500));
+
+        //console.log(myDiagram.div.style.height);
     };
 
     function onLinkDrawn(e) {
@@ -5695,8 +5698,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         allowDrop: true,
         initialAutoScale: go.Diagram.UniformToFill,
         scrollMode: go.Diagram.DocumentScroll,
-        //initialPosition: Point(125, 200),
-        layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 15, layerSpacing: 35 }),
+        initialPosition: new go.Point(125, 125),
+        layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
         "undoManager.isEnabled": true
     });
     myDiagram.model.class = go.GraphLinksModel;
@@ -5709,30 +5712,30 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
 
 
-    $("#" + controlID_overlay_radio_existing).bind('change', function (e) {
-        var checked = e.args.checked;
+    //$("#" + controlID_overlay_radio_existing).bind('change', function (e) {
+    //    var checked = e.args.checked;
 
-        if (checked) {
-            $('#' + controlID_overlay_existing).show(200);
-            $('#' + controlID_overlay_new).hide(200);
-            if ($('#' + controlID_overlay_predicates).val() != 0) {
-                $('#' + controlID_overlay_add).prop('disabled', false);
-            } else {
-                $('#' + controlID_overlay_add).prop('disabled', true);
-            }
-        } else {
-            $('#' + controlID_overlay_existing).hide(200);
-            $('#' + controlID_overlay_new).show(200);
-            if ($('#' + controlID_overlay_pname).val() != '' && $('#' + controlID_overlay_phrase).val() != '') {
-                $('#' + controlID_overlay_add).prop('disabled', false);
-            } else {
-                $('#' + controlID_overlay_add).prop('disabled', true);
-            }
-        }
-    });
+    //    if (checked) {
+    //        $('#' + controlID_overlay_existing).show(200);
+    //        $('#' + controlID_overlay_new).hide(200);
+    //        if ($('#' + controlID_overlay_predicates).val() != 0) {
+    //            $('#' + controlID_overlay_add).prop('disabled', false);
+    //        } else {
+    //            $('#' + controlID_overlay_add).prop('disabled', true);
+    //        }
+    //    } else {
+    //        $('#' + controlID_overlay_existing).hide(200);
+    //        $('#' + controlID_overlay_new).show(200);
+    //        if ($('#' + controlID_overlay_pname).val() != '' && $('#' + controlID_overlay_phrase).val() != '') {
+    //            $('#' + controlID_overlay_add).prop('disabled', false);
+    //        } else {
+    //            $('#' + controlID_overlay_add).prop('disabled', true);
+    //        }
+    //    }
+    //});
 
     $('#' + controlID_overlay_predicates).on('change', function (e) {
-        var checked = $('#' + controlID_overlay_radio_existing).jqxRadioButton('checked'); 
+        var checked = true;//$('#' + controlID_overlay_radio_existing).jqxRadioButton('checked');
         if (checked) {
             if ($(this).val() == 0) {
                 $('#' + controlID_overlay_add).prop('disabled', true);
@@ -5742,27 +5745,27 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
     });
 
-    $('#' + controlID_overlay_pname).on('keyup', function (e) {
-        var checked = $('#' + controlID_overlay_radio_new).jqxRadioButton('checked');
-        if (checked) {
-            if ($(this).val() == '' || $('#' + controlID_overlay_phrase).val() == '') {
-                $('#' + controlID_overlay_add).prop('disabled', true);
-            } else {
-                $('#' + controlID_overlay_add).prop('disabled', false);
-            }
-        }
-    });
+    //$('#' + controlID_overlay_pname).on('keyup', function (e) {
+    //    var checked = $('#' + controlID_overlay_radio_new).jqxRadioButton('checked');
+    //    if (checked) {
+    //        if ($(this).val() == '' || $('#' + controlID_overlay_phrase).val() == '') {
+    //            $('#' + controlID_overlay_add).prop('disabled', true);
+    //        } else {
+    //            $('#' + controlID_overlay_add).prop('disabled', false);
+    //        }
+    //    }
+    //});
 
-    $('#' + controlID_overlay_phrase).on('keyup', function (e) {
-        var checked = $('#' + controlID_overlay_radio_new).jqxRadioButton('checked');
-        if (checked) {
-            if ($(this).val() == '' || $('#' + controlID_overlay_pname).val() == '') {
-                $('#' + controlID_overlay_add).prop('disabled', true);
-            } else {
-                $('#' + controlID_overlay_add).prop('disabled', false);
-            }
-        }
-    });
+    //$('#' + controlID_overlay_phrase).on('keyup', function (e) {
+    //    var checked = $('#' + controlID_overlay_radio_new).jqxRadioButton('checked');
+    //    if (checked) {
+    //        if ($(this).val() == '' || $('#' + controlID_overlay_pname).val() == '') {
+    //            $('#' + controlID_overlay_add).prop('disabled', true);
+    //        } else {
+    //            $('#' + controlID_overlay_add).prop('disabled', false);
+    //        }
+    //    }
+    //});
 
     $('#' + controlID_wrapper).on('mouseup', function () {
         var height = $('#' + controlID_wrapper).height();
@@ -5813,7 +5816,9 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     //myDiagram.allowHorizontalScroll = false;
     //myDiagram.scrollMode = go.Diagram.InfiniteScroll;
 
-    makeTemplate("Artifact", 180, 90, 'transparent', 10, [makePort("", true)], [makePort("OUT", false)]);
+
+    makeTemplate("FocalArtifact", 275, 150, '#000000', 14, [makePort("", true)], [makePort("OUT", false)]);
+    makeTemplate("Artifact", 225, 105, 'transparent', 10, [makePort("", true)], [makePort("OUT", false)]);
     //makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
 
     myDiagram.linkTemplate = g(
@@ -5864,7 +5869,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
             var isFocalPoint = (d.obj == type && d.objid == id);// && d.level == 0);
 
-            model.template = "Artifact";
+            if (isFocalPoint) {
+                $('#' + controlID_header).text('Lineage: ' + d.name);
+            }
+
+            model.template = isFocalPoint ? "FocalArtifact" : "Artifact";;
             model.key = d.key;
             model.id = d.objid;
             model.type = d.obj;
@@ -6051,16 +6060,16 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     function resetOverlay() {
         $('#' + controlID_overlay_predicates).val(0);
-        $('#' + controlID_overlay_pname).val('');
-        $('#' + controlID_overlay_phrase).val('');
+        //$('#' + controlID_overlay_pname).val('');
+       // $('#' + controlID_overlay_phrase).val('');
         $('#' + controlID_overlay_add).prop('disabled', true);
-        $('#' + controlID_overlay_radio_existing).jqxRadioButton('check');
+        //$('#' + controlID_overlay_radio_existing).jqxRadioButton('check');
     }
 
     function addRelationship(id) {
         var id = ($('#' + controlID_overlay_predicates).val() || '');
         var rel = null;
-        if ($('#' + controlID_overlay_radio_existing).jqxRadioButton('checked')) {
+        //if ($('#' + controlID_overlay_radio_existing).jqxRadioButton('checked')) {
             for (var i = 0; i < predicates.length; i++) {
                 if (predicates[i].value == id) {
 
@@ -6070,13 +6079,13 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                     };
                 }
             }
-        }
-        else {
-            rel = {
-                name: $('#' + controlID_overlay_pname).val(),
-                phrase: $('#' + controlID_overlay_phrase).val()
-            };
-        }
+        //}
+        //else {
+        //    rel = {
+        //        name: $('#' + controlID_overlay_pname).val(),
+        //        phrase: $('#' + controlID_overlay_phrase).val()
+        //    };
+        //}
         newLink.predicateName = rel.name;
         newLink.phrase = rel.phrase;
         newLink.text = rel.phrase;
