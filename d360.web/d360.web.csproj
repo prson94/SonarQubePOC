@@ -976,6 +976,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\jqx\3.8.2\jqx-all.js" />
+    <Content Include="Scripts\jqx\3.9.1\jqx-all.js" />
     <Content Include="Scripts\knockout-3.3.0.js" />
     <Content Include="Scripts\knockout-file-bindings.js" />
     <Content Include="Scripts\knockout.models.js" />
@@ -1085,7 +1086,6 @@
     <Content Include="Views\Form\EditResponsibilityTypeClaims.cshtml" />
     <Content Include="Views\Parts\DisplayClaimsMatrix.cshtml" />
     <Content Include="Views\Relations\AggregateRelationOverlay.cshtml" />
-    <Content Include="Views\Overlays\TaxonomyTypeDiagram_CatalogIFrame.cshtml" />
     <Content Include="Views\Shared\Diagram.cshtml" />
     <Content Include="Views\Overlays\Score.cshtml" />
     <Content Include="Views\Form\ReportEditForm.cshtml" />

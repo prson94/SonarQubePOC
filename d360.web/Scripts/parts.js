@@ -2936,13 +2936,17 @@ function ResourceStatisticsTile(controlID, type, id) {
     );
 }
 
-function PeopleResponsibilityTile(controlID, contextList, permissions, type, id, title, showHidden) {
+function PeopleResponsibilityTile(controlID, contextList, permissions, type, id, title, showHidden, summaryOnly) {
     var toolsControlID = controlID + "_tools";
     var gridControlID = controlID + "_grid";
     controlID = '#' + controlID;
 
     var source;
     var adapter;
+
+    if (!summaryOnly) {
+        summaryOnly = false;
+    }
 
     try {
         var html = "";
@@ -3019,8 +3023,8 @@ function PeopleResponsibilityTile(controlID, contextList, permissions, type, id,
                             return '';
                     }
                 },
-                { datafield: "ContextItems", text: "Context" },
-                { datafield: "ResponsibilityID", text: "", width: '80px', filterable: false, sortable: false,
+                { datafield: "ContextItems", text: "Context", hidden: (summaryOnly) },
+                { datafield: "ResponsibilityID", text: "", width: '80px', filterable: false, sortable: false, hidden: (summaryOnly),
                   cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                         var tools = [];
 
