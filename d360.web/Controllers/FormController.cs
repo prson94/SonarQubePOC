@@ -10348,6 +10348,28 @@ order by	D.Name, I.Name";
                     };
 
                     Community.Add<Resource>(a);
+                    
+                    var id = a.ID;
+
+                    var isAdmin = parseBooleanField(form, "IsAdministrator");
+
+                    GlobalReportingResource gr = new GlobalReportingResource
+                    {
+                        IsAdministrator = isAdmin,
+                        ResourceID = id,
+                        Email = a.Email,
+                        LastName = a.LastName,
+                        FirstName = a.FirstName,
+                        Status = a.Status
+                    };
+
+                    Company.Add<GlobalReportingResource>(gr);
+
+                /*    Company.Execute(@"insert into [reporting].[Global_Resource] ([ResourceID], [FirstName], [LastName], [Email], [Status], [IsAdministrator]) 
+		                                values (@resourceId, @first, @last, @email, @stat, @admin);",
+                           new { resourceId = id, first = a.FirstName, last = a.LastName, email = a.Email, stat = a.Status, admin = (isAdmin ? 1 : 0) }
+                           );*/
+
                     Community.ChangePassword(a.ID, "", form["Password"]);
                 }
 
@@ -10419,6 +10441,8 @@ order by	D.Name, I.Name";
                 if (model == null) throw new NotFoundException("resource");
 
                 Community.Delete<Resource>(model);
+
+                Company.Delete<GlobalReportingResource>(x => x.ResourceID == id);
                 return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -10478,6 +10502,16 @@ order by	D.Name, I.Name";
                     cr.IsAdministrator = parseBooleanField(form, "IsAdministrator");
                     Community.Update<CompanyResource>(cr);                
                 }
+
+                GlobalReportingResource gr = Company.GlobalReportingResources.Find(id);
+
+                gr.FirstName = model.FirstName;
+                gr.LastName = model.LastName;
+                gr.Email = model.Email;
+                gr.IsAdministrator = cr.IsAdministrator;
+                gr.Status = model.Status;
+
+                Company.Update<GlobalReportingResource>(gr);
 
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server);

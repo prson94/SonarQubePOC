@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
@@ -43,6 +44,7 @@ namespace d360.core.entities
     public class GlobalReportingResource : BaseObject
     {
         [DataMember, Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int ResourceID { get; set; }
 
         [DataMember]
