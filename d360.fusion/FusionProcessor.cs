@@ -1022,7 +1022,12 @@ namespace d360.fusion
                 
                 int id = 0;
                 //if existingItem is null something is wrong
-                if (!_workArea.FusionSourceToIDMap.TryGetValue(sourceID, out id)) throw new Exception("UNABLE TO LOAD FUSIONATTRIBUTE ID FOR CURRENT ITEM.");
+                if (!_workArea.FusionSourceToIDMap.TryGetValue(sourceID, out id))
+                {
+                    Trace.TraceError("UNABLE TO LOAD FUSIONATTRIBUTE ID FOR CURRENT ITEM SOURCE ID [{0}] FIELD NAME [{1}] FUSION TYPE ID [{2}].", sourceID,name, fusionTypeIDString);
+
+                    continue;
+                }
 
                 foreach (var item in x)
                 {
