@@ -236,7 +236,7 @@
             resources_item(this, new ResourcePageViewModel("", "", [{ Name: "@(Resources.PageInfo.People_Title)" }]), templatePath, contextList);
             taxonomies_list(this, new PageViewModel("", "@(Resources.PageInfo.Taxonomies_Description)", [{ Name: "Models" }]), templatePath, contextList);
 
-            search(this, new PageViewModel("@(Resources.PageInfo.Search_Title)", "@(Resources.PageInfo.Search_Description)", [{ Name: '@(Resources.PageInfo.Search_Title)', Active: true }]), templatePath, contextList);
+            search(this, new PageViewModel("@(Resources.PageInfo.Search_Title)", "", [{ Name: '@(Resources.PageInfo.Search_Title)', Active: true }]), templatePath, contextList);
             home(this, new PageViewModel("@(Resources.PageInfo.Home_Title)", "@(Resources.PageInfo.Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
             community_home(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
             //community_alert(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));

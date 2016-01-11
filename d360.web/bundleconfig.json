@@ -23,7 +23,7 @@
       "Scripts/jquery.qtip.js",
       "Scripts/jquery.unobtrusive-ajax.js",
       "Scripts/jquery.fileDownload.js",
-      "Scripts/jqx/3.9.1/jqx-all.js",
+      "Scripts/jqx/3.7.1/jqx-all.js",
       "Scripts/ace/ace.js",
       "Scripts/ace/mode-sql.js",
       "Scripts/ace/mode-json.js",

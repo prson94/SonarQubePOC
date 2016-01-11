@@ -3484,7 +3484,7 @@ from	    ResponsibilityTypeHierarchy H
                     {
                         var rowNumber = 1;
                         list.Add(new ReadOnlyField { Row = rowNumber, Column = 1, Name = "Type", FieldName = "WtrType", FieldDescription = "", Value = wtr.ObjectName });
-                        list.Add(new ReadOnlyField { Row = rowNumber, Column = 2, Name = Resources.FieldInfo.TaxonomyType_Name, FieldName = "WtrOwner", FieldDescription = "", Value = wtr.ParentName ?? "None" });
+                        list.Add(new ReadOnlyField { Row = rowNumber, Column = 2, Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "WtrOwner", FieldDescription = "", Value = wtr.ParentName ?? "None" });
                         rowNumber++;
                         list.Add(new ReadOnlyField { Row = rowNumber, Column = 1, Name = "Responsibility", FieldName = "WtrResponsibility", FieldDescription = "", Value = wtr.ResponsibilityType });
                         rowNumber++;

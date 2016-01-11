@@ -90,7 +90,7 @@ namespace d360.web.Models
         public int SubjectID { get; set; }
         public string Object { get; set; }
         public int ObjectID { get; set; }
-        public int PredicatePhraseID { get; set; }
+        public int PredicateID { get; set; }
         public int IntersectID { get; set; }
     }
 

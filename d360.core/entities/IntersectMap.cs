@@ -14,7 +14,7 @@ namespace d360.core.entities
         public int ObjectIntersectNodeID { get; set; }
 
         [DataMember]
-        public int PredicatePhraseID { get; set; }
+        public int PredicateID { get; set; }
 
         [DataMember]
         public MapType Type { get; set; }

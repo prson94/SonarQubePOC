@@ -11,7 +11,7 @@ namespace d360.core.entities
         [DataMember]
         public string Name { get; set; }
 
-        [ForeignKey("PredicateID"), IgnoreDataMember]
-        public virtual ICollection<PredicatePhrase> PredicatePhrases { get; set; }
+        [DataMember]
+        public string Inverse { get; set; }
     }
 }

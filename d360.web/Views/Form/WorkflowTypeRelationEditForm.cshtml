@@ -42,7 +42,7 @@
                     @Html.DropDownList("ObjectType", Model.ObjectTypes, "Select type...", new { @class = "browser-default" })
                 </div>
                 <div class="col s6">
-                    <div id='ParentTypeTip' class="FieldNameRequired">@Resources.FieldInfo.TaxonomyType_Name</div>
+                    <div id='ParentTypeTip' class="FieldNameRequired"></div>
                     @Html.DropDownList("ParentType", Model.ParentTypes, "Select " + Resources.FieldInfo.TaxonomyType_Name + "...", new { @class = "browser-default" })
                 </div>
             </div>
@@ -96,6 +96,8 @@
 
         var parentOptionLength = $('#ParentType').children('option').length;
         var responsibilityOptionLength = $('#ResponsibilityType').children('option').length;
+
+        $('#ParentTypeTip').text(CompanySettings.ArtifactType_TaxonomyTypeID);
 
         if (workflowType == 2) {
             $('#DateForScheduleCalculation').jqxDateTimeInput({ theme: theme, width: field_width, height: h, formatString: 'd', showCalendarButton: true, value: "@(dateForScheduleCalculation)" });

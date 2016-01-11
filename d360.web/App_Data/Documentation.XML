@@ -2660,12 +2660,6 @@
         <member name="M:d360.web.Controllers.FormController.Predicate_EditFields(System.Int32)">
             <param name="id">PredicateID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.PredicatePhrase_DeleteFields(System.Int32)">
-            <param name="id">Predicate Phrase ID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.PredicatePhrase_EditFields(System.Int32)">
-            <param name="id">Predicate Phrase ID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Report_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>
         </member>

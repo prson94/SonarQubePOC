@@ -64,16 +64,16 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpGet]
-        public JsonNetResult PredicatePhrases(int id)
-        {
+        //[HttpGet]
+        //public JsonNetResult PredicatePhrases(int id)
+        //{
 
-            return new JsonNetResult
-            {
-                Data = Company.Filter<PredicatePhrase>(i => i.PredicateID == id).OrderBy(i=>i.Phrase),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
+        //    return new JsonNetResult
+        //    {
+        //        Data = Company.Filter<PredicatePhrase>(i => i.PredicateID == id).OrderBy(i=>i.Phrase),
+        //        Formatting = Newtonsoft.Json.Formatting.None
+        //    };
+        //}
 
         public JsonResult _IntersectTypes()
         {
@@ -272,10 +272,7 @@ order by D.TextPath";
         [HttpGet, Route("sources/predicates")]
         public JsonNetResult GetPredicates()
         {
-            var list = Company.Query<dynamic>(@"select P.ID as [value], R.Name as [group], P.Phrase as [text]
-from Predicate R inner join PredicatePhrase P on P.PredicateID = R.ID
-order by R.Name, P.Phrase");
-
+            var list = Company.Query<dynamic>(@"select ID as [value], Name as [text] from Predicate order by Name");
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -366,8 +363,8 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
                             if (intersect != null)
                             {
                                 var existingSourceRecordCount = Company.Query<int>(
-                                    "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicatePhraseID = @p", 
-                                    new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicatePhraseID }
+                                    "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p", 
+                                    new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
                                 ).Single();
 
                                 if (existingSourceRecordCount <= 0)
@@ -377,7 +374,7 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
                                     var intersectMap = new IntersectMap
                                     {
                                         ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
-                                        PredicatePhraseID = model.PredicatePhraseID,
+                                        PredicateID = model.PredicateID,
                                         SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
                                         Type = MapType.SourceToTarget
                                     };

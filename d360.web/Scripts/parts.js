@@ -996,7 +996,12 @@ function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
 
         $.each(fields, function (idx, f) {
             if (f.Row === row && f.Column === column) {
-                html += "<div id='" + fieldControlPrefix + f.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + sectionID + "_" + f.FieldName + "'>" + f.Name + "</span></div>";
+                var fieldFriendlyName = f.Name;
+                if (f.ScriptProperty) {
+                    fieldFriendlyName = eval(f.ScriptProperty);
+                }
+
+                html += "<div id='" + fieldControlPrefix + f.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + sectionID + "_" + f.FieldName + "'>" + fieldFriendlyName + "</span></div>";
                 if (f.TooltipContext && f.TooltipID && f.TooltipType && f.TooltipUrl) {
                     html += "<div><a href='" + f.TooltipUrl +
                         "' data-type='" + f.TooltipType +
@@ -2936,17 +2941,13 @@ function ResourceStatisticsTile(controlID, type, id) {
     );
 }
 
-function PeopleResponsibilityTile(controlID, contextList, permissions, type, id, title, showHidden, summaryOnly) {
+function PeopleResponsibilityTile(controlID, contextList, permissions, type, id, title, showHidden) {
     var toolsControlID = controlID + "_tools";
     var gridControlID = controlID + "_grid";
     controlID = '#' + controlID;
 
     var source;
     var adapter;
-
-    if (!summaryOnly) {
-        summaryOnly = false;
-    }
 
     try {
         var html = "";
@@ -3022,24 +3023,24 @@ function PeopleResponsibilityTile(controlID, contextList, permissions, type, id,
                         else
                             return '';
                     }
-                },
-                { datafield: "ContextItems", text: "Context", hidden: (summaryOnly) },
-                { datafield: "ResponsibilityID", text: "", width: '80px', filterable: false, sortable: false, hidden: (summaryOnly),
-                  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                        var tools = [];
+                }//,
+                //{ datafield: "ContextItems", text: "Context", hidden: (summaryOnly) },
+                //{ datafield: "ResponsibilityID", text: "", width: '80px', filterable: false, sortable: false, hidden: (summaryOnly),
+                //  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                //        var tools = [];
 
-                        if (data.ObjectType == data.AssigningItemType && data.ObjectID == data.AssigningItemID) {
-                            if (permissions.HasPermission("Governance", "Update")) {
-                                tools.push({ icon: 'pencil', urlprefix: '/form/EditPeopleResponsibility?id={0}' });
-                            }
-                            if (permissions.HasPermission("Governance", "Delete")) {
-                                tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibility?id={0}' });
-                            }
-                        }
+                //        if (data.ObjectType == data.AssigningItemType && data.ObjectID == data.AssigningItemID) {
+                //            if (permissions.HasPermission("Governance", "Update")) {
+                //                tools.push({ icon: 'pencil', urlprefix: '/form/EditPeopleResponsibility?id={0}' });
+                //            }
+                //            if (permissions.HasPermission("Governance", "Delete")) {
+                //                tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibility?id={0}' });
+                //            }
+                //        }
 
-                        return renderToolsHtml(value, tools, contextList.Responsibility, data);
-                    }
-                }
+                //        return renderToolsHtml(value, tools, contextList.Responsibility, data);
+                //    }
+                //}
             ]
         });
     } catch (e) {

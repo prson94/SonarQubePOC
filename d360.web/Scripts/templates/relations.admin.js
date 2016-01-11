@@ -17,27 +17,8 @@
         var IntersectTypeAdapter;
         var PredicateSource;
         var PredicateAdapter;
-        var PredicatePhraseSource;
-        var PredicatePhraseAdapter;
 
         //#region Event Handlers
-
-        function predicatesRowSelect(event) {
-            var args = event.args;
-            var row = args.rowindex;
-            var data = $("#Predicates").jqxGrid('getrowdata', row);
-
-            //amplify.publish(AmplifyActions.TileUnsubscribe, {});
-            PredicatePhraseSource.url = '/relations/PredicatePhrases?id=' + data.ID;
-            $("#PredicatePhrases").jqxGrid('updatebounddata');
-
-
-            var predicatePhrasesTools = [];
-            if (permissions.HasPermission("Root", "Create")) {
-                predicatePhrasesTools.push({ icon: 'plus', uri: '/form/AddPredicatePhrase?id=' + data.ID, context: contextList.PredicatePhrase, title: 'Add predicate phrase' });
-            }
-            TileTools('#PredicatePhraseTools', predicatePhrasesTools);
-        }
 
         function saveAction(data) {
             try {
@@ -49,9 +30,6 @@
                         console.log('pred updated');
                         $('#Predicates').jqxGrid('updatebounddata');
                         break;
-                    case contextList.PredicatePhrase:
-                        $('#PredicatePhrases').jqxGrid('updatebounddata');
-                        break;
                 }
             } catch (e) { }
         }
@@ -59,12 +37,9 @@
         function unsubscribe(data) {
             IntersectTypeAdapter = null;
             IntersectTypeSource = null;
-            PredicatePhraseAdapter = null;
-            PredicatePhraseSource = null;
             PredicateAdapter = null;
             PredicateSource = null;
 
-            $("#Predicates").off("rowselect", predicatesRowSelect);
             amplify.unsubscribe('SaveAction', saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
@@ -165,7 +140,8 @@
                         datafields:
                         [
                             { name: 'ID' },
-                            { name: 'Name' }
+                            { name: 'Name' },
+                            { name: 'Inverse' }
                         ]
                     };
 
@@ -185,6 +161,7 @@
                         theme: theme,
                         columns: [
                             { datafield: "Name", text: "Name" },
+                            { datafield: "Inverse", text: "Inverse" },
                             {
                                 text: '',
                                 dataField: 'ID',
@@ -208,60 +185,8 @@
 
                     //#endregion
 
-                    //#region PredicatePhrasesGrid
-
-                    PredicatePhraseSource = {
-                        datatype: 'json',
-                        url: null,//'/relations/PredicatePhrases',
-                        datafields:
-                        [
-                            { name: 'ID' },
-                            { name: 'Phrase' }
-                        ]
-                    };
-
-                    PredicatePhraseAdapter = new $.jqx.dataAdapter(PredicatePhraseSource);
-
-                    $("#PredicatePhrases").jqxGrid({
-                        altrows: true,
-                        width: grid_width,
-                        pagesizeoptions: ['10', '20', '50'],
-                        pagesize: 20,
-                        autoheight: true,
-                        sortable: true,
-                        filterable: true,
-                        showfilterrow: true,
-                        pageable: true,
-                        source: PredicatePhraseAdapter,
-                        theme: theme,
-                        columns: [
-                            { datafield: "Phrase", text: "Phrase" },
-                            {
-                                text: '',
-                                dataField: 'ID',
-                                width: 80,
-                                filterable: false,
-                                cellsrenderer: function (row, column, value) {
-
-                                    var tools = [];
-                                    if (permissions.HasPermission('Root', 'Update')) {
-                                        tools = [
-                                            { icon: 'pencil', urlprefix: '/form/EditPredicatePhrase?id={0}' },
-                                            { icon: 'trash-o', urlprefix: '/form/DeletePredicatePhrase?id={0}' }
-                                        ];
-                                    }
-
-                                    return renderToolsHtml(value, tools, contextList.PredicatePhrase);
-                                }
-                            }
-                        ]
-                    });
-
-                    //#endregion
-
                     //#region Event Subscriptions
 
-                    $("#Predicates").on("rowselect", predicatesRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 

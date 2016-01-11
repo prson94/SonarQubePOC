@@ -208,7 +208,7 @@ namespace d360.model
 
         public DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
 
-        public DbSet<PredicatePhrase> PredicatePhrases { get; set; }
+        //public DbSet<PredicatePhrase> PredicatePhrases { get; set; }
 
         public DbSet<Predicate> Predicates { get; set; }
 

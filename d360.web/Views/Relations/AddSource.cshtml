@@ -133,7 +133,6 @@
         var PredicatesSource = {
             datafields: [
                 { name: 'value' },
-                { name: 'group' },
                 { name: 'text' }
             ],
             datatype: "json",
@@ -206,7 +205,7 @@
                     SubjectID: 0,
                     Object: '',
                     ObjectID: 0,
-                    PredicatePhraseID: 0,
+                    PredicateID: 0,
                     IntersectID: 0
                 }
 
@@ -252,7 +251,7 @@
                     //        break;
                     //}
                     //model.IntersectID = IntersectID;
-                    model.PredicatePhraseID = predicate.value;
+                    model.PredicateID = predicate.value;
 
                     $.ajax('/relations/sources', {
                         type: 'POST',

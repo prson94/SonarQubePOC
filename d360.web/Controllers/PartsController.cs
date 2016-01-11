@@ -24,25 +24,12 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
-        //[Route("EventType/{id:int}/resolutions")]
-        //public ActionResult Resolutions(int id)
-        //{
-        //    ViewData.Add("id", id);
-        //    return PartialView();
-        //}
-
         [Route("groups/{id:int}/ownership")]
         public ActionResult OwnershipForGroup(int id)
         {
             ViewData.Add("IsAdmin", Company.ResourceGroups.Any(i => i.GroupID == id && i.ResourceID == id));
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = SystemObjects.Group.ToString() });
         }
-
-        //[Route("resources/{id:int}/assignments")]
-        //public ActionResult Assignments(int id)
-        //{
-        //    return PartialView(new ObjectModel { ObjectID = id, ObjectType = SystemObjects.Resource.ToString() });
-        //}
 
         public ActionResult DisplayClaimsMatrix(SystemObjects type, int id, int responsibilityTypeID)
         {
