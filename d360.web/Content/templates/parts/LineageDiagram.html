@@ -1,6 +1,6 @@
 ﻿<header id="{{control}}_header">Lineage</header>
-<div id="{{control}}_wrapper_fullscreen" style="z-index:1000000;background-color:white;">
-    <div id="{{control}}_overlay" style="display:none; background-color:rgba(0, 0, 0, 0.1); width:100%;height:100%;position:absolute;z-index:100000;top:0;left:0;">
+<div id="{{control}}_wrapper_fullscreen" style="z-index:99999;background-color:white;">
+    <div id="{{control}}_overlay" style="display:none; background-color:rgba(0, 0, 0, 0.1); width:100%;height:100%;position:absolute;z-index:999;top:0;left:0;">
         <div id="overlayModal" style="background-color:white;border-radius:5px;width:33%;min-width:500px;vertical-align:middle;margin:15px auto;padding:25px;box-shadow:10px 10px 5px rgba(0,0,0,.3);border:1px solid lightgray">
             <div style="width:100%;text-align:center;">
                 <div id="{{control}}_overlay_relationship"></div><br />
@@ -15,6 +15,7 @@
                         </td>
                         <td>
                             <select id="{{control}}_overlay_predicates" class="select-dropdown browser-default" style="height:100%"></select>
+                            <div id="{{control}}_overlay_roles"></div>
                         </td>
                     </tr>
                 </tbody>
@@ -54,6 +55,20 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+    <div id="{{control}}_popover_add" style="display:none;position:absolute;background-color:white;z-index:10001;width:350px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px;">
+        <div>
+            <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a href="#" style="text-decoration:none;color:white;padding-right:10px;" onclick="$('#{{control}}_popover_add').hide(200);"><i class="fa fa-remove"></i></a></div>
+            <div style="padding:10px">
+                Type: <select data-bind="value: NodeType" class="select-dropdown browser-default" id="{{control}}_add_artifact_type" style="height:100%"></select><br />
+                Search: <input id="{{control}}_add_search_text" type="text" />
+                <button id="{{control}}_add_search">Search</button>
+                <div id="{{control}}_add_search_message" style="display:none;text-align:center;color:maroon;">
+                    No Results
+                </div>
+                <div id="{{control}}_palette" style="height:300px"></div>
+            </div>
         </div>
     </div>
     <div id="{{control}}_ribbon_expander" style="width:100%;">
@@ -134,9 +149,9 @@
                                 <td style="padding:5px;">
                                     <button id="{{control}}_ribbon_undo"><i class="fa fa-2x fa-undo"></i><br />Undo</button>
                                     <button id="{{control}}_ribbon_redo"><i class="fa fa-2x fa-repeat"></i><br />Redo</button>
-                                    <button id="{{control}}_ribbon_remove"><i class="fa fa-2x fa-remove"></i><br />Remove</button>
                                     <!-- not sure why valign top is needed here -->
                                     <button style="vertical-align: top;" id="{{control}}_ribbon_add"><i class="fa fa-2x fa-plus"></i><br />Insert a Node</button>
+                                    <button id="{{control}}_ribbon_remove"><i class="fa fa-2x fa-remove"></i><br />Remove</button>
                                 </td>
                                 <td style="width:1px;border-left:1px solid #ccc;"></td>
                                 <td style="padding:5px;">
@@ -155,9 +170,10 @@
     <table>
         <tbody>
             <tr style="vertical-align:top;height:520px">
-                <td>
+                <td style="vertical-align:top">
                     <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
                         <div id="{{control}}_dgm" style="height:400px; overflow: no-display"></div>
+                        <div id="{{control}}_message" style="background-color:rgba(141, 14, 14, 1);color:white;padding:2px;font-size:.8em; border-radius:3px;display:none;"><i class="fa fa-warning"></i> You have unsaved changes in this diagram!</div>
                     </div>
                 </td>
                 <td style="width:350px;vertical-align:top;height:100%">
@@ -189,13 +205,33 @@
                             <div style="padding: 10px">
                             </div>
                         </div>-->
-                        <div id="{{control}}_add">
+                        <!--<div id="{{control}}_add">
                             <div><i class="fa fa-plus"></i> Add a new node</div>
                             <div style="padding: 10px">
-                                Type: <select data-bind="value: NodeType" class="select-dropdown browser-default" id="{{control}}_add_artifact_type" style="height:100%"></select><br />
-                                Search: <input id="{{control}}_add_search_text" type="text" />
-                                <button id="{{control}}_add_search">Search</button>
-                                <div id="{{control}}_palette" style="height:300px"></div>
+
+                            </div>
+                        </div>-->
+                        <div id="{{control}}_responsibilities">
+                            <div><i class="fa fa-retweet"></i> Responsibilities</div>
+                            <div style="padding:10px">
+                                <table id="{{control}}_responsibilities_table" style="display:none;padding:2px;font-size:smaller">
+                                    <tbody>
+                                        <tr style="background-color:lightslategray;color:white;">
+                                            <th style="border-radius:0;padding:2px;">
+                                                Role
+                                            </th>
+                                            <th style="border-radius:0;padding:2px;">
+                                                Resource
+                                            </th>
+                                            <th style="border-radius:0;padding:2px;">
+                                                Group Owner
+                                            </th>
+                                            <th style="border-radius:0;padding:2px;">
+                                                Context
+                                            </th>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                         <div id="{{control}}_fusion">
@@ -215,23 +251,6 @@
                                             </th>
                                             <th style="border-radius:0;padding:2px;">
                                                 Type
-                                            </th>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div id="{{control}}_responsibilities">
-                            <div><i class="fa fa-retweet"></i> Responsibilities</div>
-                            <div style="padding:10px">
-                                <table id="{{control}}_responsibilities_table" style="display:none;padding:2px;font-size:smaller">
-                                    <tbody>
-                                        <tr style="background-color:lightslategray;color:white;">
-                                            <th style="border-radius:0;padding:2px;">
-                                                Type
-                                            </th>
-                                            <th style="border-radius:0;padding:2px;">
-                                                Description
                                             </th>
                                         </tr>
                                     </tbody>

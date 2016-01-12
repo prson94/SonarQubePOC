@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 using System.Xml.Linq;
 using System;
 using Dapper;
+using d360.core.enums;
 
 namespace d360.web.Controllers
 {
@@ -429,9 +430,10 @@ from	h
             public string ID { get; set; }
             public string Key { get; set; }
             public int ParentID { get; set; }
-            public string Type { get; set; }
+            public SystemObjects Type { get; set; }
             public string ObjectID { get; set; }
             public string TypeName { get; set; }
+            public int IntersectMapID { get; set; }
         }
 
         public class DiagramLink
@@ -439,8 +441,7 @@ from	h
             public string From { get; set; }
             public string To { get; set; }
             public string Text { get; set; }
-            public string Phrase { get; set; }
-            public string PredicateName { get; set; }
+            public int PredicateID { get; set; }
             public int IntersectTypeID { get; set; }
             public int IntersectTypeRoleID { get; set; }
             public DiagramNode FromNode { get; set; }
@@ -450,7 +451,7 @@ from	h
         public class DiagramChanges
         {
             public List<DiagramLink> AddedLinks { get; set; }
-            public List<ObjectModel> ExclusionObjects { get; set; }
+            public List<DiagramNode> DeletedNodes { get; set; }
             public List<DiagramNode> AllNodes { get; set; }
             public List<DiagramLink> AllLinks { get; set; }
 
@@ -500,7 +501,9 @@ from	h
 
             if (changes.AddedLinks == null)
                 changes.AddedLinks = new List<DiagramLink>();
-            foreach(DiagramLink l in changes.AddedLinks)
+            if (changes.DeletedNodes == null)
+                changes.DeletedNodes = new List<DiagramNode>();
+            foreach (DiagramLink l in changes.AddedLinks)
             {
                 l.ToNode = changes.AllNodes.Where(n => n.Key == l.To).FirstOrDefault();
                 l.FromNode = changes.AllNodes.Where(n => n.Key == l.From).FirstOrDefault();
@@ -510,38 +513,49 @@ from	h
                     //TODO: error handling here
                 }
 
-                var r = Company.Query<dynamic>("EXEC AddMapRelationship @ResourceID, @Date, @ObjectType, @ObjectID, @Classification, @IntersectRole, @Description, @SubjectType, @SubjectID, @PredicateName, @PredicatePhrase"
+                var r = Company.Query<dynamic>("EXEC AddMapRelationship @ResourceID, @Date, @ObjectType, @ObjectID, @Classification, @IntersectRole, @Description, @SubjectType, @SubjectID, @PredicateID"
                 , new
                 {
                     ResourceID = Company.CurrentResourceID,
                     Date = DateTime.UtcNow,
-                    ObjectType = l.FromNode.Type,
+                    ObjectType = l.FromNode.Type.ToString(),
                     ObjectID = l.FromNode.ID,
                     Classification = (int?)null,
                     IntersectRole = (int?)null,
                     Description = (string)null,
-                    SubjectType = l.ToNode.Type,
+                    SubjectType = l.ToNode.Type.ToString(),
                     SubjectID = l.ToNode.ID,
-                    PredicateName = l.PredicateName,
-                    PredicatePhrase = l.Phrase
+                    PredicateID = l.PredicateID
                 });
 
             }
 
-            if (changes.ExclusionObjects == null)
-                changes.ExclusionObjects = new List<ObjectModel>();
-            foreach(ObjectModel d in changes.ExclusionObjects)
+            var intersects = new List<IntersectMap>();
+            foreach (DiagramNode n in changes.DeletedNodes)
             {
-                var z = Company.Query<dynamic>("EXEC [ExcludeMapIntersect] @ObjectType, @ObjectID",
-                    new { ObjectType = d.ObjectType, ObjectID = d.ObjectID});
+                if (!Company.HasPermission(n.Type, n.IntersectMapID, Claim.Delete, ClaimObject.Relationship))
+                {
+                    continue;
+                }
+
+                var model = Company.GetById<IntersectMap>(n.IntersectMapID);
+                Company.Delete(model);
             }
+
+            //if (changes.ExclusionObjects == null)
+            //    changes.ExclusionObjects = new List<ObjectModel>();
+            //foreach(ObjectModel d in changes.ExclusionObjects)
+            //{
+            //    var z = Company.Query<dynamic>("EXEC [ExcludeMapIntersect] @ObjectType, @ObjectID",
+            //        new { ObjectType = d.ObjectType, ObjectID = d.ObjectID});
+            //}
             //TODO: return something useful here
             return null;
         }
 
         public JsonNetResult GetPredicateInfo()
         {
-            var items = Company.Query<dynamic>("select pp.id, pp.predicateId, p.name, pp.phrase, cast(pp.ID as varchar(100)) + '_' + cast(p.ID as varchar(100)) as value, pp.Phrase + ' (' + p.Name + ') ' as displayName from predicatephrase pp join predicate p on p.id = pp.predicateid");
+            var items = Company.Query<dynamic>("select name,id,1 as direction from predicate where name is not null union all select inverse as name,id,2 as direction from predicate where inverse is not null");
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 

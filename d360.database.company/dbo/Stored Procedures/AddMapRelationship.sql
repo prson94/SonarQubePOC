@@ -10,8 +10,7 @@
 	@Description nvarchar(4000),
 	@SubjectType varchar(50),
 	@SubjectID int,
-	@PredicateName nvarchar(100),
-	@PredicatePhrase nvarchar(250)
+	@PredicateID int
 	
 --set @ResourceID = 1
 --set @Date = getutcdate()
@@ -67,8 +66,41 @@ begin
 		from	@Objects O
 				inner join cache.ObjectDetails S on S.[Object] = @ObjectType and S.ObjectID = @ObjectID
 				inner join cache.ObjectDetails E on E.[Object] = O.ObjectType and E.ObjectID = O.ObjectID
-				left join utility.RelationshipTypes RT on RT.SourceObjectType = S.ObjectType and RT.SourceObjectID = S.ObjectTypeID and RT.TargetObjectType = E.ObjectType and RT.TargetObjectID = E.ObjectTypeID and RT.IntersectTypeID is null
+				left join utility.RelationshipTypes RT on RT.SourceObjectType = S.ObjectType and RT.SourceObjectID = S.ObjectTypeID and RT.TargetObjectType = E.ObjectType and RT.TargetObjectID = E.ObjectTypeID
+		
+	--remove existing relationship types
+	declare @RelationExisting table (id int);
 
+			insert into @RelationExisting
+			select distinct IntersectTypeID from (
+				select 
+					n.ID,
+					n.IntersectTypeID, 
+					n.ObjectType, 
+					n.ObjectID, 
+					n.[Order], 
+					n2.ID as ID2, 
+					n2.IntersectTypeID as IntersectTypeID2, 
+					n2.ObjectType as ObjectType2, 
+					n2.ObjectID as ObjectID2, 
+					n2.[Order] as Order2 
+				from 
+					intersecttypenode n
+				join 
+					intersecttypenode n2 on n2.intersecttypeid = n.intersecttypeid and n2.[order] = 2
+				where 
+					n.[order] = 1
+			) nt
+				join 
+					cache.ObjectDetails S on S.[Object] = @ObjectType and S.ObjectID = @ObjectID
+				join 
+					@Objects O on 1=1
+				join 
+					cache.ObjectDetails E on E.[Object] = O.ObjectType and E.ObjectID = @ObjectID
+				where 
+					(nt.objecttype = S.ObjectType and nt.objectID = S.ObjectTypeID and nt.objecttype2 = E.ObjectType and nt.objectID2 = E.ObjectTypeID) or  
+					(nt.objecttype2 = S.ObjectType and nt.objectID2 = S.ObjectTypeID and nt.objecttype = E.ObjectType and nt.objectID = E.ObjectTypeID)
+	
 	set @current = 1
 	select @max = MAX(ID) from @RelationTypes
 	while @current <= @max
@@ -83,16 +115,21 @@ begin
 		from	@RelationTypes
 		where	ID = @current
 
-		-- Relationship does not yet exist, so CREATE.
-		INSERT INTO [IntersectType] (UpdatedOn, UpdatedBy) VALUES (getutcdate(), 0)
+		--create if it doesn't exist
+		if (select count(*) from @RelationExisting where id = @IntersectTypeID) = 0
+		begin
+					-- Relationship does not yet exist, so CREATE.
+			INSERT INTO [IntersectType] (UpdatedOn, UpdatedBy) VALUES (getutcdate(), 0)
 
-		SELECT @IntersectTypeID = SCOPE_IDENTITY()
+			SELECT @IntersectTypeID = SCOPE_IDENTITY()
 
-		INSERT INTO IntersectTypeNode	(IntersectTypeID, ObjectType, ObjectID, [Order]) 
-		VALUES							(@IntersectTypeID, @StartType, @StartTypeID, 1)
+			INSERT INTO IntersectTypeNode	(IntersectTypeID, ObjectType, ObjectID, [Order]) 
+			VALUES							(@IntersectTypeID, @StartType, @StartTypeID, 1)
 
-		INSERT INTO IntersectTypeNode	(IntersectTypeID, ObjectType, ObjectID, [Order])
-		VALUES							(@IntersectTypeID, @EndType, @EndTypeID, 2)
+			INSERT INTO IntersectTypeNode	(IntersectTypeID, ObjectType, ObjectID, [Order])
+			VALUES							(@IntersectTypeID, @EndType, @EndTypeID, 2)
+		end
+
 
 		set @current = @current + 1
 	end
@@ -116,7 +153,7 @@ begin
 		from	@Objects O
 				left join cache.ObjectDetails OD on OD.[Object] = @ObjectType and OD.ObjectID = @ObjectID
 				left join cache.ObjectDetails D on D.[Object] = O.ObjectType and D.ObjectID = O.ObjectID
-				left join utility.RelationshipTypes RT on RT.SourceObjectType = OD.ObjectType and RT.SourceObjectID = OD.ObjectTypeID and RT.TargetObjectType = D.ObjectType and RT.TargetObjectID = D.ObjectTypeID
+				left join utility.RelationshipTypes RT on RT.SourceObjectType = OD.ObjectType and RT.SourceObjectID = OD.ObjectTypeID and RT.TargetObjectType = D.ObjectType and RT.TargetObjectID = D.ObjectTypeID and RT.IntersectTypeID = @IntersectTypeID
 				outer apply (
 							select	i.ID
 							from	[Intersect] I
@@ -152,11 +189,11 @@ begin
 				@Action = [Action]
 		from	@Relations
 		where	ID = @current
-
+		
 		if @ObjectID > 0
-		begin
+		begin			
 			-- Relationship does not yet exist, so CREATE.
-			if @IntersectID is null and @StartIntersectNodeTypeID is not null and @EndIntersectNodeTypeID is not null
+			if (@IntersectID is null and @StartIntersectNodeTypeID is not null and @EndIntersectNodeTypeID is not null)
 				begin
 					INSERT INTO [Intersect] (IntersectTypeID, Classification, [Description], [IntersectTypeRoleID]) VALUES (@IntersectTypeID, @Classification, @Description, @IntersectRole)
 
@@ -181,7 +218,6 @@ begin
 					exec utility.AddAuditEntry @StartObject, @StartObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
 					exec utility.AddAuditEntry @EndObject, @EndObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
 					
-
 					
 				end
 			else
@@ -199,19 +235,12 @@ begin
 					end
 
 				end
-
-			--insert new map record if applicable
-			if @MapID is null or @MapID = 0
-			begin
-				insert into Map (Name, [Type]) values ('',1);
-				SELECT @MapID = SCOPE_IDENTITY();
-			end
-			
+				
 			if (@IntersectID is not null and @SubjectNodeID is null and @ObjectNodeID is null)
 			begin 
-
+			
 				select
-					@ObjectNodeID = N.ObjectID
+					@ObjectNodeID = N.ID
 				from
 					IntersectNode N
 				join
@@ -220,7 +249,7 @@ begin
 					N.IntersectID = @IntersectID and N.IntersectTypeNodeID = R.StartIntersectNodeTypeID;
 				
 				select
-					@SubjectNodeID = N.ObjectID
+					@SubjectNodeID = N.ID
 				from
 					IntersectNode N
 				join
@@ -230,43 +259,14 @@ begin
 					
 			end
 
-			declare @PredicateID int, @PredicatePhraseID int;
-			if (@PredicateName is not null and @PredicatePhrase is not null)
-			begin
-			
-				if (select count(*) from Predicate where Name = @PredicateName) = 0
-				begin
-				select * from predicate
-					insert into Predicate (Name, Phrase) values (@PredicateName,@PredicatePhrase)
-					set @PredicateID = SCOPE_IDENTITY();
-				end
-				else
-				begin
-					select @PredicateID=ID from Predicate where Name = @PredicateName;
-				end
-				if (select count(*) from PredicatePhrase where Phrase = @PredicatePhrase AND PredicateID = @PredicateID) = 0
-				begin
-					insert into PredicatePhrase(PredicateID,Phrase) values (@PredicateID,@PredicatePhrase);
-					set @PredicatePhraseID = SCOPE_IDENTITY();
-				end
-				else
-				begin
-					select @PredicatePhraseID = ID from PredicatePhrase where PredicateID = @PredicateID and Phrase = @PredicatePhrase; 
-				end
-			end
-
-			insert into intersectmap (MapID, SubjectIntersectNodeID, ObjectIntersectNodeID, PredicatePhraseID, Type)
-			select top 1
-				@MapID as MapID,
-				@SubjectNodeID as SubjectIntersectNodeID,
-				@ObjectNodeID as ObjectIntersectNodeID,
-				@PredicatePhraseID as PredicatePhraseID,
-				1 as Type
-			from intersectmap m
-			where not exists (select * from intersectmap where mapid = @MapID and subjectintersectnodeid = @SubjectNodeID 
-				and objectintersectnodeid = @ObjectNodeID);
-
-			
+			insert into IntersectMap (SubjectIntersectNodeID, ObjectIntersectNodeID, PredicateID, [Type])
+			select	top 1
+					@SubjectNodeID as SubjectIntersectNodeID,
+					@ObjectNodeID as ObjectIntersectNodeID,				
+					@PredicateID as PredicateID,
+					1 as [Type]
+			from IntersectMap m
+			where not exists (select * from intersectmap where SubjectIntersectNodeID = @SubjectNodeID and ObjectIntersectNodeID = @ObjectNodeID and PredicateID = @PredicateID);
 
 			if (@IntersectID is not null) and (not exists(select 1 from @Intersects where ObjectID = @IntersectID))
 			begin

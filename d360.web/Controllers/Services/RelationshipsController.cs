@@ -193,16 +193,17 @@ from	FusionAttribute FA
         [Route("responsibilities/{type}/{id:int}")]
         public IQueryable<dynamic> GetResponsibilities(SystemObjects type, int id)
         {
-            return Company.Query<dynamic>(@"select	
-	                                        case ResponsibilityTransformationType
-                                                when 1 then 'Business Transformation'
-		                                        else 'Technical Transformation'
-                                            end as [Type],
-                                            ID,
-                                            [Description]
-                                        from ResponsibilityTransformation T
-                                        join cache.Responsibilities S on S.ResponsibilityID = T.ResponsibilityID
-                                        where S.[Object] = @ObjectType and S.ObjectID = @ObjectID and S.[ResponsibilityTypeGroup] = 2",
+            return Company.Query<dynamic>(@"select distinct  r.responsibilityid as [ID],
+		                                    r.responsibilitytype as [Type],
+		                                    r.responsibleobjectname as [Name],
+		                                    r.responsibleobjecturl as [Url],
+		                                    d.PrimaryOwnerResourceName as [Owner],
+		                                    d.PrimaryOwnerResourceUrl as [OwnerUrl],
+		                                    d.ContextItems as [Context]
+		                                    from cache.Responsibilities r
+		                                    inner join ResponsibilityDetail d on d.ResponsibilityID = r.ResponsibilityID
+		                                    where
+		                                    r.objectid = @ObjectID and r.[object] = @ObjectType",
                                         new { ObjectType = type.ToString(), ObjectID = id }).AsQueryable();
         }
     }
