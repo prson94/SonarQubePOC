@@ -4967,10 +4967,14 @@ namespace d360.web.Controllers
             }
 
             if (selectedID != null)
-            {
+            {                
                 sourceFields.ForEach(i =>
                 {
-                    i.Selected = i.Value.Contains(selectedID);
+                    if(!string.IsNullOrEmpty(i.Value))
+                    {
+                        string[] parts = i.Value.Split('|');
+                        i.Selected = parts.Length > 1 && parts[0] == selectedID || parts[1] == selectedID;
+                    }                        
                 });
             }
 
