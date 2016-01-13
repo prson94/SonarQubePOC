@@ -51,7 +51,7 @@
                         <option value="" disabled selected>Select token</option>
                     </select>
                 </div>
-            </div>
+            </div>            
             <div class="row ValidationSection">
                 <div class="col s3">
                     <div id='PatternTip' class="FieldName">@(Resources.FieldInfo.Pattern_Name)</div>
@@ -116,11 +116,17 @@
         var w = '100%',
             h = 25;
 
-        var switchControlsBasedOnType = function(value){
+        var switchControlsBasedOnType = function(value){            
             switch (value) {
                 case 'Text':
                     $('.ValidationSection').fadeIn(100);
                     $('.LookupSection').fadeOut(100);
+                    if ($('#Pattern').val() == '') {
+                        $('#PatternValidationSection').hide();
+                    }
+                    else {
+                        $('#PatternValidationSection').show();
+                    }
                     break;
                 case 'Lookup':
                     $('.ValidationSection').fadeOut(100);
@@ -442,7 +448,7 @@
         //#region Set Values
 
         $("#Type").jqxDropDownList('val', '@(Model.FieldType.Type)');
-        switchTokensBasedOnLookup();
+        switchTokensBasedOnLookup();        
 
         if ($('#Pattern').val() == '') {
             $('#PatternValidationSection').hide();
