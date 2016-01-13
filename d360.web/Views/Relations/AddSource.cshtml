@@ -2,6 +2,8 @@
     <div class="ui segment">
         @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.SourceToTarget, Description = string.Format("Relationships will be created between the source and target below, and between {0} and the objects below,  if they do not yet exist.", ViewBag.ObjectName), Name = string.Format("Add Source for {0}", ViewBag.ObjectName) })
 
+        @*<div id="SourcesGrid"></div>*@
+
         <div class="row">
             <div class="col l4 m4 s6">
                 <div class="FieldNameRequired">Source</div>
@@ -17,10 +19,10 @@
             </div>
         </div>
         @*<div class="FieldNameRequired">Source Or Target?</div>
-        <div id="SourceOrTargetButton">
-            <button style="padding:4px 16px;">Source</button>
-            <button style="padding:4px 16px;">Target</button>
-        </div>*@
+            <div id="SourceOrTargetButton">
+                <button style="padding:4px 16px;">Source</button>
+                <button style="padding:4px 16px;">Target</button>
+            </div>*@
         <div id="ResultWrapper" style="visibility: hidden">
             <div class="FieldName">Result</div>
             <div id="Result"></div>
@@ -57,7 +59,7 @@
             var st = $("#SubjectDropdown").jqxDropDownList('getItemByValue', stValue);
             var ot = $("#ObjectDropdown").jqxDropDownList('getItemByValue', otValue);
             var predicate = $("#PredicateDropdown").jqxDropDownList('getItemByValue', prValue);
-            
+
             resultHtml = "<u>" + st.label + "</u> " + predicate.label + " " + "<u>" + ot.label + "</u>";
             //switch (index) {
             //    case 0:
@@ -322,6 +324,111 @@
         //    createResultText();
         //});
 
+        //#endregion
+
+        //#region Sources Grid
+
+        //var sg = $('#SourcesGrid');
+
+        //// prepare the data
+        //var sgSource =
+        //{
+        //    datatype: "json",
+        //    url: '/api/allitems',
+        //    updaterow: function (rowid, rowdata, commit) {
+        //        // synchronize with the server - send update command
+        //        // call commit with parameter true if the synchronization with the server is successful 
+        //        // and with parameter false if the synchronization failder.
+        //        commit(true);
+        //    },
+        //    datafields:
+        //    [
+        //        { name: 'Subject', type: 'string' },
+        //        { name: 'Predicate', type: 'string' },
+        //        { name: 'Object', type: 'string' }
+        //    ]
+        //};
+        //var sgAdapter = new $.jqx.dataAdapter(sgSource);
+
+        //// initialize jqxGrid
+        //sg.jqxGrid(
+        //{
+        //    width: '100%',
+        //    source: sgAdapter,
+        //    editable: true,
+        //    selectionmode: 'singlerow',
+        //    editmode: 'selectedrow',
+        //    columns: [
+        //      {
+        //          text: 'Subject', columntype: 'dropdownlist', datafield: 'Subject', width: '33%',
+        //          validation: function (cell, value) {
+        //              if (value == "")
+        //                  return true;
+        //              var year = value.getFullYear();
+        //              if (year >= 2015) {
+        //                  return { result: false, message: "Ship Date should be before 1/1/2015" };
+        //              }
+        //              return true;
+        //          },
+        //          createeditor: function (row, cellvalue, editor) {
+        //              editor.jqxNumberInput({ decimalDigits: 0, digits: 3 });
+        //          }
+        //      },
+        //      {
+        //          text: 'Predicate', columntype: 'dropdownlist', datafield: 'Predicate', width: '33%',
+        //          validation: function (cell, value) {
+        //              if (value == "")
+        //                  return true;
+        //              var year = value.getFullYear();
+        //              if (year >= 2015) {
+        //                  return { result: false, message: "Ship Date should be before 1/1/2015" };
+        //              }
+        //              return true;
+        //          },
+        //          createeditor: function (row, cellvalue, editor) {
+        //              editor.jqxNumberInput({ decimalDigits: 0, digits: 3 });
+        //          }
+        //      },
+        //      {
+        //          text: 'Object', columntype: 'dropdownlist', datafield: 'Object', width: '33%',
+        //          validation: function (cell, value) {
+        //              if (value == "")
+        //                  return true;
+        //              var year = value.getFullYear();
+        //              if (year >= 2015) {
+        //                  return { result: false, message: "Ship Date should be before 1/1/2015" };
+        //              }
+        //              return true;
+        //          },
+        //          createeditor: function (row, cellvalue, editor) {
+        //              editor.jqxNumberInput({ decimalDigits: 0, digits: 3 });
+        //          }
+        //      }
+        //    ]
+        //});
+
+        //// events
+        //var rowValues = "";
+        //sg.on('cellbeginedit', function (event) {
+        //    var args = event.args;
+        //    if (args.datafield === "firstname") {
+        //        rowValues = "";
+        //    }
+        //    rowValues += args.value.toString() + "    ";
+        //    if (args.datafield === "price") {
+        //        //$("#cellbegineditevent").text("Begin Row Edit: " + (1 + args.rowindex) + ", Data: " + rowValues);
+        //    }
+        //});
+        //sg.on('cellendedit', function (event) {
+        //    var args = event.args;
+        //    if (args.datafield === "firstname") {
+        //        rowValues = "";
+        //    }
+        //    rowValues += args.value.toString() + "    ";
+        //    if (args.datafield === "price") {
+        //        //$("#cellbegineditevent").text("End Row Edit: " + (1 + args.rowindex) + ", Data: " + rowValues);
+        //    }
+        //});
         //#endregion
 
     });

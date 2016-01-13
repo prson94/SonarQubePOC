@@ -1096,7 +1096,6 @@
     <Content Include="Views\Form\AttributeEditForm.cshtml" />
     <Content Include="Views\Form\AttributeDeleteForm.cshtml" />
     <Content Include="Views\Form\Upsert.cshtml" />
-    <Content Include="Views\Form\EditorTemplates\IntersectTypeEditorModel.cshtml" />
     <Content Include="Views\Overlays\Detail.cshtml" />
     <Content Include="Views\Fusion\FusionExecutionRawLog.cshtml" />
     <Content Include="Views\Fusion\FusionExecution.cshtml" />

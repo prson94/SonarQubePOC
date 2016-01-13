@@ -28,8 +28,8 @@ var AmplifyActions = {
 $.extend($.gritter.options, {
     position: 'bottom-right', // possibilities: bottom-left, bottom-right, top-left, top-right
     fade_in_speed: 1000, // how fast notifications fade in (string or int)
-    fade_out_speed: 300, // how fast the notices fade out
-    time: 1000 // hang on the screen for...
+    fade_out_speed: 200, // how fast the notices fade out
+    time: 500 // hang on the screen for...
 });
 //#endregion
 

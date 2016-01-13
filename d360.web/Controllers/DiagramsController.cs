@@ -539,7 +539,10 @@ from	h
                 }
 
                 var model = Company.GetById<IntersectMap>(n.IntersectMapID);
-                Company.Delete(model);
+                if (model != null)
+                {
+                    Company.Delete(model);
+                }
             }
 
             //if (changes.ExclusionObjects == null)
@@ -550,7 +553,7 @@ from	h
             //        new { ObjectType = d.ObjectType, ObjectID = d.ObjectID});
             //}
             //TODO: return something useful here
-            return null;
+            return new JsonNetResult { Data = new { message = "Sources updated successfully." }, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         public JsonNetResult GetPredicateInfo()
@@ -614,6 +617,7 @@ from	h
             public int level { get; set; }
             public bool exclude { get; set; }
             public int intersectMapId { get; set; }
+            public int intersectId { get; set; }
         }
 
         public class JsonLinkItem

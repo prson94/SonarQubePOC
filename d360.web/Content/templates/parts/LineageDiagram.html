@@ -165,8 +165,6 @@
             </div>
         </div>
     </div>
-    <!--<div id="{{control}}_ribbon_spacer" style="height:8px">
-    </div>-->
     <table>
         <tbody>
             <tr style="vertical-align:top;height:520px">
@@ -178,83 +176,20 @@
                 </td>
                 <td style="width:350px;vertical-align:top;height:100%">
                     <div id="{{control}}_sidebar" style="height:100%; overflow-y: scroll;">
-                        <!--<div id="{{control}}_controls">
-                            <div><i class="fa fa-gear"></i> Diagram Controls</div>
-                            <div style="padding: 10px">
-                                <h4>Zoom</h4>
-                                <div id="{{control}}_controls_zoom" style="display: inline-block; width: 70%"></div>
-                                <span id="{{control}}_zoomDisplay" style="display: inline-block; width: 30%">100% </span>
-                                <br /><br />
-                                <button id="{{control}}_controls_zoom100">zoom to 100%</button>
-                                <button id="{{control}}_controls_zoomfit">zoom to fit</button>
-                                <button id="{{control}}_controls_reset">reset</button>
-
-                                <button onclick="reOrderLayout();">reorganize </button>
-                                | <button onclick="toggleFullscreen(isFullscreen);">toggle fullscreen</button>
-                                | spacing: <input id="txtSpacing" type="text" value="25" maxlength="3" style="width:40px" onkeyup="changeSpacing($(this).val())" />
-                                <button onclick="rotateDiagram();">rotate</button>
-                                <button id="saveBtn" class="btn red" onclick="saveChanges();" style="float:right"><i class="fa fa-save"></i> Save Changes</button>
-                            </div>
-                        </div>-->
                         <div id="{{control}}_info">
                             <div><i class="fa fa-info-circle"></i> Info</div>
                             <div style="padding: 10px" id="{{control}}_info_body"></div>
                         </div>
-                        <!--<div id="{{control}}_actions">
-                            <div><i class="fa fa-pencil"></i> Actions</div>
-                            <div style="padding: 10px">
-                            </div>
-                        </div>-->
-                        <!--<div id="{{control}}_add">
-                            <div><i class="fa fa-plus"></i> Add a new node</div>
-                            <div style="padding: 10px">
-
-                            </div>
-                        </div>-->
                         <div id="{{control}}_responsibilities">
                             <div><i class="fa fa-retweet"></i> Responsibilities</div>
                             <div style="padding:10px">
-                                <table id="{{control}}_responsibilities_table" style="display:none;padding:2px;font-size:smaller">
-                                    <tbody>
-                                        <tr style="background-color:lightslategray;color:white;">
-                                            <th style="border-radius:0;padding:2px;">
-                                                Role
-                                            </th>
-                                            <th style="border-radius:0;padding:2px;">
-                                                Resource
-                                            </th>
-                                            <th style="border-radius:0;padding:2px;">
-                                                Group Owner
-                                            </th>
-                                            <th style="border-radius:0;padding:2px;">
-                                                Context
-                                            </th>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <div id="{{control}}_responsibilities_table"></div>
                             </div>
                         </div>
                         <div id="{{control}}_fusion">
                             <div><i class="fa fa-database"></i> Fusion Relationships</div>
-                            <div style="padding:10px" id="{{control}}_fusion_body">
-                                <table id="{{control}}_fusion_table" style="display:none;padding:2px;font-size:smaller">
-                                    <tbody>
-                                        <tr style="background-color:lightslategray;color:white;">
-                                            <th style="border-radius:0;padding:2px;">
-                                                Attribute
-                                            </th>
-                                            <th style="border-radius:0;padding:2px;">
-                                                Fusion
-                                            </th>
-                                            <th style="border-radius:0;padding:2px;">
-                                                Name
-                                            </th>
-                                            <th style="border-radius:0;padding:2px;">
-                                                Type
-                                            </th>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div style="padding:10px">
+                                <div id="{{control}}_fusion_body"></div>
                             </div>
                         </div>
                     </div>

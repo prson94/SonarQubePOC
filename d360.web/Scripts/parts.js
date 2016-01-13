@@ -3023,24 +3023,24 @@ function PeopleResponsibilityTile(controlID, contextList, permissions, type, id,
                         else
                             return '';
                     }
-                }//,
-                //{ datafield: "ContextItems", text: "Context", hidden: (summaryOnly) },
-                //{ datafield: "ResponsibilityID", text: "", width: '80px', filterable: false, sortable: false, hidden: (summaryOnly),
-                //  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                //        var tools = [];
+                },
+                { datafield: "ContextItems", text: "Context" },
+                { datafield: "ResponsibilityID", text: "", width: '80px', filterable: false, sortable: false, 
+                  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        var tools = [];
 
-                //        if (data.ObjectType == data.AssigningItemType && data.ObjectID == data.AssigningItemID) {
-                //            if (permissions.HasPermission("Governance", "Update")) {
-                //                tools.push({ icon: 'pencil', urlprefix: '/form/EditPeopleResponsibility?id={0}' });
-                //            }
-                //            if (permissions.HasPermission("Governance", "Delete")) {
-                //                tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibility?id={0}' });
-                //            }
-                //        }
+                        if (data.ObjectType == data.AssigningItemType && data.ObjectID == data.AssigningItemID) {
+                            if (permissions.HasPermission("Governance", "Update")) {
+                                tools.push({ icon: 'pencil', urlprefix: '/form/EditPeopleResponsibility?id={0}' });
+                            }
+                            if (permissions.HasPermission("Governance", "Delete")) {
+                                tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibility?id={0}' });
+                            }
+                        }
 
-                //        return renderToolsHtml(value, tools, contextList.Responsibility, data);
-                //    }
-                //}
+                        return renderToolsHtml(value, tools, contextList.Responsibility, data);
+                    }
+                }
             ]
         });
     } catch (e) {
@@ -4979,7 +4979,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     var controlID_fusion = controlID + '_fusion';
     var controlID_fusion_body = controlID + '_fusion_body';
-    var controlID_fusion_table = controlID + '_fusion_table';
 
     var controlID_ribbon_spacer = controlID + '_ribbon_spacer';
     var controlID_ribbon_content = controlID + '_ribbon_content';
@@ -5122,6 +5121,115 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var predicates = [];
     var overlayEdit = false;
     var selectedNode = null;
+
+    //#region Responsibilities
+
+    var lineageResponsibilitySource = {
+        datatype: 'json',
+        url: null,
+        datafields:
+        [
+            { name: 'ResponsibilityID' },
+            { name: 'AssigningItemType' },
+            { name: 'AssigningItemID' },
+            { name: 'AssigningItemName' },
+            { name: 'AssigningItemUrl' },
+            { name: 'ResponsibleObjectType' },
+            { name: 'ResponsibleObjectID' },
+            { name: 'ResponsibleObjectName' },
+            { name: 'PrimaryOwnerResourceID' },
+            { name: 'PrimaryOwnerResourceName' },
+            { name: 'PrimaryOwnerResourceUrl' },
+            { name: 'ObjectType' },
+            { name: 'ObjectID' },
+            { name: 'Role' },
+            { name: 'ResponsibleObjectUrl' }
+        ]
+    };
+
+    var lineageResponsibilityAdapter = new $.jqx.dataAdapter(lineageResponsibilitySource);
+
+    $('#' + controlID_responsibilities_table).jqxGrid({
+        altrows: true,
+        width: overlay_grid_width,
+        autoheight: true,
+        sortable: true,
+        filterable: true,
+        showfilterrow: false,
+        pagesize: 5,
+        pageable: true,
+        pagermode: "simple",
+        selectionmode: 'none',
+        autorowheight: true,
+        source: lineageResponsibilityAdapter,
+        theme: list_theme,
+        columns: [
+            { columntype: 'dropdownlist', filtertype: 'checkedlist', datafield: "Role", text: "Role", width: '34%' },
+            {
+                columntype: 'dropdownlist', filtertype: 'checkedlist', datafield: "ResponsibleObjectName", text: "Resource", width: '33%',
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    return previewLinkRenderer(data.ResponsibleObjectType, data.ResponsibleObjectID, data.ResponsibleObjectUrl, data.ResponsibleObjectName);
+                }
+            },
+            {
+                columntype: 'dropdownlist', filtertype: 'checkedlist', datafield: "PrimaryOwnerResourceName", text: "Group Owner", width: '33%',
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    if (data.PrimaryOwnerResourceName && data.PrimaryOwnerResourceName != '')
+                        return previewLinkRenderer('Resource', data.PrimaryOwnerResourceID, data.PrimaryOwnerResourceUrl, data.PrimaryOwnerResourceName);
+                    else
+                        return '';
+                }
+            }
+        ]
+    });
+
+    //#endregion
+
+    //#region Technical Relations
+
+    var technicalRelationsSource = {
+        datatype: 'json',
+        url: null,
+        datafields: [
+            { name: 'IntersectID' },
+            { name: 'Description' },
+            { name: 'TargetName' },
+            { name: 'TargetObjectID' },
+            { name: 'TargetObjectType' },
+            { name: 'TargetTypeID' },
+            { name: 'TargetType' },
+            { name: 'TargetTypeName' },
+            { name: 'Classification' },
+            { name: 'TargetUrl' }
+        ]
+    };
+
+    var technicalRelationsAdapter = new $.jqx.dataAdapter(technicalRelationsSource);
+
+    $('#' + controlID_fusion_body).jqxGrid({
+        width: overlay_grid_width,
+        autoheight: true,
+        sortable: true,
+        altrows: true,
+        filterable: true,
+        showfilterrow: false,
+        pagesize: 5,
+        pageable: true,
+        pagermode: "simple",
+        selectionmode: 'none',
+        autorowheight: true,
+        columnsresize: true,
+        source: technicalRelationsAdapter,
+        theme: list_theme,
+        groupable: false,
+        columns: [
+            { text: 'Type', groupable: true, datafield: 'TargetTypeName' },
+            { text: 'Name', groupable: false, datafield: 'TargetName' }
+        ]
+    });
+
+    //#endregion
+
     //#region methods
 
     if (readonly) {
@@ -5167,7 +5275,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             diagramObjectType: "Node",
             level: null,
             template: "Artifact",
-            intersectMapId: null
+            intersectMapId: null,
+            intersectId: null
         };
     };
 
@@ -5347,8 +5456,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         var node = e.diagram.selection.first();
         selectedNode = null;
         
-        $('#' + controlID_fusion_table).hide(200);
-
         if (node == null) {
             //$('#preview').html('');
             // $("#" + controlID_fusion).jqxExpander('expand');
@@ -5363,7 +5470,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         if (data.diagramObjectType == 'Node') { //node selected
             selectedNode = data;
-            $('#' + controlID_fusion).jqxExpander('collapse');
+            $('#' + controlID_info).jqxExpander('expand');
+            $('#' + controlID_responsibilities).jqxExpander('expand');
+            $('#' + controlID_fusion).jqxExpander('expand');
+
+            //#region Info
+
             $.ajax({
                 url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
                 data: null,
@@ -5374,76 +5486,26 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 async: true
             });
 
-            $.ajax({
-                url: '/services/relationships/responsibilities/' + data.type + '/' + data.id,
-                data: null,
-                success: function (data) {
+            //#endregion
 
-                    var html = formResponsibilitiesHtml(data);
+            technicalRelationsSource.url = '/api/Intersect/' + data.intersectId + '/relations';
+            $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
 
-                    $('#' + controlID_responsibilities_table + ' tr').slice(1).remove();
+            lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
+            $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
 
-                    if (html == "") {
-                        $('#' + controlID_responsibilities).jqxExpander('collapse');
-                        $('#' + controlID_responsibilities_table).hide(200);
-                    } else {
-
-                        $('#' + controlID_responsibilities_table + ' > tbody:last-child').append(html);
-                        $('#' + controlID_responsibilities_table).show(200);
-                        $('#' + controlID_responsibilities).jqxExpander('expand');
-                    }
-                }
-            });
-
-            $.ajax({
-                url: '/services/relationships/technical/' + originalObject + '/' + originalObjectID + '/' + data.type + '/' + data.id,
-                success: function (data) {
-
-                    var html = formFusionHtml(data);
-                    $('#' + controlID_fusion_table + ' tr').slice(1).remove();
-
-                    if (html == "") {
-                        $('#' + controlID_fusion).jqxExpander('collapse');
-                        $('#' + controlID_fusion_table).hide(200);
-                    } else {
-                        $('#' + controlID_fusion_table + ' > tbody:last-child').append(html);
-                        $('#' + controlID_fusion_table).show(200);
-                        $('#' + controlID_fusion).jqxExpander('expand');
-                    }
-                    //console.log(data);
-                },
-                async: true
-            });
-
-            $('#' + controlID_info).jqxExpander('expand');
-            $('#' + controlID_fusion).jqxExpander('collapse');
         } else if (data.diagramObjectType == "Link") { //link selected
-            $('#' + controlID_responsibilities).jqxExpander('collapse');
-            $('#' + controlID_info_body).html('');
             $('#' + controlID_info).jqxExpander('collapse');
-            var toNode = myDiagram.findNodeForKey(data.to);
-            var fromNode = myDiagram.findNodeForKey(data.from);
+            $('#' + controlID_responsibilities).jqxExpander('collapse');
+            $('#' + controlID_fusion).jqxExpander('collapse');
 
-            if (toNode != null && fromNode != null) {
-                $.ajax({
-                    url: '/services/relationships/technical/' + fromNode.data.type + '/' + fromNode.data.id + '/' + toNode.data.type + '/' + toNode.data.id,
-                    success: function (data) {
+            $('#' + controlID_info_body).html('');
 
-                        var html = formFusionHtml(data);
-                        $('#' + controlID_fusion_table + ' tr').slice(1).remove();
+            technicalRelationsSource.url = null;
+            $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
 
-                        if (html == "") {
-                            $('#' + controlID_fusion).jqxExpander('collapse');
-                            $('#' + controlID_fusion_table).hide(200);
-                        } else {
-                            $('#' + controlID_fusion_table + ' > tbody:last-child').append(html);
-                            $('#' + controlID_fusion_table).show(200);
-                            $('#' + controlID_fusion).jqxExpander('expand');
-                        }
-                    },
-                    async: true
-                });
-            }
+            lineageResponsibilitySource.url = null;
+            $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
         }
     }
 
@@ -5941,6 +6003,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             model.diagramObjectType = "Node";
             model.exclude = d.exclude.toString();
             model.intersectMapId = d.intersectMapId;
+            model.intersectId = d.intersectId;
 
             //for (var j = 0; j < pendingExclusionNodes.length; j++) {
             //    if (pendingExclusionNodes[j].intersectMapId == model.intersectMapId) {
@@ -5983,10 +6046,10 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     function populateDiagram() {
         var results = $.ajax({
-            url: '/diagrams/maps/' + type + '/' + id + '.json',
+            url: '/relations/' + type + '/' + id + '/sources',//'/diagrams/maps/' + type + '/' + id + '.json',
             data: null,
             success: function (data) {
-                console.log(data);
+                //console.log(data);
                 parseData(data);
                 //populateNodeSelectList();
                 myDiagram.zoomToFit();

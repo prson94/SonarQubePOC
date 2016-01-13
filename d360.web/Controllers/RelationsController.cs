@@ -64,16 +64,12 @@ namespace d360.web.Controllers
             };
         }
 
-        //[HttpGet]
-        //public JsonNetResult PredicatePhrases(int id)
-        //{
-
-        //    return new JsonNetResult
-        //    {
-        //        Data = Company.Filter<PredicatePhrase>(i => i.PredicateID == id).OrderBy(i=>i.Phrase),
-        //        Formatting = Newtonsoft.Json.Formatting.None
-        //    };
-        //}
+        [HttpGet, Route("sources/predicates")]
+        public JsonNetResult GetPredicates()
+        {
+            var list = Company.Query<dynamic>(@"select ID as [value], Name as [text] from Predicate order by Name");
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
 
         public JsonResult _IntersectTypes()
         {
@@ -269,13 +265,6 @@ order by D.TextPath";
             return Json(types, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet, Route("sources/predicates")]
-        public JsonNetResult GetPredicates()
-        {
-            var list = Company.Query<dynamic>(@"select ID as [value], Name as [text] from Predicate order by Name");
-            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
         [HttpGet]
         public JsonNetResult PossibleRelationshipsByIntersect(int id)
         {
@@ -287,6 +276,177 @@ order by D.TextPath";
                 Uri = "/Relations/AddRelationship?source=Intersect&sourceID=" + i.ParentIntersectID + "&intersectTypeID=" + i.IntersectTypeID + "&target=" + i.TargetType + "&targetID=" + i.TargetTypeID
             });
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public class SourcesToObjectModel
+        {
+            public int ID { get; set; }
+            public int IntersectID { get; set; }
+
+            public int SubjectIntersectNodeID { get; set; }
+            public string SourceTypeName { get; set; }
+            public string SourceObjectName { get; set; }
+            public string SourceObject { get; set; }
+            public int SourceObjectID { get; set; }
+            public string SourceIconBackColor { get; set; }
+            public string SourceIconForeColor { get; set; }
+            public int SourceLevel { get; set; }
+
+            public int ObjectIntersectNodeID { get; set; }
+            public string TargetTypeName { get; set; }
+            public string TargetObjectName { get; set; }
+            public string TargetObject { get; set; }
+            public int TargetObjectID { get; set; }
+            public string TargetIconBackColor { get; set; }
+            public string TargetIconForeColor { get; set; }
+            public int TargetLevel { get; set; }
+
+            public int PredicateID { get; set; }
+            public string Predicate { get; set; }
+        }
+
+        void processSourceLevels(List<SourcesToObjectModel> list, List<int> alreadyProcessedIDs, int level, string obj = null, int? objID = null)
+        {
+            if (!objID.HasValue)
+            {
+                list.ForEach(i => {
+                    if (!list.Any(t => t.TargetObject == i.SourceObject && t.TargetObjectID == i.SourceObjectID))
+                    {
+                        i.SourceLevel = level;
+                        i.TargetLevel = level + 1;
+                        alreadyProcessedIDs.Add(i.ID);
+                    }
+                });
+
+                list.ForEach(i => {
+                    if (!list.Any(t => t.TargetObject == i.SourceObject && t.TargetObjectID == i.SourceObjectID))
+                    {
+                        processSourceLevels(list, alreadyProcessedIDs, level + 1, i.TargetObject, i.TargetObjectID);
+                    }
+                });
+            }
+            else
+            {
+                list.Where(i => i.SourceLevel == 0 || i.TargetLevel == 0).ToList().ForEach(i => {
+                    if (list.Any(s => s.SourceObject == obj && s.SourceObjectID == objID && !alreadyProcessedIDs.Contains(s.ID)))
+                    {
+                        i.SourceLevel = level;
+                        i.TargetLevel = level + 1;
+                        alreadyProcessedIDs.Add(i.ID);
+                        processSourceLevels(list, alreadyProcessedIDs, level + 1, i.TargetObject, i.TargetObjectID);
+                    }
+                });
+            }
+        }
+
+        [HttpGet, Route("{type}/{id:int}/sources")]
+        public JsonNetResult GetSourcesByObject(SystemObjects type, int id)
+        {
+            #region SQL
+
+            var sql = @"
+select	distinct
+		R.IntersectID,
+		M.ID,
+		M.SubjectIntersectNodeID,
+		R.SourceTypeName,
+		R.SourceObjectName,
+		R.SourceObject,
+		R.SourceObjectID,
+		SD.[IconBackColor] as SourceIconBackColor,
+		SD.[IconForeColor] as SourceIconForeColor,
+        M.ObjectIntersectNodeID,
+		R.TargetTypeName,
+		R.TargetObjectName,
+		R.TargetObject,
+		R.TargetObjectID,
+		TD.[IconBackColor] as TargetIconBackColor,
+		TD.[IconForeColor] as TargetIconForeColor,
+        M.PredicateID,
+		P.Name as Predicate
+from	IntersectMap M
+		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
+		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+        inner join Predicate P on P.ID = M.PredicateID
+		inner join [cache].[Relationship] SR on SR.SourceObject = @type and SR.SourceObjectID = @id and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
+		inner join [cache].[Relationship] TR on TR.SourceObject = @type and TR.SourceObjectID = @id and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
+union
+select	distinct
+		R.IntersectID,
+		M.ID,
+		M.SubjectIntersectNodeID,
+		R.SourceTypeName,
+		R.SourceObjectName,
+		R.SourceObject,
+		R.SourceObjectID,
+		SD.[IconBackColor] as SourceIconBackColor,
+		SD.[IconForeColor] as SourceIconForeColor,
+		M.ObjectIntersectNodeID,
+		R.TargetTypeName,
+		R.TargetObjectName,
+		R.TargetObject,
+		R.TargetObjectID,
+		TD.[IconBackColor] as TargetIconBackColor,
+		TD.[IconForeColor] as TargetIconForeColor,
+		M.PredicateID,
+		P.Name as Predicate
+from	IntersectMap M
+		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.SourceObject = @type and R.SourceObjectID = @id and M.[Type] = 1
+		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+		inner join Predicate P on P.ID = M.PredicateID
+union
+select	distinct
+		R.IntersectID,
+		M.ID,
+		M.SubjectIntersectNodeID,
+		R.SourceTypeName,
+		R.SourceObjectName,
+		R.SourceObject,
+		R.SourceObjectID,
+		SD.[IconBackColor] as SourceIconBackColor,
+		SD.[IconForeColor] as SourceIconForeColor,
+		M.ObjectIntersectNodeID,
+		R.TargetTypeName,
+		R.TargetObjectName,
+		R.TargetObject,
+		R.TargetObjectID,
+		TD.[IconBackColor] as TargetIconBackColor,
+		TD.[IconForeColor] as TargetIconForeColor,
+		M.PredicateID,
+		P.Name as Predicate
+from	IntersectMap M
+		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.TargetObject = @type and R.TargetObjectID = @id and M.[Type] = 1
+		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+		inner join Predicate P on P.ID = M.PredicateID";
+
+            #endregion
+
+            var list = Company.Query<SourcesToObjectModel>(sql, new { type = type.ToString(), id }).ToList();
+
+            var nodes = new List<DiagramsController.JsonNodeItem>();
+            var links = new List<DiagramsController.JsonLinkItem>();
+
+            processSourceLevels(list, new List<int>(), 1);
+
+            list.ForEach(m =>
+            {
+                if (!nodes.Any(i => i.key == $"{m.SourceLevel}{m.SourceObject}{m.SourceObjectID}"))
+                    nodes.Add(new DiagramsController.JsonNodeItem { key = $"{m.SourceLevel}{m.SourceObject}{m.SourceObjectID}", level = m.SourceLevel, obj = m.SourceObject, objid = m.SourceObjectID, name = m.SourceObjectName, type = m.SourceTypeName, back = m.SourceIconBackColor, fore = m.SourceIconForeColor, intersectMapId = m.ID, intersectId = m.IntersectID });
+                if (!nodes.Any(i => i.key == $"{m.TargetLevel}{m.TargetObject}{m.TargetObjectID}"))
+                    nodes.Add(new DiagramsController.JsonNodeItem { key = $"{m.TargetLevel}{m.TargetObject}{m.TargetObjectID}", level = m.TargetLevel, obj = m.TargetObject, objid = m.TargetObjectID, name = m.TargetObjectName, type = m.TargetTypeName, back = m.TargetIconBackColor, fore = m.TargetIconForeColor, intersectMapId = m.ID, intersectId = m.IntersectID });
+                links.Add(new DiagramsController.JsonLinkItem { id = m.ID, from = $"{m.SourceLevel}{m.SourceObject}{m.SourceObjectID}", to = $"{m.TargetLevel}{m.TargetObject}{m.TargetObjectID}", text = m.Predicate });
+            });
+
+            return new JsonNetResult
+            {
+                Data = new { nodes, links },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+            //return new JsonNetResult { Data = null, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         #endregion
