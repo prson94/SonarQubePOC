@@ -104,7 +104,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
 
             // if it is not a bloomberg input stream ignore it             
 
-            if (formatValue.ToUpper() != "BLOOMBERG" && directionValue.ToUpper() != "I")
+            if (formatValue.ToUpper() != "BLOOMBERG" || directionValue.ToUpper() != "I")
             {
                 Console.WriteLine("Ignoring Message Stream:[{0}] Client:[{1}] Format:[{2}] Direction:[{3}]", stream.Name, companyID, formatName, directionName);
 
@@ -125,7 +125,19 @@ namespace d360.jobs.AnalyzeCloudFusionData
 
             Console.WriteLine("Getting stream last modifieddate for company: {0}, stream: {1}.", companyID, stream.ID);
 
-            DateTime lastModified = storageProvider.GetFileLastModifiedDate(constants.AZURE_CLOUD_FUSION_CONTAINER, azureFilePath);
+            DateTime lastModified = DateTime.MinValue;
+
+            try
+            {
+                lastModified = storageProvider.GetFileLastModifiedDate(constants.AZURE_CLOUD_FUSION_CONTAINER, azureFilePath);
+            }            
+            catch(Exception ex)
+            {
+                Console.WriteLine("ERROR WHILE LOADING LAST MODIFIED INFO.  INGORMING STREAM {0} ", ex.Message);
+
+                return;
+            }
+                
 
             // 3 - if last modified date differs we need to analyze else continue
             if (cloudLastRunDetails != null && cloudLastRunDetails.UpdatedOn >= lastModified)
