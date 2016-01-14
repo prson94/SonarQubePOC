@@ -106,7 +106,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
 
             if (formatValue.ToUpper() != "BLOOMBERG" || directionValue.ToUpper() != "I")
             {
-                Console.WriteLine("Ignoring Message Stream:[{0}] Client:[{1}] Format:[{2}] Direction:[{3}]", stream.Name, companyID, formatName, directionName);
+                Console.WriteLine("Ignoring Message Stream:[{0}] Client:[{1}] Format:[{2}] Direction:[{3}]", stream.Name, companyID, formatValue, directionValue);
 
                 return;
             }
@@ -120,7 +120,9 @@ namespace d360.jobs.AnalyzeCloudFusionData
             directory = directory.ToLower();
             file = file.ToLower();
 
-            var azureDirectory = companyID + "." + EAGLE_MC_FUSION_TYPE + "/" + directory.Replace("\\", "/");
+            string azureDirectory = companyID + "." + EAGLE_MC_FUSION_TYPE + "/" + directory.Replace("\\", "/");
+
+            if (!azureDirectory.EndsWith("/")) azureDirectory += '/';
             var azureFilePath = azureDirectory + file;
 
             Console.WriteLine("Getting stream last modifieddate for company: {0}, stream: {1}.", companyID, stream.ID);
@@ -151,7 +153,26 @@ namespace d360.jobs.AnalyzeCloudFusionData
             // if we are here this is the first run for this stream or it has changed either way we need to load the file
             // go to azure an try to get the file and compare to above details
 
-            Ruleset ruleFile = Ruleset.Load(storageProvider, azureDirectory, file);
+            Ruleset ruleFile = null;
+
+            try
+            {
+                ruleFile = Ruleset.Load(storageProvider, azureDirectory, file);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("ERROR OCCURRED WHILE ANALYZING FILE [{0}] COMPANY [{1}] MESSAGE [{2}]",file,companyID,ex.Message);
+
+                return;
+            }
+
+            if(ruleFile == null)
+            {
+                Console.WriteLine("INVALID RULEFILE RESULTED FROM ANALYSIS. FOR FILE [{0}] COMPANY [{1}]", file, companyID);
+
+                return;
+            }
+            
 
             var relationships = ruleFile.FlattendMappings.OrderBy(x => x.StarTag).ThenBy(x => x.Target).ToList();
 
@@ -220,7 +241,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
 
                 return;
             }
-
+                        
 
             if (bHasDifferences)
             {
