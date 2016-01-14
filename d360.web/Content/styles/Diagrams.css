@@ -39,4 +39,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-/*# sourceMappingURL=Diagrams.css.map */
+.qtip-btn-inline {
+  display: inline-block !important;
+  margin: 2px;
+  padding: 5px;
+  text-transform: none;
+  line-height: 1.4;
+}

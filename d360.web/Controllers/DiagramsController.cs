@@ -450,6 +450,8 @@ from	h
 
         public class DiagramChanges
         {
+            public string TargetType { get; set; }
+            public string TargetID { get; set; }
             public List<DiagramLink> AddedLinks { get; set; }
             public List<DiagramNode> DeletedNodes { get; set; }
             public List<DiagramNode> AllNodes { get; set; }
@@ -496,65 +498,66 @@ from	h
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public JsonNetResult SaveChanges(DiagramChanges changes)
-        {
+        //public JsonNetResult SaveChanges(DiagramChanges changes)
+        //{
 
-            if (changes.AddedLinks == null)
-                changes.AddedLinks = new List<DiagramLink>();
-            if (changes.DeletedNodes == null)
-                changes.DeletedNodes = new List<DiagramNode>();
-            foreach (DiagramLink l in changes.AddedLinks)
-            {
-                l.ToNode = changes.AllNodes.Where(n => n.Key == l.To).FirstOrDefault();
-                l.FromNode = changes.AllNodes.Where(n => n.Key == l.From).FirstOrDefault();
+        //    if (changes.AddedLinks == null)
+        //        changes.AddedLinks = new List<DiagramLink>();
+        //    if (changes.DeletedNodes == null)
+        //        changes.DeletedNodes = new List<DiagramNode>();
 
-                if (l.ToNode == null || l.FromNode == null)
-                {
-                    //TODO: error handling here
-                }
+        //    //foreach (DiagramLink l in changes.AddedLinks)
+        //    //{
+        //    //    l.ToNode = changes.AllNodes.Where(n => n.Key == l.To).FirstOrDefault();
+        //    //    l.FromNode = changes.AllNodes.Where(n => n.Key == l.From).FirstOrDefault();
 
-                var r = Company.Query<dynamic>("EXEC AddMapRelationship @ResourceID, @Date, @ObjectType, @ObjectID, @Classification, @IntersectRole, @Description, @SubjectType, @SubjectID, @PredicateID"
-                , new
-                {
-                    ResourceID = Company.CurrentResourceID,
-                    Date = DateTime.UtcNow,
-                    ObjectType = l.FromNode.Type.ToString(),
-                    ObjectID = l.FromNode.ID,
-                    Classification = (int?)null,
-                    IntersectRole = (int?)null,
-                    Description = (string)null,
-                    SubjectType = l.ToNode.Type.ToString(),
-                    SubjectID = l.ToNode.ID,
-                    PredicateID = l.PredicateID
-                });
+        //    //    if (l.ToNode == null || l.FromNode == null)
+        //    //    {
+        //    //        //TODO: error handling here
+        //    //    }
 
-            }
+        //    //    //var r = Company.Query<dynamic>("EXEC AddMapRelationship @ResourceID, @Date, @ObjectType, @ObjectID, @Classification, @IntersectRole, @Description, @SubjectType, @SubjectID, @PredicateID"
+        //    //    //, new
+        //    //    //{
+        //    //    //    ResourceID = Company.CurrentResourceID,
+        //    //    //    Date = DateTime.UtcNow,
+        //    //    //    ObjectType = l.FromNode.Type.ToString(),
+        //    //    //    ObjectID = l.FromNode.ID,
+        //    //    //    Classification = (int?)null,
+        //    //    //    IntersectRole = (int?)null,
+        //    //    //    Description = (string)null,
+        //    //    //    SubjectType = l.ToNode.Type.ToString(),
+        //    //    //    SubjectID = l.ToNode.ID,
+        //    //    //    PredicateID = l.PredicateID
+        //    //    //});
 
-            var intersects = new List<IntersectMap>();
-            foreach (DiagramNode n in changes.DeletedNodes)
-            {
-                if (!Company.HasPermission(n.Type, n.IntersectMapID, Claim.Delete, ClaimObject.Relationship))
-                {
-                    continue;
-                }
+        //    //}
 
-                var model = Company.GetById<IntersectMap>(n.IntersectMapID);
-                if (model != null)
-                {
-                    Company.Delete(model);
-                }
-            }
+        //    var intersects = new List<IntersectMap>();
+        //    foreach (DiagramNode n in changes.DeletedNodes)
+        //    {
+        //        if (!Company.HasPermission(n.Type, n.IntersectMapID, Claim.Delete, ClaimObject.Relationship))
+        //        {
+        //            continue;
+        //        }
 
-            //if (changes.ExclusionObjects == null)
-            //    changes.ExclusionObjects = new List<ObjectModel>();
-            //foreach(ObjectModel d in changes.ExclusionObjects)
-            //{
-            //    var z = Company.Query<dynamic>("EXEC [ExcludeMapIntersect] @ObjectType, @ObjectID",
-            //        new { ObjectType = d.ObjectType, ObjectID = d.ObjectID});
-            //}
-            //TODO: return something useful here
-            return new JsonNetResult { Data = new { message = "Sources updated successfully." }, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+        //        var model = Company.GetById<IntersectMap>(n.IntersectMapID);
+        //        if (model != null)
+        //        {
+        //            Company.Delete(model);
+        //        }
+        //    }
+
+        //    //if (changes.ExclusionObjects == null)
+        //    //    changes.ExclusionObjects = new List<ObjectModel>();
+        //    //foreach(ObjectModel d in changes.ExclusionObjects)
+        //    //{
+        //    //    var z = Company.Query<dynamic>("EXEC [ExcludeMapIntersect] @ObjectType, @ObjectID",
+        //    //        new { ObjectType = d.ObjectType, ObjectID = d.ObjectID});
+        //    //}
+        //    //TODO: return something useful here
+        //    return new JsonNetResult { Data = new { message = "Sources updated successfully." }, Formatting = Newtonsoft.Json.Formatting.None };
+        //}
 
         public JsonNetResult GetPredicateInfo()
         {
