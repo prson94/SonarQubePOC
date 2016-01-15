@@ -30,6 +30,9 @@ BEGIN
 			
 	exec ProcessEagleMCToEagleFieldRelations @StagingFileID, @FusionID
 
+	exec [fusion].[ProcessEagleMCToBBMnemonic] @StagingFileID, @FusionID
+
+
 
 	-- add relations for Eagle Field (205) to Bloomberg mnemonic (301)
 	if @eagleStreamID is not null
