@@ -6,8 +6,12 @@
     [TargetIntersectTypeNodeID] INT          NOT NULL,
     [TargetObject]              VARCHAR (50) NOT NULL,
     [TargetObjectID]            INT          NOT NULL,
+    [SourceIntersectNodeID]     INT          NULL,
+    [TargetIntersectNodeID]     INT          NULL,
     CONSTRAINT [PK_CacheRelationship] PRIMARY KEY CLUSTERED ([IntersectID] ASC, [SourceObject] ASC, [SourceObjectID] ASC)
 );
+
+
 
 
 GO

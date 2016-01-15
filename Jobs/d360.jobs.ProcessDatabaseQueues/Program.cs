@@ -45,8 +45,8 @@ namespace d360.jobs.ProcessDatabaseQueues
                         var companyConnection = GetCompanyConnection(companyID);
                         companyConnection.Open();
 
-                        var total = companyConnection.Query<int>("select count(1) from [queue].[Task] where MachineAssigned is null and NumberOfRetries < 3").Single();
-                        var queueItems = companyConnection.Query<QueueTask>(@"select top 25 * from [queue].[Task] where MachineAssigned is null and NumberOfRetries < 3 order by [Date] asc").ToList();
+                        var total = companyConnection.Query<int>("select count(1) from [queue].[Task] where MachineAssigned is null and NumberOfRetries < 2").Single();
+                        var queueItems = companyConnection.Query<QueueTask>(@"select top 25 * from [queue].[Task] where MachineAssigned is null and NumberOfRetries < 2 order by [Priority] asc, [Date] asc").ToList();
 
                         if (total > 25)
                         {
@@ -57,7 +57,7 @@ namespace d360.jobs.ProcessDatabaseQueues
 
                         queueItems.ForEach(q =>
                         {
-                            companyConnection.Execute("update [queue].[Task] set MachineAssigned = @m where ID = @queueID", new { m = Environment.MachineName, queueID = q.ID });
+                            companyConnection.Execute("update [queue].[Task] set MachineAssigned = @m where ID = @queueID", new { m = System.Environment.MachineName, queueID = q.ID });
                         });
 
                         queueItems.ForEach(q =>

@@ -20,9 +20,6 @@ namespace d360.core.entities
         [DataMember]
         public bool SynchAgentLog { get; set; }
 
-        //[DataMember, ReadOnly(true)]
-        //public Guid PublicID { get; set; }
-
         [IgnoreDataMember]
         public virtual DatabaseServer DatabaseServer { get; set; }
 

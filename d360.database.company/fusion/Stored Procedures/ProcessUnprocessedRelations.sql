@@ -1,4 +1,4 @@
-﻿create procedure [fusion].[ProcessUnprocessedRelations]
+﻿CREATE procedure [fusion].[ProcessUnprocessedRelations]
 as
 begin
 	set NOCOUNT, ANSI_PADDING ON;
@@ -17,7 +17,7 @@ begin
 	-- load the unprocessed relations for now across all fusion types /ids
 
 	insert into [fusion].[StagingRelation]
-				select	@unprocessedRelationsExeId,
+				select	distinct @unprocessedRelationsExeId,
 						R.StartID,
 						R.EndID,
 						S.ID,

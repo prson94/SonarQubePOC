@@ -131,13 +131,7 @@
                         OnFailed(response, status, xhr);
                     })
                       .done(function (data, status, xhr) {
-                          var response = {
-                              type: 'confirm',
-                              title: 'Successfully completed',
-                              message: xhr.responseText, //status,
-                              context: 'Workflow'
-                          };
-                          OnSuccess(response, status, xhr);
+                          OnSuccess(data, status, xhr);
                       }).always(function () {
                           $('#progress').html('');
                       });

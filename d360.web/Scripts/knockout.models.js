@@ -3078,7 +3078,7 @@ var BoardViewModel = function () {
                 self.comments.unshift(new CommentItem(newCommentData, self));
                 self.newMessage('');
                 self.ProcessingCount(self.ProcessingCount() - 1);
-                amplify.publish("SaveAction", { context: 'commentform', action: "add", id: newCommentData.ID, custom: {} })
+                amplify.publish("SaveAction", { context: 'commentform', action: "add", id: newCommentData.ID, custom: { CommentTypeID: self.newMessageType() } });
             }).fail(function (xhr, status, error) {
                 self.ProcessingCount(self.ProcessingCount() - 1);
                 self.error(status);
@@ -3163,6 +3163,13 @@ var BoardViewModel = function () {
     amplify.subscribe("ShowFilteredBoard", function (data) {
         self.setCommentsFilter(data.ObjectType, data.ObjectID);
         self.getMoreComments();
+    });
+
+    amplify.subscribe("SaveAction", function (data) {
+        if (data.context == "IssueWorkflow") {
+            self.comments([]);
+            self.getMoreComments();
+        }
     });
 
     return self;

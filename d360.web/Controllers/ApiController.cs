@@ -2213,12 +2213,12 @@ from	    ResponsibilityTypeHierarchy H
                 }
                 else
                 {
-                    msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(Environment.NewLine, " "), ex);
+                    msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
                 }
             }
             catch (Exception ex)
             {
-                msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(Environment.NewLine, " "), ex);
+                msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
             }
 
             return msg;
@@ -2273,11 +2273,11 @@ from	    ResponsibilityTypeHierarchy H
             }
             catch (SqlException ex)
             {
-                msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(Environment.NewLine, " "), ex);
+                msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
             }
             catch (Exception ex)
             {
-                msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(Environment.NewLine, " "), ex);
+                msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
             }
 
             return msg;

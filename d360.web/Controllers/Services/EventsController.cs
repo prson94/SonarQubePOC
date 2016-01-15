@@ -364,7 +364,7 @@ namespace d360.web.Controllers.Services
                     {
                         logResponse.ID = -1;
                         logResponse.ResponseCode = "500";
-                        logResponse.ResponseMessage = (ex.InnerException == null) ? ex.Message.Replace(Environment.NewLine, "") : ex.InnerException.Message.Replace(Environment.NewLine, "");
+                        logResponse.ResponseMessage = (ex.InnerException == null) ? ex.Message.Replace(System.Environment.NewLine, "") : ex.InnerException.Message.Replace(System.Environment.NewLine, "");
                         logResponse.ResponseMessage += errorDetailMessage;
                     }
 

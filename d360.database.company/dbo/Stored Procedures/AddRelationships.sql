@@ -12,11 +12,11 @@
 --set @ResourceID = 1
 --set @Date = getutcdate()
 --set @Type = 'Artifact'
---set @ID = 972874
+--set @ID = 3
 --set @Classification = 1
 --set @IntersectRole = NULL
 --set @Description = ''
---insert into @Objects VALUES ('Artifact', 733)
+--insert into @Objects VALUES ('Artifact', 2)
 as
 begin
 	set nocount on;
@@ -84,23 +84,25 @@ begin
 	declare @Relations table (
 		ID int identity, 
 			
-		StartObject varchar(50), StartObjectID int, StartName nvarchar(500), StartType varchar(50), StartTypeID int, StartIntersectNodeTypeID int,
-		EndObject varchar(50), EndObjectID int, EndName nvarchar(500), EndType varchar(50), EndTypeID int, EndIntersectNodeTypeID int,
+		StartObject varchar(50), StartObjectID int, StartName nvarchar(500), StartType varchar(50), StartTypeID int, StartIntersectNodeID int, StartIntersectNodeTypeID int,
+		EndObject varchar(50), EndObjectID int, EndName nvarchar(500), EndType varchar(50), EndTypeID int, EndIntersectNodeID int, EndIntersectNodeTypeID int,
 
 		IntersectTypeID int, IntersectID int, [Action] varchar(1)
 	)
 
 	insert into @Relations
 		select	distinct 
-				O.ObjectType, O.ObjectID, OD.Name, OD.ObjectType, OD.ObjectTypeID, RT.SourceIntersectTypeNodeID, 
-				@Type, @ID, D.Name, D.ObjectType, D.ObjectTypeID, RT.TargetIntersectTypeNodeID,
-				RT.IntersectTypeID, R.ID, CASE WHEN R.ID IS NULL THEN 'C' ELSE 'U' END
+				O.ObjectType, O.ObjectID, OD.Name, OD.ObjectType, OD.ObjectTypeID, R.StartIntersectNodeID, RT.SourceIntersectTypeNodeID, 
+				@Type, @ID, D.Name, D.ObjectType, D.ObjectTypeID, R.EndIntersectNodeID, RT.TargetIntersectTypeNodeID,
+				RT.IntersectTypeID, R.IntersectID, CASE WHEN R.IntersectID IS NULL THEN 'C' ELSE 'U' END
 		from	@Objects O
 				left join cache.ObjectDetails OD on OD.[Object] = @Type and OD.ObjectID = @ID
 				left join cache.ObjectDetails D on D.[Object] = O.ObjectType and D.ObjectID = O.ObjectID
 				left join utility.RelationshipTypes RT on RT.SourceObjectType = OD.ObjectType and RT.SourceObjectID = OD.ObjectTypeID and RT.TargetObjectType = D.ObjectType and RT.TargetObjectID = D.ObjectTypeID
 				outer apply (
-							select	i.ID
+							select	i.ID as IntersectID,
+									N2.ID as StartIntersectNodeID,
+									N1.ID as EndIntersectNodeID
 							from	[Intersect] I
 									inner join IntersectNode N1 on N1.IntersectID = I.ID and N1.ObjectType = @Type and N1.ObjectID = @ID
 									inner join IntersectNode N2 on N2.IntersectID = I.ID and N2.ObjectType = O.ObjectType and N2.ObjectID = O.ObjectID
@@ -111,8 +113,8 @@ begin
 	select @max = MAX(ID) from @Relations
 	while @current <= @max
 	begin
-		declare @StartObject varchar(50),	@StartObjectID int, @StartName nvarchar(500),	@StartIntersectNodeTypeID int, 
-				@EndObject varchar(50),		@EndObjectID int,	@EndName nvarchar(500),		@EndIntersectNodeTypeID int,
+		declare @StartObject varchar(50),	@StartObjectID int, @StartName nvarchar(500),	@StartIntersectNodeID int,	@StartIntersectNodeTypeID int, 
+				@EndObject varchar(50),		@EndObjectID int,	@EndName nvarchar(500),		@EndIntersectNodeID int,	@EndIntersectNodeTypeID int,
 				@Action varchar(1)
 
 		set @IntersectID = null	--reset here
@@ -121,12 +123,14 @@ begin
 				@StartObjectID = StartObjectID,
 				@StartName = StartName,	
 				@StartTypeID = StartTypeID,	
+				@StartIntersectNodeID = StartIntersectNodeID,
 				@StartIntersectNodeTypeID = StartIntersectNodeTypeID, 
 
 				@EndObject = EndObject,
 				@EndObjectID = EndObjectID,	
 				@EndName = EndName,	
 				@EndTypeID = EndTypeID,	
+				@EndIntersectNodeID = EndIntersectNodeID,
 				@EndIntersectNodeTypeID = EndIntersectNodeTypeID,
 
 				@IntersectTypeID = IntersectTypeID, 
@@ -147,11 +151,17 @@ begin
 					INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
 					VALUES						(@StartIntersectNodeTypeID, @IntersectID, @StartObject, @StartObjectID)
 
+					SELECT @StartIntersectNodeID = SCOPE_IDENTITY()
+
 					INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
 					VALUES						(@EndIntersectNodeTypeID, @IntersectID, @EndObject, @EndObjectID)
 
+					SELECT @EndIntersectNodeID = SCOPE_IDENTITY()
+
 					update	@Relations
-					set		IntersectID = @IntersectID
+					set		IntersectID = @IntersectID,
+							StartIntersectNodeID = @StartIntersectNodeID,
+							EndIntersectNodeID = @EndIntersectNodeID
 					where	(StartObject = @StartObject and StartObjectID = @StartObjectID and EndObject = @EndObject and EndObjectID = @EndObjectID) 
 							or (StartObject = @EndObject and StartObjectID = @EndObjectID and EndObject = @StartObject and EndObjectID = @StartObjectID)
 							--ID = @current
@@ -159,11 +169,10 @@ begin
 					insert into cache.[Object] ( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
 					values	( 'Intersect', @IntersectID, 'IntersectType', @IntersectTypeID );
 
-					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetObject, TargetObjectID )
-					values	( @IntersectID, @StartIntersectNodeTypeID, @StartObject, @StartObjectID, @EndIntersectNodeTypeID, @EndObject, @EndObjectID );
-
-					insert into cache.Relationship ( IntersectID, TargetIntersectTypeNodeID, TargetObject, TargetObjectID, SourceIntersectTypeNodeID, SourceObject, SourceObjectID )
-					values	( @IntersectID, @StartIntersectNodeTypeID, @StartObject, @StartObjectID, @EndIntersectNodeTypeID, @EndObject, @EndObjectID );
+					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
+					values	( @IntersectID, @StartIntersectNodeTypeID, @StartIntersectNodeID, @StartObject, @StartObjectID, @EndIntersectNodeTypeID, @EndIntersectNodeID, @EndObject, @EndObjectID );
+					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
+					values	( @IntersectID, @EndIntersectNodeTypeID, @EndIntersectNodeID, @EndObject, @EndObjectID, @StartIntersectNodeTypeID, @StartIntersectNodeID, @StartObject, @StartObjectID );
 
 					exec utility.AddAuditEntry @StartObject, @StartObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
 					exec utility.AddAuditEntry @EndObject, @EndObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
@@ -185,46 +194,4 @@ begin
 
 		set @current = @current + 1
 	end
-
-	--merge	[cache].[Object] as T
-	--using	(
-	--		select	distinct
-	--				'Intersect' as [Object],
-	--				IntersectID as ObjectID,
-	--				'IntersectType' as ObjectType,
-	--				IntersectTypeID as ObjectTypeID
-	--		from	@Relations
-	--		where	IntersectID is not null and IntersectTypeID is not null
-	--		) as S
-	--on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-	--when	not matched then
-	--		insert	( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
-	--		values	( S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID] );
-
-	--merge	[cache].[Relationship] as T
-	--using	(
-	--		select	IntersectID,
-	--				StartIntersectNodeTypeID as SourceIntersectTypeNodeID,					
-	--				StartObject as SourceObject,
-	--				StartObjectID as SourceObjectID,
-	--				EndIntersectNodeTypeID as TargetIntersectTypeNodeID,
-	--				EndObject as TargetObject,
-	--				EndObjectID as TargetObjectID
-	--		from	@Relations
-	--		where	IntersectID is not null and IntersectTypeID is not null
-	--		union
-	--		select	IntersectID,
-	--				EndIntersectNodeTypeID as SourceIntersectTypeNodeID,
-	--				EndObject as SourceObject,
-	--				EndObjectID as SourceObjectID,
-	--				StartIntersectNodeTypeID as TargetIntersectTypeNodeID,					
-	--				StartObject as TargetObject,
-	--				StartObjectID as TargetObjectID
-	--		from	@Relations
-	--		where	IntersectID is not null and IntersectTypeID is not null
-	--		) as S
-	--on		T.IntersectID = S.IntersectID and T.[SourceObject] = S.[SourceObject] and T.[SourceObjectID] = S.[SourceObjectID]
-	--when	not matched then
-	--		insert	( IntersectID, SourceIntersectTypeNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetObject, TargetObjectID )
-	--		values	( S.IntersectID, S.SourceIntersectTypeNodeID, S.SourceObject, S.SourceObjectID, S.TargetIntersectTypeNodeID, S.TargetObject, S.TargetObjectID );
 end

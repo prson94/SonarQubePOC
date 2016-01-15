@@ -35,7 +35,7 @@ begin
 		delete Follow							where ObjectType = @Object and ObjectID = @ObjectID
 		delete Responsibility					where ObjectType = @Object and ObjectID = @ObjectID
 		delete SurveyObjectCache				where ObjectType = @Object and ObjectID = @ObjectID
-		delete cache.ObjectDetails				where [Object] = @Object and ObjectID = @ObjectID
+		delete cache.[Object]					where [Object] = @Object and ObjectID = @ObjectID
 
 		if charindex('Type', @Object) > 0
 		begin

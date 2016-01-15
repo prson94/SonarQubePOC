@@ -5711,7 +5711,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message.Replace(Environment.NewLine, " "), HttpStatusCode.InternalServerError);
+                return jsonException(ex.Message.Replace(System.Environment.NewLine, " "), HttpStatusCode.InternalServerError);
             }
         }
 
@@ -5736,7 +5736,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
-                return jsonException(ex.Message.Replace(Environment.NewLine, " "), HttpStatusCode.InternalServerError);
+                return jsonException(ex.Message.Replace(System.Environment.NewLine, " "), HttpStatusCode.InternalServerError);
             }
         }
 
@@ -10445,11 +10445,10 @@ order by	D.Name, I.Name";
                 if (!form.HasKeys()) throw new NoFormDataException("resource");
 
                 var id = parseIntField(form, "ID");
-                var model = Community.GetById<Resource>(id);
+                var model = Community.Filter<CompanyResource>(i => i.ResourceID == id && i.CompanyID == Company.CurrentCompanyID).SingleOrDefault();
                 if (model == null) throw new NotFoundException("resource");
 
-                Community.Delete<Resource>(model);
-
+                Community.Delete<CompanyResource>(model);
                 Company.Delete<GlobalReportingResource>(x => x.ResourceID == id);
                 return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }

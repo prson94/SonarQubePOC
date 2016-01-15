@@ -45,14 +45,14 @@
     }
     </style>
     <script type="text/javascript">
-        var appInsights=window.appInsights||function(config){
-            function s(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},r=document,f=window,e="script",o=r.createElement(e),i,u;for(o.src=config.url||"//az416426.vo.msecnd.net/scripts/a/ai.0.js",r.getElementsByTagName(e)[0].parentNode.appendChild(o),t.cookie=r.cookie,t.queue=[],i=["Event","Exception","Metric","PageView","Trace"];i.length;)s("track"+i.pop());return config.disableExceptionTracking||(i="onerror",s("_"+i),u=f[i],f[i]=function(config,r,f,e,o){var s=u&&u(config,r,f,e,o);return s!==!0&&t["_"+i](config,r,f,e,o),s}),t
-        }({
-            instrumentationKey:"f73a9469-9371-4409-8bd5-2ee7f1a7c667"
-        });
+        //var appInsights=window.appInsights||function(config){
+        //    function s(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},r=document,f=window,e="script",o=r.createElement(e),i,u;for(o.src=config.url||"//az416426.vo.msecnd.net/scripts/a/ai.0.js",r.getElementsByTagName(e)[0].parentNode.appendChild(o),t.cookie=r.cookie,t.queue=[],i=["Event","Exception","Metric","PageView","Trace"];i.length;)s("track"+i.pop());return config.disableExceptionTracking||(i="onerror",s("_"+i),u=f[i],f[i]=function(config,r,f,e,o){var s=u&&u(config,r,f,e,o);return s!==!0&&t["_"+i](config,r,f,e,o),s}),t
+        //}({
+        //    instrumentationKey:"f73a9469-9371-4409-8bd5-2ee7f1a7c667"
+        //});
 
-        window.appInsights=appInsights;
-        appInsights.trackPageView();
+        //window.appInsights=appInsights;
+        //appInsights.trackPageView();
         var CompanySettings = @(Html.Raw(settingsJson));
     </script>
     <script type="text/javascript"  src="/Scripts/GoJS/GoJS-1-5-18.js"></script>
@@ -642,8 +642,9 @@
                 //{ title, message, type }
                 var stickTime = '';
                 if (data.type == 'error') stickTime = '15000';
+                var message = ((data.message) ? data.message : data.text) + "";
                 $.gritter.add({
-                    type: data.type, title: data.title, text: data.message, sticky: false, time: stickTime
+                    type: data.type, title: data.title, text: message, sticky: false, time: stickTime
                 });
             });
 

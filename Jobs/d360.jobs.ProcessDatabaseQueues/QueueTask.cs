@@ -18,5 +18,6 @@ namespace d360.jobs.ProcessDatabaseQueues
         public bool HasError { get; set; }
         public string ErrorMessage { get; set; }
         public int NumberOfRetries { get; set; }
+        public short Priority { get; set; }
     }
 }

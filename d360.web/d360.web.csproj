@@ -897,6 +897,8 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
+    <None Include="Properties\PublishProfiles\d3s-ui-AlternateProd - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-central-AlternateProd - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-central.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-central__Development.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-central__Test.pubxml" />

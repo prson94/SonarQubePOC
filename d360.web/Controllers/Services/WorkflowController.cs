@@ -695,11 +695,21 @@ from	    Workflow W
                         try
                         {
                             processor.ResumeWorkflowInstance(id, bookmarkName, obj);
-                            response = Request.CreateResponse(HttpStatusCode.Accepted, "Workflow task successfully completed.");
+                            response = Request.CreateResponse<dynamic>(HttpStatusCode.Accepted, new {
+                                context = "OwnerApprovalWorkflow", action = "edit", id = id.ToString(), type = "confirm", title = "Workflow Task", text =  "Workflow task successfully completed."
+                            });
                         }
                         catch (Exception ex)
                         {
-                            response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData());
+                            response = Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest, new
+                            {
+                                context = "OwnerApprovalWorkflow",
+                                action = "edit",
+                                id = id.ToString(),
+                                type = "error",
+                                title = "Workflow Task",
+                                text = ex.GetFullExceptionData()
+                            });
                         }
                         break;
                     case ActivityType.OwnerCertification:
@@ -711,11 +721,27 @@ from	    Workflow W
                         try
                         {
                             processor.ResumeWorkflowInstance(id, bookmarkName, obj);
-                            response = Request.CreateResponse(HttpStatusCode.Accepted, "Workflow task successfully completed.");
+                            response = Request.CreateResponse<dynamic>(HttpStatusCode.Accepted, new
+                            {
+                                context = "OwnerCertificationWorkflow",
+                                action = "edit",
+                                id = id.ToString(),
+                                type = "confirm",
+                                title = "Workflow Task",
+                                text = "Workflow task successfully completed."
+                            });
                         }
                         catch (Exception ex)
                         {
-                            response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData());
+                            response = Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest, new
+                            {
+                                context = "OwnerCertificationWorkflow",
+                                action = "edit",
+                                id = id.ToString(),
+                                type = "error",
+                                title = "Workflow Task",
+                                text = ex.GetFullExceptionData()
+                            });
                         }
                         break;
                     case ActivityType.AssignIssueToPool:
@@ -756,16 +782,40 @@ from	    Workflow W
                             if (okToProceed)
                             {
                                 processor.ResumeWorkflowInstance(id, bookmarkName, obj);
-                                response = Request.CreateResponse(HttpStatusCode.Accepted, "Workflow task successfully completed.");
+                                response = Request.CreateResponse<dynamic>(HttpStatusCode.Accepted, new
+                                {
+                                    context = "IssueWorkflow",
+                                    action = "edit",
+                                    id = id.ToString(),
+                                    type = "confirm",
+                                    title = "Workflow Task",
+                                    text = "Workflow task successfully completed."
+                                });
                             }
                             else
                             {
-                                response = Request.CreateResponse(HttpStatusCode.NoContent, "Workflow task not processed as there was no data available to work with.  Please check your request.");
+                                response = Request.CreateResponse<dynamic>(HttpStatusCode.NoContent, new
+                                {
+                                    context = "IssueWorkflow",
+                                    action = "edit",
+                                    id = id.ToString(),
+                                    type = "error",
+                                    title = "Workflow Task",
+                                    text = "Workflow task not processed as there was no data available to work with.  Please check your request."
+                                });
                             }
                         }
                         catch (Exception ex)
                         {
-                            response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.GetFullExceptionData());
+                            response = Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest, new
+                            {
+                                context = "IssueWorkflow",
+                                action = "edit",
+                                id = id.ToString(),
+                                type = "error",
+                                title = "Workflow Task",
+                                text = ex.GetFullExceptionData()
+                            });
                         }
 
                         break;
@@ -773,7 +823,15 @@ from	    Workflow W
             }
             else 
             {
-                response = Request.CreateErrorResponse(HttpStatusCode.NotFound, "You either do not have permissions to this work item or have already completed it.");
+                response = Request.CreateResponse<dynamic>(HttpStatusCode.NotFound, new
+                {
+                    context = "IssueWorkflow",
+                    action = "edit",
+                    id = id.ToString(),
+                    type = "error",
+                    title = "Workflow Task",
+                    text = "You either do not have permissions to this work item or have already completed it."
+                });
             }
 
             return response;

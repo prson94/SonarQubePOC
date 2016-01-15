@@ -78,6 +78,7 @@
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
     <Compile Include="entities\AlertFlag.cs" />
+    <Compile Include="entities\Environment.cs" />
     <Compile Include="entities\Predicate.cs" />
     <Compile Include="entities\IntersectMap.cs" />
     <Compile Include="entities\CommentVote.cs" />

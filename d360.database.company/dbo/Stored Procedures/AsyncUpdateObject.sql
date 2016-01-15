@@ -20,6 +20,25 @@ begin
 		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID]) values ('ObjectIndex', 'U', @Object, @ObjectID)
 		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Updated', @Object, @ObjectID
 
+		if @Object = 'Artifact'
+		begin
+			with h as	(
+						select	ID,
+								ParentID
+						from	Artifact
+						where	ID = @ObjectID
+						union all
+						select	A.ID,
+								A.ParentID
+						from	Artifact A
+								inner join h P on P.ID = A.ParentID
+						)
+			update	T
+			set		T.TextPath = utility.GetBreadcrumbStringWrapper(@Object, S.ID, '/')
+			from	Artifact T
+					inner join h S on S.ID = T.ID;
+		end
+
 		if @Object in ('AttributeTypeRelation', 'AttributeTypeRelation', 'ResponsibilityTypeRelation', 'ResponsibilityType')
 		begin
 			exec utility.CalculateStatistics
@@ -36,6 +55,22 @@ begin
 
 		if @Object = 'Taxonomy'
 		begin
+			with h as	(
+						select	ID,
+								ParentID
+						from	Taxonomy
+						where	ID = @ObjectID
+						union all
+						select	A.ID,
+								A.ParentID
+						from	Taxonomy A
+								inner join h P on P.ID = A.ParentID
+						)
+			update	T
+			set		T.TextPath = utility.GetBreadcrumbStringWrapper(@Object, S.ID, '/')
+			from	Taxonomy T
+					inner join h S on S.ID = T.ID;
+
 			UPDATE	F
 			set		F.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value)
 			FROM	Field F

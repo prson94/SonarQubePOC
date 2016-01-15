@@ -203,6 +203,7 @@ BEGIN
 				inner join #attributes A on A.RuleID = M.FusionAttributePromotionRuleID
 				inner join FusionAttribute FA on FA.ID = A.FusionAttributeID 
 
+	
 	-- Update the fields table above with values for all dynamic fields.
 	update	T
 	set		T.Value = S.Value
@@ -488,7 +489,7 @@ from	#rules R
 													set @shouldInsert = 1
 													set @fieldValue = cast(@objectResultID as nvarchar(4000))
 												end
-										end
+										end									
 									else
 										begin
 											-- This is a text value, so just insert it into the Field table for the promoted object.
@@ -546,6 +547,12 @@ from	#rules R
 
 	-- Add new relations as needed
 	exec [utility].[PromoteFusionAttributesRelations] @NumberOfNewRelations output
+
+	-- Handle any fusionlookup fields
+	--exec [utility].[PromoteFusionAttributeLookups]
+
+	-- Add relations back to original fusion attributes as needed
+	--exec [utility].[PromoteFusionAttributeFusionRelations]
 		
 	--Log this run done
 	update [dbo].[FusionAttributePromotionLogSummary]

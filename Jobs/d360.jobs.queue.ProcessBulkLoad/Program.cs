@@ -93,7 +93,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     queueItems.ForEach(q =>
                     {
-                        q.MachineAssigned = Environment.MachineName;
+                        q.MachineAssigned = System.Environment.MachineName;
                     });
                     ctx.SaveChanges();
 

@@ -235,7 +235,7 @@
             switchToViewer();
             $('#RelationshipLineageTile').show();
             $('#ViewNonLineage').hide();
-            LineageDiagram('TreeGridLineage', type, typeID, null, false);
+            //LineageDiagram('TreeGridLineage', type, typeID, null, false);
             amplify.publish('SaveAction', { context: contextList.SourceToTarget });
         } catch (e) {
             logError("RelationOverlay : SourceSave", e);
@@ -366,7 +366,7 @@
                     {
                         html: '<span>Views</span>', items: [
                             { html: '<span data-a="Relationships">All Relationships</span>' },
-                            { html: '<span data-a="Lineage">Full Lineage</span>' }
+                            { html: '<span data-a="Lineage">Lineage</span>' }
                         ]
                     }
                     //{

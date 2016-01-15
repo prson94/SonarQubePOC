@@ -5,8 +5,11 @@
     [RuleType]    INT             NOT NULL,
     [UpdatedOn]   DATETIME        NULL,
     [UpdatedBy]   INT             NULL,
+    [SourceID]    VARCHAR (250)   NULL,
     CONSTRAINT [PK_Rule] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 
 

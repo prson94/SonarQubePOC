@@ -1,6 +1,6 @@
 ﻿CREATE procedure [dbo].[ExcludeMapIntersect]
 --declare
-	@mapId int,
+	--@mapId int,
 	@type varchar(50),
 	@id int
 --set @object = 'Artifact'
@@ -13,13 +13,13 @@ declare @rows table (id int);
 insert into @rows 
 exec FindExcludeMapIntersect @type, @id;
 
-insert into IntersectMapExclusion (MapID, IntersectMapIDToExclude)
+insert into IntersectMapExclusion (IntersectMapID, IntersectMapIDToExclude)
 select 
-	@mapId
+	 id
 	,id 
 from @rows r
 where
-	not exists (select * from IntersectMap where mapid = @mapid and id = r.id);
+	not exists (select * from IntersectMap where id = r.id);
 
 
 end

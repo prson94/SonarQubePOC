@@ -1,8 +1,7 @@
-﻿
-CREATE PROCEDURE [dbo].[GetAllowedIntersectionTypesByIntersect]
+﻿CREATE PROCEDURE [dbo].[GetAllowedIntersectionTypesByIntersect]
 --declare 
 	@IntersectID int
---set @IntersectID = 261537
+--set @IntersectID = 261502--261625
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -18,8 +17,8 @@ BEGIN
 				RT.TargetObjectType,
 				RT.TargetObjectID,
 				case 
-					when RT.TargetMenuDisplayText is null then RTD.Name
-					when RT.TargetMenuDisplayText = '' then RTD.Name
+					when RT.TargetMenuDisplayText is null then coalesce(RTD.TextPath, RTD.Name)
+					when RT.TargetMenuDisplayText = '' then coalesce(RTD.TextPath, RTD.Name)
 					else RT.TargetMenuDisplayText
 				end,
 				@IntersectID
@@ -39,7 +38,6 @@ BEGIN
 	from	IntersectNode N
 			inner join Artifact A on A.ID = N.ObjectID and N.ObjectType = 'Artifact' and N.IntersectID = @IntersectID
 			inner join ArtifactType AT on AT.ID = A.ArtifactTypeID and AT.CanOwnFusion = 1
-
 
 	declare @h table (ID int);
 
