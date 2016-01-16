@@ -26,9 +26,9 @@ as
 begin
 	set nocount on;
 
-	declare @Objects ObjectsTable;
+	declare @Objects table (id int identity, ObjectType varchar(250), ObjectID int, StartType varchar(50), StartTypeID int, EndType varchar(50), EndTypeID int,IntersectTypeID int);
 
-	insert into @Objects values (@SubjectType, @SubjectID);
+	insert into @Objects (ObjectType, ObjectID) values (@SubjectType, @SubjectID);
 
 	if @IntersectRole = 0 
 	begin
@@ -51,58 +51,83 @@ begin
 	declare @Intersects IDTable
 	
 	/*	Get the relationship types we need to check or create.	*/
-	declare @RelationTypes table (
-		ID int identity, 
-		StartType varchar(50), StartTypeID int, 
-		EndType varchar(50), EndTypeID int, 
-		IntersectTypeID int
-	)
+	--declare @RelationTypes table (
+	--	ID int identity, 
+	--	StartType varchar(50), StartTypeID int, 
+	--	EndType varchar(50), EndTypeID int, 
+	--	IntersectTypeID int
+	--)
 	
-	insert into @RelationTypes
+	--insert into @RelationTypes
+	--	select	distinct 
+	--			S.ObjectType, S.ObjectTypeID, 
+	--			E.ObjectType, E.ObjectTypeID, 
+	--			RT.IntersectTypeID
+	--	from	@Objects O
+	--			inner join cache.ObjectDetails S on S.[Object] = @ObjectType and S.ObjectID = @ObjectID
+	--			inner join cache.ObjectDetails E on E.[Object] = O.ObjectType and E.ObjectID = O.ObjectID
+	--			left join utility.RelationshipTypes RT on RT.SourceObjectType = S.ObjectType and RT.SourceObjectID = S.ObjectTypeID and RT.TargetObjectType = E.ObjectType and RT.TargetObjectID = E.ObjectTypeID
+		
+	----remove existing relationship types
+	--declare @RelationExisting table (id int);
+
+	--		insert into @RelationExisting
+	--		select distinct IntersectTypeID from (
+	--			select 
+	--				n.ID,
+	--				n.IntersectTypeID, 
+	--				n.ObjectType, 
+	--				n.ObjectID, 
+	--				n.[Order], 
+	--				n2.ID as ID2, 
+	--				n2.IntersectTypeID as IntersectTypeID2, 
+	--				n2.ObjectType as ObjectType2, 
+	--				n2.ObjectID as ObjectID2, 
+	--				n2.[Order] as Order2 
+	--			from 
+	--				intersecttypenode n
+	--			join 
+	--				intersecttypenode n2 on n2.intersecttypeid = n.intersecttypeid and n2.[order] = 2
+	--			where 
+	--				n.[order] = 1
+	--		) nt
+	--			join 
+	--				cache.ObjectDetails S on S.[Object] = @ObjectType and S.ObjectID = @ObjectID
+	--			join 
+	--				@Objects O on 1=1
+	--			join 
+	--				cache.ObjectDetails E on E.[Object] = O.ObjectType and E.ObjectID = @ObjectID
+	--			where 
+	--				(nt.objecttype = S.ObjectType and nt.objectID = S.ObjectTypeID and nt.objecttype2 = E.ObjectType and nt.objectID2 = E.ObjectTypeID) or  
+	--				(nt.objecttype2 = S.ObjectType and nt.objectID2 = S.ObjectTypeID and nt.objecttype = E.ObjectType and nt.objectID = E.ObjectTypeID)
+	
+	--update object table with types and id if applicable
+	update 
+		obj
+	set 
+		 obj.IntersectTypeID = t.IntersectTypeID
+		,obj.StartType = t.StartType
+		,obj.StartTypeID = t.StartTypeID
+		,obj.EndType = t.EndType
+		,obj.EndTypeID = t.EndTypeID
+	from
+		@Objects obj
+	join (
 		select	distinct 
-				S.ObjectType, S.ObjectTypeID, 
-				E.ObjectType, E.ObjectTypeID, 
-				RT.IntersectTypeID
+				S.ObjectType as StartType, S.ObjectTypeID as StartTypeID, 
+				E.ObjectType as EndType, E.ObjectTypeID as EndTypeID,
+				O.ObjectType, O.ObjectID,
+				min(RT.IntersectTypeID) as IntersectTypeID
 		from	@Objects O
 				inner join cache.ObjectDetails S on S.[Object] = @ObjectType and S.ObjectID = @ObjectID
 				inner join cache.ObjectDetails E on E.[Object] = O.ObjectType and E.ObjectID = O.ObjectID
-				left join utility.RelationshipTypes RT on RT.SourceObjectType = S.ObjectType and RT.SourceObjectID = S.ObjectTypeID and RT.TargetObjectType = E.ObjectType and RT.TargetObjectID = E.ObjectTypeID
-		
-	--remove existing relationship types
-	declare @RelationExisting table (id int);
+				left join utility.RelationshipTypes RT on RT.SourceObjectType = S.ObjectType and RT.SourceObjectID = S.ObjectTypeID
+				 and RT.TargetObjectType = E.ObjectType and RT.TargetObjectID = E.ObjectTypeID
+				 group by s.objecttype,s.objecttypeid,e.objecttypeid,e.objecttype,o.objecttype,o.objectid
+				 ) t on t.ObjectType = obj.ObjectType and t.ObjectID = obj.ObjectID;
 
-			insert into @RelationExisting
-			select distinct IntersectTypeID from (
-				select 
-					n.ID,
-					n.IntersectTypeID, 
-					n.ObjectType, 
-					n.ObjectID, 
-					n.[Order], 
-					n2.ID as ID2, 
-					n2.IntersectTypeID as IntersectTypeID2, 
-					n2.ObjectType as ObjectType2, 
-					n2.ObjectID as ObjectID2, 
-					n2.[Order] as Order2 
-				from 
-					intersecttypenode n
-				join 
-					intersecttypenode n2 on n2.intersecttypeid = n.intersecttypeid and n2.[order] = 2
-				where 
-					n.[order] = 1
-			) nt
-				join 
-					cache.ObjectDetails S on S.[Object] = @ObjectType and S.ObjectID = @ObjectID
-				join 
-					@Objects O on 1=1
-				join 
-					cache.ObjectDetails E on E.[Object] = O.ObjectType and E.ObjectID = @ObjectID
-				where 
-					(nt.objecttype = S.ObjectType and nt.objectID = S.ObjectTypeID and nt.objecttype2 = E.ObjectType and nt.objectID2 = E.ObjectTypeID) or  
-					(nt.objecttype2 = S.ObjectType and nt.objectID2 = S.ObjectTypeID and nt.objecttype = E.ObjectType and nt.objectID = E.ObjectTypeID)
-	
 	set @current = 1
-	select @max = MAX(ID) from @RelationTypes
+	select @max = MAX(ID) from @Objects
 	while @current <= @max
 	begin
 		select	@StartType = StartType,
@@ -112,13 +137,21 @@ begin
 				@EndTypeID = EndTypeID,	
 
 				@IntersectTypeID = IntersectTypeID
-		from	@RelationTypes
+		from	@Objects
 		where	ID = @current
 
 		--create if it doesn't exist
-		if (select count(*) from @RelationExisting where id = @IntersectTypeID) = 0
+		if (@IntersectTypeID = NULL)
 		begin
-					-- Relationship does not yet exist, so CREATE.
+			
+			--get the object types
+			select @StartType = c.ObjectType, @StartTypeID = c.ObjectTypeID from cache.ObjectDetails c
+			where c.[Object] = @ObjectType and c.ObjectID = @ObjectID;
+			
+			select @EndType = c.ObjectType, @EndTypeID = c.ObjectTypeID from cache.ObjectDetails c
+			join @Objects O on O.ObjectType = c.[Object] and O.ObjectID = c.ObjectID and O.ID = @current;
+
+			-- Create the relationship type
 			INSERT INTO [IntersectType] (UpdatedOn, UpdatedBy) VALUES (getutcdate(), 0)
 
 			SELECT @IntersectTypeID = SCOPE_IDENTITY()
@@ -133,7 +166,6 @@ begin
 
 		set @current = @current + 1
 	end
-
 
 	-- Now deal with the objects themselves.
 	declare @Relations table (

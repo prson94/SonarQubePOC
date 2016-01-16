@@ -306,16 +306,16 @@ begin
 	end;
 
 	begin
-		INSERT INTO [cache].[ObjectDetails] 
+		INSERT INTO [cache].[Object] 
 		VALUES ('RuleType', 1, 'Informational', 'Informational', 'An informational rule such as a rule defining a data event.  This rule delivers events that are purely informational, and there is no need to perform any other steps.', NULL, NULL, NULL, '#/rules', 'RuleType', 0, 'Rule Type', '#000000', '#ffffff', 'In')
 
-		INSERT INTO [cache].[ObjectDetails] 
+		INSERT INTO [cache].[Object] 
 		VALUES ('RuleType', 2, 'Quality Check', 'Quality Check', 'A quality check rule.', NULL, NULL, NULL, '#/rules', 'RuleType', 0, 'Rule Type', '#000000', '#ffffff', 'In')
 
-		INSERT INTO [cache].[ObjectDetails] 
+		INSERT INTO [cache].[Object] 
 		VALUES ('RuleType', 3, 'Metric', 'Metric', 'A metric rule.  These rules can be included as part of scoring for a related item.', NULL, NULL, NULL, '#/rules', 'RuleType', 0, 'Rule Type', '#000000', '#ffffff', 'In')
 
-		INSERT INTO [cache].[ObjectDetails] 
+		INSERT INTO [cache].[Object] 
 		VALUES ('RuleType', 4, 'Profile', 'Profile', 'A profile rule.', NULL, NULL, NULL, '#/rules', 'RuleType', 0, 'Rule Type', '#000000', '#ffffff', 'In')
 
 		set @type = 'Rule';
@@ -366,7 +366,7 @@ begin
 			left join ObjectStyle S ON S.ObjectType = T.StyleType and S.ObjectID = T.StyleTypeID;
 
 	-- upsert the individual object into the cache table.
-	merge	cache.ObjectDetails as T
+	merge	cache.[Object] as T
 	using	(
 			SELECT	*
 			FROM	#Recache
@@ -376,31 +376,11 @@ begin
 			)
 	when matched then
 			update	
-			set		T.Name = S.Name,
-					T.TextPath = S.TextPath,
-					T.Description = S.Description,
-					T.Parent = S.Parent,
-					T.ParentID = S.ParentID,
-					T.ParentName = S.ParentName,
-					T.Url = S.Url,
-					T.ObjectType = S.ObjectType,
-					T.ObjectTypeID = S.ObjectTypeID,
-					T.ObjectTypeName = S.ObjectTypeName,
-					T.IconBackColor = S.IconBackColor,
-					T.IconForeColor = S.IconForeColor,
-					T.IconText = S.IconText
+			set		T.ObjectType = S.ObjectType,
+					T.ObjectTypeID = S.ObjectTypeID
 	when not matched then
 			insert (
-					[Object], ObjectID, Name, TextPath, Description, 
-					Parent, ParentID, ParentName, 
-					Url, 
-					ObjectType, ObjectTypeID, ObjectTypeName, 
-					IconBackColor, IconForeColor, IconText)
+					[Object], ObjectID, ObjectType, ObjectTypeID )
 			values (
-					S.[Object], S.ObjectID, S.Name, S.TextPath, S.Description, 
-					S.Parent, S.ParentID, S.ParentName, 
-					S.Url, 
-					S.ObjectType, S.ObjectTypeID, S.ObjectTypeName, 
-					S.IconBackColor, S.IconForeColor, S.IconText
-					);
+					S.[Object], S.ObjectID, S.ObjectType, S.ObjectTypeID);
 end

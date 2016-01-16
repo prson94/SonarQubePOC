@@ -9,14 +9,17 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Survey_ObjectType-ObjectID]
     ON [dbo].[Survey]([ObjectType] ASC, [ObjectID] ASC);
 
 
 GO
-CREATE TRIGGER Survey_OnAfterInsert
-   ON  dbo.Survey
+
+CREATE TRIGGER [dbo].[Survey_OnAfterInsert]
+   ON  [dbo].[Survey]
    AFTER INSERT
 AS 
 BEGIN

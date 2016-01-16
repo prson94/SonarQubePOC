@@ -10,31 +10,11 @@
 );
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_ObjectVersion_Object]
     ON [dbo].[ObjectVersion]([ObjectType] ASC, [ObjectID] ASC);
 
 
 GO
-CREATE TRIGGER dbo.ObjectVersion_InsteadOfInsert
-	ON dbo.ObjectVersion
-	INSTEAD OF INSERT
-	AS
-	BEGIN
-		SET NOCOUNT ON;
-		insert into ObjectVersion
-			select	I.ObjectType,
-					I.ObjectID,
-					coalesce(V.[Version], 0) + 1,
-					I.[Action],
-					I.ResourceID,
-					I.[Date],
-					I.Value
-			from	inserted I
-					outer apply (
-								select	max([Version]) as [Version] 
-								from	ObjectVersion 
-								where	ObjectType = I.ObjectType 
-										and ObjectID = I.ObjectID
-								) V
-	END

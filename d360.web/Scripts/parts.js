@@ -260,7 +260,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
 
     var attributeSwitchToViewer = function (t, i) {
         $(editorControlID).html('');
-        if (t && i) {
+        if (t === "Attribute" && i) {
             $(detailControlID).Detail('reload', t, i);
         }
         else {
@@ -338,8 +338,6 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
         }
     });
 
-
-
     //#endregion
 
     //#region Event Subscriptions
@@ -390,7 +388,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     }
 
     function treeControlBindingComplete(evt) {
-        var badge = $('#DetailsTile_AttributeBadge');
+        var badge = $('#AttributesCount');
         if (badge) {
             var calculateCount = function (row, count) {
                 if (row.records) {
@@ -411,14 +409,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             } catch (e) {
                 count = 0;
             }
-            if (count > 0) {
-                badge.show();
-                badge.text(count);
-            }
-            else {
-                badge.text('');
-                badge.hide();
-            }
+            badge.html("&#160;(<b>" + count + "</b>)");
         }
     }
 
@@ -794,8 +785,6 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
         }
     };
 
-    //$('#DetailTileTabs').tabs();
-
     var m = new model();
 
     //#region Detail Sub Tile
@@ -847,7 +836,7 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
     //#endregion
 
     $('#AttributesExpander').jqxExpander({ theme: theme, expanded: false });
-    //AttributesTile('AttributesSubTile', contextList, permissions, type, id, '', false);
+    AttributesTile('AttributesSubTile', contextList, permissions, type, id, '', false);
 
     //#region Events
 
@@ -934,12 +923,7 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
             } catch (e) {
                 count = 0;
             }
-            if (count > 0) {
-                $('#SynonymsCount').html("&#160;(<b>" + count + "</b>)")
-            }
-            else {
-                $('#SynonymsCount').html("")
-            }
+            $('#SynonymsCount').html("&#160;(<b>" + count + "</b>)");
         });
     }
 
@@ -5664,13 +5648,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             return;
         }
         markForDeletion(selectedNode);
-        //e.subject.each(function (d) {
-        //    console.log('d: ' + d.data);
-        //    markPendingExclusions(d.data);
-
-        //});
-        //console.log('pending exclusion nodes: ' + pendingExclusionNodes);
-        //populateDiagram();
+        $('#' + controlID_ribbon_expander).jqxExpander('expand');
+        $('#' + controlID_ribbon).jqxRibbon('selectAt', 1);
     };
     function markForDeletion(node) {
         //console.log(node);

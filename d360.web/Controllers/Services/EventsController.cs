@@ -446,8 +446,11 @@ namespace d360.web.Controllers.Services
                 {
                     throw new NotFoundException("Rule");
                 }
-
-                Company.AddRelationships(SystemObjects.Rule, id, IntersectClassification.Normal, null, null, models);
+                models.ForEach(m => {
+                    var t = (SystemObjects)Enum.Parse(typeof(SystemObjects), m.ObjectType);
+                    Company.AddRelationship(SystemObjects.Rule, id, t, m.ObjectID, IntersectClassification.Normal, null, null);
+                });
+                //Company.AddRelationships(SystemObjects.Rule, id, IntersectClassification.Normal, null, null, models);
 
                 return Request.CreateResponse(HttpStatusCode.Created);
             }

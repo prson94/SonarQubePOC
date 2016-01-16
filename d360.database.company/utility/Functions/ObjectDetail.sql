@@ -1,6 +1,4 @@
-﻿
-
-CREATE FUNCTION [utility].[ObjectDetail]
+﻿CREATE FUNCTION [utility].[ObjectDetail]
 (
 --declare
 	@type varchar(50), 
@@ -158,7 +156,7 @@ BEGIN
 	if @type = 'FusionAttribute'
 	begin
 		insert into @tbl (	ID,		Name,		TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,						[Type],					TypeName)
-			SELECT			O.ID,	coalesce(O.TextPath, O.Name),	O.TextPath,	'',				O.ParentID,	@type,		'#/fusion/' + CAST(FT.ID as varchar(15)) + '/' + + CAST(O.FusionID as varchar(15)) + '/' + T.Tab + '/' + CAST(O.ID as varchar(15)),
+			SELECT			O.ID,	coalesce(O.TextPath, O.Name),	O.TextPath,	'',				O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, FT.ID, O.ID),
 																											O.FusionAttributeTypeID,	'FusionAttributeType',	T.Name
 			FROM	FusionAttribute O
 					INNER JOIN FusionAttributeType T ON O.FusionAttributeTypeID = T.ID and O.ID = @id

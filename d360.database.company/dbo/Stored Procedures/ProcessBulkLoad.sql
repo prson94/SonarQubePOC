@@ -157,32 +157,43 @@ begin
 		begin
 			merge	Artifact T
 			using	(
-					select	distinct
-							LI.LoadID,
-							LI.RowIndex,
-							@ObjectID as ArtifactTypeID,
-							IC_N.Value as Name,
-							D.[Description],
-							P.ParentID,
-							IC_T.LookupObjectID as TaxonomyTypeID
-					from	[LoadItem] LI
-							inner join [LoadItemColumn] IC_N on IC_N.LoadID = LI.LoadID and IC_N.RowIndex = LI.RowIndex inner join LoadColumn C_N on C_N.LoadID = LI.LoadID and C_N.ColumnIndex = IC_N.ColumnIndex and C_N.Name = 'Name'
-							inner join [LoadItemColumn] IC_T on IC_T.LoadID = LI.LoadID and IC_T.RowIndex = LI.RowIndex inner join LoadColumn C_T on C_T.LoadID = LI.LoadID and C_T.ColumnIndex = IC_T.ColumnIndex and C_T.Name = 'Subject Area' and IC_T.LookupObjectID is not null
+					select	O.LoadID,
+							O.RowIndex,
+							O.ArtifactTypeID,
+							O.Name,
+							D.Description,
+							O.ParentID,
+							O.TaxonomyTypeID
+					from	(
+							select	LI.LoadID,
+									MIN(LI.RowIndex) as RowIndex,
+									@ObjectID as ArtifactTypeID,
+									IC_N.Value as Name,
+									P.ParentID,
+									IC_T.LookupObjectID as TaxonomyTypeID
+							from	[LoadItem] LI
+									inner join [LoadItemColumn] IC_N on IC_N.LoadID = LI.LoadID and IC_N.RowIndex = LI.RowIndex inner join LoadColumn C_N on C_N.LoadID = LI.LoadID and C_N.ColumnIndex = IC_N.ColumnIndex and C_N.Name = 'Name'
+									inner join [LoadItemColumn] IC_T on IC_T.LoadID = LI.LoadID and IC_T.RowIndex = LI.RowIndex inner join LoadColumn C_T on C_T.LoadID = LI.LoadID and C_T.ColumnIndex = IC_T.ColumnIndex and C_T.Name = 'Subject Area' and IC_T.LookupObjectID is not null
+									outer apply (
+												select	I.LookupObjectID as ParentID
+												from	[LoadItemColumn] I
+														inner join LoadColumn C on I.LoadID = LI.LoadID and I.RowIndex = LI.RowIndex 
+																						and C.LoadID = LI.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name like 'Parent %'
+												) P
+							where	LI.LoadID = @LoadID
+							group by LI.LoadID,
+									IC_N.Value,
+									P.ParentID,
+									IC_T.LookupObjectID
+							) O
 							outer apply (
-										select	I.Value as Description
-										from	[LoadItemColumn] I
-												inner join LoadColumn C on I.LoadID = LI.LoadID and I.RowIndex = LI.RowIndex 
-																			 and C.LoadID = LI.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name = 'Description'
-										) D
-							outer apply (
-										select	I.LookupObjectID as ParentID
-										from	[LoadItemColumn] I
-												inner join LoadColumn C on I.LoadID = LI.LoadID and I.RowIndex = LI.RowIndex 
-																			 and C.LoadID = LI.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name like 'Parent %'
-										) P
-					where	LI.LoadID = @LoadID
+								select	I.Value as Description
+								from	[LoadItemColumn] I
+										inner join LoadColumn C on I.LoadID = O.LoadID and I.RowIndex = O.RowIndex 
+																		and C.LoadID = O.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name = 'Description'
+							) D
 					) S
-			on		(T.ArtifactTypeID = S.ArtifactTypeID and T.TaxonomyTypeID = S.TaxonomyTypeID and T.Name = S.Name)
+			on		(T.ArtifactTypeID = S.ArtifactTypeID and T.TaxonomyTypeID = S.TaxonomyTypeID and T.ParentID = S.ParentID and T.Name = S.Name)
 			when	matched then
 					update	set T.[Description] = S.[Description],
 								T.[ParentID] = S.[ParentID],

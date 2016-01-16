@@ -10,29 +10,10 @@
 
 
 
+
+
 GO
 
-CREATE TRIGGER [dbo].[ObjectStyle_AfterDelete]
-	ON [dbo].[ObjectStyle]
-	FOR DELETE
-	AS
-	BEGIN
-		SET NOCOUNT ON;
-
-		update	T
-		set		T.IconBackColor = '#000000',
-				T.IconForeColor = '#ffffff',
-				T.IconText = 'leaf'
-		from	cache.ObjectDetails T
-				inner join deleted S on T.ObjectType = S.ObjectType and T.ObjectTypeID = S.ObjectID;
-
-		update	T
-		set		T.IconBackColor = '#000000',
-				T.IconForeColor = '#ffffff',
-				T.IconText = 'leaf'
-		from	cache.ObjectDetails T
-				inner join deleted S on T.[Object] = S.ObjectType and T.ObjectID = S.ObjectID;
-	END
 
 GO
 

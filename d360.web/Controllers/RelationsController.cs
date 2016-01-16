@@ -159,15 +159,15 @@ from	(
 				'Group' as Name,
 				'People' as Menu,
 				NULL as SubMenu
-		union
-		SELECT	2 as SortOrder,
-				'FusionAttributeType' as [Type],
-				A.ID,
-				REPLACE(A.TextPath, T.Name + '.', '') as Name,
-				'Fusion' as Menu,
-				T.Name as SubMenu
-		FROM	FusionAttributeType A
-				inner join FusionType T on T.ID = A.FusionTypeID
+		--union
+		--SELECT	2 as SortOrder,
+		--		'FusionAttributeType' as [Type],
+		--		A.ID,
+		--		REPLACE(A.TextPath, T.Name + '.', '') as Name,
+		--		'Fusion' as Menu,
+		--		T.Name as SubMenu
+		--FROM	FusionAttributeType A
+		--		inner join FusionType T on T.ID = A.FusionTypeID
 		) O
 order by	SortOrder, Menu, SubMenu, Name";
             #endregion
@@ -529,12 +529,23 @@ select * from @h";
             IDs.ForEach(m =>
             {
                 var s = list.Single(i => i.ID == m && i.Type == "S");
+                var sKey = $"{s.Level}{s.O}{s.OID}";
                 if (!nodes.Any(i => i.key == $"{s.Level}{s.O}{s.OID}"))
-                    nodes.Add(new DiagramsController.JsonNodeItem { key = $"{s.Level}{s.O}{s.OID}", level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID });
+                    nodes.Add(new DiagramsController.JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID });
                 var o = list.Single(i => i.ID == m && i.Type == "O");
+                var oKey = $"{o.Level}{o.O}{o.OID}";
                 if (!nodes.Any(i => i.key == $"{o.Level}{o.O}{o.OID}"))
-                    nodes.Add(new DiagramsController.JsonNodeItem { key = $"{o.Level}{o.O}{o.OID}", level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID });
-                links.Add(new DiagramsController.JsonLinkItem { id = s.ID, from = $"{s.Level}{s.O}{s.OID}", to = $"{o.Level}{o.O}{o.OID}", text = s.Predicate });
+                    nodes.Add(new DiagramsController.JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID });
+
+                if (links.Any(i => i.from == sKey && i.to == oKey))
+                {
+                    var existingLink = links.Single(i => i.from == sKey && i.to == oKey);
+                    existingLink.text += $", {s.Predicate}";
+                }
+                else
+                {
+                    links.Add(new DiagramsController.JsonLinkItem { id = s.ID, from = sKey, to = oKey, text = s.Predicate });
+                }
             });
 
             //var list = Company.Query<SourcesToObjectModel>(sql, new { type = type.ToString(), id }).ToList();

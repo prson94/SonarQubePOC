@@ -1,4 +1,5 @@
-﻿CREATE procedure [dbo].[AsyncUpdateObject]
+﻿
+CREATE procedure [dbo].[AsyncUpdateObject]
 	@Object varchar(50),
 	@ObjectID int,
 	@ParentObject varchar(50),
@@ -17,7 +18,7 @@ begin
 		
 		--exec [cache].[SynchronizeObjectDetails] @Object, @ObjectID
 		
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID]) values ('ObjectIndex', 'U', @Object, @ObjectID)
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority]) values ('ObjectIndex', 'U', @Object, @ObjectID, 4)
 		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Updated', @Object, @ObjectID
 
 		if @Object = 'Artifact'

@@ -1,4 +1,6 @@
-﻿CREATE procedure [dbo].[AsyncDeleteObject]
+﻿
+
+CREATE procedure [dbo].[AsyncDeleteObject]
 	@Object varchar(50),
 	@ObjectID int,
 	@ParentObject varchar(50),
@@ -18,8 +20,8 @@ begin
 
 		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Removed', @Object, @ObjectID
 
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-		values ('ObjectIndex', 'D', @Object, @ObjectID)
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority])
+		values ('ObjectIndex', 'D', @Object, @ObjectID, 4)
 
 		--COMMON
 		delete CommentRelation					where ObjectType = @Object and ObjectID = @ObjectID

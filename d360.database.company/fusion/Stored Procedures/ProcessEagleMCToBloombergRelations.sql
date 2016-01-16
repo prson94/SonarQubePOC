@@ -1,8 +1,5 @@
-﻿-- =============================================
--- Create date: <12/1/2015>
--- Description:	<Given the input Stage File instance the proc looks up Eagle DB Columns and adds relations to Given BB mnemonic>
--- =============================================
-CREATE PROCEDURE [Fusion].[ProcessEagleMCToBloombergRelations]	
+﻿
+CREATE PROCEDURE [fusion].[ProcessEagleMCToBloombergRelations]	
 	@StagingFileID int,
 	@FusionID int
 AS
@@ -31,7 +28,6 @@ BEGIN
 	exec ProcessEagleMCToEagleFieldRelations @StagingFileID, @FusionID
 
 	exec [fusion].[ProcessEagleMCToBBMnemonic] @StagingFileID, @FusionID
-
 
 
 	-- add relations for Eagle Field (205) to Bloomberg mnemonic (301)
