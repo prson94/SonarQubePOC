@@ -34,7 +34,9 @@ namespace d360.core
         [Description("UNC/File Link")]
         UncLink,
         [Description("Color Picker")]
-        Color
+        Color,
+        [Description("Fusion Lookup")]
+        FusionLookup
     }
 
     public class DataTypeInfo

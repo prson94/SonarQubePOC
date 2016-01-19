@@ -67,26 +67,121 @@ namespace d360.web.Controllers
             {
                 row++;
 
-                var ro = new ReadOnlyField { 
-                    Row = row, 
-                    Column = 1, 
-                    Name = k.FriendlyName, 
-                    Value = k.FormattedValue, 
-                    FieldDescription = k.DisplayDescription, 
-                    FieldName = k.Name 
-                };
-                if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
+                if (k.Type == DataType.FusionLookup.ToString())
                 {
-                    ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-                    ro.TooltipID = k.LookupObjectType == "Lookup" ? k.LookupObjectID : (string.IsNullOrEmpty(k.Value)) ? 0 : int.Parse(k.Value);
-                    ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
-                    ro.TooltipUrl = k.LookupUrl;
+                    //look at fusionlookup field and figure out what to show
+                    row += RenderFusionLookupField(k,list,row);
                 }
+                else
+                {
+                    var ro = new ReadOnlyField
+                    {
+                        Row = row,
+                        Column = 1,
+                        Name = k.FriendlyName,
+                        Value = k.FormattedValue,
+                        FieldDescription = k.DisplayDescription,
+                        FieldName = k.Name
+                    };
+                    if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
+                    {
+                        ro.TooltipContext = TemplateAction.LookupPreview.ToString();
+                        ro.TooltipID = k.LookupObjectType == "Lookup" ? k.LookupObjectID : (string.IsNullOrEmpty(k.Value)) ? 0 : int.Parse(k.Value);
+                        ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
+                        ro.TooltipUrl = k.LookupUrl;
+                    }
 
-                list.Add(ro);
+                    list.Add(ro);
+                }                
             }
 
             return row+1;
+        }
+
+        private int RenderFusionLookupField(FieldWithRelation k, List<ReadOnlyField> list, int currentRowNumber)
+        {
+            //load the definition of the field from the [FieldTypeFusionLookupDefinition] table
+            int fusionAttributeID = 0;
+            var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
+
+            //field value has the fusion attribute this guy is associated with
+            if (!int.TryParse(k.Value, out fusionAttributeID))
+                return 0; // the value isnt populated or correct render nothing
+
+            //take def and look for intersects on the original id to the type specified
+
+            var results = Company.Query<FusionAttribute>(@"
+                select 	
+                    fa.id as ID,
+                    fa.parentId as ParentID,
+	                fa.name as name,
+	                fa.textpath as textpath,
+                    fa.sourceid as SourceID
+                from 
+	                [intersectnode] inode
+	                inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
+	                inner join [fusionattribute] fa on (fa.id = inode2.objectid and fa.fusionattributetypeid = @targetAttributeTypeID)
+                where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'
+            ", new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID });
+
+
+            //get all the items urls in one query otherwise its too slow
+
+            var urlDict = Company.Query<dynamic>(@"
+                select 	
+                    od.objectid as id,
+					od.url as url
+                from 
+	                [intersectnode] inode
+	                inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
+	                inner join cache.ObjectDetails od on (od.objectid = inode2.objectid and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
+                where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'
+                    ", new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID }).ToDictionary(
+                        row => (int)row.id,
+                        row => (string)row.url
+                    );
+            
+            List <string> vals = new List<string>();
+
+            foreach (var item in results)
+            {
+                string url = null;
+                string value = string.Empty;
+
+                urlDict.TryGetValue(item.ID, out url);
+
+
+                if (!string.IsNullOrEmpty(url))
+                {
+                    value = string.Format("<a href='{1}'>{0}</a>", (def.Display == "TextPath" ? item.TextPath : item.Name),url);
+                }
+                else
+                {
+                    value = (def.Display == "TextPath" ? item.TextPath : item.Name);
+                }
+
+                vals.Add(value);
+            }
+
+
+            var ro = new ReadOnlyField
+            {
+                Row = currentRowNumber++,
+                Column = 1,
+                Name = k.FriendlyName,                
+                FieldDescription = k.DisplayDescription,
+                FieldName = k.Name
+            };
+            
+            if (vals.Count == 1)
+                ro.Value = vals[0];
+            else if (vals.Count > 1)
+                ro.MultipleValues = vals;
+
+            list.Add(ro);
+
+            return currentRowNumber;
+            
         }
 
         int loadDisplayableRelationshipsAsFields(List<ReadOnlyField> list, SystemObjects type, int id, int row)

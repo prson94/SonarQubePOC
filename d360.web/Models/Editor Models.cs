@@ -311,6 +311,11 @@ namespace d360.web.Models
         }
 
         public List<SelectListItem> LookupLists { get; set; }
+
+        public List<SelectListItem> FusionDisplayList { get; set; }
+
+        public List<SelectListItem> FromFusionAttributeTypeList { get; set; }
+        public List<SelectListItem> ToFusionAttributeTypeList { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

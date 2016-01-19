@@ -51,7 +51,7 @@
                         <option value="" disabled selected>Select token</option>
                     </select>
                 </div>
-            </div>            
+            </div>
             <div class="row ValidationSection">
                 <div class="col s3">
                     <div id='PatternTip' class="FieldName">@(Resources.FieldInfo.Pattern_Name)</div>
@@ -82,17 +82,35 @@
             </div>
             <div id="PatternValidationSection" class="row ValidationSection">
                 <div class="col s3">
-                    <div class="FieldName">@(Resources.FieldInfo.TestPattern_Name)</div>
+                    <div class="FieldNameRequired">@(Resources.FieldInfo.TestPattern_Name)</div>
                     <input id="PatternValidationText" type="text" />
                 </div>
                 <div class="col s3">
-                    <div for="FieldName">&nbsp;</div>
+                    <div for="FieldNameRequired">&nbsp;</div>
                     <div id="PatternValidationLabel"></div>
                 </div>
                 <div class="col s12">
                     <div id='ValidationDescriptionTip' class="FieldName">@(Resources.FieldInfo.ValidationDescription_Name)</div>
                     <textarea id="ValidationDescription" name="ValidationDescription" class="htmlArea">@Html.Raw(Model.FieldType.ValidationDescription)</textarea>
                 </div>
+            </div>
+            <div id="FusionLookupSection" class="row FusionLookupSection">
+                <div class="row">
+                    <div class="col s6">
+                        <div class="FieldNameRequired">For</div>
+                        @Html.DropDownList("FromFusionAttributeTypeID", Model.FromFusionAttributeTypeList, new { @class = "browser-default" })
+                    </div>
+                    <div class="col s6">
+                        <div class="FieldNameRequired">Display</div>                        
+                        @Html.DropDownList("ToFusionAttributeTypeID", Model.ToFusionAttributeTypeList, new { @class = "browser-default" })
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s6">
+                        <div class="FieldNameRequired">Show</div>
+                        @Html.DropDownList("FusionShow", Model.FusionDisplayList, new { @class = "browser-default" })
+                    </div>
+                </div>                
             </div>
             <div class="row">
                 <div class="col s6">
@@ -116,7 +134,7 @@
         var w = '100%',
             h = 25;
 
-        var switchControlsBasedOnType = function(value){            
+        var switchControlsBasedOnType = function(value){
             switch (value) {
                 case 'Text':
                     $('.ValidationSection').fadeIn(100);
@@ -127,14 +145,26 @@
                     else {
                         $('#PatternValidationSection').show();
                     }
+                    $('.FusionLookupSection').fadeOut(100);
+                    $('#IsListable').removeAttr("disabled");
                     break;
                 case 'Lookup':
                     $('.ValidationSection').fadeOut(100);
                     $('.LookupSection').fadeIn(100);
+                    $('.FusionLookupSection').fadeOut(100);
+                    $('#IsListable').removeAttr("disabled");
+                    break;
+                case 'FusionLookup':
+                    $('.FusionLookupSection').fadeIn(100);
+                    $('.ValidationSection').fadeOut(100);
+                    $('.LookupSection').fadeOut(100);
+                    $('#IsListable').attr("disabled", true).attr('checked', false);                    
                     break;
                 default:
                     $('.ValidationSection').fadeOut(100);
                     $('.LookupSection').fadeOut(100);
+                    $('.FusionLookupSection').fadeOut(100);
+                    $('#IsListable').removeAttr("disabled");
                     break;
             }
         }
@@ -179,7 +209,10 @@
         $('#MinimumLength').jqxNumberInput('val', @(Model.FieldType.MinimumLength.HasValue ? Model.FieldType.MinimumLength.Value : 1));
         $("#MaximumLength").jqxNumberInput({ width: field_width, height: h, min: 1, max: 100000, decimalDigits: 0, inputMode: 'simple', spinButtons: true });
         $('#MaximumLength').jqxNumberInput('val', @(Model.FieldType.MaximumLength.HasValue ? Model.FieldType.MaximumLength.Value : 1000));
-        $("#PatternValidationText").jqxInput({ width: field_width, theme: theme, height: h });
+        $("#PatternValidationText").jqxInput({ width: field_width, theme: theme, height: h });        
+        $("#FromFusionAttributeTypeID").jqxDropDownList({ width: field_width, theme: theme });
+        $("#ToFusionAttributeTypeID").jqxDropDownList({ width: field_width, theme: theme });
+        $("#FusionShow").jqxDropDownList({ width: field_width, theme: theme });
 
         $('#form0').jqxValidator({
             hintType: 'label',
@@ -448,7 +481,7 @@
         //#region Set Values
 
         $("#Type").jqxDropDownList('val', '@(Model.FieldType.Type)');
-        switchTokensBasedOnLookup();        
+        switchTokensBasedOnLookup();
 
         if ($('#Pattern').val() == '') {
             $('#PatternValidationSection').hide();

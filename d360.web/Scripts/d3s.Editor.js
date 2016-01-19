@@ -361,6 +361,7 @@
                                 //#endregion
                             case 'Lookup':
                             case 'DropDown':
+                            case 'FusionLookup':
                                 //#region DropDown Field Management
 
                                 //if (v.MultiSelect) {

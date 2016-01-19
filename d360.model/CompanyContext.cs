@@ -125,6 +125,8 @@ namespace d360.model
 
         public DbSet<FieldTypeWithRelation> FieldTypeWithRelations { get; set; }                /* VIEW */
 
+        public DbSet<FieldTypeFusionLookupDefinition> FieldTypeFusionLookupDefinitions { get; set; }
+
         public DbSet<Follow> Follows { get; set; }
         public DbSet<FollowChild> FollowChildren { get; set; }
 

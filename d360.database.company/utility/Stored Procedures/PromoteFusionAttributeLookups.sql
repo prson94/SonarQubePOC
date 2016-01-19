@@ -54,5 +54,3 @@ BEGIN
 	end
 
 END
-
---exec [utility].[PromoteFusionAttributeLookups]	 

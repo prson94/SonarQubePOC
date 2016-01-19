@@ -209,7 +209,7 @@ namespace d360.web.Controllers
             var row = startRow;
 
             fields.ForEach(f =>
-            {
+            {                
                 var patternMessage = "";
 
                 if (string.IsNullOrEmpty(f.ValidationDescription))
@@ -304,6 +304,28 @@ namespace d360.web.Controllers
                     FieldDescription = ft.FormDescription,
                     Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage)
                 };
+
+                if (ft.Type == DataType.FusionLookup.ToString())
+                {                    
+                    //need to render drop down of all fusion attributes that have the same type as the current
+                    var fusionAttributeList = new List<SelectListItem>();
+
+                    var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == ft.ID);
+                    
+                    if (def == null) throw new Exception("INVALID FUSION LOOKUP FIELD");
+
+                    foreach (var item in def)
+                    {
+                        var fusionAttributes = Company.Filter<FusionAttribute>(x => x.FusionAttributeTypeID == item.SourceFusionAttributeTypeID).OrderBy(x => x.Name);
+
+                        foreach (var fA in fusionAttributes)
+                        {
+                            fusionAttributeList.Add(new SelectListItem { Text = fA.Name, Value = fA.ID.ToString() });
+                        }
+
+                        fld.Items.AddRange(fusionAttributeList);
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(ft.LookupObjectType))
                 {
@@ -3593,7 +3615,10 @@ namespace d360.web.Controllers
                 FormUri = "/Form/AddFieldType",
                 FormMethod = "POST",
                 FormName = Resources.FormInfo.Add_FieldType_Title,
-                FieldType = new FieldType { Object = type.ToString(), ObjectID = id, Pattern = "", Type = DataType.Text.ToString(), MinimumLength = 0, MaximumLength = 1000, IsListable = true, IsRequired = true }
+                FieldType = new FieldType { Object = type.ToString(), ObjectID = id, Pattern = "", Type = DataType.Text.ToString(), MinimumLength = 0, MaximumLength = 1000, IsListable = true, IsRequired = true },
+                FusionDisplayList = fusionDisplayItemList(),
+                FromFusionAttributeTypeList = fusionAttributeTypeList(-1),
+                ToFusionAttributeTypeList = fusionAttributeTypeList(-1)
             };
 
             for (var i = 0; i < model.DataTypes.Count; i++)
@@ -3603,7 +3628,7 @@ namespace d360.web.Controllers
 
             return PartialView("FieldTypeEditForm", model);
         }
-
+                
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFieldType(FormCollection form)
@@ -3635,7 +3660,7 @@ namespace d360.web.Controllers
                 model.FormDescription = parseTextField(form, "FormDescription", "");
                 model.ValidationDescription = parseTextField(form, "ValidationDescription", "");
                 model.Type = parseTextField(form, "Type");
-                model.IsListable = parseBooleanField(form, "IsListable");
+                model.IsListable = (model.Type != DataType.FusionLookup.ToString()) ? parseBooleanField(form, "IsListable") : false;
                 model.IsRequired = parseBooleanField(form, "IsRequired");
                 model.SortOrder = maxSort + 1;
 
@@ -3672,8 +3697,28 @@ namespace d360.web.Controllers
                         model.LookupDisplayFormat = parseTextField(form, "LookupDisplayFormat");
                     }
                 }
-
+                
                 Company.Add<FieldType>(model);
+
+                if(model.Type == DataType.FusionLookup.ToString())
+                {
+                    var def = new FieldTypeFusionLookupDefinition();
+                    //Display
+                    def.FieldTypeID = model.ID;
+
+                    var display = parseTextField(form, "FusionShow", "Name");
+                    
+                    var sourceFusionAttributeTypeID = parseIntField(form, "FromFusionAttributeTypeID");
+                    var targetFusionAttributeTypeID = parseIntField(form, "ToFusionAttributeTypeID");
+
+                    def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
+                    def.TargetFusionAttributeTypeID = targetFusionAttributeTypeID;
+
+                    def.Display = display;
+
+                    Company.Add<FieldTypeFusionLookupDefinition>(def);
+
+                }
 
                 return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
             }
@@ -3687,6 +3732,30 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
+        private List<SelectListItem> fusionAttributeTypeList(int selectedID)
+        {
+            List<SelectListItem> lst = new List<SelectListItem>();
+
+            var fas = Company.FusionAttributeTypes.OrderBy(x => x.Name).ThenBy(x =>x.FusionType.Name);
+
+            foreach (var ftype in fas)
+            {                
+                lst.Add(new SelectListItem { Text = string.Format("{0} - {1}", ftype.Name, ftype.FusionType.Name), Value = ftype.ID.ToString(), Selected = selectedID == ftype.ID });
+            }
+
+            return lst;
+        }
+
+        private List<SelectListItem> fusionDisplayItemList(string selected = "")
+        {
+            List<SelectListItem> lst = new List<SelectListItem>();
+            lst.Add(new SelectListItem { Text = "Name", Value = "Name", Selected = (selected == "Name")});
+            lst.Add(new SelectListItem { Text = "TextPath", Value = "TextPath", Selected = (selected == "TextPath") });
+
+            return lst;
+        }
+
 
         private void CheckIsFieldTypeNameReserved(string name)
         {
@@ -3743,6 +3812,9 @@ namespace d360.web.Controllers
             if (a == null) return HttpNotFound();
             var used = Company.Fields.Any(i => i.FieldTypeID == id);
             var qry = Company.FieldTypeLookupValues.OrderBy(i => i.LookupObjectType).ThenBy(i => i.Name).AsQueryable();
+
+            var fusDef = a.FieldTypeFusionLookupDefinitions.FirstOrDefault();
+
             var model = new FieldTypeEditorModel
             {
                 LookupLists = convertToEditableFieldItems(Company.GetFieldTypeLookupOptions().ToList()),
@@ -3750,7 +3822,10 @@ namespace d360.web.Controllers
                 FieldIsUsed = used,
                 FormMethod = "PUT",
                 FormName = Resources.FormInfo.Edit_FieldType_Title,
-                FieldType = a
+                FieldType = a,
+                FusionDisplayList = fusionDisplayItemList(fusDef.Display),
+                FromFusionAttributeTypeList = fusionAttributeTypeList((fusDef != null) ? fusDef.SourceFusionAttributeTypeID : -1),
+                ToFusionAttributeTypeList = fusionAttributeTypeList((fusDef != null) ? fusDef.TargetFusionAttributeTypeID : -1)
             };
 
             for (var i = 0; i < model.DataTypes.Count; i++)
@@ -3792,7 +3867,8 @@ namespace d360.web.Controllers
                 model.DisplayDescription = parseTextField(form, "DisplayDescription", "");
                 model.FormDescription = parseTextField(form, "FormDescription", "");
                 model.ValidationDescription = parseTextField(form, "ValidationDescription", "");
-                model.IsListable = parseBooleanField(form, "IsListable");
+                
+                model.IsListable = (model.Type != DataType.FusionLookup.ToString()) ? parseBooleanField(form, "IsListable") : false;
                 model.IsRequired = parseBooleanField(form, "IsRequired");
 
                 int value;
@@ -3826,6 +3902,26 @@ namespace d360.web.Controllers
                 model.LookupDisplayFormat = parseTextField(form, "LookupDisplayFormat");
 
                 Company.Update<FieldType>(model);
+                
+                if (model.Type == DataType.FusionLookup.ToString())
+                {
+                    var def = model.FieldTypeFusionLookupDefinitions.FirstOrDefault();
+
+                    if (def != null)
+                    {                        
+                        var display = parseTextField(form, "FusionShow", "Name");
+
+                        var sourceFusionAttributeTypeID = parseIntField(form, "FromFusionAttributeTypeID");
+                        var targetFusionAttributeTypeID = parseIntField(form, "ToFusionAttributeTypeID");
+
+                        def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
+                        def.TargetFusionAttributeTypeID = targetFusionAttributeTypeID;
+
+                        def.Display = display;
+
+                        Company.Update<FieldTypeFusionLookupDefinition>(def);
+                    }
+                }
 
                 return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
             }

@@ -231,25 +231,27 @@
                         fieldFriendlyName = eval(v.ScriptProperty);
                     }
 
-                    if (v.FieldDescription && v.FieldDescription != '') {
-                        cpnl.append("<div id='" + controlID + v.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + controlID + v.FieldName + "'>" + fieldFriendlyName + "</span></div>");
-                        $('#Tip_' + controlID + v.FieldName).qtip({
-                            content: {
-                                text: v.FieldDescription,
-                                position: {
-                                    at: 'bottom center', // Position the tooltip above the link
-                                    my: 'top center',
-                                    viewport: $(window), // Keep the tooltip on-screen at all times
-                                    effect: false // Disable positioning animation
+                    if (!v.MultipleValues) {
+                        if (v.FieldDescription && v.FieldDescription != '') {
+                            cpnl.append("<div id='" + controlID + v.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + controlID + v.FieldName + "'>" + fieldFriendlyName + "</span></div>");
+                            $('#Tip_' + controlID + v.FieldName).qtip({
+                                content: {
+                                    text: v.FieldDescription,
+                                    position: {
+                                        at: 'bottom center', // Position the tooltip above the link
+                                        my: 'top center',
+                                        viewport: $(window), // Keep the tooltip on-screen at all times
+                                        effect: false // Disable positioning animation
+                                    }
+                                },
+                                style: {
+                                    classes: 'qtip-blue qtip-rounded'
                                 }
-                            },
-                            style: {
-                                classes: 'qtip-blue qtip-rounded'
-                            }
-                        });
-                    }
-                    else {
-                        cpnl.append("<div class='FieldName FieldDisplayName'>" + fieldFriendlyName + "</div>");
+                            });
+                        }
+                        else {
+                            cpnl.append("<div class='FieldName FieldDisplayName'>" + fieldFriendlyName + "</div>");
+                        }
                     }
 
                     if (v.TooltipContext && v.TooltipID && v.TooltipType && v.TooltipUrl) {
@@ -258,6 +260,50 @@
                             "' data-context='" + v.TooltipContext +
                             "' data-id='" + v.TooltipID + "'>" +
                             v.Value + "</div>");
+                    }
+                    else if(v.MultipleValues)
+                    {                        
+                        cpnl.append("<div id='" + controlID + v.FieldName + "'></div>");
+                        var data = new Array();
+                        var i = 0;
+                        v.MultipleValues.forEach(function (val) {
+                            var row = {};
+                            row["value"] = val;
+                            data[i++] = row;
+                        })
+
+                        var source =
+                        {
+                            localdata: data,
+                            datatype: "array"
+                        };
+
+                        var dataAdapter = new $.jqx.dataAdapter(source, {
+                            downloadComplete: function (data, status, xhr) { },
+                            loadComplete: function (data) { },
+                            loadError: function (xhr, status, error) { }
+                        });
+
+                        var tooltiprenderer = function (element) {
+                            $(element).parent().jqxTooltip({ position: 'mouse', content: v.FieldDescription });
+                        }
+                                                
+                        $("#" + controlID + v.FieldName).jqxGrid({
+                            altrows: true,
+                            width: grid_width,
+                            pagesizeoptions: ['10', '20', '50'],
+                            pagesize: 20,
+                            autoheight: true,
+                            sortable: true,
+                            filterable: true,
+                            showfilterrow: true,
+                            pageable: true,
+                            source: dataAdapter,
+                            theme: list_theme,
+                            columns: [
+                                { datafield: "value", text: fieldFriendlyName, rendered: tooltiprenderer }
+                            ]                           
+                        });
                     }
                     else {                        
                         if (v.Value != null && v.Value.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})/)) 
@@ -268,7 +314,7 @@
                         }
                         else
                             cpnl.append("<div class='FieldContent'>" + v.Value + "</div>");
-                    }
+                    }                    
                 });
             }
         } catch (e) {
