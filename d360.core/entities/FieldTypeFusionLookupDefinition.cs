@@ -20,6 +20,8 @@ namespace d360.core.entities
 
         [DataMember]
         public int FieldTypeID { get; set; }
-        
+
+        [DataMember]
+        public bool IsParentChild { get; set; }
     }
 }

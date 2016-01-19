@@ -110,6 +110,10 @@
                         <div class="FieldNameRequired">Show</div>
                         @Html.DropDownList("FusionShow", Model.FusionDisplayList, new { @class = "browser-default" })
                     </div>
+                    <div class="col s6">
+                        <div class="FieldNameRequired">Show Parent Child</div>
+                        <input id="IsParentChildRel" name="IsParentChildRel" type="checkbox" value="@(Model.IsParentChildRel)" @(Model.IsParentChildRel ? "checked='checked'" : "") />
+                    </div>
                 </div>                
             </div>
             <div class="row">

@@ -316,6 +316,8 @@ namespace d360.web.Models
 
         public List<SelectListItem> FromFusionAttributeTypeList { get; set; }
         public List<SelectListItem> ToFusionAttributeTypeList { get; set; }
+
+        public bool IsParentChildRel { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

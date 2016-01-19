@@ -108,35 +108,58 @@ namespace d360.web.Controllers
             if (!int.TryParse(k.Value, out fusionAttributeID))
                 return 0; // the value isnt populated or correct render nothing
 
+            string sql, urlSql = string.Empty;
             //take def and look for intersects on the original id to the type specified
 
-            var results = Company.Query<FusionAttribute>(@"
-                select 	
-                    fa.id as ID,
-                    fa.parentId as ParentID,
-	                fa.name as name,
-	                fa.textpath as textpath,
-                    fa.sourceid as SourceID
-                from 
-	                [intersectnode] inode
-	                inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
-	                inner join [fusionattribute] fa on (fa.id = inode2.objectid and fa.fusionattributetypeid = @targetAttributeTypeID)
-                where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'
-            ", new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID });
+            if(def.IsParentChild)
+            {
+                sql = @"select 
+	                        fa.id as ID,
+	                        fa.parentId as ParentID,
+	                        fa.name as name,
+	                        fa.textpath as textpath,
+	                        fa.sourceid as SourceID
+                        from 
+	                        fusionattribute fa 
+                        where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID;";
 
+                urlSql = @"select 
+	                            od.objectid as id,
+	                            od.url as url
+                            from 
+	                            fusionattribute fa 
+	                            inner join cache.ObjectDetails od on (od.objectid = fa.id and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
+                            where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID";
+            }
+            else
+            {
+                sql = @"select 	
+                            fa.id as ID,
+                            fa.parentId as ParentID,
+	                        fa.name as name,
+	                        fa.textpath as textpath,
+                            fa.sourceid as SourceID
+                        from 
+	                        [intersectnode] inode
+	                        inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
+	                        inner join [fusionattribute] fa on (fa.id = inode2.objectid and fa.fusionattributetypeid = @targetAttributeTypeID)
+                        where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
 
+                urlSql = @" select 	
+                                od.objectid as id,
+					            od.url as url
+                            from 
+	                            [intersectnode] inode
+	                            inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
+	                            inner join cache.ObjectDetails od on (od.objectid = inode2.objectid and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
+                            where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
+            }
+
+            var results = Company.Query<FusionAttribute>(sql, new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID });
+            
             //get all the items urls in one query otherwise its too slow
 
-            var urlDict = Company.Query<dynamic>(@"
-                select 	
-                    od.objectid as id,
-					od.url as url
-                from 
-	                [intersectnode] inode
-	                inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
-	                inner join cache.ObjectDetails od on (od.objectid = inode2.objectid and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
-                where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'
-                    ", new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID }).ToDictionary(
+            var urlDict = Company.Query<dynamic>(urlSql, new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID }).ToDictionary(
                         row => (int)row.id,
                         row => (string)row.url
                     );

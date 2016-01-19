@@ -300,6 +300,7 @@
                             pageable: true,
                             source: dataAdapter,
                             theme: list_theme,
+                            pagermode: 'simple',
                             columns: [
                                 { datafield: "value", text: fieldFriendlyName, rendered: tooltiprenderer }
                             ]                           

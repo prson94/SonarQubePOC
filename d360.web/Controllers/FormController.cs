@@ -3710,9 +3710,11 @@ namespace d360.web.Controllers
                     
                     var sourceFusionAttributeTypeID = parseIntField(form, "FromFusionAttributeTypeID");
                     var targetFusionAttributeTypeID = parseIntField(form, "ToFusionAttributeTypeID");
+                    var isParentChild = parseBooleanField(form, "IsParentChildRel");
 
                     def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
                     def.TargetFusionAttributeTypeID = targetFusionAttributeTypeID;
+                    def.IsParentChild = isParentChild;
 
                     def.Display = display;
 
@@ -3825,7 +3827,8 @@ namespace d360.web.Controllers
                 FieldType = a,
                 FusionDisplayList = fusionDisplayItemList(fusDef.Display),
                 FromFusionAttributeTypeList = fusionAttributeTypeList((fusDef != null) ? fusDef.SourceFusionAttributeTypeID : -1),
-                ToFusionAttributeTypeList = fusionAttributeTypeList((fusDef != null) ? fusDef.TargetFusionAttributeTypeID : -1)
+                ToFusionAttributeTypeList = fusionAttributeTypeList((fusDef != null) ? fusDef.TargetFusionAttributeTypeID : -1),
+                IsParentChildRel = fusDef.IsParentChild
             };
 
             for (var i = 0; i < model.DataTypes.Count; i++)
@@ -3913,9 +3916,11 @@ namespace d360.web.Controllers
 
                         var sourceFusionAttributeTypeID = parseIntField(form, "FromFusionAttributeTypeID");
                         var targetFusionAttributeTypeID = parseIntField(form, "ToFusionAttributeTypeID");
+                        var isParentChild = parseBooleanField(form, "IsParentChildRel");
 
                         def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
                         def.TargetFusionAttributeTypeID = targetFusionAttributeTypeID;
+                        def.IsParentChild = isParentChild;
 
                         def.Display = display;
 
