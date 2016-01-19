@@ -101,7 +101,7 @@
                         @Html.DropDownList("FromFusionAttributeTypeID", Model.FromFusionAttributeTypeList, new { @class = "browser-default" })
                     </div>
                     <div class="col s6">
-                        <div class="FieldNameRequired">Display</div>                        
+                        <div class="FieldNameRequired">Display</div>
                         @Html.DropDownList("ToFusionAttributeTypeID", Model.ToFusionAttributeTypeList, new { @class = "browser-default" })
                     </div>
                 </div>
@@ -109,9 +109,9 @@
                     <div class="col s6">
                         <div class="FieldNameRequired">Show</div>
                         @Html.DropDownList("FusionShow", Model.FusionDisplayList, new { @class = "browser-default" })
-                    </div>
-                    <div class="col s6">
-                        <div class="FieldNameRequired">Show Parent Child</div>
+                    </div>                    
+                    <div class="col s6 input-field">
+                        <div class="FieldName">Show Parent Child</div>
                         <input id="IsParentChildRel" name="IsParentChildRel" type="checkbox" value="@(Model.IsParentChildRel)" @(Model.IsParentChildRel ? "checked='checked'" : "") />
                     </div>
                 </div>                
@@ -162,7 +162,7 @@
                     $('.FusionLookupSection').fadeIn(100);
                     $('.ValidationSection').fadeOut(100);
                     $('.LookupSection').fadeOut(100);
-                    $('#IsListable').attr("disabled", true).attr('checked', false);                    
+                    $('#IsListable').attr("disabled", true).attr('checked', false);
                     break;
                 default:
                     $('.ValidationSection').fadeOut(100);
@@ -213,7 +213,7 @@
         $('#MinimumLength').jqxNumberInput('val', @(Model.FieldType.MinimumLength.HasValue ? Model.FieldType.MinimumLength.Value : 1));
         $("#MaximumLength").jqxNumberInput({ width: field_width, height: h, min: 1, max: 100000, decimalDigits: 0, inputMode: 'simple', spinButtons: true });
         $('#MaximumLength').jqxNumberInput('val', @(Model.FieldType.MaximumLength.HasValue ? Model.FieldType.MaximumLength.Value : 1000));
-        $("#PatternValidationText").jqxInput({ width: field_width, theme: theme, height: h });        
+        $("#PatternValidationText").jqxInput({ width: field_width, theme: theme, height: h });
         $("#FromFusionAttributeTypeID").jqxDropDownList({ width: field_width, theme: theme });
         $("#ToFusionAttributeTypeID").jqxDropDownList({ width: field_width, theme: theme });
         $("#FusionShow").jqxDropDownList({ width: field_width, theme: theme });
