@@ -561,8 +561,20 @@ from	h
 
         public JsonNetResult GetPredicateInfo()
         {
-            var items = Company.Query<dynamic>("select name,id,1 as direction from predicate where name is not null union all select inverse as name,id,2 as direction from predicate where inverse is not null");
+            var items = Company.Query<dynamic>("select id, name from predicate");
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult UpdatePredicate(int intersectMapID, int predicateID)
+        {
+            var record = Company.GetById<IntersectMap>(intersectMapID);
+
+            if (record != null)
+                record.PredicateID = predicateID;
+
+            Company.Update(record);
+
+            return new JsonNetResult { Data = record, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         public JsonNetResult GetExclusionsByMapObject(SystemObjects type, int id)
@@ -630,6 +642,7 @@ from	h
             public string frompid { get { return "OUT"; } }
             public string to { get; set; }
             public string text { get; set; }
+            public int predicateId { get; set; }
         }
 
         [HttpGet, Route("maps/{type}/{id:int}.json")]

@@ -410,8 +410,8 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
                 count = 0;
             }
             badge.html("&#160;(<b>" + count + "</b>)");
-        }
-    }
+            }
+            }
 
     function treeControlRowSelect(evt) {
         try {
@@ -4990,6 +4990,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_ribbon_fullscreen = controlID + '_ribbon_fullscreen';
     
     var controlID_ribbon_save = controlID + '_ribbon_save';
+    var controlID_ribbon_save_spinner = controlID + '_ribbon_save_spinner';
     var controlID_ribbon_add = controlID + '_ribbon_add';
     var controlID_ribbon_undo = controlID + '_ribbon_undo';
     var controlID_ribbon_redo = controlID + '_ribbon_redo';
@@ -5029,7 +5030,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     //var toggleAdd = false;
     $("#" + controlID_ribbon_add).on('click', function () {
-        $('#' + controlID_popover_add).toggle(200).css('left',$(this).position().left + 1).css('top',$(this).position().top + 150);
+        $('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
     });
     //$("#" + controlID_controls_zoom).jqxScrollBar({ theme: theme, width: 280, height: 18, min: 750, max: 2250, value: 1500 });
     //$("#" + controlID_overlay_radio_existing).jqxRadioButton({theme: theme}).jqxRadioButton('check');
@@ -5049,7 +5050,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $('#' + controlID_ribbon_fullscreen).on('click', function () {
         fullscreen = !fullscreen;
         if (fullscreen) {
-            window.scrollTo(0,0); //scroll to top
+            window.scrollTo(0, 0); //scroll to top
             $('#' + controlID_ribbon_fullscreen).html('<i class="fa fa-2x fa-sign-out"></i><br />Exit Fullscreen');
             $('#' + controlID_wrapper_fullscreen).css('position', 'fixed')
                 .css('left', '0')
@@ -5075,25 +5076,26 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         setTimeout(function () {
             myDiagram.requestUpdate();
             myDiagram.focus();
-        },0);
+        }, 0);
     });
 
 
     $('#' + controlID_ribbon_save).on('click', function () {
+        saveChanges();
 
-        var message = $('<p />', { text: 'Are you sure you want to save changes?' }),
-             ok = $('<button />', {
-                 text: 'Save',
-                 'class': 'btn qtip-blue qtip-btn-inline',
-             }),
-             cancel = $('<button />', {
-                 text: 'Cancel',
-                 'class': 'btn qtip-blue qtip-btn-inline',
-             });
+        //var message = $('<p />', { text: 'Are you sure you want to save changes?' }),
+        //     ok = $('<button />', {
+        //         text: 'Save',
+        //         'class': 'btn qtip-blue qtip-btn-inline',
+        //     }),
+        //     cancel = $('<button />', {
+        //         text: 'Cancel',
+        //         'class': 'btn qtip-blue qtip-btn-inline',
+        //     });
 
-        var content = "<p>Are you sure you want to save changes?</p>"
+        //var content = "<p>Are you sure you want to save changes?</p>"
 
-        confirmDialog(message.add(ok).add(cancel), 'Save Changes?', 'Save', saveChanges);
+        //confirmDialog(message.add(ok).add(cancel), 'Save Changes?', 'Save', saveChanges);
     });
 
 
@@ -5163,7 +5165,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     });
 
 
-
     var oldHeight = $('#' + controlID_wrapper).height();
     var oldWidth = $('#' + controlID_wrapper).width();
 
@@ -5177,9 +5178,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var initialNodes = [];
     var newLink = null;
     var predicates = [];
-    var overlayEdit = false;
-    var selectedNode = null;
-
+    var overlayEditLinkKey = null;
+    var selection = null;
     //#region Responsibilities
 
     var lineageResponsibilitySource = {
@@ -5300,7 +5300,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     } else {
         $("#" + controlID_ribbon_remove).jqxButton({ theme: theme });
         $("#" + controlID_ribbon_remove).on('click', function () {
-            markForDeletion(selectedNode);
+            //console.log(selection.length);
+            markForDeletion(selection);
             $("#" + controlID_ribbon_remove).hide(200);
             //populateDiagram();
         });
@@ -5308,13 +5309,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     function createLinkModel() {
         return {
+            key: null,
             id: null,
             from: null,
             frompid: "OUT",
             to: null,
             text: null,
-            phrase: null,
-            predicateName: null,
             predicateId: null,
             isDeletable: true,
             exclude: 'false',
@@ -5489,9 +5489,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     };
 
     function onDoubleClick(e) {
-        
+
         var obj = e.diagram.selection.first().data;
-        //console.log(obj);
         if (obj != null) {
             if (obj.diagramObjectType == 'Node') {
 
@@ -5507,89 +5506,84 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                  });
                 if (checkModified()) {
                     confirmDialog(message.add(ok).add(cancel), 'Confirm Navigation', 'Okay', function () {
-                type = obj.type;
-                id = obj.id;
+                        type = obj.type;
+                        id = obj.id;
                         populateDiagram();
                     });
                 } else {
                     type = obj.type;
                     id = obj.id;
 
-                populateDiagram();
+                    populateDiagram();
                     $('#' + controlID_ribbon_remove).hide(200);
-            }
-
+                }
             }
             else if (obj.diagramObjectType == 'Link' && !readonly) {
-                //overlayEdit = true;
-                //showRelationshipOverlay(obj);
-
-
-                //var fromNode = myDiagram.model.findNodeDataForKey(obj.from);
-                //var toNode = myDiagram.model.findNodeDataForKey(obj.to);
-
-                //newLink = obj;
-                //$('#' + controlID_overlay).show();
-                
-
+                overlayEditLinkKey = obj.key;
+                showRelationshipOverlay(obj);
             }
         }
     }
 
     function onSelectionChange(e) {
-        var node = e.diagram.selection.first();
-        selectedNode = null;
+        selection = e.diagram.selection;
+
+        //console.log(e.diagram.selection.count);
         
-        if (node == null) {
-            //$('#preview').html('');
-            // $("#" + controlID_fusion).jqxExpander('expand');
+        if (selection.count < 1) {
             $("#" + controlID_ribbon_remove).hide(200);
             $('#' + controlID_fusion).jqxExpander('collapse');
             $('#' + controlID_responsibilities).jqxExpander('collapse');
             $('#' + controlID_info).jqxExpander('collapse');
             return;
+        } else {
+            $("#" + controlID_ribbon_remove).show(200);
         }
-        $("#" + controlID_ribbon_remove).show(200);
-        var data = node.data;
 
-        if (data.diagramObjectType == 'Node') { //node selected
-            selectedNode = data;
-            $('#' + controlID_info).jqxExpander('expand');
-            $('#' + controlID_responsibilities).jqxExpander('expand');
-            $('#' + controlID_fusion).jqxExpander('expand');
+        //get a deep copy of the selection as an array
+        var sel = $.extend(true, [], selection.toArray()); //JSON.parse(JSON.stringify(selection.toArray()));
+        var firstNodePopulated = false;
 
-            //#region Info
+        for (var i = 0; i < sel.length; i++ )
+        {
+            var data = sel[i].data;
+           // console.log(data);
+            if (data.diagramObjectType == 'Node') {
+                
+                //#region Info
+                if (!firstNodePopulated) {
+                    $.ajax({
+                        url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
+                        data: null,
+                        success: function (data) {
 
-            $.ajax({
-                url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
-                data: null,
-                success: function (data) {
+                            $('#' + controlID_info_body).html(data);
+                        },
+                        async: true
+                    });
 
-                    $('#' + controlID_info_body).html(data);
-                },
-                async: true
-            });
+                    technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
+                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
 
-            //#endregion
+                    lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
+                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                }
+                //#endregion
 
-            technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
-            $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+                firstNodePopulated = true;
 
-            lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
-            $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+            } else if (data.diagramObjectType == "Link") { //link selected
 
-        } else if (data.diagramObjectType == "Link") { //link selected
-            $('#' + controlID_info).jqxExpander('collapse');
-            $('#' + controlID_responsibilities).jqxExpander('collapse');
-            $('#' + controlID_fusion).jqxExpander('collapse');
+                $('#' + controlID_info_body).html('');
 
-            $('#' + controlID_info_body).html('');
+                if (data.intersectId != null) {
+                    technicalRelationsSource.url = '/api/Intersect/' + data.intersectId + '/relations';
+                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
 
-            technicalRelationsSource.url = '/api/Intersect/' + data.intersectId + '/relations';
-            $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
-
-            lineageResponsibilitySource.url = null;
-            $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    lineageResponsibilitySource.url = null;
+                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                }
+            }
         }
     }
 
@@ -5614,6 +5608,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     function showRelationshipOverlay(linkData) {
 
         newLink = linkData;
+
         newLink.diagramObjectType = "Link";
         var fromNode = myDiagram.model.findNodeDataForKey(linkData.from);
         var toNode = myDiagram.model.findNodeDataForKey(linkData.to);
@@ -5641,41 +5636,66 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         $('#' + controlID_overlay).show();
     }
+    
+    function onChange(e) {
+        checkModified();
 
-    function onDelete(e) {
+    }
+
+    function onDeleting(e) {
         if (readonly) {
             e.cancel = true;
             return;
         }
-        markForDeletion(selectedNode);
+        markForDeletion(selection);
         $('#' + controlID_ribbon_expander).jqxExpander('expand');
         $('#' + controlID_ribbon).jqxRibbon('selectAt', 1);
     };
-    function markForDeletion(node) {
-        //console.log(node);
-        if (node == null)
-            return;
 
-        var affectedLinks = [];
-        for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
-            var link = myDiagram.model.linkDataArray[i];
-            //console.log(link);
-            if (link.to == node.key || link.from == node.key) {
-                affectedLinks.push(link);
+    function onDeleted(e) {
+        selection = null;
+    }
+
+    function markForDeletion(set) {
+        //console.log(set.count);
+        myDiagram.startTransaction("markSelection");
+
+        //get a deep copy of the set as an array
+        var sel = $.extend(true, [], set.toArray());//JSON.parse(JSON.stringify(set.toArray()));
+        //initialLinks = JSON.parse(JSON.stringify(linkList));
+        for (var i = 0; i < sel.length; i++)
+        {
+            var obj = sel[i].data;
+
+            if (obj == null)
+                continue;
+            
+            if (obj.diagramObjectType == 'Node') {
+                var affectedLinks = [];
+                for (var j = 0; j < myDiagram.model.linkDataArray.length; j++) {
+                    var link = myDiagram.model.linkDataArray[j];
+                    //console.log(link);
+                    if (link.to == obj.key || link.from == obj.key) {
+                        affectedLinks.push(link);
+                    }
+                }
+               
+                for (var j = 0; j < affectedLinks.length; j++) {
+                    myDiagram.model.removeLinkData(affectedLinks[j]);
+                }
+
+                myDiagram.model.removeNodeData(obj);
+            } else if (obj.diagramObjectType == 'Link') {
+                myDiagram.model.removeLinkData(obj);
+                //console.log('remove: ' + obj.id);
             }
-        }
 
-        for (var i = 0; i < affectedLinks.length; i++) {
-            myDiagram.model.removeLinkData(affectedLinks[i]);
         }
-
-        myDiagram.model.removeNodeData(node);
-        checkModified();
+        myDiagram.commitTransaction("markSelection");
     }
 
     function onDrop(e) {
         $('#' + controlID_popover_add).hide();
-        checkModified();
     }
 
     function reOrderLayout() {
@@ -5691,37 +5711,20 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         myDiagram.commitTransaction("rotate");
     }
 
-    function formFusionHtml(data) {
-        var html = '';
-        for (var i = 0; i < data.length; i++) {
-            html += "<tr><td style='padding:2px'>" + (data[i].Attribute || '') + "</td>";
-            html += "<td style='padding:2px'><a href='/" + (data[i].URL || '#') + "'>" + (data[i].Fusion || '') + "</a></td>";
-            html += "<td style='padding:2px'>" + (data[i].Name || '') + "</td>";
-            html += "<td style='padding:2px'>" + (data[i].Type || '') + "</td></tr>";
-        }
-        return html;
-    }
-
-    function formResponsibilitiesHtml(data) {
-        var html = '';
-        for (var i = 0; i < data.length; i++) {
-            html += "<tr><td style='padding:2px'>" + (data[i].Type || '') + "</td>";
-            html += "<td style='padding:2px'><a href='/" + (data[i].Url || '#') + "'>" + (data[i].Name || '') + "</td>";
-            html += "<td style='padding:2px'><a href='/" + (data[i].OwnerUrl || '#') + "'>" + (data[i].Owner || '') + "</td>";
-            html += "<td style='padding:2px'>" + (data[i].Context || '') + "</td></tr>";
-        }
-        return html;
-    }
-
     function saveChanges() {
 
         if (readonly) return;
+
         $('#' + controlID_ribbon_save).jqxButton({ disabled: true });
+        $('#' + controlID_ribbon_save_spinner).show();
+
         var nodeChanges = getNodeChanges();
         var linkChanges = getLinkChanges();
-
         var flagError = false;
         var errors = "";
+
+        //console.log(linkChanges.modified);
+
         for (var i = 0; i < nodeChanges.deleted.length; i++) {
             var node = nodeChanges.deleted[i];
         var data = {
@@ -5735,14 +5738,15 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 url: '/relations/' + data.target + '/' + data.targetID + '/sources/' + data.id
             }).done(function (data, status, xhr) {
                 if (data.success) {
-                   // populateDiagram();
-                   // amplify.publish("SourceSave");
                 } else {
                     flagError = true;
                     errors += data.message;
+                   // console.log('1');
                 }
             }).fail(function (xhr, status, error) {
-
+                flagError = true;
+                errors += data.message;
+               // console.log('1');
                // amplify.publish("SourceFormStatus", { title: 'Error When Adding Source', message: xhr.statusText + xhr.responseText, success: false });
             });
 
@@ -5778,21 +5782,50 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                     } else {
                     flagError = true;
                     errors += data.message;
+                    //console.log('2');
                 }
             },
             failure: function (data) {
+                flagError = true;
+                errors += data.message;
+               // console.log('2');
             }
         });
         }
 
+        for (var i = 0; i < linkChanges.modified.length; i++) {
+            var data = {
+                intersectMapID: linkChanges.modified[i].id,
+                predicateID: linkChanges.modified[i].predicateId
+            };
+            //console.log('reached' + data);
+
+            $.ajax({
+                async: false,
+                url: '/diagrams/updatepredicate',
+                data: data,
+                success: function (data) {
+
+                },
+                failure: function (data) {
+                    flagError = true;
+                    //console.log('save error 3 ');
+                    //console.log(data);
+                }
+            });
+            
+        }
+
+
         if (flagError) {
-            //error message here
+            amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: xhr.statusText + xhr.responseText, success: false });
         } else {
+            amplify.publish("SourceSave");
             deletedNodes = [];
             populateDiagram();
-            checkModified();   
+            $('#' + controlID_ribbon_save_spinner).hide();
         }
-        $('#' + controlID_ribbon_save).jqxButton({ disabled: false });
+
 
        
 
@@ -5803,7 +5836,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         var links = getLinkChanges();
 
         if (readonly) {
-            $('#' + controlID_message).hide(200);
+            $('#' + controlID_message).hide();
         } else if (nodes.deleted.length > 0 ||
             nodes.added.length > 0 ||
             nodes.modified.length > 0 ||
@@ -5811,12 +5844,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             links.deleted.length > 0 ||
             links.modified.length > 0) {
 
-            $('#' + controlID_message).show(200);
-            $('#' + controlID_ribbon_save).jqxButton({disabled: false})
+            $('#' + controlID_message).show();
+            $('#' + controlID_ribbon_save).jqxButton({ disabled: false })
             return true;
         } else {
-            $('#' + controlID_message).hide(200);
-            $('#' + controlID_ribbon_save).jqxButton({disabled: true});
+            $('#' + controlID_message).hide();
+            $('#' + controlID_ribbon_save).jqxButton({ disabled: true });
             return false;
         }
     }
@@ -5831,37 +5864,68 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         for (var i = 0; i < links.length; i++) {
             var found = false;
-            for (var j = 0; j < initialLinks.length; j++) {
-                if (initialLinks[j].to == links[i].to && initialLinks[j].from == links[i].from) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
+            
+            var link = $.grep(initialLinks, function (e) { e.to == links[i].to && e.from == links[i].from })
+
+            //for (var j = 0; j < initialLinks.length; j++) {
+            //    if (initialLinks[j].to == links[i].to && initialLinks[j].from == links[i].from) {
+            //        found = true;
+            //        break;
+            //    }
+            //}
+            if (link == null) {
                 changes.added.push(links[i]);
             }
         }
 
+        //console.log(initialLinks.length);
+        //console.log(links.length);
+        //console.log(myDiagram.model.linkDataArray.length);
         for (var i = 0; i < initialLinks.length; i++) {
             var found = false;
             for (var j = 0; j < links.length; j++) {
                 if (initialLinks[i].to == links[j].to && initialLinks[i].from == links[j].from) {
+                    //if (links[j].id == 307) {
+                    //    console.log(initialLinks[i].from + ' -> ' + initialLinks[i].to);
+                    //    console.log(links[j].from + ' -> ' + links[j].to);
+                    //    console.log(links[j].id);
+                    //}
                     found = true;
                     break;
                 }
             }
             if (!found) {
+                //console.log('not found');
                 changes.deleted.push(initialLinks[i]);
             }
         }
+        //console.log(initialLinks.length);
+        //console.log(links.length);
+        //console.log(myDiagram.model.linkDataArray.length);
+        for (var i = 0; i < initialLinks.length; i++) {
+            var found = false;
+            for (var j = 0; j < links.length; j++) {
+                if (initialLinks[i].id == links[j].id) {
+                    if (links[j].predicateId == null || initialLinks[i].predicateId == null)
+                        continue;
+                    //if (links[j].id == 254) {
+                    //    //console.log('init: "' + initialLinks[i].predicateId + '"');
+                    //    //console.log('links: "' + findLinkDataForKey(links[j].id).predicateId + '"');
+                    //}
 
-        for (var i = 0; i < links.length; i++) {
-            for (var j = 0; j < initialLinks.length; j++) {
-                //modified logic
+                    if (initialLinks[i].predicateId.toString() != links[j].predicateId.toString())
+                        found = true;
+                    break;
+                }
+            }
+            if (found) {
+                
+                //console.log('"' + initialLinks[i].predicateId + '"');
+                //console.log('"' + links[j].predicateId + '"');
+                changes.modified.push(links[j]);
             }
         }
 
-        //console.log(changes);
         return changes;
     }
 
@@ -5923,27 +5987,50 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     //#endregion
 
     var g = go.GraphObject.make;
+    var myDiagram = initializeDiagram();
 
-    myDiagram = g(go.Diagram, controlID_diagram, {
-        initialContentAlignment: go.Spot.Left,
-        //autoScale: go.Diagram.UniformToFill,
-        allowDrop: true,
-        initialAutoScale: go.Diagram.UniformToFill,
-        scrollMode: go.Diagram.DocumentScroll,
-        initialPosition: new go.Point(125, 125),
-        layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
-        "undoManager.isEnabled": true
-    });
-    myDiagram.model.class = go.GraphLinksModel;
-    myDiagram.model.nodeCategoryProperty = "template";
-    myDiagram.model.linkFromPortIdProperty = "frompid";
-    myDiagram.model.linkToPortIdProperty = "topid";
-    myDiagram.model.nodeDataArray = [];
-    myDiagram.model.linkDataArray = [];
-    myDiagram.toolManager.linkingTool.isEnabled = !readonly;
+    //myDiagram = g(go.Diagram, controlID_diagram, {
+    //    initialContentAlignment: go.Spot.Left,
+    //    //autoScale: go.Diagram.UniformToFill,
+    //    allowDrop: true,
+    //    initialAutoScale: go.Diagram.UniformToFill,
+    //    scrollMode: go.Diagram.DocumentScroll,
+    //    initialPosition: new go.Point(125, 125),
+    //    layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
+    //    "undoManager.isEnabled": true
+    //});
+    //myDiagram.model.class = go.GraphLinksModel;
+    //myDiagram.model.nodeCategoryProperty = "template";
+    //myDiagram.model.linkFromPortIdProperty = "frompid";
+    //myDiagram.model.linkToPortIdProperty = "topid";
+    //myDiagram.model.nodeDataArray = [];
+    //myDiagram.model.linkDataArray = [];
+    ////myDiagram.toolManager.linkingTool.isEnabled = !readonly;
+    //myDiagram.isReadOnly = readonly;
 
 
+    function initializeDiagram() {
+        var dg = g(go.Diagram, controlID_diagram, {
+                    initialContentAlignment: go.Spot.Left,
+                    //autoScale: go.Diagram.UniformToFill,
+                    allowDrop: true,
+                    initialAutoScale: go.Diagram.UniformToFill,
+                    scrollMode: go.Diagram.DocumentScroll,
+                    initialPosition: new go.Point(125, 125),
+                    layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
+                    "undoManager.isEnabled": true
+                });
+        dg.model.class = go.GraphLinksModel;
+        dg.model.nodeCategoryProperty = "template";
+        dg.model.linkFromPortIdProperty = "frompid";
+        dg.model.linkToPortIdProperty = "topid";
+        dg.model.nodeDataArray = [];
+        dg.model.linkDataArray = [];
+        //dgam.toolManager.linkingTool.isEnabled = !readonly;
+        dg.isReadOnly = readonly;
 
+        return dg;
+    }
     //$("#" + controlID_overlay_radio_existing).bind('change', function (e) {
     //    var checked = e.args.checked;
 
@@ -6041,13 +6128,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 type = originalObject;
                 id = originalObjectID;
                 populateDiagram();
-                checkModified();
             });
         } else {
         type = originalObject;
         id = originalObjectID;
         populateDiagram();
-            checkModified();
         }
     });
 
@@ -6064,8 +6149,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.addDiagramListener('ObjectDoubleClicked', onDoubleClick);
     myDiagram.addDiagramListener('LayoutCompleted', onLayoutCompleted);
     myDiagram.addDiagramListener('LinkDrawn', onLinkDrawn);
-    myDiagram.addDiagramListener('SelectionDeleting', onDelete);
+    myDiagram.addDiagramListener('SelectionDeleting', onDeleting);
+    myDiagram.addDiagramListener('SelectionDeleted', onDeleted);
     myDiagram.addDiagramListener('ExternalObjectsDropped', onDrop);
+    //myDiagram.addDiagramListener('Modified', onModified);
+    myDiagram.model.addChangedListener(onChange);
 
     myDiagram.grid.visible = false;
     myDiagram.grid.gridCellSize = new go.Size(8, 8);
@@ -6095,27 +6183,49 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         )
     );
     
+    var myPalette = initializePalette();
+    //myPalette = g(go.Palette, controlID_palette, {
+    //    contentAlignment: go.Spot.BottomCenter
+    //    , allowDrop: true
+    //    , initialAutoScale: go.Diagram.Uniform
+    //    , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
+    //})
+    //{
+    //    myPalette.model.nodeCategoryProperty = 'template';
+    //    myPalette.model.nodeDataArray = [];
+    //    myPalette.model.class = 'go.GraphLinksModel';
+    //}
 
-    myPalette = g(go.Palette, controlID_palette, {
-        contentAlignment: go.Spot.BottomCenter
-        , allowDrop: true
-        , initialAutoScale: go.Diagram.Uniform
-        , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
-    })
-    {
-        myPalette.model.nodeCategoryProperty = 'template';
-        myPalette.model.nodeDataArray = [];
-        myPalette.model.class = 'go.GraphLinksModel';
+    function initializePalette() {
+
+        var pl = g(go.Palette, controlID_palette, {
+            contentAlignment: go.Spot.BottomCenter
+            , allowDrop: true
+            , initialAutoScale: go.Diagram.Uniform
+            , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
+        })
+        pl.model.nodeCategoryProperty = 'template';
+        pl.model.nodeDataArray = [];
+        pl.model.class = 'go.GraphLinksModel';
+
+        return pl;
     }
+
     makeSearchTemplate();
+    
+    var myOverview = initializeOverview(myDiagram);
+    //myOverview =  
+    //  g(go.Overview, controlID_overview,
+    //    { observed: myDiagram, contentAlignment: go.Spot.Center });
 
-    myOverview =  
-      g(go.Overview, controlID_overview,
-        { observed: myDiagram, contentAlignment: go.Spot.Center });
+    function initializeOverview(diagram) {
+        var ov = g(go.Overview, controlID_overview,
+        { observed: diagram, contentAlignment: go.Spot.Center });
 
+        return ov;
+    }
 
     function parseData(data) {
-
         myDiagram.startTransaction("load_all_data");
         myDiagram.model.nodeDataArray = [];
         myDiagram.model.linkDataArray = [];
@@ -6123,7 +6233,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         initialLinks = [];
         var modelList = [];
         var linkList = [];
-        $('#' + controlID_message).hide(200);
+        $('#' + controlID_message).hide();
 
         for (var i = 0; i < data.nodes.length; i++) {
 
@@ -6157,9 +6267,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             var d = data.links[i];
             var link = createLinkModel();
             link.id = d.id;
+            link.key = d.id;
             link.from = d.from;
             link.to = d.to;
             link.text = d.text;
+            link.predicateId = d.predicateId;
             link.diagramObjectType = "Link";
             linkList.push(link);
         }
@@ -6169,10 +6281,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
         for (var i = 0; i < linkList.length; i++) {
             myDiagram.model.addLinkData(linkList[i]);
-        }
-       
-        initialNodes = modelList.slice();
-        initialLinks = linkList.slice();
+        }       
+
+        //get deep copy of lists
+        initialNodes = $.extend(true, [], modelList);//JSON.parse(JSON.stringify(modelList));
+        initialLinks = $.extend(true, [], linkList); //JSON.parse(JSON.stringify(linkList));
+
 
         myDiagram.commitTransaction("load_all_data");
         reOrderLayout();
@@ -6185,9 +6299,10 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 url: '/relations/' + type + '/' + id + '/sources',
             data: null,
             success: function (data) {
+                //console.log('populate');
+                //myDiagram = initializeDiagram();
                 parseData(data);
                 myDiagram.zoomToFit();
-                checkModified();
             }
         });
     }
@@ -6292,7 +6407,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $('#' + controlID_add_search).on('click', getArtifact);
     $('#' + controlID_overlay_cancel).on('click', cancelAddLink);
     $('#' + controlID_overlay_add).on('click', addRelationship);
-        //$('#' + controlID_ribbon_save).on('click', saveChanges);
 
     function populatePredicateList() {
         $.ajax({
@@ -6303,8 +6417,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
                 output.push('<option value="0_1"></option>');
                 for (var i = 0; i < data.length; i++) {
-                    //data[i].id = data[i].intersecttypeid + '_' + data[i].intersecttyperoleid
-                    output.push('<option value="' + data[i].id.toString() + '_' + data[i].direction.toString() + '">' + data[i].name + (data[i].direction == 2 ? ' (inverse)' : '') + '</option>');
+                    
+                    output.push('<option value="' + data[i].id.toString() + '">' + data[i].name + '</option>');
                     predicates.push(data[i]);
                 }
                 $('#' + controlID_overlay_predicates).html(output.join(''));
@@ -6314,8 +6428,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     function cancelAddLink() {
         if (newLink != null) {
-            if (overlayEdit) {
-                overlayEdit = false;
+            if (overlayEditLinkKey != null) {
+                overlayEditLinkKey = null;
             } else {
                 myDiagram.startTransaction("removeLink");
                 myDiagram.model.removeLinkData(newLink);
@@ -6330,60 +6444,62 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     function resetOverlay() {
         $('#' + controlID_overlay_predicates).val(0);
-        //$('#' + controlID_overlay_pname).val('');
-       // $('#' + controlID_overlay_phrase).val('');
         $('#' + controlID_overlay_add).prop('disabled', true);
-        //$('#' + controlID_overlay_radio_existing).jqxRadioButton('check');
     }
 
-    function addRelationship(id) {
-        var id = ($('#' + controlID_overlay_predicates).val() || '').split('_')[0];
-        var isInverse = ((($('#' + controlID_overlay_predicates).val() || '').split('_')[1]) == '2');
-        var phrase = null;
-        
-        //if ($('#' + controlID_overlay_radio_existing).jqxRadioButton('checked')) {
-        for (var i = 0; i < predicates.length; i++) {
-            if ((predicates[i].id.toString() + '_' + predicates[i].direction.toString()) == $('#' + controlID_overlay_predicates).val()) {
-
-                phrase = predicates[i].name;
-            }
-        }
-        //}
-        //else {
-        //    rel = {
-        //        name: $('#' + controlID_overlay_pname).val(),
-        //        phrase: $('#' + controlID_overlay_phrase).val()
-        //    };
-        //}
-        myDiagram.startTransaction("nameRelationship")
-
-        newLink.predicateName = phrase;
-        newLink.isInverse = isInverse;
-        newLink.predicateId = id;
-        newLink.phrase = phrase;
-        newLink.text = phrase;
-        newLink.diagramObjectType = "Link";
-        newLink.isDeletable = true;
-
-        var index = -1;
-
+    function findLinkDataForKey(key) {
         for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
-            if (myDiagram.model.linkDataArray[i].from == newLink.from &&
-                myDiagram.model.linkDataArray[i].to == newLink.to) {
-                myDiagram.model.removeLinkData(myDiagram.model.linkDataArray[i]);
-                break;
+            if (myDiagram.model.linkDataArray[i].key == key)
+                return myDiagram.model.linkDataArray[i];
+        }
+    }
+
+    function addRelationship() {
+
+        var id = $('#' + controlID_overlay_predicates).val();
+        var text = null;
+
+        for (var i = 0; i < predicates.length; i++) {
+            if (predicates[i].id.toString() == id.toString()) {
+                text = predicates[i].name;
             }
         }
 
-        myDiagram.model.addLinkData(newLink);
+        myDiagram.startTransaction("nameRelationship")
+        if (overlayEditLinkKey != null) {
+            var link = findLinkDataForKey(overlayEditLinkKey);
+            myDiagram.model.setDataProperty(link, 'text', text);
+            myDiagram.model.setDataProperty(link, 'predicateId', id);
+        } else {
+            newLink.predicateId = id;
+            newLink.text = text;
+            newLink.diagramObjectType = "Link";
+            newLink.isDeletable = true;
+            newLink.id = overlayEditLinkKey;
+            newLink.key = overlayEditLinkKey;
+
+            var index = -1;
+
+            for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
+                if (myDiagram.model.linkDataArray[i].from == newLink.from &&
+                    myDiagram.model.linkDataArray[i].to == newLink.to) {
+                    myDiagram.model.removeLinkData(myDiagram.model.linkDataArray[i]);
+                    break;
+                }
+            }
+
+            console.log(newLink);
+            myDiagram.model.addLinkData(newLink);
+        }
+
 
         myDiagram.commitTransaction("nameRelationship");
         $('#' + controlID_overlay).hide();
-        checkModified();
         newLink = null;
+        overlayEditLinkKey = null;
 
         resetOverlay();
-      
+
     };
 
     amplify.subscribe("SaveAction", function (saveActionEventData) {

@@ -544,7 +544,7 @@ select * from @h";
                 }
                 else
                 {
-                    links.Add(new DiagramsController.JsonLinkItem { id = s.ID, from = sKey, to = oKey, text = s.Predicate });
+                    links.Add(new DiagramsController.JsonLinkItem { id = s.ID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID });
                 }
             });
 
