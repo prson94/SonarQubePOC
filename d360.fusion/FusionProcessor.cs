@@ -378,8 +378,8 @@ namespace d360.fusion
 						                sr.id
 					                from
 						                intersectnode inode1
-						                inner join intersectnode inode2 on(inode1.IntersectID = inode2.IntersectID)
-						                inner join #tempResolvedRel sr on(inode1.ObjectID = sr.startfusionattributeid and inode2.ObjectID = sr.endfusionattributeid and inode1.IntersectTypeNodeID = sr.SourceIntersectTypeID and inode2.IntersectTypeNodeID = sr.TargetIntersectTypeID)
+						                inner join intersectnode inode2 on(inode1.IntersectID = inode2.IntersectID and inode1.ObjectID != inode2.ObjectID)
+						                inner join #tempResolvedRel sr on(inode1.ObjectID = sr.startfusionattributeid and inode2.ObjectID = sr.endfusionattributeid)
 					                where 
 						                inode1.objecttype = 'FusionAttribute'
 								                and
@@ -433,6 +433,13 @@ namespace d360.fusion
         /// <returns></returns>
         private async Task DoUnresolvedRelationsInsert(SqlConnection companyConnection)
         {
+            if(_workArea.Relationships.UnresolvedRelationshipData.Count == 0)
+            {
+                Trace.TraceInformation("NO UNRESOLVED RELATIONS EXITING DoUnresolvedRelationsInsert.");
+
+                return;
+            }
+
             await companyConnection.ExecuteAsync(@"create table #tempUnresolvedRel(StartID varchar(250), EndID nvarchar(250))", commandTimeout: ExecuteQueryTimeout);
 
             Trace.TraceInformation("INSERTING {0} UNRESOLVED RELATIONSHIPS INTO TEMPUNRESOLVEDREL TEMP TABLE.", _workArea.Relationships.UnresolvedRelationshipData.Count);
