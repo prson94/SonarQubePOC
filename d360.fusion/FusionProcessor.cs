@@ -305,6 +305,13 @@ namespace d360.fusion
         /// <returns></returns>
         private async Task ProcessRelationships(SqlConnection companyConnection, FusionRelationshipModels relationships)
         {
+            if(relationships.Count == 0)
+            {
+                Trace.TraceInformation("NO RELATIONS SPECIFIED AS PART OF FUSION JOB SKIPPING PROCESSRELATIONSHIPS.");
+
+                return;
+            }
+
             //Load the intersect types
             await LoadFusionIntersectTypes(companyConnection);
                         
@@ -387,6 +394,14 @@ namespace d360.fusion
                         ", commandTimeout: ExecuteQueryTimeout);
 
             Trace.TraceInformation("DELETED {0} RELATIONS FROM TEMPRESOLVEDREL TABLE AS PRE-EXISTING RELATIONSHIPS.", rowsDeleted);
+
+
+            if(_workArea.Relationships.ResolvedRelationshipData.Count == rowsDeleted)
+            {
+                Trace.TraceInformation("NO NEW RELATIONS TO INSERT EXITING");
+
+                return;
+            }
 
             // do the 3 inserts into the db using the temp table
 
@@ -663,10 +678,17 @@ namespace d360.fusion
             sw.Restart();
             await UpdateFusionAttributeParentIDs(companyConnection);
             Trace.TraceInformation(string.Format("MergeUpdatedParentIDValues TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
-            
-            sw.Restart();
-            await UpdateFusionAttributeTextPaths(companyConnection);
-            Trace.TraceInformation(string.Format("UpdateFusionAttributeTextPaths TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+
+            if (models.Count > 0)
+            {
+                sw.Restart();
+                await UpdateFusionAttributeTextPaths(companyConnection);
+                Trace.TraceInformation(string.Format("UpdateFusionAttributeTextPaths TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+            }
+            else
+            {
+                Trace.TraceInformation("NO MODELS SPECIFIED SKIPPING UPDATEFUSIONATTRIBUTETEXTPATHS");
+            }
 
             //update old values with values we             
             sw.Restart();
