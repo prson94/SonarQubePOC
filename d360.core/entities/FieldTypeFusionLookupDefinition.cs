@@ -23,5 +23,8 @@ namespace d360.core.entities
 
         [DataMember]
         public bool IsParentChild { get; set; }
+
+        [IgnoreDataMember, ForeignKey("FieldTypeFusionLookupDefinitionID")]
+        public virtual ICollection<FieldTypeFusionLookupDisplayField> FieldTypeFusionLookupDisplayFields { get; set; }
     }
 }

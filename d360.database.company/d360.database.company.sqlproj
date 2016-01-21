@@ -475,6 +475,7 @@
     <Build Include="fusion\Stored Procedures\ProcessEagleMCToBBMnemonic.sql" />
     <Build Include="Security\relation.sql" />
     <Build Include="utility\Stored Procedures\PromoteFusionAttributeLookups.sql" />
+    <Build Include="dbo\Tables\FieldTypeFusionLookupDisplayField.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

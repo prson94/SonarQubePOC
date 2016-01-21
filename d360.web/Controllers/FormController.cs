@@ -314,6 +314,9 @@ namespace d360.web.Controllers
                     
                     if (def == null) throw new Exception("INVALID FUSION LOOKUP FIELD");
 
+                    if(!ft.IsRequired)
+                        fusionAttributeList.Add(new SelectListItem { Text = "", Value = "" });
+
                     foreach (var item in def)
                     {
                         var fusionAttributes = Company.Filter<FusionAttribute>(x => x.FusionAttributeTypeID == item.SourceFusionAttributeTypeID).OrderBy(x => x.Name);
@@ -3618,7 +3621,7 @@ namespace d360.web.Controllers
                 FieldType = new FieldType { Object = type.ToString(), ObjectID = id, Pattern = "", Type = DataType.Text.ToString(), MinimumLength = 0, MaximumLength = 1000, IsListable = true, IsRequired = true },
                 FusionDisplayList = fusionDisplayItemList(),
                 FromFusionAttributeTypeList = fusionAttributeTypeList(-1),
-                ToFusionAttributeTypeList = fusionAttributeTypeList(-1)
+                ToFusionAttributeTypeList = fusionAttributeTypeList(-1)                
             };
 
             for (var i = 0; i < model.DataTypes.Count; i++)
@@ -3712,6 +3715,15 @@ namespace d360.web.Controllers
                     var targetFusionAttributeTypeID = parseIntField(form, "ToFusionAttributeTypeID");
                     var isParentChild = parseBooleanField(form, "IsParentChildRel");
 
+                    var displayFields = parseTextField(form, "FusionLookupFields");
+
+                    def.FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>();
+
+                    foreach (var fieldTypeID in displayFields.Split(','))
+                    {
+                        def.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = def.ID, FieldTypeID = int.Parse(fieldTypeID) });
+                    }
+
                     def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
                     def.TargetFusionAttributeTypeID = targetFusionAttributeTypeID;
                     def.IsParentChild = isParentChild;
@@ -3747,6 +3759,22 @@ namespace d360.web.Controllers
             }
 
             return lst;
+        }
+
+
+        private string fusionDisplayFieldList(FieldTypeFusionLookupDefinition fusDef)
+        {
+            if (fusDef == null) return string.Empty;
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+            foreach(var displayField in fusDef.FieldTypeFusionLookupDisplayFields)
+            {
+                if (sb.Length > 0) sb.Append(',');
+                sb.Append(displayField.FieldTypeID.ToString());
+            }
+
+            return sb.ToString();
         }
 
         private List<SelectListItem> fusionDisplayItemList(string selected = "")
@@ -3825,10 +3853,11 @@ namespace d360.web.Controllers
                 FormMethod = "PUT",
                 FormName = Resources.FormInfo.Edit_FieldType_Title,
                 FieldType = a,
-                FusionDisplayList = fusionDisplayItemList(fusDef.Display),
+                FusionDisplayList = fusionDisplayItemList((fusDef != null) ? fusDef.Display : string.Empty),
                 FromFusionAttributeTypeList = fusionAttributeTypeList((fusDef != null) ? fusDef.SourceFusionAttributeTypeID : -1),
                 ToFusionAttributeTypeList = fusionAttributeTypeList((fusDef != null) ? fusDef.TargetFusionAttributeTypeID : -1),
-                IsParentChildRel = fusDef.IsParentChild
+                IsParentChildRel = (fusDef != null) ? fusDef.IsParentChild : false,
+                FusionDisplayFieldList = fusionDisplayFieldList(fusDef)
             };
 
             for (var i = 0; i < model.DataTypes.Count; i++)
@@ -3846,6 +3875,7 @@ namespace d360.web.Controllers
 
             return PartialView("FieldTypeEditForm", model);
         }
+
 
         [HttpPut, ValidateInput(false)]
         public JsonResult EditFieldType(FormCollection form)
@@ -3917,6 +3947,31 @@ namespace d360.web.Controllers
                         var sourceFusionAttributeTypeID = parseIntField(form, "FromFusionAttributeTypeID");
                         var targetFusionAttributeTypeID = parseIntField(form, "ToFusionAttributeTypeID");
                         var isParentChild = parseBooleanField(form, "IsParentChildRel");
+                        var displayFields = parseTextField(form, "FusionLookupFields");
+                        List<FieldTypeFusionLookupDisplayField> itemsToDelete = new List<FieldTypeFusionLookupDisplayField>();
+
+                        if (!string.IsNullOrEmpty(displayFields))
+                        {
+                            var fieldsTypeIds = displayFields.Split(',').ToList();
+                            
+                            foreach (var item in def.FieldTypeFusionLookupDisplayFields)
+                            {
+                                if (fieldsTypeIds.Contains(item.FieldTypeID.ToString()))
+                                {
+                                    fieldsTypeIds.RemoveAt(fieldsTypeIds.IndexOf(item.FieldTypeID.ToString()));
+
+                                    continue;
+                                }
+                                //item is in db but not wanted remove it
+                                itemsToDelete.Add(item);
+                            }
+
+                            //anything left needs to be added
+                            foreach (var fieldTypeID in fieldsTypeIds)
+                            {
+                                def.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = def.ID, FieldTypeID = int.Parse(fieldTypeID) });
+                            }
+                        }
 
                         def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
                         def.TargetFusionAttributeTypeID = targetFusionAttributeTypeID;
@@ -3925,6 +3980,12 @@ namespace d360.web.Controllers
                         def.Display = display;
 
                         Company.Update<FieldTypeFusionLookupDefinition>(def);
+
+                        //remove items removed.
+                        foreach (var item in itemsToDelete)
+                        {
+                            Company.Delete<FieldTypeFusionLookupDisplayField>(item);
+                        }
                     }
                 }
 

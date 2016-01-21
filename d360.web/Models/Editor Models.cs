@@ -318,6 +318,8 @@ namespace d360.web.Models
         public List<SelectListItem> ToFusionAttributeTypeList { get; set; }
 
         public bool IsParentChildRel { get; set; }
+
+        public string FusionDisplayFieldList { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

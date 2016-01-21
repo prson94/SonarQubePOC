@@ -22,6 +22,7 @@ using d360.workflow.entities;
 using d360.workflow;
 using System.Runtime.Serialization;
 using d360.web.Models.Attributes;
+using System.Dynamic;
 
 namespace d360.web.Controllers
 {
@@ -97,115 +98,7 @@ namespace d360.web.Controllers
 
             return row+1;
         }
-
-        private int RenderFusionLookupField(FieldWithRelation k, List<ReadOnlyField> list, int currentRowNumber)
-        {
-            //load the definition of the field from the [FieldTypeFusionLookupDefinition] table
-            int fusionAttributeID = 0;
-            var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
-
-            //field value has the fusion attribute this guy is associated with
-            if (!int.TryParse(k.Value, out fusionAttributeID))
-                return 0; // the value isnt populated or correct render nothing
-
-            string sql, urlSql = string.Empty;
-            //take def and look for intersects on the original id to the type specified
-
-            if(def.IsParentChild)
-            {
-                sql = @"select 
-	                        fa.id as ID,
-	                        fa.parentId as ParentID,
-	                        fa.name as name,
-	                        fa.textpath as textpath,
-	                        fa.sourceid as SourceID
-                        from 
-	                        fusionattribute fa 
-                        where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID;";
-
-                urlSql = @"select 
-	                            od.objectid as id,
-	                            od.url as url
-                            from 
-	                            fusionattribute fa 
-	                            inner join cache.ObjectDetails od on (od.objectid = fa.id and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
-                            where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID";
-            }
-            else
-            {
-                sql = @"select 	
-                            fa.id as ID,
-                            fa.parentId as ParentID,
-	                        fa.name as name,
-	                        fa.textpath as textpath,
-                            fa.sourceid as SourceID
-                        from 
-	                        [intersectnode] inode
-	                        inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
-	                        inner join [fusionattribute] fa on (fa.id = inode2.objectid and fa.fusionattributetypeid = @targetAttributeTypeID)
-                        where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
-
-                urlSql = @" select 	
-                                od.objectid as id,
-					            od.url as url
-                            from 
-	                            [intersectnode] inode
-	                            inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
-	                            inner join cache.ObjectDetails od on (od.objectid = inode2.objectid and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
-                            where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
-            }
-
-            var results = Company.Query<FusionAttribute>(sql, new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID });
             
-            //get all the items urls in one query otherwise its too slow
-
-            var urlDict = Company.Query<dynamic>(urlSql, new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID }).ToDictionary(
-                        row => (int)row.id,
-                        row => (string)row.url
-                    );
-            
-            List <string> vals = new List<string>();
-
-            foreach (var item in results)
-            {
-                string url = null;
-                string value = string.Empty;
-
-                urlDict.TryGetValue(item.ID, out url);
-
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    value = string.Format("<a href='{1}'>{0}</a>", (def.Display == "TextPath" ? item.TextPath : item.Name),url);
-                }
-                else
-                {
-                    value = (def.Display == "TextPath" ? item.TextPath : item.Name);
-                }
-
-                vals.Add(value);
-            }
-
-
-            var ro = new ReadOnlyField
-            {
-                Row = currentRowNumber++,
-                Column = 1,
-                Name = k.FriendlyName,                
-                FieldDescription = k.DisplayDescription,
-                FieldName = k.Name
-            };
-            
-            if (vals.Count == 1)
-                ro.Value = vals[0];
-            else if (vals.Count > 1)
-                ro.MultipleValues = vals;
-
-            list.Add(ro);
-
-            return currentRowNumber;
-            
-        }
 
         int loadDisplayableRelationshipsAsFields(List<ReadOnlyField> list, SystemObjects type, int id, int row)
         {
@@ -238,6 +131,7 @@ namespace d360.web.Controllers
             return row + 1;
         }
 
+        
         [Route("FieldTypes")]
         public IQueryable<FieldType> GetFieldTypes()
         {
@@ -2198,6 +2092,224 @@ from	    ResponsibilityTypeHierarchy H
 
         #endregion
 
+        #region Fusion Lookup Fields
+
+        private int RenderFusionLookupField(FieldWithRelation k, List<ReadOnlyField> list, int currentRowNumber)
+        {
+            //load the definition of the field from the [FieldTypeFusionLookupDefinition] table
+            int fusionAttributeID = 0;
+            var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
+
+            //field value has the fusion attribute this guy is associated with
+            if (!int.TryParse(k.Value, out fusionAttributeID))
+                return 0; // the value isnt populated or correct render nothing
+
+            string sql, urlSql = string.Empty;
+            //take def and look for intersects on the original id to the type specified
+
+            if (def.IsParentChild)
+            {
+                sql = @"select 
+	                        fa.id as ID,
+	                        fa.parentId as ParentID,
+	                        fa.name as name,
+	                        fa.textpath as textpath,
+	                        fa.sourceid as SourceID
+                        from 
+	                        fusionattribute fa 
+                        where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID;";
+
+                urlSql = @"select 
+	                            od.objectid as id,
+	                            od.url as url
+                            from 
+	                            fusionattribute fa 
+	                            inner join cache.ObjectDetails od on (od.objectid = fa.id and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
+                            where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID";
+            }
+            else
+            {
+                sql = @"select 	
+                            fa.id as ID,
+                            fa.parentId as ParentID,
+	                        fa.name as name,
+	                        fa.textpath as textpath,
+                            fa.sourceid as SourceID
+                        from 
+	                        [intersectnode] inode
+	                        inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
+	                        inner join [fusionattribute] fa on (fa.id = inode2.objectid and fa.fusionattributetypeid = @targetAttributeTypeID)
+                        where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
+
+                urlSql = @" select 	
+                                od.objectid as id,
+					            od.url as url
+                            from 
+	                            [intersectnode] inode
+	                            inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
+	                            inner join cache.ObjectDetails od on (od.objectid = inode2.objectid and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
+                            where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
+            }
+
+            var results = Company.Query<FusionAttribute>(sql, new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID });
+
+            //get all the items urls in one query otherwise its too slow
+
+            var urlDict = Company.Query<dynamic>(urlSql, new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID }).ToDictionary(
+                        row => (int)row.id,
+                        row => (string)row.url
+                    );
+
+            var ro = new ReadOnlyField
+            {
+                Row = currentRowNumber++,
+                Column = 1,
+                Name = k.FriendlyName,
+                FieldDescription = k.DisplayDescription,
+                FieldName = k.Name
+            };
+
+            if (results.Count() > 1 || def.FieldTypeFusionLookupDisplayFields != null && def.FieldTypeFusionLookupDisplayFields.Count > 0)
+            {
+                ro.FusionLookupGridUrl = string.Format("api/FusionLookupField/{0}/{1}/values", fusionAttributeID, def.ID);
+
+                list.Add(ro);
+
+                return currentRowNumber;
+            }
+
+            string url = null;
+            string value = string.Empty;
+
+            var firstItem = results.FirstOrDefault();
+
+            if (firstItem != null)
+            {
+                urlDict.TryGetValue(firstItem.ID, out url);
+
+
+                if (!string.IsNullOrEmpty(url))
+                {
+                    value = string.Format("<a href='{1}'>{0}</a>", (def.Display == "TextPath" ? firstItem.TextPath : firstItem.Name), url);
+                }
+                else
+                {
+                    value = (def.Display == "TextPath" ? firstItem.TextPath : firstItem.Name);
+                }
+
+                ro.Value = value;
+            }
+
+            list.Add(ro);
+
+            return currentRowNumber;
+
+        }
+
+        [Route("FusionLookupField/{sourceFusionAttributeID:int}/{fieldTypeFusionLookupDefinitionID:int}/values")]
+        public HttpResponseMessage GetFusionLookupField(int sourceFusionAttributeID, int fieldTypeFusionLookupDefinitionID)
+        {
+            var columns = new List<GridColumn>();
+            var values = new List<dynamic>();
+
+            var def = Company.GetById<FieldTypeFusionLookupDefinition>(fieldTypeFusionLookupDefinitionID);
+
+            if (def == null) throw new Exception("Invalid fusion lookup field id specified");
+
+            var fieldTypeIds = def.FieldTypeFusionLookupDisplayFields.Select(x => x.FieldTypeID);
+
+            if (fieldTypeIds != null)
+            {
+                var fieldTypeInfo = (from f in Company.FieldTypes
+                                     where fieldTypeIds.Contains(f.ID)
+                                     select f);
+
+                foreach (var fieldType in fieldTypeInfo)
+                {
+                    columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.ID.ToString(), width = "auto" });
+                }
+            }
+            
+            //load the values
+            string sql = string.Empty;
+
+            if (def.IsParentChild)
+            {
+                sql = @"select 	                        
+	                        fa.name as name,
+	                        fa.textpath as textpath,
+                            od.url as fusionUrl,
+                            fa.id as id
+                        from 
+	                        fusionattribute fa 
+                            inner join cache.ObjectDetails od on (od.objectid = fa.id and od.objecttypeid = fa.fusionattributetypeid and od.[object] = 'FusionAttribute')
+                        where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID;";
+            }
+            else
+            {
+                sql = @"select 	                            
+	                        fa.name as name,
+	                        fa.textpath as textpath,
+                            od.url as fusionUrl,
+                            fa.id as id
+                        from 
+	                        [intersectnode] inode
+	                        inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
+	                        inner join [fusionattribute] fa on (fa.id = inode2.objectid and fa.fusionattributetypeid = @targetAttributeTypeID)
+                            inner join cache.ObjectDetails od on (od.objectid = fa.id and od.objecttypeid = fa.fusionattributetypeid and od.[object] = 'FusionAttribute')
+                        where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
+            }
+
+            var results = Company.Query<dynamic>(sql, new { currentObject = sourceFusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID });
+
+            IEnumerable<int> fusionAttributeIDs = results.Select(x => x.id).Cast<int>();
+
+
+            var fieldValues = (from f in Company.Fields
+                               where f.ObjectType == "FusionAttribute"
+                                         &&
+                                     fusionAttributeIDs.Contains(f.ObjectID)
+                                         &&
+                                     fieldTypeIds.Contains(f.FieldTypeID)
+                               select f).ToDictionary(kvp => (kvp.ObjectID.ToString() + "_" + kvp.FieldTypeID.ToString()), kvp => kvp);
+
+
+            foreach (var row in results)
+            {
+                dynamic r = new ExpandoObject();
+
+                r.Name = (def.Display == "TextPath" ? row.textpath : row.name.ToString());
+                r.Url = row.fusionUrl.ToString();
+
+                if (fieldTypeIds != null && fieldValues != null)
+                {
+                    foreach (var item in fieldTypeIds)
+                    {
+                        int fusionAttributeID = row.id;
+
+                        Field field = null;
+
+                        if (fieldValues.TryGetValue(fusionAttributeID.ToString() + "_" + item, out field))
+                        {
+                            ((IDictionary<string, object>)r)[item.ToString()] = field.FormattedValue;
+                        }                        
+                    }
+                }
+
+                values.Add(r);
+            }
+
+            //create array of Name + any fields configured.
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                Values = values,
+                Columns = columns
+            });
+        }
+
+
+        #endregion
+
         #region Relationships
 
         [HttpGet, Route("RelationshipObjectsByType")]
@@ -2867,6 +2979,24 @@ from	    ResponsibilityTypeHierarchy H
                     }
                     taxonomy = null;
                     break;
+                #endregion
+                case SystemObjects.FusionAttributeType:
+                    #region Fields
+
+                    var fields = Company.Filter<FieldType>(x => x.Object == "FusionAttributeType" && x.ObjectID == id);
+
+                    foreach (var field in fields)
+                    {
+                        list.Add(new DisplayField
+                        {
+                            FriendlyName = field.FriendlyName,
+                            Name = field.Name,
+                            Value = field.ID.ToString()                            
+                        });
+                    }
+
+                    break;
+                       
                     #endregion
             }
 

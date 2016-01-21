@@ -231,28 +231,28 @@
                         fieldFriendlyName = eval(v.ScriptProperty);
                     }
 
-                    if (!v.MultipleValues) {
-                        if (v.FieldDescription && v.FieldDescription != '') {
-                            cpnl.append("<div id='" + controlID + v.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + controlID + v.FieldName + "'>" + fieldFriendlyName + "</span></div>");
-                            $('#Tip_' + controlID + v.FieldName).qtip({
-                                content: {
-                                    text: v.FieldDescription,
-                                    position: {
-                                        at: 'bottom center', // Position the tooltip above the link
-                                        my: 'top center',
-                                        viewport: $(window), // Keep the tooltip on-screen at all times
-                                        effect: false // Disable positioning animation
-                                    }
-                                },
-                                style: {
-                                    classes: 'qtip-blue qtip-rounded'
+                    
+                    if (v.FieldDescription && v.FieldDescription != '') {
+                        cpnl.append("<div id='" + controlID + v.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + controlID + v.FieldName + "'>" + fieldFriendlyName + "</span></div>");
+                        $('#Tip_' + controlID + v.FieldName).qtip({
+                            content: {
+                                text: v.FieldDescription,
+                                position: {
+                                    at: 'bottom center', // Position the tooltip above the link
+                                    my: 'top center',
+                                    viewport: $(window), // Keep the tooltip on-screen at all times
+                                    effect: false // Disable positioning animation
                                 }
-                            });
-                        }
-                        else {
-                            cpnl.append("<div class='FieldName FieldDisplayName'>" + fieldFriendlyName + "</div>");
-                        }
+                            },
+                            style: {
+                                classes: 'qtip-blue qtip-rounded'
+                            }
+                        });
                     }
+                    else {
+                        cpnl.append("<div class='FieldName FieldDisplayName'>" + fieldFriendlyName + "</div>");
+                    }
+                    
 
                     if (v.TooltipContext && v.TooltipID && v.TooltipType && v.TooltipUrl) {
                         cpnl.append("<div class='FieldContent'><a href='" + v.TooltipUrl +
@@ -261,51 +261,58 @@
                             "' data-id='" + v.TooltipID + "'>" +
                             v.Value + "</div>");
                     }
-                    else if(v.MultipleValues)
+                    else if(v.FusionLookupGridUrl)
                     {                        
-                        cpnl.append("<div id='" + controlID + v.FieldName + "'></div>");
-                        var data = new Array();
-                        var i = 0;
-                        v.MultipleValues.forEach(function (val) {
-                            var row = {};
-                            row["value"] = val;
-                            data[i++] = row;
-                        })
+                        var gridID = controlID + v.FieldName + "_grid";
+                        cpnl.append("<div id='" + gridID + "'></div>");
 
-                        var source =
-                        {
-                            localdata: data,
-                            datatype: "array"
-                        };
+                        $.getJSON(v.FusionLookupGridUrl, function (data) {
 
-                        var dataAdapter = new $.jqx.dataAdapter(source, {
-                            downloadComplete: function (data, status, xhr) { },
-                            loadComplete: function (data) { },
-                            loadError: function (xhr, status, error) { }
+                            var res = data.Values;
+                            var cols = data.Columns;
+                            var source =
+                            {                                
+                                localdata:res,                             
+                                datatype: 'json'
+                            };
+
+                            var dataAdapter = new $.jqx.dataAdapter(source, {
+                                downloadComplete: function (data, status, xhr) { },
+                                loadComplete: function (data) { },
+                                loadError: function (xhr, status, error) { },
+                                beforeLoadComplete: function (records) {  }
+                            });
+
+                            var tooltiprenderer = function (element) {
+                                $(element).parent().jqxTooltip({ position: 'mouse', content: v.FieldDescription });
+                            }
+
+                            cols.unshift(
+                                 {
+                                     datafield: "Name", text: 'Name', width: 'auto', cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                         return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a href='" + data.Url + "'>" + data.Name + "</a></div>";
+                                         //return "<a href='" + data.Url + "'>" + data.Name + "</a>";
+                                     }
+                                 });
+                            
+                            $("#" + gridID).jqxGrid({
+                                altrows: true,
+                                width: grid_width,
+                                pagesizeoptions: ['10', '20', '50'],
+                                pagesize: 10,
+                                autoheight: true,
+                                sortable: true,
+                                filterable: true,
+                                showfilterrow: true,
+                                pageable: true,
+                                columnsresize: true,
+                                source: dataAdapter,
+                                theme: list_theme,
+                                pagermode: 'simple',                               
+                                columns: cols
+                            });                            
                         });
-
-                        var tooltiprenderer = function (element) {
-                            $(element).parent().jqxTooltip({ position: 'mouse', content: v.FieldDescription });
-                        }
-                                                
-                        $("#" + controlID + v.FieldName).jqxGrid({
-                            altrows: true,
-                            width: grid_width,
-                            pagesizeoptions: ['10', '20', '50'],
-                            pagesize: 20,
-                            autoheight: true,
-                            sortable: true,
-                            filterable: true,
-                            showfilterrow: true,
-                            pageable: true,
-                            source: dataAdapter,
-                            theme: list_theme,
-                            pagermode: 'simple',
-                            columns: [
-                                { datafield: "value", text: fieldFriendlyName, rendered: tooltiprenderer }
-                            ]                           
-                        });
-                    }
+                    }                    
                     else {                        
                         if (v.Value != null && v.Value.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})/)) 
                         {

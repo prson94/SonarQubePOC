@@ -115,6 +115,12 @@
                         <input id="IsParentChildRel" name="IsParentChildRel" type="checkbox" value="@(Model.IsParentChildRel)" @(Model.IsParentChildRel ? "checked='checked'" : "") />
                     </div>
                 </div>                
+                <div class="row">
+                    <div class="col s6">
+                        <div class="FieldNameRequired">Fields</div>
+                        <div  name="FusionLookupFields" id="FusionLookupFields"></div>                        
+                    </div>
+                </div>
             </div>
             <div class="row">
                 <div class="col s6">
@@ -127,7 +133,6 @@
                 </div>
             </div>
         }
-
     </div>
 </div>
 
@@ -171,6 +176,40 @@
                     $('#IsListable').removeAttr("disabled");
                     break;
             }
+        }
+
+        var loadFusionAttributeFields = function() {
+            var sourceFusionLookup =
+                {
+                    datatype:'json',
+                    datafields:
+                        [
+                            {name:'Value',type:'string'},
+                            {name:'FriendlyName',type:'string'}
+                        ],
+                    id:'Value',
+                    url:'/api/fusionattributetype/' +$('#ToFusionAttributeTypeID').val() + '/info'
+                }
+            var dataAdapterFL = new $.jqx.dataAdapter(sourceFusionLookup);
+
+            $("#FusionLookupFields").jqxDropDownList({source:dataAdapterFL});
+
+            var selected = arguments.length>0 ? arguments[0]:"";
+
+            $("#FusionLookupFields").on('bindingComplete', function (event) {            
+                if(selected.length > 0)
+                {                    
+                    var sel = selected.split(',');
+                    for(var j=0;j<sel.length;j++){
+                        var item = $("#FusionLookupFields").jqxDropDownList('getItemByValue',sel[j]); 
+                        if(item)
+                        {
+                            item.checked=true;
+                            $("#FusionLookupFields").jqxDropDownList('selectItem', item ); 
+                        }
+                    }                    
+                }            
+            });
         }
 
         var switchTokensBasedOnLookup = function() {
@@ -217,6 +256,7 @@
         $("#FromFusionAttributeTypeID").jqxDropDownList({ width: field_width, theme: theme });
         $("#ToFusionAttributeTypeID").jqxDropDownList({ width: field_width, theme: theme });
         $("#FusionShow").jqxDropDownList({ width: field_width, theme: theme });
+        $("#FusionLookupFields").jqxDropDownList({ width: field_width, theme: theme, displayMember:'FriendlyName',valueMember:'Value',checkboxes: true });
 
         $('#form0').jqxValidator({
             hintType: 'label',
@@ -458,6 +498,10 @@
             //}
         });
 
+        $('#ToFusionAttributeTypeID').on('change', function (event){
+            loadFusionAttributeFields();
+        })
+
         $('#form0').on('validationSuccess', function (event) {
             $('#form0').submit();
         });
@@ -495,6 +539,9 @@
         }
 
         //#endregion
+
+        loadFusionAttributeFields('@(Model.FusionDisplayFieldList)');
+        
 
         $("html, body").animate({ scrollTop: 0 }, "slow");
     });
