@@ -702,7 +702,7 @@ from	h", new { id = fusionID });
                         getDynamicFieldJoinStatements(parentFusionAttributeTypeID.Value, "FusionAttribute", out joins, out columns, false);
 
                         intersectSql = string.Format(@"select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = 'FusionAttributeType' and SourceObjectID = {0}", parentFusionAttributeTypeID.Value);
-                        intersects = Company.Query<int>(intersectSql).ToList();
+                        intersects = Company.Query<int>(intersectSql).Distinct().ToList();
                     }
 
                     var intersectQueryColumnText = "";

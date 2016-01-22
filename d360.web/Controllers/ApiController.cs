@@ -344,7 +344,7 @@ namespace d360.web.Controllers
 
                     detail = Company.GetObjectDetail(type, id);
 
-                    var relations = Company.Query<dynamic>(@"SELECT 'IntersectType' + cast(S.IntersectTypeID as varchar(10)) as Name, TD.Name as FriendlyName
+                    var relations = Company.Query<dynamic>(@"SELECT distinct 'IntersectType' + cast(S.IntersectTypeID as varchar(10)) as Name, TD.Name as FriendlyName
 				FROM		IntersectTypeNode S
 							inner join IntersectTypeNode T ON T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and S.ObjectType = 'FusionAttributeType' and S.ObjectID = @id
 							inner join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID", new { id = id }).ToList();
