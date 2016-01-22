@@ -922,6 +922,34 @@ from	    FusionAttributeType T
             return Json(model, JsonRequestBehavior.AllowGet);
         }
 
+
+        [Route("details/{type}/{id:int}")]
+        public JsonResult FusionItemDetails(SystemObjects type, int id)
+        {
+            var fusionAttribute = Company.GetById<FusionAttribute>(id);
+            var fields = Company.Filter<FieldWithRelation>(i => i.ObjectType == type.ToString() && i.ObjectID == id);
+
+            List<dynamic> res = new List<dynamic>();
+
+            foreach (var item in fields)
+            {
+                res.Add(new
+                {
+                    Name = item.FriendlyName,
+                    Value = item.FormattedValue
+                });
+            }
+
+            var model = new
+            {
+                Fields = res,
+                Name = fusionAttribute.Name,
+                TextPath = fusionAttribute.TextPath
+            };
+
+            return Json(model, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
     }
 }

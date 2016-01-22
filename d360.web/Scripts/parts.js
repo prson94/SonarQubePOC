@@ -1878,6 +1878,8 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
     $(controlID).html('<div id="' + gridControlID + '"></div>');
     gridControlID = '#' + gridControlID;
 
+    $('#FusionAttributeDetailsTile').hide();
+        
     //#region Event Handlers
 
     var doubleClick = function (event) {        
@@ -1944,7 +1946,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
-
+    
     // in case where we dont have the definition we need to get it this happens on goto initial selected item
     if(definition === null && id !== null){        
         $.ajax({
@@ -2076,7 +2078,7 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
 
     function buildCurrentItemBreadcrumb(data) {        
         //need to go from selected item to root and generate the breadcrumb
-        $.getJSON('/api/fusion/selectedbreadcrumb/' + data.SelectedID, function (path) {
+        $.getJSON('/api/fusion/selectedbreadcrumb/' + data.SelectedID, function (path) {            
             path.forEach(function (item) {            
                 buildBreadcrumbLink('FusionAttributeType', item.typeid, item.typename, item.typeid, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttribute&parentID=' + item.parentID + '&parentFusionAttributeTypeID=' + item.typeid,false);
 
@@ -2307,6 +2309,55 @@ function FusionRelationshipChartTile(controlID, type, id, parentAttributeID) {
     })
     .fail(function (xhr, status, error) {
         $(chartControlID).text(error);
+    });
+}
+
+function FusionAttributeDetailTile(controlID, type, id) {
+    var detailControlID = controlID + "_fus_det";    
+    controlID = '#' + controlID;    
+    $(controlID).hide();
+    
+    $.ajax({
+        url: '/fusion/details/' + type + '/' + id,
+        method: 'GET'
+    })
+    .done(function (data, status, xhr) {
+        if (data.Fields.length > 0) {            
+            $(controlID).html('<header>Details</header><table style="width: 100%"><tr><td><div id="' + detailControlID + '" style="margin: auto; width: 95%;"></div></td></tr></table>');
+            detailControlID = '#' + detailControlID;
+            var itemCnt = 0;
+            var ended = false;
+
+            var row = $("<div class='row'>");
+            $(detailControlID).append(row);
+
+            var col = $("<div class='col l6 m6'>");
+            $(row).append(col);
+
+            col.append("<div class='FieldName FieldDisplayName'>Name</div>");
+            col.append("<div class='FieldContent'>" + data.Name + "</div>");
+
+            col = $("<div class='col l6 m6'>");
+            $(row).append(col);
+            col.append("<div class='FieldName FieldDisplayName'>Path</div>");
+            col.append("<div class='FieldContent'>" + data.TextPath + "</div>");
+
+            row = $("<div class='row'>");
+            $(detailControlID).append(row);
+
+            data.Fields.forEach(function (item) {
+                if (itemCnt % 2 == 0 && itemCnt > 0) {                    
+                    row = $("<div class='row'>");
+                    $(detailControlID).append(row);
+                }                
+                col = $("<div class='col l6 m6'>");
+                $(row).append(col);
+                col.append("<div class='FieldName FieldDisplayName'>" + item.Name + "</div>");
+                col.append("<div class='FieldContent'>" + item.Value + "</div>");
+            });
+
+            $(controlID).show();
+        }
     });
 }
 

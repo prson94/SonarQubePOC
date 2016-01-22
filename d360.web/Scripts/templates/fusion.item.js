@@ -46,6 +46,7 @@
                 $('#AggregatesTile').fadeIn(500);
                 FusionRelationshipChartTile('AggregatesTile', 'FusionAttribute', data.ID);
                 AttributesTile('ItemAttributesTile', contextList, permissions, 'FusionAttribute', data.ID, 'Technical Attributes for ' + data.Name)
+                FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
             }
 
             function toolAction(data) {
