@@ -78,10 +78,7 @@
         <div style="width: 100%;height:120px" id="{{control}}_ribbon">
             <ul>
                 <li>
-                    <!--<i class="fa fa-eye"></i>--> View
-                </li>
-                <li>
-                    <!--<i class="fa fa-edit"></i>--> Edit
+                    View
                 </li>
             </ul>
             <div>
@@ -99,6 +96,9 @@
                                 </td>
                                 <td colspan="2" style="padding-left:5px;">
                                     Other
+                                </td>
+                                <td colspan="2" style="padding-left:5px;">
+                                    Edit
                                 </td>
                             </tr>
                             <tr>
@@ -133,34 +133,16 @@
                                     <button id="{{control}}_ribbon_fullscreen" style="vertical-align:top;"><i class="fa fa-2x fa-arrows-alt"></i><br />Fullscreen</button>
                                     <button id="{{control}}_ribbon_reset"><i class="fa fa-2x fa-refresh"></i><br />Reset</button>
                                 </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div>
-                    <!-- 1-Edit -->
-                    <table style="width:auto;height:115px;">
-                        <tbody>
-                            <tr style="font-size:.8em;padding-top:2px;height:15px;">
-                                <td colspan="2" style="padding-left:5px;"></td>
-                                <td colspan="2" style="padding-left:5px;"></td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px;">
+                                <td style="width:1px;border-left:1px solid #ccc;"></td>
+                                <td style="padding:5px;vertical-align:top;">
                                     <button id="{{control}}_ribbon_undo"><i class="fa fa-2x fa-undo"></i><br />Undo</button>
                                     <button id="{{control}}_ribbon_redo"><i class="fa fa-2x fa-repeat"></i><br />Redo</button>
                                     <!-- not sure why valign top is needed here -->
-                                    <button style="vertical-align: top;" id="{{control}}_ribbon_add"><i class="fa fa-2x fa-plus"></i><br />Insert a Node</button>
+                                    <button id="{{control}}_ribbon_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Insert a Node</button>
                                     <button id="{{control}}_ribbon_remove"><i class="fa fa-2x fa-remove"></i><br />Remove</button>
-                                </td>
-                                <td style="width:1px;border-left:1px solid #ccc;"></td>
-                                <td style="padding:5px;">
                                     <button id="{{control}}_ribbon_save"><i class="fa fa-2x fa-save"></i><br />Save Changes</button>
+                                    <button id="{{control}}_ribbon_save_spinner" style="border:none; display:none;"><i class="fa fa-2x fa-spinner fa-spin"></i></button>
                                 </td>
-                                <td>
-                                    <div id="{{control}}_ribbon_save_spinner" style="display:none;"><i class="fa fa-2x fa-spinner fa-spin"></i></div>
-                                </td>
-                                <td style="width:1px;border-left:1px solid #ccc;"></td>
                             </tr>
                         </tbody>
                     </table>

@@ -337,6 +337,33 @@ namespace d360.extensions.search
             }
         }
 
+        public void RemoveFromIndex(List<RemoveFromIndexModel> items)
+        {
+            AzureDirectory directory = null;
+            StandardAnalyzer analyzer = null;
+            IndexWriter writer = null;
+
+            try
+            {
+                directory = getDirectory(items[0].CompanyID);
+                analyzer = new StandardAnalyzer(version);
+                writer = new IndexWriter(directory, analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
+
+                items.ForEach(item => {
+                    deleteDocument(writer, item);
+                });
+
+                writer.Commit();
+            }
+            catch { }
+            finally
+            {
+                if (writer != null) writer.Dispose();
+                if (analyzer != null) analyzer.Dispose();
+                if (directory != null) directory.Dispose();
+            }
+        }
+
         public void UpdateInIndex(UpdateInIndexModel item)
         {
             AzureDirectory directory = null;

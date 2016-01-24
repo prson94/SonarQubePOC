@@ -5346,7 +5346,10 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     //#region methods
 
     if (readonly) {
+        $('#' + controlID_ribbon_undo).hide();
+        $('#' + controlID_ribbon_redo).hide();
         $('#' + controlID_ribbon_add).hide();
+        $('#' + controlID_ribbon_remove).hide();
         $('#' + controlID_ribbon_save).hide();
     } else {
         $("#" + controlID_ribbon_remove).jqxButton({ theme: theme });
@@ -5588,7 +5591,9 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             $('#' + controlID_info).jqxExpander('collapse');
             return;
         } else {
-            $("#" + controlID_ribbon_remove).show(200);
+            if (!readonly) {
+                $("#" + controlID_ribbon_remove).show(200);
+            }
         }
 
         //get a deep copy of the selection as an array
@@ -5700,7 +5705,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
         markForDeletion(selection);
         $('#' + controlID_ribbon_expander).jqxExpander('expand');
-        $('#' + controlID_ribbon).jqxRibbon('selectAt', 1);
+        //$('#' + controlID_ribbon).jqxRibbon('selectAt', 1);
     };
 
     function onDeleted(e) {
@@ -5819,29 +5824,30 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 predicateID: link.predicateId
             };
 
-        $.ajax({
+            console.log(source);
+
+            $.ajax({
                 url: '/Relations/sources',
                 data: JSON.stringify(source),
-            processData: false,
-            type: 'POST',
+                processData: false,
+                type: 'POST',
                 async: false,
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (data) {
-                    if (data.success) {
-                
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data.success) {                
                     } else {
+                        flagError = true;
+                        errors += data.message;
+                        //console.log('2');
+                    }
+                },
+                failure: function (data) {
                     flagError = true;
                     errors += data.message;
-                    //console.log('2');
+                   // console.log('2');
                 }
-            },
-            failure: function (data) {
-                flagError = true;
-                errors += data.message;
-               // console.log('2');
-            }
-        });
+            });
         }
 
         for (var i = 0; i < linkChanges.modified.length; i++) {
@@ -5925,6 +5931,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             //    }
             //}
             if (link == null) {
+                alert("added:" + i);
                 changes.added.push(links[i]);
             }
         }
@@ -6539,7 +6546,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 }
             }
 
-            console.log(newLink);
             myDiagram.model.addLinkData(newLink);
         }
 

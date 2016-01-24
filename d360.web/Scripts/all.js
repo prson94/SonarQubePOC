@@ -14980,12 +14980,12 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 }( amplify, jQuery ) );
 
 //! moment.js
-//! version : 2.10.6
+//! version : 2.11.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
 
-(function (global, factory) {
+;(function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
     global.moment = factory()
@@ -15102,39 +15102,45 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return m;
     }
 
+    function isUndefined(input) {
+        return input === void 0;
+    }
+
+    // Plugins that add properties should also add the key here (null value),
+    // so we can properly clone ourselves.
     var momentProperties = utils_hooks__hooks.momentProperties = [];
 
     function copyConfig(to, from) {
         var i, prop, val;
 
-        if (typeof from._isAMomentObject !== 'undefined') {
+        if (!isUndefined(from._isAMomentObject)) {
             to._isAMomentObject = from._isAMomentObject;
         }
-        if (typeof from._i !== 'undefined') {
+        if (!isUndefined(from._i)) {
             to._i = from._i;
         }
-        if (typeof from._f !== 'undefined') {
+        if (!isUndefined(from._f)) {
             to._f = from._f;
         }
-        if (typeof from._l !== 'undefined') {
+        if (!isUndefined(from._l)) {
             to._l = from._l;
         }
-        if (typeof from._strict !== 'undefined') {
+        if (!isUndefined(from._strict)) {
             to._strict = from._strict;
         }
-        if (typeof from._tzm !== 'undefined') {
+        if (!isUndefined(from._tzm)) {
             to._tzm = from._tzm;
         }
-        if (typeof from._isUTC !== 'undefined') {
+        if (!isUndefined(from._isUTC)) {
             to._isUTC = from._isUTC;
         }
-        if (typeof from._offset !== 'undefined') {
+        if (!isUndefined(from._offset)) {
             to._offset = from._offset;
         }
-        if (typeof from._pf !== 'undefined') {
+        if (!isUndefined(from._pf)) {
             to._pf = getParsingFlags(from);
         }
-        if (typeof from._locale !== 'undefined') {
+        if (!isUndefined(from._locale)) {
             to._locale = from._locale;
         }
 
@@ -15142,7 +15148,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             for (i in momentProperties) {
                 prop = momentProperties[i];
                 val = from[prop];
-                if (typeof val !== 'undefined') {
+                if (!isUndefined(val)) {
                     to[prop] = val;
                 }
             }
@@ -15189,6 +15195,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return value;
     }
 
+    // compare two arrays, return the number of differences
     function compareArrays(array1, array2, dontConvert) {
         var len = Math.min(array1.length, array2.length),
             lengthDiff = Math.abs(array1.length - array2.length),
@@ -15206,6 +15213,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     function Locale() {
     }
 
+    // internal storage for locale config files
     var locales = {};
     var globalLocale;
 
@@ -15243,7 +15251,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     function loadLocale(name) {
         var oldLocale = null;
         // TODO: Find a better way to register and load all the locales in Node
-        if (!locales[name] && typeof module !== 'undefined' &&
+        if (!locales[name] && (typeof module !== 'undefined') &&
                 module && module.exports) {
             try {
                 oldLocale = globalLocale._abbr;
@@ -15262,7 +15270,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     function locale_locales__getSetGlobalLocale (key, values) {
         var data;
         if (key) {
-            if (typeof values === 'undefined') {
+            if (isUndefined(values)) {
                 data = locale_locales__getLocale(key);
             }
             else {
@@ -15347,6 +15355,10 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return normalizedInput;
     }
 
+    function isFunction(input) {
+        return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
+    }
+
     function makeGetSet (unit, keepTime) {
         return function (value) {
             if (value != null) {
@@ -15360,11 +15372,14 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function get_set__get (mom, unit) {
-        return mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]();
+        return mom.isValid() ?
+            mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]() : NaN;
     }
 
     function get_set__set (mom, unit, value) {
-        return mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
+        if (mom.isValid()) {
+            mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
+        }
     }
 
     // MOMENTS
@@ -15377,7 +15392,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             }
         } else {
             units = normalizeUnits(units);
-            if (typeof this[units] === 'function') {
+            if (isFunction(this[units])) {
                 return this[units](value);
             }
         }
@@ -15392,7 +15407,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             Math.pow(10, Math.max(0, zerosToFill)).toString().substr(1) + absNumber;
     }
 
-    var formattingTokens = /(\[[^\[]*\])|(\\)?(Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Q|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
+    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
 
     var localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g;
 
@@ -15488,6 +15503,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     var match4         = /\d{4}/;         //    0000 - 9999
     var match6         = /[+-]?\d{6}/;    // -999999 - 999999
     var match1to2      = /\d\d?/;         //       0 - 99
+    var match3to4      = /\d\d\d\d?/;     //     999 - 9999
+    var match5to6      = /\d\d\d\d\d\d?/; //   99999 - 999999
     var match1to3      = /\d{1,3}/;       //       0 - 999
     var match1to4      = /\d{1,4}/;       //       0 - 9999
     var match1to6      = /[+-]?\d{1,6}/;  // -999999 - 999999
@@ -15496,23 +15513,19 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     var matchSigned    = /[+-]?\d+/;      //    -inf - inf
 
     var matchOffset    = /Z|[+-]\d\d:?\d\d/gi; // +00:00 -00:00 +0000 -0000 or Z
+    var matchShortOffset = /Z|[+-]\d\d(?::?\d\d)?/gi; // +00 -00 +00:00 -00:00 +0000 -0000 or Z
 
     var matchTimestamp = /[+-]?\d+(\.\d{1,3})?/; // 123456789 123456789.123
 
     // any word (or two) characters or numbers including two/three word month in arabic.
+    // includes scottish gaelic two word and hyphenated months
     var matchWord = /[0-9]*['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i;
+
 
     var regexes = {};
 
-    function isFunction (sth) {
-        // https://github.com/moment/moment/issues/2325
-        return typeof sth === 'function' &&
-            Object.prototype.toString.call(sth) === '[object Function]';
-    }
-
-
     function addRegexToken (token, regex, strictRegex) {
-        regexes[token] = isFunction(regex) ? regex : function (isStrict) {
+        regexes[token] = isFunction(regex) ? regex : function (isStrict, localeData) {
             return (isStrict && strictRegex) ? strictRegex : regex;
         };
     }
@@ -15527,9 +15540,13 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     // Code from http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
     function unescapeFormat(s) {
-        return s.replace('\\', '').replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function (matched, p1, p2, p3, p4) {
+        return regexEscape(s.replace('\\', '').replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function (matched, p1, p2, p3, p4) {
             return p1 || p2 || p3 || p4;
-        }).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        }));
+    }
+
+    function regexEscape(s) {
+        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     }
 
     var tokens = {};
@@ -15569,6 +15586,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     var MINUTE = 4;
     var SECOND = 5;
     var MILLISECOND = 6;
+    var WEEK = 7;
+    var WEEKDAY = 8;
 
     function daysInMonth(year, month) {
         return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
@@ -15596,8 +15615,12 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     addRegexToken('M',    match1to2);
     addRegexToken('MM',   match1to2, match2);
-    addRegexToken('MMM',  matchWord);
-    addRegexToken('MMMM', matchWord);
+    addRegexToken('MMM',  function (isStrict, locale) {
+        return locale.monthsShortRegex(isStrict);
+    });
+    addRegexToken('MMMM', function (isStrict, locale) {
+        return locale.monthsRegex(isStrict);
+    });
 
     addParseToken(['M', 'MM'], function (input, array) {
         array[MONTH] = toInt(input) - 1;
@@ -15615,14 +15638,17 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     // LOCALES
 
+    var MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s+)+MMMM?/;
     var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');
-    function localeMonths (m) {
-        return this._months[m.month()];
+    function localeMonths (m, format) {
+        return isArray(this._months) ? this._months[m.month()] :
+            this._months[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
     }
 
     var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
-    function localeMonthsShort (m) {
-        return this._monthsShort[m.month()];
+    function localeMonthsShort (m, format) {
+        return isArray(this._monthsShort) ? this._monthsShort[m.month()] :
+            this._monthsShort[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
     }
 
     function localeMonthsParse (monthName, format, strict) {
@@ -15661,6 +15687,11 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     function setMonth (mom, value) {
         var dayOfMonth;
 
+        if (!mom.isValid()) {
+            // No op
+            return mom;
+        }
+
         // TODO: Move this out of here!
         if (typeof value === 'string') {
             value = mom.localeData().monthsParse(value);
@@ -15689,6 +15720,72 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return daysInMonth(this.year(), this.month());
     }
 
+    var defaultMonthsShortRegex = matchWord;
+    function monthsShortRegex (isStrict) {
+        if (this._monthsParseExact) {
+            if (!hasOwnProp(this, '_monthsRegex')) {
+                computeMonthsParse.call(this);
+            }
+            if (isStrict) {
+                return this._monthsShortStrictRegex;
+            } else {
+                return this._monthsShortRegex;
+            }
+        } else {
+            return this._monthsShortStrictRegex && isStrict ?
+                this._monthsShortStrictRegex : this._monthsShortRegex;
+        }
+    }
+
+    var defaultMonthsRegex = matchWord;
+    function monthsRegex (isStrict) {
+        if (this._monthsParseExact) {
+            if (!hasOwnProp(this, '_monthsRegex')) {
+                computeMonthsParse.call(this);
+            }
+            if (isStrict) {
+                return this._monthsStrictRegex;
+            } else {
+                return this._monthsRegex;
+            }
+        } else {
+            return this._monthsStrictRegex && isStrict ?
+                this._monthsStrictRegex : this._monthsRegex;
+        }
+    }
+
+    function computeMonthsParse () {
+        function cmpLenRev(a, b) {
+            return b.length - a.length;
+        }
+
+        var shortPieces = [], longPieces = [], mixedPieces = [],
+            i, mom;
+        for (i = 0; i < 12; i++) {
+            // make the regex if we don't have it already
+            mom = create_utc__createUTC([2000, i]);
+            shortPieces.push(this.monthsShort(mom, ''));
+            longPieces.push(this.months(mom, ''));
+            mixedPieces.push(this.months(mom, ''));
+            mixedPieces.push(this.monthsShort(mom, ''));
+        }
+        // Sorting makes sure if one month (or abbr) is a prefix of another it
+        // will match the longer piece.
+        shortPieces.sort(cmpLenRev);
+        longPieces.sort(cmpLenRev);
+        mixedPieces.sort(cmpLenRev);
+        for (i = 0; i < 12; i++) {
+            shortPieces[i] = regexEscape(shortPieces[i]);
+            longPieces[i] = regexEscape(longPieces[i]);
+            mixedPieces[i] = regexEscape(mixedPieces[i]);
+        }
+
+        this._monthsRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
+        this._monthsShortRegex = this._monthsRegex;
+        this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')$', 'i');
+        this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')$', 'i');
+    }
+
     function checkOverflow (m) {
         var overflow;
         var a = m._a;
@@ -15706,6 +15803,12 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             if (getParsingFlags(m)._overflowDayOfYear && (overflow < YEAR || overflow > DATE)) {
                 overflow = DATE;
             }
+            if (getParsingFlags(m)._overflowWeeks && overflow === -1) {
+                overflow = WEEK;
+            }
+            if (getParsingFlags(m)._overflowWeekday && overflow === -1) {
+                overflow = WEEKDAY;
+            }
 
             getParsingFlags(m).overflow = overflow;
         }
@@ -15714,7 +15817,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function warn(msg) {
-        if (utils_hooks__hooks.suppressDeprecationWarnings === false && typeof console !== 'undefined' && console.warn) {
+        if (utils_hooks__hooks.suppressDeprecationWarnings === false &&
+                (typeof console !==  'undefined') && console.warn) {
             console.warn('Deprecation warning: ' + msg);
         }
     }
@@ -15724,7 +15828,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
         return extend(function () {
             if (firstTime) {
-                warn(msg + '\n' + (new Error()).stack);
+                warn(msg + '\nArguments: ' + Array.prototype.slice.call(arguments).join(', ') + '\n' + (new Error()).stack);
                 firstTime = false;
             }
             return fn.apply(this, arguments);
@@ -15742,22 +15846,39 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     utils_hooks__hooks.suppressDeprecationWarnings = false;
 
-    var from_string__isoRegex = /^\s*(?:[+-]\d{6}|\d{4})-(?:(\d\d-\d\d)|(W\d\d$)|(W\d\d-\d)|(\d\d\d))((T| )(\d\d(:\d\d(:\d\d(\.\d+)?)?)?)?([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
+    // iso 8601 regex
+    // 0000-00-00 0000-W00 or 0000-W00-0 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000 or +00)
+    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+    var basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+
+    var tzRegex = /Z|[+-]\d\d(?::?\d\d)?/;
 
     var isoDates = [
-        ['YYYYYY-MM-DD', /[+-]\d{6}-\d{2}-\d{2}/],
-        ['YYYY-MM-DD', /\d{4}-\d{2}-\d{2}/],
-        ['GGGG-[W]WW-E', /\d{4}-W\d{2}-\d/],
-        ['GGGG-[W]WW', /\d{4}-W\d{2}/],
-        ['YYYY-DDD', /\d{4}-\d{3}/]
+        ['YYYYYY-MM-DD', /[+-]\d{6}-\d\d-\d\d/],
+        ['YYYY-MM-DD', /\d{4}-\d\d-\d\d/],
+        ['GGGG-[W]WW-E', /\d{4}-W\d\d-\d/],
+        ['GGGG-[W]WW', /\d{4}-W\d\d/, false],
+        ['YYYY-DDD', /\d{4}-\d{3}/],
+        ['YYYY-MM', /\d{4}-\d\d/, false],
+        ['YYYYYYMMDD', /[+-]\d{10}/],
+        ['YYYYMMDD', /\d{8}/],
+        // YYYYMM is NOT allowed by the standard
+        ['GGGG[W]WWE', /\d{4}W\d{3}/],
+        ['GGGG[W]WW', /\d{4}W\d{2}/, false],
+        ['YYYYDDD', /\d{7}/]
     ];
 
     // iso time formats and regexes
     var isoTimes = [
-        ['HH:mm:ss.SSSS', /(T| )\d\d:\d\d:\d\d\.\d+/],
-        ['HH:mm:ss', /(T| )\d\d:\d\d:\d\d/],
-        ['HH:mm', /(T| )\d\d:\d\d/],
-        ['HH', /(T| )\d\d/]
+        ['HH:mm:ss.SSSS', /\d\d:\d\d:\d\d\.\d+/],
+        ['HH:mm:ss,SSSS', /\d\d:\d\d:\d\d,\d+/],
+        ['HH:mm:ss', /\d\d:\d\d:\d\d/],
+        ['HH:mm', /\d\d:\d\d/],
+        ['HHmmss.SSSS', /\d\d\d\d\d\d\.\d+/],
+        ['HHmmss,SSSS', /\d\d\d\d\d\d,\d+/],
+        ['HHmmss', /\d\d\d\d\d\d/],
+        ['HHmm', /\d\d\d\d/],
+        ['HH', /\d\d/]
     ];
 
     var aspNetJsonRegex = /^\/?Date\((\-?\d+)/i;
@@ -15766,26 +15887,49 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     function configFromISO(config) {
         var i, l,
             string = config._i,
-            match = from_string__isoRegex.exec(string);
+            match = extendedIsoRegex.exec(string) || basicIsoRegex.exec(string),
+            allowTime, dateFormat, timeFormat, tzFormat;
 
         if (match) {
             getParsingFlags(config).iso = true;
+
             for (i = 0, l = isoDates.length; i < l; i++) {
-                if (isoDates[i][1].exec(string)) {
-                    config._f = isoDates[i][0];
+                if (isoDates[i][1].exec(match[1])) {
+                    dateFormat = isoDates[i][0];
+                    allowTime = isoDates[i][2] !== false;
                     break;
                 }
             }
-            for (i = 0, l = isoTimes.length; i < l; i++) {
-                if (isoTimes[i][1].exec(string)) {
-                    // match[6] should be 'T' or space
-                    config._f += (match[6] || ' ') + isoTimes[i][0];
-                    break;
+            if (dateFormat == null) {
+                config._isValid = false;
+                return;
+            }
+            if (match[3]) {
+                for (i = 0, l = isoTimes.length; i < l; i++) {
+                    if (isoTimes[i][1].exec(match[3])) {
+                        // match[2] should be 'T' or space
+                        timeFormat = (match[2] || ' ') + isoTimes[i][0];
+                        break;
+                    }
+                }
+                if (timeFormat == null) {
+                    config._isValid = false;
+                    return;
                 }
             }
-            if (string.match(matchOffset)) {
-                config._f += 'Z';
+            if (!allowTime && timeFormat != null) {
+                config._isValid = false;
+                return;
             }
+            if (match[4]) {
+                if (tzRegex.exec(match[4])) {
+                    tzFormat = 'Z';
+                } else {
+                    config._isValid = false;
+                    return;
+                }
+            }
+            config._f = dateFormat + (timeFormat || '') + (tzFormat || '');
             configFromStringAndFormat(config);
         } else {
             config._isValid = false;
@@ -15823,8 +15967,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         //http://stackoverflow.com/questions/181348/instantiating-a-javascript-object-by-calling-prototype-constructor-apply
         var date = new Date(y, m, d, h, M, s, ms);
 
-        //the date constructor doesn't accept years < 1970
-        if (y < 1970) {
+        //the date constructor remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
             date.setFullYear(y);
         }
         return date;
@@ -15832,11 +15976,20 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     function createUTCDate (y) {
         var date = new Date(Date.UTC.apply(null, arguments));
-        if (y < 1970) {
+
+        //the Date.UTC function remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
             date.setUTCFullYear(y);
         }
         return date;
     }
+
+    // FORMATTING
+
+    addFormatToken('Y', 0, 0, function () {
+        var y = this.year();
+        return y <= 9999 ? '' + y : '+' + y;
+    });
 
     addFormatToken(0, ['YY', 2], 0, function () {
         return this.year() % 100;
@@ -15865,6 +16018,9 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     addParseToken('YY', function (input, array) {
         array[YEAR] = utils_hooks__hooks.parseTwoDigitYear(input);
     });
+    addParseToken('Y', function (input, array) {
+        array[YEAR] = parseInt(input, 10);
+    });
 
     // HELPERS
 
@@ -15890,124 +16046,66 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return isLeapYear(this.year());
     }
 
-    addFormatToken('w', ['ww', 2], 'wo', 'week');
-    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
+    // start-of-first-week - start-of-year
+    function firstWeekOffset(year, dow, doy) {
+        var // first-week day -- which january is always in the first week (4 for iso, 1 for other)
+            fwd = 7 + dow - doy,
+            // first-week day local weekday -- which local weekday is fwd
+            fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
 
-    // ALIASES
-
-    addUnitAlias('week', 'w');
-    addUnitAlias('isoWeek', 'W');
-
-    // PARSING
-
-    addRegexToken('w',  match1to2);
-    addRegexToken('ww', match1to2, match2);
-    addRegexToken('W',  match1to2);
-    addRegexToken('WW', match1to2, match2);
-
-    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
-        week[token.substr(0, 1)] = toInt(input);
-    });
-
-    // HELPERS
-
-    // firstDayOfWeek       0 = sun, 6 = sat
-    //                      the day of the week that starts the week
-    //                      (usually sunday or monday)
-    // firstDayOfWeekOfYear 0 = sun, 6 = sat
-    //                      the first week is the week that contains the first
-    //                      of this day of the week
-    //                      (eg. ISO weeks use thursday (4))
-    function weekOfYear(mom, firstDayOfWeek, firstDayOfWeekOfYear) {
-        var end = firstDayOfWeekOfYear - firstDayOfWeek,
-            daysToDayOfWeek = firstDayOfWeekOfYear - mom.day(),
-            adjustedMoment;
-
-
-        if (daysToDayOfWeek > end) {
-            daysToDayOfWeek -= 7;
-        }
-
-        if (daysToDayOfWeek < end - 7) {
-            daysToDayOfWeek += 7;
-        }
-
-        adjustedMoment = local__createLocal(mom).add(daysToDayOfWeek, 'd');
-        return {
-            week: Math.ceil(adjustedMoment.dayOfYear() / 7),
-            year: adjustedMoment.year()
-        };
+        return -fwdlw + fwd - 1;
     }
-
-    // LOCALES
-
-    function localeWeek (mom) {
-        return weekOfYear(mom, this._week.dow, this._week.doy).week;
-    }
-
-    var defaultLocaleWeek = {
-        dow : 0, // Sunday is the first day of the week.
-        doy : 6  // The week that contains Jan 1st is the first week of the year.
-    };
-
-    function localeFirstDayOfWeek () {
-        return this._week.dow;
-    }
-
-    function localeFirstDayOfYear () {
-        return this._week.doy;
-    }
-
-    // MOMENTS
-
-    function getSetWeek (input) {
-        var week = this.localeData().week(this);
-        return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-
-    function getSetISOWeek (input) {
-        var week = weekOfYear(this, 1, 4).week;
-        return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-
-    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
-
-    // ALIASES
-
-    addUnitAlias('dayOfYear', 'DDD');
-
-    // PARSING
-
-    addRegexToken('DDD',  match1to3);
-    addRegexToken('DDDD', match3);
-    addParseToken(['DDD', 'DDDD'], function (input, array, config) {
-        config._dayOfYear = toInt(input);
-    });
-
-    // HELPERS
 
     //http://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
-    function dayOfYearFromWeeks(year, week, weekday, firstDayOfWeekOfYear, firstDayOfWeek) {
-        var week1Jan = 6 + firstDayOfWeek - firstDayOfWeekOfYear, janX = createUTCDate(year, 0, 1 + week1Jan), d = janX.getUTCDay(), dayOfYear;
-        if (d < firstDayOfWeek) {
-            d += 7;
+    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
+        var localWeekday = (7 + weekday - dow) % 7,
+            weekOffset = firstWeekOffset(year, dow, doy),
+            dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
+            resYear, resDayOfYear;
+
+        if (dayOfYear <= 0) {
+            resYear = year - 1;
+            resDayOfYear = daysInYear(resYear) + dayOfYear;
+        } else if (dayOfYear > daysInYear(year)) {
+            resYear = year + 1;
+            resDayOfYear = dayOfYear - daysInYear(year);
+        } else {
+            resYear = year;
+            resDayOfYear = dayOfYear;
         }
 
-        weekday = weekday != null ? 1 * weekday : firstDayOfWeek;
-
-        dayOfYear = 1 + week1Jan + 7 * (week - 1) - d + weekday;
-
         return {
-            year: dayOfYear > 0 ? year : year - 1,
-            dayOfYear: dayOfYear > 0 ?  dayOfYear : daysInYear(year - 1) + dayOfYear
+            year: resYear,
+            dayOfYear: resDayOfYear
         };
     }
 
-    // MOMENTS
+    function weekOfYear(mom, dow, doy) {
+        var weekOffset = firstWeekOffset(mom.year(), dow, doy),
+            week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
+            resWeek, resYear;
 
-    function getSetDayOfYear (input) {
-        var dayOfYear = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;
-        return input == null ? dayOfYear : this.add((input - dayOfYear), 'd');
+        if (week < 1) {
+            resYear = mom.year() - 1;
+            resWeek = week + weeksInYear(resYear, dow, doy);
+        } else if (week > weeksInYear(mom.year(), dow, doy)) {
+            resWeek = week - weeksInYear(mom.year(), dow, doy);
+            resYear = mom.year() + 1;
+        } else {
+            resYear = mom.year();
+            resWeek = week;
+        }
+
+        return {
+            week: resWeek,
+            year: resYear
+        };
+    }
+
+    function weeksInYear(year, dow, doy) {
+        var weekOffset = firstWeekOffset(year, dow, doy),
+            weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
+        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
     }
 
     // Pick the first defined of two or three arguments.
@@ -16022,11 +16120,12 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function currentDateArray(config) {
-        var now = new Date();
+        // hooks is actually the exported moment object
+        var nowValue = new Date(utils_hooks__hooks.now());
         if (config._useUTC) {
-            return [now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()];
+            return [nowValue.getUTCFullYear(), nowValue.getUTCMonth(), nowValue.getUTCDate()];
         }
-        return [now.getFullYear(), now.getMonth(), now.getDate()];
+        return [nowValue.getFullYear(), nowValue.getMonth(), nowValue.getDate()];
     }
 
     // convert an array to a date.
@@ -16096,7 +16195,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function dayOfYearFromWeekInfo(config) {
-        var w, weekYear, week, weekday, dow, doy, temp;
+        var w, weekYear, week, weekday, dow, doy, temp, weekdayOverflow;
 
         w = config._w;
         if (w.GG != null || w.W != null || w.E != null) {
@@ -16110,6 +16209,9 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             weekYear = defaults(w.GG, config._a[YEAR], weekOfYear(local__createLocal(), 1, 4).year);
             week = defaults(w.W, 1);
             weekday = defaults(w.E, 1);
+            if (weekday < 1 || weekday > 7) {
+                weekdayOverflow = true;
+            }
         } else {
             dow = config._locale._week.dow;
             doy = config._locale._week.doy;
@@ -16120,23 +16222,32 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             if (w.d != null) {
                 // weekday -- low day numbers are considered next week
                 weekday = w.d;
-                if (weekday < dow) {
-                    ++week;
+                if (weekday < 0 || weekday > 6) {
+                    weekdayOverflow = true;
                 }
             } else if (w.e != null) {
                 // local weekday -- counting starts from begining of week
                 weekday = w.e + dow;
+                if (w.e < 0 || w.e > 6) {
+                    weekdayOverflow = true;
+                }
             } else {
                 // default to begining of week
                 weekday = dow;
             }
         }
-        temp = dayOfYearFromWeeks(weekYear, week, weekday, doy, dow);
-
-        config._a[YEAR] = temp.year;
-        config._dayOfYear = temp.dayOfYear;
+        if (week < 1 || week > weeksInYear(weekYear, dow, doy)) {
+            getParsingFlags(config)._overflowWeeks = true;
+        } else if (weekdayOverflow != null) {
+            getParsingFlags(config)._overflowWeekday = true;
+        } else {
+            temp = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy);
+            config._a[YEAR] = temp.year;
+            config._dayOfYear = temp.dayOfYear;
+        }
     }
 
+    // constant that refers to the ISO standard
     utils_hooks__hooks.ISO_8601 = function () {};
 
     // date from string and format string
@@ -16161,6 +16272,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         for (i = 0; i < tokens.length; i++) {
             token = tokens[i];
             parsedInput = (string.match(getParseRegexForToken(token, config)) || [])[0];
+            // console.log('token', token, 'parsedInput', parsedInput,
+            //         'regex', getParseRegexForToken(token, config));
             if (parsedInput) {
                 skipped = string.substr(0, string.indexOf(parsedInput));
                 if (skipped.length > 0) {
@@ -16229,6 +16342,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         }
     }
 
+    // date from string and array of format strings
     function configFromStringAndArray(config) {
         var tempConfig,
             bestMoment,
@@ -16279,7 +16393,9 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         }
 
         var i = normalizeObjectUnits(config._i);
-        config._a = [i.year, i.month, i.day || i.date, i.hour, i.minute, i.second, i.millisecond];
+        config._a = map([i.year, i.month, i.day || i.date, i.hour, i.minute, i.second, i.millisecond], function (obj) {
+            return obj && parseInt(obj, 10);
+        });
 
         configFromArray(config);
     }
@@ -16321,13 +16437,17 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             configFromInput(config);
         }
 
+        if (!valid__isValid(config)) {
+            config._d = null;
+        }
+
         return config;
     }
 
     function configFromInput(config) {
         var input = config._i;
         if (input === undefined) {
-            config._d = new Date();
+            config._d = new Date(utils_hooks__hooks.now());
         } else if (isDate(input)) {
             config._d = new Date(+input);
         } else if (typeof input === 'string') {
@@ -16374,7 +16494,11 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
          'moment().min is deprecated, use moment.min instead. https://github.com/moment/moment/issues/1548',
          function () {
              var other = local__createLocal.apply(null, arguments);
-             return other < this ? this : other;
+             if (this.isValid() && other.isValid()) {
+                 return other < this ? this : other;
+             } else {
+                 return valid__createInvalid();
+             }
          }
      );
 
@@ -16382,7 +16506,11 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         'moment().max is deprecated, use moment.max instead. https://github.com/moment/moment/issues/1548',
         function () {
             var other = local__createLocal.apply(null, arguments);
-            return other > this ? this : other;
+            if (this.isValid() && other.isValid()) {
+                return other > this ? this : other;
+            } else {
+                return valid__createInvalid();
+            }
         }
     );
 
@@ -16420,6 +16548,10 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
         return pickBy('isAfter', args);
     }
+
+    var now = function () {
+        return Date.now ? Date.now() : +(new Date());
+    };
 
     function Duration (duration) {
         var normalizedInput = normalizeObjectUnits(duration),
@@ -16460,6 +16592,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return obj instanceof Duration;
     }
 
+    // FORMATTING
+
     function offset (token, separator) {
         addFormatToken(token, 0, 0, function () {
             var offset = this.utcOffset();
@@ -16477,11 +16611,11 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     // PARSING
 
-    addRegexToken('Z',  matchOffset);
-    addRegexToken('ZZ', matchOffset);
+    addRegexToken('Z',  matchShortOffset);
+    addRegexToken('ZZ', matchShortOffset);
     addParseToken(['Z', 'ZZ'], function (input, array, config) {
         config._useUTC = true;
-        config._tzm = offsetFromString(input);
+        config._tzm = offsetFromString(matchShortOffset, input);
     });
 
     // HELPERS
@@ -16491,8 +16625,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // '-1530'  > ['-15', '30']
     var chunkOffset = /([\+\-]|\d\d)/gi;
 
-    function offsetFromString(string) {
-        var matches = ((string || '').match(matchOffset) || []);
+    function offsetFromString(matcher, string) {
+        var matches = ((string || '').match(matcher) || []);
         var chunk   = matches[matches.length - 1] || [];
         var parts   = (chunk + '').match(chunkOffset) || ['-', 0, 0];
         var minutes = +(parts[1] * 60) + toInt(parts[2]);
@@ -16542,11 +16676,13 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     function getSetOffset (input, keepLocalTime) {
         var offset = this._offset || 0,
             localAdjust;
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
         if (input != null) {
             if (typeof input === 'string') {
-                input = offsetFromString(input);
-            }
-            if (Math.abs(input) < 16) {
+                input = offsetFromString(matchShortOffset, input);
+            } else if (Math.abs(input) < 16) {
                 input = input * 60;
             }
             if (!this._isUTC && keepLocalTime) {
@@ -16606,12 +16742,15 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         if (this._tzm) {
             this.utcOffset(this._tzm);
         } else if (typeof this._i === 'string') {
-            this.utcOffset(offsetFromString(this._i));
+            this.utcOffset(offsetFromString(matchOffset, this._i));
         }
         return this;
     }
 
     function hasAlignedHourOffset (input) {
+        if (!this.isValid()) {
+            return false;
+        }
         input = input ? local__createLocal(input).utcOffset() : 0;
 
         return (this.utcOffset() - input) % 60 === 0;
@@ -16625,7 +16764,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function isDaylightSavingTimeShifted () {
-        if (typeof this._isDSTShifted !== 'undefined') {
+        if (!isUndefined(this._isDSTShifted)) {
             return this._isDSTShifted;
         }
 
@@ -16646,22 +16785,23 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function isLocal () {
-        return !this._isUTC;
+        return this.isValid() ? !this._isUTC : false;
     }
 
     function isUtcOffset () {
-        return this._isUTC;
+        return this.isValid() ? this._isUTC : false;
     }
 
     function isUtc () {
-        return this._isUTC && this._offset === 0;
+        return this.isValid() ? this._isUTC && this._offset === 0 : false;
     }
 
-    var aspNetRegex = /(\-)?(?:(\d*)\.)?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/;
+    // ASP.NET json date format regex
+    var aspNetRegex = /(\-)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/;
 
     // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
     // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
-    var create__isoRegex = /^(-)?P(?:(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?|([0-9,.]*)W)$/;
+    var isoRegex = /^(-)?P(?:(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?|([0-9,.]*)W)$/;
 
     function create__createDuration (input, key) {
         var duration = input,
@@ -16694,7 +16834,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
                 s  : toInt(match[SECOND])      * sign,
                 ms : toInt(match[MILLISECOND]) * sign
             };
-        } else if (!!(match = create__isoRegex.exec(input))) {
+        } else if (!!(match = isoRegex.exec(input))) {
             sign = (match[1] === '-') ? -1 : 1;
             duration = {
                 y : parseIso(match[2], sign),
@@ -16751,6 +16891,10 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     function momentsDifference(base, other) {
         var res;
+        if (!(base.isValid() && other.isValid())) {
+            return {milliseconds: 0, months: 0};
+        }
+
         other = cloneWithOffset(other, base);
         if (base.isBefore(other)) {
             res = positiveMomentsDifference(base, other);
@@ -16763,6 +16907,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return res;
     }
 
+    // TODO: remove 'name' arg after deprecation is removed
     function createAdder(direction, name) {
         return function (val, period) {
             var dur, tmp;
@@ -16783,6 +16928,12 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         var milliseconds = duration._milliseconds,
             days = duration._days,
             months = duration._months;
+
+        if (!mom.isValid()) {
+            // No op
+            return;
+        }
+
         updateOffset = updateOffset == null ? true : updateOffset;
 
         if (milliseconds) {
@@ -16814,7 +16965,10 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
                 diff < 1 ? 'sameDay' :
                 diff < 2 ? 'nextDay' :
                 diff < 7 ? 'nextWeek' : 'sameElse';
-        return this.format(formats && formats[format] || this.localeData().calendar(format, this, local__createLocal(now)));
+
+        var output = formats && (isFunction(formats[format]) ? formats[format]() : formats[format]);
+
+        return this.format(output || this.localeData().calendar(format, this, local__createLocal(now)));
     }
 
     function clone () {
@@ -16822,26 +16976,28 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function isAfter (input, units) {
-        var inputMs;
-        units = normalizeUnits(typeof units !== 'undefined' ? units : 'millisecond');
+        var localInput = isMoment(input) ? input : local__createLocal(input);
+        if (!(this.isValid() && localInput.isValid())) {
+            return false;
+        }
+        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
         if (units === 'millisecond') {
-            input = isMoment(input) ? input : local__createLocal(input);
-            return +this > +input;
+            return +this > +localInput;
         } else {
-            inputMs = isMoment(input) ? +input : +local__createLocal(input);
-            return inputMs < +this.clone().startOf(units);
+            return +localInput < +this.clone().startOf(units);
         }
     }
 
     function isBefore (input, units) {
-        var inputMs;
-        units = normalizeUnits(typeof units !== 'undefined' ? units : 'millisecond');
+        var localInput = isMoment(input) ? input : local__createLocal(input);
+        if (!(this.isValid() && localInput.isValid())) {
+            return false;
+        }
+        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
         if (units === 'millisecond') {
-            input = isMoment(input) ? input : local__createLocal(input);
-            return +this < +input;
+            return +this < +localInput;
         } else {
-            inputMs = isMoment(input) ? +input : +local__createLocal(input);
-            return +this.clone().endOf(units) < inputMs;
+            return +this.clone().endOf(units) < +localInput;
         }
     }
 
@@ -16850,21 +17006,44 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function isSame (input, units) {
-        var inputMs;
+        var localInput = isMoment(input) ? input : local__createLocal(input),
+            inputMs;
+        if (!(this.isValid() && localInput.isValid())) {
+            return false;
+        }
         units = normalizeUnits(units || 'millisecond');
         if (units === 'millisecond') {
-            input = isMoment(input) ? input : local__createLocal(input);
-            return +this === +input;
+            return +this === +localInput;
         } else {
-            inputMs = +local__createLocal(input);
+            inputMs = +localInput;
             return +(this.clone().startOf(units)) <= inputMs && inputMs <= +(this.clone().endOf(units));
         }
     }
 
+    function isSameOrAfter (input, units) {
+        return this.isSame(input, units) || this.isAfter(input,units);
+    }
+
+    function isSameOrBefore (input, units) {
+        return this.isSame(input, units) || this.isBefore(input,units);
+    }
+
     function diff (input, units, asFloat) {
-        var that = cloneWithOffset(input, this),
-            zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4,
+        var that,
+            zoneDelta,
             delta, output;
+
+        if (!this.isValid()) {
+            return NaN;
+        }
+
+        that = cloneWithOffset(input, this);
+
+        if (!that.isValid()) {
+            return NaN;
+        }
+
+        zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4;
 
         units = normalizeUnits(units);
 
@@ -16916,7 +17095,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     function moment_format__toISOString () {
         var m = this.clone().utc();
         if (0 < m.year() && m.year() <= 9999) {
-            if ('function' === typeof Date.prototype.toISOString) {
+            if (isFunction(Date.prototype.toISOString)) {
                 // native implementation is ~50x faster, use it when we can
                 return this.toDate().toISOString();
             } else {
@@ -16933,10 +17112,13 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function from (time, withoutSuffix) {
-        if (!this.isValid()) {
+        if (this.isValid() &&
+                ((isMoment(time) && time.isValid()) ||
+                 local__createLocal(time).isValid())) {
+            return create__createDuration({to: this, from: time}).locale(this.locale()).humanize(!withoutSuffix);
+        } else {
             return this.localeData().invalidDate();
         }
-        return create__createDuration({to: this, from: time}).locale(this.locale()).humanize(!withoutSuffix);
     }
 
     function fromNow (withoutSuffix) {
@@ -16944,16 +17126,22 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function to (time, withoutSuffix) {
-        if (!this.isValid()) {
+        if (this.isValid() &&
+                ((isMoment(time) && time.isValid()) ||
+                 local__createLocal(time).isValid())) {
+            return create__createDuration({from: this, to: time}).locale(this.locale()).humanize(!withoutSuffix);
+        } else {
             return this.localeData().invalidDate();
         }
-        return create__createDuration({from: this, to: time}).locale(this.locale()).humanize(!withoutSuffix);
     }
 
     function toNow (withoutSuffix) {
         return this.to(local__createLocal(), withoutSuffix);
     }
 
+    // If passed a locale key, it will set the locale for this
+    // instance.  Otherwise, it will return the locale configuration
+    // variables for this instance.
     function locale (key) {
         var newLocaleData;
 
@@ -17064,6 +17252,11 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         };
     }
 
+    function toJSON () {
+        // JSON.stringify(new Date(NaN)) === 'null'
+        return this.isValid() ? this.toISOString() : 'null';
+    }
+
     function moment_valid__isValid () {
         return valid__isValid(this);
     }
@@ -17075,6 +17268,18 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     function invalidAt () {
         return getParsingFlags(this).overflow;
     }
+
+    function creationData() {
+        return {
+            input: this._i,
+            format: this._f,
+            locale: this._locale,
+            isUTC: this._isUTC,
+            strict: this._strict
+        };
+    }
+
+    // FORMATTING
 
     addFormatToken(0, ['gg', 2], 0, function () {
         return this.weekYear() % 100;
@@ -17117,22 +17322,20 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         week[token] = utils_hooks__hooks.parseTwoDigitYear(input);
     });
 
-    // HELPERS
-
-    function weeksInYear(year, dow, doy) {
-        return weekOfYear(local__createLocal([year, 11, 31 + dow - doy]), dow, doy).week;
-    }
-
     // MOMENTS
 
     function getSetWeekYear (input) {
-        var year = weekOfYear(this, this.localeData()._week.dow, this.localeData()._week.doy).year;
-        return input == null ? year : this.add((input - year), 'y');
+        return getSetWeekYearHelper.call(this,
+                input,
+                this.week(),
+                this.weekday(),
+                this.localeData()._week.dow,
+                this.localeData()._week.doy);
     }
 
     function getSetISOWeekYear (input) {
-        var year = weekOfYear(this, 1, 4).year;
-        return input == null ? year : this.add((input - year), 'y');
+        return getSetWeekYearHelper.call(this,
+                input, this.isoWeek(), this.isoWeekday(), 1, 4);
     }
 
     function getISOWeeksInYear () {
@@ -17144,7 +17347,33 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return weeksInYear(this.year(), weekInfo.dow, weekInfo.doy);
     }
 
-    addFormatToken('Q', 0, 0, 'quarter');
+    function getSetWeekYearHelper(input, week, weekday, dow, doy) {
+        var weeksTarget;
+        if (input == null) {
+            return weekOfYear(this, dow, doy).year;
+        } else {
+            weeksTarget = weeksInYear(input, dow, doy);
+            if (week > weeksTarget) {
+                week = weeksTarget;
+            }
+            return setWeekAll.call(this, input, week, weekday, dow, doy);
+        }
+    }
+
+    function setWeekAll(weekYear, week, weekday, dow, doy) {
+        var dayOfYearData = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy),
+            date = createUTCDate(dayOfYearData.year, 0, dayOfYearData.dayOfYear);
+
+        // console.log("got", weekYear, week, weekday, "set", date.toISOString());
+        this.year(date.getUTCFullYear());
+        this.month(date.getUTCMonth());
+        this.date(date.getUTCDate());
+        return this;
+    }
+
+    // FORMATTING
+
+    addFormatToken('Q', 0, 'Qo', 'quarter');
 
     // ALIASES
 
@@ -17162,6 +17391,62 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     function getSetQuarter (input) {
         return input == null ? Math.ceil((this.month() + 1) / 3) : this.month((input - 1) * 3 + this.month() % 3);
     }
+
+    // FORMATTING
+
+    addFormatToken('w', ['ww', 2], 'wo', 'week');
+    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
+
+    // ALIASES
+
+    addUnitAlias('week', 'w');
+    addUnitAlias('isoWeek', 'W');
+
+    // PARSING
+
+    addRegexToken('w',  match1to2);
+    addRegexToken('ww', match1to2, match2);
+    addRegexToken('W',  match1to2);
+    addRegexToken('WW', match1to2, match2);
+
+    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
+        week[token.substr(0, 1)] = toInt(input);
+    });
+
+    // HELPERS
+
+    // LOCALES
+
+    function localeWeek (mom) {
+        return weekOfYear(mom, this._week.dow, this._week.doy).week;
+    }
+
+    var defaultLocaleWeek = {
+        dow : 0, // Sunday is the first day of the week.
+        doy : 6  // The week that contains Jan 1st is the first week of the year.
+    };
+
+    function localeFirstDayOfWeek () {
+        return this._week.dow;
+    }
+
+    function localeFirstDayOfYear () {
+        return this._week.doy;
+    }
+
+    // MOMENTS
+
+    function getSetWeek (input) {
+        var week = this.localeData().week(this);
+        return input == null ? week : this.add((input - week) * 7, 'd');
+    }
+
+    function getSetISOWeek (input) {
+        var week = weekOfYear(this, 1, 4).week;
+        return input == null ? week : this.add((input - week) * 7, 'd');
+    }
+
+    // FORMATTING
 
     addFormatToken('D', ['DD', 2], 'Do', 'date');
 
@@ -17185,6 +17470,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // MOMENTS
 
     var getSetDayOfMonth = makeGetSet('Date', true);
+
+    // FORMATTING
 
     addFormatToken('d', 0, 'do', 'day');
 
@@ -17218,8 +17505,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     addRegexToken('ddd',  matchWord);
     addRegexToken('dddd', matchWord);
 
-    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config) {
-        var weekday = config._locale.weekdaysParse(input);
+    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
+        var weekday = config._locale.weekdaysParse(input, token, config._strict);
         // if we didn't get a weekday name, mark the date as invalid
         if (weekday != null) {
             week.d = weekday;
@@ -17254,8 +17541,9 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // LOCALES
 
     var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
-    function localeWeekdays (m) {
-        return this._weekdays[m.day()];
+    function localeWeekdays (m, format) {
+        return isArray(this._weekdays) ? this._weekdays[m.day()] :
+            this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
     }
 
     var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
@@ -17268,20 +17556,37 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return this._weekdaysMin[m.day()];
     }
 
-    function localeWeekdaysParse (weekdayName) {
+    function localeWeekdaysParse (weekdayName, format, strict) {
         var i, mom, regex;
 
-        this._weekdaysParse = this._weekdaysParse || [];
+        if (!this._weekdaysParse) {
+            this._weekdaysParse = [];
+            this._minWeekdaysParse = [];
+            this._shortWeekdaysParse = [];
+            this._fullWeekdaysParse = [];
+        }
 
         for (i = 0; i < 7; i++) {
             // make the regex if we don't have it already
+
+            mom = local__createLocal([2000, 1]).day(i);
+            if (strict && !this._fullWeekdaysParse[i]) {
+                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
+                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
+                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
+            }
             if (!this._weekdaysParse[i]) {
-                mom = local__createLocal([2000, 1]).day(i);
                 regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
                 this._weekdaysParse[i] = new RegExp(regex.replace('.', ''), 'i');
             }
             // test the regex
-            if (this._weekdaysParse[i].test(weekdayName)) {
+            if (strict && format === 'dddd' && this._fullWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (strict && format === 'ddd' && this._shortWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (strict && format === 'dd' && this._minWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
                 return i;
             }
         }
@@ -17290,6 +17595,9 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // MOMENTS
 
     function getSetDayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
         var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
         if (input != null) {
             input = parseWeekday(input, this.localeData());
@@ -17300,20 +17608,73 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function getSetLocaleDayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
         var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
         return input == null ? weekday : this.add(input - weekday, 'd');
     }
 
     function getSetISODayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
         // behaves the same as moment#day except
         // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
         // as a setter, sunday should belong to the previous week.
         return input == null ? this.day() || 7 : this.day(this.day() % 7 ? input : input - 7);
     }
 
-    addFormatToken('H', ['HH', 2], 0, 'hour');
-    addFormatToken('h', ['hh', 2], 0, function () {
+    // FORMATTING
+
+    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
+
+    // ALIASES
+
+    addUnitAlias('dayOfYear', 'DDD');
+
+    // PARSING
+
+    addRegexToken('DDD',  match1to3);
+    addRegexToken('DDDD', match3);
+    addParseToken(['DDD', 'DDDD'], function (input, array, config) {
+        config._dayOfYear = toInt(input);
+    });
+
+    // HELPERS
+
+    // MOMENTS
+
+    function getSetDayOfYear (input) {
+        var dayOfYear = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;
+        return input == null ? dayOfYear : this.add((input - dayOfYear), 'd');
+    }
+
+    // FORMATTING
+
+    function hFormat() {
         return this.hours() % 12 || 12;
+    }
+
+    addFormatToken('H', ['HH', 2], 0, 'hour');
+    addFormatToken('h', ['hh', 2], 0, hFormat);
+
+    addFormatToken('hmm', 0, 0, function () {
+        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
+    });
+
+    addFormatToken('hmmss', 0, 0, function () {
+        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) +
+            zeroFill(this.seconds(), 2);
+    });
+
+    addFormatToken('Hmm', 0, 0, function () {
+        return '' + this.hours() + zeroFill(this.minutes(), 2);
+    });
+
+    addFormatToken('Hmmss', 0, 0, function () {
+        return '' + this.hours() + zeroFill(this.minutes(), 2) +
+            zeroFill(this.seconds(), 2);
     });
 
     function meridiem (token, lowercase) {
@@ -17342,6 +17703,11 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     addRegexToken('HH', match1to2, match2);
     addRegexToken('hh', match1to2, match2);
 
+    addRegexToken('hmm', match3to4);
+    addRegexToken('hmmss', match5to6);
+    addRegexToken('Hmm', match3to4);
+    addRegexToken('Hmmss', match5to6);
+
     addParseToken(['H', 'HH'], HOUR);
     addParseToken(['a', 'A'], function (input, array, config) {
         config._isPm = config._locale.isPM(input);
@@ -17350,6 +17716,32 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     addParseToken(['h', 'hh'], function (input, array, config) {
         array[HOUR] = toInt(input);
         getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmm', function (input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmmss', function (input, array, config) {
+        var pos1 = input.length - 4;
+        var pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('Hmm', function (input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+    });
+    addParseToken('Hmmss', function (input, array, config) {
+        var pos1 = input.length - 4;
+        var pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
     });
 
     // LOCALES
@@ -17378,6 +17770,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // this rule.
     var getSetHour = makeGetSet('Hours', true);
 
+    // FORMATTING
+
     addFormatToken('m', ['mm', 2], 0, 'minute');
 
     // ALIASES
@@ -17394,6 +17788,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     var getSetMinute = makeGetSet('Minutes', false);
 
+    // FORMATTING
+
     addFormatToken('s', ['ss', 2], 0, 'second');
 
     // ALIASES
@@ -17409,6 +17805,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // MOMENTS
 
     var getSetSecond = makeGetSet('Seconds', false);
+
+    // FORMATTING
 
     addFormatToken('S', 0, 0, function () {
         return ~~(this.millisecond() / 100);
@@ -17465,6 +17863,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     var getSetMillisecond = makeGetSet('Milliseconds', false);
 
+    // FORMATTING
+
     addFormatToken('z',  0, 0, 'zoneAbbr');
     addFormatToken('zz', 0, 0, 'zoneName');
 
@@ -17480,40 +17880,43 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     var momentPrototype__proto = Moment.prototype;
 
-    momentPrototype__proto.add          = add_subtract__add;
-    momentPrototype__proto.calendar     = moment_calendar__calendar;
-    momentPrototype__proto.clone        = clone;
-    momentPrototype__proto.diff         = diff;
-    momentPrototype__proto.endOf        = endOf;
-    momentPrototype__proto.format       = format;
-    momentPrototype__proto.from         = from;
-    momentPrototype__proto.fromNow      = fromNow;
-    momentPrototype__proto.to           = to;
-    momentPrototype__proto.toNow        = toNow;
-    momentPrototype__proto.get          = getSet;
-    momentPrototype__proto.invalidAt    = invalidAt;
-    momentPrototype__proto.isAfter      = isAfter;
-    momentPrototype__proto.isBefore     = isBefore;
-    momentPrototype__proto.isBetween    = isBetween;
-    momentPrototype__proto.isSame       = isSame;
-    momentPrototype__proto.isValid      = moment_valid__isValid;
-    momentPrototype__proto.lang         = lang;
-    momentPrototype__proto.locale       = locale;
-    momentPrototype__proto.localeData   = localeData;
-    momentPrototype__proto.max          = prototypeMax;
-    momentPrototype__proto.min          = prototypeMin;
-    momentPrototype__proto.parsingFlags = parsingFlags;
-    momentPrototype__proto.set          = getSet;
-    momentPrototype__proto.startOf      = startOf;
-    momentPrototype__proto.subtract     = add_subtract__subtract;
-    momentPrototype__proto.toArray      = toArray;
-    momentPrototype__proto.toObject     = toObject;
-    momentPrototype__proto.toDate       = toDate;
-    momentPrototype__proto.toISOString  = moment_format__toISOString;
-    momentPrototype__proto.toJSON       = moment_format__toISOString;
-    momentPrototype__proto.toString     = toString;
-    momentPrototype__proto.unix         = unix;
-    momentPrototype__proto.valueOf      = to_type__valueOf;
+    momentPrototype__proto.add               = add_subtract__add;
+    momentPrototype__proto.calendar          = moment_calendar__calendar;
+    momentPrototype__proto.clone             = clone;
+    momentPrototype__proto.diff              = diff;
+    momentPrototype__proto.endOf             = endOf;
+    momentPrototype__proto.format            = format;
+    momentPrototype__proto.from              = from;
+    momentPrototype__proto.fromNow           = fromNow;
+    momentPrototype__proto.to                = to;
+    momentPrototype__proto.toNow             = toNow;
+    momentPrototype__proto.get               = getSet;
+    momentPrototype__proto.invalidAt         = invalidAt;
+    momentPrototype__proto.isAfter           = isAfter;
+    momentPrototype__proto.isBefore          = isBefore;
+    momentPrototype__proto.isBetween         = isBetween;
+    momentPrototype__proto.isSame            = isSame;
+    momentPrototype__proto.isSameOrAfter     = isSameOrAfter;
+    momentPrototype__proto.isSameOrBefore    = isSameOrBefore;
+    momentPrototype__proto.isValid           = moment_valid__isValid;
+    momentPrototype__proto.lang              = lang;
+    momentPrototype__proto.locale            = locale;
+    momentPrototype__proto.localeData        = localeData;
+    momentPrototype__proto.max               = prototypeMax;
+    momentPrototype__proto.min               = prototypeMin;
+    momentPrototype__proto.parsingFlags      = parsingFlags;
+    momentPrototype__proto.set               = getSet;
+    momentPrototype__proto.startOf           = startOf;
+    momentPrototype__proto.subtract          = add_subtract__subtract;
+    momentPrototype__proto.toArray           = toArray;
+    momentPrototype__proto.toObject          = toObject;
+    momentPrototype__proto.toDate            = toDate;
+    momentPrototype__proto.toISOString       = moment_format__toISOString;
+    momentPrototype__proto.toJSON            = toJSON;
+    momentPrototype__proto.toString          = toString;
+    momentPrototype__proto.unix              = unix;
+    momentPrototype__proto.valueOf           = to_type__valueOf;
+    momentPrototype__proto.creationData      = creationData;
 
     // Year
     momentPrototype__proto.year       = getSetYear;
@@ -17599,7 +18002,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     function locale_calendar__calendar (key, mom, now) {
         var output = this._calendar[key];
-        return typeof output === 'function' ? output.call(mom, now) : output;
+        return isFunction(output) ? output.call(mom, now) : output;
     }
 
     var defaultLongDateFormat = {
@@ -17661,21 +18064,21 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     function relative__relativeTime (number, withoutSuffix, string, isFuture) {
         var output = this._relativeTime[string];
-        return (typeof output === 'function') ?
+        return (isFunction(output)) ?
             output(number, withoutSuffix, string, isFuture) :
             output.replace(/%d/i, number);
     }
 
     function pastFuture (diff, output) {
         var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
-        return typeof format === 'function' ? format(output) : format.replace(/%s/i, output);
+        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
     }
 
     function locale_set__set (config) {
         var prop, i;
         for (i in config) {
             prop = config[i];
-            if (typeof prop === 'function') {
+            if (isFunction(prop)) {
                 this[i] = prop;
             } else {
                 this['_' + i] = prop;
@@ -17705,11 +18108,15 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     prototype__proto.set             = locale_set__set;
 
     // Month
-    prototype__proto.months       =        localeMonths;
-    prototype__proto._months      = defaultLocaleMonths;
-    prototype__proto.monthsShort  =        localeMonthsShort;
-    prototype__proto._monthsShort = defaultLocaleMonthsShort;
-    prototype__proto.monthsParse  =        localeMonthsParse;
+    prototype__proto.months            =        localeMonths;
+    prototype__proto._months           = defaultLocaleMonths;
+    prototype__proto.monthsShort       =        localeMonthsShort;
+    prototype__proto._monthsShort      = defaultLocaleMonthsShort;
+    prototype__proto.monthsParse       =        localeMonthsParse;
+    prototype__proto._monthsRegex      = defaultMonthsRegex;
+    prototype__proto.monthsRegex       = monthsRegex;
+    prototype__proto._monthsShortRegex = defaultMonthsShortRegex;
+    prototype__proto.monthsShortRegex  = monthsShortRegex;
 
     // Week
     prototype__proto.week = localeWeek;
@@ -17997,15 +18404,15 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         var years    = round(duration.as('y'));
 
         var a = seconds < thresholds.s && ['s', seconds]  ||
-                minutes === 1          && ['m']           ||
+                minutes <= 1           && ['m']           ||
                 minutes < thresholds.m && ['mm', minutes] ||
-                hours   === 1          && ['h']           ||
+                hours   <= 1           && ['h']           ||
                 hours   < thresholds.h && ['hh', hours]   ||
-                days    === 1          && ['d']           ||
+                days    <= 1           && ['d']           ||
                 days    < thresholds.d && ['dd', days]    ||
-                months  === 1          && ['M']           ||
+                months  <= 1           && ['M']           ||
                 months  < thresholds.M && ['MM', months]  ||
-                years   === 1          && ['y']           || ['yy', years];
+                years   <= 1           && ['y']           || ['yy', years];
 
         a[2] = withoutSuffix;
         a[3] = +posNegDuration > 0;
@@ -18126,6 +18533,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     // Side effect imports
 
+    // FORMATTING
+
     addFormatToken('X', 0, 0, 'unix');
     addFormatToken('x', 0, 0, 'valueOf');
 
@@ -18143,13 +18552,14 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // Side effect imports
 
 
-    utils_hooks__hooks.version = '2.10.6';
+    utils_hooks__hooks.version = '2.11.1';
 
     setHookCallback(local__createLocal);
 
     utils_hooks__hooks.fn                    = momentPrototype;
     utils_hooks__hooks.min                   = min;
     utils_hooks__hooks.max                   = max;
+    utils_hooks__hooks.now                   = now;
     utils_hooks__hooks.utc                   = create_utc__createUTC;
     utils_hooks__hooks.unix                  = moment__createUnix;
     utils_hooks__hooks.months                = lists__listMonths;
@@ -18168,6 +18578,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     utils_hooks__hooks.weekdaysShort         = lists__listWeekdaysShort;
     utils_hooks__hooks.normalizeUnits        = normalizeUnits;
     utils_hooks__hooks.relativeTimeThreshold = duration_humanize__getSetRelativeTimeThreshold;
+    utils_hooks__hooks.prototype             = momentPrototype;
 
     var _moment = utils_hooks__hooks;
 
@@ -40175,6 +40586,7 @@ function ClickGridTool(event) {
                         fieldFriendlyName = eval(v.ScriptProperty);
                     }
 
+                    
                     if (v.FieldDescription && v.FieldDescription != '') {
                         cpnl.append("<div id='" + controlID + v.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + controlID + v.FieldName + "'>" + fieldFriendlyName + "</span></div>");
                         $('#Tip_' + controlID + v.FieldName).qtip({
@@ -40195,6 +40607,7 @@ function ClickGridTool(event) {
                     else {
                         cpnl.append("<div class='FieldName FieldDisplayName'>" + fieldFriendlyName + "</div>");
                     }
+                    
 
                     if (v.TooltipContext && v.TooltipID && v.TooltipType && v.TooltipUrl) {
                         cpnl.append("<div class='FieldContent'><a href='" + v.TooltipUrl +
@@ -40203,6 +40616,58 @@ function ClickGridTool(event) {
                             "' data-id='" + v.TooltipID + "'>" +
                             v.Value + "</div>");
                     }
+                    else if(v.FusionLookupGridUrl)
+                    {                        
+                        var gridID = controlID + v.FieldName + "_grid";
+                        cpnl.append("<div id='" + gridID + "'></div>");
+
+                        $.getJSON(v.FusionLookupGridUrl, function (data) {
+
+                            var res = data.Values;
+                            var cols = data.Columns;
+                            var source =
+                            {                                
+                                localdata:res,                             
+                                datatype: 'json'
+                            };
+
+                            var dataAdapter = new $.jqx.dataAdapter(source, {
+                                downloadComplete: function (data, status, xhr) { },
+                                loadComplete: function (data) { },
+                                loadError: function (xhr, status, error) { },
+                                beforeLoadComplete: function (records) {  }
+                            });
+
+                            var tooltiprenderer = function (element) {
+                                $(element).parent().jqxTooltip({ position: 'mouse', content: v.FieldDescription });
+                            }
+
+                            cols.unshift(
+                                 {
+                                     datafield: "Name", text: 'Name', width: 'auto', cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                         return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a href='" + data.Url + "'>" + data.Name + "</a></div>";
+                                         //return "<a href='" + data.Url + "'>" + data.Name + "</a>";
+                                     }
+                                 });
+                            
+                            $("#" + gridID).jqxGrid({
+                                altrows: true,
+                                width: grid_width,
+                                pagesizeoptions: ['10', '20', '50'],
+                                pagesize: 10,
+                                autoheight: true,
+                                sortable: true,
+                                filterable: true,
+                                showfilterrow: true,
+                                pageable: true,
+                                columnsresize: true,
+                                source: dataAdapter,
+                                theme: list_theme,
+                                pagermode: 'simple',                               
+                                columns: cols
+                            });                            
+                        });
+                    }                    
                     else {                        
                         if (v.Value != null && v.Value.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})/)) 
                         {
@@ -40212,7 +40677,7 @@ function ClickGridTool(event) {
                         }
                         else
                             cpnl.append("<div class='FieldContent'>" + v.Value + "</div>");
-                    }
+                    }                    
                 });
             }
         } catch (e) {
@@ -40586,6 +41051,7 @@ function ClickGridTool(event) {
                                 //#endregion
                             case 'Lookup':
                             case 'DropDown':
+                            case 'FusionLookup':
                                 //#region DropDown Field Management
 
                                 //if (v.MultiSelect) {
@@ -42075,8 +42541,8 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
                 count = 0;
             }
             badge.html("&#160;(<b>" + count + "</b>)");
-        }
-    }
+            }
+            }
 
     function treeControlRowSelect(evt) {
         try {
@@ -43543,6 +44009,8 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
     $(controlID).html('<div id="' + gridControlID + '"></div>');
     gridControlID = '#' + gridControlID;
 
+    $('#FusionAttributeDetailsTile').hide();
+        
     //#region Event Handlers
 
     var doubleClick = function (event) {        
@@ -43609,7 +44077,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
-
+    
     // in case where we dont have the definition we need to get it this happens on goto initial selected item
     if(definition === null && id !== null){        
         $.ajax({
@@ -43741,7 +44209,7 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
 
     function buildCurrentItemBreadcrumb(data) {        
         //need to go from selected item to root and generate the breadcrumb
-        $.getJSON('/api/fusion/selectedbreadcrumb/' + data.SelectedID, function (path) {
+        $.getJSON('/api/fusion/selectedbreadcrumb/' + data.SelectedID, function (path) {            
             path.forEach(function (item) {            
                 buildBreadcrumbLink('FusionAttributeType', item.typeid, item.typename, item.typeid, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttribute&parentID=' + item.parentID + '&parentFusionAttributeTypeID=' + item.typeid,false);
 
@@ -43972,6 +44440,55 @@ function FusionRelationshipChartTile(controlID, type, id, parentAttributeID) {
     })
     .fail(function (xhr, status, error) {
         $(chartControlID).text(error);
+    });
+}
+
+function FusionAttributeDetailTile(controlID, type, id) {
+    var detailControlID = controlID + "_fus_det";    
+    controlID = '#' + controlID;    
+    $(controlID).hide();
+    
+    $.ajax({
+        url: '/fusion/details/' + type + '/' + id,
+        method: 'GET'
+    })
+    .done(function (data, status, xhr) {
+        if (data.Fields.length > 0) {            
+            $(controlID).html('<header>Details</header><table style="width: 100%"><tr><td><div id="' + detailControlID + '" style="margin: auto; width: 95%;"></div></td></tr></table>');
+            detailControlID = '#' + detailControlID;
+            var itemCnt = 0;
+            var ended = false;
+
+            var row = $("<div class='row'>");
+            $(detailControlID).append(row);
+
+            var col = $("<div class='col l6 m6'>");
+            $(row).append(col);
+
+            col.append("<div class='FieldName FieldDisplayName'>Name</div>");
+            col.append("<div class='FieldContent'>" + data.Name + "</div>");
+
+            col = $("<div class='col l6 m6'>");
+            $(row).append(col);
+            col.append("<div class='FieldName FieldDisplayName'>Path</div>");
+            col.append("<div class='FieldContent'>" + data.TextPath + "</div>");
+
+            row = $("<div class='row'>");
+            $(detailControlID).append(row);
+
+            data.Fields.forEach(function (item) {
+                if (itemCnt % 2 == 0 && itemCnt > 0) {                    
+                    row = $("<div class='row'>");
+                    $(detailControlID).append(row);
+                }                
+                col = $("<div class='col l6 m6'>");
+                $(row).append(col);
+                col.append("<div class='FieldName FieldDisplayName'>" + item.Name + "</div>");
+                col.append("<div class='FieldContent'>" + item.Value + "</div>");
+            });
+
+            $(controlID).show();
+        }
     });
 }
 
@@ -46655,6 +47172,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_ribbon_fullscreen = controlID + '_ribbon_fullscreen';
     
     var controlID_ribbon_save = controlID + '_ribbon_save';
+    var controlID_ribbon_save_spinner = controlID + '_ribbon_save_spinner';
     var controlID_ribbon_add = controlID + '_ribbon_add';
     var controlID_ribbon_undo = controlID + '_ribbon_undo';
     var controlID_ribbon_redo = controlID + '_ribbon_redo';
@@ -46694,7 +47212,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     //var toggleAdd = false;
     $("#" + controlID_ribbon_add).on('click', function () {
-        $('#' + controlID_popover_add).toggle(200).css('left',$(this).position().left + 1).css('top',$(this).position().top + 150);
+        $('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
     });
     //$("#" + controlID_controls_zoom).jqxScrollBar({ theme: theme, width: 280, height: 18, min: 750, max: 2250, value: 1500 });
     //$("#" + controlID_overlay_radio_existing).jqxRadioButton({theme: theme}).jqxRadioButton('check');
@@ -46714,7 +47232,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $('#' + controlID_ribbon_fullscreen).on('click', function () {
         fullscreen = !fullscreen;
         if (fullscreen) {
-            window.scrollTo(0,0); //scroll to top
+            window.scrollTo(0, 0); //scroll to top
             $('#' + controlID_ribbon_fullscreen).html('<i class="fa fa-2x fa-sign-out"></i><br />Exit Fullscreen');
             $('#' + controlID_wrapper_fullscreen).css('position', 'fixed')
                 .css('left', '0')
@@ -46740,25 +47258,26 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         setTimeout(function () {
             myDiagram.requestUpdate();
             myDiagram.focus();
-        },0);
+        }, 0);
     });
 
 
     $('#' + controlID_ribbon_save).on('click', function () {
+        saveChanges();
 
-        var message = $('<p />', { text: 'Are you sure you want to save changes?' }),
-             ok = $('<button />', {
-                 text: 'Save',
-                 'class': 'btn qtip-blue qtip-btn-inline',
-             }),
-             cancel = $('<button />', {
-                 text: 'Cancel',
-                 'class': 'btn qtip-blue qtip-btn-inline',
-             });
+        //var message = $('<p />', { text: 'Are you sure you want to save changes?' }),
+        //     ok = $('<button />', {
+        //         text: 'Save',
+        //         'class': 'btn qtip-blue qtip-btn-inline',
+        //     }),
+        //     cancel = $('<button />', {
+        //         text: 'Cancel',
+        //         'class': 'btn qtip-blue qtip-btn-inline',
+        //     });
 
-        var content = "<p>Are you sure you want to save changes?</p>"
+        //var content = "<p>Are you sure you want to save changes?</p>"
 
-        confirmDialog(message.add(ok).add(cancel), 'Save Changes?', 'Save', saveChanges);
+        //confirmDialog(message.add(ok).add(cancel), 'Save Changes?', 'Save', saveChanges);
     });
 
 
@@ -46828,7 +47347,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     });
 
 
-
     var oldHeight = $('#' + controlID_wrapper).height();
     var oldWidth = $('#' + controlID_wrapper).width();
 
@@ -46842,9 +47360,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var initialNodes = [];
     var newLink = null;
     var predicates = [];
-    var overlayEdit = false;
-    var selectedNode = null;
-
+    var overlayEditLinkKey = null;
+    var selection = null;
     //#region Responsibilities
 
     var lineageResponsibilitySource = {
@@ -46960,12 +47477,16 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     //#region methods
 
     if (readonly) {
+        $('#' + controlID_ribbon_undo).hide();
+        $('#' + controlID_ribbon_redo).hide();
         $('#' + controlID_ribbon_add).hide();
+        $('#' + controlID_ribbon_remove).hide();
         $('#' + controlID_ribbon_save).hide();
     } else {
         $("#" + controlID_ribbon_remove).jqxButton({ theme: theme });
         $("#" + controlID_ribbon_remove).on('click', function () {
-            markForDeletion(selectedNode);
+            //console.log(selection.length);
+            markForDeletion(selection);
             $("#" + controlID_ribbon_remove).hide(200);
             //populateDiagram();
         });
@@ -46973,13 +47494,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     function createLinkModel() {
         return {
+            key: null,
             id: null,
             from: null,
             frompid: "OUT",
             to: null,
             text: null,
-            phrase: null,
-            predicateName: null,
             predicateId: null,
             isDeletable: true,
             exclude: 'false',
@@ -47154,9 +47674,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     };
 
     function onDoubleClick(e) {
-        
+
         var obj = e.diagram.selection.first().data;
-        //console.log(obj);
         if (obj != null) {
             if (obj.diagramObjectType == 'Node') {
 
@@ -47172,89 +47691,86 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                  });
                 if (checkModified()) {
                     confirmDialog(message.add(ok).add(cancel), 'Confirm Navigation', 'Okay', function () {
-                type = obj.type;
-                id = obj.id;
+                        type = obj.type;
+                        id = obj.id;
                         populateDiagram();
                     });
                 } else {
                     type = obj.type;
                     id = obj.id;
 
-                populateDiagram();
+                    populateDiagram();
                     $('#' + controlID_ribbon_remove).hide(200);
-            }
-
+                }
             }
             else if (obj.diagramObjectType == 'Link' && !readonly) {
-                //overlayEdit = true;
-                //showRelationshipOverlay(obj);
-
-
-                //var fromNode = myDiagram.model.findNodeDataForKey(obj.from);
-                //var toNode = myDiagram.model.findNodeDataForKey(obj.to);
-
-                //newLink = obj;
-                //$('#' + controlID_overlay).show();
-                
-
+                overlayEditLinkKey = obj.key;
+                showRelationshipOverlay(obj);
             }
         }
     }
 
     function onSelectionChange(e) {
-        var node = e.diagram.selection.first();
-        selectedNode = null;
+        selection = e.diagram.selection;
+
+        //console.log(e.diagram.selection.count);
         
-        if (node == null) {
-            //$('#preview').html('');
-            // $("#" + controlID_fusion).jqxExpander('expand');
+        if (selection.count < 1) {
             $("#" + controlID_ribbon_remove).hide(200);
             $('#' + controlID_fusion).jqxExpander('collapse');
             $('#' + controlID_responsibilities).jqxExpander('collapse');
             $('#' + controlID_info).jqxExpander('collapse');
             return;
+        } else {
+            if (!readonly) {
+                $("#" + controlID_ribbon_remove).show(200);
+            }
         }
-        $("#" + controlID_ribbon_remove).show(200);
-        var data = node.data;
 
-        if (data.diagramObjectType == 'Node') { //node selected
-            selectedNode = data;
-            $('#' + controlID_info).jqxExpander('expand');
-            $('#' + controlID_responsibilities).jqxExpander('expand');
-            $('#' + controlID_fusion).jqxExpander('expand');
+        //get a deep copy of the selection as an array
+        var sel = $.extend(true, [], selection.toArray()); //JSON.parse(JSON.stringify(selection.toArray()));
+        var firstNodePopulated = false;
 
-            //#region Info
+        for (var i = 0; i < sel.length; i++ )
+        {
+            var data = sel[i].data;
+           // console.log(data);
+            if (data.diagramObjectType == 'Node') {
+                
+                //#region Info
+                if (!firstNodePopulated) {
+                    $.ajax({
+                        url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
+                        data: null,
+                        success: function (data) {
 
-            $.ajax({
-                url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
-                data: null,
-                success: function (data) {
+                            $('#' + controlID_info_body).html(data);
+                        },
+                        async: true
+                    });
 
-                    $('#' + controlID_info_body).html(data);
-                },
-                async: true
-            });
+                    technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
+                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
 
-            //#endregion
+                    lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
+                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                }
+                //#endregion
 
-            technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
-            $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+                firstNodePopulated = true;
 
-            lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
-            $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+            } else if (data.diagramObjectType == "Link") { //link selected
 
-        } else if (data.diagramObjectType == "Link") { //link selected
-            $('#' + controlID_info).jqxExpander('collapse');
-            $('#' + controlID_responsibilities).jqxExpander('collapse');
-            $('#' + controlID_fusion).jqxExpander('collapse');
+                $('#' + controlID_info_body).html('');
 
-            $('#' + controlID_info_body).html('');
+                if (data.intersectId != null) {
+                    technicalRelationsSource.url = '/api/Intersect/' + data.intersectId + '/relations';
+                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
 
-            technicalRelationsSource.url = '/api/Intersect/' + data.intersectId + '/relations';
-            $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
-
-            lineageResponsibilitySource.url = null;
-            $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    lineageResponsibilitySource.url = null;
+                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                }
+            }
         }
     }
 
@@ -47279,6 +47795,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     function showRelationshipOverlay(linkData) {
 
         newLink = linkData;
+
         newLink.diagramObjectType = "Link";
         var fromNode = myDiagram.model.findNodeDataForKey(linkData.from);
         var toNode = myDiagram.model.findNodeDataForKey(linkData.to);
@@ -47306,41 +47823,66 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         $('#' + controlID_overlay).show();
     }
+    
+    function onChange(e) {
+        checkModified();
 
-    function onDelete(e) {
+    }
+
+    function onDeleting(e) {
         if (readonly) {
             e.cancel = true;
             return;
         }
-        markForDeletion(selectedNode);
+        markForDeletion(selection);
         $('#' + controlID_ribbon_expander).jqxExpander('expand');
-        $('#' + controlID_ribbon).jqxRibbon('selectAt', 1);
+        //$('#' + controlID_ribbon).jqxRibbon('selectAt', 1);
     };
-    function markForDeletion(node) {
-        //console.log(node);
-        if (node == null)
-            return;
 
-        var affectedLinks = [];
-        for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
-            var link = myDiagram.model.linkDataArray[i];
-            //console.log(link);
-            if (link.to == node.key || link.from == node.key) {
-                affectedLinks.push(link);
+    function onDeleted(e) {
+        selection = null;
+    }
+
+    function markForDeletion(set) {
+        //console.log(set.count);
+        myDiagram.startTransaction("markSelection");
+
+        //get a deep copy of the set as an array
+        var sel = $.extend(true, [], set.toArray());//JSON.parse(JSON.stringify(set.toArray()));
+        //initialLinks = JSON.parse(JSON.stringify(linkList));
+        for (var i = 0; i < sel.length; i++)
+        {
+            var obj = sel[i].data;
+
+            if (obj == null)
+                continue;
+            
+            if (obj.diagramObjectType == 'Node') {
+                var affectedLinks = [];
+                for (var j = 0; j < myDiagram.model.linkDataArray.length; j++) {
+                    var link = myDiagram.model.linkDataArray[j];
+                    //console.log(link);
+                    if (link.to == obj.key || link.from == obj.key) {
+                        affectedLinks.push(link);
+                    }
+                }
+               
+                for (var j = 0; j < affectedLinks.length; j++) {
+                    myDiagram.model.removeLinkData(affectedLinks[j]);
+                }
+
+                myDiagram.model.removeNodeData(obj);
+            } else if (obj.diagramObjectType == 'Link') {
+                myDiagram.model.removeLinkData(obj);
+                //console.log('remove: ' + obj.id);
             }
-        }
 
-        for (var i = 0; i < affectedLinks.length; i++) {
-            myDiagram.model.removeLinkData(affectedLinks[i]);
         }
-
-        myDiagram.model.removeNodeData(node);
-        checkModified();
+        myDiagram.commitTransaction("markSelection");
     }
 
     function onDrop(e) {
         $('#' + controlID_popover_add).hide();
-        checkModified();
     }
 
     function reOrderLayout() {
@@ -47356,37 +47898,20 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         myDiagram.commitTransaction("rotate");
     }
 
-    function formFusionHtml(data) {
-        var html = '';
-        for (var i = 0; i < data.length; i++) {
-            html += "<tr><td style='padding:2px'>" + (data[i].Attribute || '') + "</td>";
-            html += "<td style='padding:2px'><a href='/" + (data[i].URL || '#') + "'>" + (data[i].Fusion || '') + "</a></td>";
-            html += "<td style='padding:2px'>" + (data[i].Name || '') + "</td>";
-            html += "<td style='padding:2px'>" + (data[i].Type || '') + "</td></tr>";
-        }
-        return html;
-    }
-
-    function formResponsibilitiesHtml(data) {
-        var html = '';
-        for (var i = 0; i < data.length; i++) {
-            html += "<tr><td style='padding:2px'>" + (data[i].Type || '') + "</td>";
-            html += "<td style='padding:2px'><a href='/" + (data[i].Url || '#') + "'>" + (data[i].Name || '') + "</td>";
-            html += "<td style='padding:2px'><a href='/" + (data[i].OwnerUrl || '#') + "'>" + (data[i].Owner || '') + "</td>";
-            html += "<td style='padding:2px'>" + (data[i].Context || '') + "</td></tr>";
-        }
-        return html;
-    }
-
     function saveChanges() {
 
         if (readonly) return;
+
         $('#' + controlID_ribbon_save).jqxButton({ disabled: true });
+        $('#' + controlID_ribbon_save_spinner).show();
+
         var nodeChanges = getNodeChanges();
         var linkChanges = getLinkChanges();
-
         var flagError = false;
         var errors = "";
+
+        //console.log(linkChanges.modified);
+
         for (var i = 0; i < nodeChanges.deleted.length; i++) {
             var node = nodeChanges.deleted[i];
         var data = {
@@ -47400,14 +47925,15 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 url: '/relations/' + data.target + '/' + data.targetID + '/sources/' + data.id
             }).done(function (data, status, xhr) {
                 if (data.success) {
-                   // populateDiagram();
-                   // amplify.publish("SourceSave");
                 } else {
                     flagError = true;
                     errors += data.message;
+                   // console.log('1');
                 }
             }).fail(function (xhr, status, error) {
-
+                flagError = true;
+                errors += data.message;
+               // console.log('1');
                // amplify.publish("SourceFormStatus", { title: 'Error When Adding Source', message: xhr.statusText + xhr.responseText, success: false });
             });
 
@@ -47429,35 +47955,65 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 predicateID: link.predicateId
             };
 
-        $.ajax({
+            console.log(source);
+
+            $.ajax({
                 url: '/Relations/sources',
                 data: JSON.stringify(source),
-            processData: false,
-            type: 'POST',
+                processData: false,
+                type: 'POST',
                 async: false,
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (data) {
-                    if (data.success) {
-                
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data.success) {                
                     } else {
+                        flagError = true;
+                        errors += data.message;
+                        //console.log('2');
+                    }
+                },
+                failure: function (data) {
                     flagError = true;
                     errors += data.message;
+                   // console.log('2');
                 }
-            },
-            failure: function (data) {
-            }
-        });
+            });
         }
 
+        for (var i = 0; i < linkChanges.modified.length; i++) {
+            var data = {
+                intersectMapID: linkChanges.modified[i].id,
+                predicateID: linkChanges.modified[i].predicateId
+            };
+            //console.log('reached' + data);
+
+            $.ajax({
+                async: false,
+                url: '/diagrams/updatepredicate',
+                data: data,
+                success: function (data) {
+
+                },
+                failure: function (data) {
+                    flagError = true;
+                    //console.log('save error 3 ');
+                    //console.log(data);
+                }
+            });
+            
+        }
+
+
         if (flagError) {
-            //error message here
+            amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: xhr.statusText + xhr.responseText, success: false });
         } else {
+            amplify.publish("SourceSave");
             deletedNodes = [];
             populateDiagram();
-            checkModified();   
+            $('#' + controlID_ribbon_save_spinner).hide();
         }
-        $('#' + controlID_ribbon_save).jqxButton({ disabled: false });
+
 
        
 
@@ -47468,7 +48024,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         var links = getLinkChanges();
 
         if (readonly) {
-            $('#' + controlID_message).hide(200);
+            $('#' + controlID_message).hide();
         } else if (nodes.deleted.length > 0 ||
             nodes.added.length > 0 ||
             nodes.modified.length > 0 ||
@@ -47476,12 +48032,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             links.deleted.length > 0 ||
             links.modified.length > 0) {
 
-            $('#' + controlID_message).show(200);
-            $('#' + controlID_ribbon_save).jqxButton({disabled: false})
+            $('#' + controlID_message).show();
+            $('#' + controlID_ribbon_save).jqxButton({ disabled: false })
             return true;
         } else {
-            $('#' + controlID_message).hide(200);
-            $('#' + controlID_ribbon_save).jqxButton({disabled: true});
+            $('#' + controlID_message).hide();
+            $('#' + controlID_ribbon_save).jqxButton({ disabled: true });
             return false;
         }
     }
@@ -47496,37 +48052,69 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         for (var i = 0; i < links.length; i++) {
             var found = false;
-            for (var j = 0; j < initialLinks.length; j++) {
-                if (initialLinks[j].to == links[i].to && initialLinks[j].from == links[i].from) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
+            
+            var link = $.grep(initialLinks, function (e) { e.to == links[i].to && e.from == links[i].from })
+
+            //for (var j = 0; j < initialLinks.length; j++) {
+            //    if (initialLinks[j].to == links[i].to && initialLinks[j].from == links[i].from) {
+            //        found = true;
+            //        break;
+            //    }
+            //}
+            if (link == null) {
+                alert("added:" + i);
                 changes.added.push(links[i]);
             }
         }
 
+        //console.log(initialLinks.length);
+        //console.log(links.length);
+        //console.log(myDiagram.model.linkDataArray.length);
         for (var i = 0; i < initialLinks.length; i++) {
             var found = false;
             for (var j = 0; j < links.length; j++) {
                 if (initialLinks[i].to == links[j].to && initialLinks[i].from == links[j].from) {
+                    //if (links[j].id == 307) {
+                    //    console.log(initialLinks[i].from + ' -> ' + initialLinks[i].to);
+                    //    console.log(links[j].from + ' -> ' + links[j].to);
+                    //    console.log(links[j].id);
+                    //}
                     found = true;
                     break;
                 }
             }
             if (!found) {
+                //console.log('not found');
                 changes.deleted.push(initialLinks[i]);
             }
         }
+        //console.log(initialLinks.length);
+        //console.log(links.length);
+        //console.log(myDiagram.model.linkDataArray.length);
+        for (var i = 0; i < initialLinks.length; i++) {
+            var found = false;
+            for (var j = 0; j < links.length; j++) {
+                if (initialLinks[i].id == links[j].id) {
+                    if (links[j].predicateId == null || initialLinks[i].predicateId == null)
+                        continue;
+                    //if (links[j].id == 254) {
+                    //    //console.log('init: "' + initialLinks[i].predicateId + '"');
+                    //    //console.log('links: "' + findLinkDataForKey(links[j].id).predicateId + '"');
+                    //}
 
-        for (var i = 0; i < links.length; i++) {
-            for (var j = 0; j < initialLinks.length; j++) {
-                //modified logic
+                    if (initialLinks[i].predicateId.toString() != links[j].predicateId.toString())
+                        found = true;
+                    break;
+                }
+            }
+            if (found) {
+                
+                //console.log('"' + initialLinks[i].predicateId + '"');
+                //console.log('"' + links[j].predicateId + '"');
+                changes.modified.push(links[j]);
             }
         }
 
-        //console.log(changes);
         return changes;
     }
 
@@ -47588,27 +48176,50 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     //#endregion
 
     var g = go.GraphObject.make;
+    var myDiagram = initializeDiagram();
 
-    myDiagram = g(go.Diagram, controlID_diagram, {
-        initialContentAlignment: go.Spot.Left,
-        //autoScale: go.Diagram.UniformToFill,
-        allowDrop: true,
-        initialAutoScale: go.Diagram.UniformToFill,
-        scrollMode: go.Diagram.DocumentScroll,
-        initialPosition: new go.Point(125, 125),
-        layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
-        "undoManager.isEnabled": true
-    });
-    myDiagram.model.class = go.GraphLinksModel;
-    myDiagram.model.nodeCategoryProperty = "template";
-    myDiagram.model.linkFromPortIdProperty = "frompid";
-    myDiagram.model.linkToPortIdProperty = "topid";
-    myDiagram.model.nodeDataArray = [];
-    myDiagram.model.linkDataArray = [];
-    myDiagram.toolManager.linkingTool.isEnabled = !readonly;
+    //myDiagram = g(go.Diagram, controlID_diagram, {
+    //    initialContentAlignment: go.Spot.Left,
+    //    //autoScale: go.Diagram.UniformToFill,
+    //    allowDrop: true,
+    //    initialAutoScale: go.Diagram.UniformToFill,
+    //    scrollMode: go.Diagram.DocumentScroll,
+    //    initialPosition: new go.Point(125, 125),
+    //    layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
+    //    "undoManager.isEnabled": true
+    //});
+    //myDiagram.model.class = go.GraphLinksModel;
+    //myDiagram.model.nodeCategoryProperty = "template";
+    //myDiagram.model.linkFromPortIdProperty = "frompid";
+    //myDiagram.model.linkToPortIdProperty = "topid";
+    //myDiagram.model.nodeDataArray = [];
+    //myDiagram.model.linkDataArray = [];
+    ////myDiagram.toolManager.linkingTool.isEnabled = !readonly;
+    //myDiagram.isReadOnly = readonly;
 
 
+    function initializeDiagram() {
+        var dg = g(go.Diagram, controlID_diagram, {
+                    initialContentAlignment: go.Spot.Left,
+                    //autoScale: go.Diagram.UniformToFill,
+                    allowDrop: true,
+                    initialAutoScale: go.Diagram.UniformToFill,
+                    scrollMode: go.Diagram.DocumentScroll,
+                    initialPosition: new go.Point(125, 125),
+                    layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
+                    "undoManager.isEnabled": true
+                });
+        dg.model.class = go.GraphLinksModel;
+        dg.model.nodeCategoryProperty = "template";
+        dg.model.linkFromPortIdProperty = "frompid";
+        dg.model.linkToPortIdProperty = "topid";
+        dg.model.nodeDataArray = [];
+        dg.model.linkDataArray = [];
+        //dgam.toolManager.linkingTool.isEnabled = !readonly;
+        dg.isReadOnly = readonly;
 
+        return dg;
+    }
     //$("#" + controlID_overlay_radio_existing).bind('change', function (e) {
     //    var checked = e.args.checked;
 
@@ -47706,13 +48317,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 type = originalObject;
                 id = originalObjectID;
                 populateDiagram();
-                checkModified();
             });
         } else {
         type = originalObject;
         id = originalObjectID;
         populateDiagram();
-            checkModified();
         }
     });
 
@@ -47729,8 +48338,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.addDiagramListener('ObjectDoubleClicked', onDoubleClick);
     myDiagram.addDiagramListener('LayoutCompleted', onLayoutCompleted);
     myDiagram.addDiagramListener('LinkDrawn', onLinkDrawn);
-    myDiagram.addDiagramListener('SelectionDeleting', onDelete);
+    myDiagram.addDiagramListener('SelectionDeleting', onDeleting);
+    myDiagram.addDiagramListener('SelectionDeleted', onDeleted);
     myDiagram.addDiagramListener('ExternalObjectsDropped', onDrop);
+    //myDiagram.addDiagramListener('Modified', onModified);
+    myDiagram.model.addChangedListener(onChange);
 
     myDiagram.grid.visible = false;
     myDiagram.grid.gridCellSize = new go.Size(8, 8);
@@ -47760,27 +48372,49 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         )
     );
     
+    var myPalette = initializePalette();
+    //myPalette = g(go.Palette, controlID_palette, {
+    //    contentAlignment: go.Spot.BottomCenter
+    //    , allowDrop: true
+    //    , initialAutoScale: go.Diagram.Uniform
+    //    , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
+    //})
+    //{
+    //    myPalette.model.nodeCategoryProperty = 'template';
+    //    myPalette.model.nodeDataArray = [];
+    //    myPalette.model.class = 'go.GraphLinksModel';
+    //}
 
-    myPalette = g(go.Palette, controlID_palette, {
-        contentAlignment: go.Spot.BottomCenter
-        , allowDrop: true
-        , initialAutoScale: go.Diagram.Uniform
-        , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
-    })
-    {
-        myPalette.model.nodeCategoryProperty = 'template';
-        myPalette.model.nodeDataArray = [];
-        myPalette.model.class = 'go.GraphLinksModel';
+    function initializePalette() {
+
+        var pl = g(go.Palette, controlID_palette, {
+            contentAlignment: go.Spot.BottomCenter
+            , allowDrop: true
+            , initialAutoScale: go.Diagram.Uniform
+            , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
+        })
+        pl.model.nodeCategoryProperty = 'template';
+        pl.model.nodeDataArray = [];
+        pl.model.class = 'go.GraphLinksModel';
+
+        return pl;
     }
+
     makeSearchTemplate();
+    
+    var myOverview = initializeOverview(myDiagram);
+    //myOverview =  
+    //  g(go.Overview, controlID_overview,
+    //    { observed: myDiagram, contentAlignment: go.Spot.Center });
 
-    myOverview =  
-      g(go.Overview, controlID_overview,
-        { observed: myDiagram, contentAlignment: go.Spot.Center });
+    function initializeOverview(diagram) {
+        var ov = g(go.Overview, controlID_overview,
+        { observed: diagram, contentAlignment: go.Spot.Center });
 
+        return ov;
+    }
 
     function parseData(data) {
-
         myDiagram.startTransaction("load_all_data");
         myDiagram.model.nodeDataArray = [];
         myDiagram.model.linkDataArray = [];
@@ -47788,7 +48422,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         initialLinks = [];
         var modelList = [];
         var linkList = [];
-        $('#' + controlID_message).hide(200);
+        $('#' + controlID_message).hide();
 
         for (var i = 0; i < data.nodes.length; i++) {
 
@@ -47822,9 +48456,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             var d = data.links[i];
             var link = createLinkModel();
             link.id = d.id;
+            link.key = d.id;
             link.from = d.from;
             link.to = d.to;
             link.text = d.text;
+            link.predicateId = d.predicateId;
             link.diagramObjectType = "Link";
             linkList.push(link);
         }
@@ -47834,10 +48470,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
         for (var i = 0; i < linkList.length; i++) {
             myDiagram.model.addLinkData(linkList[i]);
-        }
-       
-        initialNodes = modelList.slice();
-        initialLinks = linkList.slice();
+        }       
+
+        //get deep copy of lists
+        initialNodes = $.extend(true, [], modelList);//JSON.parse(JSON.stringify(modelList));
+        initialLinks = $.extend(true, [], linkList); //JSON.parse(JSON.stringify(linkList));
+
 
         myDiagram.commitTransaction("load_all_data");
         reOrderLayout();
@@ -47850,9 +48488,10 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 url: '/relations/' + type + '/' + id + '/sources',
             data: null,
             success: function (data) {
+                //console.log('populate');
+                //myDiagram = initializeDiagram();
                 parseData(data);
                 myDiagram.zoomToFit();
-                checkModified();
             }
         });
     }
@@ -47957,7 +48596,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $('#' + controlID_add_search).on('click', getArtifact);
     $('#' + controlID_overlay_cancel).on('click', cancelAddLink);
     $('#' + controlID_overlay_add).on('click', addRelationship);
-        //$('#' + controlID_ribbon_save).on('click', saveChanges);
 
     function populatePredicateList() {
         $.ajax({
@@ -47968,8 +48606,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
                 output.push('<option value="0_1"></option>');
                 for (var i = 0; i < data.length; i++) {
-                    //data[i].id = data[i].intersecttypeid + '_' + data[i].intersecttyperoleid
-                    output.push('<option value="' + data[i].id.toString() + '_' + data[i].direction.toString() + '">' + data[i].name + (data[i].direction == 2 ? ' (inverse)' : '') + '</option>');
+                    
+                    output.push('<option value="' + data[i].id.toString() + '">' + data[i].name + '</option>');
                     predicates.push(data[i]);
                 }
                 $('#' + controlID_overlay_predicates).html(output.join(''));
@@ -47979,8 +48617,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     function cancelAddLink() {
         if (newLink != null) {
-            if (overlayEdit) {
-                overlayEdit = false;
+            if (overlayEditLinkKey != null) {
+                overlayEditLinkKey = null;
             } else {
                 myDiagram.startTransaction("removeLink");
                 myDiagram.model.removeLinkData(newLink);
@@ -47995,60 +48633,61 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     function resetOverlay() {
         $('#' + controlID_overlay_predicates).val(0);
-        //$('#' + controlID_overlay_pname).val('');
-       // $('#' + controlID_overlay_phrase).val('');
         $('#' + controlID_overlay_add).prop('disabled', true);
-        //$('#' + controlID_overlay_radio_existing).jqxRadioButton('check');
     }
 
-    function addRelationship(id) {
-        var id = ($('#' + controlID_overlay_predicates).val() || '').split('_')[0];
-        var isInverse = ((($('#' + controlID_overlay_predicates).val() || '').split('_')[1]) == '2');
-        var phrase = null;
-        
-        //if ($('#' + controlID_overlay_radio_existing).jqxRadioButton('checked')) {
-        for (var i = 0; i < predicates.length; i++) {
-            if ((predicates[i].id.toString() + '_' + predicates[i].direction.toString()) == $('#' + controlID_overlay_predicates).val()) {
-
-                phrase = predicates[i].name;
-            }
-        }
-        //}
-        //else {
-        //    rel = {
-        //        name: $('#' + controlID_overlay_pname).val(),
-        //        phrase: $('#' + controlID_overlay_phrase).val()
-        //    };
-        //}
-        myDiagram.startTransaction("nameRelationship")
-
-        newLink.predicateName = phrase;
-        newLink.isInverse = isInverse;
-        newLink.predicateId = id;
-        newLink.phrase = phrase;
-        newLink.text = phrase;
-        newLink.diagramObjectType = "Link";
-        newLink.isDeletable = true;
-
-        var index = -1;
-
+    function findLinkDataForKey(key) {
         for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
-            if (myDiagram.model.linkDataArray[i].from == newLink.from &&
-                myDiagram.model.linkDataArray[i].to == newLink.to) {
-                myDiagram.model.removeLinkData(myDiagram.model.linkDataArray[i]);
-                break;
+            if (myDiagram.model.linkDataArray[i].key == key)
+                return myDiagram.model.linkDataArray[i];
+        }
+    }
+
+    function addRelationship() {
+
+        var id = $('#' + controlID_overlay_predicates).val();
+        var text = null;
+
+        for (var i = 0; i < predicates.length; i++) {
+            if (predicates[i].id.toString() == id.toString()) {
+                text = predicates[i].name;
             }
         }
 
-        myDiagram.model.addLinkData(newLink);
+        myDiagram.startTransaction("nameRelationship")
+        if (overlayEditLinkKey != null) {
+            var link = findLinkDataForKey(overlayEditLinkKey);
+            myDiagram.model.setDataProperty(link, 'text', text);
+            myDiagram.model.setDataProperty(link, 'predicateId', id);
+        } else {
+            newLink.predicateId = id;
+            newLink.text = text;
+            newLink.diagramObjectType = "Link";
+            newLink.isDeletable = true;
+            newLink.id = overlayEditLinkKey;
+            newLink.key = overlayEditLinkKey;
+
+            var index = -1;
+
+            for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
+                if (myDiagram.model.linkDataArray[i].from == newLink.from &&
+                    myDiagram.model.linkDataArray[i].to == newLink.to) {
+                    myDiagram.model.removeLinkData(myDiagram.model.linkDataArray[i]);
+                    break;
+                }
+            }
+
+            myDiagram.model.addLinkData(newLink);
+        }
+
 
         myDiagram.commitTransaction("nameRelationship");
         $('#' + controlID_overlay).hide();
-        checkModified();
         newLink = null;
+        overlayEditLinkKey = null;
 
         resetOverlay();
-      
+
     };
 
     amplify.subscribe("SaveAction", function (saveActionEventData) {
@@ -50529,6 +51168,7 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                 $('#AggregatesTile').fadeIn(500);
                 FusionRelationshipChartTile('AggregatesTile', 'FusionAttribute', data.ID);
                 AttributesTile('ItemAttributesTile', contextList, permissions, 'FusionAttribute', data.ID, 'Technical Attributes for ' + data.Name)
+                FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
             }
 
             function toolAction(data) {

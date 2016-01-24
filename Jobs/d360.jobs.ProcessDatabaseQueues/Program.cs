@@ -13,6 +13,48 @@ using System.Xml.Linq;
 
 namespace d360.jobs.ProcessDatabaseQueues
 {
+    public static class ThreadSafeRandom
+    {
+        [ThreadStatic]
+        private static Random Local;
+
+        public static Random ThisThreadsRandom
+        {
+            get { return Local ?? (Local = new Random(unchecked(System.Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId))); }
+        }
+    }
+
+    static class MyExtensions
+    {
+        public static void Shuffle<T>(this IList<T> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = ThreadSafeRandom.ThisThreadsRandom.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+    }
+
+    public class ObjectIndexCollectionModel
+    {
+        public ObjectIndexCollectionModel()
+        {
+            Adds = new List<AddToIndexModel>();
+            Deletes = new List<RemoveFromIndexModel>();
+            Updates = new List<UpdateInIndexModel>();
+        }
+
+        public List<AddToIndexModel> Adds { get; set; }
+        public List<RemoveFromIndexModel> Deletes { get; set; }
+        public List<UpdateInIndexModel> Updates { get; set; }
+    }
+
+
     class Program: FunctionsBase
     {
         static void Main()
@@ -25,30 +67,83 @@ namespace d360.jobs.ProcessDatabaseQueues
             {
                 bool shouldRunAgain = true;
 
+                //var companies = new List<int>() { 22 };
+                var companies = GetActiveCompanyIDs();
+                var domainPrefixes = GetCompanyDomainPrefixes();
+
                 while (shouldRunAgain)
                 {
                     shouldRunAgain = false;
 
-                    //var companies = new List<int>() { 4 };
-                    var companies = GetActiveCompanyIDs();
-
-                    var domainPrefixes = GetCompanyDomainPrefixes();
-
                     #region Must keep this segment here b/c this webjob can execute on multiple machines.  We do not want two or more machines trying to grab hold of the same queue item.
                     var rand = new Random();
                     int sleepSeconds = rand.Next(1, 10);
-                    Thread.Sleep(sleepSeconds * 1000);
+                    Thread.Sleep(sleepSeconds * 500);
                     #endregion
 
-                    companies.AsParallel().WithDegreeOfParallelism(3).ForAll(companyID =>
+                    companies.Shuffle(); //Randomize
+
+                    companies.ForEach(companyID => //.AsParallel().WithDegreeOfParallelism(10).ForAll(companyID =>
                     {
+                        var numberOfQueueItems = 100;
+                        var indexCollectionModel = new ObjectIndexCollectionModel();
+
                         var companyConnection = GetCompanyConnection(companyID);
                         companyConnection.Open();
 
-                        var total = companyConnection.Query<int>("select count(1) from [queue].[Task] where MachineAssigned is null and NumberOfRetries < 2").Single();
-                        var queueItems = companyConnection.Query<QueueTask>(@"select top 25 * from [queue].[Task] where MachineAssigned is null and NumberOfRetries < 2 order by [Priority] asc, [Date] asc").ToList();
+                        #region Indexer Func
 
-                        if (total > 25)
+                        Func<string, int, string, string> resolveIndexItem = (o, oid, a) => {
+                            ObjectDetail detail = null;
+                            Dictionary<string, string> fields = null;
+
+                            #region Load Info for Object
+
+                            detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
+                            fields = companyConnection.Query<FieldWithRelation>(
+                                "SELECT * from FieldWithRelation where ObjectType = @t and ObjectID = @i order by SortOrder",
+                                new { t = o, i = oid }
+                                ).ToDictionary(k => k.Name, v => v.FormattedValue);
+
+                            if (detail != null)
+                            {
+                                if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
+                                else fields.Add("Name", detail.Name);
+
+                                if (fields.ContainsKey("Description")) fields["Description"] = detail.Description;
+                                else fields.Add("Description", detail.Description);
+
+                                if (fields.ContainsKey("TextPath")) fields["TextPath"] = detail.TextPath;
+                                else fields.Add("TextPath", detail.TextPath);
+                            }
+
+                            #endregion
+
+                            switch (a)
+                            {
+                                case "A":   //Add
+                                    var add = new AddToIndexModel { CompanyID = companyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.AddToIndex, Type = detail.TypeName };
+                                    indexCollectionModel.Adds.Add(add);
+                                    break;
+                                case "U":   //Update
+                                    var update = new UpdateInIndexModel { CompanyID = companyID, Fields = fields, Group = o, ID = oid, RelativeUrl = detail.Url, To = QueueAction.UpdateInIndex, Type = detail.TypeName };
+                                    indexCollectionModel.Updates.Add(update);
+                                    break;
+                                case "D":   //Delete
+                                    var delete = new RemoveFromIndexModel { CompanyID = companyID, Fields = fields, Group = o, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName
+                                    indexCollectionModel.Deletes.Add(delete);
+                                    break;
+                            }
+
+                            return "";
+                        };
+
+                        #endregion
+
+                        var total = companyConnection.Query<int>("select count(1) from [queue].[Task] where MachineAssigned is null and NumberOfRetries < 2").Single();
+                        var queueItems = companyConnection.Query<QueueTask>($"select top {numberOfQueueItems} * from [queue].[Task] where MachineAssigned is null and NumberOfRetries < 2 order by [Priority] asc, [Date] asc").ToList();
+
+                        if (total > numberOfQueueItems)
                         {
                             shouldRunAgain = true;
                         }
@@ -64,16 +159,11 @@ namespace d360.jobs.ProcessDatabaseQueues
                         {
                             try
                             {
-                                bool processFusionWriteStatus = true;
-                                Task<int> task = null;
-                                bool hasNotAsyncTaskError = false;
-                                string asyncTaskError = "";
-
                                 switch (q.Action)
                                 {
                                     case "Analytic":
                                         #region
-                                        task = companyConnection.ExecuteAsync("exec utility.CalculateStatistics @Type, @ID", new { Type = q.Object, ID = q.ObjectID }, null, 120);    // 2 minute timeout.
+                                        companyConnection.Execute("exec utility.CalculateStatistics @Type, @ID", new { Type = q.Object, ID = q.ObjectID }, null, 180);    // 3 minute timeout.
                                         break;
                                     #endregion
                                     case "Add":
@@ -81,7 +171,7 @@ namespace d360.jobs.ProcessDatabaseQueues
                                         if (!string.IsNullOrEmpty(q.Custom))
                                         {
                                             var customXml = XElement.Parse(q.Custom);
-                                            task = companyConnection.ExecuteAsync(
+                                            companyConnection.Execute(
                                                 "exec AsyncAddObject @Object, @ObjectID, @ParentObject, @ParentObjectID, @ResourceID",
                                                 new
                                                 {
@@ -93,6 +183,8 @@ namespace d360.jobs.ProcessDatabaseQueues
                                                 },
                                                 null,
                                                 10800);    // 180 minute timeout.
+
+                                            resolveIndexItem(q.Object, q.ObjectID, "A");
                                         }
                                         break;
                                     #endregion
@@ -101,7 +193,7 @@ namespace d360.jobs.ProcessDatabaseQueues
                                         if (!string.IsNullOrEmpty(q.Custom))
                                         {
                                             var customXml = XElement.Parse(q.Custom);
-                                            task = companyConnection.ExecuteAsync(
+                                            companyConnection.Execute(
                                                 "exec AsyncDeleteObject @Object, @ObjectID, @ParentObject, @ParentObjectID, @ResourceID",
                                                 new
                                                 {
@@ -113,6 +205,8 @@ namespace d360.jobs.ProcessDatabaseQueues
                                                 },
                                                 null,
                                                 10800);    // 180 minute timeout.
+
+                                            resolveIndexItem(q.Object, q.ObjectID, "D");
                                         }
                                         break;
                                     #endregion
@@ -121,7 +215,7 @@ namespace d360.jobs.ProcessDatabaseQueues
                                         if (!string.IsNullOrEmpty(q.Custom))
                                         {
                                             var customXml = XElement.Parse(q.Custom);
-                                            task = companyConnection.ExecuteAsync(
+                                            companyConnection.Execute(
                                                 "exec AsyncUpdateObject @Object, @ObjectID, @ParentObject, @ParentObjectID, @ResourceID",
                                                 new
                                                 {
@@ -133,176 +227,112 @@ namespace d360.jobs.ProcessDatabaseQueues
                                                 },
                                                 null,
                                                 10800);    // 180 minute timeout.
+
+                                            resolveIndexItem(q.Object, q.ObjectID, "U");
                                         }
                                         break;
                                     #endregion
                                     case "FollowChildren":
                                         #region
-                                        try
+                                        switch (q.Object)
                                         {
-                                            switch (q.Object)
-                                            {
-                                                case "Taxonomy":
-                                                    var processItems = companyConnection.Query<int>(Sql.TaxonomyParents, new { id = (int)q.ObjectID });
-                                                    foreach (var item in processItems)
-                                                    {
-                                                        companyConnection.Execute("SetChildrenByFollowID @id", new { id = (int)item }, null, 180); //3 minute timeout
-                                                    }
-                                                    break;
-                                            }
-
-                                            //cleanup orphaned FollowChild records
-                                            companyConnection.Execute("delete from followchild where not exists(select * from follow f where f.followtypeid = 3 and f.objecttype = parentobjecttype and f.objectid = parentobjectid)", null, null, 500);
-
+                                            case "Taxonomy":
+                                                var processItems = companyConnection.Query<int>(Sql.TaxonomyParents, new { id = (int)q.ObjectID });
+                                                foreach (var item in processItems)
+                                                {
+                                                    companyConnection.Execute("SetChildrenByFollowID @id", new { id = (int)item }, null, 180); //3 minute timeout
+                                                }
+                                                break;
                                         }
-                                        catch (Exception ex)
-                                        {
-                                            hasNotAsyncTaskError = true;
-                                            asyncTaskError = ex.GetFullExceptionData();
-                                        }
+
+                                        //cleanup orphaned FollowChild records
+                                        companyConnection.Execute("delete from followchild where not exists(select * from follow f where f.followtypeid = 3 and f.objecttype = parentobjecttype and f.objectid = parentobjectid)", null, null, 500);
                                         break;
                                     #endregion
                                     case "FusionCache":
                                         #region
-                                        task = companyConnection.ExecuteAsync("exec fusion.ProcessFusionCacheInQueue @FusionID", new { FusionID = q.ObjectID }, null, 10800);    // 180 minute timeout.
+                                        companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID", new { FusionID = q.ObjectID }, null, 10800);    // 180 minute timeout.
                                         break;
                                     #endregion
                                     case "Notify":
                                         #region
-                                        try
+                                        var domainPrefix = domainPrefixes.First(i => i.Key == companyID).Value;
+
+                                        switch (q.Object)
                                         {
-                                            var domainPrefix = domainPrefixes.First(i => i.Key == companyID).Value;
+                                            case "Comment":
+                                                #region
+                                                var comment = companyConnection.Query<CommentInfo>(Sql.Comment, new { CommentID = q.ObjectID }, null, true, 900).FirstOrDefault();
 
-                                            switch (q.Object)
-                                            {
-                                                case "Comment":
-                                                    #region
-                                                    var comment = companyConnection.Query<CommentInfo>(Sql.Comment, new { CommentID = q.ObjectID }, null, true, 900).FirstOrDefault();
+                                                if (comment != null)
+                                                {
+                                                    var resourcesToNotify = companyConnection.Query<CommentNotificationUser>(Sql.Resources, new { CommentID = q.ObjectID }, null, true, 900).ToList();
 
-                                                    if (comment != null)
-                                                    {
-                                                        var resourcesToNotify = companyConnection.Query<CommentNotificationUser>(Sql.Resources, new { CommentID = q.ObjectID }, null, true, 900).ToList();
+                                                    resourcesToNotify.ForEach(r => {
+                                                        var tags = new Dictionary<string, string>();
+                                                        tags.Add("user", r.Name);
+                                                        tags.Add("author", comment.Author);
+                                                        tags.Add("origin", comment.OriginationType);
 
-                                                        resourcesToNotify.ForEach(r => {
-                                                            var tags = new Dictionary<string, string>();
-                                                            tags.Add("user", r.Name);
-                                                            tags.Add("author", comment.Author);
-                                                            tags.Add("origin", comment.OriginationType);
+                                                        tags.Add("ownerName", comment.OwnerName);
+                                                        tags.Add("ownerType", comment.OwnerTypeName);
+                                                        tags.Add("body", comment.Body);
+                                                        tags.Add("ownerUrl", string.Format("https://{0}.data3sixty.com/{1}", domainPrefix, comment.OwnerUrl));
+                                                        var parentReference = "";
+                                                        if (comment.ParentID.HasValue)
+                                                        {
+                                                            parentReference = string.Format("<p>This is a reply to the original comment by {0} on {1}</p><p style=\"margin-top: 10px; margin-bottom: 10px; border: 1px solid #3979a2; background-color:#eeeeee\">{2}</p>", comment.ParentAuthor, comment.ParentDateCreated, comment.ParentBody);
+                                                        }
+                                                        tags.Add("parentReference", parentReference);
+                                                        tags.Add("createDate", comment.DateCreated.ToShortDateString());
+                                                        SendMailToUser(r.Name, r.Email, "Data3Sixty - New Comment Added", "", "comment-notification-immediate", tags, "Data3Sixty Community");
+                                                    });
+                                                }
+                                                break;
+                                            #endregion
+                                            case "FusionExecution":
+                                                #region
+                                                var execution = companyConnection.Query<d360.core.entities.FusionExecution>(@"select * from fusion.Execution where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
 
-                                                            tags.Add("ownerName", comment.OwnerName);
-                                                            tags.Add("ownerType", comment.OwnerTypeName);
-                                                            tags.Add("body", comment.Body);
-                                                            tags.Add("ownerUrl", string.Format("https://{0}.data3sixty.com/{1}", domainPrefix, comment.OwnerUrl));
-                                                            var parentReference = "";
-                                                            if (comment.ParentID.HasValue)
-                                                            {
-                                                                parentReference = string.Format("<p>This is a reply to the original comment by {0} on {1}</p><p style=\"margin-top: 10px; margin-bottom: 10px; border: 1px solid #3979a2; background-color:#eeeeee\">{2}</p>", comment.ParentAuthor, comment.ParentDateCreated, comment.ParentBody);
-                                                            }
-                                                            tags.Add("parentReference", parentReference);
-                                                            tags.Add("createDate", comment.DateCreated.ToShortDateString());
-                                                            SendMailToUser(r.Name, r.Email, "Data3Sixty - New Comment Added", "", "comment-notification-immediate", tags, "Data3Sixty Community");
-                                                        });
-                                                    }
-                                                    break;
+                                                if (execution != null)
+                                                {
+                                                    var fusionInfo = companyConnection.Query<dynamic>(Sql.FusionInfo, new { id = execution.FusionID }).FirstOrDefault();
+
+                                                    var resourcesToNotify = companyConnection.Query<dynamic>(Sql.FusionResources, new { id = execution.FusionID }, null, true, 900).ToList();
+
+                                                    resourcesToNotify.ForEach(r => {
+                                                        var tags = new Dictionary<string, string>();
+                                                        tags.Add("user", r.Name);
+                                                        tags.Add("fusion", fusionInfo.Fusion);
+                                                        tags.Add("fusionType", fusionInfo.FusionType);
+                                                        tags.Add("adds", execution.Adds.HasValue ? execution.Adds.Value.ToString() : "None");
+                                                        tags.Add("updates", execution.Updates.HasValue ? execution.Updates.Value.ToString() : "None");
+                                                        tags.Add("deletes", execution.Deletes.HasValue ? execution.Deletes.Value.ToString() : "None");
+                                                        tags.Add("fusionUrl", string.Format("https://{0}.data3sixty.com/#/fusion/{1}/{2}", domainPrefix, fusionInfo.FusionTypeID, fusionInfo.FusionID));
+                                                        tags.Add("executionUrl", string.Format("https://{0}.data3sixty.com/#/fusion/{1}/{2}/executions/{3}", domainPrefix, fusionInfo.FusionTypeID, fusionInfo.FusionID, execution.ID));
+                                                        tags.Add("startDate", execution.DateStarted.Value.ToShortDateString());
+                                                        tags.Add("startTime", execution.DateStarted.Value.ToShortTimeString());
+                                                        SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");
+                                                    });
+                                                }
+                                                break;
                                                 #endregion
-                                                case "FusionExecution":
-                                                    #region
-                                                    var execution = companyConnection.Query<d360.core.entities.FusionExecution>(@"select * from fusion.Execution where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
-
-                                                    if (execution != null)
-                                                    {
-                                                        var fusionInfo = companyConnection.Query<dynamic>(Sql.FusionInfo, new { id = execution.FusionID }).FirstOrDefault();
-
-                                                        var resourcesToNotify = companyConnection.Query<dynamic>(Sql.FusionResources, new { id = execution.FusionID }, null, true, 900).ToList();
-
-                                                        resourcesToNotify.ForEach(r => {
-                                                            var tags = new Dictionary<string, string>();
-                                                            tags.Add("user", r.Name);
-                                                            tags.Add("fusion", fusionInfo.Fusion);
-                                                            tags.Add("fusionType", fusionInfo.FusionType);
-                                                            tags.Add("adds", execution.Adds.HasValue ? execution.Adds.Value.ToString() : "None");
-                                                            tags.Add("updates", execution.Updates.HasValue ? execution.Updates.Value.ToString() : "None");
-                                                            tags.Add("deletes", execution.Deletes.HasValue ? execution.Deletes.Value.ToString() : "None");
-                                                            tags.Add("fusionUrl", string.Format("https://{0}.data3sixty.com/#/fusion/{1}/{2}", domainPrefix, fusionInfo.FusionTypeID, fusionInfo.FusionID));
-                                                            tags.Add("executionUrl", string.Format("https://{0}.data3sixty.com/#/fusion/{1}/{2}/executions/{3}", domainPrefix, fusionInfo.FusionTypeID, fusionInfo.FusionID, execution.ID));
-                                                            tags.Add("startDate", execution.DateStarted.Value.ToShortDateString());
-                                                            tags.Add("startTime", execution.DateStarted.Value.ToShortTimeString());
-                                                            SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");
-                                                        });
-                                                    }
-                                                    break;
-                                                    #endregion
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            hasNotAsyncTaskError = true;
-                                            asyncTaskError = ex.GetFullExceptionData();
                                         }
                                         break;
                                     #endregion
                                     case "ObjectCache":
                                         #region
-                                        task = companyConnection.ExecuteAsync("exec cache.SynchronizeObjectDetails @type, @id", new { type = q.Object, id = q.ObjectID }, null, 180);
+                                        companyConnection.Execute("exec cache.SynchronizeObjectDetails @type, @id", new { type = q.Object, id = q.ObjectID }, null, 180);
                                         break;
                                     #endregion
                                     case "ObjectIndex":
                                         #region
-                                        ObjectDetail detail = null;
-                                        Dictionary<string, string> fields = null;
-
-                                        #region Load Info for Object
-
-                                        detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = q.Object, i = q.ObjectID }).SingleOrDefault();
-                                        fields = companyConnection.Query<FieldWithRelation>(
-                                            "SELECT * from FieldWithRelation where ObjectType = @t and ObjectID = @i order by SortOrder",
-                                            new { t = q.Object, i = q.ObjectID }
-                                            ).ToDictionary(k => k.Name, v => v.FormattedValue);
-
-                                        if (detail != null)
-                                        {
-                                            if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
-                                            else fields.Add("Name", detail.Name);
-
-                                            if (fields.ContainsKey("Description")) fields["Description"] = detail.Description;
-                                            else fields.Add("Description", detail.Description);
-
-                                            if (fields.ContainsKey("TextPath")) fields["TextPath"] = detail.TextPath;
-                                            else fields.Add("TextPath", detail.TextPath);
-                                        }
-
-                                        #endregion
-
-                                        try
-                                        {
-                                            var search = new extensions.search.AzureSearchSource();
-                                            switch (q.Custom)
-                                            {
-                                                case "A":   //Add
-                                                    var add = new AddToIndexModel { CompanyID = companyID, Fields = fields, Group = q.Object, ID = q.ObjectID, RelativeUrl = detail.Url, To = QueueAction.AddToIndex, Type = detail.TypeName };
-                                                    search.AddToIndex(add);
-                                                    break;
-                                                case "U":   //Update
-                                                    var update = new UpdateInIndexModel { CompanyID = companyID, Fields = fields, Group = q.Object, ID = q.ObjectID, RelativeUrl = detail.Url, To = QueueAction.UpdateInIndex, Type = detail.TypeName };
-                                                    search.UpdateInIndex(update);
-                                                    break;
-                                                case "D":   //Delete
-                                                    var delete = new RemoveFromIndexModel { CompanyID = companyID, Fields = fields, Group = q.Object, ID = q.ObjectID, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName
-                                                    search.RemoveFromIndex(delete);
-                                                    break;
-                                            }
-                                            search = null;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            hasNotAsyncTaskError = true;
-                                            asyncTaskError = ex.GetFullExceptionData();
-                                        }
+                                        resolveIndexItem(q.Object, q.ObjectID, q.Custom);
                                         break;
                                     #endregion
                                     case "ObjectStyleCache":
                                         #region
-                                        task = companyConnection.ExecuteAsync(Sql.StyleCache, new { type = q.Object, id = q.ObjectID }, null, 7200);
+                                        companyConnection.Execute(Sql.StyleCache, new { type = q.Object, id = q.ObjectID }, null, 7200);
                                         break;
                                     #endregion
                                     case "ObjectVersion":
@@ -310,7 +340,7 @@ namespace d360.jobs.ProcessDatabaseQueues
                                         if (!string.IsNullOrEmpty(q.Custom))
                                         {
                                             var customXml = XElement.Parse(q.Custom);
-                                            task = companyConnection.ExecuteAsync(
+                                            companyConnection.Execute(
                                                 "EXEC utility.AddAuditEntry @Object, @ObjectID, @ResourceID, @Date, @Action, @ActionObject, @ActionObjectID",
                                                 new
                                                 {
@@ -327,88 +357,52 @@ namespace d360.jobs.ProcessDatabaseQueues
                                         }
                                         break;
                                         #endregion
-                                        //case "Recache":
-                                        //    #region
-                                        //    break;
-                                        //    #endregion
                                 }
 
-                                if (task != null)
-                                {
-                                    task.ContinueWith(t =>
-                                    {
-                                        string exceptionData = "";
-                                        if (t.Exception != null)
-                                        {
-                                            exceptionData = t.Exception.GetFullExceptionData();
-                                            if (t.Exception.InnerExceptions != null)
-                                            {
-                                                foreach (var ex in t.Exception.InnerExceptions)
-                                                {
-                                                    exceptionData += ex.GetFullExceptionData();
-                                                }
-                                            }
-                                            mex.Add(t.Exception);//companyConnection.Execute("insert into [fusion].[Error] values()", new { m = Environment.MachineName, queueID = q.ID });
-                                        }
-
-                                        if (t.IsCompleted)
-                                        {
-                                            if (t.IsFaulted)
-                                            {
-                                                if (q.NumberOfRetries >= 3)
-                                                {
-                                                    companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
-                                                }
-                                                else
-                                                {
-                                                    companyConnection.Execute(@"update [queue].[Task] set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = exceptionData }, null, 500);
-                                                }
-                                                
-                                            }
-                                            else
-                                            {
-                                                companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
-                                            }
-                                        }
-
-                                        processFusionWriteStatus = false;
-                                    });
-
-                                    while (processFusionWriteStatus && (task.Exception == null))
-                                    {
-                                        Console.WriteLine("Executing company {0}, queue {1}...", companyID, q.ID);
-                                        Thread.Sleep(2500);
-                                    }
-                                }
-                                else
-                                {
-                                    if (hasNotAsyncTaskError)
-                                    {
-                                        companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine(asyncTaskError);
-                                        if (q.NumberOfRetries >= 2)
-                                        {
-                                            companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
-                                        }
-                                        else
-                                        {
-                                            companyConnection.Execute(@"update [queue].[Task] set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = asyncTaskError }, null, 500);
-                                        }
-                                    }
-                                }
-
+                                companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
                             }
                             catch (Exception ex)
                             {
-                                mex.Add(ex);
+                                if (q.NumberOfRetries >= 2)
+                                    companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
+                                else
+                                    companyConnection.Execute(@"update [queue].[Task] set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = ex.GetFullExceptionData() }, null, 500);
                             }
                         });
 
                         companyConnection.Close();
                         companyConnection.Dispose();
+
+                        #region Now deal with INDEXING
+
+                        try
+                        {
+                            var search = new extensions.search.AzureSearchSource();
+
+                            if (indexCollectionModel.Adds.Count > 0)
+                            {
+                                search.AddToIndex(indexCollectionModel.Adds);
+                            }
+
+                            if (indexCollectionModel.Deletes.Count > 0)
+                            {
+                                search.RemoveFromIndex(indexCollectionModel.Deletes);
+                            }
+
+                            if (indexCollectionModel.Updates.Count > 0)
+                            {
+                                search.UpdateInIndex(indexCollectionModel.Updates);
+                            }
+
+                            search = null;
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData();
+                            Console.WriteLine(msg);
+                        }
+
+                        #endregion
                     });
                 } //end while shouldrunagain
             }

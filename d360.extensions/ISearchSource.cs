@@ -115,6 +115,7 @@ namespace d360.extensions
         /// </summary>
         /// <param name="item">The item to remove from the index.</param>
         void RemoveFromIndex(RemoveFromIndexModel item);
+        void RemoveFromIndex(List<RemoveFromIndexModel> items);
 
         void UpdateInIndex(UpdateInIndexModel item);
         void UpdateInIndex(List<UpdateInIndexModel> items);
