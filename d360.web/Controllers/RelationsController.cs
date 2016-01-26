@@ -832,6 +832,32 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
             };
         }
 
+        [HttpGet, Route("update/{intersectMapID:int}/{predicateID:int}")]
+        public JsonNetResult EditRelationship(int intersectMapID, int predicateID)
+        {
+            var message = "";
+            var success = false;
+            if (intersectMapID <= 0)
+            {
+                message = $"The intersect map ID ({intersectMapID}) is invalid.";
+            }
+            else
+            {
+                var record = Company.GetById<IntersectMap>(intersectMapID);
+                if (record == null)
+                {
+                    message = $"The intersect map record with ID ({intersectMapID}) cound not be found.";
+                }
+                else
+                {
+                    record.PredicateID = predicateID;
+                    Company.Update(record);
+                    success = true;
+                }
+            }
+
+            return new JsonNetResult { Data = new { message = message, success = success }, Formatting = Newtonsoft.Json.Formatting.None };
+        }
         public ActionResult EditRelationship(int id)
         {
             ViewData.Add("IntersectID", id);
