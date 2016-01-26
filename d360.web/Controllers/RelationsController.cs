@@ -300,7 +300,9 @@ order by D.TextPath";
 
         void processSourceLevel(List<SourcesToObjectModel> list, int id)
         {
+
             var level = list.Single(i => i.ID == id && i.Type == "S").Level + 1;
+
             list.Where(i => i.ID == id && i.Type == "O").ToList().ForEach(i => {
                 i.Level = level;
                 processSourceLevel(list, i.O, i.OID, level);
@@ -312,6 +314,30 @@ order by D.TextPath";
                 i.Level = level;
                 processSourceLevel(list, i.ID);
             });
+        }
+
+
+        public DiagramsController.DiagramModel ProcessDiagram(DiagramsController.DiagramModel model, DiagramsController.JsonNodeItem start)
+        {
+            var diagram = new DiagramsController.DiagramModel();
+            diagram.nodes.Add(start);
+
+            //links to the right
+            var links = model.links.Where(l => l.from == start.key).ToList();
+
+            links.ForEach(l =>
+            {
+                diagram.links.Add(l);
+                var node = model.nodes.Where(i => i.key == l.to).SingleOrDefault();
+                if (node == null)
+                    return;
+                    //diagram.nodes.Add(node);
+                    var k = ProcessDiagram(model, node);
+                diagram.nodes.AddRange(k.nodes);
+                diagram.links.AddRange(k.links);
+            });
+
+            return diagram;
         }
 
         [HttpGet, Route("{type}/{id:int}/sources")]
@@ -518,7 +544,9 @@ select * from @h";
             #endregion
 
             var list = Company.Query<SourcesToObjectModel>(sql1, new { type = type.ToString(), id }).ToList();
-            list.Where(i => i.Level == 1).ToList().ForEach(i => {
+
+            list.Where(i => i.Level == 1).ToList().ForEach(i =>
+            {
                 processSourceLevel(list, i.ID); //assumes type is "O"
             });
 
@@ -548,17 +576,62 @@ select * from @h";
                 }
             });
 
-            //var list = Company.Query<SourcesToObjectModel>(sql, new { type = type.ToString(), id }).ToList();
-            //processSourceLevels(list, new List<int>(), 1);
+            var model = new DiagramsController.DiagramModel();
+            model.links = links;
+            model.nodes = nodes;
 
-            //list.ForEach(m =>
-            //{
-            //    if (!nodes.Any(i => i.key == $"{m.SourceLevel}{m.SourceObject}{m.SourceObjectID}"))
-            //        nodes.Add(new DiagramsController.JsonNodeItem { key = $"{m.SourceLevel}{m.SourceObject}{m.SourceObjectID}", level = m.SourceLevel, obj = m.SourceObject, objid = m.SourceObjectID, name = m.SourceObjectName, type = m.SourceTypeName, back = m.SourceIconBackColor, fore = m.SourceIconForeColor, intersectMapId = m.ID, intersectId = m.IntersectID });
-            //    if (!nodes.Any(i => i.key == $"{m.TargetLevel}{m.TargetObject}{m.TargetObjectID}"))
-            //        nodes.Add(new DiagramsController.JsonNodeItem { key = $"{m.TargetLevel}{m.TargetObject}{m.TargetObjectID}", level = m.TargetLevel, obj = m.TargetObject, objid = m.TargetObjectID, name = m.TargetObjectName, type = m.TargetTypeName, back = m.TargetIconBackColor, fore = m.TargetIconForeColor, intersectMapId = m.ID, intersectId = m.IntersectID });
-            //    links.Add(new DiagramsController.JsonLinkItem { id = m.ID, from = $"{m.SourceLevel}{m.SourceObject}{m.SourceObjectID}", to = $"{m.TargetLevel}{m.TargetObject}{m.TargetObjectID}", text = m.Predicate });
-            //});
+            var leadingNodes = nodes.Where(n => !links.Any(l => l.to == n.key)).ToList();
+            var diagrams = new List<DiagramsController.DiagramModel>();
+
+            //get discrete diagrams
+            leadingNodes.ForEach(n =>
+            {
+                var diagram = ProcessDiagram(model, n);
+                diagrams.Add(diagram);
+
+            });
+
+            //pick the biggest
+            var mainDiagram = diagrams.OrderByDescending(d => d.nodes.Count).First();
+
+            //now merge the smaller diagrams into the main one if possible
+            foreach (DiagramsController.DiagramModel dgm in diagrams)
+            {
+                if (dgm == mainDiagram)
+                    continue;
+
+                var nodeList = dgm.nodes.OrderByDescending(n => n.level);
+
+                foreach (DiagramsController.JsonNodeItem n in nodeList)
+                {
+
+                    var node = mainDiagram.nodes.OrderBy(k => k.level).Where(k => k.obj == n.obj && k.objid == n.objid).FirstOrDefault();
+                    if (node == null)
+                        continue;
+                    else
+                    {
+                        var leftLinks = dgm.links.Where(l => l.to == n.key);
+                        var rightLinks = dgm.links.Where(l => l.from == n.key);
+
+                        var nodeExists = false;
+
+                        if (mainDiagram.nodes.Any(k => k.key == n.key))
+                        {
+                            //make sure we don't delete this node later
+                            nodeExists = true;
+                        }
+
+                        //point affected links to mainDiagram node
+                        foreach (DiagramsController.JsonLinkItem l in leftLinks)
+                            l.to = node.key;
+                        foreach (DiagramsController.JsonLinkItem l in rightLinks)
+                            l.from = node.key;
+
+                        if (!nodeExists)
+                            model.nodes.Remove(n);
+                    }
+                }
+            }
 
             return new JsonNetResult
             {

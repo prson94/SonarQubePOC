@@ -633,6 +633,11 @@ from	h
             public bool exclude { get; set; }
             public int intersectMapId { get; set; }
             public int intersectId { get; set; }
+
+            public override string ToString()
+            {
+                return level.ToString();
+            }
         }
 
         public class JsonLinkItem
@@ -644,6 +649,20 @@ from	h
             public string text { get; set; }
             public int predicateId { get; set; }
         }
+
+        public class DiagramModel
+        {
+            public DiagramModel()
+            {
+                nodes = new List<JsonNodeItem>();
+                links = new List<JsonLinkItem>();
+            }
+
+            public List<JsonNodeItem> nodes { get; set; }
+
+            public List<JsonLinkItem> links { get; set; }
+        }
+
 
         [HttpGet, Route("maps/{type}/{id:int}.json")]
         public JsonNetResult MapJson(string type, int id)
