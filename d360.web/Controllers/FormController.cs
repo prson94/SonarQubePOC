@@ -3717,11 +3717,14 @@ namespace d360.web.Controllers
 
                     var displayFields = parseTextField(form, "FusionLookupFields");
 
-                    def.FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>();
-
-                    foreach (var fieldTypeID in displayFields.Split(','))
+                    if (!string.IsNullOrEmpty(displayFields))
                     {
-                        def.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = def.ID, FieldTypeID = int.Parse(fieldTypeID) });
+                        def.FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>();
+
+                        foreach (var fieldTypeID in displayFields.Split(','))
+                        {
+                            def.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = def.ID, FieldTypeID = int.Parse(fieldTypeID) });
+                        }
                     }
 
                     def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
