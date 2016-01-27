@@ -2159,19 +2159,19 @@ from	    ResponsibilityTypeHierarchy H
                         row => (int)row.id,
                         row => (string)row.url
                     );
-
-            var ro = new ReadOnlyField
-            {
-                Row = currentRowNumber++,
-                Column = 1,
-                Name = k.FriendlyName,
-                FieldDescription = k.DisplayDescription,
-                FieldName = k.Name
-            };
+                        
 
             if (results.Count() > 1 || def.FieldTypeFusionLookupDisplayFields != null && def.FieldTypeFusionLookupDisplayFields.Count > 0)
             {
-                ro.FusionLookupGridUrl = string.Format("api/FusionLookupField/{0}/{1}/values", fusionAttributeID, def.ID);
+                var ro = new ReadOnlyField
+                {
+                    Row = currentRowNumber++,
+                    Column = 1,
+                    Name = k.FriendlyName,
+                    FieldDescription = k.DisplayDescription,
+                    FieldName = k.Name,
+                    FusionLookupGridUrl = string.Format("api/FusionLookupField/{0}/{1}/values", fusionAttributeID, def.ID)
+                };
 
                 list.Add(ro);
 
@@ -2185,6 +2185,15 @@ from	    ResponsibilityTypeHierarchy H
 
             if (firstItem != null)
             {
+                var ro = new ReadOnlyField
+                {
+                    Row = currentRowNumber++,
+                    Column = 1,
+                    Name = k.FriendlyName,
+                    FieldDescription = k.DisplayDescription,
+                    FieldName = k.Name                  
+                };
+
                 urlDict.TryGetValue(firstItem.ID, out url);
 
 
@@ -2198,9 +2207,9 @@ from	    ResponsibilityTypeHierarchy H
                 }
 
                 ro.Value = value;
-            }
 
-            list.Add(ro);
+                list.Add(ro);
+            }
 
             return currentRowNumber;
 
