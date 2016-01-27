@@ -20,3 +20,5 @@ ALTER TABLE [dbo].[FusionAttributePromotion]
 ADD [ObjectTypeID] INT NOT NULL DEFAULT(-1)
 
 go
+
+alter table [fusion].[execution] add [Version] VARCHAR(250) not NULL DEFAULT ('unknown')

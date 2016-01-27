@@ -11,6 +11,9 @@ namespace d360.core.entities
 
         [DataMember]
         public FusionRelationshipModels Relationships { get; set; }
+
+        [DataMember]
+        public string Version { get; set; }
     }
 
     [CollectionDataContract(Name = "items")]

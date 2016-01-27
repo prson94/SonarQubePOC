@@ -10,6 +10,7 @@
     [Deletes]             INT              NULL,
     [LoadIsNew]           BIT              CONSTRAINT [DF_FusionExecution_LoadIsNew] DEFAULT ((0)) NULL,
     [DateToUseForHistory] DATETIME         CONSTRAINT [DF_FusionExecution_DateToUseForHistory] DEFAULT (getutcdate()) NOT NULL,
+	[Version]			  VARCHAR(250)	   NULL DEFAULT ('unknown'),
     CONSTRAINT [PK_FusionExecution] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 

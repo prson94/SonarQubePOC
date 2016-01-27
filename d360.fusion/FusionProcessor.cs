@@ -108,7 +108,7 @@ namespace d360.fusion
                                         
 
                     sw.Restart();
-                    ExecutionID = await LogExecution(companyConnection);
+                    ExecutionID = await LogExecution(companyConnection,data.Version);
                     Trace.TraceInformation(string.Format("LogExecution\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
                     Trace.TraceInformation("Processing fusion execution ID: [{0}]", ExecutionID);
@@ -283,17 +283,18 @@ namespace d360.fusion
                 ",new { date = DateTime.UtcNow, id = ExecutionID, a = _workArea.Changes.AddCount, u = _workArea.Changes.UpdateCount, d = _workArea.Changes.DeleteCount }, commandTimeout: ExecuteQueryTimeout);
         }
 
-        private async Task<int> LogExecution(SqlConnection companyConnection)
+        private async Task<int> LogExecution(SqlConnection companyConnection,string version)
         {
+            if (string.IsNullOrEmpty(version)) version = "unknown";
             //TODO : remove queueID from fusion.execution table or make it nullable.
             //insert a record into the fusion execution table that logs the start of this execution
             //insert into fusion.execution (queueID,fusionID,RawLogFileName,DateStarted)
             var result = await companyConnection.QueryAsync<int>(@"
                     insert 
-                        into [fusion].[execution] ([queueID],[fusionID],[RawLogFileName],[DateStarted])
-                        values('F4EEC459-9DEF-4A3D-BDCA-EC34849CAE08',@inFusionID,@log,@started);
+                        into [fusion].[execution] ([queueID],[fusionID],[RawLogFileName],[DateStarted],[Version])
+                        values('F4EEC459-9DEF-4A3D-BDCA-EC34849CAE08',@inFusionID,@log,@started,@ver);
                         SELECT CAST(SCOPE_IDENTITY() as int)
-            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow }, commandTimeout:ReadQueryTimeout);
+            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow,ver =version }, commandTimeout:ReadQueryTimeout);
 
             return result.FirstOrDefault();
         }
