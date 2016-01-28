@@ -303,11 +303,11 @@
                                 autoheight: true,
                                 sortable: true,
                                 filterable: true,
-                                showfilterrow: true,
+                                showfilterrow: false,
                                 pageable: true,
                                 columnsresize: true,
                                 source: dataAdapter,
-                                theme: list_theme,
+                                theme: 'flat',
                                 pagermode: 'simple',                               
                                 columns: cols
                             });                            
