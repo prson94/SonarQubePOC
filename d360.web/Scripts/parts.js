@@ -2323,7 +2323,7 @@ function FusionAttributeDetailTile(controlID, type, id) {
     })
     .done(function (data, status, xhr) {
         if (data.Fields.length > 0) {            
-            $(controlID).html('<header>Details</header><table style="width: 100%"><tr><td><div id="' + detailControlID + '" style="margin: auto; width: 95%;"></div></td></tr></table>');
+            $(controlID).html('<header>Details</header><div id="' + detailControlID + '" style="margin: auto; width: 95%;" class="form"></div>');
             detailControlID = '#' + detailControlID;
             var itemCnt = 0;
             var ended = false;
@@ -2335,12 +2335,12 @@ function FusionAttributeDetailTile(controlID, type, id) {
             $(row).append(col);
 
             col.append("<div class='FieldName FieldDisplayName'>Name</div>");
-            col.append("<div class='FieldContent'>" + data.Name + "</div>");
+            col.append("<div class='FieldContent wrapword'>" + data.Name + "</div>");
 
             col = $("<div class='col l6 m6'>");
             $(row).append(col);
             col.append("<div class='FieldName FieldDisplayName'>Path</div>");
-            col.append("<div class='FieldContent'>" + data.TextPath + "</div>");
+            col.append("<div class='FieldContent wrapword'>" + data.TextPath + "</div>");
 
             row = $("<div class='row'>");
             $(detailControlID).append(row);
@@ -2353,7 +2353,7 @@ function FusionAttributeDetailTile(controlID, type, id) {
                 col = $("<div class='col l6 m6'>");
                 $(row).append(col);
                 col.append("<div class='FieldName FieldDisplayName'>" + item.Name + "</div>");
-                col.append("<div class='FieldContent'>" + item.Value + "</div>");
+                col.append("<div class='FieldContent wrapword'>" + item.Value + "</div>");
             });
 
             $(controlID).show();

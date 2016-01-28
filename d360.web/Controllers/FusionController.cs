@@ -933,6 +933,8 @@ from	    FusionAttributeType T
 
             foreach (var item in fields)
             {
+                if (string.IsNullOrEmpty(item.FormattedValue)) continue;
+
                 res.Add(new
                 {
                     Name = item.FriendlyName,
