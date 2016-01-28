@@ -3975,6 +3975,14 @@ namespace d360.web.Controllers
                                 def.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = def.ID, FieldTypeID = int.Parse(fieldTypeID) });
                             }
                         }
+                        else if(def.FieldTypeFusionLookupDisplayFields != null)
+                        {
+                            foreach (var item in def.FieldTypeFusionLookupDisplayFields)
+                            {                                
+                                //item is in db but not wanted remove it
+                                itemsToDelete.Add(item);
+                            }
+                        }
 
                         def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
                         def.TargetFusionAttributeTypeID = targetFusionAttributeTypeID;
