@@ -6356,6 +6356,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 //console.log('populate');
                 //myDiagram = initializeDiagram();
                 parseData(data);
+                reOrderLayout();
                 myDiagram.zoomToFit();
             }
         });

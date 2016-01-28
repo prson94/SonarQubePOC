@@ -10,12 +10,17 @@ namespace d360.core.enums
     {
         [Name("Source To Target"), Description("The most common mapping that allows you to set sources and targets across types contained in the system.")]
         SourceToTarget = 1,
-        [Name("Simple Hierarchy"), Description("This simple hierarchy allows for creating a tree structure or hierarchy referencing the same underlying artifact type.")]
-        SimpleHierarchy = 2,
         [Name("Type Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level.")]
         TypeHierarchy = 3,
+        [Name("Group Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level.")]
+        GroupHierarchy = 4,
+        [Name("Parent Child Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level.")]
+        ParentChildHierarchy = 5,
+
+        [Name("Simple Hierarchy"), Description("This simple hierarchy allows for creating a tree structure or hierarchy referencing the same underlying artifact type.")]
+        SimpleHierarchy = 20,
         [Name("Sourcing Hierarchy")Description("A set of calculations involving a hierarchy or ordering to which source to choose, depending on context.")]
-        SourcingHierarchy = 4
+        SourcingHierarchy = 40
     }
 
     public class MapTypeInfo

@@ -317,7 +317,7 @@ order by D.TextPath";
         }
 
 
-        public DiagramsController.DiagramModel ProcessDiagram(DiagramsController.DiagramModel model, DiagramsController.JsonNodeItem start)
+        public DiagramsController.DiagramModel TraverseDiagram(DiagramsController.DiagramModel model, DiagramsController.JsonNodeItem start)
         {
             var diagram = new DiagramsController.DiagramModel();
             diagram.nodes.Add(start);
@@ -331,13 +331,71 @@ order by D.TextPath";
                 var node = model.nodes.Where(i => i.key == l.to).SingleOrDefault();
                 if (node == null)
                     return;
-                    //diagram.nodes.Add(node);
-                    var k = ProcessDiagram(model, node);
+
+                var k = TraverseDiagram(model, node);
                 diagram.nodes.AddRange(k.nodes);
                 diagram.links.AddRange(k.links);
             });
 
             return diagram;
+        }
+
+        public DiagramsController.DiagramModel MergeDiagram(DiagramsController.DiagramModel model)
+        {
+            var leadingNodes = model.nodes.Where(n => !model.links.Any(l => l.to == n.key)).ToList();
+            var diagrams = new List<DiagramsController.DiagramModel>();
+
+            //get discrete diagrams
+            leadingNodes.ForEach(n =>
+            {
+                var diagram = TraverseDiagram(model, n);
+                diagrams.Add(diagram);
+
+            });
+
+            //pick the biggest
+            var mainDiagram = diagrams.OrderByDescending(d => d.nodes.Count).FirstOrDefault();
+
+            //now merge the smaller diagrams into the main one if possible
+            foreach (DiagramsController.DiagramModel dgm in diagrams)
+            {
+                if (dgm == mainDiagram)
+                    continue;
+
+                var nodeList = dgm.nodes.OrderByDescending(n => n.level);
+
+                foreach (DiagramsController.JsonNodeItem n in nodeList)
+                {
+
+                    var node = mainDiagram.nodes.OrderBy(k => k.level).Where(k => k.obj == n.obj && k.objid == n.objid).FirstOrDefault();
+                    if (node == null)
+                        continue;
+                    else
+                    {
+                        var leftLinks = dgm.links.Where(l => l.to == n.key);
+                        var rightLinks = dgm.links.Where(l => l.from == n.key);
+
+                        var nodeExists = false;
+
+                        if (mainDiagram.nodes.Any(k => k.key == n.key))
+                        {
+                            //make sure we don't delete this node later
+                            nodeExists = true;
+                        }
+
+                        //point affected links to mainDiagram node
+                        foreach (DiagramsController.JsonLinkItem l in leftLinks)
+                            l.to = node.key;
+                        foreach (DiagramsController.JsonLinkItem l in rightLinks)
+                            l.from = node.key;
+
+                        if (!nodeExists)
+                            model.nodes.Remove(n);
+                    }
+                }
+            }
+
+            return model;
         }
 
         [HttpGet, Route("{type}/{id:int}/sources")]
@@ -550,92 +608,36 @@ select * from @h";
                 processSourceLevel(list, i.ID); //assumes type is "O"
             });
 
-            var nodes = new List<DiagramsController.JsonNodeItem>();
-            var links = new List<DiagramsController.JsonLinkItem>();
+            var model = new DiagramsController.DiagramModel();
 
             var IDs = list.Select(i => i.ID).Distinct().ToList();
             IDs.ForEach(m =>
             {
                 var s = list.Single(i => i.ID == m && i.Type == "S");
                 var sKey = $"{s.Level}{s.O}{s.OID}";
-                if (!nodes.Any(i => i.key == $"{s.Level}{s.O}{s.OID}"))
-                    nodes.Add(new DiagramsController.JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID });
+                if (!model.nodes.Any(i => i.key == $"{s.Level}{s.O}{s.OID}"))
+                    model.nodes.Add(new DiagramsController.JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID });
                 var o = list.Single(i => i.ID == m && i.Type == "O");
                 var oKey = $"{o.Level}{o.O}{o.OID}";
-                if (!nodes.Any(i => i.key == $"{o.Level}{o.O}{o.OID}"))
-                    nodes.Add(new DiagramsController.JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID });
+                if (!model.nodes.Any(i => i.key == $"{o.Level}{o.O}{o.OID}"))
+                    model.nodes.Add(new DiagramsController.JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID });
 
-                if (links.Any(i => i.from == sKey && i.to == oKey))
+                if (model.links.Any(i => i.from == sKey && i.to == oKey))
                 {
-                    var existingLink = links.Single(i => i.from == sKey && i.to == oKey);
+                    var existingLink = model.links.Single(i => i.from == sKey && i.to == oKey);
                     existingLink.text += $", {s.Predicate}";
                 }
                 else
                 {
-                    links.Add(new DiagramsController.JsonLinkItem { id = s.ID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID });
+                    model.links.Add(new DiagramsController.JsonLinkItem { id = s.ID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID });
                 }
             });
 
-            var model = new DiagramsController.DiagramModel();
-            model.links = links;
-            model.nodes = nodes;
-
-            var leadingNodes = nodes.Where(n => !links.Any(l => l.to == n.key)).ToList();
-            var diagrams = new List<DiagramsController.DiagramModel>();
-
-            //get discrete diagrams
-            leadingNodes.ForEach(n =>
-            {
-                var diagram = ProcessDiagram(model, n);
-                diagrams.Add(diagram);
-
-            });
-
-            //pick the biggest
-            var mainDiagram = diagrams.OrderByDescending(d => d.nodes.Count).First();
-
-            //now merge the smaller diagrams into the main one if possible
-            foreach (DiagramsController.DiagramModel dgm in diagrams)
-            {
-                if (dgm == mainDiagram)
-                    continue;
-
-                var nodeList = dgm.nodes.OrderByDescending(n => n.level);
-
-                foreach (DiagramsController.JsonNodeItem n in nodeList)
-                {
-
-                    var node = mainDiagram.nodes.OrderBy(k => k.level).Where(k => k.obj == n.obj && k.objid == n.objid).FirstOrDefault();
-                    if (node == null)
-                        continue;
-                    else
-                    {
-                        var leftLinks = dgm.links.Where(l => l.to == n.key);
-                        var rightLinks = dgm.links.Where(l => l.from == n.key);
-
-                        var nodeExists = false;
-
-                        if (mainDiagram.nodes.Any(k => k.key == n.key))
-                        {
-                            //make sure we don't delete this node later
-                            nodeExists = true;
-                        }
-
-                        //point affected links to mainDiagram node
-                        foreach (DiagramsController.JsonLinkItem l in leftLinks)
-                            l.to = node.key;
-                        foreach (DiagramsController.JsonLinkItem l in rightLinks)
-                            l.from = node.key;
-
-                        if (!nodeExists)
-                            model.nodes.Remove(n);
-                    }
-                }
-            }
+            model = MergeDiagram(model);
 
             return new JsonNetResult
             {
-                Data = new { nodes, links },
+                Data = new { model.nodes, model.links },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
 

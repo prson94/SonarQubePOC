@@ -81,6 +81,7 @@
     <Compile Include="entities\Environment.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDisplayField.cs" />
+    <Compile Include="entities\IntersectTypePredicate.cs" />
     <Compile Include="entities\Predicate.cs" />
     <Compile Include="entities\IntersectMap.cs" />
     <Compile Include="entities\CommentVote.cs" />

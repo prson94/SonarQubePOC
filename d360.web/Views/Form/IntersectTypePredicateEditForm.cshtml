@@ -1,0 +1,123 @@
+﻿@using d360.web.Models;
+@using d360.core.resources;
+@model IntersectTypePredicateEditorModel
+<div class="small-overlay">
+    <div class="ui segment">
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.IntersectType, Description = Model.FormDescription, Name = Model.FormName })
+        <div>
+            <table style="width:auto !important; margin:0 auto;">
+                <tbody>
+                    <tr>
+                        <td style="width:256px">
+                            <span class="FieldName">Allocated Predicates</span>
+                        </td>
+                        <td style="width:30px"></td>
+                        <td style="width:256px">
+                            <span class="FieldName">Available Predicates</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:256px">
+                            <div id="AllocatedPredicatesBox" name="AllocatedPredicates"></div>
+                        </td>
+                        <td style="width:30px"></td>
+                        <td style="width:256px">
+                            <div id="AvailablePredicatesBox" name="AvailablePredicates"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+
+        AllocatedPredicateSource = {
+            datatype: "json",
+            type: 'get',
+            datafields: [
+                { name: 'Name' },
+                { name: 'ID' }
+            ],
+            url: '/api/IntersectTypePredicates/@(Model.IntersectTypeID)'
+        };
+
+        AvailablePredicateSource = {
+            datatype: "json",
+            type: 'get',
+            datafields: [
+                { name: 'Name' },
+                { name: 'ID' }
+            ],
+            url: '/api/IntersectTypePredicates/@(Model.IntersectTypeID)/available'
+        };
+
+        AvailablePredicateAdapter = new $.jqx.dataAdapter(AvailablePredicateSource);
+        AllocatedPredicateAdapter = new $.jqx.dataAdapter(AllocatedPredicateSource);
+
+
+        $("#AllocatedPredicatesBox").jqxListBox({ theme: theme, source: AllocatedPredicateAdapter, displayMember: "Name", valueMember: "ID", width: 250, height: 250, allowDrag: true, allowDrop: true });
+        $("#AvailablePredicatesBox").jqxListBox({ theme: theme, source: AvailablePredicateAdapter, displayMember: "Name", valueMember: "ID", width: 250, height: 250, allowDrag: true, allowDrop: true });
+
+        $("#AllocatedPredicatesBox").on('dragEnd', function (event) {
+            var source = $(this).jqxListBox('source');
+            var items = "";
+
+            for (var i = 0; i < source.length; i++) {
+                items += "<option value='" + source[i].ID + "'>" + source[i].Name + "</option>";
+            }
+            $('#AllocatedPredicates').html(items);
+        });
+
+
+        $("#AvailablePredicatesBox").on('dragEnd', function (event) {
+            var source = $(this).jqxListBox('source');
+            var items = "";
+
+            for (var i = 0; i < source.length; i++) {
+                items += "<option value='" + source[i].ID + "'>" + source[i].Name + "</option>";
+            }
+            $('#AvailablePredicates').html(items);
+        });
+
+    });
+
+    $('#EditableFormSaveButton').on('click', function () {
+
+        var allocated = $('#AllocatedPredicatesBox').jqxListBox('getItems');
+        var allocatedPredicates = [];
+
+        for(var i = 0; i < allocated.length; i++) {
+            allocatedPredicates.push({ID: allocated[i].value, Name: allocated[i].label, Type: 0});
+        }
+
+        var model = {
+            IntersectTypeID: '@(Model.IntersectTypeID)',
+            AllocatedPredicates: allocatedPredicates
+        };
+
+        $.ajax({
+            url: '@(Model.FormUri)',
+            data: model,
+            method: 'POST'
+        });
+        amplify.publish("SaveAction", { context: $('#EditableFormCancelButton').data('context') });
+    });
+
+    $('#EditableFormCancelButton').on('click', function () {
+        amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+    });
+    amplify.subscribe("ErrorOccurredAction", function (data) {
+        $('#EditableFormSaveButton').hide();
+    });
+    amplify.subscribe("StartingAjax", function () {
+        $('#EditableFormSaveButton').attr('disabled', 'disabled');
+        $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+    });
+    amplify.subscribe("EndingAjax", function () {
+        $('#EditableFormSaveButton').removeAttr('disabled');
+        $('#progress').html('');
+    });
+
+</script>

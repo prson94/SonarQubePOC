@@ -103,6 +103,13 @@ namespace d360.web.Models
         public string IconForeColor { get; set; }
     }
 
+    public class IntersectTypePredicateEditorModel : BaseEditorModel
+    {
+        public int IntersectTypeID { get; set; }
+
+        public List<Predicate> AllocatedPredicates { get; set; }
+    }
+
     public class AttributeTypeEditorModel : BaseEditorModel
     {
         public AttributeTypeEditorModel()

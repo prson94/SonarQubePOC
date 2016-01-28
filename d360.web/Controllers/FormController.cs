@@ -6003,6 +6003,69 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        public ActionResult IntersectTypePredicateEditForm(int id)
+        {
+            var model = new IntersectTypePredicateEditorModel
+            {
+                FormName = "Allocate Intersect Type Predicates",
+                FormDescription = "Allocate predicates to this intersect type by dragging them between the two lists.",
+                FormUri = "/form/SavePredicateAllocations",
+                FormMethod = "POST",
+                AllocatedPredicates = new List<Predicate>(),
+                AvailablePredicates = new List<Predicate>(),
+                IntersectTypeID = id
+            };
+
+            return PartialView(model);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult SavePredicateAllocations(IntersectTypePredicateEditorModel model)
+        {
+            if (model == null || model.IntersectTypeID == 0)
+            {
+                throw new NotFoundException("save predicate allocations");
+            }
+
+            var intersectTypePredicates = Company.IntersectTypePredicates.Where(p => p.IntersectTypeID == model.IntersectTypeID).ToList();
+
+            try
+            {
+                foreach (IntersectTypePredicate p in intersectTypePredicates)
+                {
+                    var allocated = model.AllocatedPredicates.Where(a => a.ID == p.PredicateID).FirstOrDefault();
+                    if (allocated == null)
+                    {
+                        Company.Delete(p);
+                    }
+                }
+
+                foreach (Predicate p in model.AllocatedPredicates.ToList())
+                {
+                    var existing = Company.IntersectTypePredicates.Where(e => e.IntersectTypeID == model.IntersectTypeID && e.PredicateID == p.ID).FirstOrDefault();
+
+                    if (existing == null)
+                    {
+
+                        Company.Add(new IntersectTypePredicate() { IntersectTypeID = model.IntersectTypeID, PredicateID = p.ID });
+                    }
+                }
+
+              return jsonSuccess("Predicate allocations successfully saved.", model.IntersectTypeID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
+
+            }
+
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
 
         public ActionResult AddIntersectType()
         {
@@ -8176,6 +8239,15 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
 
+            var heirarchyTypes = new List<SelectListItem>();
+
+            heirarchyTypes.Add(new SelectListItem() { Text = "Source To Target", Value = ((int)MapType.SourceToTarget).ToString() });
+            heirarchyTypes.Add(new SelectListItem() { Text = "Type Hierarchy", Value = ((int)MapType.TypeHierarchy).ToString() });
+            heirarchyTypes.Add(new SelectListItem() { Text = "Group Hierarchy", Value = ((int)MapType.GroupHierarchy).ToString() });
+            heirarchyTypes.Add(new SelectListItem() { Text = "Parent Child Hierarchy", Value = ((int)MapType.ParentChildHierarchy).ToString() });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Predicate Type", FieldType = DataType.Lookup.ToString(), Items = heirarchyTypes });
+
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -8239,7 +8311,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 var a = new Predicate
                 {
                     Name = parseTextField(form, "Name", null, true),
-                    Inverse = parseTextField(form, "Inverse", null, true)
+                    Inverse = parseTextField(form, "Inverse", null, true),
+                    Type = parseIntField(form, "Type")
                 };
 
                 Company.Add<Predicate>(a);

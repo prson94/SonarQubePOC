@@ -928,6 +928,10 @@ namespace d360.web.Controllers
                     #endregion
                 case SystemObjects.IntersectType:
                     #region Actions
+                    if (id > 0)
+                    {
+                        list.Add(new PageActionItem { Context = "Allocation", Icon = Resources.Actions.Allocation_Icon, Title = "Allocate Predicates", Uri = string.Format("/form/IntersectTypePredicateEditForm?id={0}", id) });
+                    }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                     #endregion
@@ -2008,6 +2012,54 @@ inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID", new { i
         .OrderBy(i => i.LastName).ThenBy(i => i.FirstName).AsQueryable();
         }
 
+        #endregion
+
+        #region IntersectType
+
+        [HttpGet, Route("IntersectTypePredicates/{id:int}")]
+        public IQueryable<Predicate> GetAllocatedPredicates(int id)
+        {
+            var allocations = Company.IntersectTypePredicates.Where(p => p.IntersectTypeID == id);
+            var predicates = Company.Predicates.Where(p => allocations.Select(a => a.PredicateID).Distinct().ToList().Contains(p.ID));
+
+            var xx = predicates.ToList();
+
+            return predicates;
+        }
+
+        [HttpGet, Route("IntersectTypePredicates/{id:int}/available")]
+        public IQueryable<Predicate> GetAvailablePredicates(int id)
+        {
+            var allocated = GetAllocatedPredicates(id).ToList();
+
+            var availableTypes = new List<int>();
+
+            availableTypes.Add((int)MapType.SourceToTarget);
+            availableTypes.Add((int)MapType.ParentChildHierarchy);
+
+            var intersectType = Company.GetById<IntersectType>(id);
+            if (intersectType == null)
+            {
+                return null;
+            }
+            var nodes = intersectType.Nodes.ToList();
+
+            if (nodes.Count >= 2)
+            {
+                if (nodes[0].ObjectType == nodes[1].ObjectType && nodes[0].ObjectID == nodes[1].ObjectID)
+                {
+                    availableTypes.Add((int)MapType.TypeHierarchy);
+                    availableTypes.Add((int)MapType.GroupHierarchy);
+                }
+            }
+
+            var predicates = Company.Predicates.Where(p => availableTypes.Contains(p.Type));
+            var allocatedIDs = allocated.Select(a => a.ID).Distinct().ToList();
+
+            var availablePredicates = predicates.Where(p => !allocatedIDs.Contains(p.ID));
+
+            return availablePredicates;
+        }
         #endregion
 
         #region Loads

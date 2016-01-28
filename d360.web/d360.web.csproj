@@ -1136,6 +1136,7 @@
     <Content Include="Views\Diagrams\LineageTest.cshtml" />
     <Content Include="Views\Diagrams\Map.cshtml" />
     <Content Include="Views\Relations\AddSource.cshtml" />
+    <Content Include="Views\Form\IntersectTypePredicateEditForm.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

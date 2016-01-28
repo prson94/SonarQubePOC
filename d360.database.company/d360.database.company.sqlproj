@@ -488,6 +488,7 @@
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByIntersect.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByObject.sql" />
     <None Include="dbo\User Defined Types\RelationshipTypeTable.sql" />
+    <None Include="dbo\Tables\IntersectTypePredicate.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

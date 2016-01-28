@@ -20,6 +20,22 @@
 
         //#region Event Handlers
 
+        function listRowSelect(event) {
+
+            var args = event.args;
+            var row = args.rowindex;
+
+            var data = $('#List').jqxGrid('getrowdata', row);
+
+            if (data) {
+                amplify.publish(AmplifyActions.TileUnsubscribe, {});
+
+                $('#SideIcons').PageTools("reload", type, data.ID);
+
+            }
+        }
+
+
         function saveAction(data) {
             try {
                 switch (data.context) {
@@ -187,6 +203,7 @@
 
                     //#region Event Subscriptions
 
+                    $('#List').on('rowselect', listRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 

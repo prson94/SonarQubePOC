@@ -2,6 +2,7 @@
     [ID]      INT            IDENTITY (1, 1) NOT NULL,
     [Name]    NVARCHAR (100) NOT NULL,
     [Inverse] NVARCHAR (250) NULL,
+	[Type] [int] NOT NULL,
     CONSTRAINT [PK_Predicate] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 

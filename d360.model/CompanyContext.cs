@@ -128,6 +128,7 @@ namespace d360.model
         public DbSet<FieldTypeFusionLookupDefinition> FieldTypeFusionLookupDefinitions { get; set; }
 
         public DbSet<Follow> Follows { get; set; }
+
         public DbSet<FollowChild> FollowChildren { get; set; }
 
         public DbSet<FollowDetail> FollowDetails { get; set; }                                  /* VIEW */
@@ -181,6 +182,8 @@ namespace d360.model
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
         public DbSet<IntersectTypeNode> IntersectTypeNodes { get; set; }
+
+        public DbSet<IntersectTypePredicate> IntersectTypePredicates { get; set; }
 
         public DbSet<Load> Loads { get; set; }
 
