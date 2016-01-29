@@ -1,4 +1,5 @@
-﻿CREATE procedure [dbo].[DeleteObject]
+﻿
+CREATE procedure [dbo].[DeleteObject]
 	@Obj varchar(50),
 	@ObjectID int,
 	@ResourceID int
@@ -43,7 +44,6 @@ begin
 			delete FieldType						where [Object] = @Object AND ObjectID = @ObjectID
 			delete ResponsibilityTypeRelation		where ObjectType = @Object and ObjectID = @ObjectID
 			delete ResponsibilityTypeObjectClaim	where ObjectType = @Object and ObjectID = @ObjectID
-			delete ResponsibilityTypeSourceType		where ObjectType = @Object and ObjectID = @ObjectID
 			delete StatisticTypeRelation			where ObjectType = @Object and ObjectID = @ObjectID
 			delete WorkflowTypeRelation				where [Object] = @Object and ObjectID = @ObjectID
 

@@ -1,5 +1,4 @@
 ﻿
-
 CREATE procedure [dbo].[AsyncDeleteObject]
 	@Object varchar(50),
 	@ObjectID int,
@@ -20,8 +19,8 @@ begin
 
 		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Removed', @Object, @ObjectID
 
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority])
-		values ('ObjectIndex', 'D', @Object, @ObjectID, 4)
+		--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority])
+		--values ('ObjectIndex', 'D', @Object, @ObjectID, 4)
 
 		--COMMON
 		delete CommentRelation					where ObjectType = @Object and ObjectID = @ObjectID
@@ -37,7 +36,6 @@ begin
 			delete FieldType						where [Object] = @Object AND ObjectID = @ObjectID
 			delete ResponsibilityTypeRelation		where ObjectType = @Object and ObjectID = @ObjectID
 			delete ResponsibilityTypeObjectClaim	where ObjectType = @Object and ObjectID = @ObjectID
-			delete ResponsibilityTypeSourceType		where ObjectType = @Object and ObjectID = @ObjectID
 			delete StatisticTypeRelation			where ObjectType = @Object and ObjectID = @ObjectID
 			delete WorkflowTypeRelation				where [Object] = @Object and ObjectID = @ObjectID
 

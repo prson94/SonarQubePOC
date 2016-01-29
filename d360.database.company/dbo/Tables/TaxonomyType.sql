@@ -13,6 +13,8 @@
 
 
 
+
+
 GO
 
 CREATE TRIGGER [dbo].[TaxonomyType_AfterInsert]
@@ -22,6 +24,20 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Add', [queue].WriteIndexXml('', 'TaxonomyType', ID, coalesce(UpdatedBy, 0)), 'TaxonomyType', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'TaxonomyType' as [Object],			ID as ObjectID,
+					'TaxonomyType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
 
 GO
 
@@ -38,6 +54,20 @@ AS
 			T.[Path] = utility.GetBreadcrumbWrapper('Taxonomy', S.ID)
 	from	Taxonomy T
 			inner join inserted S on S.ID = T.TaxonomyTypeID
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'TaxonomyType' as [Object],			ID as ObjectID,
+					'TaxonomyType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
 
 GO
 

@@ -48,8 +48,6 @@ namespace d360.model
         public DbSet<ResourceType> ResourceTypes { get; set; }
         public DbSet<Setting> Settings { get; set; }
 
-        public DbSet<JobActivity> JobActivities { get; set; }
-
         public DbSet<d360.core.entities.Plugins.Package> Packages { get; set; }
         public DbSet<d360.core.entities.Plugins.PackageContent> PackageContents { get; set; }
 

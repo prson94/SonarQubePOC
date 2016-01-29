@@ -8,7 +8,7 @@
   </SourceModelProvider>
   <TargetModelProvider>
     <ConnectionBasedModelProvider>
-      <ConnectionString>Data Source=d3sprodeast.database.windows.net;Initial Catalog=D3S_8;Persist Security Info=True;User ID=d3s_user;Pooling=False</ConnectionString>
+      <ConnectionString>Data Source=d3sdev.database.windows.net;Initial Catalog=D3S_15;Persist Security Info=True;User ID=d3s_user;Pooling=False</ConnectionString>
     </ConnectionBasedModelProvider>
   </TargetModelProvider>
   <SchemaCompareSettingsService>
@@ -289,11 +289,11 @@
       </PropertyElementName>
       <PropertyElementName>
         <Name>TargetDatabaseName</Name>
-        <Value>D3S_8</Value>
+        <Value>D3S_15</Value>
       </PropertyElementName>
       <PropertyElementName>
         <Name>TargetConnectionString</Name>
-        <Value>Data Source=d3sprodeast.database.windows.net;Initial Catalog=D3S_8;Persist Security Info=True;User ID=d3s_user;Pooling=False;MultipleActiveResultSets=False;Application Name="Microsoft SQL Server Data Tools, Schema Compare"</Value>
+        <Value>Data Source=d3sdev.database.windows.net;Initial Catalog=D3S_15;Persist Security Info=True;User ID=d3s_user;Pooling=False;MultipleActiveResultSets=False;Application Name="Microsoft SQL Server Data Tools, Schema Compare"</Value>
       </PropertyElementName>
       <PropertyElementName>
         <Name>TreatVerificationErrorsAsWarnings</Name>

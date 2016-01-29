@@ -16,6 +16,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_FusionAttributeType_FusionTypeID]
     ON [dbo].[FusionAttributeType]([FusionTypeID] ASC);
@@ -41,6 +43,20 @@ AS
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Add', [queue].WriteIndexXml('', 'FusionType', FusionTypeID, coalesce(UpdatedBy, 0)), 'FusionAttributeType', ID from inserted
 
+	merge	[cache].[Object] as T
+	using	(
+			select	'FusionAttributeType' as [Object],			ID as ObjectID,
+					'FusionType' as ObjectType,					FusionTypeID as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+
 GO
 
 CREATE TRIGGER [dbo].[FusionAttributeType_AfterUpdate]
@@ -50,3 +66,17 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Update', [queue].WriteIndexXml('', 'FusionType', FusionTypeID, coalesce(UpdatedBy, 0)), 'FusionAttributeType', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'FusionAttributeType' as [Object],			ID as ObjectID,
+					'FusionType' as ObjectType,					FusionTypeID as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);

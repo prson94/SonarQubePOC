@@ -11,5 +11,7 @@ namespace d360.core.entities
         public string Username { get; set; }
 
         public string Password { get; set; }
+
+        public string FusionQueue { get; set; }
     }
 }

@@ -5048,7 +5048,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_ribbon_remove = controlID + '_ribbon_remove';
 
     var controlID_popover_add = controlID + '_popover_add';
-
+    
     
     //#endregion
 
@@ -5790,7 +5790,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         for (var i = 0; i < nodeChanges.deleted.length; i++) {
             var node = nodeChanges.deleted[i];
-            var data = {
+        var data = {
                 target: type,
                 targetID: id,
                 id: node.intersectMapId
@@ -5833,28 +5833,28 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
             //console.log(source);
             processCount++;
-            $.ajax({
+        $.ajax({
                 url: '/Relations/sources',
                 data: JSON.stringify(source),
-                processData: false,
-                type: 'POST',
+            processData: false,
+            type: 'POST',
                 // async: false,
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (data) {
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
                     if (data.success) {
                     } else {
-                        flagError = true;
-                        errors += data.message;
-                        processCount--;
-                    }
-                },
-                failure: function (data) {
                     flagError = true;
                     errors += data.message;
-                    processCount--;
+                        processCount--;
                 }
-            });
+            },
+            failure: function (data) {
+                flagError = true;
+                errors += data.message;
+                    processCount--;
+            }
+        });
         }
 
         for (var i = 0; i < linkChanges.modified.length; i++) {
@@ -5880,7 +5880,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                     //console.log(data);
                 }
             });
-
+            
         }
 
         if (flagError) {
@@ -6362,38 +6362,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         });
     }
     populateDiagram();
-
-    function markPendingExclusions(node) {
-        var data = {
-            type: node.type,
-            id: node.id
-        };
-        pendingExclusionObjects.push({
-            ObjectType: node.type,
-            ObjectID: node.id
-        });
-
-        $.ajax({
-            url: '/diagrams/GetExclusionsByMapObject',
-            data: data,
-            async: false,
-            success: function (data) {
-                for (var i = 0; i < data.length; i++) {
-                    for (var j = 0; j < myDiagram.model.nodeDataArray.length; j++) {
-                        var n = myDiagram.model.nodeDataArray[j];
-
-                        if (n.intersectMapId == data[i]) {
-                            //console.log('marking intersectmapid ' + n.intersectMapId + ' as excluded');
-                            myDiagram.model.nodeDataArray[j].exclude = 'true';
-                            pendingExclusionNodes.push(n);
-                        }
-                    }
-                }
-            }
-        });
-
-        //console.log(myDiagram.model.nodeDataArray);
-    }
 
 
     function populateTypeSelectList() {

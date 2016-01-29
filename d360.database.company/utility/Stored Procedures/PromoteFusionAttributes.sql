@@ -300,12 +300,30 @@ from	#rules R
 								end
 							else
 							  begin
-									update	Artifact
-									set		Name = @name,
-											Description = @description,
-											ParentID = @PromotionParentObjectID,
-											TaxonomyTypeID = @modelTypeID
+									declare @testArtifactName nvarchar(250) = null,
+											@testArtifactDescription nvarchar(4000) = null,
+											@testArtifactParentID int = null,
+											@testArtifactTaxonomyTypeID int = null
+
+									select	@testArtifactName = Name,
+											@testArtifactDescription = Description,
+											@testArtifactParentID = ParentID,
+											@testArtifactTaxonomyTypeID = TaxonomyTypeID
+									from	Artifact
 									where	ID = @PromotedID
+
+									if (@testArtifactName <> @name) 
+										OR (@testArtifactDescription <> @description) 
+										OR (@testArtifactParentID <> @PromotionParentObjectID) 
+										OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
+									begin
+										update	Artifact
+										set		Name = @name,
+												Description = @description,
+												ParentID = @PromotionParentObjectID,
+												TaxonomyTypeID = @modelTypeID
+										where	ID = @PromotedID
+									end
 								end
 						end
  
@@ -489,7 +507,7 @@ from	#rules R
 													set @shouldInsert = 1
 													set @fieldValue = cast(@objectResultID as nvarchar(4000))
 												end
-										end
+										end									
 									else
 										begin
 											-- This is a text value, so just insert it into the Field table for the promoted object.
@@ -547,9 +565,10 @@ from	#rules R
 
 	-- Add new relations as needed
 	exec [utility].[PromoteFusionAttributesRelations] @NumberOfNewRelations output
-		
-	-- Populate fusion attribute lookup fields
+
+	-- Handle any fusionlookup fields
 	exec [utility].[PromoteFusionAttributeLookups]
+	
 		
 	--Log this run done
 	update [dbo].[FusionAttributePromotionLogSummary]

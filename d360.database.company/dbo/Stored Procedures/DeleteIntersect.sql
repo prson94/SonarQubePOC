@@ -1,6 +1,4 @@
-﻿
-
-CREATE PROCEDURE [dbo].[DeleteIntersect]
+﻿CREATE PROCEDURE [dbo].[DeleteIntersect]
 	@ID int,
 	@ResourceID int
 AS
@@ -72,7 +70,12 @@ BEGIN
 		declare @oType varchar(25), 
 				@oID int, 
 				@oNodeID int,
-				@date datetime
+				@date datetime,
+				@firstObject varchar(50),
+				@firstObjectID int,
+				@secondObject varchar(50),
+				@secondObjectID int,
+				@resolveResponsibilities bit = 0
 
 		set @date = getutcdate()
 
@@ -82,6 +85,9 @@ BEGIN
 				@oNodeID = IntersectNodeID
 		from	@nodes
 
+		set @firstObject = @oType
+		set @firstObjectID = @oID
+
 		exec utility.AddAuditEntry @oType, @oID, @ResourceID, @date, 'Removed', 'Intersect', @ID
 		delete @nodes where IntersectNodeID = @oNodeID
 
@@ -91,9 +97,11 @@ BEGIN
 				@oNodeID = IntersectNodeID
 		from	@nodes
 
+		set @secondObject  = @oType
+		set @secondObjectID = @oID
+
 		exec utility.AddAuditEntry @oType, @oID, @ResourceID, @date, 'Removed', 'Intersect', @ID
 		delete @nodes where IntersectNodeID = @oNodeID
-
 
 		-- Now delete the actual records.
 		delete	IntersectNode
@@ -102,6 +110,21 @@ BEGIN
 		delete	[Intersect]
 		where	ID = @ID
 
+
+		delete cache.Relationship where IntersectID = @ID
+
+		--Update the responsibilities of the object that should inherit form the other (Taxonomy can push relationships down to artifact)
+		if ( (@firstObject = 'Taxonomy' and @secondObject = 'Artifact') OR (@firstObject = 'Artifact' and @secondObject = 'Taxonomy') )
+		begin
+			if @firstObject = 'Artifact'
+			begin
+				exec [cache].[SynchronizeResponsibilitiesForObject] @firstObject, @firstObjectID
+			end
+			if @secondObject = 'Artifact'
+			begin
+				exec [cache].[SynchronizeResponsibilitiesForObject] @secondObject, @secondObjectID
+			end
+		end
 
 		if @trancount = 0
 			commit;

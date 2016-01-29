@@ -6,10 +6,12 @@
     [FieldTypeID]       INT              NULL,
     [FieldName]         NVARCHAR (250)   CONSTRAINT [DF_FusionResult_FieldName] DEFAULT ('Name') NOT NULL,
     [Action]            VARCHAR (1)      NULL,
-    [OldValue]          NVARCHAR (250)   NULL,
-    [NewValue]          NVARCHAR (250)   NULL,
+    [OldValue]          NVARCHAR (MAX)   NULL,
+    [NewValue]          NVARCHAR (MAX)   NULL,
     CONSTRAINT [PK_FusionResult] PRIMARY KEY CLUSTERED ([ID] DESC)
 );
+
+
 
 
 GO

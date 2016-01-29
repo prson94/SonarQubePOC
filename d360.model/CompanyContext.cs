@@ -175,6 +175,10 @@ namespace d360.model
 
         public DbSet<IntersectMap> IntersectMaps { get; set; }
 
+        public DbSet<IntersectMapSourceRule> IntersectMapSourceRules { get; set; }
+
+        public DbSet<IntersectMapSourceRuleContext> IntersectMapSourceRuleContexts { get; set; }
+
         public DbSet<Intersect> Intersects { get; set; }
 
         public DbSet<IntersectNode> IntersectNodes { get; set; }
@@ -265,8 +269,6 @@ namespace d360.model
 
         public DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
 
-        public DbSet<ResponsibilityTypeSourceType> ResponsibilityTypeSourceTypes { get; set; }
-
         public DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
 
         public DbSet<ResponsibilityTypeObjectClaimDetail> ResponsibilityTypeObjectClaimDetail { get; set; } /* VIEW */
@@ -275,7 +277,9 @@ namespace d360.model
 
         public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
 
-        public DbSet<SourcingResponsibilityDetail> SourcingResponsibilityDetails { get; set; }              /* VIEW */
+        public DbSet<SourceRule> SourceRules { get; set; }
+
+        public DbSet<SourceRuleContext> SourceRuleContexts { get; set; }
 
         public DbSet<Statistic> Statistics { get; set; }
 
@@ -416,29 +420,6 @@ namespace d360.model
             }
         }
 
-        public void AddMappingDependency(int mappingID, 
-            string sourceSystem, int sourceSystemID, string sourceObject, int sourceObjectID, int sourceFusionAttributeID,
-            string targetSystem, int targetSystemID, string targetObject, int targetObjectID, int targetFusionAttributeID)
-        {
-            Database.Connection.Execute(
-                @"AddMappingDependencies @ResourceID, @MappingID, @SourceSystem, @SourceSystemID, @SourceObject, @SourceObjectID, @SourceFusionAttributeID, @TargetSystem, @TargetSystemID, @TargetObject, @TargetObjectID, @TargetFusionAttributeID",
-                new
-                {
-                    ResourceID = CurrentResourceID,
-                    MappingID = mappingID,
-                    SourceSystem = sourceSystem,
-                    SourceSystemID = sourceSystemID,
-                    SourceObject = sourceObject,
-                    SourceObjectID = sourceObjectID,
-                    SourceFusionAttributeID = sourceFusionAttributeID,
-                    TargetSystem = targetSystem,
-                    TargetSystemID = targetSystemID,
-                    TargetObject = targetObject,
-                    TargetObjectID = targetObjectID,
-                    TargetFusionAttributeID = targetFusionAttributeID
-                }, null, 90);
-        }
-
         public void AddRelatedArtifact(int artifact, int artifactToRelate)
         {
             try
@@ -489,16 +470,6 @@ end
             }
         }
 
-        public void AddSourceTypesToResponsibilityType(int id, List<ObjectModel> items)
-        {
-            foreach (var o in items)
-            {
-                var r = new ResponsibilityTypeSourceType { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = id };
-                ResponsibilityTypeSourceTypes.Add(r);
-            }
-            SaveChanges();
-        }
-
         public void DeleteRelatedArtifact(int source, int target)
         {
             // See if there items are already related.
@@ -528,12 +499,6 @@ begin
   delete RelatedArtifact where GroupID = @tG
  end
 end", new { ss = source, tt = target });
-        }
-
-        public void EditSourceTypesForResponsibilityType(int id, List<ObjectModel> items)
-        {
-            Delete<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == id);
-            AddSourceTypesToResponsibilityType(id, items);
         }
 
         public List<AllocationPossibility> GetAllocationOptions()
@@ -891,23 +856,6 @@ order by	ColumnIndex", new { id });
             return ObjectStyles.SingleOrDefault(i => i.ObjectType == sType && i.ObjectID == id);
         }
         
-        //public IEnumerable<NonIntersectionPoint> GetPossibleRelationshipsBySourceAndTargetType(SystemObjects source, int sourceID, SystemObjects targetType, int targetTypeID, int intersectTypeID)
-        //{
-        //    return
-        //        Database.Connection.Query<NonIntersectionPoint>(
-        //            "EXEC GetNonIntersections @SourceID, @TargetTypeID, @SourceType, @TargetType, @Prefix, @IntersectTypeID",
-        //            new
-        //            {
-        //                SourceID = sourceID,
-        //                TargetTypeID = targetTypeID,
-        //                SourceType = source.ToString(),
-        //                TargetType = targetType.ToString(),
-        //                Prefix = "",
-        //                IntersectTypeID = intersectTypeID
-        //            }, null, true, 120
-        //        );
-        //}
-
         public XElement GetRandomSurveyQuestionForUser(SystemObjects type, int id)
         {
             string query = string.Format("GetRandomSurveyQuestionForUser {0}, '{1}', {2}", CurrentResourceID, type.ToString(), id);
@@ -1539,38 +1487,15 @@ where	R.SourceObject = 'FusionAttribute'
             return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
         }
 
-        public List<SourcingResponsibilityDetail> GetRelatedObjectContextMap(SystemObjects type, int id, SystemObjects relatedType, int relatedID, int typeToRemoveFromName = 1)
-        {
-            string query = @"
-select	*
-from	SourcingResponsibilityDetail
-where	ObjectType = 'Intersect' 
-		and ObjectID in 
-		(
-		select	N.IntersectID 
-		from	IntersectNode N
-				inner join SourcingResponsibilityDetail S	on N.ObjectType = @StartType 
-															and N.ObjectID = @StartID 
-															and S.ObjectType = 'Intersect' 
-															and S.ObjectID = N.IntersectID
-															and S.ResponsibleObjectType = @EndType
-															and S.ResponsibleObjectID = @EndID
-		)            
-";
-            return Query<SourcingResponsibilityDetail>(
-                query, 
-                new { StartType = type.ToString(), StartID = id, EndType = relatedType.ToString(), EndID = relatedID }
-            ).ToList();
-        }
 
-        public List<GetRelationshipModel> GetRelationships(SystemObjects type, int id)
-        {
-            var parameters = new List<SqlParameter>(){
-                new SqlParameter("ObjectType", type.ToString()),
-                new SqlParameter("ObjectID", id)
-            };
-            return ExecuteQuery<GetRelationshipModel>("GetRelationships @ObjectType, @ObjectID", parameters);
-        }
+        //public List<GetRelationshipModel> GetRelationships(SystemObjects type, int id)
+        //{
+        //    var parameters = new List<SqlParameter>(){
+        //        new SqlParameter("ObjectType", type.ToString()),
+        //        new SqlParameter("ObjectID", id)
+        //    };
+        //    return ExecuteQuery<GetRelationshipModel>("GetRelationships @ObjectType, @ObjectID", parameters);
+        //}
 
         /// <summary>
         /// Gets a list of relationship counts for a given object, broken up by All Glossary Items, Critical Glossary ITems, and All Models.

@@ -10,6 +10,8 @@
 
 
 
+
+
 GO
 
 CREATE TRIGGER [dbo].[FusionType_AfterUpdate]
@@ -19,6 +21,20 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Update', [queue].WriteIndexXml('', 'FusionType', ID, coalesce(UpdatedBy, 0)), 'FusionType', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'FusionType' as [Object],			ID as ObjectID,
+					'FusionType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
 
 GO
 
@@ -39,3 +55,17 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Add', [queue].WriteIndexXml('', 'FusionType', ID, coalesce(UpdatedBy, 0)), 'FusionType', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'FusionType' as [Object],			ID as ObjectID,
+					'FusionType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);

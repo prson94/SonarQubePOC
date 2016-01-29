@@ -6806,7 +6806,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
         [ValidateHttpAntiForgeryToken]
         [HttpPost]
-        public JsonResult AddLoadFile(LoadFilePostModel model)
+        public JsonResult AddLoad(LoadFilePostModel model)
         {
             try
             {
@@ -6872,7 +6872,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                             for (var i = 1; i <= fieldTypeNames.Count; i++)
                             {
                                 var actualValue = xls.GetCellValueAsString(1, i);
-                                var expectedValue = fieldTypeNames[i-1];
+                                var expectedValue = fieldTypeNames[i - 1];
                                 if (actualValue.Equals(expectedValue))
                                 {
                                     load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = actualValue });
@@ -6915,6 +6915,158 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             }
             catch (Exception ex)
             {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        //[ValidateHttpAntiForgeryToken]
+        //[HttpPost]
+        //public JsonResult AddLoad(LoadFilePostModel model)
+        //{
+        //    try
+        //    {
+        //        // Perform checks to make sure fields are populated.
+        //        if (string.IsNullOrEmpty(model.Type)) throw new NoFormDataException("Type");
+        //        if (string.IsNullOrEmpty(model.Action)) throw new NoFormDataException("Action");
+
+        //        JsonResult json;
+        //        Load load = null;
+        //        var success = false;
+        //        var errorMessage = "";
+
+        //        var typeInfo = model.Type.Split('|');
+
+        //        load = new Load
+        //        {
+        //          Action = model.Action,
+        //          Notes = model.Notes,
+        //          Object = typeInfo[0],
+        //          ObjectID = int.Parse(typeInfo[1]),
+        //          DateStarted = DateTime.UtcNow
+        //        };
+
+        //        success = !hasError;
+
+        //        if (success)
+        //        {
+        //            Company.Add<Load>(load);
+        //            json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
+        //        }
+        //        else
+        //        {
+        //             json = jsonException(errorMessage, HttpStatusCode.BadRequest);
+        //        }
+
+        //        return json;
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost]
+        public JsonResult AddLoadFile(int id)
+        {
+            try
+            {
+                var file = Request.Files[0];
+                var extension = Path.GetExtension(file.FileName);
+                var stream = new MemoryStream();
+                file.InputStream.CopyTo(stream);
+
+                Load load = null;
+                JsonResult json;
+                var success = false;
+                var errorMessage = "";
+                SLDocument xls;
+
+                if (extension == ".xlsx")
+                {
+                    load = Company.GetById<Load>(id);
+                    load.File = stream.ToArray();
+                    load.Extension = extension;
+
+                    xls = new SLDocument(stream);
+
+                    var fieldTypeNames = getFieldNamesByType(load.Object, load.ObjectID);
+
+                    var stats = xls.GetWorksheetStatistics();
+                    int columnCount = 0;
+
+                    for (int i = 1; i <= stats.NumberOfColumns; i++)
+                    {
+                        var testValue = xls.GetCellValueAsString(1, i);
+                        if (string.IsNullOrEmpty(testValue))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            columnCount++;
+                        }
+                    }
+
+                    if (columnCount == fieldTypeNames.Count)
+                    {
+                        var hasError = false;
+                        load.LoadColumns = new List<LoadColumn>();
+                        for (var i = 1; i <= fieldTypeNames.Count; i++)
+                        {
+                            var actualValue = xls.GetCellValueAsString(1, i);
+                            var expectedValue = fieldTypeNames[i - 1];
+                            if (actualValue.Equals(expectedValue))
+                            {
+                                load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = actualValue });
+                            }
+                            else
+                            {
+                                hasError = true;
+                                errorMessage += string.Format("{0} did not match the expected value of {1}. ", actualValue, expectedValue);
+                            }
+                        }
+
+                        success = !hasError;
+                    }
+                    else
+                    {
+                        errorMessage = "The number of columns in the spreadsheet does not match the number of defined fields for this load type.";
+                    }
+                }
+                else
+                {
+                    errorMessage = "Incorrect file type";
+                }
+
+                if (success)
+                {
+                    Company.Update<Load>(load);
+                    json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
+                }
+                else
+                {
+                    load = null;
+                    Company.Delete<Load>(i => i.ID == id);
+                    json = jsonException(errorMessage, HttpStatusCode.BadRequest);
+                }
+
+                return json;
+            }
+            catch (BaseException ex)
+            {
+                Company.Delete<Load>(i => i.ID == id);
+                return jsonException(ex.StatusDescription, ex.StatusCode);
+            }
+            catch (Exception ex)
+            {
+                Company.Delete<Load>(i => i.ID == id);
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
@@ -9462,32 +9614,6 @@ order by	D.Name, I.Name";
                 }).ToList();
             list.Add(new EditableField { Row = row, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = allocations });
             row++;
-
-            if (a.ResponsibilityTypeGroup == ResponsibilityTypeGroup.Sourcing)
-            {
-                var selectedArtifactTypes = Company.Filter<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == a.ID).Select(i => i.ObjectID).ToList();
-                var artifactTypes = (
-                                                    from i in Company.Table<ArtifactType>()
-                                                    select new SelectListItem
-                                                    {
-                                                        Text = i.Name,
-                                                        Value = i.ID.ToString(),
-                                                        Selected = selectedArtifactTypes.Contains(i.ID)
-                                                    }
-                                                    ).ToList();
-                selectedArtifactTypes = null;
-                list.Add(new EditableField
-                {
-                    Row = row,
-                    Column = 1,
-                    FieldName = "SourceType",
-                    Name = Resources.FieldInfo.ResponsibilitySourcedFrom_Name,
-                    FieldType = DataType.Lookup.ToString(),
-                    MultiSelect = true,
-                    Items = artifactTypes
-                });
-                row++;
-            }
             
             list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
@@ -9544,11 +9670,6 @@ order by	D.Name, I.Name";
                     Company.ResponsibilityTypeRelations.Add(r);
                 }
                 Company.SaveChanges();
-                
-                if (a.ResponsibilityTypeGroup == ResponsibilityTypeGroup.Sourcing)
-                {
-                    Company.AddSourceTypesToResponsibilityType(a.ID, form["SourceType"].Split(',').Select(i => new ObjectModel { ObjectID = int.Parse(i), ObjectType = SystemObjects.ArtifactType.ToString() }).ToList());
-                }
 
                 return jsonSuccess("Item successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
             }
@@ -9656,11 +9777,6 @@ order by	D.Name, I.Name";
                     Company.ResponsibilityTypeRelations.Add(r);
                 }
                 Company.SaveChanges();
-
-                if (model.ResponsibilityTypeGroup == ResponsibilityTypeGroup.Sourcing)
-                {
-                    Company.EditSourceTypesForResponsibilityType(id, form["SourceType"].Split(',').Select(i => new ObjectModel { ObjectID = int.Parse(i), ObjectType = SystemObjects.ArtifactType.ToString() }).ToList());
-                }
 
                 return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
             }

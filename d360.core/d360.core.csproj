@@ -82,6 +82,8 @@
     <Compile Include="entities\FieldTypeFusionLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDisplayField.cs" />
     <Compile Include="entities\IntersectTypePredicate.cs" />
+    <Compile Include="entities\SourceRuleContext .cs" />
+    <Compile Include="entities\IntersectMapSourceRuleContext.cs" />
     <Compile Include="entities\Predicate.cs" />
     <Compile Include="entities\IntersectMap.cs" />
     <Compile Include="entities\CommentVote.cs" />
@@ -89,6 +91,8 @@
     <Compile Include="entities\FusionAttributeOwnerRuleItem.cs" />
     <Compile Include="entities\FusionAttributePromotionRuleItem.cs" />
     <Compile Include="entities\Queues\BulkLoadQueue.cs" />
+    <Compile Include="entities\IntersectMapSourceRule.cs" />
+    <Compile Include="entities\SourceRule.cs" />
     <Compile Include="entities\TagRelation.cs" />
     <Compile Include="entities\Tag.cs" />
     <Compile Include="entities\Audit.cs" />
@@ -132,7 +136,6 @@
     <Compile Include="entities\Plugins\FusionIntersectType.cs" />
     <Compile Include="entities\Plugins\FusionType.cs" />
     <Compile Include="entities\Plugins\PackageContent.cs" />
-    <Compile Include="entities\ResponsibilityTypeSourceType.cs" />
     <Compile Include="entities\CompanyResource.cs" />
     <Compile Include="entities\ResponsibilityTypeRelation.cs" />
     <Compile Include="entities\ResponsibilityContextItem.cs" />
@@ -173,7 +176,6 @@
     <Compile Include="entities\Contracts\IFieldsObject.cs" />
     <Compile Include="entities\FusionAttributePromotion.cs" />
     <Compile Include="entities\FusionAttributeTypePromotion.cs" />
-    <Compile Include="entities\JobActivity.cs" />
     <Compile Include="entities\ObjectSecurity.cs" />
     <Compile Include="entities\ResolutionRelation.cs" />
     <Compile Include="entities\EventGroup.cs" />
@@ -233,7 +235,6 @@
     <Compile Include="entities\Views\DomainAllocationDetail.cs" />
     <Compile Include="entities\Views\ResponsibilitySummaryDetail.cs" />
     <Compile Include="entities\Views\ResponsibilityDetailForResource.cs" />
-    <Compile Include="entities\Views\SourcingResponsibilityDetail.cs" />
     <Compile Include="entities\Views\ResponsibilityDetailBase.cs" />
     <Compile Include="entities\Views\ResponsibilityTypeObjectClaimDetail.cs" />
     <Compile Include="entities\Views\SecurityDetail.cs" />

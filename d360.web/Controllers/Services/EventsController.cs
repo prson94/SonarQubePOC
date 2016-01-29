@@ -402,7 +402,7 @@ namespace d360.web.Controllers.Services
             }
             else
             {
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule could not be located based on the Source ID: {sourceID}.");
+                return Request.CreateResponse(HttpStatusCode.NotFound, new { Message = $"Rule could not be located based on the Source ID: {sourceID}." });
             }
         }
 
@@ -423,7 +423,7 @@ namespace d360.web.Controllers.Services
             try
             {
                 if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update, ClaimObject.Root))
-                    return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add relationships to this rule.");
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized, new { Message = "You are not allowed to add relationships to this rule." });
 
                 if (models == null)
                 {
@@ -452,15 +452,15 @@ namespace d360.web.Controllers.Services
                 });
                 //Company.AddRelationships(SystemObjects.Rule, id, IntersectClassification.Normal, null, null, models);
 
-                return Request.CreateResponse(HttpStatusCode.Created);
+                return Request.CreateResponse(HttpStatusCode.Created, new { Message = "Relationships created." });
             }
             catch (BaseException ex)
             {
-                return Request.CreateErrorResponse(ex.StatusCode, ex.StatusMessage);
+                return Request.CreateResponse(ex.StatusCode, new { Message = ex.StatusMessage });
             }
             catch (Exception ex)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, new { Message = $"An unknown error occured.  Please try again later. Error was: {ex.GetFullExceptionData()}" });
             }
         }
 

@@ -62,6 +62,7 @@
                             break;
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
+                            PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
                             break;
                         case "RequestCertification":
                         case "Workflow":

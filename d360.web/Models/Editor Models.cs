@@ -108,6 +108,7 @@ namespace d360.web.Models
         public int IntersectTypeID { get; set; }
 
         public List<Predicate> AllocatedPredicates { get; set; }
+        public List<Predicate> AvailablePredicates { get; set; }
     }
 
     public class AttributeTypeEditorModel : BaseEditorModel

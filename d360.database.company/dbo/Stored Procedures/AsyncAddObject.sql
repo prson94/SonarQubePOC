@@ -17,7 +17,7 @@ begin
 		
 		exec [cache].[SynchronizeObjectDetails] @Object, @ObjectID
 
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority]) values ('ObjectIndex', 'A', @Object, @ObjectID, 4)
+		--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority]) values ('ObjectIndex', 'A', @Object, @ObjectID, 4)
 
 		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Created', @Object, @ObjectID
 

@@ -16,6 +16,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Attribute_ParentID]
     ON [dbo].[AttributeType]([ParentID] ASC);
@@ -43,6 +45,10 @@ AS
 	BEGIN
 		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 			select 'Delete', [queue].WriteIndexXml('Removed', 'AttributeType', ID, coalesce(UpdatedBy, 0)), 'AttributeType', ID from deleted
+
+		delete	T
+		from	[cache].[Object] T
+				inner join deleted D on T.[Object] = 'AttributeType' and D.ID = T.ObjectID;
 	END
 
 
@@ -56,7 +62,22 @@ AS
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Add', [queue].WriteIndexXml('', 'AttributeType', ID, coalesce(UpdatedBy, 0)), 'AttributeType', ID from inserted
 
+	merge	[cache].[Object] as T
+	using	(
+			select	'AttributeType' as [Object],			ID as ObjectID,
+					'AttributeType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
+
 GO
+
 
 CREATE TRIGGER [dbo].[AttributeType_AfterUpdate]
    ON  [dbo].[AttributeType] 
@@ -65,6 +86,20 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Update', [queue].WriteIndexXml('', 'AttributeType', ID, coalesce(UpdatedBy, 0)), 'AttributeType', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'AttributeType' as [Object],			ID as ObjectID,
+					'AttributeType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
 
 GO
 

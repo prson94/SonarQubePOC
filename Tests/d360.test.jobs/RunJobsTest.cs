@@ -27,11 +27,12 @@ namespace d360.test.jobs
         {
             var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
             cnn.Open();
-            var sql = "select ID from Company";
+            var sql = "select ID from Company where ";
             if (developmentOnly)
             {
-                sql += " where DatabaseServerID = 6";
+                sql += "DatabaseServerID = 6 and ";
             }
+            sql += "Status = 'Active'";
             var list = cnn.Query<int>(sql).ToList();
             cnn.Close();
             cnn.Dispose();
@@ -63,7 +64,7 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 2; //10
+            var companyID = 22; //10
             var fusionTypeID = 16;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
@@ -101,73 +102,57 @@ END",
         public void DeployDatabaseChanges()
         {
             #region SQL
-            var sql = @"ALTER procedure [dbo].[AsyncAddObject]
-	@Object varchar(50),
-	@ObjectID int,
-	@ParentObject varchar(50),
-	@ParentObjectID int,
-	@ResourceID int
-as
-begin
-	set nocount on;
-	declare @trans varchar(25) = 'Trans',
-			@current int = 1,
-			@max int,
-			@date datetime = getutcdate()
+            var sql = @"ALTER TRIGGER [dbo].[Artifact_AfterUpdate]
+   ON  [dbo].[Artifact] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Artifact'
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted;
 
-	begin try
-		begin transaction @trans
-		
-		exec [cache].[SynchronizeObjectDetails] @Object, @ObjectID
+	with S as	(
+				select	ID,
+						ParentID
+				from	inserted
+				union all
+				select	A.ID,
+						A.ParentID
+				from	Artifact A
+						inner join S on S.ID = A.ParentID
+				)
+	update	T
+	set		T.TextPath = utility.GetBreadcrumbString('Artifact', S.ID, '/')
+	from	Artifact T
+			inner join S on S.ID = T.ID
 
-		--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority]) values ('ObjectIndex', 'A', @Object, @ObjectID, 4)
 
-		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Created', @Object, @ObjectID
-
-		if @Object = 'Intersect'
-		begin
-			declare @IDs dbo.IDTable
-			insert into @IDs values (@ObjectID)
-			exec [cache].[SynchronizeRelationships] @IDs
-		end
-
-		if @Object in ('AttributeTypeRelation', 'AttributeTypeRelation', 'ResponsibilityTypeRelation', 'ResponsibilityType')
-		begin
-			exec utility.CalculateStatistics
-		end
-		else
-		begin
-			exec utility.CalculateStatistics @Object, @ObjectID
-		end
-
-		if @Object = 'Responsibility'
-		begin
-			exec cache.SynchronizeResponsibilitiesForObject @ParentObject, @ParentObjectID 
-		end
-
-		commit transaction @trans
-	end try
-	begin catch
-		DECLARE @ErrorMessage NVARCHAR(4000);
-		DECLARE @ErrorSeverity INT;
-		DECLARE @ErrorState INT;
-
-		SELECT 
-			@ErrorMessage = ERROR_MESSAGE(),
-			@ErrorSeverity = ERROR_SEVERITY(),
-			@ErrorState = ERROR_STATE();
-
-		-- Use RAISERROR inside the CATCH block to return error
-		-- information about the original error that caused
-		-- execution to jump to the CATCH block.
-		RAISERROR (@ErrorMessage, -- Message text.
-				   @ErrorSeverity, -- Severity.
-				   @ErrorState -- State.
-				   );
-
-		rollback transaction @trans
-	end catch
-end";
+	merge	[cache].[Object] as T
+	using	(
+			select	'Artifact' as [Object],
+					ID as ObjectID,
+					--Name as Name,
+					--TextPath as TextPath,
+					'ArtifactType' as ObjectType,
+					ArtifactTypeID as ObjectTypeID--,
+					--[dbo].[GenerateObjectUrl]('Artifact', ArtifactTypeID, ID) as Url
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]--,
+						--T.[Name] = S.[Name],
+						--T.[TextPath] = S.[TextPath]
+	when	not matched then
+			insert	(
+					[Object],[ObjectID], --[Name], [TextPath], 
+					[ObjectType], [ObjectTypeID]--, [Url]
+					)
+			values	(
+					S.[Object], S.[ObjectID], --S.[Name], S.[TextPath], 
+					S.[ObjectType], S.[ObjectTypeID]--, S.[Url]
+					);";
 
             #endregion
             var list = getCompanies().ToList();

@@ -6323,7 +6323,7 @@ input[type=checkbox]:not(:disabled) ~ .lever:active:after {
 /*********************
       File Input
 **********************/
-.file-field {
+/*.file-field {
   position: relative; }
   .file-field input.file-path {
     margin-left: 100px;
@@ -6335,8 +6335,8 @@ input[type=checkbox]:not(:disabled) ~ .lever:active:after {
     height: 3rem;
     line-height: 3rem; }
   .file-field span {
-    cursor: pointer; }
-  .file-field input[type=file] {
+    cursor: pointer; }*/
+  /*.file-field input[type=file] {
     position: absolute;
     top: 0;
     right: 0;
@@ -6348,7 +6348,7 @@ input[type=checkbox]:not(:disabled) ~ .lever:active:after {
     font-size: 20px;
     cursor: pointer;
     opacity: 0;
-    filter: alpha(opacity=0); }
+    filter: alpha(opacity=0); }*/
 
 /***************
       Range

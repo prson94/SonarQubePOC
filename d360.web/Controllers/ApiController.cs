@@ -2430,12 +2430,12 @@ from	    ResponsibilityTypeHierarchy H
             //return Company.GetRelationships(type, id);
         }
 
-        [Route("{type}/{id:int}/relations/{intersectID:int}/items")]
-        public List<GetRelationshipModel> GetChildRelationships(SystemObjects type, int id, int intersectID)
-        {
-            var list = Company.GetRelationships(SystemObjects.Intersect, intersectID);
-            return list;
-        }
+        //[Route("{type}/{id:int}/relations/{intersectID:int}/items")]
+        //public List<GetRelationshipModel> GetChildRelationships(SystemObjects type, int id, int intersectID)
+        //{
+        //    var list = Company.GetRelationships(SystemObjects.Intersect, intersectID);
+        //    return list;
+        //}
 
         [Route("{type}/{id:int}/relations/critical")]
         public IQueryable<CriticalRelationshipsByObject> GetCriticalRelations(SystemObjects type, int id)
@@ -3474,41 +3474,6 @@ from	    ResponsibilityTypeHierarchy H
                             allocations = string.Format("<ul>{0}</ul>", allocations);
                         }
                         list.Add(new ReadOnlyField { Row = nextRow, Column = 1, Name = "Allocations", FieldName = "Allocations", FieldDescription = "", Value = allocations });
-
-                        #endregion
-
-
-                        #region Sourcing-Specific
-
-                        if (responsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.Sourcing)
-                        {
-                            var sources = string.Empty;
-
-                            var stypes =(
-                                        from s in Company.ResponsibilityTypeSourceTypes.Where(i => i.ResponsibilityTypeID == responsibilityType.ID)
-                                        join a in Company.ArtifactTypes on s.ObjectID equals a.ID
-                                        select new AllocationPossibility
-                                        {
-                                            Name = a.Name,
-                                            ObjectType = s.ObjectType,
-                                            ObjectTypeID = s.ObjectID
-                                        }
-                                        );
-
-                            foreach (var a in stypes.Select(i => i.Name))
-                            {
-                                sources += string.Format("<li>{0}</li>", a);
-                            }
-                            if (string.IsNullOrEmpty(sources))
-                            {
-                                sources = "None specified";
-                            }
-                            else
-                            {
-                                sources = string.Format("<ul>{0}</ul>", sources);
-                            }
-                            list.Add(new ReadOnlyField { Row = nextRow, Column = 2, Name = "Sources", FieldName = "SourceTypes", FieldDescription = "", Value = sources });
-                        }
 
                         #endregion
                     }

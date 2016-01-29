@@ -265,11 +265,11 @@
                     input: "#Name",
                     rule: function () {
                         var nameToTest = $('#Name').val();
-                        var nameRegex = new RegExp("^[a-zA-Z0-9]+$");
+                        var nameRegex = new RegExp("^[a-zA-Z0-9_-]+$");
                         return nameRegex.test(nameToTest);
                     },
                     action: 'blur',
-                    message: 'Name can only have uppercase and lowercase letters and numbers.'
+                    message: 'Name can only have uppercaseletters, lowercase letters, numbers, dash, or underscore.'
                 },
                 {
                     input: "#Name",

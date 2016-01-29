@@ -20,6 +20,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Artifact_ArtifactTypeID]
     ON [dbo].[Artifact]([ArtifactTypeID] ASC)
@@ -90,12 +92,23 @@ AS
 	SET NOCOUNT ON;
 	declare @ot varchar(50) = 'Artifact'
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Update', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted
+        select 'Update', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted;
+
+	with S as	(
+				select	ID,
+						ParentID
+				from	inserted
+				union all
+				select	A.ID,
+						A.ParentID
+				from	Artifact A
+						inner join S on S.ID = A.ParentID
+				)
 	update	T
-	set		T.TextPath = utility.GetBreadcrumbStringWrapper(@ot, S.ID, '/'),
-			T.[Path] = utility.GetBreadcrumbWrapper(@ot, S.ID)
+	set		T.TextPath = utility.GetBreadcrumbString('Artifact', S.ID, '/')
 	from	Artifact T
-			inner join inserted S on S.ID = T.ID;
+			inner join S on S.ID = T.ID
+
 
 	merge	[cache].[Object] as T
 	using	(

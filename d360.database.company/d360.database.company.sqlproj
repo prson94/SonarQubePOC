@@ -124,7 +124,6 @@
     </Build>
     <Build Include="reporting\Tables\Global_Audit.sql" />
     <Build Include="dbo\Tables\ResolutionRelation.sql" />
-    <Build Include="dbo\Tables\ResponsibilityTransformation.sql" />
     <Build Include="reporting\Tables\Global_FieldAudit.sql" />
     <Build Include="dbo\Tables\FusionAttributeOwnerRuleItem.sql" />
     <Build Include="dbo\Tables\FieldType.sql" />
@@ -190,7 +189,6 @@
     <Build Include="dbo\Tables\StatisticType.sql" />
     <Build Include="dbo\Tables\ArtifactType.sql" />
     <Build Include="dbo\Tables\StatisticTypeRelation.sql" />
-    <Build Include="dbo\Tables\ResponsibilityTypeSourceType.sql" />
     <Build Include="dbo\Tables\Workflow.sql" />
     <Build Include="dbo\Tables\Statistic.sql" />
     <Build Include="dbo\Tables\WorkflowStatus.sql" />
@@ -202,7 +200,6 @@
     <Build Include="dbo\Tables\WorkflowResource.sql" />
     <Build Include="dbo\Tables\Domain.sql" />
     <Build Include="dbo\Tables\ResponsibilityTypeRelation.sql" />
-    <Build Include="dbo\Tables\ResponsibilityTypeHierarchy.sql" />
     <Build Include="dbo\Tables\ResponsibilityTypeObjectClaim.sql" />
     <Build Include="dbo\Tables\Rule.sql" />
     <Build Include="dbo\Tables\AttributeTypeCategory.sql" />
@@ -244,7 +241,6 @@
     <Build Include="queue\Tables\Notification.sql">
       <AnsiNulls>Off</AnsiNulls>
     </Build>
-    <Build Include="dbo\Tables\IntersectTypeRoleRelation.sql" />
     <Build Include="dbo\Tables\IntersectNode.sql" />
     <Build Include="dbo\Views\StatisticTypeCheckOption.sql" />
     <Build Include="dbo\Views\EventHeader.sql" />
@@ -270,7 +266,6 @@
     <Build Include="dbo\Views\DomainAllocationDetail.sql" />
     <Build Include="dbo\Views\FieldTypeWithRelation.sql" />
     <Build Include="dbo\Views\AttributeTypeRelationDetail.sql" />
-    <Build Include="dbo\Views\SourcingResponsibilityDetail.sql" />
     <Build Include="dbo\Views\ResponsibilitySummaryDetail.sql" />
     <Build Include="utility\Views\ResponsibilityHierarchy.sql" />
     <Build Include="dbo\Views\AttributeDetail.sql" />
@@ -336,8 +331,8 @@
     </Build>
     <Build Include="dbo\Stored Procedures\GetEventsByObject.sql" />
     <Build Include="dbo\Stored Procedures\DeleteObject.sql">
-      <AnsiNulls>Off</AnsiNulls>
-      <QuotedIdentifier>Off</QuotedIdentifier>
+      <AnsiNulls>On</AnsiNulls>
+      <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
     <Build Include="dbo\Stored Procedures\GetCommentCountByFollower.sql" />
     <Build Include="dbo\Stored Procedures\GetCommentDetailsByFollowerOld.sql" />
@@ -358,7 +353,6 @@
     <Build Include="cache\Stored Procedures\SynchronizeObjectDetails.sql" />
     <Build Include="dbo\Stored Procedures\GetStatisticDetails.sql" />
     <Build Include="utility\Stored Procedures\CalculateStatistics.sql" />
-    <Build Include="dbo\Stored Procedures\GetRelationships.sql" />
     <Build Include="dbo\Stored Procedures\AddRelationships.sql" />
     <Build Include="dbo\Stored Procedures\GetRandomSurveyQuestionForUser.sql" />
     <Build Include="dbo\Stored Procedures\GetCommentDetailsByType.sql" />
@@ -392,7 +386,6 @@
     <Build Include="dbo\Stored Procedures\GetNonIntersections.sql" />
     <Build Include="dbo\Stored Procedures\GetAllowedAndUnallocatedResponsibilityTypesByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetRelatedObjectsByEventTypeWrapper.sql" />
-    <Build Include="dbo\Stored Procedures\GetLineageDiagramData.sql" />
     <Build Include="tile\Stored Procedures\GetRedFlagSummariesByResource.sql" />
     <Build Include="tile\Stored Procedures\GetRedFlagsByTypeAndResource.sql" />
     <Build Include="validate\Stored Procedures\IntersectType.sql" />
@@ -403,7 +396,6 @@
       <QuotedIdentifier>Off</QuotedIdentifier>
     </Build>
     <Build Include="utility\Stored Procedures\PromoteFusionAttributes.sql" />
-    <Build Include="dbo\Stored Procedures\GetEnvironmentDetailsDiagramData.sql" />
     <Build Include="dbo\Stored Procedures\GetIntersectTypeOptions.sql" />
     <Build Include="dbo\User Defined Types\PreviouslyCheckedIDTable.sql" />
     <Build Include="dbo\User Defined Types\StaticFieldCandidateTable.sql" />
@@ -426,7 +418,6 @@
     <Build Include="dbo\Stored Procedures\FollowObject.sql" />
     <Build Include="tile\Stored Procedures\GetObjectStatistics.sql" />
     <Build Include="fusion\Tables\StagingRelationMapping.sql" />
-    <Build Include="dbo\Tables\Map.sql" />
     <Build Include="dbo\Tables\IntersectMap.sql" />
     <Build Include="dbo\Tables\Predicate.sql" />
     <Build Include="dbo\Tables\MapTransformation.sql" />
@@ -443,10 +434,7 @@
     <Build Include="queue\Tables\Task.sql" />
     <Build Include="queue\Functions\WriteIndexXml.sql" />
     <Build Include="dbo\Tables\Transformation.sql" />
-    <Build Include="dbo\Tables\PredicatePhrase.sql" />
     <Build Include="dbo\Tables\IntersectMapTransformation.sql" />
-    <Build Include="dbo\Tables\IntersectMapExclusion_1.sql" />
-    <Build Include="dbo\Tables\IntersectMapContextItem.sql" />
     <Build Include="cache\Tables\ResponsibilityItem.sql" />
     <Build Include="cache\Tables\Relationship.sql" />
     <Build Include="cache\Tables\Object.sql" />
@@ -454,9 +442,6 @@
     <Build Include="cache\Views\Relationships.sql" />
     <Build Include="cache\Views\ObjectDetails.sql" />
     <Build Include="queue\Functions\WriteDeleteXml.sql" />
-    <Build Include="dbo\Stored Procedures\GetLineageDiagram_1.sql" />
-    <Build Include="dbo\Stored Procedures\FindExcludeMapIntersect_1.sql" />
-    <Build Include="dbo\Stored Procedures\ExcludeMapIntersect_1.sql" />
     <Build Include="dbo\Stored Procedures\AsyncUpdateObject.sql" />
     <Build Include="dbo\Stored Procedures\AsyncDeleteObject.sql" />
     <Build Include="dbo\Stored Procedures\AsyncAddObject.sql" />
@@ -475,6 +460,14 @@
     <Build Include="Security\relation.sql" />
     <Build Include="utility\Stored Procedures\PromoteFusionAttributeLookups.sql" />
     <Build Include="dbo\Tables\FieldTypeFusionLookupDisplayField.sql" />
+    <Build Include="dbo\Tables\SourceRuleContext.sql" />
+    <Build Include="dbo\Tables\SourceRule.sql" />
+    <Build Include="dbo\Tables\IntersectTypePredicate_1.sql" />
+    <Build Include="dbo\Tables\IntersectMapSourceRuleContext.sql" />
+    <Build Include="dbo\Tables\IntersectMapSourceRule.sql" />
+    <Build Include="utility\Functions\GetVerticalResponsibilityList.sql" />
+    <Build Include="utility\Functions\GetHierarchyAssignedResponsibilityList.sql" />
+    <Build Include="utility\Functions\GetDirectlyAssignedResponsibilityList.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -489,6 +482,7 @@
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByObject.sql" />
     <None Include="dbo\User Defined Types\RelationshipTypeTable.sql" />
     <None Include="dbo\Tables\IntersectTypePredicate.sql" />
+    <None Include="ToDeployToClientDev.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

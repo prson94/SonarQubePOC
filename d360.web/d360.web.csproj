@@ -898,15 +898,13 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
-    <None Include="Properties\PublishProfiles\d3s-ui-AlternateProd - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-ui-central-AlternateProd - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-ui-central.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-ui-central__Development.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-ui-central__Test.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-ui-Nightly - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-ui.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-ui__Development.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-ui__Test.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Alternate Production - North Central.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Production - Central.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Client Development - Central.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Nightly.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Production - East.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Client Development - East.pubxml" />
     <None Include="Scripts\ace\ace.js" />
     <Content Include="Scripts\ace\mode-json.js" />
     <None Include="Scripts\ace\mode-sql.js" />
@@ -944,10 +942,6 @@
     <Content Include="Scripts\errors.json" />
     <None Include="Scripts\handlebars-1.1.2.js" />
     <None Include="Content\styles\_Variables.less" />
-    <None Include="Scripts\diagrams\common.js" />
-    <None Include="Scripts\diagrams\environment.js" />
-    <None Include="Scripts\diagrams\lineage.js" />
-    <None Include="Scripts\diagrams\information.catalog.js" />
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\GoJS\GoJS-1-5-18-debug.js" />
     <Content Include="Scripts\GoJS\GoJS-1-5-18.js" />
@@ -1184,7 +1178,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\materialize\font\" />
-    <Folder Include="Scripts\d3\" />
     <Folder Include="Views\Home\" />
     <Folder Include="Views\Queries\" />
     <Folder Include="Views\Tiles\" />

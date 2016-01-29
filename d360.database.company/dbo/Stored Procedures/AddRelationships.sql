@@ -174,6 +174,19 @@ begin
 					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
 					values	( @IntersectID, @EndIntersectNodeTypeID, @EndIntersectNodeID, @EndObject, @EndObjectID, @StartIntersectNodeTypeID, @StartIntersectNodeID, @StartObject, @StartObjectID );
 
+					--Update the responsibilities of the object that should inherit form the other (Taxonomy can push relationships down to artifact)
+					if ( (@StartObject = 'Taxonomy' and @EndObject = 'Artifact') OR (@StartObject = 'Artifact' and @EndObject = 'Taxonomy') )
+					begin
+						if @StartObject = 'Artifact'
+						begin
+							exec [cache].[SynchronizeResponsibilitiesForObject] @StartObject, @StartObjectID
+						end
+						if @EndObject = 'Artifact'
+						begin
+							exec [cache].[SynchronizeResponsibilitiesForObject] @EndObject, @EndObjectID
+						end
+					end
+
 					exec utility.AddAuditEntry @StartObject, @StartObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
 					exec utility.AddAuditEntry @EndObject, @EndObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
 				end

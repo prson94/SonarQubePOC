@@ -13,6 +13,8 @@
 
 
 
+
+
 GO
 
 CREATE TRIGGER [dbo].[PolicyType_AfterInsert]
@@ -22,6 +24,20 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Add', [queue].WriteIndexXml('', 'PolicyType', ID, coalesce(UpdatedBy, 0)), 'PolicyType', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'PolicyType' as [Object],			ID as ObjectID,
+					'PolicyType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
 
 GO
 
@@ -37,6 +53,20 @@ AS
 	set		T.TextPath = utility.GetBreadcrumbStringWrapper('Policy', T.ID, '/')
 	from	Policy T
 			inner join inserted S on S.ID = T.PolicyTypeID
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'PolicyType' as [Object],			ID as ObjectID,
+					'PolicyType' as ObjectType,			0 as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
 
 GO
 

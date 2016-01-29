@@ -41,9 +41,6 @@ namespace d360.core.entities
         public virtual ICollection<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
 
         [IgnoreDataMember, ForeignKey("ResponsibilityTypeID")]
-        public virtual ICollection<ResponsibilityTypeSourceType> ResponsibilityTypeSourceTypes { get; set; }
-
-        [IgnoreDataMember, ForeignKey("ResponsibilityTypeID")]
         public virtual ICollection<Responsibility> Responsibilities { get; set; }
     }
 }

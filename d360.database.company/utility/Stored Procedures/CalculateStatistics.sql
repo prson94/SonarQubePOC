@@ -1,4 +1,5 @@
-﻿CREATE procedure [utility].[CalculateStatistics]
+﻿
+CREATE procedure [utility].[CalculateStatistics]
 --declare
 	@Type varchar(50) = NULL,
 	@ID int = NULL,
@@ -145,7 +146,6 @@ begin
 							R.ObjectID,
 							case 
 								when P.ValueExists <> 0 then R.PossibleScore
-								when S.ValueExists <> 0 then R.PossibleScore
 								else 0
 							end as Score
 					from	@relations R
@@ -155,12 +155,6 @@ begin
 										where		ObjectType = R.ObjectType and ObjectID = R.ObjectID and ResponsibilityTypeID = @CheckObjectID
 										group by	ResponsibilityTypeID, ObjectType, ObjectID
 										) P
-							outer apply (
-										select		ISNULL(ResponsibilityTypeID, 0) as ValueExists
-										from		SourcingResponsibilityDetail
-										where		ObjectType = R.ObjectType and ObjectID = R.ObjectID and ResponsibilityTypeID = @CheckObjectID
-										group by	ResponsibilityTypeID, ObjectType, ObjectID
-										) S
 			end
 		end
 

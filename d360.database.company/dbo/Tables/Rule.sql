@@ -14,6 +14,8 @@
 
 
 
+
+
 GO
 
 CREATE TRIGGER [dbo].[Rule_AfterUpdate]
@@ -24,8 +26,21 @@ AS
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Update', [queue].WriteIndexXml('', 'Rule', ID, coalesce(UpdatedBy, 0)), 'Rule', ID from inserted
 
-GO
+	merge	[cache].[Object] as T
+	using	(
+			select	'Rule' as [Object],			ID as ObjectID,
+					'RuleType' as ObjectType,	RuleType as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
 
+GO
 CREATE TRIGGER [dbo].[Rule_AfterInsert]
    ON  [dbo].[Rule] 
    AFTER INSERT
@@ -33,6 +48,20 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Add', [queue].WriteIndexXml('', 'Rule', ID, coalesce(UpdatedBy, 0)), 'Rule', ID from inserted
+
+	merge	[cache].[Object] as T
+	using	(
+			select	'Rule' as [Object],			ID as ObjectID,
+					'RuleType' as ObjectType,	RuleType as ObjectTypeID
+			from	inserted
+			) as S
+	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+	when	matched then
+			update set	T.[ObjectType] = S.[ObjectType],
+						T.[ObjectTypeID] = S.[ObjectTypeID]
+	when	not matched then
+			insert	( [Object],		[ObjectID],		[ObjectType],	[ObjectTypeID]		)
+			values	( S.[Object],	S.[ObjectID],	S.[ObjectType], S.[ObjectTypeID]	);
 
 GO
 
@@ -43,3 +72,7 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Delete', [queue].WriteIndexXml('Removed', 'Rule', ID, coalesce(UpdatedBy, 0)), 'Rule', ID from deleted
+
+	delete	T
+	from	[cache].[Object] T
+			inner join deleted D on T.[Object] = 'Rule' and D.ID = T.ObjectID;
