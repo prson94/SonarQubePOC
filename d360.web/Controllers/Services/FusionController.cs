@@ -531,7 +531,13 @@ where   ExecutionID = {0}", id);
                 Trace.TraceInformation("{0}{1}", prefix, "Saved raw json data to storage container.");
 
                 Trace.TraceInformation("Enqueueing new fusion job on the queue.  Fusion ID: {0}, Company ID: {1}, Log:{2}",fusionID,Company.CurrentCompanyID, fileName);
-                var fusionQueue = new FusionQueueManager(constants.AZURE_FUSION_QUEUE);
+
+                //get the name of the fusion queue from the database server name
+                var db = Community.Query<DatabaseServer>( @"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id",new { id = Company.CurrentCompanyID }).SingleOrDefault();
+
+                Trace.TraceInformation("Fusion queue name is: {0}, Company ID: {1}", db.FusionQueue, Company.CurrentCompanyID);
+
+                var fusionQueue = new FusionQueueManager(db.FusionQueue);
 
                 await fusionQueue.SendMessageAsync(new FusionProcessingData
                 {
