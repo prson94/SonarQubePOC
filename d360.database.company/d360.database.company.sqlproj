@@ -93,6 +93,7 @@
     <Folder Include="dbo\User Defined Types\" />
     <Folder Include="queue\Functions" />
     <Folder Include="cache\Views\" />
+    <Folder Include="utility\User Defined Types" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="fusion\Tables\StagingRelation.sql">
@@ -468,6 +469,10 @@
     <Build Include="utility\Functions\GetVerticalResponsibilityList.sql" />
     <Build Include="utility\Functions\GetHierarchyAssignedResponsibilityList.sql" />
     <Build Include="utility\Functions\GetDirectlyAssignedResponsibilityList.sql" />
+    <Build Include="dbo\Tables\IntersectMapTemplate.sql" />
+    <Build Include="dbo\Tables\IntersectMapTemplateLogSummary.sql" />
+    <Build Include="utility\Stored Procedures\ProcessIntersectTemplates.sql" />
+    <Build Include="utility\Stored Procedures\AddRelationDiagramRelations.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -483,6 +488,7 @@
     <None Include="dbo\User Defined Types\RelationshipTypeTable.sql" />
     <None Include="dbo\Tables\IntersectTypePredicate.sql" />
     <None Include="ToDeployToClientDev.sql" />
+    <None Include="utility\User Defined Types\DiagramRelationshipTable.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />
