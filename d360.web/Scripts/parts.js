@@ -6430,6 +6430,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $('#' + controlID_add_search).on('click', getArtifact);
     $('#' + controlID_overlay_cancel).on('click', cancelAddLink);
     $('#' + controlID_overlay_add).on('click', addRelationship);
+    $('#' + controlID_popover_add).on('keypress', '#' + controlID_add_search_text, function (e) {
+        if (e.keyCode == 13) {
+            $('#' + controlID_add_search).click();
+            return false;
+        }
+    });
 
     function populatePredicateList() {
         $.ajax({
