@@ -182,7 +182,7 @@ namespace d360.fusion
             }
             jobDuration.Stop();
 
-            metrics["Duration(ms)"] = jobDuration.ElapsedMilliseconds;
+            metrics["Duration(s)"] = jobDuration.ElapsedMilliseconds / 1000;
             
             ai.TrackEvent("Fusion Job Complete", null, metrics);
 
