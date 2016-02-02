@@ -47,14 +47,16 @@
                     <td data-bind="text: $data"></td>
                 </tr>
             </table>
-            <br/><br/>
+            <br /><br />
             Or <a data-bind="attr: { href: TemplateDownloadUrl }">download spreadsheet</a>.
         </div>
         <div class="col s12" data-bind="visible: ActionAndTypeSelected">
             <div class="FieldName">File</div>
             @*<div id="BulkLoadFile"></div>*@
-            <div data-bind="fileDrag: File">
-                <input type="file" data-bind="fileInput: File, customFileInput: {}" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />
+            @*<div data-bind="fileDrag: File">*@
+            <div>
+                <input type="file" data-bind="fileInput: File" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="width: 99%" />
+                @*<input type="file" data-bind="fileInput: File, customFileInput: {}" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />*@
             </div>
         </div>
     </div>
@@ -129,9 +131,9 @@
 
         //#endregion
 
-        //self.File().dataURL.subscribe(function (dataURL) {
-        //    console.log(dataURL);
-        //});
+        self.File().dataURL.subscribe(function (dataURL) {
+            console.log(dataURL);
+        });
 
         self.Action.subscribe(function (value) {
             self.TypeOptions.removeAll();
@@ -180,14 +182,15 @@
             self.InProgress(true);
 
             var postModel = {
-                Action: self.Action(),
+                LoadAction: self.Action(),
                 Type: self.Type(),
                 Notes: self.Notes(),
                 File: self.File().dataURL()
             }
 
             $.ajax('/form/AddLoad', {
-                data: postModel,
+                data: JSON.stringify(postModel),
+                contentType: "application/json; charset=utf-8",
                 dataType: 'json',
                 method: 'post'
             }).done(function (data, status, xhr) {
@@ -198,9 +201,9 @@
                 //    var fileName = args.file;
                 //    var serverResponse = args.response;
 
-                    amplify.publish("SaveAction", { context: data.context, action: 'add', id: data.id, custom: data.custom });
-                    amplify.publish("ShowMessage", data);
-                    self.InProgress(false);
+                amplify.publish("SaveAction", { context: data.context, action: 'add', id: data.id, custom: data.custom });
+                amplify.publish("ShowMessage", data);
+                self.InProgress(false);
                 //});
 
                 //$('#BulkLoadFile').jqxFileUpload('uploadFile', 1);

@@ -281,6 +281,11 @@ order by D.TextPath";
 
         public class SourcesToObjectModel
         {
+            public SourcesToObjectModel()
+            {
+                SourceRuleCount = 0;
+            }
+
             public int ID { get; set; }
             public int IntersectID { get; set; }
             public string Type { get; set; }
@@ -296,6 +301,10 @@ order by D.TextPath";
             public string ForeColor { get; set; }
             public int PredicateID { get; set; }
             public string Predicate { get; set; }
+
+            public int RawSourceRuleCount { get; set; }
+
+            public int SourceRuleCount { get; set; }
         }
 
         void processSourceLevel(List<SourcesToObjectModel> list, int id)
@@ -317,9 +326,9 @@ order by D.TextPath";
         }
 
 
-        public DiagramsController.DiagramModel TraverseDiagram(DiagramsController.DiagramModel model, DiagramsController.JsonNodeItem start)
+        public DiagramModel TraverseDiagram(DiagramModel model, JsonNodeItem start)
         {
-            var diagram = new DiagramsController.DiagramModel();
+            var diagram = new DiagramModel();
             diagram.nodes.Add(start);
 
             //links to the right
@@ -340,10 +349,10 @@ order by D.TextPath";
             return diagram;
         }
 
-        public DiagramsController.DiagramModel MergeDiagram(DiagramsController.DiagramModel model)
+        public DiagramModel MergeDiagram(DiagramModel model)
         {
             var leadingNodes = model.nodes.Where(n => !model.links.Any(l => l.to == n.key)).ToList();
-            var diagrams = new List<DiagramsController.DiagramModel>();
+            var diagrams = new List<DiagramModel>();
 
             //get discrete diagrams
             leadingNodes.ForEach(n =>
@@ -357,14 +366,14 @@ order by D.TextPath";
             var mainDiagram = diagrams.OrderByDescending(d => d.nodes.Count).FirstOrDefault();
 
             //now merge the smaller diagrams into the main one if possible
-            foreach (DiagramsController.DiagramModel dgm in diagrams)
+            foreach (DiagramModel dgm in diagrams)
             {
                 if (dgm == mainDiagram)
                     continue;
 
                 var nodeList = dgm.nodes.OrderByDescending(n => n.level);
 
-                foreach (DiagramsController.JsonNodeItem n in nodeList)
+                foreach (JsonNodeItem n in nodeList)
                 {
 
                     var node = mainDiagram.nodes.OrderBy(k => k.level).Where(k => k.obj == n.obj && k.objid == n.objid).FirstOrDefault();
@@ -384,9 +393,9 @@ order by D.TextPath";
                         }
 
                         //point affected links to mainDiagram node
-                        foreach (DiagramsController.JsonLinkItem l in leftLinks)
+                        foreach (JsonLinkItem l in leftLinks)
                             l.to = node.key;
-                        foreach (DiagramsController.JsonLinkItem l in rightLinks)
+                        foreach (JsonLinkItem l in rightLinks)
                             l.from = node.key;
 
                         if (!nodeExists)
@@ -401,92 +410,92 @@ order by D.TextPath";
         [HttpGet, Route("{type}/{id:int}/sources")]
         public JsonNetResult GetSourcesByObject(SystemObjects type, int id)
         {
-
             #region Legacy SQL
 
-            var sql = @"
-select	distinct
-		R.IntersectID,
-		M.ID,
-		M.SubjectIntersectNodeID,
-		R.SourceTypeName,
-		R.SourceObjectName,
-		R.SourceObject,
-		R.SourceObjectID,
-		SD.[IconBackColor] as SourceIconBackColor,
-		SD.[IconForeColor] as SourceIconForeColor,
-        M.ObjectIntersectNodeID,
-		R.TargetTypeName,
-		R.TargetObjectName,
-		R.TargetObject,
-		R.TargetObjectID,
-		TD.[IconBackColor] as TargetIconBackColor,
-		TD.[IconForeColor] as TargetIconForeColor,
-        M.PredicateID,
-		P.Name as Predicate
-from	IntersectMap M
-		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
-		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-        inner join Predicate P on P.ID = M.PredicateID
-		inner join [cache].[Relationship] SR on SR.SourceObject = @type and SR.SourceObjectID = @id and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
-		inner join [cache].[Relationship] TR on TR.SourceObject = @type and TR.SourceObjectID = @id and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
-union
-select	distinct
-		R.IntersectID,
-		M.ID,
-		M.SubjectIntersectNodeID,
-		R.SourceTypeName,
-		R.SourceObjectName,
-		R.SourceObject,
-		R.SourceObjectID,
-		SD.[IconBackColor] as SourceIconBackColor,
-		SD.[IconForeColor] as SourceIconForeColor,
-		M.ObjectIntersectNodeID,
-		R.TargetTypeName,
-		R.TargetObjectName,
-		R.TargetObject,
-		R.TargetObjectID,
-		TD.[IconBackColor] as TargetIconBackColor,
-		TD.[IconForeColor] as TargetIconForeColor,
-		M.PredicateID,
-		P.Name as Predicate
-from	IntersectMap M
-		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.SourceObject = @type and R.SourceObjectID = @id and M.[Type] = 1
-		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-		inner join Predicate P on P.ID = M.PredicateID
-union
-select	distinct
-		R.IntersectID,
-		M.ID,
-		M.SubjectIntersectNodeID,
-		R.SourceTypeName,
-		R.SourceObjectName,
-		R.SourceObject,
-		R.SourceObjectID,
-		SD.[IconBackColor] as SourceIconBackColor,
-		SD.[IconForeColor] as SourceIconForeColor,
-		M.ObjectIntersectNodeID,
-		R.TargetTypeName,
-		R.TargetObjectName,
-		R.TargetObject,
-		R.TargetObjectID,
-		TD.[IconBackColor] as TargetIconBackColor,
-		TD.[IconForeColor] as TargetIconForeColor,
-		M.PredicateID,
-		P.Name as Predicate
-from	IntersectMap M
-		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.TargetObject = @type and R.TargetObjectID = @id and M.[Type] = 1
-		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-		inner join Predicate P on P.ID = M.PredicateID";
+//            var sql = @"
+//select	distinct
+//		R.IntersectID,
+//		M.ID,
+//		M.SubjectIntersectNodeID,
+//		R.SourceTypeName,
+//		R.SourceObjectName,
+//		R.SourceObject,
+//		R.SourceObjectID,
+//		SD.[IconBackColor] as SourceIconBackColor,
+//		SD.[IconForeColor] as SourceIconForeColor,
+//        M.ObjectIntersectNodeID,
+//		R.TargetTypeName,
+//		R.TargetObjectName,
+//		R.TargetObject,
+//		R.TargetObjectID,
+//		TD.[IconBackColor] as TargetIconBackColor,
+//		TD.[IconForeColor] as TargetIconForeColor,
+//        M.PredicateID,
+//		P.Name as Predicate
+//from	IntersectMap M
+//		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
+//		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+//		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+//        inner join Predicate P on P.ID = M.PredicateID
+//		inner join [cache].[Relationship] SR on SR.SourceObject = @type and SR.SourceObjectID = @id and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
+//		inner join [cache].[Relationship] TR on TR.SourceObject = @type and TR.SourceObjectID = @id and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
+//union
+//select	distinct
+//		R.IntersectID,
+//		M.ID,
+//		M.SubjectIntersectNodeID,
+//		R.SourceTypeName,
+//		R.SourceObjectName,
+//		R.SourceObject,
+//		R.SourceObjectID,
+//		SD.[IconBackColor] as SourceIconBackColor,
+//		SD.[IconForeColor] as SourceIconForeColor,
+//		M.ObjectIntersectNodeID,
+//		R.TargetTypeName,
+//		R.TargetObjectName,
+//		R.TargetObject,
+//		R.TargetObjectID,
+//		TD.[IconBackColor] as TargetIconBackColor,
+//		TD.[IconForeColor] as TargetIconForeColor,
+//		M.PredicateID,
+//		P.Name as Predicate
+//from	IntersectMap M
+//		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.SourceObject = @type and R.SourceObjectID = @id and M.[Type] = 1
+//		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+//		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+//		inner join Predicate P on P.ID = M.PredicateID
+//union
+//select	distinct
+//		R.IntersectID,
+//		M.ID,
+//		M.SubjectIntersectNodeID,
+//		R.SourceTypeName,
+//		R.SourceObjectName,
+//		R.SourceObject,
+//		R.SourceObjectID,
+//		SD.[IconBackColor] as SourceIconBackColor,
+//		SD.[IconForeColor] as SourceIconForeColor,
+//		M.ObjectIntersectNodeID,
+//		R.TargetTypeName,
+//		R.TargetObjectName,
+//		R.TargetObject,
+//		R.TargetObjectID,
+//		TD.[IconBackColor] as TargetIconBackColor,
+//		TD.[IconForeColor] as TargetIconForeColor,
+//		M.PredicateID,
+//		P.Name as Predicate
+//from	IntersectMap M
+//		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.TargetObject = @type and R.TargetObjectID = @id and M.[Type] = 1
+//		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+//		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+//		inner join Predicate P on P.ID = M.PredicateID";
 
             #endregion
 
             #region SQL
 
-            var sql1 = @"declare @tbl table	(
+            var sql1 = @"
+declare @tbl table	(
 					IntersectID int, ID int, 
 					SubjectNodeID int, SubjectTypeName nvarchar(1000), SubjectObjectName nvarchar(1000), Subject varchar(50), SubjectID int, SubjectBackColor varchar(10), SubjectForeColor varchar(10),  
 					ObjectNodeID int, ObjectTypeName nvarchar(1000), ObjectObjectName nvarchar(1000), Object varchar(50), ObjectID int, ObjectBackColor varchar(10), ObjectForeColor varchar(10),
@@ -573,14 +582,26 @@ insert into @tbl
 declare @h table	(
 					ID int, [Type] varchar(1), IsStart bit, IsEnd bit,
 					[Level] int, NodeID int, TypeName nvarchar(1000), ObjectName nvarchar(1000), O varchar(50), OID int, BackColor varchar(10), ForeColor varchar(10),
-					IntersectID int, PredicateID int, Predicate nvarchar(250)
+					IntersectID int, PredicateID int, Predicate nvarchar(250),
+					RawSourceRuleCount int
 					)
 
 insert into @h
-	select	ID, 'S', 0, 0, 0, SubjectNodeID, SubjectTypeName, SubjectObjectName, Subject, SubjectID, SubjectBackColor, SubjectForeColor, IntersectID, PredicateID, Predicate from @tbl
-
+	select	ID, 'S', 0, 0, 0, SubjectNodeID, SubjectTypeName, SubjectObjectName, Subject, SubjectID, SubjectBackColor, SubjectForeColor, IntersectID, PredicateID, Predicate, R.[Count] 
+	from	@tbl S
+			cross apply (
+						select	count(1) as [Count]
+						from	IntersectMapSourceRule
+						where	IntersectMapID = S.ID
+						) R
 insert into @h
-	select	ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, PredicateID, Predicate from	@tbl
+	select	ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, PredicateID, Predicate, R.[Count] 
+	from	@tbl S
+			cross apply (
+						select	count(1) as [Count]
+						from	IntersectMapSourceRule
+						where	IntersectMapID = S.ID
+						) R
 
 update	T
 set		T.[Level] = 1,
@@ -608,19 +629,33 @@ select * from @h";
                 processSourceLevel(list, i.ID); //assumes type is "O"
             });
 
-            var model = new DiagramsController.DiagramModel();
+            //foreach(var o in list.Where(o => o.Type == "O"))
+            //{
+            //    o.SourceRuleCount = list.Where(s => s.O == o.O && s.OID == o.OID && s.Type == "S").Sum(s => s.RawSourceRuleCount);
+            //}
+
+            var model = new DiagramModel();
+
+            Func<string, int, string, int> getTotal = delegate(string obj, int objID, string currentType) {
+                return list.Where(i => i.O == obj && i.OID == objID && i.Type == "O").Sum(i => i.RawSourceRuleCount);
+            };
 
             var IDs = list.Select(i => i.ID).Distinct().ToList();
             IDs.ForEach(m =>
             {
                 var s = list.Single(i => i.ID == m && i.Type == "S");
                 var sKey = $"{s.Level}{s.O}{s.OID}";
-                if (!model.nodes.Any(i => i.key == $"{s.Level}{s.O}{s.OID}"))
-                    model.nodes.Add(new DiagramsController.JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID });
+                if (!model.nodes.Any(i => i.key == sKey))
+                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
+                //else
+                //    model.nodes.First(i => i.key == sKey).sourceRuleCount = getTotal(s.O, s.OID, s.Type);
+
                 var o = list.Single(i => i.ID == m && i.Type == "O");
                 var oKey = $"{o.Level}{o.O}{o.OID}";
-                if (!model.nodes.Any(i => i.key == $"{o.Level}{o.O}{o.OID}"))
-                    model.nodes.Add(new DiagramsController.JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID });
+                if (!model.nodes.Any(i => i.key == oKey))
+                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotal(o.O, o.OID, o.Type) });
+                else
+                    model.nodes.First(i => i.key == oKey).sourceRuleCount = getTotal(o.O, o.OID, o.Type);
 
                 if (model.links.Any(i => i.from == sKey && i.to == oKey))
                 {
@@ -629,7 +664,7 @@ select * from @h";
                 }
                 else
                 {
-                    model.links.Add(new DiagramsController.JsonLinkItem { id = s.ID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID });
+                    model.links.Add(new JsonLinkItem { id = s.ID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID });
                 }
             });
 

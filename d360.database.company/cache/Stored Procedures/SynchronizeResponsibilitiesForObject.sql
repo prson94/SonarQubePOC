@@ -2,6 +2,8 @@
 --declare
 	@Object varchar(50),
 	@ObjectID int
+--set @Object = 'ArtifactType'
+--set @ObjectID = 11
 as
 begin
 	set nocount on;
@@ -36,8 +38,16 @@ begin
 	insert into #Responsibilities
 		select * from utility.GetDirectlyAssignedResponsibilityList(@Object, @ObjectID, 7);
 
-	delete #Responsibilities where [Object] + cast(ObjectID as varchar) <> @Object + cast(@ObjectID as varchar)
-	delete cache.ResponsibilityItem where [Object] = @Object and ObjectID = @ObjectID
+
+--select * from #Responsibilities
+	--delete #Responsibilities where [Object] + cast(ObjectID as varchar) <> @Object + cast(@ObjectID as varchar)
+	--delete cache.ResponsibilityItem where [Object] = @Object and ObjectID = @ObjectID
+	DELETE	T
+	FROM	cache.ResponsibilityItem T
+			INNER JOIN #Responsibilities S ON S.[Object] = T.[Object] 
+											and S.[ObjectID] = T.[ObjectID] 
+											and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+											and S.ContextHash = T.ContextHash;
 
 	declare @current int = 1,
 			@max int,
@@ -77,6 +87,8 @@ begin
 		end
 		set @current = @current + 1
 	end;
+
+--select * from #Responsibilities
 
 	insert into cache.ResponsibilityItem
 	(

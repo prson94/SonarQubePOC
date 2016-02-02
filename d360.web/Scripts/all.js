@@ -36806,18 +36806,46 @@ ko.bindingHandlers.fileInput = {
             }
             var reader = new FileReader();
             reader.onload = function (e) {
-                if (fileData[property]) {
-                    fileData[property](e.target.result);
-                }
-                if (method == 'readAsDataURL' && fileData.base64String && ko.isObservable(fileData.base64String)) {
-                    var resultParts = e.target.result.split(",");
-                    if (resultParts.length === 2) {
-                        fileData.base64String(resultParts[1]);
-                    }
-                }
+                //if (fileData[property]) {
+                //    fileData[property](e.target.result);
+                //}
+                //if (method == 'readAsDataURL' && fileData.base64String && ko.isObservable(fileData.base64String)) {
+                //    var resultParts = e.target.result.split(",");
+                //    if (resultParts.length === 2) {
+                //        fileData.base64String(resultParts[1]);
+                //    }
+                //}
+
+
+                //var chars = new Uint8Array(e.target.result);
+                //var CHUNK_SIZE = 0x8000;
+                //var index = 0;
+                //var length = chars.length;
+                //var result = '';
+                //var slice;
+                //while (index < length) {
+                //    slice = chars.subarray(index, Math.min(index + CHUNK_SIZE, length));
+                //    result += String.fromCharCode.apply(null, slice);
+                //    index += CHUNK_SIZE;
+                //}
+                //fileData.base64String(result);
+                fileData.dataURL(e.target.result);
             };
 
-            reader[method](file);
+            //reader[method](file);
+
+            reader.readAsDataURL(file);
+            //reader.readAsArrayBuffer(file);
+
+            //var binary = "";
+            //var bytes = new Uint8Array(e.target.result);
+            //var length = bytes.byteLength;
+
+            //for (var i = 0; i < length; i++) {
+            //    binary += String.fromCharCode(bytes[i]);
+            //}
+
+            //att.Body = (new sforce.Base64Binary(binary)).toString();
         });
     }
 };
@@ -39670,7 +39698,17 @@ $.extend($.gritter.options, {
 //#region Template Helpers
 
 Handlebars.getTemplate = function (name) {
-    if (Handlebars.templates === undefined || Handlebars.templates[name] === undefined) {
+    var shouldCheckForTemplate = false;
+
+    if (Handlebars.templates === undefined) {
+        shouldCheckForTemplate = true;
+    }
+    else {
+        if (Handlebars.templates[name] === undefined) {
+            shouldCheckForTemplate = true;
+        }
+    }
+    if (shouldCheckForTemplate) {
         $.ajax({
             url: '/content/templates/parts/' + name + '.html',
             cache: true,
@@ -46999,6 +47037,9 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_info = controlID + '_info';
     var controlID_info_body = controlID + '_info_body';
 
+    var controlID_sourcerules = controlID + '_sourcerules';
+    var controlID_sourcerules_table = controlID + '_sourcerules_table';
+
     //var controlID_add = controlID + '_add';
     var controlID_add_search_text = controlID + '_add_search_text';
     var controlID_add_search = controlID + '_add_search';
@@ -47041,10 +47082,14 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_ribbon_undo = controlID + '_ribbon_undo';
     var controlID_ribbon_redo = controlID + '_ribbon_redo';
     var controlID_ribbon_remove = controlID + '_ribbon_remove';
+    var controlID_ribbon_sourcerule_add = controlID + '_ribbon_sourcerule_add';
 
     var controlID_popover_add = controlID + '_popover_add';
-    
-    
+
+    var controlID_popover_sourcerule_editor = controlID + '_popover_sourcerule_editor';
+    var controlID_popover_sourcerule_editor_name = controlID_popover_sourcerule_editor + '_name';
+    var controlID_popover_sourcerule_editor_sources = controlID_popover_sourcerule_editor + '_sources';
+
     //#endregion
 
     //#region Control instantiation
@@ -47061,6 +47106,9 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $("#" + controlID_ribbon_zoom_out).jqxRepeatButton({ delay: 3, theme: theme });
     $("#" + controlID_ribbon_zoom_in).jqxRepeatButton({ delay: 3, theme: theme });
 
+    //$("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 });
+
+    $("#" + controlID_sourcerules).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_responsibilities).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_fusion).jqxExpander({ theme: theme }).jqxExpander('collapse');
@@ -47069,20 +47117,14 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     //#endregion
 
     $("#" + controlID_message).hide();
-    //$("#" + controlID_overlay_roles).jqxDropDownList({ theme: theme, width: '100%' });
-    //$("#" + controlID_popover_add).jqxPopover({ theme: 'default', title: 'Add a Node', showCloseButton: true, autoClose: false, selector: $('#' + controlID_ribbon_add), offset: { left: 0, top: 0 }, arrowOffsetValue: 0 })
-    //.after('open',function (e) {
-    //    myPalette.scale = 1.0;
-    //});
 
-    //var toggleAdd = false;
     $("#" + controlID_ribbon_add).on('click', function () {
         $('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
     });
-    //$("#" + controlID_controls_zoom).jqxScrollBar({ theme: theme, width: 280, height: 18, min: 750, max: 2250, value: 1500 });
-    //$("#" + controlID_overlay_radio_existing).jqxRadioButton({theme: theme}).jqxRadioButton('check');
-    //$("#" + controlID_overlay_radio_new).jqxRadioButton({ theme: theme });
 
+    //$("#" + controlID_ribbon_sourcerule_add).on('click', function () {
+    //    $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
+    //});
 
     $('#' + controlID_ribbon).jqxRibbon({
         width: "100%",
@@ -47127,7 +47169,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }, 0);
     });
 
-
     $('#' + controlID_ribbon_save).on('click', function () {
         saveChanges();
 
@@ -47145,7 +47186,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         //confirmDialog(message.add(ok).add(cancel), 'Save Changes?', 'Save', saveChanges);
     });
-
 
 
     function confirmDialog(content, title, id, func) {
@@ -47228,6 +47268,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var predicates = [];
     var overlayEditLinkKey = null;
     var selection = null;
+
     //#region Responsibilities
 
     var lineageResponsibilitySource = {
@@ -47390,7 +47431,9 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             level: null,
             template: "Artifact",
             intersectMapId: null,
-            intersectId: null
+            intersectId: null,
+            sourceRuleCount: 0,
+            isVisible: false
         };
     };
 
@@ -47449,6 +47492,32 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         },
         new go.Binding("fill", "backColor").makeTwoWay()
        ),
+        g(go.Panel,
+            "Auto",
+            {
+                alignment: go.Spot.TopRight//,
+                //margin: go.Margin(0, 0, 0, 25)
+            },
+            g(go.Shape, "Circle",
+                {
+                    fill: '#DD1148',
+                    toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: 'Source rule defined' })))
+                }
+            ),
+            g(go.TextBlock,
+                {
+                    row: 0,
+                    margin: 3,
+                    alignment: go.Spot.Top,
+                    editable: false,
+                    //maxSize: new go.Size(w - 20, h - 10),
+                    stroke: '#ffffff',
+                    font: "bold " + fontSize + "pt sans-serif"
+                }//,
+                //new go.Binding("text", "sourceRuleCount").makeTwoWay()
+            ),
+            new go.Binding("visible", "isVisible")
+        ),
         g(go.Panel, "Table",
             g(go.TextBlock, {
                 row: 0,
@@ -47617,6 +47686,21 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
                     technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
                     $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+
+                    if (data.sourceRuleCount > 0) {
+                        $('#' + controlID_sourcerules).show();
+                        $("#" + controlID_sourcerules).jqxExpander('expand');
+
+                        $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function(rules) {
+                            var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
+                            $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
+                        });
+                    }
+                    else {
+                        $('#' + controlID_sourcerules).hide();
+                        $("#" + controlID_sourcerules).jqxExpander('collapse');
+                        $("#" + controlID_sourcerules_table).html('');
+                    }
 
                     lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
                     $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
@@ -48074,6 +48158,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         dg.model.linkToPortIdProperty = "topid";
         dg.model.nodeDataArray = [];
         dg.model.linkDataArray = [];
+        dg.toolManager.hoverDelay = 250;
         dg.toolManager.linkingTool.isEnabled = !readonly;
         dg.model.isReadOnly = readonly;
         //dg.isReadOnly = readonly;
@@ -48308,7 +48393,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             model.exclude = d.exclude.toString();
             model.intersectMapId = d.intersectMapId;
             model.intersectId = d.intersectId;
-
+            model.sourceRuleCount = d.sourceRuleCount;
+            model.isVisible = (d.sourceRuleCount > 0);
             modelList.push(model);
         }
 
@@ -48425,6 +48511,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $('#' + controlID_add_search).on('click', getArtifact);
     $('#' + controlID_overlay_cancel).on('click', cancelAddLink);
     $('#' + controlID_overlay_add).on('click', addRelationship);
+    $('#' + controlID_popover_add).on('keypress', '#' + controlID_add_search_text, function (e) {
+        if (e.keyCode == 13) {
+            $('#' + controlID_add_search).click();
+            return false;
+        }
+    });
 
     function populatePredicateList() {
         $.ajax({

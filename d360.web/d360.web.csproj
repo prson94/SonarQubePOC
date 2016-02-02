@@ -429,6 +429,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Diagram Models.cs" />
     <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
@@ -454,6 +455,7 @@
       <DependentUpon>apps.css</DependentUpon>
     </Content>
     <Content Include="Content\templates\parts\LineageDiagram.html" />
+    <Content Include="Content\templates\parts\LineageDiagramSourceRules.html" />
     <Content Include="Content\templates\rules.list.html" />
     <Content Include="Content\templates\policies.list.html" />
     <Content Include="Content\templates\policies.admin.html" />
@@ -1280,7 +1282,7 @@
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://demo.dev.data3sixty.local</IISUrl>
           <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
-          <IISAppRootUrl>http://gmo-d3s.dev.data3sixty.local/</IISAppRootUrl>
+          <IISAppRootUrl>http://swib-d3s.dev.data3sixty.local/</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

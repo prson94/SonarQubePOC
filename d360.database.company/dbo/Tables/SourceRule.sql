@@ -3,6 +3,7 @@
     [Name]                NVARCHAR (1000) NOT NULL,
     [Object]              VARCHAR (50)    NOT NULL,
     [ObjectID]            INT             NOT NULL,
+	[TargetIntersectMapID]	INT           NOT NULL,
     [AppliesToObject]     VARCHAR (50)    NULL,
     [AppliesToObjectID]   INT             NULL,
     [AppliesToObjectList] XML             NULL,

@@ -35,7 +35,7 @@ namespace d360.jobs.TriggerArtifactCertificationWorkflow
 
             try
             {
-                var companies = GetActiveCompanyIDs();//.Where(i => i == 4).ToList();
+                var companies = GetActiveCompanyIDs().Where(i => i == 28).ToList();
                 var domainPrefixes = GetCompanyDomainPrefixes();
 
                 companies.ForEach(companyID =>

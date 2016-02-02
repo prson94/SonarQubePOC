@@ -48,3 +48,31 @@
     text-transform:none;
     line-height:1.4;
 }
+
+.rule-list {
+    .rule-name {
+        color: @d3s-blue-2;
+        font-weight: 500;
+        font-size: 1.2em;
+    }
+    table {
+        thead {
+            tr {
+                color: @d3s-gray-2;
+                font-style: oblique;
+            }
+        }
+        tbody {
+            tr {
+                .rule-item {
+                    padding-top:15px;
+                    vertical-align: top;
+                }
+                .rule-item-name {
+                    font-weight: 500;
+                    color: @d3s-blue-4;
+                }
+            }
+        }
+    }
+}

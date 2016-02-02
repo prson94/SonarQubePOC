@@ -6659,7 +6659,7 @@ namespace d360.web.Controllers
 
         public class LoadFilePostModel
         {
-            public string Action { get; set; }
+            public string LoadAction { get; set; }
             public string Type { get; set; }
             public string Notes { get; set; }
             public string File { get; set; }
@@ -6812,7 +6812,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             {
                 // Perform checks to make sure fields are populated.
                 if (string.IsNullOrEmpty(model.Type)) throw new NoFormDataException("Type");
-                if (string.IsNullOrEmpty(model.Action)) throw new NoFormDataException("Action");
+                if (string.IsNullOrEmpty(model.LoadAction)) throw new NoFormDataException("LoadAction");
 
                 var match = MimeTypeExtensionsMap.RegEx.Match(model.File);
 
@@ -6837,7 +6837,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                         load = new Load
                         {
                             File = stream.ToArray(),
-                            Action = model.Action,
+                            Action = model.LoadAction,
                             Extension = extension,
                             Notes = model.Notes,
                             Object = typeInfo[0],
@@ -6932,31 +6932,20 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
         //        JsonResult json;
         //        Load load = null;
-        //        var success = false;
-        //        var errorMessage = "";
 
         //        var typeInfo = model.Type.Split('|');
 
         //        load = new Load
         //        {
-        //          Action = model.Action,
-        //          Notes = model.Notes,
-        //          Object = typeInfo[0],
-        //          ObjectID = int.Parse(typeInfo[1]),
-        //          DateStarted = DateTime.UtcNow
+        //            Action = model.Action,
+        //            Notes = model.Notes,
+        //            Object = typeInfo[0],
+        //            ObjectID = int.Parse(typeInfo[1]),
+        //            DateStarted = DateTime.UtcNow
         //        };
 
-        //        success = !hasError;
-
-        //        if (success)
-        //        {
-        //            Company.Add<Load>(load);
-        //            json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
-        //        }
-        //        else
-        //        {
-        //             json = jsonException(errorMessage, HttpStatusCode.BadRequest);
-        //        }
+        //        Company.Add<Load>(load);
+        //        json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
 
         //        return json;
         //    }
@@ -6971,106 +6960,106 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         //    }
         //}
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost]
-        public JsonResult AddLoadFile(int id)
-        {
-            try
-            {
-                var file = Request.Files[0];
-                var extension = Path.GetExtension(file.FileName);
-                var stream = new MemoryStream();
-                file.InputStream.CopyTo(stream);
+        //[ValidateHttpAntiForgeryToken]
+        //[HttpPost]
+        //public JsonResult AddLoadFile(int id)
+        //{
+        //    try
+        //    {
+        //        var file = Request.Files[0];
+        //        var extension = Path.GetExtension(file.FileName);
+        //        var stream = new MemoryStream();
+        //        file.InputStream.CopyTo(stream);
 
-                Load load = null;
-                JsonResult json;
-                var success = false;
-                var errorMessage = "";
-                SLDocument xls;
+        //        Load load = null;
+        //        JsonResult json;
+        //        var success = false;
+        //        var errorMessage = "";
+        //        SLDocument xls;
 
-                if (extension == ".xlsx")
-                {
-                    load = Company.GetById<Load>(id);
-                    load.File = stream.ToArray();
-                    load.Extension = extension;
+        //        if (extension == ".xlsx")
+        //        {
+        //            load = Company.GetById<Load>(id);
+        //            load.File = stream.ToArray();
+        //            load.Extension = extension;
 
-                    xls = new SLDocument(stream);
+        //            xls = new SLDocument(stream);
 
-                    var fieldTypeNames = getFieldNamesByType(load.Object, load.ObjectID);
+        //            var fieldTypeNames = getFieldNamesByType(load.Object, load.ObjectID);
 
-                    var stats = xls.GetWorksheetStatistics();
-                    int columnCount = 0;
+        //            var stats = xls.GetWorksheetStatistics();
+        //            int columnCount = 0;
 
-                    for (int i = 1; i <= stats.NumberOfColumns; i++)
-                    {
-                        var testValue = xls.GetCellValueAsString(1, i);
-                        if (string.IsNullOrEmpty(testValue))
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            columnCount++;
-                        }
-                    }
+        //            for (int i = 1; i <= stats.NumberOfColumns; i++)
+        //            {
+        //                var testValue = xls.GetCellValueAsString(1, i);
+        //                if (string.IsNullOrEmpty(testValue))
+        //                {
+        //                    break;
+        //                }
+        //                else
+        //                {
+        //                    columnCount++;
+        //                }
+        //            }
 
-                    if (columnCount == fieldTypeNames.Count)
-                    {
-                        var hasError = false;
-                        load.LoadColumns = new List<LoadColumn>();
-                        for (var i = 1; i <= fieldTypeNames.Count; i++)
-                        {
-                            var actualValue = xls.GetCellValueAsString(1, i);
-                            var expectedValue = fieldTypeNames[i - 1];
-                            if (actualValue.Equals(expectedValue))
-                            {
-                                load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = actualValue });
-                            }
-                            else
-                            {
-                                hasError = true;
-                                errorMessage += string.Format("{0} did not match the expected value of {1}. ", actualValue, expectedValue);
-                            }
-                        }
+        //            if (columnCount == fieldTypeNames.Count)
+        //            {
+        //                var hasError = false;
+        //                load.LoadColumns = new List<LoadColumn>();
+        //                for (var i = 1; i <= fieldTypeNames.Count; i++)
+        //                {
+        //                    var actualValue = xls.GetCellValueAsString(1, i);
+        //                    var expectedValue = fieldTypeNames[i - 1];
+        //                    if (actualValue.Equals(expectedValue))
+        //                    {
+        //                        load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = actualValue });
+        //                    }
+        //                    else
+        //                    {
+        //                        hasError = true;
+        //                        errorMessage += string.Format("{0} did not match the expected value of {1}. ", actualValue, expectedValue);
+        //                    }
+        //                }
 
-                        success = !hasError;
-                    }
-                    else
-                    {
-                        errorMessage = "The number of columns in the spreadsheet does not match the number of defined fields for this load type.";
-                    }
-                }
-                else
-                {
-                    errorMessage = "Incorrect file type";
-                }
+        //                success = !hasError;
+        //            }
+        //            else
+        //            {
+        //                errorMessage = "The number of columns in the spreadsheet does not match the number of defined fields for this load type.";
+        //            }
+        //        }
+        //        else
+        //        {
+        //            errorMessage = "Incorrect file type";
+        //        }
 
-                if (success)
-                {
-                    Company.Update<Load>(load);
-                    json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
-                }
-                else
-                {
-                    load = null;
-                    Company.Delete<Load>(i => i.ID == id);
-                    json = jsonException(errorMessage, HttpStatusCode.BadRequest);
-                }
+        //        if (success)
+        //        {
+        //            Company.Update<Load>(load);
+        //            json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
+        //        }
+        //        else
+        //        {
+        //            load = null;
+        //            Company.Delete<Load>(i => i.ID == id);
+        //            json = jsonException(errorMessage, HttpStatusCode.BadRequest);
+        //        }
 
-                return json;
-            }
-            catch (BaseException ex)
-            {
-                Company.Delete<Load>(i => i.ID == id);
-                return jsonException(ex.StatusDescription, ex.StatusCode);
-            }
-            catch (Exception ex)
-            {
-                Company.Delete<Load>(i => i.ID == id);
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        //        return json;
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        Company.Delete<Load>(i => i.ID == id);
+        //        return jsonException(ex.StatusDescription, ex.StatusCode);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Company.Delete<Load>(i => i.ID == id);
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
         #endregion
 

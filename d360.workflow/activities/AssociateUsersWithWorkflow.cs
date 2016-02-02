@@ -31,7 +31,7 @@ namespace d360.workflow
                     foreach (var user in users)
                     {
                         cnn.Execute(
-                            @"insert into WorkflowResource values (@WorkflowID, @Activity, @ResourceID, 0, newid())",
+                            @"insert into WorkflowResource (WorkflowID, [Activity], ResourceID, IsComplete) values (@WorkflowID, @Activity, @ResourceID, 0)",
                             new { WorkflowID = context.WorkflowInstanceId, Activity = (int)activity, ResourceID = user.ID }
                         );
                     }

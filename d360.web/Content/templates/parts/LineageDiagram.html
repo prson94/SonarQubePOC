@@ -5,7 +5,6 @@
             <div style="width:100%;text-align:center;">
                 <div id="{{control}}_overlay_relationship"></div><br />
             </div>
-            <!--<div id="{{control}}_overlay_radio_existing">Choose an existing predicate</div>-->
             <table id="{{control}}_overlay_existing" style="margin-top:5px;">
                 <tbody>
                     <tr>
@@ -20,29 +19,6 @@
                     </tr>
                 </tbody>
             </table>
-            <!--<div id="{{control}}_overlay_radio_new">Create a new predicate</div>
-            <table id="{{control}}_overlay_new" style="display:none;margin-top:5px;">
-                <tbody>
-                    <tr>
-                        <td style="width:27px;"></td>
-                        <td style="padding-bottom:5px">
-                            Predicate Name:
-                        </td>
-                        <td>
-                            <input type="text" id="{{control}}_overlay_pname" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="width:27px;"></td>
-                        <td>
-                            Phrase:
-                        </td>
-                        <td>
-                            <input type="text" id="{{control}}_overlay_phrase" />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>-->
             <table style="margin-top:5px;">
                 <tbody>
                     <tr>
@@ -69,6 +45,16 @@
                 </div>
                 <div id="{{control}}_palette" style="height:300px"></div>
             </div>
+        </div>
+    </div>
+    <div id="{{control}}_popover_sourcerule_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:500px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px;">
+        <div>
+            <span class="FieldNameRequired">Name:</span>
+            <input id="{{control}}_popover_sourcerule_editor_name" type="text" />
+        </div>
+        <div>
+            <span class="FieldNameRequired">Source Order:</span>
+            <div id="{{control}}_popover_sourcerule_editor_sources"></div>
         </div>
     </div>
     <div id="{{control}}_ribbon_expander" style="width:100%;">
@@ -100,6 +86,9 @@
                                 <td colspan="2" style="padding-left:5px;">
                                     Edit
                                 </td>
+                                <!--<td colspan="2" style="padding-left:5px;">
+                                    Rules
+                                </td>-->
                             </tr>
                             <tr>
                                 <td style="padding:5px;">
@@ -128,11 +117,13 @@
                                         </tbody>
                                     </table>
                                 </td>
+
                                 <td style="width:1px;border-left:1px solid #ccc;"></td>
                                 <td style="padding:5px;vertical-align:top;">
                                     <button id="{{control}}_ribbon_fullscreen" style="vertical-align:top;"><i class="fa fa-2x fa-arrows-alt"></i><br />Fullscreen</button>
                                     <button id="{{control}}_ribbon_reset"><i class="fa fa-2x fa-refresh"></i><br />Reset</button>
                                 </td>
+
                                 <td style="width:1px;border-left:1px solid #ccc;"></td>
                                 <td style="padding:5px;vertical-align:top;">
                                     <button id="{{control}}_ribbon_undo"><i class="fa fa-2x fa-undo"></i><br />Undo</button>
@@ -143,6 +134,11 @@
                                     <button id="{{control}}_ribbon_save" style="vertical-align:top;"><i class="fa fa-2x fa-save"></i><br />Save Changes</button>
                                     <div id="{{control}}_ribbon_save_spinner" style="border:none; display:none;vertical-align:top;"><i class="fa fa-2x fa-spinner fa-spin"></i></div>
                                 </td>
+
+                                <!--<td style="width:1px;border-left:1px solid #ccc;"></td>
+                                <td style="padding:5px;vertical-align:top;">
+                                    <button id="{{control}}_ribbon_sourcerule_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Source Rule</button>
+                                </td>-->
                             </tr>
                         </tbody>
                     </table>
@@ -164,6 +160,12 @@
                         <div id="{{control}}_info">
                             <div><i class="fa fa-info-circle"></i> Info</div>
                             <div style="padding: 10px" id="{{control}}_info_body"></div>
+                        </div>
+                        <div id="{{control}}_sourcerules" style="display:none">
+                            <div><i class="fa fa-code-fork"></i> Source Rules</div>
+                            <div style="padding:10px">
+                                <div id="{{control}}_sourcerules_table"></div>
+                            </div>
                         </div>
                         <div id="{{control}}_responsibilities">
                             <div><i class="fa fa-retweet"></i> Responsibilities</div>

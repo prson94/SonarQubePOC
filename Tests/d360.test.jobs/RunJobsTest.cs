@@ -64,8 +64,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 22; //10
-            var fusionTypeID = 16;
+            var companyID = 28; //10
+            var fusionTypeID = 13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FieldTypes);
@@ -102,57 +102,7 @@ END",
         public void DeployDatabaseChanges()
         {
             #region SQL
-            var sql = @"ALTER TRIGGER [dbo].[Artifact_AfterUpdate]
-   ON  [dbo].[Artifact] 
-   AFTER UPDATE
-AS 
-	SET NOCOUNT ON;
-	declare @ot varchar(50) = 'Artifact'
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Update', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted;
-
-	with S as	(
-				select	ID,
-						ParentID
-				from	inserted
-				union all
-				select	A.ID,
-						A.ParentID
-				from	Artifact A
-						inner join S on S.ID = A.ParentID
-				)
-	update	T
-	set		T.TextPath = utility.GetBreadcrumbString('Artifact', S.ID, '/')
-	from	Artifact T
-			inner join S on S.ID = T.ID
-
-
-	merge	[cache].[Object] as T
-	using	(
-			select	'Artifact' as [Object],
-					ID as ObjectID,
-					--Name as Name,
-					--TextPath as TextPath,
-					'ArtifactType' as ObjectType,
-					ArtifactTypeID as ObjectTypeID--,
-					--[dbo].[GenerateObjectUrl]('Artifact', ArtifactTypeID, ID) as Url
-			from	inserted
-			) as S
-	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-	when	matched then
-			update set	T.[ObjectType] = S.[ObjectType],
-						T.[ObjectTypeID] = S.[ObjectTypeID]--,
-						--T.[Name] = S.[Name],
-						--T.[TextPath] = S.[TextPath]
-	when	not matched then
-			insert	(
-					[Object],[ObjectID], --[Name], [TextPath], 
-					[ObjectType], [ObjectTypeID]--, [Url]
-					)
-			values	(
-					S.[Object], S.[ObjectID], --S.[Name], S.[TextPath], 
-					S.[ObjectType], S.[ObjectTypeID]--, S.[Url]
-					);";
+            var sql = @"";
 
             #endregion
             var list = getCompanies().ToList();

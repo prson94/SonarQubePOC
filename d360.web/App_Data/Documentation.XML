@@ -2794,20 +2794,6 @@
             <param name="p">The parent fusion attribute type (optional)</param>
             <returns>A list of fusion attributes types.</returns>
         </member>
-        <member name="M:d360.web.Controllers.DiagramsController.LineageDiagramData(System.Int32)">
-            <summary>
-            Gets the actual sources for the given relationship.
-            </summary>
-            <param name="id">The target IntersectID</param>
-            <returns>JSON Data</returns>
-        </member>
-        <member name="M:d360.web.Controllers.DiagramsController.EnvironmentDetailsDiagramData(d360.core.SystemObjects,System.Int32)">
-            <summary>
-            Gets the ideal sources for the given relationship.
-            </summary>
-            <param name="id">The target IntersectID</param>
-            <returns>JSON Data</returns>
-        </member>
         <member name="M:d360.web.Models.Attributes.FileDownloadAttribute.CheckAndHandleFileResult(System.Web.Mvc.ActionExecutedContext)">
             <summary>
             If the current response is a FileResult (an MVC base class for files) then write a

@@ -255,18 +255,46 @@ ko.bindingHandlers.fileInput = {
             }
             var reader = new FileReader();
             reader.onload = function (e) {
-                if (fileData[property]) {
-                    fileData[property](e.target.result);
-                }
-                if (method == 'readAsDataURL' && fileData.base64String && ko.isObservable(fileData.base64String)) {
-                    var resultParts = e.target.result.split(",");
-                    if (resultParts.length === 2) {
-                        fileData.base64String(resultParts[1]);
-                    }
-                }
+                //if (fileData[property]) {
+                //    fileData[property](e.target.result);
+                //}
+                //if (method == 'readAsDataURL' && fileData.base64String && ko.isObservable(fileData.base64String)) {
+                //    var resultParts = e.target.result.split(",");
+                //    if (resultParts.length === 2) {
+                //        fileData.base64String(resultParts[1]);
+                //    }
+                //}
+
+
+                //var chars = new Uint8Array(e.target.result);
+                //var CHUNK_SIZE = 0x8000;
+                //var index = 0;
+                //var length = chars.length;
+                //var result = '';
+                //var slice;
+                //while (index < length) {
+                //    slice = chars.subarray(index, Math.min(index + CHUNK_SIZE, length));
+                //    result += String.fromCharCode.apply(null, slice);
+                //    index += CHUNK_SIZE;
+                //}
+                //fileData.base64String(result);
+                fileData.dataURL(e.target.result);
             };
 
-            reader[method](file);
+            //reader[method](file);
+
+            reader.readAsDataURL(file);
+            //reader.readAsArrayBuffer(file);
+
+            //var binary = "";
+            //var bytes = new Uint8Array(e.target.result);
+            //var length = bytes.byteLength;
+
+            //for (var i = 0; i < length; i++) {
+            //    binary += String.fromCharCode(bytes[i]);
+            //}
+
+            //att.Body = (new sforce.Base64Binary(binary)).toString();
         });
     }
 };

@@ -16,6 +16,8 @@ using System;
 using System.Text.RegularExpressions;
 using d360.core.exceptions;
 using System.Net;
+using d360.fusion;
+using System.Threading.Tasks;
 
 namespace d360.web.Controllers
 {
@@ -337,7 +339,7 @@ namespace d360.web.Controllers
         }
 
         [Route("{typeID:int}/configurations/{id:int}/template/{attributeTypeID:int}"), HttpPost]
-        public HttpStatusCodeResult UploadFusionManualLoad(int typeID, int id, int attributeTypeID)
+        public async Task<HttpStatusCodeResult> UploadFusionManualLoad(int typeID, int id, int attributeTypeID)
         {
             try
             {
@@ -379,7 +381,9 @@ namespace d360.web.Controllers
                     #endregion
                     
                     var currentColumnIndex = 1;
-                    
+
+                    var models = new List<Dictionary<string, string>>();
+
                     #region Parse raw ancestor nodes.
                     
                     foreach (var nodeID in parentAttributeTypeIDs)
@@ -415,17 +419,19 @@ namespace d360.web.Controllers
 
                                 #endregion
 
-                                var node = new XElement("m", new XAttribute("id", currentRowNumber));
+                                var jsonFields = new Dictionary<string, string>();
 
-                                node.Add(new XElement("Name", xls.GetCellValueAsString(currentRowIndex, currentColumnIndex)));
-                                node.Add(new XElement("FusionAttributeTypeID", nodeID));
-                                node.Add(new XElement("SourceID", sourceID));
+                                jsonFields.Add("Name", xls.GetCellValueAsString(currentRowIndex, currentColumnIndex));
+                                jsonFields.Add("SourceID", sourceID);
+                                jsonFields.Add("FusionAttributeTypeID", nodeID.ToString());
                                 if (!string.IsNullOrEmpty(parentSourceID))
                                 {
-                                    node.Add(new XElement("ParentSourceID", parentSourceID));
+                                    jsonFields.Add("ParentSourceID", parentSourceID);
                                 }
 
-                                mXml.Add(node);        // Add node.
+                                models.Add(jsonFields);
+
+
                                 currentRowNumber++;    // This number must be unique.  A unique number per fusion attribute.                            
                             }
 
@@ -442,7 +448,6 @@ namespace d360.web.Controllers
                     currentRowIndex = 2;    // Reset the current row index.
                     while (currentRowIndex <= endRowIndex)
                     {
-
                         #region Create SourceID
 
                         var sourceID = "";
@@ -463,22 +468,22 @@ namespace d360.web.Controllers
 
                         #endregion
 
-                        var node = new XElement("m", new XAttribute("id", currentRowNumber));
+                        var jsonFields = new Dictionary<string, string>();
 
-                        node.Add(new XElement("Name", xls.GetCellValueAsString(currentRowIndex, currentColumnIndex)));
-                        node.Add(new XElement("FusionAttributeTypeID", attributeTypeID));
-                        node.Add(new XElement("SourceID", sourceID));
+                        jsonFields.Add("Name", xls.GetCellValueAsString(currentRowIndex, currentColumnIndex));
+                        jsonFields.Add("SourceID", sourceID);
+                        jsonFields.Add("FusionAttributeTypeID", attributeTypeID.ToString());
                         if (!string.IsNullOrEmpty(parentSourceID))
                         {
-                            node.Add(new XElement("ParentSourceID", parentSourceID));
+                            jsonFields.Add("ParentSourceID", parentSourceID);
                         }
 
                         for (int i = 0; i < targetAttributeTypeFields.Count; i++)
                         {
-                            node.Add(new XElement(targetAttributeTypeFields[i].Name, xls.GetCellValueAsString(currentRowIndex, i + currentColumnIndex + 1)));
+                            jsonFields.Add(targetAttributeTypeFields[i].Name, xls.GetCellValueAsString(currentRowIndex, i + currentColumnIndex + 1));
                         }
 
-                        mXml.Add(node);        // Add node.
+                        models.Add(jsonFields);
 
                         currentRowNumber++;    // This number must be unique.  A unique number per fusion attribute.
                         currentRowIndex++;
@@ -488,20 +493,26 @@ namespace d360.web.Controllers
 
                     #region Save to queue for processing
 
-                    var doc = new XElement("import", mXml, new XElement("rs"));
+                    var import = new BulkFusionImport { Models = models, Relationships = new FusionRelationshipModels() };
 
-                    var queueItem = new QueueFusionItem { ID = Guid.NewGuid(), FusionID = id, Data = doc.ToString() };
-                    Company.AddFusionQueueItem(queueItem);
+                    var json = JsonConvert.SerializeObject(import);
 
-                    try
-                    {
-                        var execution = new FusionExecution { DateToUseForHistory = DateTime.UtcNow, FusionID = id, QueueID = queueItem.ID };
-                        Company.Add<FusionExecution>(execution);
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.TraceError(ex.GetFullExceptionData());
-                    }
+                    var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss");
+
+                    var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
+                    Storage.CreateFolder(folder);
+                    var fileName = $"{typeID}.{id}.{dateString}.json";
+                    Storage.CreateFile(folder, fileName, json);
+
+                    var db = Community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = Company.CurrentCompanyID }).SingleOrDefault();
+
+                    var fusionQueue = new FusionQueueManager(db.FusionQueue);
+
+                    await fusionQueue.SendMessageAsync(new FusionProcessingData {
+                        CompanyID = Company.CurrentCompanyID,
+                        FusionID = id,
+                        LogFileName = fileName
+                    });
 
                     #endregion                
                 }

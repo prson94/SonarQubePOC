@@ -36,7 +36,17 @@ $.extend($.gritter.options, {
 //#region Template Helpers
 
 Handlebars.getTemplate = function (name) {
-    if (Handlebars.templates === undefined || Handlebars.templates[name] === undefined) {
+    var shouldCheckForTemplate = false;
+
+    if (Handlebars.templates === undefined) {
+        shouldCheckForTemplate = true;
+    }
+    else {
+        if (Handlebars.templates[name] === undefined) {
+            shouldCheckForTemplate = true;
+        }
+    }
+    if (shouldCheckForTemplate) {
         $.ajax({
             url: '/content/templates/parts/' + name + '.html',
             cache: true,

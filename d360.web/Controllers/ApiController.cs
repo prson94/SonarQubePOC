@@ -2449,7 +2449,108 @@ from	    ResponsibilityTypeHierarchy H
             var sType = type.ToString();
             var tType = targetType.ToString();
             return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && ((i.Classification == IntersectClassification.Critical && criticalOnly) || !criticalOnly));
-        }        
+        }
+
+        public class RawSourceRuleItem
+        {
+            public int IntersectMapID { get; set; }
+            public int SourceRuleID { get; set; }
+            public string Name { get; set; }
+            public string SourceObject { get; set; }
+            public int SourceObjectID { get; set; }
+            public string SourceObjectName { get; set; }
+            public string SourceTypeName { get; set; }
+            public string Description { get; set; }
+            public string RuleContexts { get; set; }
+            public string ItemContexts { get; set; }
+            public int SortOrder { get; set; }
+        }
+
+        public class SourceRulesViewModel
+        {
+            public List<SourceRuleViewModel> Rules { get; set; }
+        }
+
+        public class SourceRuleViewModel
+        {
+            public int SourceRuleID { get; set; }
+            public string Name { get; set; }
+            public string RuleContexts { get; set; }
+            public List<SourceRuleItemViewModel> Items { get; set; }
+        }
+
+        public class SourceRuleItemViewModel
+        {
+            public int IntersectMapID { get; set; }
+            public string SourceObject { get; set; }
+            public int SourceObjectID { get; set; }
+            public string SourceObjectName { get; set; }
+            public string SourceTypeName { get; set; }
+            public string Description { get; set; }
+            public string ItemContexts { get; set; }
+            public int SortOrder { get; set; }
+        }
+
+        [Route("{focal}/{focalID:int}/sources/{obj}/{objID:int}/rules")]
+        public SourceRulesViewModel GetSourceRules(string focal, int focalID, string obj, int objID)
+        {
+            var rules = new SourceRulesViewModel { Rules = new List<SourceRuleViewModel>() };
+
+            var sql = @"
+select	J.IntersectMapID,
+		J.SourceRuleID,
+		S.Name,
+		R.SourceObject,
+		R.SourceObjectID,
+		R.SourceObjectName,
+		R.SourceTypeName,
+		J.Description,
+		(
+		select substring(
+						(
+						SELECT  ', ' + D.TextPath AS 'data()' 
+						from	SourceRuleContext JI
+								inner join cache.ObjectDetails D on JI.Object = D.Object and JI.ObjectID = D.ObjectID and JI.SourceRuleID = J.ID
+						FOR		XML PATH('')
+						), 2, 2500)
+		) as RuleContexts,
+		(
+		select substring(
+						(
+						SELECT  ', ' + D.TextPath AS 'data()' 
+						from	IntersectMapSourceRuleContext JI
+								inner join cache.ObjectDetails D on JI.Object = D.Object and JI.ObjectID = D.ObjectID and JI.IntersectMapSourceRuleID = J.ID
+						FOR		XML PATH('')
+						), 2, 2500)
+		) as ItemContexts,
+		J.SortOrder
+from	IntersectMapSourceRule J
+		inner join SourceRule S on S.ID = J.SourceRuleID and S.Object = @focal and S.ObjectID = @focalID 
+		inner join IntersectMap M on J.IntersectMapID = M.ID
+		inner join cache.Relationships R on R.SourceIntersectNodeID = M.SubjectIntersectNodeID and R.TargetObject = @obj and R.TargetObjectID = @objID";
+            var rawItems = Company.Query<RawSourceRuleItem>(sql, new { focal, focalID, obj, objID }).OrderBy(i => i.Name).ThenBy(i => i.SortOrder).ToList();
+
+            rawItems.Select(r => new { r.Name, r.SourceRuleID, r.RuleContexts }).Distinct().ToList().ForEach(r => {
+                var ruleModel = new SourceRuleViewModel { Name = r.Name, SourceRuleID = r.SourceRuleID, RuleContexts = r.RuleContexts, Items = new List<SourceRuleItemViewModel>() };
+                rawItems.Where(i => i.SourceRuleID == r.SourceRuleID).OrderBy(i => i.SortOrder).ToList().ForEach(i =>
+                {
+                    ruleModel.Items.Add(new SourceRuleItemViewModel {
+                        Description = i.Description,
+                        IntersectMapID = i.IntersectMapID,
+                        ItemContexts = i.ItemContexts,
+                        SortOrder = i.SortOrder,
+                        SourceObject = i.SourceObject,
+                        SourceObjectID = i.SourceObjectID,
+                        SourceObjectName = i.SourceObjectName,
+                        SourceTypeName = i.SourceTypeName
+                    });
+                });
+                rules.Rules.Add(ruleModel);
+            });
+
+            return rules;
+        }
+
 
         private List<int> LoadAttributes(int intersectTypeID)
         {                        

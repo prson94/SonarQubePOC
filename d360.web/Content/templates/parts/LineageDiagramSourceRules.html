@@ -1,0 +1,33 @@
+﻿<div class="rule-list">
+    {{#each Rules}}
+
+    <div class="rule-name" style="float: left; width: 92%">{{Name}}</div>
+    <div style="float: right; width: 8%;"><i class="fa fa-pencil fa-2x"></i></div>
+    <div style="clear: both"></div>
+
+    <div><strong>Context:</strong><br />{{{RuleContexts}}}</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Source</th>
+                <th>Order</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each Items}}
+            <tr class="rule-item-name">
+                <td class="rule-item">{{SourceTypeName}} : {{SourceObjectName}}</td>
+                <td class="rule-item" rowspan="2">{{SortOrder}}</td>
+            </tr>
+            <tr>
+                <td><i>Context:</i>{{{ItemContexts}}}</td>
+            </tr>
+            <tr>
+                <td><i>Description:</i>{{{Description}}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    {{/each}}
+</div>
