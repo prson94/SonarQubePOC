@@ -3,7 +3,7 @@
   <Role name="d360.workers.FusionWorkerRole">
     <Instances count="1" />
     <ConfigurationSettings>
-      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=data3sixty;AccountKey=akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="" />
       <Setting name="QueueMessageVisibilityTime" value="3600" />
       <Setting name="QueueName" value="fusion-queue" />
       <Setting name="QueueCheckFrequency" value="60000" />
@@ -11,6 +11,7 @@
       <Setting name="DBReadQueryTimeout" value="600" />
       <Setting name="DBBulkCopyTimeout" value="300" />
       <Setting name="MaximumRetries" value="3" />
+      <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="ce8d05fc-1a80-44d5-82e8-102232cffa0d" />
     </ConfigurationSettings>
   </Role>
 </ServiceConfiguration>

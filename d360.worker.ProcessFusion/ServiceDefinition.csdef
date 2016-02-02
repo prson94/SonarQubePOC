@@ -10,6 +10,7 @@
       <Setting name="DBReadQueryTimeout" />
       <Setting name="DBBulkCopyTimeout" />
       <Setting name="MaximumRetries" />
+      <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" />
     </ConfigurationSettings>
   </WorkerRole>
 </ServiceDefinition>

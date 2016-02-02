@@ -11,6 +11,7 @@ using Dapper;
 using d360.extensions;
 using Newtonsoft.Json;
 using System.Data;
+using Microsoft.ApplicationInsights;
 
 namespace d360.fusion
 {
@@ -47,12 +48,19 @@ namespace d360.fusion
         private static int MAX_FIELD_VALUE_LENGTH = 4000;
         private static int MAX_SOURCEID_LENGTH = 250;
         private static string FUSION_ATTRIBUTE_MISSING_NAME_NAME = "Name not resolved";
-        
+        private static string FUSION_PROCESSOR_AI_NAME = "FusionProcessor";
 
         public async Task Process(FusionProcessingData fusionData, int bulkTimeout, int readTimeout, int executeTimeout)
         {
             BulkFusionImport data = null;
 
+            var jobDuration = System.Diagnostics.Stopwatch.StartNew();
+            var ai = new TelemetryClient();
+            var metrics = new Dictionary<string, double>();
+
+            ai.Context.Operation.Id = Guid.NewGuid().ToString();
+            ai.Context.Operation.Name = FUSION_PROCESSOR_AI_NAME;
+            
             BulkCopyTimeout = bulkTimeout;
             ReadQueryTimeout = readTimeout;
             ExecuteQueryTimeout = executeTimeout;
@@ -69,9 +77,16 @@ namespace d360.fusion
 
             if (FusionID <= 0) throw new Exception("Invalid fusion id specified.");
 
-            Trace.TraceInformation("====================================================================================================");
-            Trace.TraceInformation("STARTING FUSION JOB FOR FUSION ID: {0} COMPANY ID: {1} FILE: {2}", FusionID, CompanyID, LogFileName);
+            ai.Context.Properties["CompanyID"] = CompanyID.ToString();
+            ai.Context.Properties["FusionID"] = FusionID.ToString();
+            ai.Context.Properties["FileName"] = LogFileName;
+            ai.Context.Properties["SQLBulkCopyTimeout"] = BulkCopyTimeout.ToString();
+            ai.Context.Properties["SQLReadQueryTimeout"] = ReadQueryTimeout.ToString();
+            ai.Context.Properties["SQLBulkTimeout"] = BulkCopyTimeout.ToString();
             
+            Trace.TraceInformation("====================================================================================================");
+            Trace.TraceInformation("STARTING FUSION JOB FOR FUSION ID: {0} COMPANY ID: {1} FILE: {2}", FusionID, CompanyID, LogFileName);            
+                                   
             IStorageProvider storageProvider = new d360.extensions.storage.AzureStorageProvider();
                 
             var folderName = string.Format("bulk-fusion-{0}", fusionData.CompanyID);
@@ -89,6 +104,12 @@ namespace d360.fusion
 
             Trace.TraceInformation("FUSION JOB HAS {0} MODELS, {1} RELATIONS", data.Models.Count, data.Relationships.Count);
 
+            metrics["MODELS"] = data.Models.Count;
+            metrics["RELATIONS"] = data.Relationships.Count;
+            metrics["JSON DATA SIZE"] = json.Length;
+
+            ai.TrackEvent("Fusion Job Starting", null, metrics);
+
             // Sanitize data
             //remove spaces from values in models           
             // this can be done in parrellel
@@ -102,10 +123,9 @@ namespace d360.fusion
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(CompanyID))
             {
                 try
-                {
+                {                    
                     companyConnection.Open();
-                    //Generate an execution id
-                                        
+                    //Generate an execution id                                        
 
                     sw.Restart();
                     ExecutionID = await LogExecution(companyConnection,data.Version);
@@ -137,7 +157,9 @@ namespace d360.fusion
                     await UpdateCache(companyConnection);
                 }
                 catch (AggregateException exception)
-                {
+                {                                           
+                    ai.TrackException(exception);
+
                     Trace.TraceError("FusionProcessor::Process encountered and error while running fusion job.");
                     foreach (Exception ex in exception.InnerExceptions)
                     {
@@ -148,7 +170,9 @@ namespace d360.fusion
                     throw exception;
                 }
                 catch (Exception ex)
-                {
+                {   
+                    ai.TrackException(ex);
+
                     Trace.TraceError("FusionProcessor::Process encountered and error while running fusion job.  Exception details [{0}]", ex.Message);
 
                     LogFusionError(companyConnection, ex);
@@ -156,7 +180,13 @@ namespace d360.fusion
                     throw ex;
                 }
             }
-                        
+            jobDuration.Stop();
+
+            metrics["Duration(ms)"] = jobDuration.ElapsedMilliseconds;
+            
+            ai.TrackEvent("Fusion Job Complete", null, metrics);
+
+            ai.TrackRequest(FUSION_PROCESSOR_AI_NAME, DateTime.Now, jobDuration.Elapsed, "", true); 
         }
 
         private async Task UpdateQueue(SqlConnection companyConnection)
@@ -302,12 +332,19 @@ namespace d360.fusion
             //TODO : remove queueID from fusion.execution table or make it nullable.
             //insert a record into the fusion execution table that logs the start of this execution
             //insert into fusion.execution (queueID,fusionID,RawLogFileName,DateStarted)
-            var result = await companyConnection.QueryAsync<int>(@"
+            /*var result = await companyConnection.QueryAsync<int>(@"
                     insert 
                         into [fusion].[execution] ([queueID],[fusionID],[RawLogFileName],[DateStarted],[Version])
                         values('F4EEC459-9DEF-4A3D-BDCA-EC34849CAE08',@inFusionID,@log,@started,@ver);
                         SELECT CAST(SCOPE_IDENTITY() as int)
-            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow,ver =version }, commandTimeout:ReadQueryTimeout);
+            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow,ver =version }, commandTimeout:ReadQueryTimeout);*/
+
+            var result = await companyConnection.QueryAsync<int>(@"
+                    insert 
+                        into [fusion].[execution] ([queueID],[fusionID],[RawLogFileName],[DateStarted])
+                        values('F4EEC459-9DEF-4A3D-BDCA-EC34849CAE08',@inFusionID,@log,@started);
+                        SELECT CAST(SCOPE_IDENTITY() as int)
+            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow }, commandTimeout: ReadQueryTimeout);
 
             return result.FirstOrDefault();
         }
