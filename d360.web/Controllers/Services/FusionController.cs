@@ -210,13 +210,7 @@ where A.FusionTypeID = @id", columns, joins);
             /// </summary>
             [DataMember]
             public bool Success { get; set; }
-
-            /// <summary>
-            /// A flag indicating wether the Fusion Agent had erros.
-            /// </summary>
-            [DataMember]
-            public bool Errors { get; set; }
-
+            
             /// <summary>
             /// An optional message that the Fusion Agent can send when completing this task.  This usually contains an error message.
             /// </summary>
@@ -264,8 +258,7 @@ where A.FusionTypeID = @id", columns, joins);
 @"select    S.DateStarted, 
             S.DateCompleted, 
             S.MachineQueuedOn, 
-            S.Success, 
-            S.Errors,
+            S.Success,             
             S.Message, 
             F.ID as FusionID, 
             F.Name as Fusion, 
