@@ -14,6 +14,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string Version { get; set; }
+
+        [DataMember]
+        public List<string> Errors { get; set; }
     }
 
     [CollectionDataContract(Name = "items")]

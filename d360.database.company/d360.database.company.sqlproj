@@ -473,6 +473,8 @@
     <Build Include="dbo\Tables\IntersectMapTemplateLogSummary.sql" />
     <Build Include="utility\Stored Procedures\ProcessIntersectTemplates.sql" />
     <Build Include="utility\Stored Procedures\AddRelationDiagramRelations.sql" />
+    <Build Include="fusion\Tables\AgentError.sql" />
+    <Build Include="fusion\Tables\AgentErrorItem.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

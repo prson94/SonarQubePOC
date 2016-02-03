@@ -212,6 +212,12 @@ where A.FusionTypeID = @id", columns, joins);
             public bool Success { get; set; }
 
             /// <summary>
+            /// A flag indicating wether the Fusion Agent had erros.
+            /// </summary>
+            [DataMember]
+            public bool Errors { get; set; }
+
+            /// <summary>
             /// An optional message that the Fusion Agent can send when completing this task.  This usually contains an error message.
             /// </summary>
             [DataMember]
@@ -259,6 +265,7 @@ where A.FusionTypeID = @id", columns, joins);
             S.DateCompleted, 
             S.MachineQueuedOn, 
             S.Success, 
+            S.Errors,
             S.Message, 
             F.ID as FusionID, 
             F.Name as Fusion, 
@@ -547,6 +554,43 @@ where   ExecutionID = {0}", id);
                 });
 
                 Trace.TraceInformation("Done enqueueing the fusion job on the queue.");
+
+                //check if the job encountered any errors.  If so log the agent errors in fusion agenterror tables
+                if(import.Errors != null && import.Errors.Count > 0)
+                {
+                    var host = "";
+                    //agent encountered errors log them for display in the ui
+                    if (System.Web.HttpContext.Current != null)
+                        host = System.Web.HttpContext.Current.Request.UserHostName;
+
+
+                    FusionAgentError error = new FusionAgentError
+                    {
+                        Date = DateTime.Now,
+                        FusionID = fusionID,
+                        MachineName = host
+                    };
+
+                    Company.Add<FusionAgentError>(error);
+
+
+                    error.FusionAgentErrorItems = new List<FusionAgentErrorItem>();
+                    
+                    foreach(var item in import.Errors)
+                    {
+                        error.FusionAgentErrorItems.Add(new FusionAgentErrorItem
+                        {
+                            Message = item,
+                            AgentErrorID = error.ID,
+                            Date = DateTime.Now
+                        });
+                    }
+
+                    if(error.FusionAgentErrorItems.Count > 0)
+                    {                         
+                        Company.Update<FusionAgentError>(error);
+                    }
+                }
 
             }
             catch (Exception ex)

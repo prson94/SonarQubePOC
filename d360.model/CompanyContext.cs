@@ -171,6 +171,8 @@ namespace d360.model
 
         public DbSet<FusionType> FusionTypes { get; set; }
 
+        public DbSet<FusionAgentError> FusionAgentErrors { get; set; }
+
         public DbSet<Group> Groups { get; set; }
 
         public DbSet<IntersectMap> IntersectMaps { get; set; }
