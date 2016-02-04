@@ -2,6 +2,7 @@
 using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -15,6 +16,7 @@ namespace d360.core.entities
         public string Inverse { get; set; }
 
         [DataMember]
-        public int Type { get; set; }
+        public MapType Type{ get; set; }
+
     }
 }

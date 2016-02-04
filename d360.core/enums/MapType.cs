@@ -37,6 +37,11 @@ namespace d360.core.enums
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DisplayNameAttribute>().DisplayName;
         }
 
+        public static string GetName(this MapType type)
+        {
+            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
+        }
+
         public static string GetDescription(this MapType type)
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DescriptionAttribute>().Description;

@@ -491,6 +491,7 @@
     <None Include="dbo\Tables\IntersectTypePredicate.sql" />
     <None Include="ToDeployToClientDev.sql" />
     <None Include="utility\User Defined Types\DiagramRelationshipTable.sql" />
+    <None Include="dbo\Stored Procedures\GetHierarchyByMapType.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

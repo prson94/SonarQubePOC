@@ -454,6 +454,12 @@
     <Content Include="Content\styles\apps.min.css">
       <DependentUpon>apps.css</DependentUpon>
     </Content>
+    <Content Include="Content\styles\jqx.metro.css">
+      <DependentUpon>jqx.metro.less</DependentUpon>
+    </Content>
+    <Content Include="Content\styles\jqx.metro.min.css">
+      <DependentUpon>jqx.metro.css</DependentUpon>
+    </Content>
     <Content Include="Content\templates\parts\LineageDiagram.html" />
     <Content Include="Content\templates\parts\LineageDiagramSourceRules.html" />
     <Content Include="Content\templates\rules.list.html" />
@@ -800,6 +806,7 @@
     <Content Include="Content\styles\img\hue.png" />
     <Content Include="Content\styles\img\saturation.png" />
     <None Include="Content\styles\jqx.flat.less" />
+    <Content Include="Content\styles\jqx.metro.less" />
     <None Include="Content\styles\jqx.plain.css.map">
       <DependentUpon>jqx.plain.css</DependentUpon>
     </None>
@@ -1135,6 +1142,7 @@
     <Content Include="Views\Form\IntersectTypePredicateEditForm.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsAgentOverlay.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsProcessOverlay.cshtml" />
+    <Content Include="Views\Form\Hierarchy.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
