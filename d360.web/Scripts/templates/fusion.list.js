@@ -43,11 +43,11 @@
                     );
                     console.log(data);
                     if ($(controlID).find('.AgentKpi').length) {                        
-                        var score = (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(1);                        
+                        var score = (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(0);                        
                         drawKpi($(controlID).find('.AgentKpi'), 'Agent % Success', score, 100 - score, true);
                     }
                     if ($(controlID).find('.FusionKpi').length) {
-                        var score = (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(1);                        
+                        var score = (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(0);                        
                         drawKpi($(controlID).find('.FusionKpi'), 'Processing % Success', score, 100 - score, true);
                     }
                 }
