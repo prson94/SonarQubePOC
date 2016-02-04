@@ -857,3 +857,16 @@
         <a href="#" data-bind="attr: {'data-category': Name}, text: Name"></a> : <span data-bind="text: ResultCount"></span> item(s)
     </div>
 </script>
+
+<script id="fusionStatisticsTile" type="text/x-handlebars-template">
+    <table style="width: 99.5%; margin: auto">
+        <tr>            
+            <td rowspan="2" style="width: 190px; vertical-align: top; text-align: right" align="right" class="tile-clickable" data-tile data-uri="/fusion/FusionErrorsProcessOverlay" data-context="TileOverlay">
+                <div class="FusionKpi" style="width: 180px; height: 180px;"></div>
+            </td>
+            <td rowspan="2" style="width: 190px; vertical-align: top; text-align: right" align="right" class="tile-clickable" data-tile data-uri="/fusion/FusionErrorsAgentOverlay" data-context="TileOverlay">
+                <div class="AgentKpi" style="width: 180px; height: 180px;"></div>
+            </td>
+        </tr>       
+    </table>
+</script>

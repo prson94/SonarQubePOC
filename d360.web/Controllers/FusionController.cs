@@ -539,6 +539,20 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region Overlays
+
+        public ActionResult FusionErrorsProcessOverlay()
+        {            
+            return PartialView();
+        }
+
+        public ActionResult FusionErrorsAgentOverlay()
+        {
+            return PartialView();
+        }
+
+        #endregion
+
         #region Json
 
         public JsonResult RelationshipAggregates(SystemObjects type, int id, int parentAttributeID = 0)

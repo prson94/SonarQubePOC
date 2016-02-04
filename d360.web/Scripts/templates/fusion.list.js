@@ -29,6 +29,31 @@
             location.assign('#/fusion/' + data.FusionTypeID + '/' + data.ID);
         }
 
+        function FusionStatisticsTile(controlID) {
+            var source = $("#fusionStatisticsTile").html();
+            var template = Handlebars.compile(source);
+
+            controlID = '#' + controlID;
+
+            $.getJSON(
+                '/api/fusion/statistics',
+                function (data) {
+                    $(controlID).html(
+                        template(data)
+                    );
+                    console.log(data);
+                    if ($(controlID).find('.AgentKpi').length) {                        
+                        var score = (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(1);                        
+                        drawKpi($(controlID).find('.AgentKpi'), 'Agent % Success', score, 100 - score, true);
+                    }
+                    if ($(controlID).find('.FusionKpi').length) {
+                        var score = (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(1);                        
+                        drawKpi($(controlID).find('.FusionKpi'), 'Processing % Success', score, 100 - score, true);
+                    }
+                }
+            );
+        }
+
         function unsubscribe(data) {
             AgentHistoryGridAdapter = null;
             AgentHistoryGridSource = null;
@@ -53,6 +78,9 @@
 
                 $('#SideIcons').PageTools();
                 $('#SideIcons').PageTools('clear');
+
+
+                FusionStatisticsTile('FusionStatistics');
 
                 //#region Grid Logic
 

@@ -3885,6 +3885,21 @@ from	IntersectMapSourceRule J
             return Company.GetObjectStatistics(type, id);
         }
 
+        [Route("fusion/statistics")]
+        public FusionStatisticTileModel GetFusionStatistics()
+        {
+            FusionStatisticTileModel res =  Company.Query<FusionStatisticTileModel>(
+                            @"  select
+	                                (select count(1) from fusion.agenterror where [date] > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as AgentErrors,
+	                                (select count(1) from fusion.execution where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as AgentExecutions,
+	                                (select count(1) from fusionstatuslog where success = 1 and datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as FusionExecutions,
+	                                (select count(1) from fusion.error where [date] > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as FusionErrors,
+	                                (select count(1) from fusionattributepromotionlogsummary where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as NumberOfPromotions"
+                ).FirstOrDefault();
+
+            return res;
+        }
+
         [Route("{type}/{id:int}/fieldlookup")]
         public EditableFieldLookupList GetEditableFieldLookupData(SystemObjects type, int id, int take = 10000)
         {

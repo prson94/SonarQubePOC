@@ -210,7 +210,7 @@ where A.FusionTypeID = @id", columns, joins);
             /// </summary>
             [DataMember]
             public bool Success { get; set; }
-            
+
             /// <summary>
             /// An optional message that the Fusion Agent can send when completing this task.  This usually contains an error message.
             /// </summary>
@@ -342,6 +342,32 @@ from	fusion.Error ER
         inner join fusion.Execution EX on EX.ID = ER.ExecutionID
         inner join Fusion F on F.ID = EX.FusionID
         inner join FusionType FT on FT.ID = F.FusionTypeID").AsQueryable();
+        }
+
+        public class AgentErrorModel
+        {
+            public DateTime Date { get; set; }
+            public string Message { get; set; }
+            public string MachineName { get; set; }
+            public int FusionID { get; set; }
+            public string Fusion { get; set; }            
+            public string FusionType { get; set; }
+        }
+
+        [Route("agenterrors")]
+        public IQueryable<AgentErrorModel> GetAgentErrors()
+        {
+            return Company.Query<AgentErrorModel>(
+                    @"select	ER.Date,
+                                ERI.Message,
+                                ER.MachineName,                
+                                F.ID as FusionID, 
+                                F.Name as Fusion,             
+                                FT.Name as FusionType
+                    from	fusion.AgentError ER
+                            inner join fusion.AgentErrorItem ERI on ER.ID = ERI.AgentErrorID                            
+                            inner join Fusion F on F.ID = ER.FusionID
+                            inner join FusionType FT on FT.ID = F.FusionTypeID").AsQueryable();
         }
 
         [Route("executions/{id:int}/results")]

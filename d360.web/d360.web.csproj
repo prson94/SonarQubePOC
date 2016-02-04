@@ -1133,6 +1133,8 @@
     <Content Include="Views\Diagrams\Map.cshtml" />
     <Content Include="Views\Relations\AddSource.cshtml" />
     <Content Include="Views\Form\IntersectTypePredicateEditForm.cshtml" />
+    <Content Include="Views\Fusion\FusionErrorsAgentOverlay.cshtml" />
+    <Content Include="Views\Fusion\FusionErrorsProcessOverlay.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
