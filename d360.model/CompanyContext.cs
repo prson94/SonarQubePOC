@@ -807,6 +807,14 @@ order by	ColumnIndex", new { id });
 
         #endregion
 
+        class LookupFieldValueModel
+        {
+            public string Name { get; set; }
+            public int SortOrder { get; set; }
+            public int ObjectID { get; set; }
+            public string FormattedValue { get; set; }
+        }
+
         public List<Dictionary<string, object>> GetLookupItemsAsDictionary(int typeID)
         {
             var items = new List<Dictionary<string, object>>();
@@ -815,7 +823,32 @@ order by	ColumnIndex", new { id });
             
             var lookupIDs = values.Select(i => i.ID).ToList();
             var sType = SystemObjects.Lookup.ToString();
-            var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && lookupIDs.Contains(i.ObjectID)).ToList();
+            
+            // you cant use fields with relation cause this is called from setup page and cache is not updated instananiously
+            var fields = new List<LookupFieldValueModel>();
+
+            int pageSize = 2000;
+            int pageNumbers = lookupIDs.Count / pageSize;
+
+            pageNumbers += ((lookupIDs.Count % pageSize) > 0 ) ? 1 : 0;
+
+            for(var i = 0; i< pageNumbers; i++)
+            {
+                var subList = pageNumbers > 1 ? lookupIDs.Skip(i * pageSize).Take(pageSize) : lookupIDs;
+                fields.AddRange(Query<LookupFieldValueModel>(@"
+                        select 
+	                        ft.Name,
+	                        ft.SortOrder,
+	                        f.ObjectID,	
+	                        f.FormattedValue
+                        from 
+	                        [FieldType] ft
+	                        inner join [field] f on (f.fieldTypeID = ft.id)
+                        where 
+	                        f.[objecttype] = @ty and f.objectid in @ids;
+                    "
+                    , new { ids = subList, ty = sType }));
+            }
 
             values.ForEach(e =>
             {
@@ -832,6 +865,7 @@ order by	ColumnIndex", new { id });
 
             return items;
         }
+        
 
         public ObjectDetail GetObjectDetail(SystemObjects type, long id)
         {
