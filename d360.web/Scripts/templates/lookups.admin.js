@@ -139,11 +139,11 @@
                                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
 
                                     var tools = [];
-
+                                    
                                     if (permissions.HasPermission('Root', 'Update')) {
                                         tools = [
                                             { icon: 'pencil', urlprefix: '/form/EditLookupType?id=' + data.ID },
-                                            { icon: 'trash-o', urlprefix: '/form/DeleteLookupType?id={0}' + data.ID }
+                                            { icon: 'trash-o', urlprefix: '/form/DeleteLookupType?id=' + data.ID }
                                         ];
                                     }
 
