@@ -263,13 +263,18 @@ namespace d360.web.Controllers
             join f in Company.Fields on ft.ID equals f.FieldTypeID
             join ad in Company.AttributeDetails on f.ObjectID equals ad.ID
             where ft.Object == "AttributeType" && ft.ObjectID == attribute && ad.ObjectID == id && ad.ObjectType == "Intersect"
-            select new { Name = ft.FriendlyName, Value = f.FormattedValue, Order = ft.SortOrder}).OrderBy(i => i.Order);
+            select new { ID = ad.ID, Name = ft.FriendlyName, Value = f.FormattedValue, Order = ft.SortOrder}).OrderBy(i => i.ID).ThenBy(i => i.Order);
 
+            int PreviousObjectID = -1;
             foreach(var val in fieldValues)
-            {                
+            {
+                if (PreviousObjectID != val.ID && PreviousObjectID > 0) sb.Append("<div class='separator'>&nbsp;</div>");
+
                 sb.Append("<b>" + val.Name + ":</b> ");
                 sb.Append(val.Value);
                 sb.Append("<br>");
+
+                PreviousObjectID = val.ID;
             }
 
             return Content(sb.ToString(), "text/html");
