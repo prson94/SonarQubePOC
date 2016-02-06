@@ -6019,6 +6019,41 @@ namespace d360.web.Controllers
             return PartialView(model);
         }
 
+        [Route("hierarchy/{intersectMapId}/{mapType}/{type}/{id:int}")]
+        public ActionResult Hierarchy(int intersectMapId, MapType mapType, SystemObjects type, int id)
+        {
+            HierarchyEditorModel model = new HierarchyEditorModel();
+            model.IntersectMapId = intersectMapId;
+
+            model.ObjectType = type;
+            model.ObjectID = id;
+
+            var intersect = Company.GetById<IntersectMap>(intersectMapId);
+
+            if (intersect != null)
+            {
+                var subjectNode = Company.GetById<IntersectNode>(intersect.SubjectIntersectNodeID);
+                var objectNode = Company.GetById<IntersectNode>(intersect.ObjectIntersectNodeID);
+                model.Subject = Company.GetObjectDetail(subjectNode.ObjectType, subjectNode.ObjectID);
+                model.Object = Company.GetObjectDetail(objectNode.ObjectType, objectNode.ObjectID);
+
+            }
+            else
+            {
+                model.Object = null;
+                model.Subject = Company.GetObjectDetail(type, id);
+            }
+            model.Type = mapType;
+
+
+
+            model.Hierarchy = Company.Query<RelationsController.HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)model.Type }).ToList();
+
+            //model.AvailableArtifacts = Company.Artifacts.Where(r => r.)
+            return PartialView("Hierarchy", model);
+
+        }
+
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult SavePredicateAllocations(IntersectTypePredicateEditorModel model)
@@ -8453,7 +8488,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 {
                     Name = parseTextField(form, "Name", null, true),
                     Inverse = parseTextField(form, "Inverse", null, true),
-                    Type = parseIntField(form, "Type")
+                    Type = (MapType)parseIntField(form, "Type")
                 };
 
                 Company.Add<Predicate>(a);

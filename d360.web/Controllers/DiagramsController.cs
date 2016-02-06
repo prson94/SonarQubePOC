@@ -5,6 +5,7 @@ using d360.core.entities;
 using d360.model;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using d360.core.enums;
 using d360.web.Models;
 
 namespace d360.web.Controllers
@@ -172,9 +173,9 @@ from	h
         //    return new JsonNetResult { Data = new { message = "Sources updated successfully." }, Formatting = Newtonsoft.Json.Formatting.None };
         //}
 
-        public JsonNetResult GetPredicateInfo()
+        public JsonNetResult GetPredicateInfo(MapType type = MapType.SourceToTarget)
         {
-            var items = Company.Query<dynamic>("select id, name from predicate");
+            var items = Company.Query<dynamic>("select id, name from predicate where type = @type", new { type = type});
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 

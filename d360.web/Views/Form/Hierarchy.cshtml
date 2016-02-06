@@ -1,0 +1,134 @@
+﻿@using d360.web.Models;
+@using d360.core.enums;
+@model HierarchyEditorModel
+
+<div class="small-overlay">
+    <div class="ui segment">
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = "hierarchyform", Description = Model.FormDescription, Name = Model.FormName })
+
+        @switch (Model.Type)
+        {
+            case MapType.TypeHierarchy:
+
+                break;
+        }
+
+        <h3>Add Child Type</h3>
+        <div class="row">
+            <div class="s6">
+                <p>Choose an Artifact:</p>
+                <div id="hierarchyArtifactList"></div>
+                <p>Choose a Predicate:</p>
+                <div id="hierarchyPredicateList"></div>
+                <span id="hierarchyError" style="color:#710000; display:none;">An error occurred. Please select an artifact and a predicate to save.</span>
+            </div>
+            <div class="s6">
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    var hierarchySubjectSource = {
+        datafields: [
+            { name: 'Object' },
+            { name: 'ObjectID' },
+            { name: 'Name' }
+        ],
+        datatype: "json",
+        url: '/relations/hierarchy/artifacts/@((int)Model.IntersectMapId)/@(Model.Type)/@(Model.ObjectType)/@(Model.Subject.ID)'
+    };
+
+    var hierarchySubjectAdapter = new $.jqx.dataAdapter(
+        hierarchySubjectSource,
+        {
+            beforeLoadComplete: function (records) {
+                for (var i = 0; i < records.length; i++) {
+                    var record = records[i];
+                    record.Value = record.Object + '|' + record.ObjectID;
+                }
+                return records;
+            }
+        }
+    );
+
+    $("#hierarchyArtifactList").jqxDropDownList({
+        theme: theme,
+        source: hierarchySubjectAdapter,
+        width: field_width,
+        height: field_height,
+        valueMember: 'Value',
+        displayMember: 'Name',
+        filterable: true,
+        dropDownWidth: 400,
+        searchMode: 'containsignorecase'
+    });
+
+    var hierarchyPredicateSource = {
+        datafields: [
+            { name: 'id' },
+            { name: 'name' }
+        ],
+        datatype: "json",
+        url: '/diagrams/getpredicateinfo?type=@(Model.Type)'
+    };
+
+    var hierarchyPredicateAdapter = new $.jqx.dataAdapter(hierarchyPredicateSource);
+
+    $("#hierarchyPredicateList").jqxDropDownList({
+        theme: theme,
+        source: hierarchyPredicateAdapter,
+        width: field_width,
+        height: field_height,
+        valueMember: 'id',
+        displayMember: 'name',
+        filterable: true,
+        dropDownWidth: 400,
+        searchMode: 'containsignorecase'
+    });
+
+    $('#EditableFormSaveButton').on('click', function () {
+        $('#hierarchyError').hide();
+        var SourcePostModel = {
+            Target: 'Artifact',
+            TargetID: 1,
+            Subject: '@(Model.ObjectType)',
+            SubjectID: '@(Model.ObjectID)',
+            Object: '@(Model.ObjectType)',
+            ObjectID: $('#hierarchyArtifactList').val().split('|')[1],
+            PredicateID: $('#hierarchyPredicateList').val()
+        };
+
+        if (SourcePostModel.ObjectID == null || SourcePostModel.PredicateID == "") {
+            $('#hierarchyError').show();
+        }
+        //console.log(SourcePostModel);
+
+        $.ajax({
+            url: '/relations/sources',
+            data: SourcePostModel,
+            method: 'POST',
+            async: false
+        });
+
+        amplify.publish("SaveAction", { context: $('#EditableFormCancelButton').data('context') });
+    });
+
+    $('#EditableFormCancelButton').on('click', function () {
+        amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+    });
+    amplify.subscribe("ErrorOccurredAction", function (data) {
+        $('#EditableFormSaveButton').hide();
+    });
+    amplify.subscribe("StartingAjax", function () {
+        $('#EditableFormSaveButton').attr('disabled', 'disabled');
+        $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+    });
+    amplify.subscribe("EndingAjax", function () {
+        $('#EditableFormSaveButton').removeAttr('disabled');
+        $('#progress').html('');
+    });
+
+</script>

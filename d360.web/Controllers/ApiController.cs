@@ -2053,7 +2053,7 @@ inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID", new { i
                 }
             }
 
-            var predicates = Company.Predicates.Where(p => availableTypes.Contains(p.Type));
+            var predicates = Company.Predicates.Where(p => availableTypes.Contains((int)p.Type));
             var allocatedIDs = allocated.Select(a => a.ID).Distinct().ToList();
 
             var availablePredicates = predicates.Where(p => !allocatedIDs.Contains(p.ID));

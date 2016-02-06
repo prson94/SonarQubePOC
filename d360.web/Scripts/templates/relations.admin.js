@@ -157,7 +157,8 @@
                         [
                             { name: 'ID' },
                             { name: 'Name' },
-                            { name: 'Inverse' }
+                            { name: 'Inverse' },
+                            { name: 'Type' }
                         ]
                     };
 
@@ -178,6 +179,7 @@
                         columns: [
                             { datafield: "Name", text: "Name" },
                             { datafield: "Inverse", text: "Inverse" },
+                            { datafield: "Type", text: "Type" },
                             {
                                 text: '',
                                 dataField: 'ID',

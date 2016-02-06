@@ -527,6 +527,23 @@ namespace d360.web.Models
         public List<SelectListItem> Resources { get; set; }
     }
 
+    public class HierarchyEditorModel : BaseEditorModel
+    {
+        public HierarchyEditorModel()
+        {
+
+        }
+
+        public int IntersectMapId { get; set; }
+        public MapType Type { get; set; }
+        public SystemObjects ObjectType { get; set; }
+        public int ObjectID { get; set; }
+        public ObjectDetail Subject { get; set; }
+        public ObjectDetail Object { get; set; }
+        public List<Controllers.RelationsController.HierarchyModel> Hierarchy { get; set; }
+
+    }
+
     [DataContract(Name = "QuestionResponse", Namespace = constants.NAMESPACE)]
     public class QuestionResponseModel
     {

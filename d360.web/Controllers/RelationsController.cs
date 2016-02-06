@@ -56,10 +56,23 @@ namespace d360.web.Controllers
         [HttpGet]
         public JsonNetResult Predicates()
         {
+            var predicates = Company.Table<Predicate>().OrderBy(i => i.Name);
+            var data = new List<dynamic>();
+
+            predicates.ToList().ForEach(p =>
+                {
+                    data.Add(new
+                    {
+                        ID = p.ID,
+                        Name = p.Name,
+                        Inverse = p.Inverse,
+                        Type = p.Type.GetName()
+                    });
+            });
 
             return new JsonNetResult
             {
-                Data = Company.Table<Predicate>().OrderBy(i => i.Name),
+                Data = data,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -307,6 +320,85 @@ order by D.TextPath";
             public int SourceRuleCount { get; set; }
         }
 
+        public class HierarchyModel
+        {
+            public int ID { get; set; }
+            public string Subject { get; set; }
+            public string Object { get; set; }
+            public int SubjectID { get; set; }
+            public int ObjectID { get; set; }
+            public string ParentID { get; set; }
+            public string Name { get; set; }
+            public string Path { get; set; }
+            public string Url { get; set; }
+            public string ObjectTypeName { get; set; }
+            public int Level { get; set; }
+            public int PredicateID { get; set; }
+            public MapType Type { get; set; }
+            public string UID { get; set; }
+        }
+
+        [HttpGet, Route("hierarchy/{mapType}/{type}/{id:int}")]
+        public JsonNetResult GetHierarchy(SystemObjects type, int id, MapType mapType)
+        {
+            var results = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)mapType });
+
+            return new JsonNetResult
+            {
+                Data = results,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+        [HttpGet, Route("hierarchy/artifacts/{intersectMapId}/{mapType}/{type}/{id:int}")]
+        public JsonNetResult GetArtifactsByIntersectMapId(int intersectMapId, MapType mapType, SystemObjects type, int id)
+        {
+
+            var obj = Company.GetObjectDetail(type, id);
+
+            var allItems = Company.Query<dynamic>(@"select		[Object], 
+              			ObjectID, 
+              			ObjectTypeName + ': ' + TextPath as Name
+              from		cache.ObjectDetails 
+              where		[Object] = 'Artifact' and ObjectType = @type and ObjectTypeID = @id
+              			and ObjectID <> 0
+              order by	Name", new { type = obj.Type, id = obj.TypeID});
+
+            var itemList = allItems.ToList();
+
+            var intersectMap = Company.GetById<IntersectMap>(intersectMapId);
+            var hierarchy = new List<HierarchyModel>();
+            if (intersectMap != null)
+            {
+                var intersectNode = Company.GetById<IntersectNode>(intersectMap.SubjectIntersectNodeID);
+                hierarchy = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)mapType }).ToList();
+
+            }
+            else
+            {
+                //add whatever artifact we're currently on
+                hierarchy.Add(new HierarchyModel() { Subject = type.ToString(), SubjectID = id });
+            }
+
+            foreach (dynamic d in allItems)
+            {
+                switch(mapType)
+                {
+                    case MapType.TypeHierarchy:
+                        var h = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID).FirstOrDefault();
+                        var h2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID).FirstOrDefault();
+
+                        if (h != null || h2 != null)
+                            itemList.Remove(d);
+                        break;
+                }
+            }
+
+            return new JsonNetResult
+            {
+                Data = itemList,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
         void processSourceLevel(List<SourcesToObjectModel> list, int id)
         {
 
@@ -740,7 +832,7 @@ from	Relationship R
         {
             var message = "";
             var success = false;
-
+            
             if (string.IsNullOrEmpty(model.Target) || model.TargetID <= 0)
             {
                 message = $"The Target, or current object, you provided is invalid.";
@@ -765,11 +857,18 @@ from	Relationship R
                         }
                         else
                         {
-                            if ($"{model.Target}{model.TargetID}" != $"{model.Subject}{model.SubjectID}")
-                                Company.AddRelationship(model.Target, model.TargetID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
+                            var predicate = Company.GetById<Predicate>(model.PredicateID);
 
-                            if ($"{model.Target}{model.TargetID}" != $"{model.Object}{model.ObjectID}")
-                                Company.AddRelationship(model.Target, model.TargetID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                            if (predicate.Type == MapType.SourceToTarget)
+                            {
+                                if ($"{model.Target}{model.TargetID}" != $"{model.Subject}{model.SubjectID}")
+                                    Company.AddRelationship(model.Target, model.TargetID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
+
+                                if ($"{model.Target}{model.TargetID}" != $"{model.Object}{model.ObjectID}")
+                                    Company.AddRelationship(model.Target, model.TargetID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+
+                            }
+
 
                             Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
                             var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
@@ -798,7 +897,7 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
                                         ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
                                         PredicateID = model.PredicateID,
                                         SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                        Type = MapType.SourceToTarget
+                                        Type = predicate.Type
                                     };
                                     Company.Add<IntersectMap>(intersectMap);
                                     success = true;

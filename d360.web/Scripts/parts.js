@@ -732,6 +732,7 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
     var _DetailSubTile = '#DetailSubTile';
     var _SynonymsSubTile = '#SynonymsSubTile';
     var _AttributesSubTile = '#AttributesSubTile';
+    var _HierarchyTile = '#HierarchyTile';
 
     var source = shouldHideSynonyms ? $("#detailTileNoSynonymsTmpl").html() : $("#detailTileTmpl").html();
     var template = Handlebars.compile(source);
@@ -792,6 +793,10 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
     $(_DetailSubTile).Detail({ type: type, id: id, context: context });
 
     //#endregion
+
+    //#region Hierarchy Tile
+    HierarchyTile(controlID, contextList, permissions, type, id, context);
+    //#endregion 
 
     //#region Synonyms Grid
 
@@ -1124,6 +1129,84 @@ function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
     }).always(function () {
         $(ribbonControlID).fadeIn(250);
     });
+}
+
+function HierarchyTile(controlID, contextList, permissions, type, id, context) {
+    controlID = controlID.substring(1);
+    var source = $("#hierarchyTileTmpl").html();
+    var template = Handlebars.compile(source);
+    var mapType = 3;
+    $('#HierarchyTile').html(template({ control: controlID }));
+
+    var adapterSource =
+              {
+                  dataType: "json",
+                  dataFields: [
+                    { name: 'ID', type: 'number' },
+                    { name: 'UID', type: 'string' },
+                    { name: 'Subject', type: 'string' },
+                    { name: 'SubjectID', type: 'number' },
+                    { name: 'Object', type: 'string' },
+                    { name: 'ObjectID', type: 'number' },
+                    { name: 'ParentID', type: 'string' },
+                    { name: 'Name', type: 'string' },
+                    { name: 'Path', type: 'string' },
+                    { name: 'Url', type: 'string' },
+                    { name: 'ObjectTypeName', type: 'string' },
+                    { name: 'Level', type: 'number' },
+                    { name: 'PredicateID', type: 'number' },
+                    { name: 'Type', type: 'number' }
+                  ],
+                  hierarchy:
+                  {
+                      keyDataField: { name: 'UID' },
+                      parentDataField: { name: 'ParentID' }
+                  },
+                  id: 'UID',
+                  url: '/relations/hierarchy/' + mapType + '/' + type + '/' + id
+              };
+    var dataAdapter = new $.jqx.dataAdapter(adapterSource);
+    
+    var controlID_type_heirarchy = controlID + '_type_hierarchy';
+
+   $('#' + controlID_type_heirarchy).jqxTreeGrid(
+              {
+                  width: 450,
+                  source: dataAdapter,
+                  sortable: false,
+                  theme: 'metro',
+                  //ready: function()
+                  //{
+                  //    //$("#treeGrid").jqxTreeGrid('expandRow', '2');
+                  //},
+                  columns: [
+                    {
+                        text: "Type Hierarchy", dataField: 'Name', width: 350, align: "center",
+                        cellsRenderer: function (rowKey, dataField, value, data) {
+                            if ((data.Level > 0 && data.Object == type && data.ObjectID == id) || (data.Level <= 0 && data.Subject == type && data.SubjectID == id)){
+                                return "<div style='margin-left: 4px; display:inline-block;color:#33A'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
+                            }
+
+                            return "<div style='margin-left: 4px; display:inline-block;'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
+                             
+                        }
+                    },
+                    {
+                        text: "", dataField: 'UID', width: 100, align: "center",
+                        cellsRenderer: function (rowKey, dataField, value, data) {
+                            return "<div style='cursor:pointer;margin-left: 4px;' class='RowTools'><a onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + data.ID + "/" + mapType + "/" + ((data.Level > 0) ? data.Object : data.Subject) + "/" + ((data.Level > 0) ? data.ObjectID : data.SubjectID) + "' data-context='addhierarchyform'><i class='fa fa-plus'></i></a></div>";
+                        }
+                    }
+                  ]
+                  //,columnGroups:
+                  //[
+                  //  { text: "Type Hierarchy", name: "HierarchyDetails", align: "center" }
+                  //]
+              });
+
+   amplify.subscribe("SaveAction", "hierarchyform", function () {
+       $('#' + controlID_type_heirarchy).jqxTreeGrid('updateBoundData');
+   });
 }
 
 function DomainAllocationsTile(controlID, contextList, permissions, typeID, domainID) {
