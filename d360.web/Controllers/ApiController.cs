@@ -2203,7 +2203,7 @@ from	    ResponsibilityTypeHierarchy H
             }
             else
             {
-                sql = @"select 	
+                sql = @"select distinct  	
                             fa.id as ID,
                             fa.parentId as ParentID,
 	                        fa.name as name,
