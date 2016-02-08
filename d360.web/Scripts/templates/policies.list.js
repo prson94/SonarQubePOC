@@ -26,6 +26,10 @@
 
             //#region Event Handlers
 
+            function refreshActionMenu(data) {
+                $('#SideIcons').PageTools({ type: type, id: policyID });
+            }
+
             function policyGridRowSelect(evt) {
                 try {
                     var args = evt.args;    // event args.
@@ -110,6 +114,7 @@
                 $("#PolicyGrid").off("rowSelect", policyGridRowSelect);
                 amplify.unsubscribe("SaveAction", saveAction);
                 amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
             }
 
             //#endregion
@@ -188,6 +193,7 @@
                     $("#PolicyGrid").on("rowSelect", policyGridRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                    amplify.subscribe("RefreshActionMenu", refreshActionMenu);
 
                     //#endregion
                 });

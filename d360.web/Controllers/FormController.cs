@@ -8417,7 +8417,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
             var heirarchyTypes = new List<SelectListItem>();
 
-            heirarchyTypes.Add(new SelectListItem() { Text = "Source To Target", Value = ((int)MapType.SourceToTarget).ToString() });
+            heirarchyTypes.Add(new SelectListItem() { Text = "Source To Target", Value = ((int)MapType.Lineage).ToString() });
             heirarchyTypes.Add(new SelectListItem() { Text = "Type Hierarchy", Value = ((int)MapType.TypeHierarchy).ToString() });
             heirarchyTypes.Add(new SelectListItem() { Text = "Group Hierarchy", Value = ((int)MapType.GroupHierarchy).ToString() });
             heirarchyTypes.Add(new SelectListItem() { Text = "Parent Child Hierarchy", Value = ((int)MapType.ParentChildHierarchy).ToString() });
@@ -8488,7 +8488,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 {
                     Name = parseTextField(form, "Name", null, true),
                     Inverse = parseTextField(form, "Inverse", null, true),
-                    Type = (MapType)parseIntField(form, "Type")
+                    Type = (MapType)Enum.Parse(typeof(MapType), form["Type"])
                 };
 
                 Company.Add<Predicate>(a);

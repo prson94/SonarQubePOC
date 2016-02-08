@@ -112,5 +112,3 @@ begin
 			inner join cache.ObjectDetails O on O.[Object] = R.[Object] and O.ObjectID = R.ObjectID
 			inner join Predicate P on P.ID = R.PredicateID
 end
-GO
-

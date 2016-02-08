@@ -17,6 +17,9 @@ namespace d360.core.entities.Views
         public string ObjectType { get; set; }
 
         [DataMember]
+        public int FollowID { get; set; }
+
+        [DataMember]
         public int? ID { get; set; }
 
         [DataMember]
@@ -61,8 +64,6 @@ namespace d360.core.entities.Views
         [DataMember]
         public double? CurrentScore { get; set; }
 
-        [DataMember]
-        public bool RedFlagged { get; set; }
 
         [DataMember]
         public string FollowerEmail { get; set; }
@@ -84,5 +85,8 @@ namespace d360.core.entities.Views
 
         [DataMember]
         public string FollowerUrl { get; set; }
+
+        [DataMember]
+        public bool HardFollow { get; set; }
     }
 }

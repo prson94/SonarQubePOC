@@ -3,11 +3,12 @@ as
 begin
 	set nocount on;
 	declare @artifactTypes table (RowID int identity, ID int)
-	declare @vocabularies table (RowID int identity, ID int)
+	declare @subjectAreas table (RowID int identity, ID int)
 
 	-- loop control variables
 	declare @current int,
 			@max int
+
 	-- certification loop instance variables
 	declare @wt int = 2,
 			@id int,
@@ -18,8 +19,10 @@ begin
 			@calculationDate datetime,
 			@difMonths int,
 			@calculationDateMinusDaysBefore date,
+			@lastStartDate datetime,
 			@minDate datetime = '1900-01-01 00:00:00.000',
-			@DateFieldExists bit = 0
+			@DateFieldExists bit = 0,
+			@currentDate datetime = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(getutcdate()) AS varchar) AS DATETIME)
 
 	-- 1. CHECK ARTIFACT TYPES -------------------------------------
 	-- get the artifact types that need to be checked
@@ -27,7 +30,9 @@ begin
 		select	T.ID
 		from	ArtifactType T
 				inner join WorkflowTypeRelation R on R.[Object] = 'ArtifactType' and R.ObjectID = T.ID and R.WorkflowType = @wt and R.[Enabled] = 1
---update Artifact set DateLastCertified = null, Status = 'Draft' where ID = 16109
+
+--select * from @artifactTypes
+
 	set @current = 1
 	select @max = MAX(RowID) from @artifactTypes
 	while @current <= @max
@@ -44,18 +49,10 @@ begin
 				@end = Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'),
 				@months = Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'),
 				@days = Fields.value('(/fields/DaysGivenToCompleteCertification)[1]', 'int'),
-				@calculationDate = Fields.value('(/fields/DateForScheduleCalculation)[1]', 'datetime')
+				@calculationDate = Fields.value('(/fields/DateForScheduleCalculation)[1]', 'datetime'),
+				@lastStartDate = Fields.value('(/fields/CertificationStartDate)[1]', 'datetime')
 		from	WorkflowTypeRelation
 		where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
-		/*
-		select	Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'),
-				Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'),
-				Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'),
-				Fields.value('(/fields/DaysGivenToCompleteCertification)[1]', 'int'),
-				Fields.value('(/fields/DateForScheduleCalculation)[1]', 'datetime')
-		from	WorkflowTypeRelation
-		where	ObjectType = 'ArtifactType' and ObjectID = 1 and WorkflowType = 2
-		*/
 
 		if @end is null
 		begin
@@ -67,14 +64,31 @@ begin
 		set @calculationDateMinusDaysBefore = DATEADD(d, -@days, @calculationDate)
 		select @difMonths = DATEDIFF(mm, @calculationDateMinusDaysBefore, getutcdate())
 
-		if (@difMonths >= @months) and (@difMonths % @months = 0) and (DATEDIFF(mm, @end, getutcdate()) >= @months)
+--select	@id as ArtifactTypeID,
+--		@calculationDate as CalculationDate,
+--		@calculationDateMinusDaysBefore as CalculationDateMinusDaysBefore,
+--		@difMonths as NumMonthsSinceLastCertification,
+--		@months as NumMonthsBetweenCertifications,
+--		@lastStartDate as LastStartDate
+
+		if ((@difMonths >= @months) and (DATEDIFF(mm, @end, getutcdate()) >= @months) OR @lastStartDate is null) --or (@difMonths % @months = 0)
 		begin
 			set @start = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(@calculationDateMinusDaysBefore) AS varchar) AS DATETIME) --CONVERT(date, getutcdate())
 			set @end = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(@calculationDate) AS varchar) AS DATETIME) --DATEADD(d, @days, CONVERT(date, getutcdate()))
+--select @start, @end, DATEDIFF(d, @start, @end)
+
+			if DATEDIFF(d, @start, @end) < @days
+			begin
+				set @start = @currentDate
+				set @end = DATEADD(d, @days, @currentDate)
+			end
 
 			select	@DateFieldExists = Fields.exist('fields/CertificationStartDate')
 			from	WorkflowTypeRelation
 			where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
+
+--select @start, @end
+--select @DateFieldExists as DateFieldExists
 
 			if @DateFieldExists = 1
 			begin
@@ -107,39 +121,31 @@ begin
 		set @current = @current + 1
 	end
 
-	-- clear the artifact types to prepare for vocabulary loop
-
-	--update	WorkflowTypeRelation
-	--set		Fields.modify('insert <CertificationStartDate>2015-06-01T00:00:00</CertificationStartDate> into (/fields)[1]')
-	--where	[Object] = 'ArtifactType' and ObjectID = 1 and WorkflowType = 2
-
-	--update	WorkflowTypeRelation
-	--set		Fields.modify('insert <CertificationEndDate>2015-07-31T00:00:00</CertificationEndDate> into (/fields)[1]')
-	--where	[Object] = 'ArtifactType' and ObjectID = 1 and WorkflowType = 2
-
 	-- 2. CHECK VOCABULARIES ---------------------------------------
 	-- get the vocabularies that need to be checked
-	insert into @vocabularies
-		select	ID
-		from	TaxonomyType
+	insert into @subjectAreas
+		select	T.ID
+		from	TaxonomyType T
+				inner join WorkflowTypeRelation R on R.[Object] = 'TaxonomyType' and R.ObjectID = T.ID and R.WorkflowType = @wt and R.[Enabled] = 1
 
 	set @current = 1
-	select @max = MAX(RowID) from @vocabularies
+	select @max = MAX(RowID) from @subjectAreas
 	while @current <= @max
 	begin
-		-- set to default
+	--	-- set to default
 		set @start = null
 		set @end = null
 		set @months = null
 		set @days = null
 	
-		select @id = ID from @vocabularies where RowID = @current
+		select @id = ID from @subjectAreas where RowID = @current
 
 		select	@start = Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'),
 				@end = Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'),
 				@months = Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'),
 				@days = Fields.value('(/fields/DaysGivenToCompleteCertification)[1]', 'int'),
-				@calculationDate = Fields.value('(/fields/DateForScheduleCalculation)[1]', 'datetime')
+				@calculationDate = Fields.value('(/fields/DateForScheduleCalculation)[1]', 'datetime'),
+				@lastStartDate = Fields.value('(/fields/CertificationStartDate)[1]', 'datetime')
 		from	WorkflowTypeRelation
 		where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
 	
@@ -153,10 +159,16 @@ begin
 		set @calculationDateMinusDaysBefore = DATEADD(d, -@days, @calculationDate)
 		select @difMonths = DATEDIFF(mm, @calculationDateMinusDaysBefore, getutcdate())
 		
-		if (@difMonths >= @months) and (@difMonths % @months = 0) and (DATEDIFF(mm, @end, getutcdate()) >= @months)
+		if ((@difMonths >= @months) and (DATEDIFF(mm, @end, getutcdate()) >= @months) OR @lastStartDate is null)
 			begin
 				set @start = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(@calculationDateMinusDaysBefore) AS varchar) AS DATETIME)
 				set @end = CAST(CAST(year(getutcdate()) AS varchar) + '-' + CAST(month(getutcdate()) AS varchar) + '-' + CAST(day(@calculationDate) AS varchar) AS DATETIME)
+
+				if DATEDIFF(d, @start, @end) < @days
+				begin
+					set @start = @currentDate
+					set @end = DATEADD(d, @days, @currentDate)
+				end
 
 				select	@DateFieldExists = Fields.exist('fields/CertificationStartDate')
 				from	WorkflowTypeRelation
@@ -195,35 +207,79 @@ begin
 	end
 
 	-- 3. CHECK ARTIFACTS ------------------------------------------
+--declare @wt int =2
 	select	A.ID as ArtifactID,
+--A.ArtifactTypeID,
+--W.DateStarted,
 			coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime')) as CertificationStartDate,
 			coalesce(V.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime')) as CertificationEndDate
 	from	Artifact A
-			inner join WorkflowTypeRelation T on T.[Object] = 'ArtifactType' and T.ObjectID = A.ArtifactTypeID and T.WorkflowType = @wt and T.[Enabled] = 1  and T.Parent is null and T.ParentID is null
+			left join WorkflowTypeRelation T on T.[Object] = 'ArtifactType' and T.ObjectID = A.ArtifactTypeID and T.WorkflowType = @wt and T.[Enabled] = 1  and T.Parent is null and T.ParentID is null
 			left join WorkflowTypeRelation V on V.[Object] = 'ArtifactType' and V.ObjectID = A.ArtifactTypeID and V.WorkflowType = @wt and V.[Enabled] = 1 and V.Parent = 'TaxonomyType' and V.ParentID = A.TaxonomyTypeID
+			outer apply (
+						select	max(DateStarted) as DateStarted
+						from	Workflow
+						where	Data.value('(/fields/ArtifactID)[1]', 'int') = A.ID
+								--and DateCompleted is null
+						) W
 	where	(
-			A.DateLastCertified is null 
-			or A.DateLastCertified < coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
+				W.DateStarted is null
+				or
+				(
+					W.DateStarted is not null 
+					and
+					DATEDIFF(m, W.DateStarted, 
+						coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
+					) > 0
+				)
+			)
+			and
+			(
+				A.DateLastCertified is null 
+				--or A.DateLastCertified < coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
+				or 
+				(
+					A.DateLastCertified is not null
+					and DATEDIFF(m, 
+						A.DateLastCertified, 
+						coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
+					) > coalesce(V.Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'), T.Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'))
+					and A.Status = 'Certified'
+				)
+				or A.Status <> 'Certified'
 			)
 			and A.Status <> 'Archived'
 			and coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime')) is not null
 			and A.ID not in (
-						select	Data.value('(/fields/ArtifactID)[1]', 'int')
-						from	Workflow
-						where	WorkflowType = @wt 
-								and Data.value('(/fields/StartDate)[1]', 'datetime') between 
-									coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
-									and coalesce(V.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'))
-								 --and DateCompleted is null
-						)
+							select	Data.value('(/fields/ArtifactID)[1]', 'int')
+							from	Workflow
+							where	WorkflowType = @wt 
+									and Data.value('(/fields/StartDate)[1]', 'datetime') between 
+											coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
+											and coalesce(V.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationEndDate)[1]', 'datetime'))
+							)
+			and A.ID not in (
+							select	Data.value('(/fields/ArtifactID)[1]', 'int')
+							from	Workflow
+							where	WorkflowType = @wt 
+									and DateCompleted is null
+							)
+			and A.ID not in (
+							select	Data.value('(/fields/ArtifactID)[1]', 'int')
+							from	Workflow
+							where	WorkflowType = @wt 
+									and DATEDIFF(m, 
+											DateStarted, 
+											coalesce(V.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'), T.Fields.value('(/fields/CertificationStartDate)[1]', 'datetime'))
+										) > coalesce(V.Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'), T.Fields.value('(/fields/MonthsUntilCertification)[1]', 'int'))
+							)
 			and A.ID in (
 						select	RD.ObjectID 
-						from	ResponsibilityDetail RD
-								inner join WorkflowTypeRelationResponsibilityType WTR on RD.[ObjectType] = 'Artifact' 
-																						and WTR.ObjectType = 'ArtifactType' 
-																						and WTR.ObjectID = RD.ObjectTypeID
-																						and WTR.WorkflowType = @wt 
-																						and WTR.ResponsibilityTypeID = RD.ResponsibilityTypeID
+						from	[cache].[Responsibilities] RD
+								left join WorkflowTypeRelation WTR_V on WTR_V.[Object] = 'ArtifactType' and WTR_V.ObjectID = RD.ObjectTypeID and WTR_V.WorkflowType = @wt and WTR_V.[Enabled] = 1 and WTR_V.ResponsibilityTypeID = RD.ResponsibilityTypeID and WTR_V.Parent = 'TaxonomyType' and WTR_V.ParentID = A.TaxonomyTypeID
+								left join WorkflowTypeRelation WTR_T on WTR_T.[Object] = 'ArtifactType' and WTR_T.ObjectID = RD.ObjectTypeID and WTR_T.WorkflowType = @wt and WTR_T.[Enabled] = 1 and WTR_T.ResponsibilityTypeID = RD.ResponsibilityTypeID and WTR_T.Parent is null and WTR_T.ParentID is null
+						where	RD.[Object] = 'Artifact' 
+								and coalesce(WTR_V.ID, WTR_T.ID) is not null
 						)
 
 end

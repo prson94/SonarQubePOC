@@ -23,32 +23,32 @@ namespace d360.web.Controllers
 
         #endregion
 
-        [Route("CriticalNonCriticalRedFlagAggregates")]
-        public JsonNetResult GetCriticalNonCriticalRedFlagAggregates()
-        {
-            var query = Company.Query<dynamic>(
-@"select D.ObjectType as Type,
-D.ObjectTypeName as TypeName,
-D.ObjectTypeID as TypeID,
-count(1) as [Count],
-sum(C.CriticalCount) as [CriticalCount]
-from		AlertFlag AF
-			inner join cache.ObjectDetails D on D.[Object] = AF.ObjectType and D.ObjectID = AF.ObjectID 
-			cross apply (
-						select	case 
-									when count(1) > 0 then 1 
-									else 0
-								end as CriticalCount
-						from	Relationship R 
-						where	R.SourceType = AF.ObjectType
-								and R.SourceObjectID = AF.ObjectID
-								and R.Classification = 1 -- CRITICAL
-						) C
-where		AF.Active = 1
-group by	D.ObjectType, D.ObjectTypeName, D.ObjectTypeID
-order by	D.ObjectTypeName");
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//        [Route("CriticalNonCriticalRedFlagAggregates")]
+//        public JsonNetResult GetCriticalNonCriticalRedFlagAggregates()
+//        {
+//            var query = Company.Query<dynamic>(
+//@"select D.ObjectType as Type,
+//D.ObjectTypeName as TypeName,
+//D.ObjectTypeID as TypeID,
+//count(1) as [Count],
+//sum(C.CriticalCount) as [CriticalCount]
+//from		AlertFlag AF
+//			inner join cache.ObjectDetails D on D.[Object] = AF.ObjectType and D.ObjectID = AF.ObjectID 
+//			cross apply (
+//						select	case 
+//									when count(1) > 0 then 1 
+//									else 0
+//								end as CriticalCount
+//						from	Relationship R 
+//						where	R.SourceType = AF.ObjectType
+//								and R.SourceObjectID = AF.ObjectID
+//								and R.Classification = 1 -- CRITICAL
+//						) C
+//where		AF.Active = 1
+//group by	D.ObjectType, D.ObjectTypeName, D.ObjectTypeID
+//order by	D.ObjectTypeName");
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
         [Route("{id:int}/UsedVsUnusedResponsibilitiesByArtifactType")]
         public JsonNetResult UsedVsUnusedResponsibilitiesByArtifactType(int id)
@@ -118,6 +118,7 @@ order by	Status ", new { id = id });
             var query = Company.Query<dynamic>(@"select Type, TypeName, TypeID, count(1) as [Count]
 from FollowDetail
 where ResourceID = @id
+and ObjectType not in ('ArtifactType', 'DomainType', 'DomainGroup', 'PolicyType', 'ResourceType', 'TaxonomyType')
 group by Type, TypeName, TypeID", new { id = id });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
@@ -126,7 +127,7 @@ group by Type, TypeName, TypeID", new { id = id });
         [Route("FollowingByResourceByType")]
         public JsonNetResult GetFollowingByResourceByType(int resourceID, string type, int id)
         {
-            var query = Company.Query<dynamic>(@"select ObjectType, ObjectID, Name, ID, Url, RedFlagged, CurrentScore, OpenEventCount
+            var query = Company.Query<dynamic>(@"select ObjectType, ObjectID, Name, ID, Url, CurrentScore, OpenEventCount
 from FollowDetail
 where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = type, i = id });
 
@@ -151,7 +152,7 @@ from (
 				else ObjectTypeID 
 			end as ObjectTypeID
 	from ResponsibilityDetailForResource
-	where ResponsibleObjectType = 'Resource' and ResponsibleObjectID = @id and Visible = 1
+	where ResponsibleObjectType = 'Resource' and ResponsibleObjectID = @id and Visible = 1 and ObjectTypeName is not null
 	group by ObjectName, 
 			ObjectType, ObjectTypeName, 		case ObjectType 
 				when 'Policy' then 0 
@@ -182,28 +183,13 @@ group by	O.ResponsibilityType, O.ResponsibilityTypeID");
         [Route("{id:int}/ResourcesByResponsibilityType")]
         public JsonNetResult GetResourcesByResponsibilityType(int id)
         {
-            var query = Company.Query<dynamic>(@"select O.ResponsibilityTypeID, coalesce(RG.ResourceID, O.ResponsibleObjectID) as ResourceID, '' as FirstName, '' as LastName , COUNT(1) as OwnedItemCount
+            var query = Company.Query<dynamic>(@"select O.ResponsibilityTypeID, coalesce(RG.ResourceID, O.ResponsibleObjectID) as ResourceID, R.FirstName, R.LastName, COUNT(1) as OwnedItemCount
 			from	Responsibility O
 					left join ResourceGroup RG on O.ResponsibleObjectType = 'Group' and RG.GroupID = O.ResponsibleObjectID
 					inner join ResponsibilityDetail RD on RD.ResponsibilityID = O.ID
-			where	O.ResponsibilityTypeID = @id 
-			group by O.ResponsibilityTypeID, coalesce(RG.ResourceID, O.ResponsibleObjectID)", new { id = id }).ToList();
-
-            var IDs = query.Select(i => (int)i.ResourceID).Distinct().ToList();
-
-            var resources = Community.Filter<Resource>(i => IDs.Contains(i.ID)).Select(i => new { i.ID, i.LastName, i.FirstName }).ToList();
-
-            query.ForEach(r =>
-            {
-                var resource = resources.SingleOrDefault(i => i.ID == r.ResourceID);
-                if (resource != null)
-                {
-                    r.FirstName = resource.FirstName;
-                    r.LastName = resource.LastName;
-                }
-                resource = null;
-            });
-
+					inner join reporting.Global_Resource R on R.ResourceID = coalesce(RG.ResourceID, O.ResponsibleObjectID)
+			where	O.ResponsibilityTypeID = @id
+			group by O.ResponsibilityTypeID, coalesce(RG.ResourceID, O.ResponsibleObjectID), R.FirstName,R.LastName", new { id = id }).ToList();
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -265,34 +251,6 @@ order by	T.Name", new { type = type.ToString(), id = id });
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-//        [Route("Policy/{id:int}/EventStatusBreakdown")]
-//        public JsonNetResult GetEventStatusBreakdownByPolicy(int id)
-//        {
-//            var query = Company.Query<dynamic>(@"
-//with r as	(
-//            select	P.ID as PolicyID,
-//                    R.ID as RuleID
-//            from	Policy P
-//                    left join [Rule] R on R.PolicyID = P.ID 
-//            where	P.ID = @id
-//            union all
-//            select	CP.ID as PolicyID,
-//                    CR.ID as RuleID
-//            from	r 
-//                    inner join Policy CP on CP.ParentID = r.PolicyID
-//                    outer apply (
-//                                select ID from [Rule] where PolicyID = CP.ID
-//                                ) CR
-//            )
-//select	Status,
-//		count(1) as [Count]
-//from	Event E
-//		inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID in (select RuleID from r where RuleID is not null)
-//group by Status", new { id = id });
-
-//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-//        }
-
         [Route("Rule/{id:int}/EventStatusBreakdown")]
         public JsonNetResult GetEventStatusBreakdownByRule(int id, int? maxHistoryDays)
         {
@@ -312,57 +270,6 @@ order by	T.Name", new { type = type.ToString(), id = id });
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-//        [Route("Policy/{id:int}/EventAgeBreakdown")]
-//        public JsonNetResult GetEventAgeBreakdownByPolicy(int id)
-//        {
-//            var query = Company.Query<dynamic>(@"
-//with r as	(
-//            select	P.ID as PolicyID,
-//                    R.ID as RuleID
-//            from	Policy P
-//                    left join [Rule] R on R.PolicyID = P.ID 
-//            where	P.ID = @id
-//            union all
-//            select	CP.ID as PolicyID,
-//                    CR.ID as RuleID
-//            from	r 
-//                    inner join Policy CP on CP.ParentID = r.PolicyID
-//                    outer apply (
-//                                select ID from [Rule] where PolicyID = CP.ID
-//                                ) CR
-//            )
-//select		Status,
-//			count(1) as [Count]
-//from		(
-//			select	case 
-//						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 'Under 24 Hours'
-//						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 'Under 72 Hours'
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 'Under 7 Days'
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 'Under 30 Days'
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 'Under 60 Days'
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 'Under 90 Days'
-//						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 'Under 1 Year'
-//						else 'Over 1 Year'
-//					end as Status,
-//					case 
-//						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 1
-//						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 3
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 7
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 30
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 60
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 90
-//						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 365
-//						else 366
-//					end as NumDays
-//			from	Event E
-//					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID in (select RuleID from r where RuleID is not null)
-//			) o
-//group by	Status, NumDays
-//order by	NumDays", new { id = id });
-
-//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-//        }
-
         [Route("Rule/{id:int}/EventAgeBreakdown")]
         public JsonNetResult GetEventAgeBreakdownByRule(int id, int? maxHistoryDays)
         {
@@ -379,78 +286,9 @@ order by	T.Name", new { type = type.ToString(), id = id });
             {0}
             group by cast(E.[Date] as Date)
 			order by cast(E.[Date] as Date)", whereClause), new { id = id, m = maxHistoryDays });
-//            var query = Company.Query<dynamic>(string.Format(@"
-//select		Status,
-//			count(1) as [Count]
-//from		(
-//			select	case 
-//						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 'Under 24 Hours'
-//						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 'Under 72 Hours'
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 'Under 7 Days'
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 'Under 30 Days'
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 'Under 60 Days'
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 'Under 90 Days'
-//						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 'Under 1 Year'
-//						else 'Over 1 Year'
-//					end as Status,
-//					case 
-//						when DATEDIFF(hh, E.[Date], getutcdate()) < 24 then 1
-//						when DATEDIFF(hh, E.[Date], getutcdate()) < 72 then 3
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 7 then 7
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 30 then 30
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 60 then 60
-//						when DATEDIFF(dd, E.[Date], getutcdate()) < 90 then 90
-//						when DATEDIFF(mm, E.[Date], getutcdate()) < 13 then 365
-//						else 366
-//					end as NumDays
-//			from	Event E
-//					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID = @id
-//            {0}
-//			) o
-//group by	Status, NumDays
-//order by	NumDays", whereClause), new { id = id, m = maxHistoryDays });
             
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
-
-//        [Route("Policy/{id:int}/EventCriticalityBreakdown")]
-//        public JsonNetResult GetEventCriticalityBreakdownByPolicy(int id)
-//        {
-//            var query = Company.Query<dynamic>(@"
-//with r as	(
-//            select	P.ID as PolicyID,
-//                    R.ID as RuleID
-//            from	Policy P
-//                    left join [Rule] R on R.PolicyID = P.ID 
-//            where	P.ID = @id
-//            union all
-//            select	CP.ID as PolicyID,
-//                    CR.ID as RuleID
-//            from	r 
-//                    inner join Policy CP on CP.ParentID = r.PolicyID
-//                    outer apply (
-//                                select ID from [Rule] where PolicyID = CP.ID
-//                                ) CR
-//            )
-//select		Criticality,
-//			count(1) as [Count]
-//from		(
-//			select	case E.Criticality
-//						when 5 then 'Critical'
-//						when 4 then 'High'
-//						when 3 then 'Medium'
-//						when 2 then 'Low'
-//						else 'Negligible'
-//					end as Criticality,
-//					E.Criticality as SortOrder
-//			from	Event E
-//					inner join EventGroup G on G.ID = E.EventGroupID and G.RuleID in (select RuleID from r where RuleID is not null)
-//			) o
-//group by	Criticality, SortOrder
-//order by	SortOrder desc", new { id = id });
-
-//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-//        }
 
         [Route("Rule/{id:int}/EventCriticalityBreakdown")]
         public JsonNetResult GetEventCriticalityBreakdownByRule(int id, int? maxHistoryDays)

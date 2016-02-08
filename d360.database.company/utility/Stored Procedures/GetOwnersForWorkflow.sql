@@ -2,7 +2,7 @@
 --declare 
 	@workflowID uniqueidentifier
 --set @workflowID = '387A8094-565E-45AF-B049-01329EEF2209' --=> wt 1
---set @workflowID = 'CEE2AF0D-DAB8-432B-AF08-00E52B808C52' --=> wt 2
+--set @workflowID = '0C573C9B-D237-4468-8822-7D515750675B'--'CEE2AF0D-DAB8-432B-AF08-00E52B808C52' --=> wt 2
 --set @workflowID = 'FD3C4A3D-C9BB-477A-B5CD-BC99C62AF53F' --=> wt 3
 as
 begin
@@ -29,7 +29,7 @@ begin
 								(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
 								(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
 							)
-						and R.Email not like '%?subject=%' 
+						and R.Email not like '%?subject=%' and R.Status = 'Active'
 
 		if not exists(select * from @tbl)
 		begin
@@ -44,7 +44,7 @@ begin
 									(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
 									(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
 								)
-							and R.Email not like '%?subject=%' 
+							and R.Email not like '%?subject=%' and R.Status = 'Active'
 		end
 	end
 
@@ -63,7 +63,7 @@ begin
 								(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
 								(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
 							)
-						and R.Email not like '%?subject=%' 
+						and R.Email not like '%?subject=%' and R.Status = 'Active' 
 
 		if not exists(select * from @tbl)
 		begin
@@ -79,7 +79,7 @@ begin
 									(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
 									(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
 								)
-							and R.Email not like '%?subject=%' 
+							and R.Email not like '%?subject=%' and R.Status = 'Active' 
 		end
 	end
 
@@ -96,7 +96,7 @@ begin
 								(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
 								(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
 							) 
-							and R.Email not like '%?subject=%' 
+							and R.Email not like '%?subject=%' and R.Status = 'Active'
 	end
 
 	select * from @tbl

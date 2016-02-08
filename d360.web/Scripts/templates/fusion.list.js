@@ -106,6 +106,7 @@
                     altrows: true,
                     width: grid_width,
                     autoheight: true,
+                    autorowheight: true,
                     sortable: true,
                     filterable: true,
                     showfilterrow: true,
@@ -119,7 +120,14 @@
                     columns: [
                         { datafield: "FusionType", text: "Type", filtertype: 'checkedlist', width: '20%' },
                         { datafield: "Name", text: "Configuration", filtertype: 'checkedlist', width: '20%' },
-                        { datafield: "Description", text: "Description", filtertype: 'textbox' },
+                        {
+                            datafield: "Description",
+                            text: "Description",
+                            filtertype: 'textbox'//,
+                            //cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            //    return "<div style='padding: 10px'>" + value + "</div>";
+                            //}
+                        },
                         { datafield: "Enabled", text: "Enabled?", width: '10%', columntype: 'checkbox', filtertype: 'bool', },
                         {
                             datafield: "ID",

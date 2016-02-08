@@ -23,7 +23,8 @@
   "frameworks": {
     "dnx451": {
       "dependencies": {
-        "Lucene.Net": "3.0.3"
+        "Lucene.Net": "3.0.3",
+        "Lucene.Net.Linq": "3.5.3"
       }
     },
     "dnxcore50": { }

@@ -776,6 +776,8 @@ namespace d360.web.Controllers
                     #endregion
                 case SystemObjects.DomainGroup:
                     #region Actions
+                    following = Company.IsUserFollowing(type, id, null);
+                    list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}" });
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                     #endregion
@@ -797,6 +799,9 @@ namespace d360.web.Controllers
                             //list.Add(addItem);
                         }
                     }
+                    following = Company.IsUserFollowing(type, id, null);
+                    list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}" });
+
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                     #endregion
@@ -930,9 +935,9 @@ namespace d360.web.Controllers
                     #region Actions
                     if (id > 0)
                     {
-                        list.Add(new PageActionItem { Context = "Allocation", Icon = Resources.Actions.Allocation_Icon, Title = "Allocate Predicates", Uri = string.Format("/form/IntersectTypePredicateEditForm?id={0}", id) });
+                        //list.Add(new PageActionItem { Context = "Allocation", Icon = Resources.Actions.Allocation_Icon, Title = "Allocate Predicates", Uri = string.Format("/form/IntersectTypePredicateEditForm?id={0}", id) });
+                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                     #endregion
                 case SystemObjects.LookupType:
@@ -1029,13 +1034,14 @@ namespace d360.web.Controllers
                         }
                         reportNode = appendReportMenu(type, id, SystemObjects.PolicyType, policy.PolicyTypeID, true);
                         if (reportNode != null) list.Add(reportNode);
-                        list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
+                        list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}&includeChildren=true" });
                     }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                 #endregion
                 case SystemObjects.PolicyType:
                     #region Actions
+                    following = Company.IsUserFollowing(type, id, null);
                     if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
                     {
                         if (context == "default")
@@ -1054,6 +1060,7 @@ namespace d360.web.Controllers
                     }
                     reportNode = appendReportMenu(type, id, SystemObjects.PolicyType, id);
                     if (reportNode != null) list.Add(reportNode);
+                    list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}" });
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                 #endregion
@@ -1438,6 +1445,21 @@ order by A.FormattedValue
             model.Add("TypeName", a.ArtifactType.Name);
             model.Add("AllowRelatedArtifacts", a.ArtifactType.AllowRelatedArtifacts);
             model.Add("Status", a.Status);
+
+            var allowed = false;
+            try
+            {
+                var sql = @"select  case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end  as Allowed
+from	utility.RelationshipTypes T
+		inner join IntersectTypePredicate TP on TP.IntersectTypeID = T.IntersectTypeID and T.SourceObjectType = 'ArtifactType' and T.SourceObjectID = @id
+		inner join Predicate P on P.ID = TP.PredicateID and P.Type in (3,4)";
+
+                allowed = Company.Query<bool>(sql, new { id = a.ArtifactTypeID }).Single();
+            }
+            catch
+            { }
+
+            model.Add("AllowPredicateHierarchies", allowed);
 
             // Dynamic fields
             var values = Company.GetFieldRelationsByObject(SystemObjects.Artifact, a.ID).ToList();
@@ -2034,7 +2056,7 @@ inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID", new { i
 
             var availableTypes = new List<int>();
 
-            availableTypes.Add((int)MapType.SourceToTarget);
+            availableTypes.Add((int)MapType.Lineage);
             availableTypes.Add((int)MapType.ParentChildHierarchy);
 
             var intersectType = Company.GetById<IntersectType>(id);

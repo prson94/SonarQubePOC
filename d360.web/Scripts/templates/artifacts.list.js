@@ -22,11 +22,11 @@
             var ArtifactListAdapter;
 
             //#region Event Handlers
+
             function refreshActionMenu(data) {
                 //$('#SideIcons').PageTools('reload', type: type, id: id, context: 'list');
                 $('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
             }
-
 
             function artifactListPageResized() {
                 $("#List").jqxGrid('refresh');

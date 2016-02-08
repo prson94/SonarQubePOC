@@ -1,6 +1,153 @@
 ﻿CREATE VIEW [dbo].[FollowDetail]
 AS
-	SELECT		F.ResourceID,
+	with ArtifactTypes as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'ArtifactType' and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			cast('Artifact' as varchar(50)) as [Object],
+			C.ID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Artifact C
+			inner join Follow P on P.ObjectType = 'ArtifactType' and P.ObjectID = C.ArtifactTypeID and P.FollowTypeID = 3
+	),
+	DomainTypes as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'DomainType' and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			cast('Domain' as varchar(50)) as [Object],
+			C.ID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Domain C
+			inner join Follow P on P.ObjectType = 'DomainType' and P.ObjectID = C.DomainTypeID and P.FollowTypeID = 3
+	),
+	DomainGroups as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'DomainGroup' and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			cast('Domain' as varchar(50)) as [Object],
+			C.ID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Domain C
+			inner join Follow P on P.ObjectType = 'DomainGroup' and P.ObjectID = C.DomainGroupID and P.FollowTypeID = 3
+	),
+	Groups as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'Group' and ObjectID = 0 and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			P.ObjectType as [Object],
+			C.ID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	[Group] C
+			inner join Follow P on P.ObjectType = 'Group' and P.ObjectID = 0 and P.FollowTypeID = 3
+	),
+	PolicyTypes as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'PolicyType' and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			cast('Policy' as varchar(50)) as [Object],
+			C.ID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Policy C
+			inner join Follow P on P.ObjectType = 'PolicyType' and P.ObjectID = C.PolicyTypeID and P.FollowTypeID = 3
+	),
+	PolicyParents as
+	(
+	select	F.ID as FollowID,
+			T.ID,
+			T.ParentID,
+			F.ResourceID,
+			1 as HardFollow
+	from	Policy T
+			inner join Follow F on F.ObjectType = 'Policy' and F.ObjectID = T.ID and F.FollowTypeID = 3
+	union all
+	select	P.FollowID,
+			C.ID,
+			C.ParentID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Policy C
+			inner join PolicyParents P on P.ID = C.ParentID
+	),
+	Resources as
+	(
+	select	ID as FollowID,
+			ObjectType as [Object],
+			ObjectID,
+			ResourceID,
+			1 as HardFollow
+	from	Follow
+	where	ObjectType = 'ResourceType' and FollowTypeID = 3
+	union all
+	select	P.ID as FollowID,
+			cast('Resource' as varchar(50)) as [Object],
+			C.ResourceID as ObjectID,
+			P.ResourceID,
+			0 as HardFollow
+	from	reporting.Global_Resource C
+			inner join Follow P on P.ObjectType = 'ResourceType' and P.FollowTypeID = 3
+	where	C.ResourceID > 0
+	),
+	TaxonomyParents as
+	(
+	select	F.ID as FollowID,
+			T.ID,
+			T.ParentID,
+			F.ResourceID,
+			1 as HardFollow
+	from	Taxonomy T
+			inner join Follow F on F.ObjectType = 'Taxonomy' and F.ObjectID = T.ID and F.FollowTypeID = 3
+	union all
+	select	P.FollowID,
+			C.ID,
+			C.ParentID,
+			P.ResourceID,
+			0 as HardFollow
+	from	Taxonomy C
+			inner join TaxonomyParents P on P.ID = C.ParentID
+	)
+
+	SELECT		F.FollowID,
+				F.ResourceID,
 				R.Email,
 				R.Email as FollowerEmail,
 				R.FirstName + ' ' + R.LastName as FollowerName,
@@ -10,7 +157,7 @@ AS
 				F.ResourceID as FollowerObjectID,
 				dbo.GenerateObjectUrl('Resource', 1, F.ResourceID) as FollowerUrl,
 				F.ObjectID,
-				F.ObjectType,
+				F.[Object] as ObjectType,
 				O.ObjectID as ID,
 				O.Name,
 				O.TextPath,
@@ -20,18 +167,82 @@ AS
 				O.Url,
 				O.ObjectTypeID as TypeID,
 				O.ObjectType as [Type],
-				O.ObjectTypeName as [TypeName],
+				case O.ObjectType
+					when 'ResourceType' then 'User'
+					when 'Group' then 'Group'
+					else O.ObjectTypeName
+				end as [TypeName],
 				O.IconBackColor,
 				O.IconForeColor,
 				O.IconText,
 				0 AS OpenEventCount,
-				dbo.GetObjectStatisticScore(F.ObjectType, F.ObjectID) as CurrentScore,
-				case 
-					when AF.Active is null then cast(0 as bit)
-					else AF.Active
-				end as RedFlagged
-	FROM		Follow F
-				left join reporting.Global_Resource R on R.ResourceID = F.ResourceID
-				left join cache.ObjectDetails O on O.[Object] = F.ObjectType and O.ObjectID = F.ObjectID
-				LEFT JOIN AlertFlag AF on AF.ObjectType = F.ObjectType and AF.ObjectID = F.ObjectID and AF.Active = 1
+				dbo.GetObjectStatisticScore(F.[Object], F.ObjectID) as CurrentScore,
+				cast(F.HardFollow as bit) as HardFollow
+	FROM		(
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	ArtifactTypes
+				union
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	DomainTypes
+				union
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	DomainGroups
+				union
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	Groups
+				union
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	PolicyTypes
+				union
+				select	FollowID,
+						'Policy', 
+						ID as ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	PolicyParents
+				union
+				select	FollowID,
+						[Object], 
+						ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	Resources
+				union
+				select	FollowID,
+						'Taxonomy' as [Object], 
+						ID as ObjectID, 
+						ResourceID, 
+						HardFollow 
+				from	TaxonomyParents
+				union
+				select	ID as FollowID,
+						ObjectType as [Object], 
+						ObjectID, 
+						ResourceID, 
+						1 as HardFollow 
+				from	Follow
+				where	FollowTypeID = 1	
+				) F
+				inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID
+				inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
 

@@ -48,8 +48,7 @@
                 { name: 'ObjectType' },
                 { name: 'ObjectID' },
                 { name: 'OpenEventCount' },
-                { name: 'CurrentScore' },
-                { name: 'RedFlagged' }
+                { name: 'CurrentScore' }
             ],
             datatype: "json",
             async: false,
@@ -71,17 +70,8 @@
             filterable: true,
             filtermode: 'excel',
             scrollbarsize: 10,
-            //showfilterrow: true,
             width: grid_width,
             columns: [
-                 //{
-                 //    datafield: "TypeName",
-                 //    text: "Type",
-                 //    width: '125px'
-                 //    //cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                 //        //return previewLinkRenderer(data.ObjectType, data.ObjectID, data.Url, data.Name);
-                 //    //}
-                 //},
                  {
                      datafield: "Name",
                      text: "Name",
@@ -105,45 +95,9 @@
                      cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                          return "<div class='RowTools'><a onclick='UnFollow(" + index + ")'><i title='Stop Following' class='fa fa-bookmark-o'></i></a></div>";
                      }
-                 },
-                 {
-                     datafield: "RedFlagged",
-                     text: "",
-                     width: '30px',
-                     filterable: false,
-                     cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                         return redFlaggedRenderer(data, false);
-                     }
                  }
             ]
         });
-
-        //$('#FollowingPart').on('rowunselect', function (event) {
-        //    amplify.publish("ClearFilteredBoard");
-        //});
-
-        //$('#FollowingPart').on('rowselect', function (event) {
-        //    var args = event.args;
-        //    var row = args.rowindex;
-
-        //    var currentSelectedIndexes = $('#FollowingPart').jqxGrid('getselectedrowindexes');
-        //    $.each(currentSelectedIndexes, function (p, ix) {
-        //        if (ix != row) $('#FollowingPart').jqxGrid('unselectrow', ix);
-        //    })
-        //    amplify.publish("ClearOtherBoardFilters", { Origin: 'Following' });
-
-        //    var data = $('#FollowingPart').jqxGrid('getrowdata', row);
-        //    amplify.publish("ShowFilteredBoard", { ObjectType: data.ObjectType, ObjectID: data.ObjectID });
-        //});
-
-        //amplify.subscribe("ClearOtherBoardFilters", function (data) {
-        //    if (data.Origin != 'Following') {
-        //        var currentSelectedIndexes = $('#FollowingPart').jqxGrid('getselectedrowindexes');
-        //        $.each(currentSelectedIndexes, function (p, ix) {
-        //            $('#FollowingPart').jqxGrid('unselectrow', ix);
-        //        })
-        //    }
-        //});
 
         amplify.subscribe("CommandExecuted", function (data) {
             $('#FollowingPart').jqxGrid('updatebounddata');

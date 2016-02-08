@@ -18,6 +18,10 @@
 
         //#region Event Handlers
 
+        function refreshActionMenu(data) {
+            $('#SideIcons').PageTools({ type: type, id: policyTypeID });
+        }
+
         function listBindingComplete(event) {
             var rowCount = $('#List').jqxGrid('getdisplayrows').length;
             if (rowCount > 0) {
@@ -67,6 +71,7 @@
             $('#List').off('rowselect', listRowSelect);
             amplify.unsubscribe("SaveAction", saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
         }
 
         //#endregion
@@ -145,6 +150,7 @@
                     $('#List').on('rowselect', listRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                    amplify.subscribe("RefreshActionMenu", refreshActionMenu);
 
                     //#endregion
                 }

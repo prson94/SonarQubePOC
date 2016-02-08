@@ -29,7 +29,7 @@ namespace d360.utils.company
 
         public static string GetConnectionString(int id, string server, string username, string password)
         {
-            return string.Format("server={0};Database=D3S_{1};User ID={2};Password={3}", server, id, username, password);
+            return string.Format("server={0};Database=D3S_{1};User ID={2};Password={3}; MultipleActiveResultSets=True", server, id, username, password);
         }
 
         public static void ExecuteActionOnAllCompanies(string actionName, string sql, int timeout)

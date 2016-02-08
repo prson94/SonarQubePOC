@@ -107,12 +107,16 @@
                     var loadPermissionsDependentTiles = function () {
                         ObjectStatisticsTile('MicroWidget1', type, id);
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
-
-                        //Relationship_SimpleHierarchyTile('SimpleHierarchyTile', contextList, permissions, type, id);
-
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
                         LineageDiagram('SourcingTile', type, id, null, true);
                         CertificationNotificationTile('CertificationNotification', id);
+
+                        if (json.AllowPredicateHierarchies) {
+                            HierarchyTile('HierarchyTile', contextList, permissions, type, id)
+                        }
+                        else {
+                            $('#HierarchyTile').hide();
+                        }
 
                         if (json.AllowRelatedArtifacts) {
                             RelatedArtifactsGrid('RelatedArtifactsTile', permissions, json.TypeName, typeID, id);

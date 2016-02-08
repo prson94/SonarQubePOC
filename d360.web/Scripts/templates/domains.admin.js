@@ -3,6 +3,7 @@
         context.app.swap('');
         context.title(pageViewModel.Title);
         var type = 'DomainType';
+        var id = 0;
 
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: 'Administration' });
@@ -15,6 +16,10 @@
         var DomainTypesAdapter;
 
         //#region Event Handlers
+
+        function refreshActionMenu(data) {
+            $('#SideIcons').PageTools({ type: type, id: id });
+        }
 
         function listBindingComplete(event) {
             var rowCount = $('#List').jqxGrid('getdisplayrows').length;
@@ -29,6 +34,7 @@
 
             amplify.publish(AmplifyActions.TileUnsubscribe, {});
             if (data) {
+                id = data.ID;
                 $('#SideIcons').PageTools("reload", type, data.ID);
                 var loadPermissionsDependentTiles = function () {
                     DetailTile('DetailTile', contextList, permissions, type, data.ID);
@@ -62,6 +68,7 @@
             $("#List").off("bindingcomplete", listBindingComplete);
             amplify.unsubscribe("SaveAction", saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
         }
 
         //#endregion
@@ -130,6 +137,7 @@
                 $("#List").one("bindingcomplete", listBindingComplete);
                 amplify.subscribe("SaveAction", saveAction);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                amplify.subscribe("RefreshActionMenu", refreshActionMenu);
 
                 //#endregion
             });

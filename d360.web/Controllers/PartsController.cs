@@ -194,7 +194,29 @@ namespace d360.web.Controllers
                 resource = null;
             }
 
-            ViewData.Add("Title", string.Format("{0} That {1} Following", detail.PluralizedName, resourceName));
+            var objectName = "";
+
+            if (detail != null)
+            {
+                objectName = detail.PluralizedName;
+            }
+            else
+            {
+                switch (type)
+                {
+                    case SystemObjects.Group:
+                        objectName = "Groups";
+                        break;
+                    case SystemObjects.ResourceType:
+                        objectName = "Users";
+                        break;
+                    default:
+                        objectName = type.ToString();
+                        break;
+                }
+            }
+
+            ViewData.Add("Title", string.Format("{0} That {1} Following", objectName, resourceName));
             
             detail = null;
             ViewData.Add("ResourceID", resourceID);
@@ -206,38 +228,6 @@ namespace d360.web.Controllers
         {
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
-
-        //[Route("{type}/{id}/governance/grid")]
-        //public ActionResult GovernanceGrid(SystemObjects type, int id)
-        //{
-        //    ViewData.Add("type", type);
-        //    ViewData.Add("id", id);
-        //    return PartialView();
-        //}
-
-        //[Route("{type}/{id:int}/relations/critical")]
-        //public ActionResult CriticalRelationshipsByObject(SystemObjects type, int id, SystemObjects? relatedType, int? relatedID)
-        //{
-        //    return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
-        //}
-
-        //[Route("{type}/{id}/sourcing/{relatedType}/{relatedID:int}/grid")]
-        //[Route("{type}/{id}/sourcing/grid")]
-        //public ActionResult SourcingGrid(SystemObjects type, int id, SystemObjects? relatedType, int? relatedID)
-        //{
-        //    var uri = string.Format("/api/{0}/{1}/sources", type.ToString(), id);
-
-        //    ViewData.Add("Type", type);
-        //    ViewData.Add("ID", id);
-        //    if (relatedType.HasValue && relatedID.HasValue)
-        //    {
-        //        uri = string.Format("{0}/{1}/{2}", uri, relatedType.Value.ToString(), relatedID.Value); ;
-        //    }
-            
-        //    ViewData.Add("Uri", uri);
-
-        //    return PartialView();
-        //}
 
         [Route("{type}/{id}/groups")]
         public ActionResult Groups(SystemObjects type, int id)

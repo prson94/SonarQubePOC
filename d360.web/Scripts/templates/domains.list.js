@@ -34,7 +34,7 @@
             }
 
             function refreshActionMenu(data) {
-                $('#SideIcons').PageTools("reload", 'Domain', selectedID);
+                $('#SideIcons').PageTools('refresh');//("reload", 'Domain', selectedID);
             }
 
             function saveAction(data) {

@@ -349,6 +349,7 @@ order by D.TextPath";
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+
         [HttpGet, Route("hierarchy/artifacts/{intersectMapId}/{mapType}/{type}/{id:int}")]
         public JsonNetResult GetArtifactsByIntersectMapId(int intersectMapId, MapType mapType, SystemObjects type, int id)
         {
@@ -832,7 +833,7 @@ from	Relationship R
         {
             var message = "";
             var success = false;
-            
+
             if (string.IsNullOrEmpty(model.Target) || model.TargetID <= 0)
             {
                 message = $"The Target, or current object, you provided is invalid.";
@@ -859,14 +860,13 @@ from	Relationship R
                         {
                             var predicate = Company.GetById<Predicate>(model.PredicateID);
 
-                            if (predicate.Type == MapType.SourceToTarget)
+                            if (predicate.Type == MapType.Lineage)
                             {
                                 if ($"{model.Target}{model.TargetID}" != $"{model.Subject}{model.SubjectID}")
                                     Company.AddRelationship(model.Target, model.TargetID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
 
                                 if ($"{model.Target}{model.TargetID}" != $"{model.Object}{model.ObjectID}")
                                     Company.AddRelationship(model.Target, model.TargetID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-
                             }
 
 
@@ -897,7 +897,7 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
                                         ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
                                         PredicateID = model.PredicateID,
                                         SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                        Type = predicate.Type
+                                        Type = MapType.Lineage
                                     };
                                     Company.Add<IntersectMap>(intersectMap);
                                     success = true;

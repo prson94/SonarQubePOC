@@ -14,6 +14,7 @@ using System.Text;
 using System.Net;
 using Newtonsoft.Json;
 using d360.core.enums;
+using d360.core.entities.Views;
 
 namespace d360.web.Models
 {
@@ -473,6 +474,15 @@ namespace d360.web.Controllers
         {
             try
             {
+                var sType = type.ToString();
+                var f = Company.Filter<FollowDetail>(i => i.ObjectID == id && i.ObjectType == sType && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+                if (f != null)
+                {
+                    if (!f.HardFollow)
+                    {
+                        return Json(new { title = "Error!", message = $"You are currently following this item's parent.  You may not unfollow this item.", type = "error" });
+                    }
+                }
                 bool status = Company.UpdateFollowStatus(type, id, null, includeChildren);
                 return Json(new { title = "Success!", message = string.Format("You are {0} following this item.", (status) ? "now" : "no longer"), type = "notification" });
             }

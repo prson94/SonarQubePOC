@@ -43159,6 +43159,81 @@ function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
     });
 }
 
+function HierarchyTile(controlID, contextList, permissions, type, id) {
+    var source = $("#hierarchyTileTmpl").html();
+    var template = Handlebars.compile(source);
+    var mapType = 3;
+
+
+    $('#' + controlID).html(template({ control: controlID }));
+
+    controlID = '#' + controlID;
+    var controlID_type_heirarchy = controlID + '_type_hierarchy';
+
+    var adapterSource = {
+        dataType: "json",
+        dataFields: [
+        { name: 'ID', type: 'number' },
+        { name: 'UID', type: 'string' },
+        { name: 'Subject', type: 'string' },
+        { name: 'SubjectID', type: 'number' },
+        { name: 'Object', type: 'string' },
+        { name: 'ObjectID', type: 'number' },
+        { name: 'ParentID', type: 'string' },
+        { name: 'Name', type: 'string' },
+        { name: 'Path', type: 'string' },
+        { name: 'Url', type: 'string' },
+        { name: 'ObjectTypeName', type: 'string' },
+        { name: 'Level', type: 'number' },
+        { name: 'PredicateID', type: 'number' },
+        { name: 'Type', type: 'number' }
+        ],
+        hierarchy:
+        {
+            keyDataField: { name: 'UID' },
+            parentDataField: { name: 'ParentID' }
+        },
+        id: 'UID',
+        url: '/relations/hierarchy/' + mapType + '/' + type + '/' + id
+    };
+
+    var dataAdapter = new $.jqx.dataAdapter(adapterSource);
+
+   $(controlID_type_heirarchy).jqxTreeGrid({
+        width: 450,
+        source: dataAdapter,
+        sortable: false,
+        theme: 'metro',
+        columns: [
+        {
+            text: "Type Hierarchy", dataField: 'Name', width: 350, align: "center",
+            cellsRenderer: function (rowKey, dataField, value, data) {
+                if ((data.Level > 0 && data.Object == type && data.ObjectID == id) || (data.Level <= 0 && data.Subject == type && data.SubjectID == id)){
+                    return "<div style='margin-left: 4px; display:inline-block;color:#33A'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
+                }
+
+                return "<div style='margin-left: 4px; display:inline-block;'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
+                             
+            }
+        },
+        {
+            text: "", dataField: 'UID', width: 100, align: "center",
+            cellsRenderer: function (rowKey, dataField, value, data) {
+                return "<div style='cursor:pointer;margin-left: 4px;' class='RowTools'><a onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + data.ID + "/" + mapType + "/" + ((data.Level > 0) ? data.Object : data.Subject) + "/" + ((data.Level > 0) ? data.ObjectID : data.SubjectID) + "' data-context='addhierarchyform'><i class='fa fa-plus'></i></a></div>";
+            }
+        }
+        ]
+        //,columnGroups:
+        //[
+        //  { text: "Type Hierarchy", name: "HierarchyDetails", align: "center" }
+        //]
+    });
+
+   amplify.subscribe("SaveAction", "hierarchyform", function () {
+       $(controlID_type_heirarchy).jqxTreeGrid('updateBoundData');
+   });
+}
+
 function DomainAllocationsTile(controlID, contextList, permissions, typeID, domainID) {
 
     var gridControlID = controlID + "_grid";
@@ -47853,35 +47928,29 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         if (readonly) return;
 
         $('#' + controlID_ribbon_save).jqxButton({ disabled: true });
-        //console.log('show');
         // $('#' + controlID_ribbon_save_spinner).show();
 
         var nodeChanges = getNodeChanges();
         var linkChanges = getLinkChanges();
 
-        //console.log(nodeChanges);
-        //console.log(linkChanges);
-
         var flagError = false;
         var errors = "";
         var processCount = 0;
-        //console.log(linkChanges.modified);
 
         for (var i = 0; i < nodeChanges.deleted.length; i++) {
             var node = nodeChanges.deleted[i];
-        var data = {
+            var data = {
                 target: type,
                 targetID: id,
                 id: node.intersectMapId
-            }
+            };
             processCount++;
             $.ajax({
+                async: false,
                 method: 'DELETE',
-                //async: false,
                 url: '/relations/' + data.target + '/' + data.targetID + '/sources/' + data.id
             }).done(function (data, status, xhr) {
-                if (data.success) {
-                } else {
+                if (!data.success) {
                     flagError = true;
                     errors += data.message;
                     processCount--;
@@ -47910,30 +47979,28 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 predicateID: link.predicateId
             };
 
-            //console.log(source);
             processCount++;
-        $.ajax({
+            $.ajax({
                 url: '/Relations/sources',
+                async: false,
                 data: JSON.stringify(source),
-            processData: false,
-            type: 'POST',
-                // async: false,
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (data) {
-                    if (data.success) {
-                    } else {
+                processData: false,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (!data.success) {
+                        flagError = true;
+                        errors += data.message;
+                        processCount--;
+                    }
+                },
+                failure: function (data) {
                     flagError = true;
                     errors += data.message;
-                        processCount--;
-                }
-            },
-            failure: function (data) {
-                flagError = true;
-                errors += data.message;
                     processCount--;
-            }
-        });
+                }
+            });
         }
 
         for (var i = 0; i < linkChanges.modified.length; i++) {
@@ -47944,22 +48011,18 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
             if (data.intersectMapID == null || data.predicateID == null)
                 continue;
-            //console.log('reached' + data);
             processCount++;
             $.ajax({
-                //async: false,
                 url: '/relations/update/' + data.intersectMapID + '/' + data.predicateID,
+                async: false,
                 success: function (data) {
                     processCount--;
                 },
                 failure: function (data) {
                     flagError = true;
                     processCount--;
-                    //console.log('save error 3 ');
-                    //console.log(data);
                 }
             });
-            
         }
 
         if (flagError) {
@@ -48520,7 +48583,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
     function populatePredicateList() {
         $.ajax({
-            url: '/diagrams/getpredicateinfo',
+            url: '/diagrams/getpredicateinfo?type=1',
             success: function (data) {
                 var output = [];
                 predicates = [];
@@ -49691,12 +49754,16 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                     var loadPermissionsDependentTiles = function () {
                         ObjectStatisticsTile('MicroWidget1', type, id);
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
-
-                        //Relationship_SimpleHierarchyTile('SimpleHierarchyTile', contextList, permissions, type, id);
-
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
                         LineageDiagram('SourcingTile', type, id, null, true);
                         CertificationNotificationTile('CertificationNotification', id);
+
+                        if (json.AllowPredicateHierarchies) {
+                            HierarchyTile('HierarchyTile', contextList, permissions, type, id)
+                        }
+                        else {
+                            $('#HierarchyTile').hide();
+                        }
 
                         if (json.AllowRelatedArtifacts) {
                             RelatedArtifactsGrid('RelatedArtifactsTile', permissions, json.TypeName, typeID, id);
@@ -49745,11 +49812,11 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
             var ArtifactListAdapter;
 
             //#region Event Handlers
+
             function refreshActionMenu(data) {
                 //$('#SideIcons').PageTools('reload', type: type, id: id, context: 'list');
                 $('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
             }
-
 
             function artifactListPageResized() {
                 $("#List").jqxGrid('refresh');
@@ -50467,6 +50534,7 @@ function domains_admin(app, pageViewModel, templatePath, contextList) {
         context.app.swap('');
         context.title(pageViewModel.Title);
         var type = 'DomainType';
+        var id = 0;
 
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: 'Administration' });
@@ -50479,6 +50547,10 @@ function domains_admin(app, pageViewModel, templatePath, contextList) {
         var DomainTypesAdapter;
 
         //#region Event Handlers
+
+        function refreshActionMenu(data) {
+            $('#SideIcons').PageTools({ type: type, id: id });
+        }
 
         function listBindingComplete(event) {
             var rowCount = $('#List').jqxGrid('getdisplayrows').length;
@@ -50493,6 +50565,7 @@ function domains_admin(app, pageViewModel, templatePath, contextList) {
 
             amplify.publish(AmplifyActions.TileUnsubscribe, {});
             if (data) {
+                id = data.ID;
                 $('#SideIcons').PageTools("reload", type, data.ID);
                 var loadPermissionsDependentTiles = function () {
                     DetailTile('DetailTile', contextList, permissions, type, data.ID);
@@ -50526,6 +50599,7 @@ function domains_admin(app, pageViewModel, templatePath, contextList) {
             $("#List").off("bindingcomplete", listBindingComplete);
             amplify.unsubscribe("SaveAction", saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
         }
 
         //#endregion
@@ -50594,6 +50668,7 @@ function domains_admin(app, pageViewModel, templatePath, contextList) {
                 $("#List").one("bindingcomplete", listBindingComplete);
                 amplify.subscribe("SaveAction", saveAction);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                amplify.subscribe("RefreshActionMenu", refreshActionMenu);
 
                 //#endregion
             });
@@ -50635,7 +50710,7 @@ function domains_list(app, pageViewModel, templatePath, contextList) {
             }
 
             function refreshActionMenu(data) {
-                $('#SideIcons').PageTools("reload", 'Domain', selectedID);
+                $('#SideIcons').PageTools('refresh');//("reload", 'Domain', selectedID);
             }
 
             function saveAction(data) {
@@ -51202,6 +51277,31 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
             location.assign('#/fusion/' + data.FusionTypeID + '/' + data.ID);
         }
 
+        function FusionStatisticsTile(controlID) {
+            var source = $("#fusionStatisticsTile").html();
+            var template = Handlebars.compile(source);
+
+            controlID = '#' + controlID;
+
+            $.getJSON(
+                '/api/fusion/statistics',
+                function (data) {
+                    $(controlID).html(
+                        template(data)
+                    );
+                    console.log(data);
+                    if ($(controlID).find('.AgentKpi').length) {                        
+                        var score = (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(0);                        
+                        drawKpi($(controlID).find('.AgentKpi'), 'Agent % Success', score, 100 - score, true);
+                    }
+                    if ($(controlID).find('.FusionKpi').length) {
+                        var score = (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(0);                        
+                        drawKpi($(controlID).find('.FusionKpi'), 'Processing % Success', score, 100 - score, true);
+                    }
+                }
+            );
+        }
+
         function unsubscribe(data) {
             AgentHistoryGridAdapter = null;
             AgentHistoryGridSource = null;
@@ -51227,6 +51327,9 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                 $('#SideIcons').PageTools();
                 $('#SideIcons').PageTools('clear');
 
+
+                FusionStatisticsTile('FusionStatistics');
+
                 //#region Grid Logic
 
                 FusionSource = {
@@ -51251,6 +51354,7 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                     altrows: true,
                     width: grid_width,
                     autoheight: true,
+                    autorowheight: true,
                     sortable: true,
                     filterable: true,
                     showfilterrow: true,
@@ -51264,7 +51368,14 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                     columns: [
                         { datafield: "FusionType", text: "Type", filtertype: 'checkedlist', width: '20%' },
                         { datafield: "Name", text: "Configuration", filtertype: 'checkedlist', width: '20%' },
-                        { datafield: "Description", text: "Description", filtertype: 'textbox' },
+                        {
+                            datafield: "Description",
+                            text: "Description",
+                            filtertype: 'textbox'//,
+                            //cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            //    return "<div style='padding: 10px'>" + value + "</div>";
+                            //}
+                        },
                         { datafield: "Enabled", text: "Enabled?", width: '10%', columntype: 'checkbox', filtertype: 'bool', },
                         {
                             datafield: "ID",
@@ -52552,11 +52663,11 @@ function lookups_admin(app, pageViewModel, templatePath, contextList) {
                                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
 
                                     var tools = [];
-
+                                    
                                     if (permissions.HasPermission('Root', 'Update')) {
                                         tools = [
                                             { icon: 'pencil', urlprefix: '/form/EditLookupType?id=' + data.ID },
-                                            { icon: 'trash-o', urlprefix: '/form/DeleteLookupType?id={0}' + data.ID }
+                                            { icon: 'trash-o', urlprefix: '/form/DeleteLookupType?id=' + data.ID }
                                         ];
                                     }
 
@@ -52846,6 +52957,10 @@ function policies_admin(app, pageViewModel, templatePath, contextList) {
 
         //#region Event Handlers
 
+        function refreshActionMenu(data) {
+            $('#SideIcons').PageTools({ type: type, id: policyTypeID });
+        }
+
         function listBindingComplete(event) {
             var rowCount = $('#List').jqxGrid('getdisplayrows').length;
             if (rowCount > 0) {
@@ -52895,6 +53010,7 @@ function policies_admin(app, pageViewModel, templatePath, contextList) {
             $('#List').off('rowselect', listRowSelect);
             amplify.unsubscribe("SaveAction", saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
         }
 
         //#endregion
@@ -52973,6 +53089,7 @@ function policies_admin(app, pageViewModel, templatePath, contextList) {
                     $('#List').on('rowselect', listRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                    amplify.subscribe("RefreshActionMenu", refreshActionMenu);
 
                     //#endregion
                 }
@@ -53008,6 +53125,10 @@ function policies_list(app, pageViewModel, templatePath, contextList) {
             var PolicyGridAdapter;
 
             //#region Event Handlers
+
+            function refreshActionMenu(data) {
+                $('#SideIcons').PageTools({ type: type, id: policyID });
+            }
 
             function policyGridRowSelect(evt) {
                 try {
@@ -53093,6 +53214,7 @@ function policies_list(app, pageViewModel, templatePath, contextList) {
                 $("#PolicyGrid").off("rowSelect", policyGridRowSelect);
                 amplify.unsubscribe("SaveAction", saveAction);
                 amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
             }
 
             //#endregion
@@ -53171,6 +53293,7 @@ function policies_list(app, pageViewModel, templatePath, contextList) {
                     $("#PolicyGrid").on("rowSelect", policyGridRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                    amplify.subscribe("RefreshActionMenu", refreshActionMenu);
 
                     //#endregion
                 });
@@ -53340,7 +53463,8 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
                         [
                             { name: 'ID' },
                             { name: 'Name' },
-                            { name: 'Inverse' }
+                            { name: 'Inverse' },
+                            { name: 'Type' }
                         ]
                     };
 
@@ -53361,6 +53485,7 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
                         columns: [
                             { datafield: "Name", text: "Name" },
                             { datafield: "Inverse", text: "Inverse" },
+                            { datafield: "Type", text: "Type" },
                             {
                                 text: '',
                                 dataField: 'ID',

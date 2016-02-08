@@ -10,7 +10,6 @@ BEGIN
 			@NumberOfObjectsConsidered int = 0,
 			@NumberOfIntersectsAdded int = 0;		
 
-
 	declare @intersectTable table	(
 		IntersectTypeID int, IntersectID int, ID int, SourceObject varchar(50),
 		SourceObjectID int, SourceIntersectTypeNodeID int, [TargetObject] varchar(50), TargetObjectID int, TargetIntersectTypeNodeID int,
@@ -47,8 +46,7 @@ BEGIN
 		DROP TABLE #itemsToCopyToTable;
 
 	create table #itemsToCopyToTable (ID int identity, ObjectID int, [Object] varchar(50))
-
-
+	
 	-- check if there is any work
 		-- any templates?
 	insert into @TemplateTable
@@ -260,16 +258,13 @@ BEGIN
 				--debug print out what we are gonna add
 				--select * from @intersectToItemTempTable
 			end
-
-			--select * from @intersectToItemTempTable;
+						
 			-- delete relations that already exist for the item from what we are about to insert												
 			delete w
 				from @intersectToItemTempTable w
 				inner join intersectnode inode1 on(w.sourceobject = inode1.objecttype and w.sourceobjectid = inode1.objectid)
 				inner join intersectnode inode2 on(inode1.intersectid = inode2.intersectid and inode2.objectid = @currentObjectID and inode2.objecttype = @currentObjectType)
-
-			--select * from @intersectToItemTempTable;
-			
+							
 			-- call proce to add the relations for this item
 			exec [utility].[AddRelationDiagramRelations] @intersectToItemTempTable, @NumberOfIntersectsAdded, @NumberOfObjectsUpdated
 					

@@ -56,7 +56,7 @@ namespace d360.jobs.GenerateReportingLayer
             sql.AppendFormat("VIEW {0} AS ", objectName);
 
             sql.AppendFormat("select A.ID as {0}ID, A.Name as {0}Name, ", name);
-            if (includeOwningModel) sql.Append("A.Status, V.Name as Domain, ");
+            if (includeOwningModel) sql.Append("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, ");
             sql.AppendFormat("[dbo].GenerateObjectUrl('{0}', A.{1}, A.ID) as Url, Attr.AttributeType, Attr.Category, Attr.[Count] ", objectType, objectTypeKeyName);
             sql.AppendFormat("from {0} A ", tableName);
             if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
@@ -93,7 +93,7 @@ where	A.{2} = {1}", objectType, typeID, objectTypeKeyName);
 
             var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var owningModelColumns = (includeOwningModel) ? "A.Status, V.Name as Domain, " : "";
+            var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
             var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
             var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, O.RelationshipType, O.RelationshipTypeID, O.[Count]
@@ -132,7 +132,7 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
 
             var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var owningModelColumns = (includeOwningModel) ? "A.Status, V.Name as Domain, " : "";
+            var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
             var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
             var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, T.ID as ResponsibilityTypeID, T.Name as ResponsibilityType, coalesce(O.[Count], 0) as [Count]
@@ -170,7 +170,7 @@ outer apply (
 
             var objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-            var owningModelColumns = (includeOwningModel) ? "A.Status, V.Name as Domain, " : "";
+            var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
             var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
             var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, Att.MissingAttributes, Rel.MissingRelationships, Res.MissingResponsibilities
@@ -250,7 +250,7 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
             sql.AppendFormat("VIEW {0} AS ", objectName);
 
             sql.AppendFormat("select A.ID as {0}ID, A.Name as {0}Name, ", name);
-            if (includeOwningModel) sql.Append("V.Name as Domain, ");
+            if (includeOwningModel) sql.Append("V.ID as SubjectAreaID, V.Name as SubjectArea, ");
             sql.AppendFormat("[dbo].GenerateObjectUrl('{0}', A.{1}, A.ID) as {0}Url, AD.ID as AttributeID, AD.ParentID as ParentAttributeID, AD.Name as Attribute, AD.FormattedValue as AttributeValue ", objectType, objectTypeKeyName);
             sql.AppendFormat("from {0} A ", tableName);
             if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
@@ -281,7 +281,7 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
             sql.AppendFormat("VIEW {0} AS ", objectName);
 
             sql.AppendFormat("select R.IntersectID, A.ID as {0}ID, A.Name as {0}Name, ", name);
-            if (includeOwningModel) sql.Append("A.Status, V.Name as Domain, ");
+            if (includeOwningModel) sql.Append("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, ");
             sql.Append("R.TargetTypeName as TargetType, R.TargetObjectID as TargetID, R.TargetObjectName as TargetName, dbo.GenerateObjectUrl(R.TargetObject, R.TargetTypeID, R.TargetObjectID) as TargetUrl, case R.Classification when 1 then 'Critical' else 'Normal' end as Classification, R.Description, TR.[Count] as ChildRelationshipCount ");
             sql.Append("from cache.Relationships R ");
             sql.AppendFormat("inner join {0} A on A.{1} = {2} and R.SourceObject = '{3}' and A.ID = R.SourceObjectID ", tableName, objectTypeKeyName, typeID, objectType);
@@ -404,7 +404,7 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
                             objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.Name)));
                             viewNames.Add(objectName);
 
-                            selectSql = string.Format(@"select A.ID, A.Name, A.TextPath, A.Description, A.Status, V.Name as Domain, {0} dbo.GenerateObjectUrl('{3}', A.ArtifactTypeID, A.ID) as Url, AC.AttributeCount, Rels.[Count] as RelationshipCount from Artifact A inner join TaxonomyType V on V.ID = A.TaxonomyTypeID {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.ArtifactTypeID = {1}", columns, o.ID, joins, objectType);
+                            selectSql = string.Format(@"select A.ID, A.Name, A.TextPath, A.Description, A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, {0} dbo.GenerateObjectUrl('{3}', A.ArtifactTypeID, A.ID) as Url, dbo.GetObjectStatisticScore('Artifact', A.ID) as CurrentScore, AC.AttributeCount, Rels.[Count] as RelationshipCount from Artifact A inner join TaxonomyType V on V.ID = A.TaxonomyTypeID {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.ArtifactTypeID = {1}", columns, o.ID, joins, objectType);
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -539,7 +539,7 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
                             selectSql = string.Format(@"select A.ID, A.ParentID, A.Name, A.TextPath, A.Description, A.[Level], L.Name as LevelName, L.Description as LevelDescription, 
     C.Name as Class,
-    {0} dbo.GenerateObjectUrl('{3}', A.TaxonomyTypeID, A.ID) as Url, AC.AttributeCount, Rels.[Count] as RelationshipCount 
+    {0} dbo.GenerateObjectUrl('{3}', A.TaxonomyTypeID, A.ID) as Url, dbo.GetObjectStatisticScore('Taxonomy', A.ID) as CurrentScore, AC.AttributeCount, Rels.[Count] as RelationshipCount 
     from Taxonomy A {2} 
     inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
     inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID

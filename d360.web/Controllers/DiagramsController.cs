@@ -99,7 +99,18 @@ from	h
 
         public JsonNetResult GetArtifact(int id, string search)
         {
-            var items = Company.Query<dynamic>("select top 8 objectid as id, c.name, iconbackcolor as backColor, iconforecolor as foreColor, c.objecttypename as typeName, c.url, c.object as objectType from cache.objectdetails c join artifact a on a.artifacttypeid = @id and c.objectid = a.id where lower(c.name) like lower('%' + @search + '%') ", new { id, search });
+            var items = Company.Query<dynamic>(@"
+select  top 8 
+        objectid as id, 
+        c.name, 
+        iconbackcolor as backColor, 
+        iconforecolor as foreColor, 
+        c.objecttypename as typeName, 
+        c.url, 
+        c.object as objectType 
+from    cache.objectdetails c 
+        inner join artifact a on a.artifacttypeid = @id and c.object = 'Artifact' and c.objectid = a.id 
+where lower(c.name) like lower('%' + @search + '%') ", new { id, search });
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -112,68 +123,7 @@ from	h
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        //public JsonNetResult SaveChanges(DiagramChanges changes)
-        //{
-
-        //    if (changes.AddedLinks == null)
-        //        changes.AddedLinks = new List<DiagramLink>();
-        //    if (changes.DeletedNodes == null)
-        //        changes.DeletedNodes = new List<DiagramNode>();
-
-        //    //foreach (DiagramLink l in changes.AddedLinks)
-        //    //{
-        //    //    l.ToNode = changes.AllNodes.Where(n => n.Key == l.To).FirstOrDefault();
-        //    //    l.FromNode = changes.AllNodes.Where(n => n.Key == l.From).FirstOrDefault();
-
-        //    //    if (l.ToNode == null || l.FromNode == null)
-        //    //    {
-        //    //        //TODO: error handling here
-        //    //    }
-
-        //    //    //var r = Company.Query<dynamic>("EXEC AddMapRelationship @ResourceID, @Date, @ObjectType, @ObjectID, @Classification, @IntersectRole, @Description, @SubjectType, @SubjectID, @PredicateID"
-        //    //    //, new
-        //    //    //{
-        //    //    //    ResourceID = Company.CurrentResourceID,
-        //    //    //    Date = DateTime.UtcNow,
-        //    //    //    ObjectType = l.FromNode.Type.ToString(),
-        //    //    //    ObjectID = l.FromNode.ID,
-        //    //    //    Classification = (int?)null,
-        //    //    //    IntersectRole = (int?)null,
-        //    //    //    Description = (string)null,
-        //    //    //    SubjectType = l.ToNode.Type.ToString(),
-        //    //    //    SubjectID = l.ToNode.ID,
-        //    //    //    PredicateID = l.PredicateID
-        //    //    //});
-
-        //    //}
-
-        //    var intersects = new List<IntersectMap>();
-        //    foreach (DiagramNode n in changes.DeletedNodes)
-        //    {
-        //        if (!Company.HasPermission(n.Type, n.IntersectMapID, Claim.Delete, ClaimObject.Relationship))
-        //        {
-        //            continue;
-        //        }
-
-        //        var model = Company.GetById<IntersectMap>(n.IntersectMapID);
-        //        if (model != null)
-        //        {
-        //            Company.Delete(model);
-        //        }
-        //    }
-
-        //    //if (changes.ExclusionObjects == null)
-        //    //    changes.ExclusionObjects = new List<ObjectModel>();
-        //    //foreach(ObjectModel d in changes.ExclusionObjects)
-        //    //{
-        //    //    var z = Company.Query<dynamic>("EXEC [ExcludeMapIntersect] @ObjectType, @ObjectID",
-        //    //        new { ObjectType = d.ObjectType, ObjectID = d.ObjectID});
-        //    //}
-        //    //TODO: return something useful here
-        //    return new JsonNetResult { Data = new { message = "Sources updated successfully." }, Formatting = Newtonsoft.Json.Formatting.None };
-        //}
-
-        public JsonNetResult GetPredicateInfo(MapType type = MapType.SourceToTarget)
+        public JsonNetResult GetPredicateInfo(MapType type = MapType.Lineage)
         {
             var items = Company.Query<dynamic>("select id, name from predicate where type = @type", new { type = type});
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
@@ -190,41 +140,6 @@ from	h
 
             return new JsonNetResult { Data = record, Formatting = Newtonsoft.Json.Formatting.None };
         }
-
-        #endregion
-
-        #region Lineage Diagram Data
-
-        //[HttpGet, Route("maps/{type}/{id:int}")]
-        //public ActionResult Map(string type, int id)
-        //{
-        //    ViewBag.Type = type;
-        //    ViewBag.ID = id;
-        //    return View();
-        //}
-
-        //[HttpGet, Route("maps/{type}/{id:int}.json")]
-        //public JsonNetResult MapJson(string type, int id)
-        //{
-        //    var list = Company.Query<DbMapItem>("GetLineageDiagram @type, @id", new { type, id }).ToList();
-
-        //    var nodes = new List<JsonNodeItem>();
-        //    var links = new List<JsonLinkItem>();
-
-        //    list.ForEach(mapItem =>
-        //    {
-        //        if (!nodes.Any(i => i.key == mapItem.ObjectID))
-        //            nodes.Add(new JsonNodeItem { key = mapItem.ObjectID, obj = mapItem.Obj, objid = mapItem.ObjID, level = mapItem.Level, name = mapItem.Object, type = mapItem.ObjectType, back = mapItem.ObjectBackColor, fore = mapItem.ObjectForeColor, exclude = mapItem.Exclude, intersectMapId = mapItem.IntersectMapID });
-        //        if (!nodes.Any(i => i.key == mapItem.SubjectID))
-        //            nodes.Add(new JsonNodeItem { key = mapItem.SubjectID, obj = mapItem.Sub, objid = mapItem.SubID, name = mapItem.Subject, type = mapItem.SubjectType, back = mapItem.SubjectBackColor, fore = mapItem.SubjectForeColor, exclude = mapItem.Exclude, intersectMapId = mapItem.IntersectMapID });
-        //        links.Add(new JsonLinkItem { id = mapItem.IntersectMapID, from = mapItem.SubjectID, to = mapItem.ObjectID, text = mapItem.Predicate });
-        //    });
-
-        //    return new JsonNetResult {
-        //        Data = new { nodes, links },
-        //        Formatting = Newtonsoft.Json.Formatting.None
-        //    };
-        //}
 
         #endregion
     }

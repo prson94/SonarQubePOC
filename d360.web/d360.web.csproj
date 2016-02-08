@@ -1031,6 +1031,7 @@
     <Content Include="Scripts\templates\policies.admin.js" />
     <Content Include="Scripts\version.json" />
     <None Include="Scripts\_references.js" />
+    <Content Include="Views\Form\Hierarchy.cshtml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -1142,7 +1143,6 @@
     <Content Include="Views\Form\IntersectTypePredicateEditForm.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsAgentOverlay.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsProcessOverlay.cshtml" />
-    <Content Include="Views\Form\Hierarchy.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

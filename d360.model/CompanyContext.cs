@@ -1026,18 +1026,9 @@ order by	ColumnIndex", new { id });
             }
             string sType = type.ToString();
 
-            var following = Follows.Where(i => i.ResourceID == resourceID && (i.FollowTypeID == FollowType.Parent || (i.ObjectID == objectID && i.ObjectType == sType)));
+            var follow = FollowDetails.Any(i => i.ResourceID == resourceID && i.ObjectID == objectID && i.ObjectType == sType);
 
-            if (following.Any(i => i.ObjectID == objectID && i.ObjectType == sType))
-                return true;
-
-            following = following.Where(i => i.FollowTypeID == FollowType.Parent);
-            if (!following.Any())
-                return false;
-
-            var children = FollowChildren.Where(i => following.Any(f => f.ObjectID == i.ParentObjectID && f.ObjectType == i.ParentObjectType) && i.ObjectType == sType && i.ObjectID == objectID);
-
-            return children.Any();
+            return follow;
         }
 
         public bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID)
@@ -1053,14 +1044,15 @@ order by	ColumnIndex", new { id });
             }
             string sType = type.ToString();
 
-            var children = FollowChildren.Where(i => i.ObjectID == objectID && i.ObjectType == sType);
-
-            if (!children.Any())
+            var fd = FollowDetails.FirstOrDefault(i => i.ResourceID == resourceID && i.ObjectID == objectID && i.ObjectType == sType);
+            if (fd != null)
+            {
+                return Follows.SingleOrDefault(i => i.ID == fd.FollowID);
+            }
+            else
+            {
                 return null;
-
-            var following = Follows.Where(i => children.Any(c => c.ParentObjectType == i.ObjectType && c.ParentObjectID == i.ObjectID) && i.ResourceID == resourceID && i.FollowTypeID == FollowType.Parent);
-
-            return following.FirstOrDefault();
+            }
         }
 
 
@@ -1083,8 +1075,7 @@ order by	ColumnIndex", new { id });
 
             if (f != null)
             {
-                Follows.Remove(f);
-                SaveChanges();
+                Delete<Follow>(f);
                 value = false;
             }
             else
@@ -1099,7 +1090,11 @@ order by	ColumnIndex", new { id });
                     switch (type)
                     {
                         case SystemObjects.ArtifactType:
+                        case SystemObjects.DomainGroup:
+                        case SystemObjects.DomainType:
+                        case SystemObjects.PolicyType:
                         case SystemObjects.ResourceType:
+                        case SystemObjects.TaxonomyType:
                             followType = FollowType.Parent;
                             break;
                         case SystemObjects.Artifact:

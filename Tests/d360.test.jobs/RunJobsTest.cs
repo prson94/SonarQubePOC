@@ -163,25 +163,62 @@ END
         }
 
         [TestMethod]
-        public void ReIndex_Execute_Artifacts()
+        public void Index_Single_Item()
         {
-            var companyID = 1;
+            var companyID = 4;
             var context = getCompanyConnection(companyID);
 
             var sType = SystemObjects.Artifact.ToString();
-            var list = new List<UpdateInIndexModel>();//<AddToIndexModel>();
+            var id = 733;
+            AddToIndexModel item = null;
 
-            var fields = context.Query<FieldWithRelation>("select * from FieldWithRelation where ObjectType = @t", new { t = sType}).ToList();
+            var fields = context.Query<FieldWithRelation>("select * from FieldWithRelation where ObjectType = @t and ObjectID = @id", new { t = sType, id }).ToList();
+            var a = context.Query(@"
+select  A.*, 
+        T.Name as ArtifactType, 
+        V.Name as SubjectArea 
+from    Artifact A 
+        inner join ArtifactType T on T.ID = A.ArtifactTypeID and A.ID = @id
+        inner join TaxonomyType V on V.ID = A.TaxonomyTypeID
+", new { id }).Single();
 
-            foreach (var a in context.Query("select A.*, T.Name as ArtifactType, V.Name as Vocabulary from Artifact A inner join ArtifactType T on T.ID = A.ArtifactTypeID inner join Vocabulary V on V.ID = A.VocabularyID"))
+            item = new AddToIndexModel { Group = "Artifact", CompanyID = companyID, ID = a.ID, Type = a.ArtifactType, RelativeUrl = string.Format("#/artifacts/{0}/{1}", a.ArtifactTypeID, a.ID) };
+            item.Fields = new Dictionary<string, string>();
+            item.Fields.Add("Name", a.Name);
+            item.Fields.Add("Description", a.Description);
+            item.Fields.Add("Status", a.Status);
+            item.Fields.Add("Type", a.ArtifactType);
+            item.Fields.Add("SubjectArea", a.SubjectArea);
+            foreach (var f in fields)
             {
-                var item = new UpdateInIndexModel { Group = "Artifact", CompanyID = companyID, ID = a.ID, Type = a.ArtifactType, RelativeUrl = string.Format("#/artifacts/{0}/{1}", a.ArtifactTypeID, a.ID) };
+                if (!item.Fields.ContainsKey(f.Name)) item.Fields.Add(f.Name, f.FormattedValue);
+            }
+
+            var source = new ElasticSearchSource();
+            source.AddToIndex(item);
+        }
+
+        [TestMethod]
+        public void ReIndex_Execute_Artifacts()
+        {
+            var companyID = 4;
+            var context = getCompanyConnection(companyID);
+
+            var sType = SystemObjects.Artifact.ToString();
+            //var list = new List<UpdateInIndexModel>();
+            var list = new List<AddToIndexModel>();
+
+            var fields = context.Query<FieldWithRelation>("select * from FieldWithRelation where ObjectType = @t and ObjectID in (733,732,4651)", new { t = sType}).ToList();
+
+            foreach (var a in context.Query("select A.*, T.Name as ArtifactType, V.Name as SubjectArea from Artifact A inner join ArtifactType T on T.ID = A.ArtifactTypeID inner join TaxonomyType V on V.ID = A.TaxonomyTypeID where A.ID in (733,732,4651)"))
+            {
+                var item = new AddToIndexModel { Group = "Artifact", CompanyID = companyID, ID = a.ID, Type = a.ArtifactType, RelativeUrl = string.Format("#/artifacts/{0}/{1}", a.ArtifactTypeID, a.ID) };
                 item.Fields = new Dictionary<string, string>();
                 item.Fields.Add("Name", a.Name);
                 item.Fields.Add("Description", a.Description);
                 item.Fields.Add("Status", a.Status);
                 item.Fields.Add("Type", a.ArtifactType);
-                item.Fields.Add("Vocabulary", a.Vocabulary);
+                item.Fields.Add("SubjectArea", a.SubjectArea);
                 var subset = fields.Where(i => i.ObjectID == a.ID);
                 foreach (var f in subset)
                 {
@@ -190,10 +227,15 @@ END
                 list.Add(item);
             }
 
-            var source = new AzureSearchSource();
-            source.ClearIndex(companyID, "Artifact");
-            source.UpdateInIndex(list);
-            //source.AddToIndex(list);
+            var source = new ElasticSearchSource();
+            source.AddToIndex(list);
+        }
+
+        [TestMethod]
+        public void Search_FindArtifact()
+        {
+            var source = new ElasticSearchSource();
+            var results = source.GetSearchResults(4, 1, "Eagle");
         }
 
         [TestMethod]
