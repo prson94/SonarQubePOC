@@ -50,7 +50,7 @@
             if (data) {
                 $('#SideIcons').PageTools("reload", type, data.ID);
                 LookupTypeItemsGrid('ItemsTile', contextList, permissions, data.ID);
-                FieldsGrid("FieldsTile", contextList, permissions, type, data.ID, 'Lookup Definition');
+                FieldsGrid("FieldsTile", contextList, permissions, type, data.ID);
             }
             else {
                 $('#SideIcons').PageTools("reload", type, 0);

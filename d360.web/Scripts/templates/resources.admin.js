@@ -50,7 +50,7 @@
                 $('#SideIcons').PageTools({ type: type, id: typeID });
 
                 var loadPermissionsDependentTiles = function () {
-                    FieldsGrid("FieldsTile", contextList, permissions, type, typeID, 'User Definition');
+                    FieldsGrid("FieldsTile", contextList, permissions, type, typeID);
 
                     //#region Grid
 

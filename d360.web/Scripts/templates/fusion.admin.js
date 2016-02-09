@@ -33,8 +33,8 @@
             var row = args.row;     // row data.
             var key = args.key;     // row key.
 
-            $('#FusionAttributeTypeFieldsTitle').text('Fields for ' + row.Name);
-            FieldsGrid("FusionAttributeTypeFields", contextList, permissions, 'FusionAttributeType', args.key, 'Attribute Definition');
+            //$('#FusionAttributeTypeFieldsTitle').text('Fields for ' + row.Name);
+            FieldsGrid("FusionAttributeTypeFields", contextList, permissions, 'FusionAttributeType', args.key, 'Fields for ' + row.Name);
         }
 
         function fusionTypeSelected(data) {
@@ -45,7 +45,7 @@
 
             var loadPermissionsDependentTiles = function () {
                 DetailTile('DetailTile', contextList, permissions, 'FusionType', data.ID);
-                FieldsGrid("FieldsTile", contextList, permissions, 'FusionType', data.ID, 'Configuration Definition');
+                FieldsGrid("FieldsTile", contextList, permissions, 'FusionType', data.ID);
                 FusionConfigurationsGrid('ConfigurationsTile', contextList, permissions, 'FusionType', data.ID);
                 PeopleResponsibilityTile('SecurityTile', contextList, permissions, 'FusionType', data.ID, 'Default Responsibilities', true);
 

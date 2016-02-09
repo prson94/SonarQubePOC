@@ -43859,9 +43859,9 @@ function FieldsGrid(controlID, contextList, permissions, type, id, title) {
 
     //#region Grid
 
-    //if (!title) {
+    if (!title || title <= '') {
         title = 'Field Definition';
-    //}
+    }
 
     try {
         $(controlID).html('<header>' + title + '<div id="' + toolsControlID + '"></div></header>' + '<div id="' + gridControlID + '"></div>');
@@ -49520,8 +49520,7 @@ function artifacts_admin(app, pageViewModel, templatePath, contextList) {
                     $('#SideIcons').PageTools("reload", type, row.ID);
 
                     var loadPermissionsDependentTiles = function () {
-                        //DetailTile('DetailTile', contextList, permissions, type, row.ID);
-                        FieldsGrid("FieldsTile", contextList, permissions, type, row.ID, 'Artifact Definition');
+                        FieldsGrid("FieldsTile", contextList, permissions, type, row.ID);
                         PeopleResponsibilityTile('SecurityTile', contextList, permissions, type, row.ID, 'Default Responsibilities', true);
                     }
                     permissions.GetPermissionsForObject(type, row.ID).then(loadPermissionsDependentTiles);
@@ -50400,7 +50399,7 @@ function attributes_admin(app, pageViewModel, templatePath, contextList) {
 		        $('#SideIcons').PageTools("reload", type, o);
 
 		        //DetailTile('DetailTile', contextList, permissions, type, o);
-		        FieldsGrid("FieldsTile", contextList, permissions, type, o, 'Attribute Definition');
+		        FieldsGrid("FieldsTile", contextList, permissions, type, o);
 
 		        if (p) {
 		            $('#AllocationsTile').addClass('tile-disabled');
@@ -50979,8 +50978,8 @@ function fusion_admin(app, pageViewModel, templatePath, contextList) {
             var row = args.row;     // row data.
             var key = args.key;     // row key.
 
-            $('#FusionAttributeTypeFieldsTitle').text('Fields for ' + row.Name);
-            FieldsGrid("FusionAttributeTypeFields", contextList, permissions, 'FusionAttributeType', args.key, 'Attribute Definition');
+            //$('#FusionAttributeTypeFieldsTitle').text('Fields for ' + row.Name);
+            FieldsGrid("FusionAttributeTypeFields", contextList, permissions, 'FusionAttributeType', args.key, 'Fields for ' + row.Name);
         }
 
         function fusionTypeSelected(data) {
@@ -50991,7 +50990,7 @@ function fusion_admin(app, pageViewModel, templatePath, contextList) {
 
             var loadPermissionsDependentTiles = function () {
                 DetailTile('DetailTile', contextList, permissions, 'FusionType', data.ID);
-                FieldsGrid("FieldsTile", contextList, permissions, 'FusionType', data.ID, 'Configuration Definition');
+                FieldsGrid("FieldsTile", contextList, permissions, 'FusionType', data.ID);
                 FusionConfigurationsGrid('ConfigurationsTile', contextList, permissions, 'FusionType', data.ID);
                 PeopleResponsibilityTile('SecurityTile', contextList, permissions, 'FusionType', data.ID, 'Default Responsibilities', true);
 
@@ -52574,7 +52573,7 @@ function lookups_admin(app, pageViewModel, templatePath, contextList) {
             if (data) {
                 $('#SideIcons').PageTools("reload", type, data.ID);
                 LookupTypeItemsGrid('ItemsTile', contextList, permissions, data.ID);
-                FieldsGrid("FieldsTile", contextList, permissions, type, data.ID, 'Lookup Definition');
+                FieldsGrid("FieldsTile", contextList, permissions, type, data.ID);
             }
             else {
                 $('#SideIcons').PageTools("reload", type, 0);
@@ -53818,7 +53817,7 @@ function resources_admin(app, pageViewModel, templatePath, contextList) {
                 $('#SideIcons').PageTools({ type: type, id: typeID });
 
                 var loadPermissionsDependentTiles = function () {
-                    FieldsGrid("FieldsTile", contextList, permissions, type, typeID, 'User Definition');
+                    FieldsGrid("FieldsTile", contextList, permissions, type, typeID);
 
                     //#region Grid
 
@@ -54535,9 +54534,8 @@ function taxonomies_admin(app, pageViewModel, templatePath, contextList) {
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
                 $('#SideIcons').PageTools("reload", type, data.ID);
-                //DetailTile('DetailTile', contextList, permissions, type, data.ID);
                 TaxonomyTypeLevelsGrid('LevelsTile', contextList, permissions, data.ID);
-                FieldsGrid("FieldsTile", contextList, permissions, type, data.ID, 'Model Definition');
+                FieldsGrid("FieldsTile", contextList, permissions, type, data.ID);
                 $('#ClaimsTile').load('/parts/ResponsibilityTypeObjectClaimGrid?type=' + type + '&id=' + data.ID);
                 PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, data.ID, 'Default Responsibilities', true);
             }

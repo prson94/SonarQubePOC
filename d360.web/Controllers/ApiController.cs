@@ -2869,7 +2869,15 @@ from	IntersectMapSourceRule J
         [Route("resources/{typeID:int}")]
         public IQueryable<GlobalReportingResource> GetResourcesByType(int typeID)
         {
-            return Company.Table<GlobalReportingResource>();
+            var query = Company.Table<GlobalReportingResource>();
+            if (HideData3SixtyUsers())
+            {
+                return query.Where(i => !i.Email.Contains("data3sixty.com"));
+            }
+            else
+            {
+                return query;
+            }
         }
 
         [Route("resources/{typeID:int}/{id:int}")]

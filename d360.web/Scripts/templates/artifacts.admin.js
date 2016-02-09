@@ -61,8 +61,7 @@
                     $('#SideIcons').PageTools("reload", type, row.ID);
 
                     var loadPermissionsDependentTiles = function () {
-                        //DetailTile('DetailTile', contextList, permissions, type, row.ID);
-                        FieldsGrid("FieldsTile", contextList, permissions, type, row.ID, 'Artifact Definition');
+                        FieldsGrid("FieldsTile", contextList, permissions, type, row.ID);
                         PeopleResponsibilityTile('SecurityTile', contextList, permissions, type, row.ID, 'Default Responsibilities', true);
                     }
                     permissions.GetPermissionsForObject(type, row.ID).then(loadPermissionsDependentTiles);

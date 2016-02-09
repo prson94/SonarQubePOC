@@ -1826,9 +1826,9 @@ function FieldsGrid(controlID, contextList, permissions, type, id, title) {
 
     //#region Grid
 
-    //if (!title) {
+    if (!title || title <= '') {
         title = 'Field Definition';
-    //}
+    }
 
     try {
         $(controlID).html('<header>' + title + '<div id="' + toolsControlID + '"></div></header>' + '<div id="' + gridControlID + '"></div>');

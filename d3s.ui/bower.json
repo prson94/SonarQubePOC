@@ -6,6 +6,7 @@
     "jquery": "2.1.4",
     "jquery-validation": "1.14.0",
     "jquery-validation-unobtrusive": "3.2.4",
-    "ember-renderspeed": "~1.0.0-beta"
+    "ember-renderspeed": "~1.0.0-beta",
+    "packery": "~1.4.3"
   }
 }

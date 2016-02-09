@@ -58,7 +58,7 @@
 		        $('#SideIcons').PageTools("reload", type, o);
 
 		        //DetailTile('DetailTile', contextList, permissions, type, o);
-		        FieldsGrid("FieldsTile", contextList, permissions, type, o, 'Attribute Definition');
+		        FieldsGrid("FieldsTile", contextList, permissions, type, o);
 
 		        if (p) {
 		            $('#AllocationsTile').addClass('tile-disabled');

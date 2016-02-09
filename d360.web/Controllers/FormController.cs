@@ -6300,7 +6300,7 @@ namespace d360.web.Controllers
             var resList = GetCompanyResources()
                 .OrderBy(i => i.LastName)
                 .ThenBy(i => i.FirstName)
-                .Select(i => new { ID = i.ID, i.FirstName, i.LastName })
+                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName })
                 .ToList()
                 .Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() })
                 .ToList();
@@ -6324,8 +6324,8 @@ namespace d360.web.Controllers
 
             var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
             var resList = GetCompanyResources()
-                .Where(i => !currentGroupUsers.Contains(i.ID))
-                .Select(i => new { ID = i.ID, i.FirstName, i.LastName }).ToList().Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() }).ToList();
+                .Where(i => !currentGroupUsers.Contains(i.ResourceID))
+                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName }).ToList().Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() }).ToList();
             resList.Insert(0, new SelectListItem { Text = "Please select", Value = "" });
             list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ResourceID", Name = "Resource", FieldType = DataType.Lookup.ToString(), Items = resList });
 
@@ -6379,7 +6379,7 @@ namespace d360.web.Controllers
 
             var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
             var resList = GetCompanyResources()
-                .Select(i => new { ID = i.ID, i.FirstName, i.LastName, MembershipStatus = currentGroupUsers.Any(o => o == i.ID) ? "Current Member" : "Not Yet a Member" })
+                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName, MembershipStatus = currentGroupUsers.Any(o => o == i.ResourceID) ? "Current Member" : "Not Yet a Member" })
                 .OrderBy(i => i.MembershipStatus)
                 .ThenBy(i => i.LastName)
                 .ThenBy(i => i.FirstName)
@@ -9394,8 +9394,8 @@ order by	D.Name, I.Name";
         List<SelectListItem> getResponsibilityResources(string selectedID = "")
         {
             var list = GetCompanyResources()
-                .Where(i => i.ID > 0)
-                .Select(i => new { ID = i.ID, i.FirstName, i.LastName })
+                .Where(i => i.ResourceID > 0)
+                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName })
                 .ToList()
                 .Select(i => new SelectListItem
                 {
@@ -10767,7 +10767,7 @@ order by	D.Name, I.Name";
                     Community.ChangePassword(a.ID, "", form["Password"]);
                 }
 
-                if (!GetCompanyResources().Any(i => i.ID == a.ID))
+                if (!GetCompanyResources().Any(i => i.ResourceID == a.ID))
                 {
                     var isAdmin = parseBooleanField(form, "IsAdministrator");
                     Community.Add<CompanyResource>(new CompanyResource

@@ -2,6 +2,7 @@
 /// <reference path="../gulpfile.js" />
 /// <reference path="js/site.js" />
 /// <reference path="lib/bootstrap/dist/js/bootstrap.js" />
+/// <reference path="lib/classie/classie.js" />
 /// <reference path="lib/ember/ember.js" />
 /// <reference path="lib/ember/ember-template-compiler.js" />
 /// <reference path="lib/ember-renderspeed/ember-renderspeed.js" />

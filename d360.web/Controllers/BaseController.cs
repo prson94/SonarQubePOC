@@ -141,6 +141,17 @@ namespace d360.web.Controllers
             Company = company;
         }
 
+        internal bool HideData3SixtyUsers()
+        {
+            var hideData3SixtyUsers = false;
+            var settings = Community.GetCompanySettings();
+            if (settings.Any(i => i.Key == "HideData3SixtyUsers"))
+            {
+                hideData3SixtyUsers = bool.Parse(settings["HideData3SixtyUsers"]);
+            }
+            return hideData3SixtyUsers;
+        }
+
         internal IQueryable<Resource> GetCompanyResources()
         {
             return (
@@ -318,14 +329,29 @@ namespace d360.web.Controllers
             Company = company;
         }
 
-        internal IQueryable<Resource> GetCompanyResources()
+        internal IQueryable<GlobalReportingResource> GetCompanyResources()
         {
-            return (
-                   from cr in Community.CompanyResources
-                   join r in Community.Resources on cr.ResourceID equals r.ID
-                   where cr.CompanyID == Company.CurrentCompanyID
-                   select r
-                );
+            var hideData3SixtyUsers = HideData3SixtyUsers();
+            var query = Company.Table<GlobalReportingResource>();
+            return ((HideData3SixtyUsers()) ? query.Where(i => !i.Email.Contains("data3sixty.com")) : query);
+
+            //return (
+            //       from cr in Community.CompanyResources
+            //       join r in Community.Resources on cr.ResourceID equals r.ID
+            //       where cr.CompanyID == Company.CurrentCompanyID
+            //       select r
+            //    );
+        }
+
+        internal bool HideData3SixtyUsers()
+        {
+            var hideData3SixtyUsers = false;
+            var settings = Community.GetCompanySettings();
+            if (settings.Any(i => i.Key == "HideData3SixtyUsers"))
+            {
+                hideData3SixtyUsers = bool.Parse(settings["HideData3SixtyUsers"]);
+            }
+            return hideData3SixtyUsers;
         }
 
         protected override JsonResult Json(object data, string contentType, System.Text.Encoding contentEncoding, JsonRequestBehavior behavior)
