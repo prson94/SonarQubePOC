@@ -935,7 +935,7 @@ namespace d360.web.Controllers
                     #region Actions
                     if (id > 0)
                     {
-                        //list.Add(new PageActionItem { Context = "Allocation", Icon = Resources.Actions.Allocation_Icon, Title = "Allocate Predicates", Uri = string.Format("/form/IntersectTypePredicateEditForm?id={0}", id) });
+                        list.Add(new PageActionItem { Context = "Allocation", Icon = Resources.Actions.Allocation_Icon, Title = "Allocate Predicates", Uri = string.Format("/form/IntersectTypePredicateEditForm?id={0}", id) });
                         list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     }
                     break;

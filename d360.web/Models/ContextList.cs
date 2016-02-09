@@ -30,6 +30,7 @@ public static class ContextList
         public const string FusionAttributeType = "fusionattributetypeform";
         public const string FusionType = "fusiontypeform";
         public const string Group = "groupform";
+        public const string Hierarchy = "hierarchyform";
         public const string Intersect = "intersectform";
         public const string IntersectType = "intersecttypeform";
         public const string IntersectTypeRole = "intersecttyperoleform";

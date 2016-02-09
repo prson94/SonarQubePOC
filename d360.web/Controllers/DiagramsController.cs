@@ -129,6 +129,38 @@ where lower(c.name) like lower('%' + @search + '%') ", new { id, search });
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        public JsonNetResult GetPredicateInfoByAllocation(int id)
+        {
+            var items = Company.Query<dynamic>(@"select p.id, p.name, p.type from predicate p
+                join intersecttypepredicate t on t.predicateid = p.id and t.intersecttypeid in (
+	                select t.intersecttypeid from intersectmap m
+	                join intersectnode n on n.id = subjectintersectnodeid
+	                join intersecttypenode t on t.id = n.intersecttypenodeid
+	                where m.id = @id
+	                union all
+	                select t.intersecttypeid from intersectmap m
+	                join intersectnode n on n.id = objectintersectnodeid
+	                join intersecttypenode t on t.id = n.intersecttypenodeid
+	                where m.id = @id
+                )
+                where p.type = (select type from intersectmap where id = @id)", new { id = id});
+            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult GetPredicateInfoByTypes(string type1, string type2, int id1, int id2, MapType mapType)
+        {
+            var items = Company.Query<dynamic>(@"select p.id, p.name, p.type from predicate p
+                join intersecttypepredicate t on t.predicateid = p.id and t.intersecttypeid in 
+                (
+	                select distinct n1.intersecttypeid from intersecttypenode n1
+	                join intersecttypenode n2 on n2.intersecttypeid = n1.intersecttypeid and n2.objectType = @type2  and n2.objectid = @id2 
+	                where n1.objectType = @type1 and n1.[order] != n2.[order] and n1.objectid = @id1
+                )
+                where p.type = @type",
+                new { type1 = type1, type2 = type2, id1 = id1, id2 = id2, type = mapType});
+            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
         public JsonNetResult UpdatePredicate(int intersectMapID, int predicateID)
         {
             var record = Company.GetById<IntersectMap>(intersectMapID);

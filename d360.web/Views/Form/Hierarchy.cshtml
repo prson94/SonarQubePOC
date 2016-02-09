@@ -4,26 +4,19 @@
 
 <div class="small-overlay">
     <div class="ui segment">
-        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = "hierarchyform", Description = Model.FormDescription, Name = Model.FormName })
-
-        @switch (Model.Type)
-        {
-            case MapType.TypeHierarchy:
-
-                break;
-        }
-
-        <h3>Add Child Type</h3>
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.Hierarchy, Description = Model.FormDescription, Name = Model.FormName })
         <div class="row">
-            <div class="s6">
-                <p>Choose an Artifact:</p>
+            <div class="col s6">
+                <p class="FieldNameRequired col1">Artifact</p>
                 <div id="hierarchyArtifactList"></div>
-                <p>Choose a Predicate:</p>
+            </div>
+            <div class="col s6">
+                <p class="FieldNameRequired">Predicate</p>
                 <div id="hierarchyPredicateList"></div>
                 <span id="hierarchyError" style="color:#710000; display:none;">An error occurred. Please select an artifact and a predicate to save.</span>
             </div>
-            <div class="s6">
-                
+            <div class="s6" style="display:none">
+                @(Model.SubjectType) , @(Model.SubjectID)
             </div>
         </div>
     </div>
@@ -38,7 +31,7 @@
             { name: 'Name' }
         ],
         datatype: "json",
-        url: '/relations/hierarchy/artifacts/@((int)Model.IntersectMapId)/@(Model.Type)/@(Model.ObjectType)/@(Model.Subject.ID)'
+        url: '/relations/hierarchy/artifacts/@((int)Model.IntersectMapId)/@(Model.HierarchyMapType)/@(Model.SubjectType)/@(Model.SubjectID)'
     };
 
     var hierarchySubjectAdapter = new $.jqx.dataAdapter(
@@ -72,7 +65,17 @@
             { name: 'name' }
         ],
         datatype: "json",
-        url: '/diagrams/getpredicateinfo?type=@(Model.Type)'
+        @if(Model.IntersectMapId != 0)
+        {
+           <text> url: '/diagrams/GetPredicateInfoByAllocation?id=@(Model.IntersectMapId)'</text>
+        } else
+        {
+                    //public JsonNetResult GetPredicateInfoByTypes(string type1, string type2, int id1, int id2, MapType mapType)
+
+            <text>url: '/diagrams/GetPredicateInfoByTypes?type1=@(Model.Subject.Type)&type2=@(Model.Subject.Type)&id1=@(Model.Subject.TypeID)&id2=@(Model.Subject.TypeID)&mapType=@(Model.HierarchyMapType)'
+    </text>
+        }
+        
     };
 
     var hierarchyPredicateAdapter = new $.jqx.dataAdapter(hierarchyPredicateSource);
@@ -92,11 +95,11 @@
     $('#EditableFormSaveButton').on('click', function () {
         $('#hierarchyError').hide();
         var SourcePostModel = {
-            Target: 'Artifact',
-            TargetID: 1,
-            Subject: '@(Model.ObjectType)',
-            SubjectID: '@(Model.ObjectID)',
-            Object: '@(Model.ObjectType)',
+            TargetType: '@(Model.TargetType)',
+            TargetID: '@(Model.TargetID)',
+            SubjectType: '@(Model.SubjectType)',
+            SubjectID: '@(Model.SubjectID)',
+            ObjectType: '@(Model.ObjectType)',
             ObjectID: $('#hierarchyArtifactList').val().split('|')[1],
             PredicateID: $('#hierarchyPredicateList').val()
         };
@@ -107,7 +110,7 @@
         //console.log(SourcePostModel);
 
         $.ajax({
-            url: '/relations/sources',
+            url: '/form/SaveHierarchy',
             data: SourcePostModel,
             method: 'POST',
             async: false

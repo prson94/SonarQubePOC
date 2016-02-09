@@ -5938,6 +5938,7 @@ namespace d360.web.Controllers
             }
         }
 
+
         #endregion
 
         #region IntersectType
@@ -6025,8 +6026,8 @@ namespace d360.web.Controllers
             HierarchyEditorModel model = new HierarchyEditorModel();
             model.IntersectMapId = intersectMapId;
 
-            model.ObjectType = type;
-            model.ObjectID = id;
+            model.SubjectType = type.ToString();
+            model.SubjectID = id;
 
             var intersect = Company.GetById<IntersectMap>(intersectMapId);
 
@@ -6037,22 +6038,208 @@ namespace d360.web.Controllers
                 model.Subject = Company.GetObjectDetail(subjectNode.ObjectType, subjectNode.ObjectID);
                 model.Object = Company.GetObjectDetail(objectNode.ObjectType, objectNode.ObjectID);
 
+                model.ObjectType = model.Object.ParentType;
+                model.ObjectID = model.Object.ID;
             }
             else
             {
-                model.Object = null;
                 model.Subject = Company.GetObjectDetail(type, id);
+                model.SubjectType = model.Subject.ParentType;
+                model.SubjectID = model.Subject.ID;
+                model.ObjectType = model.Subject.ParentType;
             }
-            model.Type = mapType;
+            model.HierarchyMapType = mapType;
 
+            model.Hierarchy = Company.Query<RelationsController.HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)model.HierarchyMapType }).ToList();
 
-
-            model.Hierarchy = Company.Query<RelationsController.HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)model.Type }).ToList();
+            model.FormName = "Add Child to Hierarchy";
+            model.FormDescription = "";
+            model.FormUri = "/forms/savehierarchy";
+            model.FormMethod = "POST";
 
             //model.AvailableArtifacts = Company.Artifacts.Where(r => r.)
             return PartialView("Hierarchy", model);
 
         }
+
+        [ValidateHttpAntiForgeryToken, HttpPost]
+        public JsonResult SaveHierarchy(HierarchyEditorModel model)
+        {
+            var message = "";
+            var success = false;
+                if (string.IsNullOrEmpty(model.SubjectType) || model.SubjectID <= 0)
+                {
+                    message = $"The Subject you provided is invalid.";
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(model.ObjectType) || model.ObjectID <= 0)
+                    {
+                        message = $"The Object you provided is invalid.";
+                    }
+                    else
+                    {
+                        if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+                        {
+                            message = $"A source may not map to itself directly.";
+                        }
+                        else
+                        {
+                            var predicate = Company.GetById<Predicate>(model.PredicateID);
+
+                            Company.AddRelationship(model.SubjectType, model.SubjectID, model.ObjectType, model.ObjectID, IntersectClassification.Normal, null, null);
+                            var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
+                                S.IntersectID,
+                                S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
+                                O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
+                                from [IntersectNode] S 
+                                inner join IntersectNode O on O.IntersectID = S.IntersectID 
+                                and S.[ObjectType] = @s and S.ObjectID = @sid 
+                                and O.[ObjectType] = @o and O.ObjectID = @oid",
+                                new { s = model.SubjectType, sid = model.SubjectID, o = model.ObjectType, oid = model.ObjectID }
+                                ).SingleOrDefault();
+
+                            if (intersect != null)
+                            {
+                                var existingSourceRecordCount = Company.Query<int>(
+                                    "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
+                                    new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
+                                ).Single();
+
+                                if (existingSourceRecordCount <= 0)
+                                {
+                                    // If we got here, we are all good.
+
+                                    var intersectMap = new IntersectMap
+                                    {
+                                        ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
+                                        PredicateID = model.PredicateID,
+                                        SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
+                                        Type = MapType.TypeHierarchy
+                                    };
+                                    Company.Add<IntersectMap>(intersectMap);
+                                    success = true;
+                                }
+                                else
+                                {
+                                    success = true;
+                                    //message = $"There is already an existing source with this role.";
+                                }
+                            }
+                            else
+                            {
+                                message = $"The Subject or Object did not match up with the Relationship you provided.";
+                            }
+                        }
+                    }
+                }
+
+            return jsonSuccess("Hierarchy item successfully saved.", model.IntersectMapId.ToString(), ContextList.Hierarchy, "edit", HttpStatusCode.OK);
+
+        }
+
+        public ActionResult DeleteHierarchy(int id)
+        {
+            var intersectMap = Company.GetById<IntersectMap>(id);
+
+            var model = new EditableForm
+            {
+                Context = ContextList.PeopleResponsibility,
+                FieldUri = string.Format("/form/Hierarchy_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this item"),
+                FormUri = "/form/DeleteHierarchy",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteHierarchy(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("hierarchy");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<IntersectMap>(id);
+                if (model == null) throw new NotFoundException("hierarchy");
+
+                Company.Delete<IntersectMap>(model);
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, new { IntersectMapId = model.ID });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public JsonResult Hierarchy_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<IntersectMap>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        //public JsonResult Hierarchy_DeleteFields(int id)
+        //{
+        //    var list = new List<EditableField>();
+        //    var a = Company.GetById<IntersectMap>(id);
+
+        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
+
+        //public JsonResult Hierarchy_AddFields(int intersectMapId, string targetType, int targetID, MapType mapType)
+        //{
+        //    var list = new List<EditableField>();
+        //model.IntersectMapId = intersectMapId;
+
+        //model.TargetType = type.ToString();
+        //model.TargetID = id;
+
+        //var intersect = Company.GetById<IntersectMap>(intersectMapId);
+
+        //if (intersect != null)
+        //{
+        //    var subjectNode = Company.GetById<IntersectNode>(intersect.SubjectIntersectNodeID);
+        //    var objectNode = Company.GetById<IntersectNode>(intersect.ObjectIntersectNodeID);
+        //    model.Subject = Company.GetObjectDetail(subjectNode.ObjectType, subjectNode.ObjectID);
+        //    model.Object = Company.GetObjectDetail(objectNode.ObjectType, objectNode.ObjectID);
+
+        //    model.SubjectType = model.Subject.Type;
+        //    model.ObjectType = model.Object.Type;
+        //    model.SubjectID = model.Subject.ID;
+        //    model.ObjectID = model.Object.ID;
+
+
+        //}
+        //else
+        //{
+        //    model.Object = null;
+        //    model.Subject = Company.GetObjectDetail(type, id);
+        //    model.SubjectType = model.Subject.Type;
+        //    model.SubjectID = model.Subject.ID;
+        //}
+        //model.HierarchyMapType = mapType;
+
+        //model.Hierarchy = Company.Query<RelationsController.HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)model.HierarchyMapType }).ToList();
+
+
+        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ObjectID", Name = "Artifact Type", FieldType = DataType.Lookup.ToString(), Items = types });
+        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
 
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]

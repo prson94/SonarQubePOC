@@ -1135,7 +1135,7 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
     $('#' + controlID).html(template({ control: controlID }));
 
     controlID = '#' + controlID;
-    var controlID_type_heirarchy = controlID + '_type_hierarchy';
+    var controlID_type_hierarchy = controlID + '_type_hierarchy';
 
     var adapterSource = {
         dataType: "json",
@@ -1166,7 +1166,7 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
 
     var dataAdapter = new $.jqx.dataAdapter(adapterSource);
 
-   $(controlID_type_heirarchy).jqxTreeGrid({
+   $(controlID_type_hierarchy).jqxTreeGrid({
         width: 450,
         source: dataAdapter,
         sortable: false,
@@ -1186,7 +1186,9 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
         {
             text: "", dataField: 'UID', width: 100, align: "center",
             cellsRenderer: function (rowKey, dataField, value, data) {
-                return "<div style='cursor:pointer;margin-left: 4px;' class='RowTools'><a onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + data.ID + "/" + mapType + "/" + ((data.Level > 0) ? data.Object : data.Subject) + "/" + ((data.Level > 0) ? data.ObjectID : data.SubjectID) + "' data-context='addhierarchyform'><i class='fa fa-plus'></i></a></div>";
+                return "<div style='cursor:pointer;margin-left: 4px;' class='RowTools'><a onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + data.ID + "/" + mapType + "/" + ((data.Level > 0) ? data.Object : data.Subject) + "/" + ((data.Level > 0) ? data.ObjectID : data.SubjectID) + "' data-context='addhierarchyform'><i class='fa fa-level-down'></i></a>" +
+                    //((data.Level != 0) ? "" : "<a  onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + data.ID + "'><i class='fa fa-level-up'></i></a>") +
+                    "<a  onclick='ClickGridTool(event)' data-uri='/form/deletehierarchy/" + data.ID + "'><i class='fa fa-trash-o'></i></a></div>";
             }
         }
         ]
@@ -1196,8 +1198,52 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
         //]
     });
 
+   $(controlID_type_hierarchy).on('rowDoubleClick', function (event) {
+        var args = event.args;
+        var row = args.row;
+        window.location.href = row.Url;
+   });
+
+   $(controlID_type_hierarchy).on('bindingComplete', function (event) { 
+       var data = event.args.owner.source.loadedData;
+
+       var focal = null;
+       for (var i = 0; i < data.length; i++) {
+           $(this).jqxTreeGrid('expandRow', data[i].UID);
+           if ((data[i].Level > 0 && data[i].Object == type && data[i].ObjectID == id) || (data[i].Level <= 0 && data[i].Subject == type && data[i].SubjectID == id)) {
+               focal = data[i];
+               break;
+           }
+       }
+       //console.log(type + ', ' + id);
+       //console.log(focal);
+       if (focal == null)
+           return;
+
+       //var parent = focal;
+       ////$(this).jqxTreeGrid('expandRow', parent.UID);
+       //while(1)
+       //{
+       //    var found = false;
+       //   for (var i = 0; i < data.length; i++) {
+       //        if (data[i].UID == parent.ParentID) {
+       //            parent = data[i];
+       //            $(this).jqxTreeGrid('expandRow', parent.UID);
+       //            console.log(parent.UID);
+       //            found = true;
+       //            break;
+       //        }
+       //   }
+       //   if (!found)
+       //       break;
+       //}
+       
+       $(this).jqxTreeGrid('ensureRowVisible', focal.UID);
+       
+   });
+
    amplify.subscribe("SaveAction", "hierarchyform", function () {
-       $(controlID_type_heirarchy).jqxTreeGrid('updateBoundData');
+       $(controlID_type_hierarchy).jqxTreeGrid('updateBoundData');
    });
 }
 

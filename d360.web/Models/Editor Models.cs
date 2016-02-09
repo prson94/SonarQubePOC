@@ -535,9 +535,17 @@ namespace d360.web.Models
         }
 
         public int IntersectMapId { get; set; }
-        public MapType Type { get; set; }
-        public SystemObjects ObjectType { get; set; }
+        public MapType HierarchyMapType { get; set; }
+        public string ObjectType { get; set; }
         public int ObjectID { get; set; }
+
+        public string TargetType { get; set; }
+        public string SubjectType { get; set; }
+        public int SubjectID { get; set; }
+        public int TargetID { get; set; }
+
+        public int PredicateID { get; set; }
+
         public ObjectDetail Subject { get; set; }
         public ObjectDetail Object { get; set; }
         public List<Controllers.RelationsController.HierarchyModel> Hierarchy { get; set; }
