@@ -2215,7 +2215,7 @@ from	    ResponsibilityTypeHierarchy H
 	                        inner join [fusionattribute] fa on (fa.id = inode2.objectid and fa.fusionattributetypeid = @targetAttributeTypeID)
                         where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
 
-                urlSql = @" select 	
+                urlSql = @" select distinct 	
                                 od.objectid as id,
 					            od.url as url
                             from 
