@@ -102,14 +102,8 @@
     <Build Include="dbo\Tables\PolicyTypeClass.sql" />
     <Build Include="dbo\Tables\IntersectType.sql" />
     <Build Include="dbo\Tables\FusionAttributeSynchronizationStatus.sql" />
-    <Build Include="fusion\Tables\StagingRelationArchive.sql">
-      <AnsiNulls>Off</AnsiNulls>
-    </Build>
     <Build Include="dbo\Tables\PolicyType.sql" />
     <Build Include="dbo\Tables\LoadItem.sql" />
-    <Build Include="fusion\Tables\StagingItem.sql">
-      <AnsiNulls>On</AnsiNulls>
-    </Build>
     <Build Include="dbo\Tables\Follow.sql" />
     <Build Include="dbo\Tables\Intersect.sql" />
     <Build Include="dbo\Tables\AttributeType.sql" />
@@ -139,24 +133,18 @@
     <Build Include="fusion\Tables\Error.sql">
       <AnsiNulls>Off</AnsiNulls>
     </Build>
-    <Build Include="fusion\Tables\StagingError.sql" />
     <Build Include="dbo\Tables\Responsibility.sql" />
     <Build Include="fusion\Tables\Result.sql">
       <AnsiNulls>Off</AnsiNulls>
     </Build>
-    <Build Include="fusion\Tables\StagingStatistic.sql" />
     <Build Include="fusion\Tables\Execution.sql">
       <AnsiNulls>Off</AnsiNulls>
     </Build>
     <Build Include="dbo\Tables\EmailTemplate.sql" />
     <Build Include="dbo\Tables\RelatedArtifact.sql" />
-    <Build Include="fusion\Tables\StepStatistic.sql">
-      <AnsiNulls>Off</AnsiNulls>
-    </Build>
     <Build Include="dbo\Tables\DomainType.sql" />
     <Build Include="utility\Tables\ApiError.sql" />
     <Build Include="dbo\Tables\Comment.sql" />
-    <Build Include="fusion\Tables\StagingItemArchive.sql" />
     <Build Include="dbo\Tables\SurveyObjectCache.sql" />
     <Build Include="dbo\Tables\CommentRelation.sql" />
     <Build Include="dbo\Tables\WorkflowResourceNotification.sql" />
@@ -372,7 +360,6 @@
       <QuotedIdentifier>Off</QuotedIdentifier>
     </Build>
     <Build Include="dbo\Stored Procedures\DeleteIntersect.sql" />
-    <Build Include="fusion\Stored Procedures\ProcessFusionInQueue.sql" />
     <Build Include="tile\Stored Procedures\GetSocialStatisticsByObject.sql" />
     <Build Include="tile\Stored Procedures\GetChildArtifactStatisticsByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetAttributeAndIntersectHierarchyByObject.sql" />
@@ -417,7 +404,6 @@
     <Build Include="Security\validate.sql" />
     <Build Include="dbo\Stored Procedures\FollowObject.sql" />
     <Build Include="tile\Stored Procedures\GetObjectStatistics.sql" />
-    <Build Include="fusion\Tables\StagingRelationMapping.sql" />
     <Build Include="dbo\Tables\IntersectMap.sql" />
     <Build Include="dbo\Tables\Predicate.sql" />
     <Build Include="dbo\Tables\MapTransformation.sql" />

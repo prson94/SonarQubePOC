@@ -182,3 +182,37 @@ GO
 
 DROP TABLE [dbo].[IntersectTypeRole]
 GO
+
+
+
+-- Remove old stored proc based fusion stuff
+
+ALTER TABLE [fusion].[execution] ALTER COLUMN QueueID UNIQUEIDENTIFIER NULL
+go
+
+drop table [fusion].[StagingRelationArchive]
+go
+
+drop table [fusion].[StagingError]
+go
+
+drop table [fusion].[StagingItem]
+go
+
+drop table [fusion].[StagingItemArchive]
+go
+
+drop table [fusion].[StagingRelationArchive]
+go
+
+drop table [fusion].[StagingRelationMapping]
+go
+
+drop table [fusion].[StagingStatistic]
+go
+
+drop table [fusion].[StepStatistic]
+go
+
+drop procedure [fusion].[ProcessFusionInQueue]
+go

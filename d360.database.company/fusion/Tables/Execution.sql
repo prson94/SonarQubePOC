@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [fusion].[Execution] (
     [ID]                  INT              IDENTITY (1, 1) NOT NULL,
-    [QueueID]             UNIQUEIDENTIFIER NOT NULL,
+    [QueueID]             UNIQUEIDENTIFIER NULL,
     [FusionID]            INT              NOT NULL,
     [RawLogFileName]      NVARCHAR (500)   NULL,
     [DateStarted]         DATETIME         NULL,
