@@ -5,9 +5,11 @@ using System.Net;
 using System;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Text;
 
 namespace d360.extensions.search
 {
+
     public class JsonResponseModel
     {
         public JObject Data { get; set; }
@@ -58,7 +60,7 @@ namespace d360.extensions.search
     public class SearchResultsHitsModel
     {
         public int total { get; set; }
-        public float maxscore { get; set; }
+        public float max_score { get; set; }
         public List<SearchResultsHitModel> hits { get; set; }
     }
 
@@ -67,7 +69,7 @@ namespace d360.extensions.search
         public string _index { get; set; }
         public string _type { get; set; }
         public string _id { get; set; }
-        public float score { get; set; }
+        public float _score { get; set; }
         public JObject _source { get; set; }
     }
 
@@ -145,21 +147,31 @@ namespace d360.extensions.search
         {
             var model = new JsonResponseModel();
             var wr = "";
-            using (var resp = (HttpWebResponse)webReq.GetResponse())
+            try {
+                using (var resp = (HttpWebResponse)webReq.GetResponse())
+                {
+                    model.Status = resp.StatusCode;
+                    model.StatusMessage = resp.StatusDescription;
+
+                    using (var responseStream = resp.GetResponseStream())
+                    {
+                        using (var rdr = new System.IO.StreamReader(responseStream))
+                        {
+                            wr = rdr.ReadToEnd();
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(wr))
+                        model.Data = JObject.Parse(wr);
+                }
+            }
+            catch(WebException we)
             {
+                var resp = we.Response as HttpWebResponse;
+                if (resp == null)
+                    throw;
                 model.Status = resp.StatusCode;
                 model.StatusMessage = resp.StatusDescription;
-
-                using (var responseStream = resp.GetResponseStream())
-                {
-                    using (var rdr = new System.IO.StreamReader(responseStream))
-                    {
-                        wr = rdr.ReadToEnd();
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(wr))
-                    model.Data = JObject.Parse(wr);
             }
             return model;
         }
@@ -173,6 +185,22 @@ namespace d360.extensions.search
             {
                 webReq = createWebRequest("PUT", indexName);
                 loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 1, \"number_of_replicas\": 1 }}}"));
+                response = getJsonResponse(webReq);
+                if (response.Status != HttpStatusCode.OK)
+                    throw new ApplicationException(response.StatusMessage);
+            }
+        }
+
+
+        private void deleteIndexIfExists(int companyID)
+        {
+            var indexName = $"{getCompanyIndexName(companyID)}";
+            var webReq = createWebRequest("HEAD", indexName);
+            var response = getJsonResponse(webReq);
+            if (response.Status != HttpStatusCode.NotFound)
+            {
+                webReq = createWebRequest("DELETE", indexName);
+                //loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 1, \"number_of_replicas\": 1 }}}"));
                 response = getJsonResponse(webReq);
                 if (response.Status != HttpStatusCode.OK)
                     throw new ApplicationException(response.StatusMessage);
@@ -195,21 +223,25 @@ namespace d360.extensions.search
         public void AddToIndex(List<AddToIndexModel> items)
         {
             createIndexIfNotExists(items[0].CompanyID);
-            var json = "";
-
+            var sb = new StringBuilder();
+            
             var indexName = getCompanyIndexName(items[0].CompanyID);
             items.ForEach(item => {
-                json += "{ \"index\" : { \"_id\" : \"" + $"{item.Group}|{item.ID}" + "\" } }\n";
-                json += "{ ";
-                json += "\"Url\" : \"" + item.RelativeUrl + "\" }\n";
+                sb.Append("{ \"index\" : { \"_id\" : \"" + $"{item.Group}|{item.ID}" + "\" } }\n");
+                sb.Append("{\"Url\" : \"" + item.RelativeUrl + "\",");
+                bool bFirst = true;
                 foreach (var f in item.Fields)
                 {
-                    json += " \"" + f.Key + "\" : \"" + f.Value.Replace("\\r", "").Replace("\\n", "").Replace("\\t", "") + "\"";
-                }
-                json += " }\n";
+                    if (!bFirst)
+                        sb.Append(", ");
+                    else
+                        bFirst = false;
+                    sb.Append(" \"" + f.Key + "\" : \"" + f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "") + "\" ");
+                }                
+                sb.Append(" }\n");                
             });
-            json += "\n";
-
+            sb.Append("\n");
+            
             /*
 { "update" : { "_id" : "Artifact|732" } }
 { "doc": { "Url" : "#/artifacts/2/732", "Name" : "Security Master Data Mart", "Description" : "<p>A dimensional model containing security master data sourced from vendors.</p>", "Status" : "Under Review", "Type" : "Application", "SubjectArea" : "Investments" } }
@@ -221,27 +253,29 @@ namespace d360.extensions.search
             */
 
             var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/{items[0].Group}/_bulk");
-            loadMessageInRequestBody(webReq, json);
+            loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.Created)
+            if (response.Status != HttpStatusCode.OK)
                 throw new ApplicationException(response.StatusMessage);
+
+            var result = response.Data;
+
+            if (result == null) throw new Exception("Invalid response no data");
+
+            var hasErrors = result.GetValue("errors");
+
+            if (hasErrors.Value<bool>())
+                throw new Exception(response.Data.ToString());            
         }
 
         public void ClearIndex(int companyID)
         {
-            //createIndexIfNotExists(companyID);
+            deleteIndexIfExists(companyID);
 
-            //var client = getSearchClient();
-
-            //var deleteResponse = client.DeleteIndex(getCompanyIndexName(companyID));
-            //if (!deleteResponse.IsValid)
-            //    throw deleteResponse.OriginalException;
-
-            //var createResponse = client.CreateIndex(getCompanyIndexName(companyID));
-            //if (!createResponse.IsValid)
-            //    throw createResponse.OriginalException;
+            createIndexIfNotExists(companyID);            
         }
 
+     
         public void ClearIndex(int companyID, string group)
         {
             createIndexIfNotExists(companyID);
@@ -269,28 +303,28 @@ namespace d360.extensions.search
                 throw new ApplicationException(response.StatusMessage);
 
             var results = response.Data.ToObject<SearchResultsModel>();
-
+            
             return results.hits.hits.Select(h => new IndexResult {
-                Description = h._source.Properties().Values("Description").Value<string>(),
-                Group = h._type,
-                ID = h._id,
-                //Name = h._source.Values("Name").Value<string>(),
-                NormalizedScore = h.score/results.hits.maxscore,
-                Score = h.score//,
-                //Type = h._source.Values("Type").Value<string>(),
-                //Url = h._source.Values("Url").Value<string>()
-            }).ToList();
+                    Description = GetPropertyValue<string>(h._source, "Description"),
+                    Group = h._type,
+                    ID = h._id,
+                    Name = GetPropertyValue<string>(h._source, "Name"),
+                    NormalizedScore = (results.hits.max_score == 0 ? 0 : h._score/results.hits.max_score),
+                    Score = h._score,
+                    Type = GetPropertyValue<string>(h._source, "Type"),
+                    Url = GetPropertyValue<string>(h._source, "Url")
+                }).ToList();
+        }
 
-            //Group = doc.Get("Group") + "",
-            //Name = doc.Get("Name") + "",
-            //Type = doc.Get("Type"),
-            //ID = doc.Get("ID"),
-            //Description = doc.Get("Description") + "",
-            //Url = doc.Get("Url") + "",
-            //NormalizedScore = x.Score / maxScore,
-            //Score = x.Score
-
-            //return null;
+        private T GetPropertyValue<T>(JObject _source, string propName)
+        {
+            JToken jToken = null;
+            
+            if (_source.TryGetValue(propName, out jToken))
+            {
+                return jToken.Value<T>();
+            }
+            return default(T);
         }
 
         public void ReIndex(int companyID, List<AddToIndexModel> items)

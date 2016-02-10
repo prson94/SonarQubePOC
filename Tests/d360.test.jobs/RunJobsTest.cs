@@ -235,7 +235,14 @@ from    Artifact A
         public void Search_FindArtifact()
         {
             var source = new ElasticSearchSource();
-            var results = source.GetSearchResults(4, 1, "Eagle");
+            var results = source.GetSearchResults(4, 1, "Data Warehouse");
+        }
+
+        [TestMethod]
+        public void Search_ClearIndex()
+        {
+            var source = new ElasticSearchSource();
+            source.ClearIndex(4);
         }
 
         [TestMethod]
