@@ -15,35 +15,13 @@ namespace d360.extensions.search
         public JObject Data { get; set; }
         public HttpStatusCode Status { get; set; }
         public string StatusMessage { get; set; }
-    }
 
-    /*
-{
-  "took": 1,
-  "timed_out": false,
-  "_shards": {
-    "total": 1,
-    "successful": 1,
-    "failed": 0
-  },
-  "hits": {
-    "total": 1,
-    "max_score": 0.59884083,
-    "hits": [
-      {
-        "_index": "d3s4",
-        "_type": "artifact",
-        "_id": "733",
-        "_score": 0.59884083,
-        "_source": {
-          "Name": "Eagle PACE",
-          "Description": "Houses equity data in a trading system."
+        public bool IsSuccessStatusCode
+        {
+            get { return ((int)Status >= 200) && ((int)Status <= 299); }
         }
-      }
-    ]
-  }
-}    
-        */
+    }
+        
     public class SearchResultsModel
     {
         public int took { get; set; }
@@ -93,15 +71,6 @@ namespace d360.extensions.search
             }
             return doc;
         }
-
-        //void deleteDocument(IndexWriter writer, IndexObjectModel item)
-        //{
-        //    writer.DeleteDocuments(
-        //        new TermQuery(new Term("Group", item.Group)),
-        //        new TermQuery(new Term("Type", item.Type)),
-        //        new TermQuery(new Term("ID", item.ID.ToString()))
-        //    );
-        //}
 
         string getCompanyIndexName(int companyID)
         {
@@ -176,6 +145,10 @@ namespace d360.extensions.search
             return model;
         }
 
+        /// <summary>
+        /// Create an index if id doesnt exist
+        /// </summary>
+        /// <param name="companyID"></param>
         void createIndexIfNotExists(int companyID)
         {
             var indexName = $"{getCompanyIndexName(companyID)}";
@@ -191,7 +164,10 @@ namespace d360.extensions.search
             }
         }
 
-
+        /// <summary>
+        /// Delete an index if it exists
+        /// </summary>
+        /// <param name="companyID"></param>
         private void deleteIndexIfExists(int companyID)
         {
             var indexName = $"{getCompanyIndexName(companyID)}";
@@ -216,19 +192,22 @@ namespace d360.extensions.search
             var webReq = createWebRequest("PUT", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}");
             loadMessageInRequestBody(webReq, createDocument(item));
             var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.Created)
+            
+            if (!response.IsSuccessStatusCode)
                 throw new ApplicationException(response.StatusMessage);
         }
 
         public void AddToIndex(List<AddToIndexModel> items)
         {
+            if (items == null || items.Count < 0) return;
+
             createIndexIfNotExists(items[0].CompanyID);
             var sb = new StringBuilder();
             
             var indexName = getCompanyIndexName(items[0].CompanyID);
             items.ForEach(item => {
                 sb.Append("{ \"index\" : { \"_id\" : \"" + $"{item.Group}|{item.ID}" + "\" } }\n");
-                sb.Append("{\"Url\" : \"" + item.RelativeUrl + "\",");
+                sb.Append("{\"Url\" : \"" + item.RelativeUrl + "\",");                
                 bool bFirst = true;
                 foreach (var f in item.Fields)
                 {
@@ -280,12 +259,12 @@ namespace d360.extensions.search
         {
             createIndexIfNotExists(companyID);
 
-            //var indices = Indices.Parse(getCompanyIndexName(companyID));
-            //var types = Types.Parse(group);
-            //var req= new DeleteRequest(getCompanyIndexName(companyID), )
-            //var deleteResponse = client.DeleteMany(indices, types);
-            //if (!deleteResponse.Success)
-            //    throw deleteResponse.OriginalException;
+            var webReq = createWebRequest("DELETE", $"{getCompanyIndexName(companyID)}/{group}/_query");
+            loadMessageInRequestBody(webReq, JObject.Parse("{\"query\": { \"match_all\": {} }}"));
+
+            var response = getJsonResponse(webReq);
+            if (response.Status != HttpStatusCode.OK)
+                throw new ApplicationException(response.StatusMessage);
         }
       
         public IEnumerable<string> GetSearchPhrases(int companyID, string term, int maxResults)
@@ -294,6 +273,13 @@ namespace d360.extensions.search
             return null;
         }
 
+        /// <summary>
+        /// Gets the search results from elastic search and converts them to index results
+        /// </summary>
+        /// <param name="companyID"></param>
+        /// <param name="resourceID"></param>
+        /// <param name="phrase"></param>
+        /// <returns></returns>
         public List<IndexResult> GetSearchResults(int companyID, int resourceID, string phrase)
         {
             createIndexIfNotExists(companyID);
@@ -337,7 +323,7 @@ namespace d360.extensions.search
         {
             createIndexIfNotExists(item.CompanyID);
 
-            var webReq = createWebRequest("DELETE", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}");
+            var webReq = createWebRequest("DELETE", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}");            
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
                 throw new ApplicationException(response.StatusMessage);
@@ -345,17 +331,31 @@ namespace d360.extensions.search
 
         public void RemoveFromIndex(List<RemoveFromIndexModel> items)
         {
+            if (items == null || items.Count < 0) return;
+
             createIndexIfNotExists(items[0].CompanyID);
 
-            //var client = getSearchClient();
-            //var req = new BulkRequest(getCompanyIndexName(items[0].CompanyID), new TypeName { Name = items[0].Group });
-            //items.ForEach(item => {
-            //    req.Operations.Add(new BulkDeleteOperation<JObject>(createDocument(item)));
-            //});
-            //var response = client.Bulk(req);
+            StringBuilder sb = new StringBuilder();
 
-            //if (!response.IsValid && response.OriginalException != null)
-            //    throw response.OriginalException;
+            foreach (var item in items)
+            {
+                sb.Append("{ \"delete\" : { \"_type\" : \"" + item.Group + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
+            }
+                        
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk");
+            loadMessageInRequestBody(webReq, sb.ToString());
+            var response = getJsonResponse(webReq);
+            if (response.Status != HttpStatusCode.OK)
+                throw new ApplicationException(response.StatusMessage);
+
+            var result = response.Data;
+
+            if (result == null) throw new Exception("Invalid response no data");
+
+            var hasErrors = result.GetValue("errors");
+
+            if (hasErrors.Value<bool>())
+                throw new Exception(response.Data.ToString());
         }
 
         public void UpdateInIndex(UpdateInIndexModel item)
@@ -371,17 +371,43 @@ namespace d360.extensions.search
 
         public void UpdateInIndex(List<UpdateInIndexModel> items)
         {
+            if (items == null || items.Count < 0) return;
+
             createIndexIfNotExists(items[0].CompanyID);
 
-            //var client = getSearchClient();
-            //var req = new BulkRequest(getCompanyIndexName(items[0].CompanyID), new TypeName { Name = items[0].Group });
-            //items.ForEach(item => {
-            //    req.Operations.Add(new BulkUpdateOperation<JObject, JObject>(createDocument(item)));
-            //});
-            //var response = client.Bulk(req);
+            StringBuilder sb = new StringBuilder();
 
-            //if (!response.IsValid && response.OriginalException != null)
-            //    throw response.OriginalException;
+            foreach (var item in items)
+            {
+                sb.Append("{ \"update\" : { \"_type\" : \"" + item.Group + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
+
+                sb.Append("{ \"doc\" : {\"Url\" : \"" + item.RelativeUrl + "\",");
+                bool bFirst = true;
+                foreach (var f in item.Fields)
+                {
+                    if (!bFirst)
+                        sb.Append(", ");
+                    else
+                        bFirst = false;
+                    sb.Append(" \"" + f.Key + "\" : \"" + f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "") + "\" ");
+                }
+                sb.Append(" } }\n");
+            }
+
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk");
+            loadMessageInRequestBody(webReq, sb.ToString());
+            var response = getJsonResponse(webReq);
+            if (response.Status != HttpStatusCode.OK)
+                throw new ApplicationException(response.StatusMessage);
+
+            var result = response.Data;
+
+            if (result == null) throw new Exception("Invalid response no data");
+
+            var hasErrors = result.GetValue("errors");
+
+            if (hasErrors.Value<bool>())
+                throw new Exception(response.Data.ToString());            
         }
     }
 }
