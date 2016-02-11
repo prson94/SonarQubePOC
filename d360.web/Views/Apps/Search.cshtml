@@ -16,8 +16,8 @@
             Responsibility : "@(ContextList.Responsibility)"
         }
             
-        var initrowdetails = function (index, parentElement, gridElement, datarecord) {
-            var div = $($(parentElement).children()[0]);
+        var initrowdetails = function (index, parentElement, gridElement, datarecord) {            
+            console.log(3);
             if (div != null) {                
                 var ID = datarecord.ID;
                 var Group = datarecord.Group;
@@ -65,7 +65,7 @@
         }
 
         var source = {
-            datatype: "json",
+            datatype: "json",            
             datafields: [
                 { name: 'NormalizedScore', type: 'float' },
                 { name: 'Name', type: 'string' },
@@ -76,21 +76,22 @@
                 { name: 'Merged', type: 'string' },
                 { name: 'Url', type: 'string' }
             ],
-            type: 'POST',
+            type: 'POST',            
             dataType: 'json',
             url: '/search/results',
             data: { search: phrase },
             id:'ID',
             sortcolumn: 'NormalizedScore',
-            sortdirection: 'desc'
+            sortdirection: 'desc',
+            root: "Results",
         };
 
         var dataAdapter = new $.jqx.dataAdapter(
             source, {
                 loadComplete: function (data) {
-                    if (data) { $('#Timing').text(data.ElapsedTime); }
+                    if (data) { $('#Timing').text('took ' + data.Result.ElapsedMS + 'ms' ); }
                 },
-                beforeLoadComplete: function (records) {
+                beforeLoadComplete: function (records) {                    
                     var data = new Array();
                     for (var i = 0; i < records.length; i++) {
                         var row = records[i];                        

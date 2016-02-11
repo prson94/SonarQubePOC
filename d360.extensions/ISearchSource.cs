@@ -16,6 +16,18 @@ namespace d360.extensions
         public int ResultCount { get; set; }
     }
 
+    public class IndexResults
+    {
+        public IndexResults()
+        {
+            Results = new List<IndexResult>();
+        }
+
+        public List<IndexResult> Results { get; set; }
+        public int Matches { get; set; }
+        public int ElapsedMS { get; set; }
+    }
+
     public class IndexResult
     {
         public string Name { get; set; }
@@ -92,7 +104,7 @@ namespace d360.extensions
         /// <param name="phrase">The search phrase to get results for</param>
         /// <returns>A list of search results.</returns>
         /// <exception cref="SearchResultsException"></exception>
-        List<IndexResult> GetSearchResults(int companyID, int resourceID, string phrase);
+        IndexResults GetSearchResults(int companyID, int resourceID, string phrase);
 
 
         /// <summary>

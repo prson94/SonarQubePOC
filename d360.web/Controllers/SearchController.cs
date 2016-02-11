@@ -34,21 +34,14 @@ namespace d360.web.Controllers
         [HttpPost]
         public JsonResult Results(string search)
         {
-            var sw = new Stopwatch();
-            sw.Start();
-
             var o = new SearchResultsViewModel();
             
             if (!string.IsNullOrEmpty(search))
             {
-                o.Results = SearchSource.GetSearchResults(Company.CurrentCompanyID, Company.CurrentResourceID, search);
-                o.Categories = o.Results.GroupBy(i => i.Type).Select(i => new IndexCategory { ResultCount = i.Count(), Name = i.Key }).ToList();
+                o.Result = SearchSource.GetSearchResults(Company.CurrentCompanyID, Company.CurrentResourceID, search);
+                o.Categories = o.Result.Results.GroupBy(i => i.Type).Select(i => new IndexCategory { ResultCount = i.Count(), Name = i.Key }).ToList();
             }
-
-            sw.Stop();
-
-            o.ElapsedTime = string.Format("Search ran in {0} seconds.", (decimal)sw.ElapsedMilliseconds / 1000);
-
+            
             return Json(o);
         }
 

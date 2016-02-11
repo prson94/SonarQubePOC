@@ -203,12 +203,12 @@ namespace d360.extensions.search
         }
 
 
-        public List<IndexResult> GetSearchResults(int companyID, int resourceID, string phrase)
+        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase)
         {
+            IndexResults result = new IndexResults();
             phrase = phrase.Replace("--", "");
 
-            AzureDirectory directory = null;
-            List<IndexResult> results = null;
+            AzureDirectory directory = null;            
             IndexSearcher searcher = null;
             StandardAnalyzer analyzer = null;
             string[] fields = null;
@@ -237,7 +237,7 @@ namespace d360.extensions.search
 
                 if (maxScore == System.Single.NaN) maxScore = 1;
 
-                results = search.ScoreDocs.Select(x =>
+                result.Results = search.ScoreDocs.Select(x =>
                 {
                     var doc = searcher.Doc(x.Doc);
                     return new IndexResult
@@ -254,9 +254,10 @@ namespace d360.extensions.search
                 }
                 ).ToList();
 
-                //Trace.TraceInformation("GetSearchResults : Return Results");
 
-                return results;
+                //Trace.TraceInformation("GetSearchResults : Return Results");
+                
+                return result;
             }
             catch (Exception ex)
             {

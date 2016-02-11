@@ -41,11 +41,11 @@ namespace d360.web.Controllers.Services
             if (!string.IsNullOrEmpty(phrase))
             {
                 var c = Community.GetById<Company>(Company.CurrentCompanyID, i => i.CompanyDomainSettings);
-                var results = SearchSource.GetSearchResults(Company.CurrentCompanyID, Company.CurrentResourceID, phrase).ToList();
-                results.ForEach(i => {
+                var result = SearchSource.GetSearchResults(Company.CurrentCompanyID, Company.CurrentResourceID, phrase);
+                result.Results.ForEach(i => {
                     i.AbsoluteUrl = string.Format("https://{0}.data3sixty.com/{1}", "", c.CompanyDomainSettings.First(d => d.IsPrimary).UrlPrefix, i.Url);
-                });
-                return results.AsQueryable();
+                });                
+                return result.Results.AsQueryable();
             }
             else 
             {

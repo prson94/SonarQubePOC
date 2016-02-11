@@ -74,13 +74,11 @@ namespace d360.web.Models
     {
         public SearchResultsViewModel()
         {
-            Results = new List<IndexResult>();
-            Categories = new List<IndexCategory>();
-            ElapsedTime = string.Empty;
+            Result = new IndexResults();
+            Categories = new List<IndexCategory>();            
         }
 
-        public List<IndexResult> Results { get; set; }
-        public List<IndexCategory> Categories { get; set; }
-        public string ElapsedTime { get; set; }
+        public IndexResults Result { get; set; }
+        public List<IndexCategory> Categories { get; set; }        
     }
 }

@@ -175,8 +175,7 @@ namespace d360.extensions.search
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.NotFound)
             {
-                webReq = createWebRequest("DELETE", indexName);
-                //loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 1, \"number_of_replicas\": 1 }}}"));
+                webReq = createWebRequest("DELETE", indexName);                
                 response = getJsonResponse(webReq);
                 if (response.Status != HttpStatusCode.OK)
                     throw new ApplicationException(response.StatusMessage);
@@ -187,25 +186,21 @@ namespace d360.extensions.search
 
         public void AddToIndex(AddToIndexModel item)
         {
-            createIndexIfNotExists(item.CompanyID);
-
-            var webReq = createWebRequest("PUT", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}");
-            loadMessageInRequestBody(webReq, createDocument(item));
-            var response = getJsonResponse(webReq);
-            
-            if (!response.IsSuccessStatusCode)
-                throw new ApplicationException(response.StatusMessage);
+            AddToIndex(new List<AddToIndexModel> { item });
         }
 
         public void AddToIndex(List<AddToIndexModel> items)
-        {
-            if (items == null || items.Count < 0) return;
+        {            
+            if (!items.Any()) return;
 
-            createIndexIfNotExists(items[0].CompanyID);
+            var companyId = items.First().CompanyID;
+
+            createIndexIfNotExists(companyId);
             var sb = new StringBuilder();
             
-            var indexName = getCompanyIndexName(items[0].CompanyID);
-            items.ForEach(item => {
+            var indexName = getCompanyIndexName(companyId);
+            foreach(var item in items)
+            {             
                 sb.Append("{ \"index\" : { \"_id\" : \"" + $"{item.Group}|{item.ID}" + "\", \"_type\" : \"" + item.Group + "\" } }\n");
                 sb.Append("{\"Url\" : \"" + item.RelativeUrl + "\",");                
                 bool bFirst = true;
@@ -220,23 +215,15 @@ namespace d360.extensions.search
                         bFirst = false;
 
                     var val = f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "").Replace("\"", "\\\"");
+                    val = HtmlUtilities.RemoveTags(val);
                     sb.Append(" \"" + f.Key + "\" : \"" + val  + "\" ");
                 }                
                 sb.Append(" }\n");                
-            });
+            }
             sb.Append("\n");
             
-            /*
-{ "update" : { "_id" : "Artifact|732" } }
-{ "doc": { "Url" : "#/artifacts/2/732", "Name" : "Security Master Data Mart", "Description" : "<p>A dimensional model containing security master data sourced from vendors.</p>", "Status" : "Under Review", "Type" : "Application", "SubjectArea" : "Investments" } }
-{ "update" : { "_id" : "Artifact|733" } }
-{ "doc": { "Url" : "#/artifacts/2/733", "Name" : "Data Warehouse", "Description" : "<p> Enterprise security master and DWH system</p>", "Status" : "Certified", "Type" : "Application", "SubjectArea" : "Enterprise Applications" } }
-{ "create" : { "_id" : "Artifact|4651" } }
-{ "Url" : "#/artifacts/1/4651", "Name" : "Country of Risk", "Description" : "<p>Provides a way to communicate the true geographic risk of a company. The country of risk is the International Organization for Standardization (ISO) country code of the issuer's principal place of business. It is derived from four factors listed in order of importance: management location, country of primary listing, sales/revenue and reporting currency of the issuer.        Exceptions are made for American Depositary Receipts (ADR's) and Hong Kong 'H' Shares where the country of listing will not be a factor.'   Vendor sourced values may be overridden by the portfolio manager with the approval of the Data Governance team.</p>", "Status" : "Certified", "Type" : "Business Term", "SubjectArea" : "Investments" }
-            
-            */
 
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk");
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk");
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
@@ -285,26 +272,32 @@ namespace d360.extensions.search
         /// <param name="resourceID"></param>
         /// <param name="phrase"></param>
         /// <returns></returns>
-        public List<IndexResult> GetSearchResults(int companyID, int resourceID, string phrase)
+        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase)
         {
+            IndexResults result = new IndexResults();
+
             createIndexIfNotExists(companyID);
-            var webReq = createWebRequest("GET", $"{getCompanyIndexName(companyID)}/_search?q={phrase}");
+            var webReq = createWebRequest("GET", $"{getCompanyIndexName(companyID)}/_search?q={phrase}&size=200");
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
                 throw new ApplicationException(response.StatusMessage);
 
-            var results = response.Data.ToObject<SearchResultsModel>();
-            
-            return results.hits.hits.Select(h => new IndexResult {
+            var searchResults = response.Data.ToObject<SearchResultsModel>();
+
+            result.Results = searchResults.hits.hits.Select(h => new IndexResult {
                     Description = GetPropertyValue<string>(h._source, "Description"),
                     Group = h._type,
                     ID = h._id,
                     Name = GetPropertyValue<string>(h._source, "Name"),
-                    NormalizedScore = (results.hits.max_score.GetValueOrDefault() == 0 ? 0 : h._score/results.hits.max_score.GetValueOrDefault()),
+                    NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : h._score/searchResults.hits.max_score.GetValueOrDefault()),
                     Score = h._score,
                     Type = GetPropertyValue<string>(h._source, "Type"),
                     Url = GetPropertyValue<string>(h._source, "Url")
                 }).ToList();
+
+            result.ElapsedMS = searchResults.took;
+
+            return result;
         }
 
         private T GetPropertyValue<T>(JObject _source, string propName)

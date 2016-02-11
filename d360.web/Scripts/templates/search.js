@@ -45,8 +45,8 @@ function SearchViewModel() {
                 },
                 success: function (data) {
                     try {
-                        if (data.Results.length > 0) {
-                            var results = $.map(data.Results, function (item) { return new SearchResult(item); });
+                        if (data.Result.Results.length > 0) {
+                            var results = $.map(data.Result.Results, function (item) { return new SearchResult(item); });
                             self.results(results);
                         }
 
@@ -57,9 +57,9 @@ function SearchViewModel() {
                     } catch (e) {
 
                     }
-
+                    console.log(data);
                     self.shouldShowSpinner(false);
-                    self.elapsedTime(data.ElapsedTime);
+                    self.elapsedTime('Search returned ' + data.Result.Results.length + ' results in (' + (data.Result.ElapsedMS/ 1000) + ' seconds)');
                 }
             });
         //}
