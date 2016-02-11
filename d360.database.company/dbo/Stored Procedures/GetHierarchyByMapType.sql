@@ -5,13 +5,13 @@
 as
 begin
 
-declare @results table (ID int, [Subject] varchar(150), SubjectID int, [Object] varchar(150),
- ObjectID int, ParentID varchar(500), Name varchar(250), Path varchar(250), Url varchar(50),
-  ObjectTypeName varchar(100), [Level] int, PredicateID int, [Type] int, [UID] varchar(500));
+ declare @results table (ID int, [Subject] varchar(150), SubjectID int, [Object] varchar(150),
+	 ObjectID int, ParentID varchar(max), Name varchar(250), Path varchar(250), Url varchar(50),
+	 ObjectTypeName varchar(100), [Level] int, PredicateID int, [Type] int, [UID] varchar(max));
 
-  declare @results2 table (ID int, [Subject] varchar(150), SubjectID int, [Object] varchar(150),
- ObjectID int, ParentID varchar(500), Name varchar(250), Path varchar(250), Url varchar(50),
-  ObjectTypeName varchar(100), [Level] int, PredicateID int, [Type] int, [UID] varchar(500));
+ declare @results2 table (ID int, [Subject] varchar(150), SubjectID int, [Object] varchar(150),
+	 ObjectID int, ParentID varchar(max), Name varchar(250), Path varchar(250), Url varchar(50),
+	 ObjectTypeName varchar(100), [Level] int, PredicateID int, [Type] int, [UID] varchar(max));
 
 
 with u as
@@ -22,7 +22,7 @@ with u as
 		n1.objectid as [SubjectID],
 		n2.objecttype as [Object],
 		n2.objectid as [ObjectID],
-		cast('0' as varchar(500)) as ParentID,
+		cast('0' as varchar(max)) as ParentID,
 		d.Name,
 		cast(d.name as varchar(500)) as [Path],
 		d.url as Url,
@@ -30,7 +30,7 @@ with u as
 		-1 as [Level],
 		m.PredicateID as PredicateID,
 		m.[Type] as [Type],
-		cast((n1.objecttype + cast(n1.objectid as varchar(10))) as varchar(500)) as [UID]
+		cast((n1.objecttype + cast(n1.objectid as varchar(10))) as varchar(max)) as [UID]
 	from intersectmap m
 	join intersectnode n1 on n1.id = m.subjectintersectnodeid
 	join intersectnode n2 on n2.id = m.objectintersectnodeid
@@ -53,7 +53,7 @@ with u as
 		u.[Level]-1 as [Level],
 		m.PredicateID as PredicateID,
 		m.[Type] as [Type],
-		cast((n1.objecttype + cast(n1.objectid as varchar(10))) as varchar(500)) as [UID]
+		cast((n1.objecttype + cast(n1.objectid as varchar(10))) as varchar(max)) as [UID]
 	from intersectmap m
 	join intersectnode n1 on n1.id = m.subjectintersectnodeid
 	join intersectnode n2 on n2.id = m.objectintersectnodeid
@@ -79,8 +79,6 @@ begin
 	update @results
 	set ParentID = '0'
 	where [UID] = (select ParentID from @results where [UID] = @UID and [Level] < 0);
-
-
 
 	if (select count(*) from @results r
 		join @results c on c.ParentID = @UID
@@ -125,7 +123,7 @@ insert into @results
 		t.[id] as SubjectID,
 		t.[type]as [Object],
 		t.[id] as [ObjectID],
-		cast(null as varchar(500)) as ParentID,
+		cast(null as varchar(max)) as ParentID,
 		d.Name,
 		cast(d.name as varchar(500)) as [Path],
 		d.url as Url,
@@ -148,7 +146,7 @@ begin
 		t.[id] as SubjectID,
 		t.[type]as [Object],
 		t.[id] as [ObjectID],
-		cast(null as varchar(500)) as ParentID,
+		cast(0 as varchar(max)) as ParentID,
 		d.Name,
 		cast(d.name as varchar(500)) as [Path],
 		d.url as Url,
@@ -162,6 +160,9 @@ begin
 
 end;
 
+declare @parent int;
+select @parent = min([Level]) from @results;
+
  with z as
 (
 	select 
@@ -170,7 +171,7 @@ end;
 		n1.objectid as SubjectID,
 		n2.objecttype as [Object],
 		n2.objectid as [ObjectID],
-		cast(r.[UID] as varchar(500)) as ParentID,
+		cast(r.[UID] as varchar(max)) as ParentID,
 		d.Name,
 		cast(d.name as varchar(500)) as [Path],
 		d.url as Url,
@@ -178,12 +179,12 @@ end;
 		1 as [Level],
 		m.PredicateID as PredicateID,
 		m.[Type] as [Type],
-		cast((n2.objecttype + cast(n2.objectid as varchar(10))) as varchar(500)) as [UID]
+		cast((n1.objecttype + cast(n1.objectid as varchar(10)) + n2.objecttype + cast(n2.objectid as varchar(10))) as varchar(max)) as [UID]
 	from intersectmap m
 	join intersectnode n1 on n1.id = m.subjectintersectnodeid
 	join intersectnode n2 on n2.id = m.objectintersectnodeid
 	join cache.objectdetails d on d.object = n2.objecttype and d.objectid = n2.objectid
-	join @results r on r.[subject] = n1.objecttype and r.subjectid = n1.objectid and r.[Level] = (select min([Level]) from @results)
+	join @results r on r.[subject] = n1.objecttype and r.subjectid = n1.objectid and ((@mapType != 4 and r.[Level] = @parent) or (@mapType = 4 and r.ParentID = '0'))
 	where m.[type] = @mapType
 	
 	union all
@@ -202,7 +203,7 @@ end;
 		z.[Level]+1 as [Level],
 		m.PredicateID as PredicateID,
 		m.[Type] as [Type],
-		cast((n2.objecttype + cast(n2.objectid as varchar(10))) as varchar(500)) as [UID]
+		cast((z.UID + n2.objecttype + cast(n2.objectid as varchar(10))) as varchar(max)) as [UID]
 	from intersectmap m
 	join intersectnode n1 on n1.id = m.subjectintersectnodeid
 	join intersectnode n2 on n2.id = m.objectintersectnodeid
@@ -212,7 +213,6 @@ end;
 )
 insert into @results2
 select distinct * from z;
-
 
 insert into @results2
 select 
@@ -231,7 +231,7 @@ select
 	r.[type],
 	r.[uid]
 from @results r
-where r.[Level] = (select min([Level]) from @results);
+where ((@mapType != 4 and r.[Level] = @parent) or (@mapType = 4 and r.ParentID = '0'));
 
 select * from @results2 order by [level] asc;
 

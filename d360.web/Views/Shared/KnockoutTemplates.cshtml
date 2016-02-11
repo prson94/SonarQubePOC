@@ -190,8 +190,18 @@
 
 <script id="hierarchyTileTmpl" type="text/x-handlebars-template">
     <header>Hierarchies</header>
-    <div>
-        <div id="{{control}}_type_hierarchy"></div>
+    <div class="row">
+        <div class="col s6">
+            <div id="{{control}}_type_hierarchy"></div>
+        </div>
+        <div class="col s6">
+            <div id="{{control}}_group_hierarchy"></div>
+        </div>
+        <div class="row" style="display:none;">
+            <div class="col s12">
+                <div id="{{control}}_parentchild_hierarchy"></div>
+            </div>
+        </div>
     </div>
 </script>
 

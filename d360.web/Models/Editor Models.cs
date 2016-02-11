@@ -531,25 +531,22 @@ namespace d360.web.Models
     {
         public HierarchyEditorModel()
         {
-
+            IsAddingParent = false;
         }
 
-        public int IntersectMapId { get; set; }
-        public MapType HierarchyMapType { get; set; }
-        public string ObjectType { get; set; }
-        public int ObjectID { get; set; }
-
-        public string TargetType { get; set; }
-        public string SubjectType { get; set; }
-        public int SubjectID { get; set; }
-        public int TargetID { get; set; }
-
+        public int IntersectMapID { get; set; }
+        public MapType HierarchyType { get; set; }
         public int PredicateID { get; set; }
+        public bool IsAddingParent { get; set; }
 
-        public ObjectDetail Subject { get; set; }
-        public ObjectDetail Object { get; set; }
-        public List<Controllers.RelationsController.HierarchyModel> Hierarchy { get; set; }
-
+        public int ObjectID { get; set; }
+        public string Object { get; set; }
+        public string ObjectType { get; set; }
+        public int ObjectTypeID { get; set; }
+        public int SubjectID { get; set; }
+        public string Subject { get; set; }
+        public string SubjectType { get; set; }
+        public int SubjectTypeID { get; set; }
     }
 
     [DataContract(Name = "QuestionResponse", Namespace = constants.NAMESPACE)]

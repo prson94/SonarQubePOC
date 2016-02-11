@@ -6028,13 +6028,18 @@ namespace d360.web.Controllers
         }
 
         [Route("hierarchy/{intersectMapId}/{mapType}/{type}/{id:int}")]
-        public ActionResult Hierarchy(int intersectMapId, MapType mapType, SystemObjects type, int id)
+        public ActionResult Hierarchy(int intersectMapId, MapType mapType, SystemObjects type, int id, bool parent = false)
         {
             HierarchyEditorModel model = new HierarchyEditorModel();
-            model.IntersectMapId = intersectMapId;
+            model.IntersectMapID = intersectMapId;
+            model.IsAddingParent = parent;
 
-            model.SubjectType = type.ToString();
+            var sub = Company.GetObjectDetail(type, id);
+
+            model.Subject = type.ToString();
             model.SubjectID = id;
+            model.SubjectTypeID = sub.TypeID;
+            model.SubjectType = sub.Type;
 
             var intersect = Company.GetById<IntersectMap>(intersectMapId);
 
@@ -6042,29 +6047,27 @@ namespace d360.web.Controllers
             {
                 var subjectNode = Company.GetById<IntersectNode>(intersect.SubjectIntersectNodeID);
                 var objectNode = Company.GetById<IntersectNode>(intersect.ObjectIntersectNodeID);
-                model.Subject = Company.GetObjectDetail(subjectNode.ObjectType, subjectNode.ObjectID);
-                model.Object = Company.GetObjectDetail(objectNode.ObjectType, objectNode.ObjectID);
+                var obj = Company.GetObjectDetail(objectNode.ObjectType, objectNode.ObjectID);
 
-                model.ObjectType = model.Object.ParentType;
-                model.ObjectID = model.Object.ID;
+                model.Object = obj.ParentType;
+                model.ObjectID = obj.ID;
+                model.ObjectTypeID = obj.TypeID;
+                model.ObjectType = obj.Type;
             }
             else
             {
-                model.Subject = Company.GetObjectDetail(type, id);
-                model.SubjectType = model.Subject.ParentType;
-                model.SubjectID = model.Subject.ID;
-                model.ObjectType = model.Subject.ParentType;
+                model.Object = model.Subject;
+                model.ObjectTypeID = model.SubjectTypeID;
+                model.ObjectType = model.SubjectType;
             }
-            model.HierarchyMapType = mapType;
 
-            model.Hierarchy = Company.Query<RelationsController.HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)model.HierarchyMapType }).ToList();
+            model.HierarchyType = mapType;
 
-            model.FormName = "Add Child to Hierarchy";
+            model.FormName = (model.IsAddingParent ? "Add Parent to Hierarchy" : "Add Child to Hierarchy");
             model.FormDescription = "";
             model.FormUri = "/forms/savehierarchy";
             model.FormMethod = "POST";
 
-            //model.AvailableArtifacts = Company.Artifacts.Where(r => r.)
             return PartialView("Hierarchy", model);
 
         }
@@ -6073,29 +6076,38 @@ namespace d360.web.Controllers
         public JsonResult SaveHierarchy(HierarchyEditorModel model)
         {
             var message = "";
-            var success = false;
-                if (string.IsNullOrEmpty(model.SubjectType) || model.SubjectID <= 0)
-                {
-                    message = $"The Subject you provided is invalid.";
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(model.ObjectType) || model.ObjectID <= 0)
-                    {
-                        message = $"The Object you provided is invalid.";
-                    }
-                    else
-                    {
-                        if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
-                        {
-                            message = $"A source may not map to itself directly.";
-                        }
-                        else
-                        {
-                            var predicate = Company.GetById<Predicate>(model.PredicateID);
 
-                            Company.AddRelationship(model.SubjectType, model.SubjectID, model.ObjectType, model.ObjectID, IntersectClassification.Normal, null, null);
-                            var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
+            if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
+            {
+                message = $"The Subject you provided is invalid.";
+            }
+            else if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
+            {
+                message = $"The Object you provided is invalid.";
+            }
+            else if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+            {
+                message = $"A source may not map to itself directly.";
+            }
+            else if ((int)model.HierarchyType < 1)
+            {
+                message = $"The hierarchy type could not be determined.";
+            }
+
+            var predicate = Company.GetById<Predicate>(model.PredicateID);
+
+            if (message == "")
+            {
+                if (model.IsAddingParent)
+                {
+                    if (model.IntersectMapID > 0)
+                    {
+                        //first add a relationship between the old parent of the object and the new parent
+
+                        var parent = Company.Query<dynamic>("select n.ObjectType, n.ObjectID from intersectmap m join intersectnode n on n.id = m.subjectintersectnodeid where m.id = @id", new { id = model.IntersectMapID }).Single();
+
+                        Company.AddRelationship(parent.ObjectType, parent.ObjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                        var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
                                 S.IntersectID,
                                 S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
                                 O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
@@ -6103,46 +6115,89 @@ namespace d360.web.Controllers
                                 inner join IntersectNode O on O.IntersectID = S.IntersectID 
                                 and S.[ObjectType] = @s and S.ObjectID = @sid 
                                 and O.[ObjectType] = @o and O.ObjectID = @oid",
-                                new { s = model.SubjectType, sid = model.SubjectID, o = model.ObjectType, oid = model.ObjectID }
-                                ).SingleOrDefault();
+                            new { s = parent.ObjectType, sid = parent.ObjectID, o = model.Object, oid = model.ObjectID }
+                            ).SingleOrDefault();
 
-                            if (intersect != null)
+                        if (intersect != null)
+                        {
+                            var existingSourceRecordCount = Company.Query<int>(
+                                "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
+                                new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
+                            ).Single();
+
+                            if (existingSourceRecordCount <= 0)
                             {
-                                var existingSourceRecordCount = Company.Query<int>(
-                                    "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
-                                    new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
-                                ).Single();
-
-                                if (existingSourceRecordCount <= 0)
+                                var intersectMap = new IntersectMap
                                 {
-                                    // If we got here, we are all good.
-
-                                    var intersectMap = new IntersectMap
-                                    {
-                                        ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
-                                        PredicateID = model.PredicateID,
-                                        SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                        Type = MapType.TypeHierarchy
-                                    };
-                                    Company.Add<IntersectMap>(intersectMap);
-                                    success = true;
-                                }
-                                else
-                                {
-                                    success = true;
-                                    //message = $"There is already an existing source with this role.";
-                                }
+                                    ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
+                                    PredicateID = model.PredicateID,
+                                    SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
+                                    Type = model.HierarchyType
+                                };
+                                Company.Add(intersectMap);
                             }
-                            else
+                        }
+
+                        try
+                        {
+                            var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
+
+                            Company.Delete(intersectMap);
+                        }
+                        catch (Exception ex)
+                        {
+                            message = ex.Message;
+                        }
+                    }
+
+                    //swap subject/object and add the relationship
+                    var subid = model.SubjectID;
+                    var subtype = model.Subject;
+                    model.Subject = model.Object;
+                    model.SubjectID = model.ObjectID;
+                    model.Object = subtype;
+                    model.ObjectID = subid;
+                }
+
+                if (message == "")
+                {
+                    Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                    var intersect2 = Company.Query<IntersectLookupModel>(@"select top 1 
+                                S.IntersectID,
+                                S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
+                                O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
+                                from [IntersectNode] S 
+                                inner join IntersectNode O on O.IntersectID = S.IntersectID 
+                                and S.[ObjectType] = @s and S.ObjectID = @sid 
+                                and O.[ObjectType] = @o and O.ObjectID = @oid",
+                        new { s = model.Subject, sid = model.SubjectID, o = model.Object, oid = model.ObjectID }
+                        ).SingleOrDefault();
+
+                    if (intersect2 != null)
+                    {
+                        var existingSourceRecordCount = Company.Query<int>(
+                            "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
+                            new { s = intersect2.SubjectNodeID, o = intersect2.ObjectNodeID, p = model.PredicateID }
+                        ).Single();
+
+                        if (existingSourceRecordCount <= 0)
+                        {
+                            var intersectMap = new IntersectMap
                             {
-                                message = $"The Subject or Object did not match up with the Relationship you provided.";
-                            }
+                                ObjectIntersectNodeID = intersect2.ObjectNodeID,// objectIntersectNode.ID,
+                                PredicateID = model.PredicateID,
+                                SubjectIntersectNodeID = intersect2.SubjectNodeID,// subjectIntersectNode.ID,
+                                Type = model.HierarchyType
+                            };
+                            Company.Add(intersectMap);
                         }
                     }
                 }
-
-            return jsonSuccess("Hierarchy item successfully saved.", model.IntersectMapId.ToString(), ContextList.Hierarchy, "edit", HttpStatusCode.OK);
-
+            }
+            if (message == "")
+                return jsonSuccess("Hierarchy item successfully saved.", model.IntersectMapID.ToString(), ContextList.Hierarchy, "edit", HttpStatusCode.OK);
+            else
+                return jsonException(new Exception(message),HttpStatusCode.OK);
         }
 
         public ActionResult DeleteHierarchy(int id)
@@ -6195,58 +6250,6 @@ namespace d360.web.Controllers
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        //public JsonResult Hierarchy_DeleteFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var a = Company.GetById<IntersectMap>(id);
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        //public JsonResult Hierarchy_AddFields(int intersectMapId, string targetType, int targetID, MapType mapType)
-        //{
-        //    var list = new List<EditableField>();
-        //model.IntersectMapId = intersectMapId;
-
-        //model.TargetType = type.ToString();
-        //model.TargetID = id;
-
-        //var intersect = Company.GetById<IntersectMap>(intersectMapId);
-
-        //if (intersect != null)
-        //{
-        //    var subjectNode = Company.GetById<IntersectNode>(intersect.SubjectIntersectNodeID);
-        //    var objectNode = Company.GetById<IntersectNode>(intersect.ObjectIntersectNodeID);
-        //    model.Subject = Company.GetObjectDetail(subjectNode.ObjectType, subjectNode.ObjectID);
-        //    model.Object = Company.GetObjectDetail(objectNode.ObjectType, objectNode.ObjectID);
-
-        //    model.SubjectType = model.Subject.Type;
-        //    model.ObjectType = model.Object.Type;
-        //    model.SubjectID = model.Subject.ID;
-        //    model.ObjectID = model.Object.ID;
-
-
-        //}
-        //else
-        //{
-        //    model.Object = null;
-        //    model.Subject = Company.GetObjectDetail(type, id);
-        //    model.SubjectType = model.Subject.Type;
-        //    model.SubjectID = model.Subject.ID;
-        //}
-        //model.HierarchyMapType = mapType;
-
-        //model.Hierarchy = Company.Query<RelationsController.HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)model.HierarchyMapType }).ToList();
-
-
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ObjectID", Name = "Artifact Type", FieldType = DataType.Lookup.ToString(), Items = types });
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
 
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]

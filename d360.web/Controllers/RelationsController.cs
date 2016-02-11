@@ -354,16 +354,26 @@ order by D.TextPath";
         public JsonNetResult GetArtifactsByIntersectMapId(int intersectMapId, MapType mapType, SystemObjects type, int id)
         {
 
+            var sql = @"select [Object], 
+              ObjectID, 
+              ObjectTypeName + ': ' + TextPath as Name
+              from cache.ObjectDetails
+              where ObjectID <> 0  and ObjectTypeName is not null";
+
+            switch(mapType)
+            {
+                case MapType.TypeHierarchy:
+                case MapType.GroupHierarchy:
+                    sql += " and ObjectType = @type and ObjectTypeID = @id order by Name";
+                    break;
+                default:
+                    sql += " order by Name";
+                    break;
+            }
+
+
             var obj = Company.GetObjectDetail(type, id);
-
-            var allItems = Company.Query<dynamic>(@"select		[Object], 
-              			ObjectID, 
-              			ObjectTypeName + ': ' + TextPath as Name
-              from		cache.ObjectDetails 
-              where		[Object] = 'Artifact' and ObjectType = @type and ObjectTypeID = @id
-              			and ObjectID <> 0
-              order by	Name", new { type = obj.Type, id = obj.TypeID});
-
+            var allItems = Company.Query<dynamic>(sql, new { type = obj.Type, id = obj.TypeID});
             var itemList = allItems.ToList();
 
             var intersectMap = Company.GetById<IntersectMap>(intersectMapId);
@@ -372,11 +382,9 @@ order by D.TextPath";
             {
                 var intersectNode = Company.GetById<IntersectNode>(intersectMap.SubjectIntersectNodeID);
                 hierarchy = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)mapType }).ToList();
-
             }
             else
             {
-                //add whatever artifact we're currently on
                 hierarchy.Add(new HierarchyModel() { Subject = type.ToString(), SubjectID = id });
             }
 
@@ -385,10 +393,15 @@ order by D.TextPath";
                 switch(mapType)
                 {
                     case MapType.TypeHierarchy:
-                        var h = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID).FirstOrDefault();
-                        var h2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID).FirstOrDefault();
+                    case MapType.ParentChildHierarchy:
+                        var t = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID).FirstOrDefault();
+                        var t2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID).FirstOrDefault();
 
-                        if (h != null || h2 != null)
+                        if (t != null || t2 != null)
+                            itemList.Remove(d);
+                        break;
+                    case MapType.GroupHierarchy:
+                        if (d.Object == type.ToString() && d.ObjectID == id)
                             itemList.Remove(d);
                         break;
                 }

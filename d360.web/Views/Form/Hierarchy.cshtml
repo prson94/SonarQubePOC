@@ -16,7 +16,8 @@
                 <span id="hierarchyError" style="color:#710000; display:none;">An error occurred. Please select an artifact and a predicate to save.</span>
             </div>
             <div class="s6" style="display:none">
-                @(Model.SubjectType) , @(Model.SubjectID)
+                @(Model.Subject) , @(Model.SubjectID), 
+                @(Model.IsAddingParent)
             </div>
         </div>
     </div>
@@ -24,14 +25,14 @@
 
 <script>
 
-    var hierarchySubjectSource = {
+    var hierarchySubjectSource = { 
         datafields: [
             { name: 'Object' },
             { name: 'ObjectID' },
             { name: 'Name' }
         ],
         datatype: "json",
-        url: '/relations/hierarchy/artifacts/@((int)Model.IntersectMapId)/@(Model.HierarchyMapType)/@(Model.SubjectType)/@(Model.SubjectID)'
+        url: '/relations/hierarchy/artifacts/@(Model.IntersectMapID)/@(Model.HierarchyType)/@(Model.Subject)/@(Model.SubjectID)'
     };
 
     var hierarchySubjectAdapter = new $.jqx.dataAdapter(
@@ -65,14 +66,12 @@
             { name: 'name' }
         ],
         datatype: "json",
-        @if(Model.IntersectMapId != 0)
+        @if(Model.IntersectMapID != 0)
         {
-           <text> url: '/diagrams/GetPredicateInfoByAllocation?id=@(Model.IntersectMapId)'</text>
+           <text> url: '/diagrams/GetPredicateInfoByAllocation?id=@(Model.IntersectMapID)'</text>
         } else
         {
-                    //public JsonNetResult GetPredicateInfoByTypes(string type1, string type2, int id1, int id2, MapType mapType)
-
-            <text>url: '/diagrams/GetPredicateInfoByTypes?type1=@(Model.Subject.Type)&type2=@(Model.Subject.Type)&id1=@(Model.Subject.TypeID)&id2=@(Model.Subject.TypeID)&mapType=@(Model.HierarchyMapType)'
+            <text>url: '/diagrams/GetPredicateInfoByTypes?type1=@(Model.SubjectType)&type2=@(Model.SubjectType)&id1=@(Model.SubjectTypeID)&id2=@(Model.SubjectTypeID)&mapType=@(Model.HierarchyType)'
     </text>
         }
         
@@ -94,24 +93,24 @@
 
     $('#EditableFormSaveButton').on('click', function () {
         $('#hierarchyError').hide();
-        var SourcePostModel = {
-            TargetType: '@(Model.TargetType)',
-            TargetID: '@(Model.TargetID)',
-            SubjectType: '@(Model.SubjectType)',
+        var EditorPostModel = {
+            Subject: '@(Model.Subject)',
             SubjectID: '@(Model.SubjectID)',
-            ObjectType: '@(Model.ObjectType)',
+            Object: '@(Model.Object)',
             ObjectID: $('#hierarchyArtifactList').val().split('|')[1],
-            PredicateID: $('#hierarchyPredicateList').val()
+            PredicateID: $('#hierarchyPredicateList').val(),
+            IsAddingParent: '@(Model.IsAddingParent)',
+            IntersectMapId: '@(Model.IntersectMapID)',
+            HierarchyType: '@(Model.HierarchyType)'
         };
 
-        if (SourcePostModel.ObjectID == null || SourcePostModel.PredicateID == "") {
+        if (EditorPostModel.ObjectID == null || EditorPostModel.PredicateID == "") {
             $('#hierarchyError').show();
         }
-        //console.log(SourcePostModel);
 
         $.ajax({
             url: '/form/SaveHierarchy',
-            data: SourcePostModel,
+            data: EditorPostModel,
             method: 'POST',
             async: false
         });
