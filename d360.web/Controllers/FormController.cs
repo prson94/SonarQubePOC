@@ -3757,8 +3757,15 @@ namespace d360.web.Controllers
             var fas = Company.FusionAttributeTypes.OrderBy(x => x.Name).ThenBy(x =>x.FusionType.Name);
 
             foreach (var ftype in fas)
-            {                
-                lst.Add(new SelectListItem { Text = string.Format("{0} - {1}", ftype.Name, ftype.FusionType.Name), Value = ftype.ID.ToString(), Selected = selectedID == ftype.ID });
+            {
+                var parentName = string.Empty;
+
+                if (ftype.Parent != null) parentName = ftype.Parent.Name;
+
+                if(!string.IsNullOrEmpty(parentName))
+                    lst.Add(new SelectListItem { Text = string.Format("{0} - {1} (parent:{2})", ftype.Name, ftype.FusionType.Name,parentName), Value = ftype.ID.ToString(), Selected = selectedID == ftype.ID });
+                else
+                    lst.Add(new SelectListItem { Text = string.Format("{0} - {1}", ftype.Name, ftype.FusionType.Name), Value = ftype.ID.ToString(), Selected = selectedID == ftype.ID });
             }
 
             return lst;
