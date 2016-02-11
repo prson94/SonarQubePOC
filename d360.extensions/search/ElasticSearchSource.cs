@@ -38,7 +38,7 @@ namespace d360.extensions.search
     public class SearchResultsHitsModel
     {
         public int total { get; set; }
-        public float max_score { get; set; }
+        public float? max_score { get; set; }
         public List<SearchResultsHitModel> hits { get; set; }
     }
 
@@ -206,16 +206,21 @@ namespace d360.extensions.search
             
             var indexName = getCompanyIndexName(items[0].CompanyID);
             items.ForEach(item => {
-                sb.Append("{ \"index\" : { \"_id\" : \"" + $"{item.Group}|{item.ID}" + "\" } }\n");
+                sb.Append("{ \"index\" : { \"_id\" : \"" + $"{item.Group}|{item.ID}" + "\", \"_type\" : \"" + item.Group + "\" } }\n");
                 sb.Append("{\"Url\" : \"" + item.RelativeUrl + "\",");                
                 bool bFirst = true;
                 foreach (var f in item.Fields)
                 {
+                    if (string.IsNullOrEmpty(f.Value))
+                        continue;
+
                     if (!bFirst)
                         sb.Append(", ");
                     else
                         bFirst = false;
-                    sb.Append(" \"" + f.Key + "\" : \"" + f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "") + "\" ");
+
+                    var val = f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "").Replace("\"", "\\\"");
+                    sb.Append(" \"" + f.Key + "\" : \"" + val  + "\" ");
                 }                
                 sb.Append(" }\n");                
             });
@@ -231,7 +236,7 @@ namespace d360.extensions.search
             
             */
 
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/{items[0].Group}/_bulk");
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk");
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
@@ -295,7 +300,7 @@ namespace d360.extensions.search
                     Group = h._type,
                     ID = h._id,
                     Name = GetPropertyValue<string>(h._source, "Name"),
-                    NormalizedScore = (results.hits.max_score == 0 ? 0 : h._score/results.hits.max_score),
+                    NormalizedScore = (results.hits.max_score.GetValueOrDefault() == 0 ? 0 : h._score/results.hits.max_score.GetValueOrDefault()),
                     Score = h._score,
                     Type = GetPropertyValue<string>(h._source, "Type"),
                     Url = GetPropertyValue<string>(h._source, "Url")
