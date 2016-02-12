@@ -241,6 +241,31 @@ namespace d360.web.Controllers
                     Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage)
                 };
 
+                if (f.Type == DataType.FusionLookup.ToString())
+                {
+                    //need to render drop down of all fusion attributes that have the same type as the current
+                    var fusionAttributeList = new List<SelectListItem>();
+
+                    var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == f.ID);
+
+                    if (def == null) throw new Exception("INVALID FUSION LOOKUP FIELD");
+
+                    if (!f.IsRequired)
+                        fusionAttributeList.Add(new SelectListItem { Text = "", Value = "" });
+
+                    foreach (var item in def)
+                    {
+                        var fusionAttributes = Company.Filter<FusionAttribute>(x => x.FusionAttributeTypeID == item.SourceFusionAttributeTypeID).OrderBy(x => x.Name);
+
+                        foreach (var fA in fusionAttributes)
+                        {
+                            fusionAttributeList.Add(new SelectListItem { Text = fA.Name, Value = fA.ID.ToString() });
+                        }
+
+                        fld.Items.AddRange(fusionAttributeList);
+                    }
+                }
+
                 if (!string.IsNullOrEmpty(f.LookupObjectType))
                 {
                     fld.FieldType = DataType.Lookup.ToString();
