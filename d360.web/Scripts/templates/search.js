@@ -42,7 +42,8 @@ function search(app, pageViewModel, templatePath, contextList) {
 
         function searchStringKeyPress(e) {
             var code = (e.keyCode ? e.keyCode : e.which);
-            if (code == 13) { //Enter key           
+            if (code == 13) { //Enter key 
+                $('#SearchResults').show();
                 loadCategories = true;
                 var searchSource = getSource($("#SearchString").val(),'');
                 
@@ -103,7 +104,11 @@ function search(app, pageViewModel, templatePath, contextList) {
                         },
                         loadComplete: function (data) {
                             var msg = "";
-                            if (data) msg = 'Search found ' + data.Result.Matches + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds).' + (data.Result.Matches > 10000 ? '  Results limited to first 10000 items.' : '');
+                            
+                            if (data) {
+                                msg = 'Search found ' + data.Result.Matches + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds).' + (data.Result.Matches > 10000 ? '  Results limited to first 10000 items.' : '');
+                                if (data.Result.Matches == 0) $('#SearchResults').hide();
+                            }
                             searchVm.elapsedTime(msg);
 
                             if (loadCategories) {
