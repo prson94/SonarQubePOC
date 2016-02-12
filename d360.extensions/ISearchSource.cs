@@ -102,9 +102,11 @@ namespace d360.extensions
         /// <param name="companyID">The current company ID</param>
         /// <param name="resourceID">The current user ID</param>
         /// <param name="phrase">The search phrase to get results for</param>
+        /// <param name="size">Page Size</param>
+        /// <param name="from">Start at result</param>
         /// <returns>A list of search results.</returns>
         /// <exception cref="SearchResultsException"></exception>
-        IndexResults GetSearchResults(int companyID, int resourceID, string phrase);
+        IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from);
 
 
         /// <summary>

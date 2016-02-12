@@ -203,7 +203,7 @@ namespace d360.extensions.search
         }
 
 
-        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase)
+        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from)
         {
             IndexResults result = new IndexResults();
             phrase = phrase.Replace("--", "");

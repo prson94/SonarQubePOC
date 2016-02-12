@@ -5,6 +5,7 @@
 @import "jqx.base.less";
 @import "jqx.plain.less";
 @import "jqx.flat.less"; /* used in fusion lookup for flat grid*/
+@import "jqx.transparent.less"; /* used in search transparent datatable*/
 @import "jqx.d3s.less"; 
 @import "jqx.metro.less";
 
@@ -173,82 +174,6 @@ fieldset legend {
     color: #DDDDDD !important;
 }
 
-/*#endregion */
-
-/*#region Search */
-
-#SearchButton {
-    cursor: pointer;
-}
-
-#CategoryResults {
-    padding-top: 10px;
-
-    .category,
-    .entry {
-        font-size: 110%;
-        margin-bottom: 5px;
-
-        a {
-            font-weight: 600;
-            text-decoration: none;
-        }
-    }
-}
-
-#SearchResults {
-    margin: 10px 10px 20px 10px;
-
-    .entry {
-        margin-bottom: 10px;
-
-        .name {
-            font-size: 110%;
-        }
-
-        .description {
-            color: #999;
-        }
-    }
-}
-
-#search {
-    position: relative;
-    font-family: @body-font-family;
-    font-size: 125%;
-    color: #666;
-    margin: 10px 10px 0px 0px;
-
-    table tr {
-        vertical-align: middle;
-
-        td:first-child {
-            width: 50px;
-        }
-    }
-
-    .text {
-        background-color: #fff;
-        font-weight: 900;
-        font-stretch: extra-expanded;
-        font-size: 15px;
-        line-height: 20px;
-        color: @d3s-blue-2;
-        border: 1px solid #a9a9a9;
-        width: 200px;
-    }
-
-    button {
-        border: none;
-        padding: 0;
-        background-color: Transparent;
-    }
-}
-
-.info {
-    margin: 10px 10px 20px 10px;
-}
- 
 /*#endregion */
 
 /*#region Login */
@@ -542,3 +467,105 @@ fieldset legend {
     opacity: 0;
 }
 /*#endregion*/
+
+/*#region search*/
+
+.search-score-cell
+{
+    color:@d3s-red-1;
+}
+
+.search-result-name
+{
+    font-weight:bold;
+    margin: 10px 0 5px 0;
+}
+
+.search-result-attributes
+{
+    margin: 0 0 3px 0;    
+}
+
+.search-result-categories,
+.search-result-summary
+{
+    font-weight:bold;
+    margin: 6px 0 0 0;
+}
+
+.search-result-desc
+{
+    color:@d3s-gray-2;
+}
+
+#SearchButton {
+    cursor: pointer;
+}
+
+#CategoryResults {
+    padding-top: 20px;
+
+    .category,
+    .entry {
+        font-size: 110%;
+        margin-bottom: 5px;
+
+        a {
+            font-weight: 600;
+            text-decoration: none;
+        }
+    }
+}
+
+#SearchResults {
+    .entry {
+        margin-bottom: 10px;
+
+        .name {
+            font-size: 110%;
+        }
+
+        .description {
+            color: #999;
+        }
+    }
+}
+
+#search {
+    position: relative;
+    font-family: @body-font-family;
+    font-size: 125%;
+    color: #666;
+    margin: 10px 10px 0px 0px;
+
+    table tr {
+        vertical-align: middle;
+
+        td:first-child {
+            width: 50px;
+        }
+    }
+
+    .text {
+        background-color: #fff;
+        font-weight: 900;
+        font-stretch: extra-expanded;
+        font-size: 15px;
+        line-height: 20px;
+        color: @d3s-blue-2;
+        border: 1px solid #a9a9a9;
+        width: 200px;
+    }
+
+    button {
+        border: none;
+        padding: 0;
+        background-color: Transparent;
+    }
+}
+
+.info {
+    margin: 10px 10px 20px 10px;
+}
+ 
+/*#endregion */

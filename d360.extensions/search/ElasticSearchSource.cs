@@ -272,12 +272,12 @@ namespace d360.extensions.search
         /// <param name="resourceID"></param>
         /// <param name="phrase"></param>
         /// <returns></returns>
-        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase)
+        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from)
         {
             IndexResults result = new IndexResults();
 
             createIndexIfNotExists(companyID);
-            var webReq = createWebRequest("GET", $"{getCompanyIndexName(companyID)}/_search?q={phrase}&size=200");
+            var webReq = createWebRequest("GET", $"{getCompanyIndexName(companyID)}/_search?q={Uri.EscapeDataString(phrase)}&size={size}&from={from}");
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
                 throw new ApplicationException(response.StatusMessage);
@@ -289,13 +289,16 @@ namespace d360.extensions.search
                     Group = h._type,
                     ID = h._id,
                     Name = GetPropertyValue<string>(h._source, "Name"),
-                    NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : h._score/searchResults.hits.max_score.GetValueOrDefault()),
+                    NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score/searchResults.hits.max_score.GetValueOrDefault()*100)),
                     Score = h._score,
                     Type = GetPropertyValue<string>(h._source, "Type"),
                     Url = GetPropertyValue<string>(h._source, "Url")
                 }).ToList();
 
             result.ElapsedMS = searchResults.took;
+
+            if(searchResults.hits != null)
+                result.Matches = searchResults.hits.total;
 
             return result;
         }

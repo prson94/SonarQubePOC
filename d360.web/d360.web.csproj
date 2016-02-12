@@ -827,6 +827,7 @@
     <None Include="Content\styles\jqx.plain.min.css">
       <DependentUpon>jqx.plain.less</DependentUpon>
     </None>
+    <Content Include="Content\styles\jqx.transparent.less" />
     <None Include="Content\styles\Root.css">
       <DependentUpon>Root.less</DependentUpon>
     </None>

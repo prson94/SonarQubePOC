@@ -41,7 +41,7 @@ namespace d360.web.Controllers.Services
             if (!string.IsNullOrEmpty(phrase))
             {
                 var c = Community.GetById<Company>(Company.CurrentCompanyID, i => i.CompanyDomainSettings);
-                var result = SearchSource.GetSearchResults(Company.CurrentCompanyID, Company.CurrentResourceID, phrase);
+                var result = SearchSource.GetSearchResults(Company.CurrentCompanyID, Company.CurrentResourceID, phrase,200,0);
                 result.Results.ForEach(i => {
                     i.AbsoluteUrl = string.Format("https://{0}.data3sixty.com/{1}", "", c.CompanyDomainSettings.First(d => d.IsPrimary).UrlPrefix, i.Url);
                 });                
