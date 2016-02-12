@@ -1129,6 +1129,9 @@ function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
 function HierarchyTile(controlID, contextList, permissions, type, id) {
     var source = $("#hierarchyTileTmpl").html();
     var template = Handlebars.compile(source);
+    var newRowID = null;
+    var rowKey = null;
+    var newRowCounter = -1;
 
     $('#' + controlID).html(template({ control: controlID }));
 
@@ -1137,8 +1140,13 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
     var controlID_group_hierarchy = controlID + '_group_hierarchy';
     var controlID_parentchild_hierarchy = controlID + '_parentchild_hierarchy';
 
-    var getAdapter = function (mapType) {
+    var controlID_type_newRow = controlID + '_type_newRow';
+    var controlID_group_newRow = controlID + '_group_newRow';
+    var controlID_parentchild_newRow = controlID + '_parentchild_newRow';
+
+    var getAdapter = function (mapType, selector) {
         return {
+
             dataType: "json",
             dataFields: [
             { name: 'ID', type: 'number' },
@@ -1162,24 +1170,112 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
                 parentDataField: { name: 'ParentID' }
             },
             id: 'UID',
-            url: '/relations/hierarchy/' + mapType + '/' + type + '/' + id
+            url: '/relations/hierarchy/' + mapType + '/' + type + '/' + id,
+            addRow: function (rowID, rowData, position, parentID, commit) {
+                
+                //console.log(rowID);
+                //console.log(rowData);
+                //console.log(parentID);
+                //console.log(rowKey);
+                //rowID = "root" + newRowCounter--;
+                //rowKey = rowID;
+                //rowData.UID = rowKey;
+                //rowData.uid = rowKey;
+                rowData.ObjectTypeName = "Business Term";
+                //rowData.Name =
+                //rowData.ParentID = parentID;
+                newRowID = rowID;
+                commit(true);
+            }
         };
     }
-    var getTreeGrid = function (mapType, adapter, title) {
+    var getTreeGrid = function (mapType, adapter, title, selector) {
         return {
             width: 450,
             source: adapter,
             sortable: false,
+            showToolbar: true,
             theme: 'metro',
+            toolbarHeight: 35,
+            renderToolbar: function(toolBar) {
+                var html = $("<div style='overflow: hidden; position: relative; height: 100%; width: 100%; margin-bottom: 4px'></div>");
+                var addTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa fa-plus'></i></div></div>";
+                var saveTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa fa-save'></i></div></div>";
+                var addButton = $(addTemplate);
+                var saveButton = $(saveTemplate);
+                html.append(addButton);
+                html.append(saveButton);
+                toolBar.append(html);
+                addButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' });
+                saveButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' });
+                addButton.click(function (event) {
+                    $(selector).jqxTreeGrid('expandRow', rowKey);
+                    $(selector).jqxTreeGrid('addRow', newRowCounter--, {}, 'first', rowKey);
+                    $(selector).jqxTreeGrid('clearSelection');
+                    $(selector).jqxTreeGrid('selectRow', newRowID);
+                    $(selector).jqxTreeGrid('beginRowEdit', newRowID);
+                });
+                saveButton.click(function (event) {
+                    //console.log(rowKey);
+                    $(selector).jqxTreeGrid('endRowEdit', rowKey, false);
+
+                });
+            },
             columns: [
                 {
-                    text: title, dataField: 'Name', width: 350, align: "center",
+                    text: title, dataField: 'Name', width: 350, align: "center", columnType: "template",
                     cellsRenderer: function (rowKey, dataField, value, data) {
                         var item = getRowDataItem(data);
                         if (item.type == type && item.id == id) {
                             return "<div style='margin-left: 4px; display:inline-block;color:#33A'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
                         }
                         return "<div style='margin-left: 4px; display:inline-block;'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
+                    },
+                    createEditor: function (row, cellvalue, editor, cellText, width, height) {
+                        
+                        var hierarchySubjectSource = {
+                            datafields: [
+                                { name: 'Object' },
+                                { name: 'ObjectID' },
+                                { name: 'Name' }
+                            ],
+                            datatype: "json",
+                            url: '/relations/hierarchy/artifacts/0/' + mapType + '/' + type + '/' + id
+                        };
+
+
+                        var hierarchySubjectAdapter = new $.jqx.dataAdapter(
+                            hierarchySubjectSource,
+                            {
+                                beforeLoadComplete: function (records) {
+                                    for (var i = 0; i < records.length; i++) {
+                                        var record = records[i];
+                                        record.Value = record.Object + '|' + record.ObjectID;
+                                    }
+                                    return records;
+                                }
+                            }
+                        );
+
+                        editor.jqxDropDownList({
+                            theme: theme,
+                            source: hierarchySubjectAdapter,
+                            width: field_width,
+                            height: field_height,
+                            valueMember: 'Value',
+                            displayMember: 'Name',
+                            filterable: true,
+                            dropDownWidth: 200,
+                            searchMode: 'containsignorecase'
+                        });
+                    },
+                    initEditor: function (row, cellvalue, editor, celltext, width, height) {
+                        //console.log('reached init');
+                        //editor.jqxDropDownList('selectItem', getRowDataItem(row).type + '|' + getRowDataItem(row).id);
+                    },
+                    getEditorValue: function (row, cellvalue, editor) {
+                        console.log(editor.jqxDropDownList('getSelectedItem'));
+                        return editor.jqxDropDownList('getSelectedItem').originalItem.Name.split(':')[1];
                     }
                 },
                 {
@@ -1197,7 +1293,7 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
     }
 
     function initTreeGrid(selector, mapType, title) {
-        $(selector).jqxTreeGrid(getTreeGrid(mapType, new $.jqx.dataAdapter(getAdapter(mapType)), title));
+        $(selector).jqxTreeGrid(getTreeGrid(mapType, new $.jqx.dataAdapter(getAdapter(mapType)), title, selector));
     }
 
     function getRowDataItem(data) {
@@ -1250,6 +1346,12 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
    });
    $(controlID_group_hierarchy).on('bindingComplete', function (event) {
        showFocalRow($(this), event);
+   });
+
+   $(controlID_type_hierarchy).on('rowSelect', function (event) {
+       
+       rowKey = event.args.key;
+       console.log('rowSelect: ' + rowKey);
    });
 
    amplify.subscribe("SaveAction", "hierarchyform", function () {
