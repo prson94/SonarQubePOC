@@ -235,7 +235,7 @@ from    Artifact A
         public void Search_FindArtifact()
         {
             var source = new ElasticSearchSource();
-            var results = source.GetSearchResults(4, 1, "Data Warehouse");
+            var results = source.GetSearchResults(4, 1, "Data Warehouse",10,0);
         }
 
         
