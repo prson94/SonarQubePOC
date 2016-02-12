@@ -27,30 +27,24 @@ function search(app, pageViewModel, templatePath, contextList) {
         var searchVm;
         var phrase;
         var searchSource;
+        var loadCategories;
 
         var showOnlyRelevantCategory = function (category) {
+            
+            var searchSource = getSource($("#SearchString").val(), category == 'All' ? '':category);
 
-            try {
-                $('#SearchResults .entry').each(function () {
-                    if (category == '' || $(this).data("category") == category) {
-                        $(this).show(300);
-                    }
-                    else {
-                        $(this).hide(300);
-                    }
-                });
-            }
-            catch (e) {
-                console.log(e);
-            }
+            var dataAdapter = getDataAdapter(searchSource);
+
+            $('#SearchResults').jqxDataTable({ source: dataAdapter });
         }
 
         //region Event Handlers
 
         function searchStringKeyPress(e) {
             var code = (e.keyCode ? e.keyCode : e.which);
-            if (code == 13) { //Enter key                                
-                var searchSource = getSource($("#SearchString").val());
+            if (code == 13) { //Enter key           
+                loadCategories = true;
+                var searchSource = getSource($("#SearchString").val(),'');
                 
                 var dataAdapter = getDataAdapter(searchSource);
                 
@@ -65,7 +59,7 @@ function search(app, pageViewModel, templatePath, contextList) {
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
-        function getSource(term) {
+        function getSource(term, selGroup) {
             return {
                 datatype: "json",
                 datafields: [
@@ -81,7 +75,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                 type: 'POST',
                 dataType: 'json',
                 url: '/search/results',
-                data: { search: term, from: 0, size: 10 },
+                data: { search: term, from: 0, size: 10, group: selGroup },
                 id: 'ID',
                 sortcolumn: 'NormalizedScore',
                 sortdirection: 'desc',
@@ -111,8 +105,21 @@ function search(app, pageViewModel, templatePath, contextList) {
                             var msg = "";
                             if (data) msg = 'Search found ' + data.Result.Matches + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds).' + (data.Result.Matches > 10000 ? '  Results limited to first 10000 items.' : '');
                             searchVm.elapsedTime(msg);
-                            var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
-                            searchVm.categories(cats);
+
+                            if (loadCategories) {
+                                data.Categories.unshift({ Name: 'All', ResultCount: 0 });
+                                var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
+                                searchVm.categories(cats);
+                                
+
+                                $('#CategoryResults .entry a[data-category]').each(function () {
+                                    $(this).click(function () {
+                                        var c = $(this).data("category");
+                                        showOnlyRelevantCategory(c);
+                                    });
+                                });
+                                loadCategories = false;
+                            }
                         },
                         loadError: function (xhr, status, error) {
                             throw new Error(error.toString());
@@ -124,6 +131,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                                 row.Merged = "<h4 class='search-result-name'><a href='/" + row.Url + "'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: " + row.Type + " &nbsp;&nbsp;Type: " + row.Group + "</h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
                                 data.push(row);
                             }
+                                                         
                             return data;
                         }
                     }
@@ -142,6 +150,8 @@ function search(app, pageViewModel, templatePath, contextList) {
                 $('#SideIcons').PageTools("clear");
                 $('#ContentHeader').hide();
 
+                loadCategories = true;
+
                 searchVm = new SearchViewModel();
                 try {
                     ko.applyBindings(searchVm, document.getElementById("SearchArea"));
@@ -157,7 +167,7 @@ function search(app, pageViewModel, templatePath, contextList) {
 
                 //#endregion
                              
-                var source = getSource($("#SearchString").val());
+                var source = getSource($("#SearchString").val(),'');
 
                 var dataAdapter = getDataAdapter(source);
                                 

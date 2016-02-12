@@ -272,12 +272,31 @@ namespace d360.extensions.search
         /// <param name="resourceID"></param>
         /// <param name="phrase"></param>
         /// <returns></returns>
-        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from)
+        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "")
         {
             IndexResults result = new IndexResults();
 
             createIndexIfNotExists(companyID);
-            var webReq = createWebRequest("GET", $"{getCompanyIndexName(companyID)}/_search?q={Uri.EscapeDataString(phrase)}&size={size}&from={from}");
+            
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/_search");
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append( "{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+
+            if (!string.IsNullOrEmpty(group))
+            {
+                var groupParts = group.ToLower().Split(' ');
+
+                foreach (var item in groupParts)
+                {
+                    sb.Append(",\"filter\": { \"term\":  { \"Type\": \"" + item + "\" } }");
+                }
+            }
+                        
+            sb.Append("}},\"from\":" + from + ",\"size\":" + size+ ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }}");
+
+            loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
                 throw new ApplicationException(response.StatusMessage);

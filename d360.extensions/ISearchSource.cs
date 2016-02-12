@@ -106,7 +106,7 @@ namespace d360.extensions
         /// <param name="from">Start at result</param>
         /// <returns>A list of search results.</returns>
         /// <exception cref="SearchResultsException"></exception>
-        IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from);
+        IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "");
 
 
         /// <summary>
