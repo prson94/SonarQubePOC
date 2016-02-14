@@ -39,7 +39,7 @@ namespace d360.web.Controllers
             if (!string.IsNullOrEmpty(search))
             {
                 o.Result = SearchSource.GetSearchResults(Company.CurrentCompanyID, Company.CurrentResourceID, search, size, from, group);
-                o.Categories = o.Result.Results.GroupBy(i => i.Type).Select(i => new IndexCategory { ResultCount = i.Count(), Name = i.Key }).ToList();
+                o.Categories = o.Result.Results.GroupBy(i => i.Type).Select(i => new IndexCategory { ResultCount = i.Count(), Name = i.Key }).OrderBy(x=>x.Name).ToList();
             }
             
             return Json(o);
