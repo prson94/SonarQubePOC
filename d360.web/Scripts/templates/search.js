@@ -139,7 +139,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                             var data = new Array();
                             for (var i = 0; i < records.length; i++) {
                                 var row = records[i];                        
-                                row.Merged = "<h4 class='search-result-name'><a href='#' data-url='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: <em>" + row.Type + "</em> &nbsp;&nbsp;Type: <em>" + row.Group + "</em></h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
+                                row.Merged = "<h4 class='search-result-name'><a data-url='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: <em>" + row.Type + "</em> &nbsp;&nbsp;Type: <em>" + row.Group + "</em></h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
                                 data.push(row);
                             }
                                                          
