@@ -53,10 +53,16 @@ function search(app, pageViewModel, templatePath, contextList) {
             }
         }
 
+        function resultSelect(e) {
+            $('#ContentHeader').show();
+            document.location.href = $(e.target).attr('data-url');
+        }
+
         function unsubscribe(data) {
             searchVm = null;
 
             $("#SearchString").off('keypress', searchStringKeyPress);
+            $('#SearchResults').off('click', '.search-result-link', resultSelect);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
@@ -133,7 +139,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                             var data = new Array();
                             for (var i = 0; i < records.length; i++) {
                                 var row = records[i];                        
-                                row.Merged = "<h4 class='search-result-name'><a href='/" + row.Url + "'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: <em>" + row.Type + "</em> &nbsp;&nbsp;Type: <em>" + row.Group + "</em></h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
+                                row.Merged = "<h4 class='search-result-name'><a href='#' data-url='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: <em>" + row.Type + "</em> &nbsp;&nbsp;Type: <em>" + row.Group + "</em></h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
                                 data.push(row);
                             }
                                                          
@@ -170,7 +176,10 @@ function search(app, pageViewModel, templatePath, contextList) {
                 $("#SearchString").on('keypress', searchStringKeyPress);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
+                $('#SearchResults').on('click', '.search-result-link', resultSelect);
+
                 //#endregion
+
                              
                 var source = getSource($("#SearchString").val(),'');
 
