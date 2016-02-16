@@ -48,11 +48,13 @@ function search(app, pageViewModel, templatePath, contextList) {
                 phrase = $("#SearchString").val();                
                 $('#SearchResults').show();
                 loadCategories = true;
+                
                 var searchSource = getSource(phrase,'');
                 
                 var dataAdapter = getDataAdapter(searchSource);
+                                
+                $('#SearchResults').jqxDataTable({ source: dataAdapter });
                 
-                $('#SearchResults').jqxDataTable({ source: dataAdapter });                
             }
         }
 
@@ -93,7 +95,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                 id: 'ID',
                 sortcolumn: 'NormalizedScore',
                 sortdirection: 'desc',
-                root: "Results",
+                root: "Results",              
             };
         }
 
@@ -115,13 +117,13 @@ function search(app, pageViewModel, templatePath, contextList) {
                             var msg = "";
 
                             if (data) {
-                                msg = 'Search found ' + data.Result.Matches + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10000 items.' : '');
+                                msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
                                 if (data.Result.Matches == 0) $('#SearchResults').hide();
                             }
                             searchVm.elapsedTime(msg);
 
                             if (loadCategories) {
-                                data.Categories.unshift({ Name: 'All', ResultCount: source.totalRecords });
+                                data.Categories.unshift({ Name: 'All', ResultCount: data.Result.Matches });
                                 var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
                                 searchVm.categories(cats);
 
@@ -192,16 +194,14 @@ function search(app, pageViewModel, templatePath, contextList) {
                     pagerButtonsCount: 10,
                     serverProcessing: true,
                     pagerMode: 'default',
-                    source: dataAdapter,
-                    altRows: false,
+                    source: dataAdapter,                    
                     theme: 'transparent',
-                    width: '98%',
-                    columnsResize: true,
+                    width: '98%',                    
                     pageSizeOptions: ['10', '20', '50'],
                     enableHover: false,
                     columns: [
-                        { text: ' ', dataField: 'Merged' },
-                        { text: 'Score', dataField: 'NormalizedScore', width: '15%', cellsformat: 'p2', cellClassName: 'search-score-cell' },
+                        { text: ' ', dataField: 'Merged'},
+                        { text: 'Score', dataField: 'NormalizedScore', width: 80, cellsformat: 'p2', cellClassName: 'search-score-cell' },
                         
                     ]
                 });
