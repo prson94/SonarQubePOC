@@ -158,6 +158,7 @@ namespace d360.extensions.search
             {
                 webReq = createWebRequest("PUT", indexName);
                 loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 1, \"number_of_replicas\": 1 }}}"));
+                //loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_default_\": {\"Type\": { \"type\":     \"string\",    \"fields\": {\"raw\": { \"type\":  \"string\",\"index\": \"not_analyzed\"}}}}}}"));
                 response = getJsonResponse(webReq);
                 if (response.Status != HttpStatusCode.OK)
                     throw new ApplicationException(response.StatusMessage);
@@ -281,6 +282,9 @@ namespace d360.extensions.search
             var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/_search");
 
             StringBuilder sb = new StringBuilder();
+
+            if(!string.IsNullOrEmpty(phrase))
+                phrase = phrase.Replace("\"","\\\"");
 
             sb.Append( "{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
 
