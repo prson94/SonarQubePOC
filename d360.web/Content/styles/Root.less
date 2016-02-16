@@ -491,6 +491,7 @@ fieldset legend {
 {
     font-weight:bold;
     margin: 6px 0 0 0;
+    padding:10px 10px 0 10px;
 }
 
 .search-result-desc
@@ -503,15 +504,23 @@ fieldset legend {
     cursor:pointer;
 }
 
+.search-highlight
+{
+    background-color:@rgba-secondary-2-3;
+}
+
 #SearchButton {
     cursor: pointer;
 }
 
 #CategoryResults {
-    padding-top: 20px;
+    padding:20px 0 10px 0;    
+    max-height: 500px;
+    overflow:auto;
 
-    .category,
-    .entry {
+    
+    .category
+     {
         font-size: 110%;
         margin-bottom: 5px;
 
@@ -520,6 +529,24 @@ fieldset legend {
             text-decoration: none;
         }
     }
+    .entry{
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        overflow:hidden;
+        margin-bottom:5px;
+
+        .selected{
+            font-weight:bold;
+            border-left: 4px solid;
+            padding-left: 3px;
+        }
+    }
+
+
+}
+
+#SearchArea{
+    padding-top:5px;
 }
 
 #SearchResults {
@@ -534,7 +561,7 @@ fieldset legend {
             color: #999;
         }
     }
-    margin-bottom:175px;
+    padding:0 10px 10px 10px;    
 }
 
 #search {

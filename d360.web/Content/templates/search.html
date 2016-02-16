@@ -1,12 +1,16 @@
 ﻿<div id="SearchArea">
     <div class="row">
-        <div class="col l2 m2 hide-on-small-only">            
+        <div class="col l2 m2 hide-on-small-only">
+            <div class="tile tile-detail">
                 <h4 class="search-result-categories">Categories:</h4>
-                <div class="widget search-category-area" id="CategoryResults" data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>            
-        </div>
+                <div class="widget search-category-area" id="CategoryResults" data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
+            </div>
+         </div>
         <div class="col l10 m10">
-            <h4 data-bind="text: elapsedTime" class="search-result-summary"></h4>            
-            <div id="SearchResults"></div>            
-        </div>
+            <div class="tile tile-detail">
+                <h4 data-bind="text: elapsedTime" class="search-result-summary"></h4>
+                <div id="SearchResults"></div>
+                </div>
+            </div>
     </div>
 </div>

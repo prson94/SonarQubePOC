@@ -29,9 +29,11 @@ function search(app, pageViewModel, templatePath, contextList) {
         var searchSource;
         var loadCategories;
 
-        var showOnlyRelevantCategory = function (category) {
-            
-            var searchSource = getSource($("#SearchString").val(), category == 'All' ? '':category);
+        var showOnlyRelevantCategory = function (category,e) {
+            $('#CategoryResults a').removeClass('selected');
+            $(e.target).addClass('selected');
+                        
+            var searchSource = getSource(phrase, category == 'All' ? '':category);
 
             var dataAdapter = getDataAdapter(searchSource);
 
@@ -43,9 +45,10 @@ function search(app, pageViewModel, templatePath, contextList) {
         function searchStringKeyPress(e) {
             var code = (e.keyCode ? e.keyCode : e.which);
             if (code == 13) { //Enter key 
+                phrase = $("#SearchString").val();                
                 $('#SearchResults').show();
                 loadCategories = true;
-                var searchSource = getSource($("#SearchString").val(),'');
+                var searchSource = getSource(phrase,'');
                 
                 var dataAdapter = getDataAdapter(searchSource);
                 
@@ -53,9 +56,11 @@ function search(app, pageViewModel, templatePath, contextList) {
             }
         }
 
-        function resultSelect(e) {
+        function resultSelect(e) {            
             $('#ContentHeader').show();
-            document.location.href = $(e.target).attr('data-url');
+            var el = $(e.target).closest('a');            
+            console.log(el.attr('data-url'));
+            document.location.href = el.attr('data-url');
         }
 
         function unsubscribe(data) {
@@ -66,6 +71,8 @@ function search(app, pageViewModel, templatePath, contextList) {
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
+        //#endregion
+
         function getSource(term, selGroup) {
             return {
                 datatype: "json",
@@ -75,7 +82,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                     { name: 'Type', type: 'string' },
                     { name: 'Group', type: 'string' },
                     { name: 'Description', type: 'string' },
-                    { name: 'ID', type: 'number' },                        
+                    { name: 'ID', type: 'number' },
                     { name: 'Url', type: 'string' },
                     { name: 'Merged', type: 'string' },
                 ],
@@ -87,19 +94,15 @@ function search(app, pageViewModel, templatePath, contextList) {
                 sortcolumn: 'NormalizedScore',
                 sortdirection: 'desc',
                 root: "Results",
-                };
+            };
         }
 
         function getDataAdapter(source) {
             return new $.jqx.dataAdapter(source,
                     {
                         formatData: function (data) {
-                            // update the $skip and $top params of the OData service.
-                            // data.pagenum - page number starting from 0.
-                            // data.pagesize - page size
                             data.from = data.pagenum * data.pagesize;
                             data.size = data.pagesize;
-                            //  data.$inlinecount = "allpages";
                             return data;
                         },
                         downloadComplete: function (data, status, xhr) {
@@ -110,7 +113,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                         },
                         loadComplete: function (data) {
                             var msg = "";
-                            
+
                             if (data) {
                                 msg = 'Search found ' + data.Result.Matches + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10000 items.' : '');
                                 if (data.Result.Matches == 0) $('#SearchResults').hide();
@@ -118,16 +121,16 @@ function search(app, pageViewModel, templatePath, contextList) {
                             searchVm.elapsedTime(msg);
 
                             if (loadCategories) {
-                                data.Categories.unshift({ Name: 'All', ResultCount: 0 });
+                                data.Categories.unshift({ Name: 'All', ResultCount: source.totalRecords });
                                 var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
                                 searchVm.categories(cats);
-                                
 
-                                $('#CategoryResults .entry a[data-category]').each(function () {
-                                    $(this).click(function () {
+                                $('.search-category-link').each(function () {
+                                    $(this).click(function (e) {
                                         var c = $(this).data("category");
-                                        showOnlyRelevantCategory(c);
+                                        showOnlyRelevantCategory(c, e);
                                     });
+                                    if ($(this).data("category") == "All") $(this).addClass('selected');
                                 });
                                 loadCategories = false;
                             }
@@ -135,21 +138,19 @@ function search(app, pageViewModel, templatePath, contextList) {
                         loadError: function (xhr, status, error) {
                             throw new Error(error.toString());
                         },
-                        beforeLoadComplete: function (records) {                    
+                        beforeLoadComplete: function (records) {
                             var data = new Array();
                             for (var i = 0; i < records.length; i++) {
-                                var row = records[i];                        
+                                var row = records[i];
                                 row.Merged = "<h4 class='search-result-name'><a data-url='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: <em>" + row.Type + "</em> &nbsp;&nbsp;Type: <em>" + row.Group + "</em></h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
                                 data.push(row);
                             }
-                                                         
+
                             return data;
                         }
                     }
                 );
         }
-
-        //#endregion
 
         context
             .render(templatePath + 'search.html', pageViewModel)
@@ -179,9 +180,9 @@ function search(app, pageViewModel, templatePath, contextList) {
                 $('#SearchResults').on('click', '.search-result-link', resultSelect);
 
                 //#endregion
-
+                phrase = $("#SearchString").val();
                              
-                var source = getSource($("#SearchString").val(),'');
+                var source = getSource(phrase, '');
 
                 var dataAdapter = getDataAdapter(source);
                                 

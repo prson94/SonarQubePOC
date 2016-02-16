@@ -28,6 +28,8 @@ namespace d360.extensions.search
         public bool timed_out { get; set; }
         public SearchResultsShardModel _shards { get; set; }
         public SearchResultsHitsModel hits { get; set; }
+
+        public SearchAggregationsModel aggregations { get; set; }
     }
     public class SearchResultsShardModel
     {
@@ -42,6 +44,22 @@ namespace d360.extensions.search
         public List<SearchResultsHitModel> hits { get; set; }
     }
 
+    public class SearchAggregationsModel
+    {
+        public SearchAggregationTypeModel types { get; set; }
+    }
+
+    public class SearchAggregationTypeModel
+    {
+        public List<SearchAggregationTypeBucketModel> buckets { get; set; }
+    }
+
+    public class SearchAggregationTypeBucketModel
+    {
+        public int doc_count { get; set; }
+        public string Key { get; set; }
+    }
+
     public class SearchResultsHitModel
     {
         public string _index { get; set; }
@@ -49,6 +67,7 @@ namespace d360.extensions.search
         public string _id { get; set; }
         public float _score { get; set; }
         public JObject _source { get; set; }
+        public JObject highlight { get; set; }
     }
 
 
@@ -157,9 +176,10 @@ namespace d360.extensions.search
             if (response.Status == HttpStatusCode.NotFound)
             {
                 webReq = createWebRequest("PUT", indexName);
-                loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 1, \"number_of_replicas\": 1 }}}"));
-                //loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_default_\": {\"Type\": { \"type\":     \"string\",    \"fields\": {\"raw\": { \"type\":  \"string\",\"index\": \"not_analyzed\"}}}}}}"));
-                response = getJsonResponse(webReq);
+                
+                loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_default_\" : {\"properties\" : {\"Type\" : {\"type\" : \"string\",\"fields\" : {\"raw\" : {\"type\" : \"string\", \"index\" :\"not_analyzed\"}}}}}}}"));
+
+                    response = getJsonResponse(webReq);
                 if (response.Status != HttpStatusCode.OK)
                     throw new ApplicationException(response.StatusMessage);
             }
@@ -273,7 +293,7 @@ namespace d360.extensions.search
         /// <param name="resourceID"></param>
         /// <param name="phrase"></param>
         /// <returns></returns>
-        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "")
+        public IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexCategory> categories, string group = "")
         {
             IndexResults result = new IndexResults();
 
@@ -288,17 +308,27 @@ namespace d360.extensions.search
 
             sb.Append( "{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
 
+            //if a group was specified filter by it
             if (!string.IsNullOrEmpty(group))
             {
-                var groupParts = group.ToLower().Split(' ');
-
-                foreach (var item in groupParts)
-                {
-                    sb.Append(",\"filter\": { \"term\":  { \"Type\": \"" + item + "\" } }");
-                }
+                sb.Append(",\"filter\": { \"term\":  { \"Type.raw\": \"" + group + "\" } }");                
             }
                         
-            sb.Append("}},\"from\":" + from + ",\"size\":" + size+ ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }}");
+            sb.Append("}},\"from\":" + from + ",\"size\":" + size+ ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }");
+
+            // if no group filter then we need to get list of categories
+            if (string.IsNullOrEmpty(group))
+            {
+                sb.Append(",\"aggs\" : { \"types\" : { \"terms\" : { \"field\" : \"Type.raw\",\"size\": 0 } } }");
+            }
+
+            //turn on highlighting
+
+            sb.Append(", \"highlight\": {\"fields\": {\"*\": { \"pre_tags\": [\"<em class='search-highlight'>\"],\"post_tags\": [\"</em>\"],\"number_of_fragments\" : 0 }},\"require_field_match\": false  }");
+
+            sb.Append("}");
+
+            //if no group specified get the categories for this search
 
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
@@ -308,16 +338,26 @@ namespace d360.extensions.search
             var searchResults = response.Data.ToObject<SearchResultsModel>();
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult {
-                    Description = GetPropertyValue<string>(h._source, "Description"),
+                    Description = GetHighlightedPropertyValueIfExists(h, "Description"),
                     Group = h._type,
                     ID = h._id,
-                    Name = GetPropertyValue<string>(h._source, "Name"),
+                    Name = GetHighlightedPropertyValueIfExists(h, "Name"),
                     NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score/searchResults.hits.max_score.GetValueOrDefault()*100)),
                     Score = h._score,
-                    Type = GetPropertyValue<string>(h._source, "Type"),
-                    Url = GetPropertyValue<string>(h._source, "Url")
+                    Type = GetHighlightedPropertyValueIfExists(h, "Type"),
+                    Url = GetHighlightedPropertyValueIfExists(h, "Url")
                 }).ToList();
 
+
+            if (searchResults.aggregations != null && searchResults.aggregations.types != null && searchResults.aggregations.types.buckets != null)
+            {
+                categories.AddRange(searchResults.aggregations.types.buckets.Select(h => new IndexCategory
+                {
+                    Name = h.Key,
+                    ResultCount = h.doc_count
+                }).OrderBy(x =>x.Name));
+            }
+            
             result.ElapsedMS = searchResults.took;
 
             if(searchResults.hits != null)
@@ -326,12 +366,87 @@ namespace d360.extensions.search
             return result;
         }
 
+        /// <summary>
+        /// Gets the search results from elastic search and converts them to index results
+        /// </summary>
+        /// <param name="companyID"></param>
+        /// <param name="resourceID"></param>
+        /// <param name="phrase"></param>
+        /// <returns></returns>
+        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "")
+        {
+            IndexResults result = new IndexResults();
+
+            createIndexIfNotExists(companyID);
+
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/_search");
+
+            StringBuilder sb = new StringBuilder();
+
+            if (!string.IsNullOrEmpty(phrase))
+                phrase = phrase.Replace("\"", "\\\"");
+
+            sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+
+            //if a group was specified filter by it
+            if (!string.IsNullOrEmpty(group))
+            {
+                sb.Append(",\"filter\": { \"term\":  { \"Type.raw\": \"" + group + "\" } }");
+            }
+
+            sb.Append("}},\"from\":" + from + ",\"size\":" + size + ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }");
+                        
+            sb.Append("}");
+
+            //if no group specified get the categories for this search
+
+            loadMessageInRequestBody(webReq, sb.ToString());
+            var response = getJsonResponse(webReq);
+            if (response.Status != HttpStatusCode.OK)
+                throw new ApplicationException(response.StatusMessage);
+
+            var searchResults = response.Data.ToObject<SearchResultsModel>();
+
+            result.Results = searchResults.hits.hits.Select(h => new IndexResult
+            {
+                Description = GetPropertyValue<string>(h._source, "Description"),
+                Group = h._type,
+                ID = h._id,
+                Name = GetPropertyValue<string>(h._source, "Name"),
+                NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
+                Score = h._score,
+                Type = GetPropertyValue<string>(h._source, "Type"),
+                Url = GetPropertyValue<string>(h._source, "Url")
+            }).ToList();
+            
+            result.ElapsedMS = searchResults.took;
+
+            if (searchResults.hits != null)
+                result.Matches = searchResults.hits.total;
+
+            return result;
+        }
+
+        private string GetHighlightedPropertyValueIfExists(SearchResultsHitModel h, string propName)
+        {
+            var highlightVal = GetPropertyValue<string>(h.highlight, propName);
+
+            if (!string.IsNullOrEmpty(highlightVal)) return highlightVal;
+
+            return GetPropertyValue<string>(h._source, propName);
+        }
+
+
         private T GetPropertyValue<T>(JObject _source, string propName)
         {
             JToken jToken = null;
             
             if (_source.TryGetValue(propName, out jToken))
             {
+                if(jToken.Type == JTokenType.Array)
+                {
+                    return ((JArray)jToken)[0].Value<T>();
+                }
                 return jToken.Value<T>();
             }
             return default(T);

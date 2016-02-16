@@ -873,8 +873,13 @@
     </div>
 </script>
 <script id="searchResultsCategoryTmpl" type="text/html">
-    <div class="entry">
-        <a href="#" data-bind="attr: {'data-category': Name}, text: Name"></a>
+    <div class="row">        
+        <div class="col l10 m10 s11 entry">
+            <a href="#" class="search-category-link" data-bind="attr: {'data-category': Name, 'title':Name}, text: Name"></a>
+        </div>
+        <div class="col l2 m2 s1">
+            <span data-bind="text: ResultCount > 0 ? ResultCount : ''" style="float:right"></span>
+        </div>         
     </div>
 </script>
 

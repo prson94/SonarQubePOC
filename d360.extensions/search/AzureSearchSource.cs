@@ -159,7 +159,13 @@ namespace d360.extensions.search
             "they", "this", "to", "was", "will", "with"
         };
 
-        
+
+        public IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexCategory> categories, string group = "")
+        {
+            throw new Exception("NOT IMPLEMENTED");
+        }
+
+
         public IEnumerable<string> GetSearchPhrases(int companyID, string term, int maxResults)
         {
             AzureDirectory directory = null;
