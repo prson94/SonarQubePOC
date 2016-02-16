@@ -43162,75 +43162,234 @@ function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
 function HierarchyTile(controlID, contextList, permissions, type, id) {
     var source = $("#hierarchyTileTmpl").html();
     var template = Handlebars.compile(source);
-    var mapType = 3;
-
+    var newRowID = null;
+    var rowKey = null;
+    var newRowCounter = -1;
 
     $('#' + controlID).html(template({ control: controlID }));
 
     controlID = '#' + controlID;
-    var controlID_type_heirarchy = controlID + '_type_hierarchy';
+    var controlID_type_hierarchy = controlID + '_type_hierarchy';
+    var controlID_group_hierarchy = controlID + '_group_hierarchy';
+    var controlID_parentchild_hierarchy = controlID + '_parentchild_hierarchy';
 
-    var adapterSource = {
-        dataType: "json",
-        dataFields: [
-        { name: 'ID', type: 'number' },
-        { name: 'UID', type: 'string' },
-        { name: 'Subject', type: 'string' },
-        { name: 'SubjectID', type: 'number' },
-        { name: 'Object', type: 'string' },
-        { name: 'ObjectID', type: 'number' },
-        { name: 'ParentID', type: 'string' },
-        { name: 'Name', type: 'string' },
-        { name: 'Path', type: 'string' },
-        { name: 'Url', type: 'string' },
-        { name: 'ObjectTypeName', type: 'string' },
-        { name: 'Level', type: 'number' },
-        { name: 'PredicateID', type: 'number' },
-        { name: 'Type', type: 'number' }
-        ],
-        hierarchy:
-        {
-            keyDataField: { name: 'UID' },
-            parentDataField: { name: 'ParentID' }
-        },
-        id: 'UID',
-        url: '/relations/hierarchy/' + mapType + '/' + type + '/' + id
-    };
+    var controlID_type_newRow = controlID + '_type_newRow';
+    var controlID_group_newRow = controlID + '_group_newRow';
+    var controlID_parentchild_newRow = controlID + '_parentchild_newRow';
 
-    var dataAdapter = new $.jqx.dataAdapter(adapterSource);
+    var getAdapter = function (mapType, selector) {
+        return {
 
-   $(controlID_type_heirarchy).jqxTreeGrid({
-        width: 450,
-        source: dataAdapter,
-        sortable: false,
-        theme: 'metro',
-        columns: [
-        {
-            text: "Type Hierarchy", dataField: 'Name', width: 350, align: "center",
-            cellsRenderer: function (rowKey, dataField, value, data) {
-                if ((data.Level > 0 && data.Object == type && data.ObjectID == id) || (data.Level <= 0 && data.Subject == type && data.SubjectID == id)){
-                    return "<div style='margin-left: 4px; display:inline-block;color:#33A'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
-                }
-
-                return "<div style='margin-left: 4px; display:inline-block;'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
-                             
+            dataType: "json",
+            dataFields: [
+            { name: 'ID', type: 'number' },
+            { name: 'UID', type: 'string' },
+            { name: 'Subject', type: 'string' },
+            { name: 'SubjectID', type: 'number' },
+            { name: 'Object', type: 'string' },
+            { name: 'ObjectID', type: 'number' },
+            { name: 'ParentID', type: 'string' },
+            { name: 'Name', type: 'string' },
+            { name: 'Path', type: 'string' },
+            { name: 'Url', type: 'string' },
+            { name: 'ObjectTypeName', type: 'string' },
+            { name: 'Level', type: 'number' },
+            { name: 'PredicateID', type: 'number' },
+            { name: 'Type', type: 'number' }
+            ],
+            hierarchy:
+            {
+                keyDataField: { name: 'UID' },
+                parentDataField: { name: 'ParentID' }
+            },
+            id: 'UID',
+            url: '/relations/hierarchy/' + mapType + '/' + type + '/' + id,
+            addRow: function (rowID, rowData, position, parentID, commit) {
+                
+                //console.log(rowID);
+                //console.log(rowData);
+                //console.log(parentID);
+                //console.log(rowKey);
+                //rowID = "root" + newRowCounter--;
+                //rowKey = rowID;
+                //rowData.UID = rowKey;
+                //rowData.uid = rowKey;
+                rowData.ObjectTypeName = "Business Term";
+                //rowData.Name =
+                //rowData.ParentID = parentID;
+                newRowID = rowID;
+                commit(true);
             }
-        },
-        {
-            text: "", dataField: 'UID', width: 100, align: "center",
-            cellsRenderer: function (rowKey, dataField, value, data) {
-                return "<div style='cursor:pointer;margin-left: 4px;' class='RowTools'><a onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + data.ID + "/" + mapType + "/" + ((data.Level > 0) ? data.Object : data.Subject) + "/" + ((data.Level > 0) ? data.ObjectID : data.SubjectID) + "' data-context='addhierarchyform'><i class='fa fa-plus'></i></a></div>";
+        };
+    }
+    var getTreeGrid = function (mapType, adapter, title, selector) {
+        return {
+            width: 450,
+            source: adapter,
+            sortable: false,
+            showToolbar: true,
+            theme: 'metro',
+            toolbarHeight: 35,
+            renderToolbar: function(toolBar) {
+                var html = $("<div style='overflow: hidden; position: relative; height: 100%; width: 100%; margin-bottom: 4px'></div>");
+                var addTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa fa-plus'></i></div></div>";
+                var saveTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa fa-save'></i></div></div>";
+                var addButton = $(addTemplate);
+                var saveButton = $(saveTemplate);
+                html.append(addButton);
+                html.append(saveButton);
+                toolBar.append(html);
+                addButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' });
+                saveButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' });
+                addButton.click(function (event) {
+                    $(selector).jqxTreeGrid('expandRow', rowKey);
+                    $(selector).jqxTreeGrid('addRow', newRowCounter--, {}, 'first', rowKey);
+                    $(selector).jqxTreeGrid('clearSelection');
+                    $(selector).jqxTreeGrid('selectRow', newRowID);
+                    $(selector).jqxTreeGrid('beginRowEdit', newRowID);
+                });
+                saveButton.click(function (event) {
+                    //console.log(rowKey);
+                    $(selector).jqxTreeGrid('endRowEdit', rowKey, false);
+
+                });
+            },
+            columns: [
+                {
+                    text: title, dataField: 'Name', width: 350, align: "center", columnType: "template",
+                    cellsRenderer: function (rowKey, dataField, value, data) {
+                        var item = getRowDataItem(data);
+                        if (item.type == type && item.id == id) {
+                            return "<div style='margin-left: 4px; display:inline-block;color:#33A'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
+                        }
+                        return "<div style='margin-left: 4px; display:inline-block;'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
+                    },
+                    createEditor: function (row, cellvalue, editor, cellText, width, height) {
+                        
+                        var hierarchySubjectSource = {
+                            datafields: [
+                                { name: 'Object' },
+                                { name: 'ObjectID' },
+                                { name: 'Name' }
+                            ],
+                            datatype: "json",
+                            url: '/relations/hierarchy/artifacts/0/' + mapType + '/' + type + '/' + id
+                        };
+
+
+                        var hierarchySubjectAdapter = new $.jqx.dataAdapter(
+                            hierarchySubjectSource,
+                            {
+                                beforeLoadComplete: function (records) {
+                                    for (var i = 0; i < records.length; i++) {
+                                        var record = records[i];
+                                        record.Value = record.Object + '|' + record.ObjectID;
+                                    }
+                                    return records;
+                                }
+                            }
+                        );
+
+                        editor.jqxDropDownList({
+                            theme: theme,
+                            source: hierarchySubjectAdapter,
+                            width: field_width,
+                            height: field_height,
+                            valueMember: 'Value',
+                            displayMember: 'Name',
+                            filterable: true,
+                            dropDownWidth: 200,
+                            searchMode: 'containsignorecase'
+                        });
+                    },
+                    initEditor: function (row, cellvalue, editor, celltext, width, height) {
+                        //console.log('reached init');
+                        //editor.jqxDropDownList('selectItem', getRowDataItem(row).type + '|' + getRowDataItem(row).id);
+                    },
+                    getEditorValue: function (row, cellvalue, editor) {
+                        console.log(editor.jqxDropDownList('getSelectedItem'));
+                        return editor.jqxDropDownList('getSelectedItem').originalItem.Name.split(':')[1];
+                    }
+                },
+                {
+                    text: "", dataField: 'UID', width: 100, align: "center",
+                    cellsRenderer: function (rowKey, dataField, value, data) {
+                        var item = getRowDataItem(data);
+                        return "<div style='cursor:pointer;margin-left: 4px;' class='RowTools'>" +
+                        ((mapType == 4 && item.type == type && item.id == id) ? "" : "<a style='padding: 0;' onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + ((data.Level > 0) ? data.ID : "0") + "/" + mapType + "/" + item.type + "/" + item.id + "?parent=true'><i class='fa fa-level-up fa-flip-horizontal'></i></a>") +
+                        "<a style='padding: 0;' onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + data.ID + "/" + mapType + "/" + item.type + "/" + item.id + "' data-context='addhierarchyform'><i class='fa fa-level-down'></i></a>" +
+                        "<a style='padding: 0;' onclick='ClickGridTool(event)' data-uri='/form/deletehierarchy/" + data.ID + "'><i class='fa fa-trash-o'></i></a></div>";
+                    }
+                }
+            ]
+        }
+    }
+
+    function initTreeGrid(selector, mapType, title) {
+        $(selector).jqxTreeGrid(getTreeGrid(mapType, new $.jqx.dataAdapter(getAdapter(mapType)), title, selector));
+    }
+
+    function getRowDataItem(data) {
+        
+        if (data.Level > 0) {
+            return {
+                type: data.Object,
+                id: data.ObjectID
+            }
+        } else {
+            return {
+                type: data.Subject,
+                id: data.SubjectID
             }
         }
-        ]
-        //,columnGroups:
-        //[
-        //  { text: "Type Hierarchy", name: "HierarchyDetails", align: "center" }
-        //]
-    });
+    }
+
+   initTreeGrid(controlID_type_hierarchy, 3, "Type Hierarchy");
+   initTreeGrid(controlID_group_hierarchy, 4, "Group Hierarchy");
+   initTreeGrid(controlID_parentchild_hierarchy, 5, "Parent/Child Hierarchy");
+
+   function showFocalRow(treeGrid, event) {
+       var data = event.args.owner.source.loadedData;
+       var focal = null;
+       
+       for (var i = 0; i < data.length; i++) {
+           $(treeGrid).jqxTreeGrid('expandRow', data[i].UID);
+           var item = getRowDataItem(data[i]);
+           if (item.id == id && item.type == type) {
+               focal = data[i];
+               break;
+           }
+       }
+
+       if (focal == null)
+           return;
+
+       $(treeGrid).jqxTreeGrid('ensureRowVisible', focal.UID);
+   }
+    
+   $(controlID_type_hierarchy).on('rowDoubleClick', function (event) {
+        window.location.href = event.args.row.Url;
+   });
+   $(controlID_group_hierarchy).on('rowDoubleClick', function (event) {
+       window.location.href = event.args.row.Url;
+   });
+
+   $(controlID_type_hierarchy).on('bindingComplete', function (event) { 
+       showFocalRow($(this), event);
+   });
+   $(controlID_group_hierarchy).on('bindingComplete', function (event) {
+       showFocalRow($(this), event);
+   });
+
+   $(controlID_type_hierarchy).on('rowSelect', function (event) {
+       
+       rowKey = event.args.key;
+       console.log('rowSelect: ' + rowKey);
+   });
 
    amplify.subscribe("SaveAction", "hierarchyform", function () {
-       $(controlID_type_heirarchy).jqxTreeGrid('updateBoundData');
+       $(controlID_type_hierarchy).jqxTreeGrid('updateBoundData');
+       $(controlID_group_hierarchy).jqxTreeGrid('updateBoundData');
    });
 }
 
@@ -47115,14 +47274,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_sourcerules = controlID + '_sourcerules';
     var controlID_sourcerules_table = controlID + '_sourcerules_table';
 
-    //var controlID_add = controlID + '_add';
     var controlID_add_search_text = controlID + '_add_search_text';
     var controlID_add_search = controlID + '_add_search';
     var controlID_add_artifact_type = controlID + '_add_artifact_type';
     var controlID_add_search_message = controlID + '_add_search_message';
 
-    //var controlID_overlay_radio_existing = controlID + '_overlay_radio_existing';
-    //var controlID_overlay_radio_new = controlID + '_overlay_radio_new';
     var controlID_overlay_existing = controlID + '_overlay_existing';
     var controlID_overlay_new = controlID + '_overlay_new';
     var controlID_overlay_relationship = controlID + '_overlay_relationship';
@@ -47130,8 +47286,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_overlay_cancel = controlID + '_overlay_cancel';
     var controlID_overlay_add = controlID + '_overlay_add';
     var controlID_overlay_roles = controlID + '_overlay_roles';
-    //var controlID_overlay_pname = controlID + '_overlay_pname';
-    //var controlID_overlay_phrase = controlID + '_overlay_phrase';
 
     var controlID_responsibilities = controlID + '_responsibilities';
     var controlID_responsibilities_table = controlID + '_responsibilities_table';
@@ -47449,8 +47603,13 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             $('#' + controlID_fusion_body).jqxGrid('autoresizecolumns');
         },
         columns: [
-            { text: 'Type', groupable: true, datafield: 'TargetTypeName' },
-            { text: 'Name', groupable: false, datafield: 'TargetName' }
+            //{ text: 'Type', groupable: true, datafield: 'TargetTypeName' },
+            {
+                text: 'Name', groupable: false, datafield: 'TargetName',
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    return textrenderer("<div class='cell-value-name'>" + data.TargetName + "</div><div class='cell-value-type'>" + data.TargetTypeName + "</div>");
+                }
+            }
         ]
     });
 
@@ -47570,8 +47729,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         g(go.Panel,
             "Auto",
             {
-                alignment: go.Spot.TopRight//,
-                //margin: go.Margin(0, 0, 0, 25)
+                alignment: go.Spot.LeftCenter
             },
             g(go.Shape, "Circle",
                 {
@@ -47583,9 +47741,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 {
                     row: 0,
                     margin: 3,
-                    alignment: go.Spot.Top,
+                    alignment: go.Spot.LeftCenter,
                     editable: false,
-                    //maxSize: new go.Size(w - 20, h - 10),
                     stroke: '#ffffff',
                     font: "bold " + fontSize + "pt sans-serif"
                 }//,
@@ -47723,8 +47880,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     function onSelectionChange(e) {
         selection = e.diagram.selection;
 
-        //console.log(e.diagram.selection.count);
-        
         if (selection.count < 1) {
             $("#" + controlID_ribbon_remove).hide(200);
             $('#' + controlID_fusion).jqxExpander('collapse');
@@ -47744,7 +47899,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         for (var i = 0; i < sel.length; i++ )
         {
             var data = sel[i].data;
-           // console.log(data);
+
             if (data.diagramObjectType == 'Node') {
                 
                 //#region Info
@@ -47753,14 +47908,15 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                         url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
                         data: null,
                         success: function (data) {
-
                             $('#' + controlID_info_body).html(data);
+                            $("#" + controlID_info).jqxExpander('expand');
                         },
                         async: true
                     });
 
                     technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
                     $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+                    $("#" + controlID_fusion).jqxExpander('expand');
 
                     if (data.sourceRuleCount > 0) {
                         $('#' + controlID_sourcerules).show();
@@ -47777,8 +47933,10 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                         $("#" + controlID_sourcerules_table).html('');
                     }
 
+                    $("#" + controlID_responsibilities).show();
                     lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
                     $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    $("#" + controlID_responsibilities).jqxExpander('expand');
                 }
                 //#endregion
 
@@ -47787,13 +47945,20 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             } else if (data.diagramObjectType == "Link") { //link selected
 
                 $('#' + controlID_info_body).html('');
+                $("#" + controlID_info).jqxExpander('collapse');
+
+                $("#" + controlID_sourcerules).jqxExpander('collapse');
+                $('#' + controlID_sourcerules).hide();
+
+                lineageResponsibilitySource.url = null;
+                $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                $("#" + controlID_responsibilities).jqxExpander('collapse');
+                $('#' + controlID_responsibilities).hide();
 
                 if (data.intersectId != null) {
                     technicalRelationsSource.url = '/api/Intersect/' + data.intersectId + '/relations';
                     $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
-
-                    lineageResponsibilitySource.url = null;
-                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    $("#" + controlID_fusion).jqxExpander('expand');
                 }
             }
         }
@@ -48184,26 +48349,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var g = go.GraphObject.make;
     var myDiagram = initializeDiagram();
 
-    //myDiagram = g(go.Diagram, controlID_diagram, {
-    //    initialContentAlignment: go.Spot.Left,
-    //    //autoScale: go.Diagram.UniformToFill,
-    //    allowDrop: true,
-    //    initialAutoScale: go.Diagram.UniformToFill,
-    //    scrollMode: go.Diagram.DocumentScroll,
-    //    initialPosition: new go.Point(125, 125),
-    //    layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
-    //    "undoManager.isEnabled": true
-    //});
-    //myDiagram.model.class = go.GraphLinksModel;
-    //myDiagram.model.nodeCategoryProperty = "template";
-    //myDiagram.model.linkFromPortIdProperty = "frompid";
-    //myDiagram.model.linkToPortIdProperty = "topid";
-    //myDiagram.model.nodeDataArray = [];
-    //myDiagram.model.linkDataArray = [];
-    ////myDiagram.toolManager.linkingTool.isEnabled = !readonly;
-    //myDiagram.isReadOnly = readonly;
-
-
     function initializeDiagram() {
         var dg = g(go.Diagram, controlID_diagram, {
                     initialContentAlignment: go.Spot.Left,
@@ -48228,27 +48373,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         return dg;
     }
-    //$("#" + controlID_overlay_radio_existing).bind('change', function (e) {
-    //    var checked = e.args.checked;
-
-    //    if (checked) {
-    //        $('#' + controlID_overlay_existing).show(200);
-    //        $('#' + controlID_overlay_new).hide(200);
-    //        if ($('#' + controlID_overlay_predicates).val() != 0) {
-    //            $('#' + controlID_overlay_add).prop('disabled', false);
-    //        } else {
-    //            $('#' + controlID_overlay_add).prop('disabled', true);
-    //        }
-    //    } else {
-    //        $('#' + controlID_overlay_existing).hide(200);
-    //        $('#' + controlID_overlay_new).show(200);
-    //        if ($('#' + controlID_overlay_pname).val() != '' && $('#' + controlID_overlay_phrase).val() != '') {
-    //            $('#' + controlID_overlay_add).prop('disabled', false);
-    //        } else {
-    //            $('#' + controlID_overlay_add).prop('disabled', true);
-    //        }
-    //    }
-    //});
 
     $('#' + controlID_overlay_predicates).on('change', function (e) {
         var checked = true;//$('#' + controlID_overlay_radio_existing).jqxRadioButton('checked');
@@ -48260,28 +48384,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             }
         }
     });
-
-    //$('#' + controlID_overlay_pname).on('keyup', function (e) {
-    //    var checked = $('#' + controlID_overlay_radio_new).jqxRadioButton('checked');
-    //    if (checked) {
-    //        if ($(this).val() == '' || $('#' + controlID_overlay_phrase).val() == '') {
-    //            $('#' + controlID_overlay_add).prop('disabled', true);
-    //        } else {
-    //            $('#' + controlID_overlay_add).prop('disabled', false);
-    //        }
-    //    }
-    //});
-
-    //$('#' + controlID_overlay_phrase).on('keyup', function (e) {
-    //    var checked = $('#' + controlID_overlay_radio_new).jqxRadioButton('checked');
-    //    if (checked) {
-    //        if ($(this).val() == '' || $('#' + controlID_overlay_pname).val() == '') {
-    //            $('#' + controlID_overlay_add).prop('disabled', true);
-    //        } else {
-    //            $('#' + controlID_overlay_add).prop('disabled', false);
-    //        }
-    //    }
-    //});
 
     $('#' + controlID_wrapper).on('mouseup', function () {
         var height = $('#' + controlID_wrapper).height();
@@ -48333,12 +48435,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
     });
 
-    //$("#" + controlID_controls_zoom).on('valueChanged', function (event) {
-    //    var val = parseInt(event.currentValue);
-    //    $('#' + controlID_ribbon_zoom_text).text(Math.round((val / 1500) * 100) + '%');
-    //    myDiagram.scale = (val / 1500);
-    //});
-
     //#endregion
 
     myDiagram.addDiagramListener('ViewportBoundsChanged', onViewportBoundsChanged);
@@ -48349,21 +48445,15 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.addDiagramListener('SelectionDeleting', onDeleting);
     myDiagram.addDiagramListener('SelectionDeleted', onDeleted);
     myDiagram.addDiagramListener('ExternalObjectsDropped', onDrop);
-    //myDiagram.addDiagramListener('Modified', onModified);
     myDiagram.model.addChangedListener(onChange);
 
     myDiagram.grid.visible = false;
     myDiagram.grid.gridCellSize = new go.Size(8, 8);
     myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
     myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
-    //myDiagram.allowVerticalScroll = false;
-    //myDiagram.allowHorizontalScroll = false;
-    //myDiagram.scrollMode = go.Diagram.InfiniteScroll;
-
 
     makeTemplate("FocalArtifact", 275, 150, '#000000', 14, [makePort("", true)], [makePort("OUT", false)]);
     makeTemplate("Artifact", 225, 105, 'transparent', 10, [makePort("", true)], [makePort("OUT", false)]);
-    //makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
 
     myDiagram.linkTemplate = g(
         go.Link, { routing: go.Link.AvoidsNodes, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel
@@ -48381,17 +48471,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     );
     
     var myPalette = initializePalette();
-    //myPalette = g(go.Palette, controlID_palette, {
-    //    contentAlignment: go.Spot.BottomCenter
-    //    , allowDrop: true
-    //    , initialAutoScale: go.Diagram.Uniform
-    //    , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
-    //})
-    //{
-    //    myPalette.model.nodeCategoryProperty = 'template';
-    //    myPalette.model.nodeDataArray = [];
-    //    myPalette.model.class = 'go.GraphLinksModel';
-    //}
 
     function initializePalette() {
 
@@ -48411,9 +48490,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     makeSearchTemplate();
     
     var myOverview = initializeOverview(myDiagram);
-    //myOverview =  
-    //  g(go.Overview, controlID_overview,
-    //    { observed: myDiagram, contentAlignment: go.Spot.Center });
 
     function initializeOverview(diagram) {
         var ov = g(go.Overview, controlID_overview,
@@ -48767,14 +48843,6 @@ function home(app, pageViewModel, templatePath, contextList, currentResourceID) 
             });
     });
 }
-function SearchResult(data) {
-    var self = this;
-    data = data || {};
-    self.Name = data.Name;
-    self.Url = data.Url;
-    self.Description = data.Description;
-    self.Type = data.Type;
-}
 
 function SearchResultCategory(data) {
     var self = this;
@@ -48788,108 +48856,45 @@ function SearchViewModel() {
     self.categories = ko.observableArray();
     self.results = ko.observableArray();
     self.elapsedTime = ko.observable();
-
-    self.shouldShowSpinner = ko.observable(false);
-    //self.shouldShowSpinner = function () {
-    //    return (self.results().length <= 0);
-    //};
-
-    self.getResults = function (phrase) {
-
-        //try {
-            self.categories.removeAll();
-            self.results.removeAll();
-            self.elapsedTime('');
-
-            self.shouldShowSpinner(true);
-
-            $.ajax({
-                data: 'search=' + phrase,
-                url: '/search/results',
-                dataType: 'json',
-                type: 'POST',
-                error: function () {
-                    amplify.publish("ShowMessage", { title: 'Error When Searching', message: 'An error occurred while attempting to get search results.', type: 'error' });
-                    self.shouldShowSpinner(false);
-                },
-                success: function (data) {
-                    try {
-                        if (data.Results.length > 0) {
-                            var results = $.map(data.Results, function (item) { return new SearchResult(item); });
-                            self.results(results);
-                        }
-
-                        if (data.Categories.length > 0) {
-                            var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
-                            self.categories(cats);
-                        }
-                    } catch (e) {
-
-                    }
-
-                    self.shouldShowSpinner(false);
-                    self.elapsedTime(data.ElapsedTime);
-                }
-            });
-        //}
-        //catch (e) {
-        //    console.log(e);
-        //}
-    };
-
+        
     return self;
 }
 
 function search(app, pageViewModel, templatePath, contextList) {
     var searchRoute = function(context) {
         context.app.swap('');
-
-        //var phrase = context.params['phrase'];
-
+                
         context.title(pageViewModel.Title);
 
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: pageViewModel.Title, Active: true });
 
         var searchVm;
+        var phrase;
+        var searchSource;
+        var loadCategories;
 
         var showOnlyRelevantCategory = function (category) {
+            
+            var searchSource = getSource($("#SearchString").val(), category == 'All' ? '':category);
 
-            try {
-                $('#SearchResults .entry').each(function () {
-                    if (category == '' || $(this).data("category") == category) {
-                        $(this).show(300);
-                    }
-                    else {
-                        $(this).hide(300);
-                    }
-                });
-            }
-            catch (e) {
-                console.log(e);
-            }
+            var dataAdapter = getDataAdapter(searchSource);
+
+            $('#SearchResults').jqxDataTable({ source: dataAdapter });
         }
 
-        //#region Event Handlers
-
-        function documentAjaxComplete() {
-            try {
-                $('#CategoryResults .entry a[data-category]').each(function () {
-                    $(this).click(function () {
-                        var c = $(this).data("category");
-                        showOnlyRelevantCategory(c);
-                    });
-                });
-            }
-            catch (e) {
-                console.log(e);
-            }
-        }
+        //region Event Handlers
 
         function searchStringKeyPress(e) {
             var code = (e.keyCode ? e.keyCode : e.which);
-            if (code == 13) { //Enter key
-                searchVm.getResults($("#SearchString").val());
+            if (code == 13) { //Enter key 
+                $('#SearchResults').show();
+                loadCategories = true;
+                var searchSource = getSource($("#SearchString").val(),'');
+                
+                var dataAdapter = getDataAdapter(searchSource);
+                
+                $('#SearchResults').jqxDataTable({ source: dataAdapter });                
             }
         }
 
@@ -48898,6 +48903,89 @@ function search(app, pageViewModel, templatePath, contextList) {
 
             $("#SearchString").off('keypress', searchStringKeyPress);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        }
+
+        function getSource(term, selGroup) {
+            return {
+                datatype: "json",
+                datafields: [
+                    { name: 'NormalizedScore', type: 'float' },
+                    { name: 'Name', type: 'string' },
+                    { name: 'Type', type: 'string' },
+                    { name: 'Group', type: 'string' },
+                    { name: 'Description', type: 'string' },
+                    { name: 'ID', type: 'number' },                        
+                    { name: 'Url', type: 'string' },
+                    { name: 'Merged', type: 'string' },
+                ],
+                type: 'POST',
+                dataType: 'json',
+                url: '/search/results',
+                data: { search: term, from: 0, size: 10, group: selGroup },
+                id: 'ID',
+                sortcolumn: 'NormalizedScore',
+                sortdirection: 'desc',
+                root: "Results",
+                };
+        }
+
+        function getDataAdapter(source) {
+            return new $.jqx.dataAdapter(source,
+                    {
+                        formatData: function (data) {
+                            // update the $skip and $top params of the OData service.
+                            // data.pagenum - page number starting from 0.
+                            // data.pagesize - page size
+                            data.from = data.pagenum * data.pagesize;
+                            data.size = data.pagesize;
+                            //  data.$inlinecount = "allpages";
+                            return data;
+                        },
+                        downloadComplete: function (data, status, xhr) {
+                            if (!source.totalRecords) {
+                                source.totalRecords = parseInt(data.Result.Matches);
+                                if (source.totalRecords > 10000) source.totalRecords = 10000;
+                            }
+                        },
+                        loadComplete: function (data) {
+                            var msg = "";
+                            
+                            if (data) {
+                                msg = 'Search found ' + data.Result.Matches + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10000 items.' : '');
+                                if (data.Result.Matches == 0) $('#SearchResults').hide();
+                            }
+                            searchVm.elapsedTime(msg);
+
+                            if (loadCategories) {
+                                data.Categories.unshift({ Name: 'All', ResultCount: 0 });
+                                var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
+                                searchVm.categories(cats);
+                                
+
+                                $('#CategoryResults .entry a[data-category]').each(function () {
+                                    $(this).click(function () {
+                                        var c = $(this).data("category");
+                                        showOnlyRelevantCategory(c);
+                                    });
+                                });
+                                loadCategories = false;
+                            }
+                        },
+                        loadError: function (xhr, status, error) {
+                            throw new Error(error.toString());
+                        },
+                        beforeLoadComplete: function (records) {                    
+                            var data = new Array();
+                            for (var i = 0; i < records.length; i++) {
+                                var row = records[i];                        
+                                row.Merged = "<h4 class='search-result-name'><a href='/" + row.Url + "'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: <em>" + row.Type + "</em> &nbsp;&nbsp;Type: <em>" + row.Group + "</em></h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
+                                data.push(row);
+                            }
+                                                         
+                            return data;
+                        }
+                    }
+                );
         }
 
         //#endregion
@@ -48910,6 +48998,9 @@ function search(app, pageViewModel, templatePath, contextList) {
 
                 $('#SideIcons').PageTools({ type: '', id: 0 });
                 $('#SideIcons').PageTools("clear");
+                $('#ContentHeader').hide();
+
+                loadCategories = true;
 
                 searchVm = new SearchViewModel();
                 try {
@@ -48920,17 +49011,35 @@ function search(app, pageViewModel, templatePath, contextList) {
                 }
 
                 //#region Event Registration
-
-                $(document).ajaxComplete(documentAjaxComplete);
+                                
                 $("#SearchString").on('keypress', searchStringKeyPress);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                 //#endregion
+                             
+                var source = getSource($("#SearchString").val(),'');
 
-                var phrase = $("#SearchString").val();
-                if (phrase != '') {
-                    searchVm.getResults(phrase);
-                }
+                var dataAdapter = getDataAdapter(source);
+                                
+                $("#SearchResults").jqxDataTable(
+                {                    
+                    pageable: true,
+                    pagerButtonsCount: 10,
+                    serverProcessing: true,
+                    pagerMode: 'default',
+                    source: dataAdapter,
+                    altRows: false,
+                    theme: 'transparent',
+                    width: '98%',
+                    columnsResize: true,
+                    pageSizeOptions: ['10', '20', '50'],
+                    enableHover: false,
+                    columns: [
+                        { text: ' ', dataField: 'Merged' },
+                        { text: 'Score', dataField: 'NormalizedScore', width: '15%', cellsformat: 'p2', cellClassName: 'search-score-cell' },
+                        
+                    ]
+                });
 
             });
     }
@@ -51290,11 +51399,11 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                     );
                     console.log(data);
                     if ($(controlID).find('.AgentKpi').length) {                        
-                        var score = (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(0);                        
+                        var score = (data.AgentExecutions > 0) ? (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(0) : 100;                        
                         drawKpi($(controlID).find('.AgentKpi'), 'Agent % Success', score, 100 - score, true);
                     }
-                    if ($(controlID).find('.FusionKpi').length) {
-                        var score = (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(0);                        
+                    if ($(controlID).find('.FusionKpi').length) {                        
+                        var score = (data.FusionErrors > 0) ? (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(0) : 100;                        
                         drawKpi($(controlID).find('.FusionKpi'), 'Processing % Success', score, 100 - score, true);
                     }
                 }

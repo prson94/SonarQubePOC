@@ -20,5 +20,9 @@
   {
     "outputFile": "Content/styles/jqx.metro.css",
     "inputFile": "Content/styles/jqx.metro.less"
+  },
+  {
+    "outputFile": "Content/styles/navigation.css",
+    "inputFile": "Content/styles/navigation.less"
   }
 ]

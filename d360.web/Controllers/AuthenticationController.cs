@@ -21,6 +21,7 @@ using System.IO;
 using d360.core.enums;
 using System.Reflection;
 using System.Diagnostics;
+using System.Web;
 
 namespace d360.web.Controllers
 {
@@ -331,7 +332,27 @@ namespace d360.web.Controllers
                     if (resource.ID > 0)
                     {
                         // Create a login context for the asserted identity.
-                        FormsAuthentication.SetAuthCookie(userName, false);
+                        //FormsAuthentication.SetAuthCookie(userName, false);
+                        var ticket = new FormsAuthenticationTicket(
+                            1,
+                            userName,
+                            DateTime.Now,
+                            DateTime.Now.AddMinutes(FormsAuthentication.Timeout.TotalMinutes),
+                            false,
+                            $"userName, {Request.UserAgent}",
+                            FormsAuthentication.FormsCookiePath
+                        );
+                        var encryptedTicket = FormsAuthentication.Encrypt(ticket);
+                        var cookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
+                        {
+                            HttpOnly = true,
+                            Secure = FormsAuthentication.RequireSSL,
+                            Path = FormsAuthentication.FormsCookiePath,
+                            Domain = FormsAuthentication.CookieDomain
+                        };
+
+                        Response.AppendCookie(cookie);
+
 
                         // Get the originally requested resource URL from the relay state, if any.
                         string redirectURL = "/#";

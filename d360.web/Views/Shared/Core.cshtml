@@ -1,0 +1,37 @@
+﻿@{
+    Layout = null;
+    var CurrentResourceID = ViewData["ResourceID"].ToString();
+    var VersionNumber = ViewData["VersionNumber"].ToString();
+    var settings = (Dictionary<string, string>)ViewData["Settings"];
+    var settingsJson = "";
+    foreach (var k in settings.Keys)
+    {
+        settingsJson += (string.IsNullOrEmpty(settingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, settings[k]);
+    }
+    settingsJson = "{" + settingsJson + "}";
+    var companyLogo = settings["CompanyLogo"];
+    var companyIcon = settings["CompanyIcon"];
+    var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
+}
+@functions{
+    public string GetAntiForgeryToken()
+    {
+        string cookieToken, formToken;
+        AntiForgery.GetTokens(null, out cookieToken, out formToken);
+        return cookieToken + ":" + formToken;
+    }
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Ember-based Layout</title>
+    <script src="~/Scripts/jquery-2.1.4.js"></script>
+    <script src="~/Scripts/handlebars.js"></script>
+    <script src="~/Scripts/ember.debug.js"></script>
+    <script src="~/Scripts/ember-data.js"></script>
+    <script src="~/Scripts/packery.pkgd.js"></script>
+</head>
+<body>
+</body>
+</html>

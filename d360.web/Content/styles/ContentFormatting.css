@@ -859,3 +859,12 @@ ul.hierarchy :last-child {
   color: #e2792a;
   cursor: help;
 }
+/*-----------------------
+   Types of Data Columns
+------------------------*/
+.cell-value-name {
+  font-weight: 600;
+}
+.cell-value-type {
+  font-size: 0.7em;
+}

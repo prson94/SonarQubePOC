@@ -1419,27 +1419,35 @@ namespace d360.fusion
                     continue;
                 }
 
-                sourceID = sourceID.Replace(" ", string.Empty).ToUpper();
-
-                models[i][SourceIDAttribute] = sourceID;
-
-                if (models[i].TryGetValue(ParentSourceIDAttribute, out parentSourceID))
+                if (string.IsNullOrEmpty(sourceID))
                 {
-                    if(!string.IsNullOrEmpty(parentSourceID))
-                        models[i][ParentSourceIDAttribute] = parentSourceID.Replace(" ", string.Empty).ToUpper();
-                }
+                    Trace.TraceWarning("FUSION PROCESSING FOUND A NODE MISSING A VALID SOURCE ID.  DATA:[{0}]", string.Join(";", models[i]));
 
-                //make sure this item doesnt exist more than once
-                if (existingSourceIDs.Contains(sourceID))
+                    continue;
+                }
+                else
                 {
-                    Trace.TraceWarning("INPUT FUSION DATA CONTAINS THE SAME SOURCEID VALUE MULTIPLE TIMES.  SOURCE ID:[{0}] MODEL:[{1}]", sourceID, string.Join(";", models[i]));
+                    sourceID = sourceID.Replace(" ", string.Empty).ToUpper();
+                    models[i][SourceIDAttribute] = sourceID;
 
-                    models.RemoveAt(i);
+                    if (models[i].TryGetValue(ParentSourceIDAttribute, out parentSourceID))
+                    {
+                        if (!string.IsNullOrEmpty(parentSourceID))
+                            models[i][ParentSourceIDAttribute] = parentSourceID.Replace(" ", string.Empty).ToUpper();
+                    }
+
+                    //make sure this item doesnt exist more than once
+                    if (existingSourceIDs.Contains(sourceID))
+                    {
+                        Trace.TraceWarning("INPUT FUSION DATA CONTAINS THE SAME SOURCEID VALUE MULTIPLE TIMES.  SOURCE ID:[{0}] MODEL:[{1}]", sourceID, string.Join(";", models[i]));
+
+                        models.RemoveAt(i);
+                    }
+
+                    existingSourceIDs.Add(sourceID);
+
+                    _workArea.InSourceIDList.Add(sourceID);
                 }
-
-                existingSourceIDs.Add(sourceID);                
-
-                _workArea.InSourceIDList.Add(sourceID);
             }            
         }
     }

@@ -31,5 +31,13 @@ namespace d360.web.Controllers
             ViewData.Add("Settings", Community.GetCompanySettings());
             return View();
         }
+
+        public ActionResult Ember()
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("ResourceID", Company.CurrentResourceID);
+            ViewData.Add("Settings", Community.GetCompanySettings());
+            return View("Core");
+        }
     }
 }

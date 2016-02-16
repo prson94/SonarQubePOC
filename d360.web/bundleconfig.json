@@ -84,7 +84,7 @@
     "outputFileName": "content/styles/all.css",
     "inputFiles": [
       "content/font-awesome.css",
-      "Content/materialize/css/materialize.css",
+      "Content/styles/materialize.css",
       "Content/styles/Root.css",
       "Content/styles/ContentFormatting.css",
       "Content/styles/navigation.css"

@@ -447,9 +447,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="app\controllers\TodoListsController.js" />
+    <Content Include="app\router.js" />
+    <Content Include="app\routes\home.js" />
     <Content Include="App_Data\Documentation.XML" />
     <Content Include="Areas\HelpPage\HelpPage.css" />
-    <Content Include="Content\materialize\css\materialize.css" />
+    <Content Include="Content\styles\materialize.css" />
     <Content Include="Content\styles\apps.css" />
     <Content Include="Content\styles\apps.min.css">
       <DependentUpon>apps.css</DependentUpon>
@@ -459,6 +462,12 @@
     </Content>
     <Content Include="Content\styles\jqx.metro.min.css">
       <DependentUpon>jqx.metro.css</DependentUpon>
+    </Content>
+    <Content Include="Content\styles\navigation.css">
+      <DependentUpon>navigation.less</DependentUpon>
+    </Content>
+    <Content Include="Content\styles\navigation.min.css">
+      <DependentUpon>navigation.css</DependentUpon>
     </Content>
     <Content Include="Content\templates\parts\LineageDiagram.html" />
     <Content Include="Content\templates\parts\LineageDiagramSourceRules.html" />
@@ -471,33 +480,13 @@
     <Content Include="Content\styles\all.min.css">
       <DependentUpon>all.css</DependentUpon>
     </Content>
-    <Content Include="Content\styles\images\backgroundTop.png" />
-    <Content Include="Content\styles\images\backImage.png" />
-    <Content Include="Content\styles\images\bg_black.png" />
-    <Content Include="Content\styles\images\bg_blackhover.png" />
-    <Content Include="Content\styles\images\bg_blackhover_horizontal.png" />
-    <Content Include="Content\styles\images\bg_blackpressed.png" />
-    <Content Include="Content\styles\images\bg_blackpressed_horizontal.png" />
-    <Content Include="Content\styles\images\bg_black_horizontal.png" />
-    <Content Include="Content\styles\images\bg_blueenergy.png" />
-    <Content Include="Content\styles\images\bg_darkblue.png" />
-    <Content Include="Content\styles\images\bg_darkbluehover.png" />
-    <Content Include="Content\styles\images\bg_darkbluepressed.png" />
-    <Content Include="Content\styles\images\blackbackground.png" />
-    <Content Include="Content\styles\images\black_gradient.png" />
     <Content Include="Content\styles\images\check_black.png" />
-    <Content Include="Content\styles\images\check_blue.png" />
-    <Content Include="Content\styles\images\check_blue_indeterminate.png" />
     <Content Include="Content\styles\images\check_disabled.png" />
     <Content Include="Content\styles\images\check_indeterminate_black.png" />
     <Content Include="Content\styles\images\check_indeterminate_disabled.png" />
-    <Content Include="Content\styles\images\check_indeterminate_white.png" />
-    <Content Include="Content\styles\images\check_lightblue.png" />
-    <Content Include="Content\styles\images\check_lightblue_indeterminate.png" />
     <Content Include="Content\styles\images\check_white.png" />
     <Content Include="Content\styles\images\close.png" />
     <Content Include="Content\styles\images\close_black.png" />
-    <Content Include="Content\styles\images\close_blue.png" />
     <Content Include="Content\styles\images\close_white.png" />
     <Content Include="Content\styles\images\colorpicker\bar-hue.png" />
     <Content Include="Content\styles\images\colorpicker\bar-saturation.png" />
@@ -506,49 +495,35 @@
     <Content Include="Content\styles\images\colorpicker\map-saturation.png" />
     <Content Include="Content\styles\images\crosshair-white.png" />
     <Content Include="Content\styles\images\crosshair.png" />
-    <Content Include="Content\styles\images\darkred_gradient.png" />
     <Content Include="Content\styles\images\drag.png" />
     <Content Include="Content\styles\images\dragcancel.png" />
     <Content Include="Content\styles\images\error.png" />
     <Content Include="Content\styles\images\filter.png" />
     <Content Include="Content\styles\images\html_editor.png" />
-    <Content Include="Content\styles\images\html_editor_white.png" />
     <Content Include="Content\styles\images\icon-calendar-white.png" />
     <Content Include="Content\styles\images\icon-calendar.png" />
     <Content Include="Content\styles\images\icon-cancel-white.png" />
     <Content Include="Content\styles\images\icon-cancel.png" />
     <Content Include="Content\styles\images\icon-delete-white.png" />
     <Content Include="Content\styles\images\icon-delete.png" />
-    <Content Include="Content\styles\images\icon-down-blue.png" />
-    <Content Include="Content\styles\images\icon-down-transparent.png" />
     <Content Include="Content\styles\images\icon-down-white.png" />
     <Content Include="Content\styles\images\icon-down.png" />
     <Content Include="Content\styles\images\icon-edit-white.png" />
     <Content Include="Content\styles\images\icon-edit.png" />
-    <Content Include="Content\styles\images\icon-first-blue.png" />
-    <Content Include="Content\styles\images\icon-first-transparent.png" />
     <Content Include="Content\styles\images\icon-first-white.png" />
     <Content Include="Content\styles\images\icon-first.png" />
-    <Content Include="Content\styles\images\icon-last-blue.png" />
-    <Content Include="Content\styles\images\icon-last-transparent.png" />
     <Content Include="Content\styles\images\icon-last-white.png" />
     <Content Include="Content\styles\images\icon-last.png" />
-    <Content Include="Content\styles\images\icon-left-blue.png" />
-    <Content Include="Content\styles\images\icon-left-transparent.png" />
     <Content Include="Content\styles\images\icon-left-white.png" />
     <Content Include="Content\styles\images\icon-left.png" />
     <Content Include="Content\styles\images\icon-menu-minimized-white.png" />
     <Content Include="Content\styles\images\icon-menu-minimized.png" />
-    <Content Include="Content\styles\images\icon-right-blue.png" />
-    <Content Include="Content\styles\images\icon-right-transparent.png" />
     <Content Include="Content\styles\images\icon-right-white.png" />
     <Content Include="Content\styles\images\icon-right.png" />
     <Content Include="Content\styles\images\icon-save-white.png" />
     <Content Include="Content\styles\images\icon-save.png" />
     <Content Include="Content\styles\images\icon-showpassword-white.png" />
     <Content Include="Content\styles\images\icon-showpassword.png" />
-    <Content Include="Content\styles\images\icon-up-blue.png" />
-    <Content Include="Content\styles\images\icon-up-transparent.png" />
     <Content Include="Content\styles\images\icon-up-white.png" />
     <Content Include="Content\styles\images\icon-up.png" />
     <Content Include="Content\styles\images\info.png" />
@@ -569,22 +544,11 @@
     <Content Include="Content\styles\images\metro-icon-up-white.png" />
     <Content Include="Content\styles\images\metro-icon-up.png" />
     <Content Include="Content\styles\images\multi-arrow.gif" />
-    <Content Include="Content\styles\images\office-icon-down.png" />
-    <Content Include="Content\styles\images\office-icon-first.png" />
-    <Content Include="Content\styles\images\office-icon-last.png" />
-    <Content Include="Content\styles\images\office-icon-left.png" />
-    <Content Include="Content\styles\images\office-icon-right.png" />
-    <Content Include="Content\styles\images\office-icon-up.png" />
     <Content Include="Content\styles\images\plus.png" />
     <Content Include="Content\styles\images\plus_white.png" />
     <Content Include="Content\styles\images\pointer.png" />
-    <Content Include="Content\styles\images\rangebar_classic.png" />
-    <Content Include="Content\styles\images\rangebar_darkblue.png" />
-    <Content Include="Content\styles\images\rangebar_shinyblack.png" />
-    <Content Include="Content\styles\images\rangebar_summer.png" />
     <Content Include="Content\styles\images\red_arrow_down.png" />
     <Content Include="Content\styles\images\red_arrow_up.png" />
-    <Content Include="Content\styles\images\red_gradient.png" />
     <Content Include="Content\styles\images\roundbg_check_black.png" />
     <Content Include="Content\styles\images\roundbg_check_disabled.png" />
     <Content Include="Content\styles\images\roundbg_check_indeterminate.png" />
@@ -594,7 +558,6 @@
     <Content Include="Content\styles\images\roundbg_disabled.png" />
     <Content Include="Content\styles\images\search.png" />
     <Content Include="Content\styles\images\icon-search_white.png" />
-    <Content Include="Content\styles\images\search_white.png" />
     <Content Include="Content\styles\images\sortasc.png" />
     <Content Include="Content\styles\images\sortascbutton.png" />
     <Content Include="Content\styles\images\sortdesc.png" />
@@ -606,13 +569,7 @@
     <Content Include="Content\styles\images\success.png" />
     <Content Include="Content\styles\images\tick.png" />
     <Content Include="Content\styles\images\time.png" />
-    <Content Include="Content\styles\images\track_classic.png" />
-    <Content Include="Content\styles\images\track_darkblue.png" />
-    <Content Include="Content\styles\images\track_shinyblack.png" />
-    <Content Include="Content\styles\images\track_summer.png" />
     <Content Include="Content\styles\images\warning.png" />
-    <Content Include="Content\styles\images\wp_check_indeterminate_white.png" />
-    <Content Include="Content\styles\images\wp_check_white.png" />
     <Content Include="Content\styles\jqx.d3s.css">
       <DependentUpon>jqx.d3s.less</DependentUpon>
     </Content>
@@ -662,8 +619,13 @@
     <Content Include="fonts\material-design-icons\Material-Design-Icons.ttf" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.eot" />
     <Content Include="apiapp.json" />
+    <Content Include="app\templates\home.hbs" />
+    <Content Include="app\templates\components\people-list.hbs" />
     <None Include="bundleconfig.json" />
     <None Include="compilerconfig.json" />
+    <None Include="compilerconfig.json.defaults">
+      <DependentUpon>compilerconfig.json</DependentUpon>
+    </None>
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>
@@ -690,12 +652,6 @@
     <Content Include="Content\styles\jquery.gritter.min.css">
       <DependentUpon>jquery.gritter.css</DependentUpon>
     </Content>
-    <Content Include="Content\styles\navigation.css">
-      <DependentUpon>navigation.less</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\navigation.min.css">
-      <DependentUpon>navigation.css</DependentUpon>
-    </Content>
     <Content Include="Content\styles\Tooltip.css">
       <DependentUpon>Tooltip.less</DependentUpon>
     </Content>
@@ -712,9 +668,6 @@
     <Content Include="Content\templates\community.home.html" />
     <Content Include="Content\templates\load.html" />
     <Content Include="Content\styles\navigation.less" />
-    <Content Include="Content\styles\navigation.css.map">
-      <DependentUpon>navigation.css</DependentUpon>
-    </Content>
     <Content Include="Content\styles\Tooltip.css.map">
       <DependentUpon>Tooltip.css</DependentUpon>
     </Content>
@@ -723,16 +676,8 @@
     </Content>
     <Content Include="Content\templates\reporting.admin.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
-    <Content Include="images\backgrounds\light-gray.jpg" />
-    <Content Include="images\loader-large-inverted.gif" />
-    <Content Include="images\loader-large.gif" />
-    <Content Include="images\loader-medium-inverted.gif" />
-    <Content Include="images\loader-medium.gif" />
-    <Content Include="images\loader-mini-inverted.gif" />
-    <Content Include="images\loader-mini.gif" />
-    <Content Include="images\loader-small-inverted.gif" />
     <Content Include="images\loader-small.gif" />
-    <Content Include="Content\images\gritter.png">
+    <Content Include="images\gritter.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\images\logo.new.png" />
@@ -750,19 +695,6 @@
     <None Include="Content\redactor\redactor.min.css">
       <DependentUpon>redactor.css</DependentUpon>
     </None>
-    <Content Include="Content\resources\drag.png" />
-    <Content Include="Content\resources\dragcancel.png" />
-    <Content Include="Content\resources\filter_dark.png" />
-    <Content Include="Content\resources\filter_large_.png" />
-    <Content Include="Content\resources\loader.gif" />
-    <Content Include="Content\resources\menubutton.png" />
-    <Content Include="Content\resources\red_arrow_down.png" />
-    <Content Include="Content\resources\red_arrow_up.png" />
-    <Content Include="Content\resources\sortasc.png" />
-    <Content Include="Content\resources\sortascbutton.png" />
-    <Content Include="Content\resources\sortdesc.png" />
-    <Content Include="Content\resources\sortdescbutton.png" />
-    <Content Include="Content\resources\sortremove.png" />
     <None Include="Content\styles\colorpicker.css">
       <DependentUpon>colorpicker.less</DependentUpon>
     </None>
@@ -832,44 +764,6 @@
       <DependentUpon>Root.less</DependentUpon>
     </None>
     <None Include="Content\styles\Tooltip.less" />
-    <Content Include="Content\images\ajaxLoader.gif" />
-    <Content Include="Content\images\arrow.down.png" />
-    <Content Include="Content\images\arrow.up.png" />
-    <Content Include="Content\images\arrows-ffffff.png" />
-    <Content Include="Content\images\back_disabled.jpg" />
-    <Content Include="Content\images\back_enabled.jpg" />
-    <Content Include="Content\images\bar180.gif" />
-    <Content Include="Content\images\bg-input-focus.png" />
-    <Content Include="Content\images\bg-input.png" />
-    <Content Include="Content\images\close.gif" />
-    <Content Include="Content\images\detail.16.png" />
-    <Content Include="Content\images\footer-tools.png" />
-    <Content Include="Content\images\forward_disabled.jpg" />
-    <Content Include="Content\images\forward_enabled.jpg" />
-    <Content Include="Content\images\header.bg.gif" />
-    <Content Include="Content\images\icons-18-black.png" />
-    <Content Include="Content\images\icons-18-white.png" />
-    <Content Include="Content\images\icons-36-black.png" />
-    <Content Include="Content\images\icons-36-white.png" />
-    <Content Include="Content\images\large_icon.png" />
-    <Content Include="Content\images\login.bg.png" />
-    <Content Include="Content\images\logo.png" />
-    <Content Include="Content\images\members.view.png" />
-    <Content Include="Content\images\nav_background.png" />
-    <Content Include="Content\images\next.gif" />
-    <Content Include="Content\images\prev.gif" />
-    <Content Include="Content\images\search.24.png" />
-    <Content Include="Content\images\sel_win7.gif" />
-    <Content Include="Content\images\shadow.png" />
-    <Content Include="Content\images\social.png" />
-    <Content Include="Content\images\sort_asc.png" />
-    <Content Include="Content\images\sort_asc_disabled.png" />
-    <Content Include="Content\images\sort_both.png" />
-    <Content Include="Content\images\sort_desc.png" />
-    <Content Include="Content\images\sort_desc_disabled.png" />
-    <Content Include="Content\images\sprite.png" />
-    <Content Include="Content\images\transparent.gif" />
-    <Content Include="Content\images\windowsLive.png" />
     <None Include="Content\styles\Root.min.css">
       <DependentUpon>Root.css</DependentUpon>
     </None>
@@ -903,6 +797,7 @@
     <Content Include="Content\templates\attributes.admin.html" />
     <Content Include="Content\templates\artifacts.admin.html" />
     <Content Include="Content\templates\_content.header.html" />
+    <Content Include="images\logo.png" />
     <Content Include="node-test.html" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
@@ -939,22 +834,36 @@
     <None Include="Scripts\d3s.Detail.js" />
     <None Include="Scripts\d3s.Editor.js" />
     <None Include="Scripts\d3s.FormTools.js" />
-    <None Include="Scripts\d3s.PageNavigation.js" />
     <None Include="Scripts\d3s.PageTools.js" />
     <None Include="Scripts\d3s.RandomSurveyQuestion.js" />
-    <None Include="Scripts\d3s.Social.js" />
-    <None Include="Scripts\d3s.SocialCategory.js" />
     <None Include="Scripts\d3s.SurveyReport.js" />
     <Content Include="Scripts\Apps.js" />
     <Content Include="Scripts\Apps.min.js">
       <DependentUpon>Apps.js</DependentUpon>
     </Content>
+    <Content Include="Scripts\ember-data.js" />
+    <Content Include="Scripts\ember-data.min.js" />
+    <Content Include="Scripts\ember-data.prod.js" />
+    <Content Include="Scripts\ember-template-compiler.js" />
+    <Content Include="Scripts\ember.debug.js" />
+    <Content Include="Scripts\ember.js" />
+    <Content Include="Scripts\ember.min.js" />
+    <Content Include="Scripts\ember.prod.js" />
     <Content Include="Scripts\errors.json" />
+    <Content Include="Scripts\ember-data.js.map" />
     <None Include="Scripts\handlebars-1.1.2.js" />
     <None Include="Content\styles\_Variables.less" />
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\GoJS\GoJS-1-5-18-debug.js" />
     <Content Include="Scripts\GoJS\GoJS-1-5-18.js" />
+    <Content Include="Scripts\handlebars.amd.js" />
+    <Content Include="Scripts\handlebars.amd.min.js" />
+    <Content Include="Scripts\handlebars.js" />
+    <Content Include="Scripts\handlebars.min.js" />
+    <Content Include="Scripts\handlebars.runtime.amd.js" />
+    <Content Include="Scripts\handlebars.runtime.amd.min.js" />
+    <Content Include="Scripts\handlebars.runtime.js" />
+    <Content Include="Scripts\handlebars.runtime.min.js" />
     <Content Include="Scripts\jquery-2.1.4.js" />
     <Content Include="Scripts\jquery.signalR-2.2.0.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
@@ -1025,6 +934,8 @@
     <None Include="Scripts\templates\surveys.admin.js" />
     <Content Include="Scripts\moment-with-locales.js" />
     <Content Include="Scripts\moment.js" />
+    <Content Include="Scripts\packery.pkgd.js" />
+    <Content Include="Scripts\packery.pkgd.min.js" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\templates\rules.list.js" />
@@ -1040,7 +951,6 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Views\Parts\AuditGrid.cshtml" />
-    <Content Include="Views\Resources\Survey.cshtml" />
     <Content Include="Views\Parts\GovernanceGrid.cshtml" />
     <Content Include="Views\Parts\Board.cshtml" />
     <Content Include="Views\Parts\Detail.cshtml" />
@@ -1144,6 +1054,7 @@
     <Content Include="Views\Form\IntersectTypePredicateEditForm.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsAgentOverlay.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsProcessOverlay.cshtml" />
+    <Content Include="Views\Shared\Core.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1190,7 +1101,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Content\materialize\font\" />
+    <Folder Include="Content\materialize\css\" />
     <Folder Include="Views\Home\" />
     <Folder Include="Views\Queries\" />
     <Folder Include="Views\Tiles\" />
@@ -1207,9 +1118,6 @@
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>FieldInfo.Designer.cs</LastGenOutput>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">

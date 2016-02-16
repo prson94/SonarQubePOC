@@ -44,12 +44,6 @@ namespace d360.web.Controllers
 
         #region Actions
 
-        [Route("surveys/{typeID:int}/{id:int}")]
-        public ActionResult Survey(int typeID, int id)
-        {
-            return View();
-        }
-
         [Route("image/{id:int}")]
         public ActionResult MyImage(int id, int size = 150)
         {
@@ -107,24 +101,6 @@ namespace d360.web.Controllers
         {
             return PartialView();
         }
-
-        //[Route("lookups/{id:int}/allocations")]
-        //public ActionResult _LookupAllocations(int id)
-        //{
-        //    ViewData.Add("ID", id);
-        //    return PartialView();
-        //}
-
-        //[Route("lookups/{id:int}/items")]
-        //public ActionResult _LookupItems(int id)
-        //{
-        //    ViewData.Add("ID", id);
-
-        //    var sType = SystemObjects.LookupType.ToString();
-        //    var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == sType && i.ObjectID == id).ToList();
-        //    fields.Insert(0, new FieldTypeWithRelation { FriendlyName = "ID", Name = "ID", Type = DataType.Number.ToString() });
-        //    return PartialView(fields);
-        //}
 
         string buttonHtml(string buttonType, string context, string uri, string icon, string title, string method = "")
         {

@@ -572,6 +572,8 @@ where   ExecutionID = {0}", id);
                     LogFileName = fileName
                 });
 
+                //await Task.WhenAll(task);
+
                 Trace.TraceInformation("Done enqueueing the fusion job on the queue.");
 
                 //check if the job encountered any errors.  If so log the agent errors in fusion agenterror tables

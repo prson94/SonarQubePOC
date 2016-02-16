@@ -5241,14 +5241,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_sourcerules = controlID + '_sourcerules';
     var controlID_sourcerules_table = controlID + '_sourcerules_table';
 
-    //var controlID_add = controlID + '_add';
     var controlID_add_search_text = controlID + '_add_search_text';
     var controlID_add_search = controlID + '_add_search';
     var controlID_add_artifact_type = controlID + '_add_artifact_type';
     var controlID_add_search_message = controlID + '_add_search_message';
 
-    //var controlID_overlay_radio_existing = controlID + '_overlay_radio_existing';
-    //var controlID_overlay_radio_new = controlID + '_overlay_radio_new';
     var controlID_overlay_existing = controlID + '_overlay_existing';
     var controlID_overlay_new = controlID + '_overlay_new';
     var controlID_overlay_relationship = controlID + '_overlay_relationship';
@@ -5256,8 +5253,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_overlay_cancel = controlID + '_overlay_cancel';
     var controlID_overlay_add = controlID + '_overlay_add';
     var controlID_overlay_roles = controlID + '_overlay_roles';
-    //var controlID_overlay_pname = controlID + '_overlay_pname';
-    //var controlID_overlay_phrase = controlID + '_overlay_phrase';
 
     var controlID_responsibilities = controlID + '_responsibilities';
     var controlID_responsibilities_table = controlID + '_responsibilities_table';
@@ -5575,8 +5570,13 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             $('#' + controlID_fusion_body).jqxGrid('autoresizecolumns');
         },
         columns: [
-            { text: 'Type', groupable: true, datafield: 'TargetTypeName' },
-            { text: 'Name', groupable: false, datafield: 'TargetName' }
+            //{ text: 'Type', groupable: true, datafield: 'TargetTypeName' },
+            {
+                text: 'Name', groupable: false, datafield: 'TargetName',
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    return textrenderer("<div class='cell-value-name'>" + data.TargetName + "</div><div class='cell-value-type'>" + data.TargetTypeName + "</div>");
+                }
+            }
         ]
     });
 
@@ -5696,8 +5696,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         g(go.Panel,
             "Auto",
             {
-                alignment: go.Spot.TopRight//,
-                //margin: go.Margin(0, 0, 0, 25)
+                alignment: go.Spot.LeftCenter
             },
             g(go.Shape, "Circle",
                 {
@@ -5709,9 +5708,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 {
                     row: 0,
                     margin: 3,
-                    alignment: go.Spot.Top,
+                    alignment: go.Spot.LeftCenter,
                     editable: false,
-                    //maxSize: new go.Size(w - 20, h - 10),
                     stroke: '#ffffff',
                     font: "bold " + fontSize + "pt sans-serif"
                 }//,
@@ -5849,8 +5847,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     function onSelectionChange(e) {
         selection = e.diagram.selection;
 
-        //console.log(e.diagram.selection.count);
-        
         if (selection.count < 1) {
             $("#" + controlID_ribbon_remove).hide(200);
             $('#' + controlID_fusion).jqxExpander('collapse');
@@ -5870,7 +5866,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         for (var i = 0; i < sel.length; i++ )
         {
             var data = sel[i].data;
-           // console.log(data);
+
             if (data.diagramObjectType == 'Node') {
                 
                 //#region Info
@@ -5879,14 +5875,15 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                         url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
                         data: null,
                         success: function (data) {
-
                             $('#' + controlID_info_body).html(data);
+                            $("#" + controlID_info).jqxExpander('expand');
                         },
                         async: true
                     });
 
                     technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
                     $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+                    $("#" + controlID_fusion).jqxExpander('expand');
 
                     if (data.sourceRuleCount > 0) {
                         $('#' + controlID_sourcerules).show();
@@ -5903,8 +5900,10 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                         $("#" + controlID_sourcerules_table).html('');
                     }
 
+                    $("#" + controlID_responsibilities).show();
                     lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
                     $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    $("#" + controlID_responsibilities).jqxExpander('expand');
                 }
                 //#endregion
 
@@ -5913,13 +5912,20 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             } else if (data.diagramObjectType == "Link") { //link selected
 
                 $('#' + controlID_info_body).html('');
+                $("#" + controlID_info).jqxExpander('collapse');
+
+                $("#" + controlID_sourcerules).jqxExpander('collapse');
+                $('#' + controlID_sourcerules).hide();
+
+                lineageResponsibilitySource.url = null;
+                $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                $("#" + controlID_responsibilities).jqxExpander('collapse');
+                $('#' + controlID_responsibilities).hide();
 
                 if (data.intersectId != null) {
                     technicalRelationsSource.url = '/api/Intersect/' + data.intersectId + '/relations';
                     $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
-
-                    lineageResponsibilitySource.url = null;
-                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    $("#" + controlID_fusion).jqxExpander('expand');
                 }
             }
         }
@@ -6310,26 +6316,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var g = go.GraphObject.make;
     var myDiagram = initializeDiagram();
 
-    //myDiagram = g(go.Diagram, controlID_diagram, {
-    //    initialContentAlignment: go.Spot.Left,
-    //    //autoScale: go.Diagram.UniformToFill,
-    //    allowDrop: true,
-    //    initialAutoScale: go.Diagram.UniformToFill,
-    //    scrollMode: go.Diagram.DocumentScroll,
-    //    initialPosition: new go.Point(125, 125),
-    //    layout: g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
-    //    "undoManager.isEnabled": true
-    //});
-    //myDiagram.model.class = go.GraphLinksModel;
-    //myDiagram.model.nodeCategoryProperty = "template";
-    //myDiagram.model.linkFromPortIdProperty = "frompid";
-    //myDiagram.model.linkToPortIdProperty = "topid";
-    //myDiagram.model.nodeDataArray = [];
-    //myDiagram.model.linkDataArray = [];
-    ////myDiagram.toolManager.linkingTool.isEnabled = !readonly;
-    //myDiagram.isReadOnly = readonly;
-
-
     function initializeDiagram() {
         var dg = g(go.Diagram, controlID_diagram, {
                     initialContentAlignment: go.Spot.Left,
@@ -6354,27 +6340,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         return dg;
     }
-    //$("#" + controlID_overlay_radio_existing).bind('change', function (e) {
-    //    var checked = e.args.checked;
-
-    //    if (checked) {
-    //        $('#' + controlID_overlay_existing).show(200);
-    //        $('#' + controlID_overlay_new).hide(200);
-    //        if ($('#' + controlID_overlay_predicates).val() != 0) {
-    //            $('#' + controlID_overlay_add).prop('disabled', false);
-    //        } else {
-    //            $('#' + controlID_overlay_add).prop('disabled', true);
-    //        }
-    //    } else {
-    //        $('#' + controlID_overlay_existing).hide(200);
-    //        $('#' + controlID_overlay_new).show(200);
-    //        if ($('#' + controlID_overlay_pname).val() != '' && $('#' + controlID_overlay_phrase).val() != '') {
-    //            $('#' + controlID_overlay_add).prop('disabled', false);
-    //        } else {
-    //            $('#' + controlID_overlay_add).prop('disabled', true);
-    //        }
-    //    }
-    //});
 
     $('#' + controlID_overlay_predicates).on('change', function (e) {
         var checked = true;//$('#' + controlID_overlay_radio_existing).jqxRadioButton('checked');
@@ -6386,28 +6351,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             }
         }
     });
-
-    //$('#' + controlID_overlay_pname).on('keyup', function (e) {
-    //    var checked = $('#' + controlID_overlay_radio_new).jqxRadioButton('checked');
-    //    if (checked) {
-    //        if ($(this).val() == '' || $('#' + controlID_overlay_phrase).val() == '') {
-    //            $('#' + controlID_overlay_add).prop('disabled', true);
-    //        } else {
-    //            $('#' + controlID_overlay_add).prop('disabled', false);
-    //        }
-    //    }
-    //});
-
-    //$('#' + controlID_overlay_phrase).on('keyup', function (e) {
-    //    var checked = $('#' + controlID_overlay_radio_new).jqxRadioButton('checked');
-    //    if (checked) {
-    //        if ($(this).val() == '' || $('#' + controlID_overlay_pname).val() == '') {
-    //            $('#' + controlID_overlay_add).prop('disabled', true);
-    //        } else {
-    //            $('#' + controlID_overlay_add).prop('disabled', false);
-    //        }
-    //    }
-    //});
 
     $('#' + controlID_wrapper).on('mouseup', function () {
         var height = $('#' + controlID_wrapper).height();
@@ -6459,12 +6402,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         }
     });
 
-    //$("#" + controlID_controls_zoom).on('valueChanged', function (event) {
-    //    var val = parseInt(event.currentValue);
-    //    $('#' + controlID_ribbon_zoom_text).text(Math.round((val / 1500) * 100) + '%');
-    //    myDiagram.scale = (val / 1500);
-    //});
-
     //#endregion
 
     myDiagram.addDiagramListener('ViewportBoundsChanged', onViewportBoundsChanged);
@@ -6475,21 +6412,15 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.addDiagramListener('SelectionDeleting', onDeleting);
     myDiagram.addDiagramListener('SelectionDeleted', onDeleted);
     myDiagram.addDiagramListener('ExternalObjectsDropped', onDrop);
-    //myDiagram.addDiagramListener('Modified', onModified);
     myDiagram.model.addChangedListener(onChange);
 
     myDiagram.grid.visible = false;
     myDiagram.grid.gridCellSize = new go.Size(8, 8);
     myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
     myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
-    //myDiagram.allowVerticalScroll = false;
-    //myDiagram.allowHorizontalScroll = false;
-    //myDiagram.scrollMode = go.Diagram.InfiniteScroll;
-
 
     makeTemplate("FocalArtifact", 275, 150, '#000000', 14, [makePort("", true)], [makePort("OUT", false)]);
     makeTemplate("Artifact", 225, 105, 'transparent', 10, [makePort("", true)], [makePort("OUT", false)]);
-    //makeTemplate("FusionAttribute", 300, 50, 7, [makePort("", true)], [makePort("OUT", false)]);
 
     myDiagram.linkTemplate = g(
         go.Link, { routing: go.Link.AvoidsNodes, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel
@@ -6507,17 +6438,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     );
     
     var myPalette = initializePalette();
-    //myPalette = g(go.Palette, controlID_palette, {
-    //    contentAlignment: go.Spot.BottomCenter
-    //    , allowDrop: true
-    //    , initialAutoScale: go.Diagram.Uniform
-    //    , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
-    //})
-    //{
-    //    myPalette.model.nodeCategoryProperty = 'template';
-    //    myPalette.model.nodeDataArray = [];
-    //    myPalette.model.class = 'go.GraphLinksModel';
-    //}
 
     function initializePalette() {
 
@@ -6537,9 +6457,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     makeSearchTemplate();
     
     var myOverview = initializeOverview(myDiagram);
-    //myOverview =  
-    //  g(go.Overview, controlID_overview,
-    //    { observed: myDiagram, contentAlignment: go.Spot.Center });
 
     function initializeOverview(diagram) {
         var ov = g(go.Overview, controlID_overview,

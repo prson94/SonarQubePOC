@@ -141,10 +141,6 @@
                     tabs.html(tabHtml + divHtml);
                     tabs.jqxTabs({ theme: 'bootstrap', keyboardNavigation: false, scrollPosition: 'both', selectionTracker: true, animationType: 'fade', width: '100%' });
 
-                    //$.each(data, function (idx, t) {
-                    //  tabs.jqxTabs('addAt', 3, t.Title, $("<div id='" + options.tabID + idx + "' data-uri='" + t.Uri + "' data-loaded='false'><img src='/Content/images/ajaxLoader.gif'/></div>"));
-                    //});
-
                     tabs.on('selected', function (event) {
                         loadTabData($obj, options, event.args.item);
                     });

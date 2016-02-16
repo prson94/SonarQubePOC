@@ -17,8 +17,8 @@
         <tbody>
             {{#each Items}}
             <tr class="rule-item-name">
+                <td class="rule-item" rowspan="3">{{SortOrder}}</td>
                 <td class="rule-item">{{SourceTypeName}} : {{SourceObjectName}}</td>
-                <td class="rule-item" rowspan="2">{{SortOrder}}</td>
             </tr>
             <tr>
                 <td><i>Context:</i>{{{ItemContexts}}}</td>
