@@ -1130,8 +1130,9 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
     var source = $("#hierarchyTileTmpl").html();
     var template = Handlebars.compile(source);
     var newRowID = null;
-    var rowKey = null;
+    //var rowKey = null;
     var newRowCounter = -1;
+    var editorDropDownInfo = [];
 
     $('#' + controlID).html(template({ control: controlID }));
 
@@ -1155,6 +1156,8 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
             { name: 'SubjectID', type: 'number' },
             { name: 'Object', type: 'string' },
             { name: 'ObjectID', type: 'number' },
+            { name: 'ObjectType', type: 'string' },
+            { name: 'ObjectTypeID', type: 'number' },
             { name: 'ParentID', type: 'string' },
             { name: 'Name', type: 'string' },
             { name: 'Path', type: 'string' },
@@ -1162,7 +1165,9 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
             { name: 'ObjectTypeName', type: 'string' },
             { name: 'Level', type: 'number' },
             { name: 'PredicateID', type: 'number' },
-            { name: 'Type', type: 'number' }
+            { name: 'PredicatePhrase', type: 'string'},
+            { name: 'Type', type: 'number' },
+            { name: 'GroupNumber', type: 'number' }
             ],
             hierarchy:
             {
@@ -1172,18 +1177,8 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
             id: 'UID',
             url: '/relations/hierarchy/' + mapType + '/' + type + '/' + id,
             addRow: function (rowID, rowData, position, parentID, commit) {
-                
-                //console.log(rowID);
-                //console.log(rowData);
-                //console.log(parentID);
-                //console.log(rowKey);
-                //rowID = "root" + newRowCounter--;
-                //rowKey = rowID;
-                //rowData.UID = rowKey;
-                //rowData.uid = rowKey;
-                rowData.ObjectTypeName = "Business Term";
-                //rowData.Name =
-                //rowData.ParentID = parentID;
+                rowData.parentID = parentID;
+
                 newRowID = rowID;
                 commit(true);
             }
@@ -1196,19 +1191,91 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
             sortable: false,
             showToolbar: true,
             theme: 'metro',
-            toolbarHeight: 35,
-            renderToolbar: function(toolBar) {
+            toolbarHeight: 40,
+            renderToolbar: function (toolBar) {
+                var rowKey = null;
+
                 var html = $("<div style='overflow: hidden; position: relative; height: 100%; width: 100%; margin-bottom: 4px'></div>");
-                var addTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa fa-plus'></i></div></div>";
-                var saveTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa fa-save'></i></div></div>";
-                var addButton = $(addTemplate);
-                var saveButton = $(saveTemplate);
+                var buttonTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa {fa-icon}'></i></div></div>";
+                var addButton = $(buttonTemplate.replace("{fa-icon}", "fa-plus"));
+                //var addParentButton = $(buttonTemplate.replace("{fa-icon}", "fa-plus"));
+                var saveButton = $(buttonTemplate.replace("{fa-icon}", "fa-save"));
+                var editButton = $(buttonTemplate.replace("{fa-icon}", "fa-pencil"));
+                var deleteButton = $(buttonTemplate.replace("{fa-icon}", "fa-trash"));
+                var cancelButton = $(buttonTemplate.replace("{fa-icon}", "fa-remove"));
                 html.append(addButton);
+                //html.append(addParentButton);
                 html.append(saveButton);
+                html.append(editButton);
+                html.append(deleteButton);
+                html.append(cancelButton);
                 toolBar.append(html);
                 addButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' });
+                //addParentButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro'});
                 saveButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' });
+                editButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' });
+                deleteButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' });
+                cancelButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' });
+
+                var setButtonState = function (state) {
+                    switch (state)
+                    {
+                        case 'select':
+                        case 'save':
+                            addButton.jqxButton({ disabled: false });
+                            //addParentButton.jqxButton({ disabled: false });
+                            saveButton.jqxButton({ disabled: true });
+                            editButton.jqxButton({ disabled: false });
+                            deleteButton.jqxButton({ disabled: false });
+                            cancelButton.jqxButton({ disabled: true });
+                            break;
+                        case 'unselect':
+                            addButton.jqxButton({ disabled: true });
+                            //addParentButton.jqxButton({ disabled: true });
+                            saveButton.jqxButton({ disabled: true });
+                            editButton.jqxButton({ disabled: true });
+                            deleteButton.jqxButton({ disabled: true });
+                            cancelButton.jqxButton({ disabled: true });
+                            break;
+                        case 'edit':
+                            addButton.jqxButton({ disabled: true });
+                            //addParentButton.jqxButton({ disabled: true });
+                            saveButton.jqxButton({ disabled: false });
+                            editButton.jqxButton({ disabled: true });
+                            deleteButton.jqxButton({ disabled: true });
+                            cancelButton.jqxButton({ disabled: false });
+                            break;
+                        case 'disable':
+                            addButton.jqxButton({ disabled: true });
+                            //addParentButton.jqxButton({ disabled: true });
+                            saveButton.jqxButton({ disabled: true });
+                            editButton.jqxButton({ disabled: true });
+                            deleteButton.jqxButton({ disabled: true });
+                            cancelButton.jqxButton({ disabled: true });
+                            break;
+                    }
+                }
+                
+                setButtonState('unselect');
+
+                $(selector).on('rowSelect', function (event) {
+                    setButtonState('select');
+                        rowKey = event.args.key;
+                });
+                $(selector).on('rowDoubleClick', function (event) {
+                    window.location.href = event.args.row.Url;
+                });
+                $(selector).on('bindingComplete', function (event) {
+                    showFocalRow($(selector), event);
+                });
+                $(selector).on('rowUnselect', function () { setButtonState('unselect')});
+                $(selector).on('rowEndEdit', function () {  setButtonState('save')});
+                $(selector).on('rowBeginEdit', function () { setButtonState('edit') });
+
                 addButton.click(function (event) {
+                    if ($(selector).jqxTreeGrid('getSelection').length < 1)
+                        return;
+                    console.log(rowKey);
                     $(selector).jqxTreeGrid('expandRow', rowKey);
                     $(selector).jqxTreeGrid('addRow', newRowCounter--, {}, 'first', rowKey);
                     $(selector).jqxTreeGrid('clearSelection');
@@ -1216,14 +1283,55 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
                     $(selector).jqxTreeGrid('beginRowEdit', newRowID);
                 });
                 saveButton.click(function (event) {
-                    //console.log(rowKey);
                     $(selector).jqxTreeGrid('endRowEdit', rowKey, false);
+                    var rowData = null;
 
+                    rowData = $(selector).jqxTreeGrid('getRow', rowKey);
+
+                    if (rowData != null) {
+                        var parentData = getRowDataItem(rowData.parent);
+                        var EditorPostModel = {
+                            Subject: parentData.type,
+                            SubjectID: parentData.id,
+                            'Object': rowData.Object,
+                            'ObjectID': rowData.ObjectID,
+                            PredicateID: rowData.PredicateID,
+                            IsAddingParent: false,
+                            IntersectMapId: (rowData.parent.ID || 0),
+                            HierarchyType: mapType,
+                            GroupNumber: rowData.parent.GroupNumber
+                        };
+                        console.log(EditorPostModel);
+                        $.ajax({
+                            url: '/form/SaveHierarchy',
+                            data: EditorPostModel,
+                            method: 'POST',
+                            async: false
+                        });
+                        $(selector).jqxTreeGrid('updateBoundData');
+                    }
+                });
+                cancelButton.click(function (event) {
+                    $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
+                    $(selector).jqxTreeGrid('deleteRow', rowKey);
+                });
+                deleteButton.click(function (event) {
+                    var selection = $(selector).jqxTreeGrid('getSelection');
+                    if (selection == null || selection == [] || selection[0] == null)
+                        return;
+                    if (selection[0].ID == null || selection[0].ID < 1)
+                        return;
+                    $.ajax({
+                        url: '/form/DeleteHierarchyByID?id=' + selection[0].ID,
+                        method: 'DELETE',
+                        async: false
+                    });
+                    $(selector).jqxTreeGrid('updateBoundData');
                 });
             },
             columns: [
                 {
-                    text: title, dataField: 'Name', width: 350, align: "center", columnType: "template",
+                    text: title, dataField: 'Name', width: 350, align: "center", columnType: "custom",
                     cellsRenderer: function (rowKey, dataField, value, data) {
                         var item = getRowDataItem(data);
                         if (item.type == type && item.id == id) {
@@ -1232,15 +1340,26 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
                         return "<div style='margin-left: 4px; display:inline-block;'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
                     },
                     createEditor: function (row, cellvalue, editor, cellText, width, height) {
-                        
+
+                        var rowData = $(selector).jqxTreeGrid('getRow', row);
+                        var mapId = 0;
+
+                        if (rowData != null)
+                            if (rowData.parent != null)
+                                mapId = rowData.parent.ID;
+
+                        //console.log(selector);
+                        //console.log(rowData);
                         var hierarchySubjectSource = {
                             datafields: [
                                 { name: 'Object' },
                                 { name: 'ObjectID' },
-                                { name: 'Name' }
+                                { name: 'Name' },
+                                { name: 'ObjectTypeName' },
+                                { name: 'DisplayName' }
                             ],
                             datatype: "json",
-                            url: '/relations/hierarchy/artifacts/0/' + mapType + '/' + type + '/' + id
+                            url: '/relations/hierarchy/artifacts/' + mapId + '/' + mapType + '/' + type + '/' + id
                         };
 
 
@@ -1263,29 +1382,73 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
                             width: field_width,
                             height: field_height,
                             valueMember: 'Value',
-                            displayMember: 'Name',
+                            displayMember: 'DisplayName',
                             filterable: true,
-                            dropDownWidth: 200,
+                            dropDownWidth: 350,
                             searchMode: 'containsignorecase'
                         });
-                    },
-                    initEditor: function (row, cellvalue, editor, celltext, width, height) {
-                        //console.log('reached init');
-                        //editor.jqxDropDownList('selectItem', getRowDataItem(row).type + '|' + getRowDataItem(row).id);
+
+
                     },
                     getEditorValue: function (row, cellvalue, editor) {
-                        console.log(editor.jqxDropDownList('getSelectedItem'));
-                        return editor.jqxDropDownList('getSelectedItem').originalItem.Name.split(':')[1];
+                        var rowData = $(selector).jqxTreeGrid('getRow', row);
+                        var selectedItem = editor.jqxDropDownList('getSelectedItem').originalItem;
+
+                        rowData.ObjectTypeName = selectedItem.ObjectTypeName;
+                        rowData.Object = selectedItem.Object;
+                        rowData.ObjectID = selectedItem.ObjectID;
+                        return selectedItem.Name;
                     }
                 },
                 {
-                    text: "", dataField: 'UID', width: 100, align: "center",
-                    cellsRenderer: function (rowKey, dataField, value, data) {
-                        var item = getRowDataItem(data);
-                        return "<div style='cursor:pointer;margin-left: 4px;' class='RowTools'>" +
-                        ((mapType == 4 && item.type == type && item.id == id) ? "" : "<a style='padding: 0;' onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + ((data.Level > 0) ? data.ID : "0") + "/" + mapType + "/" + item.type + "/" + item.id + "?parent=true'><i class='fa fa-level-up fa-flip-horizontal'></i></a>") +
-                        "<a style='padding: 0;' onclick='ClickGridTool(event)' data-uri='/form/hierarchy/" + data.ID + "/" + mapType + "/" + item.type + "/" + item.id + "' data-context='addhierarchyform'><i class='fa fa-level-down'></i></a>" +
-                        "<a style='padding: 0;' onclick='ClickGridTool(event)' data-uri='/form/deletehierarchy/" + data.ID + "'><i class='fa fa-trash-o'></i></a></div>";
+                    text: "Predicate", dataField: 'PredicatePhrase', width: 100, align: "center", columnType: "custom",
+                    createEditor: function (row, cellvalue, editor, cellText, width, height) {
+                        
+                        var rowData = $(selector).jqxTreeGrid('getRow', row);
+                        var intersectMapId = 0;
+                        console.log(rowData);
+                        var parentRow = rowData.parent;
+                        if (parentRow != null)
+                            intersectMapId = parent.ID;
+
+                        var url = '/diagrams/GetPredicateInfo';
+
+                        if (intersectMapId > 0)
+                            url += 'ByAllocation?id=' + intersectMapId;
+                        else {
+                            rowData = $(selector).jqxTreeGrid('getRows')[0];
+                            url += 'ByTypes?type1=' + rowData.ObjectType + '&type2=' + rowData.ObjectType + '&id1=' + rowData.ObjectTypeID + '&id2=' + rowData.ObjectTypeID + '&mapType=' + mapType;
+                        }
+
+                        var hierarchyPredicateSource = {
+                            datafields: [
+                                { name: 'id' },
+                                { name: 'name' }
+                            ],
+                            datatype: "json",
+                            url: url
+                        }
+
+                        var hierarchyPredicateAdapter = new $.jqx.dataAdapter(hierarchyPredicateSource);
+
+                        editor.jqxDropDownList({
+                            theme: theme,
+                            source: hierarchyPredicateAdapter,
+                            width: field_width,
+                            height: field_height,
+                            valueMember: 'id',
+                            displayMember: 'name',
+                            filterable: true,
+                            dropDownWidth: 100,
+                            searchMode: 'containsignorecase'
+                        });
+                    },
+                    getEditorValue: function (row, cellvalue, editor) {
+                        var rowData = $(selector).jqxTreeGrid('getRow', row);
+                        var selectedItem = editor.jqxDropDownList('getSelectedItem').originalItem;
+
+                        rowData.PredicateID = selectedItem.id;
+                        return selectedItem.name;
                     }
                 }
             ]
@@ -1316,6 +1479,8 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
    initTreeGrid(controlID_parentchild_hierarchy, 5, "Parent/Child Hierarchy");
 
    function showFocalRow(treeGrid, event) {
+       if (event == null || event.args == null)
+           return;
        var data = event.args.owner.source.loadedData;
        var focal = null;
        
@@ -1334,26 +1499,6 @@ function HierarchyTile(controlID, contextList, permissions, type, id) {
        $(treeGrid).jqxTreeGrid('ensureRowVisible', focal.UID);
    }
     
-   $(controlID_type_hierarchy).on('rowDoubleClick', function (event) {
-        window.location.href = event.args.row.Url;
-   });
-   $(controlID_group_hierarchy).on('rowDoubleClick', function (event) {
-       window.location.href = event.args.row.Url;
-   });
-
-   $(controlID_type_hierarchy).on('bindingComplete', function (event) { 
-       showFocalRow($(this), event);
-   });
-   $(controlID_group_hierarchy).on('bindingComplete', function (event) {
-       showFocalRow($(this), event);
-   });
-
-   $(controlID_type_hierarchy).on('rowSelect', function (event) {
-       
-       rowKey = event.args.key;
-       console.log('rowSelect: ' + rowKey);
-   });
-
    amplify.subscribe("SaveAction", "hierarchyform", function () {
        $(controlID_type_hierarchy).jqxTreeGrid('updateBoundData');
        $(controlID_group_hierarchy).jqxTreeGrid('updateBoundData');

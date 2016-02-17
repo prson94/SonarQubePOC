@@ -6116,10 +6116,12 @@ namespace d360.web.Controllers
             }
             else if ((int)model.HierarchyType < 1)
             {
-                message = $"The hierarchy type could not be determined.";
+                message = $"The hierarchy type is invalid.";
             }
 
             var predicate = Company.GetById<Predicate>(model.PredicateID);
+
+
 
             if (message == "")
             {
@@ -6215,6 +6217,17 @@ namespace d360.web.Controllers
                                 Type = model.HierarchyType
                             };
                             Company.Add(intersectMap);
+
+                            if (model.HierarchyType == MapType.GroupHierarchy)
+                            {
+                                var intersectMapGroup = new IntersectMapGroup();
+                                intersectMapGroup.IntersectMapID = intersectMap.ID;
+                                if (model.GroupNumber > -1)
+                                    intersectMapGroup.GroupNumber = model.GroupNumber;
+                                else
+                                    intersectMapGroup.GroupNumber = Company.Query<int>("select coalesce(max(groupnumber) + 1, 1) from intersectmapgroup").Single();
+                                Company.Add(intersectMapGroup);
+                            }
                         }
                     }
                 }
@@ -6242,18 +6255,18 @@ namespace d360.web.Controllers
         }
 
         [HttpDelete]
-        public JsonResult DeleteHierarchy(FormCollection form)
+        public JsonResult DeleteHierarchyByID(int id)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("hierarchy");
+                //if (!form.HasKeys()) throw new NoFormDataException("hierarchy");
 
-                var id = parseIntField(form, "ID");
+                //var id = parseIntField(form, "ID");
                 var model = Company.GetById<IntersectMap>(id);
                 if (model == null) throw new NotFoundException("hierarchy");
 
                 Company.Delete<IntersectMap>(model);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, new { IntersectMapId = model.ID });
+                return jsonSuccess("Item successfully removed.", id.ToString(),"hierarchy", "delete", HttpStatusCode.OK, new { IntersectMapId = model.ID });
             }
             catch (BaseException ex)
             {

@@ -327,6 +327,8 @@ order by D.TextPath";
             public string Object { get; set; }
             public int SubjectID { get; set; }
             public int ObjectID { get; set; }
+            public string ObjectType { get; set; }
+            public int ObjectTypeID { get; set; }
             public string ParentID { get; set; }
             public string Name { get; set; }
             public string Path { get; set; }
@@ -334,8 +336,11 @@ order by D.TextPath";
             public string ObjectTypeName { get; set; }
             public int Level { get; set; }
             public int PredicateID { get; set; }
+            public string PredicatePhrase { get; set; }
             public MapType Type { get; set; }
+            public int GroupNumber { get; set; }
             public string UID { get; set; }
+
         }
 
         [HttpGet, Route("hierarchy/{mapType}/{type}/{id:int}")]
@@ -354,11 +359,19 @@ order by D.TextPath";
         public JsonNetResult GetArtifactsByIntersectMapId(int intersectMapId, MapType mapType, SystemObjects type, int id)
         {
 
-            var sql = @"select [Object], 
-              ObjectID, 
-              ObjectTypeName + ': ' + TextPath as Name
-              from cache.ObjectDetails
-              where ObjectID <> 0  and ObjectTypeName is not null";
+            var sql = @"select  [Object], 
+                        ObjectID, 
+                        ObjectTypeName + ': ' + TextPath as DisplayName,
+                        TextPath as Name,
+                        ObjectTypeName
+                        from cache.ObjectDetails d
+                        where ObjectID <> 0  and ObjectTypeName is not null
+                        and [Object] + '|' + cast(ObjectID as varchar(20)) not in
+                        (
+	                        select distinct n.objecttype + '|' + cast(n.objectid as varchar(20)) from intersectmap m
+	                        join intersectnode n on n.id = m.objectintersectnodeid
+	                        where m.type = @mapType
+                        )";
 
             switch(mapType)
             {
@@ -373,7 +386,7 @@ order by D.TextPath";
 
 
             var obj = Company.GetObjectDetail(type, id);
-            var allItems = Company.Query<dynamic>(sql, new { type = obj.Type, id = obj.TypeID});
+            var allItems = Company.Query<dynamic>(sql, new { type = obj.Type, id = obj.TypeID, mapType = mapType});
             var itemList = allItems.ToList();
 
             var intersectMap = Company.GetById<IntersectMap>(intersectMapId);

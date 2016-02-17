@@ -532,6 +532,7 @@ namespace d360.web.Models
         public HierarchyEditorModel()
         {
             IsAddingParent = false;
+            GroupNumber = -1;
         }
 
         public int IntersectMapID { get; set; }
@@ -547,6 +548,7 @@ namespace d360.web.Models
         public string Subject { get; set; }
         public string SubjectType { get; set; }
         public int SubjectTypeID { get; set; }
+        public int GroupNumber { get; set; }
     }
 
     [DataContract(Name = "QuestionResponse", Namespace = constants.NAMESPACE)]

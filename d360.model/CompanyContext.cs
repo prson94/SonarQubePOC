@@ -177,6 +177,8 @@ namespace d360.model
 
         public DbSet<IntersectMap> IntersectMaps { get; set; }
 
+        public DbSet<IntersectMapGroup> IntersectMapGroups { get; set; }
+
         public DbSet<IntersectMapSourceRule> IntersectMapSourceRules { get; set; }
 
         public DbSet<IntersectMapSourceRuleContext> IntersectMapSourceRuleContexts { get; set; }
