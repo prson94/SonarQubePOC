@@ -943,7 +943,6 @@
     <Content Include="Scripts\templates\policies.admin.js" />
     <Content Include="Scripts\version.json" />
     <None Include="Scripts\_references.js" />
-    <Content Include="Views\Form\Hierarchy.cshtml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

@@ -112,7 +112,8 @@
                         CertificationNotificationTile('CertificationNotification', id);
 
                         if (json.AllowPredicateHierarchies) {
-                            HierarchyTile('HierarchyTile', contextList, permissions, type, id)
+                            HierarchyTile('TypeHierarchyTile', contextList, permissions, type, id, 3, 'Type Hierarchy');
+                            HierarchyTile('GroupHierarchyTile', contextList, permissions, type, id, 4, 'Group Hierarchy');
                         }
                         else {
                             $('#HierarchyTile').hide();

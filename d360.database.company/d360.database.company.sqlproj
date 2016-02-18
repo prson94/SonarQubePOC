@@ -481,6 +481,7 @@
     <None Include="utility\User Defined Types\DiagramRelationshipTable.sql" />
     <None Include="dbo\Stored Procedures\GetHierarchyByMapType.sql" />
     <None Include="dbo\Tables\IntersectMapGroup.sql" />
+    <None Include="dbo\Stored Procedures\GetGroupHierarchy.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

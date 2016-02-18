@@ -9,6 +9,8 @@ using d360.core.entities;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using Resources;
+using d360.web.Filters;
+using d360.core.exceptions;
 
 namespace d360.web.Controllers
 {
@@ -291,7 +293,6 @@ order by D.TextPath";
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-
         public class SourcesToObjectModel
         {
             public SourcesToObjectModel()
@@ -320,6 +321,8 @@ order by D.TextPath";
             public int SourceRuleCount { get; set; }
         }
 
+        #region Hierarchy
+
         public class HierarchyModel
         {
             public int ID { get; set; }
@@ -343,10 +346,228 @@ order by D.TextPath";
 
         }
 
+        public class HierarchyArtifactsModel
+        {
+            public int IntersectMapID { get; set; }
+            public MapType MapType { get; set; }
+            public SystemObjects Type { get; set; }
+            public int ID { get; set; }
+            public int GroupNumber { get; set; }
+            public bool IsAddingParent { get; set; }
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost]
+        [Route("hierarchy/save")]
+        public JsonResult SaveHierarchy(HierarchyPostModel model)
+        {
+            var message = "";
+
+            if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
+            {
+                message = $"The Subject you provided is invalid.";
+            }
+            else if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
+            {
+                message = $"The Object you provided is invalid.";
+            }
+            else if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+            {
+                message = $"A source may not map to itself directly.";
+            }
+            else if ((int)model.HierarchyType < 1)
+            {
+                message = $"The hierarchy type is invalid.";
+            }
+
+            var predicate = Company.GetById<Predicate>(model.PredicateID);
+
+            if (message == "")
+            {
+                if (model.IsAddingParent)
+                {
+                    int subid = model.SubjectID;
+                    string subtype = model.Subject;
+                    if (model.IntersectMapID > 0)
+                    {
+                        //first add a relationship between the old parent of the object and the new parent
+
+                        var record = Company.Query<dynamic>("select n1.ObjectType as SubjectType, n1.ObjectID as SubjectID, n2.ObjectType, n2.ObjectID from intersectmap m join intersectnode n1 on n1.id = m.subjectintersectnodeid join intersectnode n2 on n2.id = m.objectintersectnodeid where m.id = @id", new { id = model.IntersectMapID }).Single();
+
+                        subid = record.ObjectID;
+                        subtype = record.ObjectType;
+
+                        Company.AddRelationship(record.SubjectType, record.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                        var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
+                                S.IntersectID,
+                                S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
+                                O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
+                                from [IntersectNode] S 
+                                inner join IntersectNode O on O.IntersectID = S.IntersectID 
+                                and S.[ObjectType] = @s and S.ObjectID = @sid 
+                                and O.[ObjectType] = @o and O.ObjectID = @oid",
+                            new { s = record.SubjectType, sid = record.SubjectID, o = model.Object, oid = model.ObjectID }
+                            ).SingleOrDefault();
+
+                        if (intersect != null)
+                        {
+                            var existingSourceRecordCount = Company.Query<int>(
+                                "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
+                                new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
+                            ).Single();
+
+                            if (existingSourceRecordCount <= 0)
+                            {
+                                var intersectMap = new IntersectMap
+                                {
+                                    ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
+                                    PredicateID = model.PredicateID,
+                                    SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
+                                    Type = model.HierarchyType
+                                };
+                                Company.Add(intersectMap);
+
+                                if (model.HierarchyType == MapType.GroupHierarchy)
+                                {
+                                    var intersectMapGroup = new IntersectMapGroup();
+                                    intersectMapGroup.IntersectMapID = intersectMap.ID;
+                                    if (model.GroupNumber > -1)
+                                        intersectMapGroup.GroupNumber = model.GroupNumber;
+                                    else
+                                    {
+                                        intersectMapGroup.GroupNumber = Company.Query<int>("select coalesce(max(groupnumber) + 1, 1) from intersectmapgroup").Single();
+                                        model.GroupNumber = intersectMapGroup.GroupNumber;
+                                    }
+                                       
+                                    Company.Add(intersectMapGroup);
+                                }
+                            }
+                        }
+
+                        try
+                        {
+                            var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
+
+                            Company.Delete(intersectMap);
+                        }
+                        catch (Exception ex)
+                        {
+                            message = ex.Message;
+                        }
+                    }
+                    
+                    //swap subject/object and add the relationship
+                    model.Subject = model.Object;
+                    model.SubjectID = model.ObjectID;
+                    model.Object = subtype;
+                    model.ObjectID = subid;
+                }
+
+                if (message == "")
+                {
+                    Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                    var intersect2 = Company.Query<IntersectLookupModel>(@"select top 1 
+                                S.IntersectID,
+                                S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
+                                O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
+                                from [IntersectNode] S 
+                                inner join IntersectNode O on O.IntersectID = S.IntersectID 
+                                and S.[ObjectType] = @s and S.ObjectID = @sid 
+                                and O.[ObjectType] = @o and O.ObjectID = @oid",
+                        new { s = model.Subject, sid = model.SubjectID, o = model.Object, oid = model.ObjectID }
+                        ).SingleOrDefault();
+
+                    if (intersect2 != null)
+                    {
+                        var existingSourceRecordCount = Company.Query<int>(
+                            "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
+                            new { s = intersect2.SubjectNodeID, o = intersect2.ObjectNodeID, p = model.PredicateID }
+                        ).Single();
+
+                        if (existingSourceRecordCount <= 0)
+                        {
+                            var intersectMap = new IntersectMap
+                            {
+                                ObjectIntersectNodeID = intersect2.ObjectNodeID,// objectIntersectNode.ID,
+                                PredicateID = model.PredicateID,
+                                SubjectIntersectNodeID = intersect2.SubjectNodeID,// subjectIntersectNode.ID,
+                                Type = model.HierarchyType
+                            };
+                            Company.Add(intersectMap);
+
+                            if (model.HierarchyType == MapType.GroupHierarchy)
+                            {
+                                var intersectMapGroup = new IntersectMapGroup();
+                                intersectMapGroup.IntersectMapID = intersectMap.ID;
+                                if (model.GroupNumber > -1)
+                                    intersectMapGroup.GroupNumber = model.GroupNumber;
+                                else
+                                    intersectMapGroup.GroupNumber = Company.Query<int>("select coalesce(max(groupnumber) + 1, 1) from intersectmapgroup").Single();
+                                Company.Add(intersectMapGroup);
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+            //if (message == "")
+            //    return jsonSuccess("Hierarchy item successfully saved.", model.IntersectMapID.ToString(), ContextList.Hierarchy, "edit", HttpStatusCode.OK);
+            //else
+            //    return jsonException(new Exception(message), HttpStatusCode.OK);
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost]
+        [Route("hierarchy/edit")]
+        public JsonResult EditHierarchy(HierarchyPostModel model)
+        {
+            var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
+
+            if (intersectMap == null)
+                return null;
+
+            intersectMap.PredicateID = model.PredicateID;
+            Company.Update(intersectMap);
+
+            return null;
+            
+        }
+        [HttpDelete]
+        [Route("hierarchy/delete/{id:int}")]
+        public JsonResult DeleteHierarchy(int id)
+        {
+            
+            try
+            {
+                var model = Company.GetById<IntersectMap>(id);
+                var group = Company.IntersectMapGroups.Where(g => g.IntersectMapID == id).FirstOrDefault();
+                if (model == null) throw new NotFoundException("hierarchy");
+
+                Company.Delete(model);
+
+                if (group != null)
+                    Company.Delete(group);
+
+                return null;//return jsonSuccess("Item successfully removed.", id.ToString(), "hierarchy", "delete", HttpStatusCode.OK, new { IntersectMapId = model.ID });
+            }
+            catch (BaseException ex)
+            {
+                return null; //return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return null; // return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [HttpGet, Route("hierarchy/{mapType}/{type}/{id:int}")]
         public JsonNetResult GetHierarchy(SystemObjects type, int id, MapType mapType)
         {
-            var results = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)mapType });
+            var sql = "EXEC GetHierarchyByMapType @type, @id, @mapType";
+
+            if (mapType == MapType.GroupHierarchy)
+                sql = "EXEC GetGroupHierarchy @type, @id";
+
+            var results = Company.Query<HierarchyModel>(sql, new { type = type.ToString(), id = id, mapType = (int)mapType });
 
             return new JsonNetResult
             {
@@ -355,8 +576,8 @@ order by D.TextPath";
             };
         }
 
-        [HttpGet, Route("hierarchy/artifacts/{intersectMapId}/{mapType}/{type}/{id:int}")]
-        public JsonNetResult GetArtifactsByIntersectMapId(int intersectMapId, MapType mapType, SystemObjects type, int id)
+        [HttpGet, Route("hierarchy/artifacts")]
+        public JsonNetResult GetHierarchyArtifacts(HierarchyArtifactsModel model)
         {
 
             var sql = @"select  [Object], 
@@ -369,41 +590,51 @@ order by D.TextPath";
                         and [Object] + '|' + cast(ObjectID as varchar(20)) not in
                         (
 	                        select distinct n.objecttype + '|' + cast(n.objectid as varchar(20)) from intersectmap m
-	                        join intersectnode n on n.id = m.objectintersectnodeid
+	                        join intersectnode n on n.id = m.{0}
+                            {1}
 	                        where m.type = @mapType
-                        )";
+                        ) {2}";
 
-            switch(mapType)
+            var nodeId = "objectintersectnodeid";
+            if (model.IsAddingParent)
+                nodeId = "subjectintersectnodeid";
+
+            switch(model.MapType)
             {
                 case MapType.TypeHierarchy:
+                    sql = string.Format(sql, nodeId, "", " and ObjectType = @type and ObjectTypeID = @id order by Name");
+                    break;
                 case MapType.GroupHierarchy:
-                    sql += " and ObjectType = @type and ObjectTypeID = @id order by Name";
+                    sql = string.Format(sql, nodeId, "join intersectmapgroup g on g.intersectmapid = m.id and g.groupnumber = @groupNumber", " and ObjectType = @type and ObjectTypeID = @id order by Name");
                     break;
                 default:
                     sql += " order by Name";
                     break;
             }
 
-
-            var obj = Company.GetObjectDetail(type, id);
-            var allItems = Company.Query<dynamic>(sql, new { type = obj.Type, id = obj.TypeID, mapType = mapType});
+            var obj = Company.GetObjectDetail(model.Type, model.ID);
+            var allItems = Company.Query<dynamic>(sql, new { type = obj.Type, id = obj.TypeID, mapType = model.MapType, groupNumber = model.GroupNumber});
             var itemList = allItems.ToList();
 
-            var intersectMap = Company.GetById<IntersectMap>(intersectMapId);
+            var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
             var hierarchy = new List<HierarchyModel>();
+
             if (intersectMap != null)
             {
                 var intersectNode = Company.GetById<IntersectNode>(intersectMap.SubjectIntersectNodeID);
-                hierarchy = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = type.ToString(), id = id, mapType = (int)mapType }).ToList();
+                if (model.MapType == MapType.GroupHierarchy)
+                    hierarchy = Company.Query<HierarchyModel>("EXEC GetGroupHierarchy @type, @id", new { type = model.Type.ToString(), id = model.ID }).ToList();
+                else
+                    hierarchy = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = model.Type.ToString(), id = model.ID, mapType = model.MapType }).ToList();
             }
             else
             {
-                hierarchy.Add(new HierarchyModel() { Subject = type.ToString(), SubjectID = id });
+                hierarchy.Add(new HierarchyModel() { Subject = model.Type.ToString(), SubjectID = model.ID });
             }
 
             foreach (dynamic d in allItems)
             {
-                switch(mapType)
+                switch(model.MapType)
                 {
                     case MapType.TypeHierarchy:
                     case MapType.ParentChildHierarchy:
@@ -414,7 +645,7 @@ order by D.TextPath";
                             itemList.Remove(d);
                         break;
                     case MapType.GroupHierarchy:
-                        if (d.Object == type.ToString() && d.ObjectID == id)
+                        if (d.Object == model.Type.ToString() && d.ObjectID == model.ID)
                             itemList.Remove(d);
                         break;
                 }
@@ -426,6 +657,9 @@ order by D.TextPath";
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+
+        #endregion Hierarchy
+
         void processSourceLevel(List<SourcesToObjectModel> list, int id)
         {
 

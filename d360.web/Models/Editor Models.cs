@@ -527,9 +527,9 @@ namespace d360.web.Models
         public List<SelectListItem> Resources { get; set; }
     }
 
-    public class HierarchyEditorModel : BaseEditorModel
+    public class HierarchyPostModel : BaseEditorModel
     {
-        public HierarchyEditorModel()
+        public HierarchyPostModel()
         {
             IsAddingParent = false;
             GroupNumber = -1;

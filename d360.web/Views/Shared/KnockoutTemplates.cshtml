@@ -189,23 +189,8 @@
 </script>
 
 <script id="hierarchyTileTmpl" type="text/x-handlebars-template">
-    <header>Hierarchies</header>
-    <div class="row">
-        <div class="col s6">
-            <div id="{{control}}_type_hierarchy"></div>
-        </div>
-        <div class="col s6">
-            <div id="{{control}}_group_hierarchy"></div>
-        </div>
-        <div class="row" style="display:none;">
-            <div class="col s12">
-                <div id="{{control}}_parentchild_hierarchy"></div>
-            </div>
-        </div>
-        <input id="{{control}}_type_newRow" type="hidden" />
-        <input id="{{control}}_group_newRow" type="hidden" />
-        <input id="{{control}}_parentchild_newRow" type="hidden" />
-    </div>
+    <header id="{{control}}_title"></header>
+    <div style="margin:0 auto" id="{{control}}_hierarchy"></div>
 </script>
 
 <script id="detailTileNoSynonymsTmpl" type="text/x-handlebars-template">
