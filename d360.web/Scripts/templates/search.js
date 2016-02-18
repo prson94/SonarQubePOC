@@ -116,13 +116,17 @@ function search(app, pageViewModel, templatePath, contextList) {
                         loadComplete: function (data) {
                             var msg = "";
 
-                            if (data) {
-                                msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
-                                if (data.Result.Matches == 0) $('#SearchResults').hide();
-                            }
-                            searchVm.elapsedTime(msg);
+                            if (data) {                                
+                                if (data.Result.Matches == 0) {
+                                    $('#SearchResults').hide();
+                                    searchVm.elapsedTime("No search results found for the specified search term.");
+                                }
+                            }                            
 
                             if (loadCategories) {
+                                msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
+                                searchVm.elapsedTime(msg);
+
                                 data.Categories.unshift({ Name: 'All', ResultCount: data.Result.Matches });
                                 var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
                                 searchVm.categories(cats);
