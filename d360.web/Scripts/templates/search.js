@@ -207,7 +207,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                     enableHover: false,
                     columns: [
                         { text: ' ', dataField: 'Merged', width: '92%'},
-                        { text: 'Score', dataField: 'NormalizedScore', width: '7%', cellsformat: 'p2', cellClassName: 'search-score-cell' },
+                        { text: 'Rank', dataField: 'NormalizedScore', width: '7%', cellsformat: 'p2', cellClassName: 'search-score-cell' },
                         
                     ]
                 });
