@@ -6,6 +6,10 @@ using System;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Text;
+using d360.core.entities;
+using d360.core;
+using System.Data.SqlClient;
+using Dapper;
 
 namespace d360.extensions.search
 {
@@ -73,6 +77,10 @@ namespace d360.extensions.search
 
     public class ElasticSearchSource : ISearchSource
     {
+        private const string DEFAULT_SEARCH_SERVER = "search1-d3s.cloudapp.net:9200";
+        
+        protected string SearchServerUrl { get; set; }
+
         #region Utility methods
 
         JObject createDocument(IndexObjectModel item)
@@ -101,9 +109,27 @@ namespace d360.extensions.search
             return $"{item.Group}|{item.ID}";
         }
 
-        HttpWebRequest createWebRequest(string method, string uri)
+        void loadSearchServerUrl(int companyID)
         {
-            var webReq = HttpWebRequest.CreateHttp($"http://search1-d3s.cloudapp.net:9200/{uri}");
+            using (var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                var db = community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = companyID }).SingleOrDefault();
+
+                SearchServerUrl = db.SearchServer ?? DEFAULT_SEARCH_SERVER;
+            }
+
+            if (string.IsNullOrEmpty(SearchServerUrl)) throw new Exception("DEV ERROR - NO SEARCH BASE URL SPECIFIED.");
+        }
+        
+        
+        HttpWebRequest createWebRequest(string method, string uri, int companyID)
+        {
+            if(string.IsNullOrEmpty(SearchServerUrl))
+            {
+                loadSearchServerUrl(companyID);
+            }
+            
+            var webReq = HttpWebRequest.CreateHttp($"http://{SearchServerUrl}/{uri}");
             webReq.ContentType = "application/json; charset=UTF-8";
             webReq.Accept = "application/json";
             webReq.Method = method;
@@ -171,11 +197,11 @@ namespace d360.extensions.search
         void createIndexIfNotExists(int companyID)
         {
             var indexName = $"{getCompanyIndexName(companyID)}";
-            var webReq = createWebRequest("HEAD", indexName);
+            var webReq = createWebRequest("HEAD", indexName, companyID);
             var response = getJsonResponse(webReq);
             if (response.Status == HttpStatusCode.NotFound)
             {
-                webReq = createWebRequest("PUT", indexName);
+                webReq = createWebRequest("PUT", indexName, companyID);
                 
                 loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_default_\" : {\"properties\" : {\"Type\" : {\"type\" : \"string\",\"fields\" : {\"raw\" : {\"type\" : \"string\", \"index\" :\"not_analyzed\"}}}}}}}"));
 
@@ -192,11 +218,11 @@ namespace d360.extensions.search
         private void deleteIndexIfExists(int companyID)
         {
             var indexName = $"{getCompanyIndexName(companyID)}";
-            var webReq = createWebRequest("HEAD", indexName);
+            var webReq = createWebRequest("HEAD", indexName, companyID);
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.NotFound)
             {
-                webReq = createWebRequest("DELETE", indexName);                
+                webReq = createWebRequest("DELETE", indexName, companyID);                
                 response = getJsonResponse(webReq);
                 if (response.Status != HttpStatusCode.OK)
                     throw new ApplicationException(response.StatusMessage);
@@ -244,7 +270,7 @@ namespace d360.extensions.search
             sb.Append("\n");
             
 
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk");
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk", companyId);
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
@@ -272,7 +298,7 @@ namespace d360.extensions.search
         {
             createIndexIfNotExists(companyID);
 
-            var webReq = createWebRequest("DELETE", $"{getCompanyIndexName(companyID)}/{group}/_query");
+            var webReq = createWebRequest("DELETE", $"{getCompanyIndexName(companyID)}/{group}/_query", companyID);
             loadMessageInRequestBody(webReq, JObject.Parse("{\"query\": { \"match_all\": {} }}"));
 
             var response = getJsonResponse(webReq);
@@ -299,7 +325,7 @@ namespace d360.extensions.search
 
             createIndexIfNotExists(companyID);
             
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/_search");
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/_search", companyID);
 
             StringBuilder sb = new StringBuilder();
 
@@ -379,7 +405,7 @@ namespace d360.extensions.search
 
             createIndexIfNotExists(companyID);
 
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/_search");
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/_search", companyID);
 
             StringBuilder sb = new StringBuilder();
 
@@ -460,9 +486,11 @@ namespace d360.extensions.search
 
         public void RemoveFromIndex(RemoveFromIndexModel item)
         {
+            if (item == null) return;
+
             createIndexIfNotExists(item.CompanyID);
 
-            var webReq = createWebRequest("DELETE", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}");            
+            var webReq = createWebRequest("DELETE", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}", item.CompanyID);            
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
                 throw new ApplicationException(response.StatusMessage);
@@ -472,7 +500,9 @@ namespace d360.extensions.search
         {
             if (items == null || items.Count < 0) return;
 
-            createIndexIfNotExists(items[0].CompanyID);
+            var companyID = items[0].CompanyID;
+
+            createIndexIfNotExists(companyID);
 
             StringBuilder sb = new StringBuilder();
 
@@ -481,7 +511,7 @@ namespace d360.extensions.search
                 sb.Append("{ \"delete\" : { \"_type\" : \"" + item.Group + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
             }
                         
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk");
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk", companyID);
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
@@ -499,9 +529,11 @@ namespace d360.extensions.search
 
         public void UpdateInIndex(UpdateInIndexModel item)
         {
+            if (item == null) return;
+
             createIndexIfNotExists(item.CompanyID);
 
-            var webReq = createWebRequest("PUT", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}");
+            var webReq = createWebRequest("PUT", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}", item.CompanyID);
             loadMessageInRequestBody(webReq, createDocument(item));
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
@@ -512,7 +544,9 @@ namespace d360.extensions.search
         {
             if (items == null || items.Count < 0) return;
 
-            createIndexIfNotExists(items[0].CompanyID);
+            var companyID = items[0].CompanyID;
+
+            createIndexIfNotExists(companyID);
 
             StringBuilder sb = new StringBuilder();
 
@@ -533,7 +567,7 @@ namespace d360.extensions.search
                 sb.Append(" } }\n");
             }
 
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk");
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk", companyID);
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
