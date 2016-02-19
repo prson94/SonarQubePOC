@@ -114,9 +114,10 @@
                         if (json.AllowPredicateHierarchies) {
                             HierarchyTile('TypeHierarchyTile', contextList, permissions, type, id, 3, 'Type Hierarchy');
                             HierarchyTile('GroupHierarchyTile', contextList, permissions, type, id, 4, 'Group Hierarchy');
+                           // HierarchyTile('ParentHierarchyTile', contextList, permissions, type, id, 5, 'Parent/Child Hierarchy');
                         }
                         else {
-                            $('#HierarchyTile').hide();
+                            $('#HierarchyTileSection').hide();
                         }
 
                         if (json.AllowRelatedArtifacts) {

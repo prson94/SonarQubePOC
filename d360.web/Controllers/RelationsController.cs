@@ -358,7 +358,7 @@ order by D.TextPath";
 
         [ValidateHttpAntiForgeryToken, HttpPost]
         [Route("hierarchy/save")]
-        public JsonResult SaveHierarchy(HierarchyPostModel model)
+        public JsonNetResult SaveHierarchy(HierarchyPostModel model)
         {
             var message = "";
 
@@ -424,9 +424,16 @@ order by D.TextPath";
                                     SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
                                     Type = model.HierarchyType
                                 };
-                                Company.Add(intersectMap);
+                                try
+                                {
+                                    Company.Add(intersectMap);
+                                } catch (Exception ex)
+                                {
+                                    message = ex.Message;
+                                }
+                                
 
-                                if (model.HierarchyType == MapType.GroupHierarchy)
+                                if (model.HierarchyType == MapType.GroupHierarchy && message == "")
                                 {
                                     var intersectMapGroup = new IntersectMapGroup();
                                     intersectMapGroup.IntersectMapID = intersectMap.ID;
@@ -437,8 +444,14 @@ order by D.TextPath";
                                         intersectMapGroup.GroupNumber = Company.Query<int>("select coalesce(max(groupnumber) + 1, 1) from intersectmapgroup").Single();
                                         model.GroupNumber = intersectMapGroup.GroupNumber;
                                     }
-                                       
-                                    Company.Add(intersectMapGroup);
+                                    
+                                    try
+                                    {
+                                        Company.Add(intersectMapGroup);
+                                    } catch (Exception ex)
+                                    {
+                                        message = ex.Message;
+                                    }
                                 }
                             }
                         }
@@ -446,12 +459,28 @@ order by D.TextPath";
                         try
                         {
                             var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
-
                             Company.Delete(intersectMap);
                         }
                         catch (Exception ex)
                         {
                             message = ex.Message;
+                        }
+
+                        if (model.HierarchyType == MapType.GroupHierarchy && model.GroupNumber > -1 && message == "")
+                        {
+                            try
+                            {
+                                var intersectMapGroup = Company.IntersectMapGroups.Where(g => g.IntersectMapID == model.IntersectMapID && g.GroupNumber == model.GroupNumber).FirstOrDefault();
+
+                                if (intersectMapGroup != null)
+                                {
+                                    Company.Delete(intersectMapGroup);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                message = ex.Message;
+                            }
                         }
                     }
                     
@@ -492,27 +521,44 @@ order by D.TextPath";
                                 SubjectIntersectNodeID = intersect2.SubjectNodeID,// subjectIntersectNode.ID,
                                 Type = model.HierarchyType
                             };
-                            Company.Add(intersectMap);
 
-                            if (model.HierarchyType == MapType.GroupHierarchy)
+                            try
                             {
-                                var intersectMapGroup = new IntersectMapGroup();
-                                intersectMapGroup.IntersectMapID = intersectMap.ID;
-                                if (model.GroupNumber > -1)
-                                    intersectMapGroup.GroupNumber = model.GroupNumber;
-                                else
-                                    intersectMapGroup.GroupNumber = Company.Query<int>("select coalesce(max(groupnumber) + 1, 1) from intersectmapgroup").Single();
-                                Company.Add(intersectMapGroup);
+                                Company.Add(intersectMap);
                             }
+                            catch (Exception ex)
+                            {
+                                message = ex.Message;
+                            }
+
+                            if (model.HierarchyType == MapType.GroupHierarchy && message == "")
+                            {
+                                try
+                                {
+                                    var intersectMapGroup = new IntersectMapGroup();
+                                    intersectMapGroup.IntersectMapID = intersectMap.ID;
+                                    if (model.GroupNumber > -1)
+                                        intersectMapGroup.GroupNumber = model.GroupNumber;
+                                    else
+                                        intersectMapGroup.GroupNumber = Company.Query<int>("select coalesce(max(groupnumber) + 1, 1) from intersectmapgroup").Single();
+                                    Company.Add(intersectMapGroup);
+                                }
+                                catch (Exception ex)
+                                {
+                                    message = ex.Message;
+                                }
+                            }
+
                         }
                     }
                 }
             }
-            return null;
-            //if (message == "")
-            //    return jsonSuccess("Hierarchy item successfully saved.", model.IntersectMapID.ToString(), ContextList.Hierarchy, "edit", HttpStatusCode.OK);
-            //else
-            //    return jsonException(new Exception(message), HttpStatusCode.OK);
+
+            return new JsonNetResult
+            {
+                Data = message,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost]
@@ -530,6 +576,7 @@ order by D.TextPath";
             return null;
             
         }
+
         [HttpDelete]
         [Route("hierarchy/delete/{id:int}")]
         public JsonResult DeleteHierarchy(int id)
@@ -646,6 +693,11 @@ order by D.TextPath";
                         break;
                     case MapType.GroupHierarchy:
                         if (d.Object == model.Type.ToString() && d.ObjectID == model.ID)
+                            itemList.Remove(d);
+                        var g = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID && r.GroupNumber == model.GroupNumber).FirstOrDefault();
+                        var g2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID && r.GroupNumber == model.GroupNumber).FirstOrDefault();
+
+                        if (g != null || g2 != null)
                             itemList.Remove(d);
                         break;
                 }

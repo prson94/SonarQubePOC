@@ -35,14 +35,13 @@ with u as
 		m.PredicateID as PredicateID,
 		coalesce(p.Name,'') + '/' + coalesce(p.Inverse,'') as PredicatePhrase,
 		m.[Type] as [Type],
-		coalesce(g.GroupNumber,-1) as GroupNumber,
+		-1 as GroupNumber,
 		cast((n1.objecttype + cast(n1.objectid as varchar(10))) as varchar(max)) as [UID]
 	from intersectmap m
 	join intersectnode n1 on n1.id = m.subjectintersectnodeid
 	join intersectnode n2 on n2.id = m.objectintersectnodeid
 	join cache.objectdetails d on d.object = n1.objecttype and d.objectid = n1.objectid
 	join predicate p on p.id = m.predicateid
-	left join intersectmapgroup g on @mapType = 4 and g.intersectmapid = m.id
 	where n2.objecttype = @type and n2.objectid = @id and m.[type] = @mapType
 
 	union all
@@ -64,7 +63,7 @@ with u as
 		m.PredicateID as PredicateID,
 		coalesce(p.Name,'') + '/' + coalesce(p.Inverse,'') as PredicatePhrase,
 		m.[Type] as [Type],
-		u.GroupNumber,
+		-1 as GroupNumber,
 		cast((n1.objecttype + cast(n1.objectid as varchar(10))) as varchar(max)) as [UID]
 	from intersectmap m
 	join intersectnode n1 on n1.id = m.subjectintersectnodeid
@@ -72,11 +71,6 @@ with u as
 	join cache.objectdetails d on d.object = n1.objecttype and d.objectid = n1.objectid
 	join predicate p on p.id = m.predicateid
 	join u on u.[Subject] = n2.objecttype and u.[SubjectID] = n2.objectid and (u.[subject] + cast(u.[subjectid] as varchar(10))) != (u.[object] + cast(u.[objectid] as varchar(10)))
-	join (
-		select -1 as groupnumber, -1 as intersectmapid
-		union all
-		select groupnumber,intersectmapid from intersectmapgroup
-	) g on (u.groupnumber = -1 and g.groupnumber = u.groupnumber) or (@mapType = 4 and g.groupnumber = u.groupnumber and g.intersectmapid = m.id)
 	where m.[type] = @mapType
 )
 insert into @results
@@ -218,15 +212,14 @@ select @parent = min([Level]) from @results;
 		m.PredicateID as PredicateID,
 		coalesce(p.Name,'') + '/' + coalesce(p.Inverse,'') as PredicatePhrase,
 		m.[Type] as [Type],
-		coalesce(g.GroupNumber,-1) as GroupNumber,
+		-1 as GroupNumber,
 		cast((n1.objecttype + cast(n1.objectid as varchar(10)) + n2.objecttype + cast(n2.objectid as varchar(10))) as varchar(max)) as [UID]
 	from intersectmap m
 	join intersectnode n1 on n1.id = m.subjectintersectnodeid
 	join intersectnode n2 on n2.id = m.objectintersectnodeid
 	join cache.objectdetails d on d.object = n2.objecttype and d.objectid = n2.objectid
 	join predicate p on p.id = m.predicateid
-	join @results r on r.[subject] = n1.objecttype and r.subjectid = n1.objectid and ((@mapType != 4 and r.[Level] = @parent) or (@mapType = 4 and r.ParentID = '0'))
-	left join intersectmapgroup g on @mapType = 4 and ((r.groupnumber = -1) or (g.groupnumber = r.groupnumber)) and g.intersectmapid = m.id
+	join @results r on r.[subject] = n1.objecttype and r.subjectid = n1.objectid and r.[Level] = @parent
 	where m.[type] = @mapType
 	
 	union all
@@ -248,7 +241,7 @@ select @parent = min([Level]) from @results;
 		m.PredicateID as PredicateID,
 		coalesce(p.Name,'') + '/' + coalesce(p.Inverse,'') as PredicatePhrase,
 		m.[Type] as [Type],
-		z.GroupNumber,
+		-1 as GroupNumber,
 		cast((z.UID + n2.objecttype + cast(n2.objectid as varchar(10))) as varchar(max)) as [UID]
 	from intersectmap m
 	join intersectnode n1 on n1.id = m.subjectintersectnodeid
@@ -256,11 +249,6 @@ select @parent = min([Level]) from @results;
 	join cache.objectdetails d on d.object = n2.objecttype and d.objectid = n2.objectid
 	join predicate p on p.id = m.predicateid
 	join z on z.[Object] = n1.objecttype and z.[ObjectID] = n1.objectid
-	join (
-		select -1 as groupnumber, -1 as intersectmapid
-		union all
-		select groupnumber,intersectmapid from intersectmapgroup
-	) g on (z.groupnumber = -1 and g.groupnumber = z.groupnumber) or (@mapType = 4 and g.groupnumber = z.groupnumber and g.intersectmapid = m.id)
 	where m.[type] = @mapType
 )
 insert into @results2
@@ -287,24 +275,14 @@ select
 	r.[groupnumber],
 	r.[uid]
 from @results r
-where ((@mapType != 4 and r.[Level] = @parent) or (@mapType = 4 and r.ParentID = '0'));
-
-update r
-set r.GroupNumber = p.GroupNumber
-from @results2 r
-join @results2 p on p.parentid = r.[uid]
-where @mapType = 4 and r.id = 0;
+where r.[Level] = @parent;
 
 update @results2
 set predicatephrase = reverse(stuff(reverse(predicatephrase),1,1,''))
 where reverse(predicatephrase) like '/%';
 
 
-
 select * from @results2 
-where (@mapType = 4 and groupnumber > -1 and (select count(*) from @results2) > 1) or
-(@mapType = 4 and groupnumber = -1 and (select count(*) from @results2) = 1) or
-(@mapType != 4)
 order by [level] asc;
 
 end
