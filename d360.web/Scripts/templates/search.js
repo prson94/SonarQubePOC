@@ -69,6 +69,7 @@ function search(app, pageViewModel, templatePath, contextList) {
 
         function unsubscribe(data) {
             searchVm = null;
+            $('#ContentHeader').show();
 
             $("#SearchString").off('keypress', searchStringKeyPress);
             $('#SearchResults').off('click', '.search-result-link', resultSelect);
