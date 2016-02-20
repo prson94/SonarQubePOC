@@ -3,6 +3,8 @@ using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using d360.core.enums;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -29,5 +31,11 @@ namespace d360.core.entities
         public string AppliesToObjectList { get; set; }
 
         #endregion
+
+        [IgnoreDataMember, ForeignKey("SourceRuleID")]
+        public virtual ICollection<SourceRuleContext> Contexts { get; set; }
+
+        [IgnoreDataMember, ForeignKey("SourceRuleID")]
+        public virtual ICollection<IntersectMapSourceRule> Items { get; set; }
     }
 }

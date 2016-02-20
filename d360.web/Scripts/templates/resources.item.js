@@ -64,24 +64,16 @@
 
                     $('#SideIcons').PageTools({ type: type, id: id });
 
-                    DetailTile('DetailTile', contextList, [], type, id, true);
+                    ObjectDetail('DetailTile', type, id);
 
                     YourFollowedItemsTile('#FollowingTile', id, 'Items User Follows');
                     YourOwnedItemsTile('#OwnedTile', id, 'Items User Owns');
 
                     ResourceStatisticsTile('SocialTile', type, id);
 
-                    //socialTile = new ProfileSocialMicroTileModel(id);
-                    //ko.applyBindings(socialTile, document.getElementById('SocialTile'));
-                    //socialTile.GetStatistics();
-
                     ProfileSocial = new BoardViewModel();
                     ko.applyBindings(ProfileSocial, document.getElementById('ProfileBoard'));
                     ProfileSocial.changeObject(type, id);
-
-                    //var scoreTile = new StatisticsBarViewModel();
-                    //ko.applyBindings(scoreTile, document.getElementById('ScoreTile'));
-                    //scoreTile.changeObject(type, id);
 
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);

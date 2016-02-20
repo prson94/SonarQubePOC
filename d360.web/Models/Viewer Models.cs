@@ -32,6 +32,18 @@ namespace d360.web.Models
         public List<AttributeNode> Children { get; set; }
     }
 
+    public class BreadcrumbItem
+    {
+        public BreadcrumbItem()
+        {
+            Active = false;
+        }
+        public string Name { get; set; }
+        public string Url { get; set; }
+        public bool Active { get; set; }
+    }
+
+
     public class ClaimsMatrixDisplayModel
     {
         public int ResponsibilityTypeID { get; set; }
@@ -68,6 +80,30 @@ namespace d360.web.Models
     {
         public string Object { get; set; }
         public int ObjectID { get; set; }
+    }
+
+    public class DetailReadOnlyModel
+    {
+        public DetailReadOnlyModel()
+        {
+            rows = new List<DetailReadOnlyRowModel>();
+        }
+
+        public int columns { get; set; }
+        public List<DetailReadOnlyRowModel> rows { get; set; }
+    }
+
+    public class DetailReadOnlyRowModel
+    {
+        public DetailReadOnlyRowModel()
+        {
+            FirstColumnFields = new List<ReadOnlyField>();
+            SecondColumnFields = new List<ReadOnlyField>();
+        }
+
+        public int columns { get; set; }
+        public List<ReadOnlyField> FirstColumnFields { get; set; }
+        public List<ReadOnlyField> SecondColumnFields { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

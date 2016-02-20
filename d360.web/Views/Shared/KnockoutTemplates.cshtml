@@ -1,4 +1,103 @@
-﻿<script id="companySettingsIpRestictionTmpl" type="text/html">
+﻿<script id="hierarchyRuleContextEditTmpl" type="text/html">
+    <tr style="margin-bottom: 10px">
+        <td style="vertical-align: top">
+            <div data-bind="jqxDropDownList: {
+                  width: field_width98,
+                 height: field_height,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: ObjectIndex,
+                 source: Side1Options,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase'
+                 }"></div>
+        </td>
+        <td style="vertical-align: top">
+            <div data-bind="jqxDropDownList: {
+                  width: field_width98,
+                 height: field_height,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: ObjectIDIndex,
+                 source: ObjectIDOptions,
+                 disabled: ObjectOnly,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase'
+                 }"></div>
+        </td>
+        <td style="width: 20px; text-align: right; vertical-align: top">
+            <a style="padding: 0 .5rem;" class="waves-effect waves-teal btn-flat" title="Remove this context item" data-bind="click:$parent.deleteItem"><i class="fa fa-trash"></i></a>
+        </td>
+    </tr>
+</script>
+<script id="hierarchyRuleItemEditTmpl" type="text/html">
+    <div class="row">
+        <div class="col s3 FieldNameRequired">Order</div>
+        <div class="col s9">
+            <div data-bind="jqxListBox: { width: field_width98, height: field_height, theme: theme, value: Order}"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s3 FieldNameRequired">Name</div>
+        <div class="col s9">
+            <div data-bind="jqxListBox: { width: field_width98, height: field_height, theme: theme, value: Name}"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s3 FieldName">Description</div>
+        <div class="col s9">
+            <input type="text" data-bind="jqxInput: { width: field_width98, height: 300, theme: theme, value: Description}" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s3 FieldName">Context</div>
+        <div class="col s9">
+            <table class="responsive-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Item</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody data-bind="template: {name: 'hierarchyRuleItemEditTmpl', foreach: Items }"></tbody>
+            </table>
+        </div>
+    </div>
+</script>
+<script id="hierarchyRuleEditTmpl" type="text/html">
+    <div class="row">
+        <div class="col s3 FieldNameRequired">Name</div>
+        <div class="col s9">
+            <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme, value: Name}" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s3 FieldName">Context</div>
+        <div class="col s9">
+            <div data-bind="template: {name: 'hierarchyRuleItemEditTmpl', foreach: Items }"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col s3 FieldName">Items</div>
+        <div class="col s9">
+            <table class="responsive-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Item</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody data-bind="template: {name: 'hierarchyRuleContextEditTmpl', foreach: Contexts }"></tbody>
+            </table>
+        </div>
+    </div>
+</script>
+<script id="companySettingsIpRestictionTmpl" type="text/html">
     <tr style="margin-bottom: 10px">
         <td style="vertical-align: top">
             <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme, value: Name}" />

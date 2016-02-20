@@ -1,5 +1,4 @@
-﻿
-CREATE FUNCTION [utility].[GetFormattedFieldLookupValue]
+﻿CREATE FUNCTION [utility].[GetFormattedFieldLookupValue]
 (
 	@Type varchar(25),
 	@DisplayFormat nvarchar(250),
@@ -32,25 +31,39 @@ BEGIN
 	begin
 
 		declare @tDisplayFormat nvarchar(250)
-		declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
+		declare @tokens table(ID int identity(1,1), pos int, Token nvarchar(100), Field nvarchar(100))
 		declare @fieldValues table(Field nvarchar(100), Value nvarchar(4000), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250))
 
 		set @formattedValue = @DisplayFormat
 		SET @tDisplayFormat = @DisplayFormat
 	
-		WHILE(PATINDEX('%{%', @tDisplayFormat) > 0)
-		BEGIN
+
+		declare @pos int
+		declare @oldpos int
+		select @oldpos = 0
+		select @pos=patindex('%{%',@DisplayFormat) 
+		while @pos > 0 and @oldpos<>@pos
+		 begin
 			declare @txt nvarchar(100)
-			SELECT @txt = SUBSTRING(@tDisplayFormat, PATINDEX('%{%', @tDisplayFormat), PATINDEX('%}%', @tDisplayFormat))
-			IF NOT EXISTS(SELECT 1 FROM @tokens WHERE Token = @txt)
-			BEGIN
-				INSERT INTO @tokens VALUES (
-					@txt,
-					(select SUBSTRING(@txt, 2, LEN(@txt)-2))
-				)
-			END
-			SET @tDisplayFormat = stuff(@tDisplayFormat, charindex(@txt, @tDisplayFormat), len(@txt), '') --REPLACE(SUBSTRING(@tDisplayFormat, 1, PATINDEX('%}%', @tDisplayFormat)), @txt, '') + SUBSTRING(@tDisplayFormat, PATINDEX('%}%', @tDisplayFormat), LEN(@tDisplayFormat))
-		END
+			SELECT @txt = SUBSTRING(@tDisplayFormat, @pos, PATINDEX('%}%', @tDisplayFormat))
+
+			insert into @tokens Values (@pos, @txt, SUBSTRING(@txt, 2, LEN(@txt)-2))
+			Select @oldpos = @pos
+			select @pos = patindex('%{%',Substring(@DisplayFormat, @pos + 1, len(@DisplayFormat))) + @pos
+		end
+		--WHILE(PATINDEX('%{%', @tDisplayFormat) > 0)
+		--BEGIN
+		--	declare @txt nvarchar(100)
+		--	SELECT @txt = SUBSTRING(@tDisplayFormat, PATINDEX('%{%', @tDisplayFormat), PATINDEX('%}%', @tDisplayFormat))
+		--	IF NOT EXISTS(SELECT 1 FROM @tokens WHERE Token = @txt)
+		--	BEGIN
+		--		INSERT INTO @tokens VALUES (
+		--			@txt,
+		--			(select SUBSTRING(@txt, 2, LEN(@txt)-2))
+		--		)
+		--	END
+		--	SET @tDisplayFormat = stuff(@tDisplayFormat, charindex(@txt, @tDisplayFormat), len(@txt), '') --REPLACE(SUBSTRING(@tDisplayFormat, 1, PATINDEX('%}%', @tDisplayFormat)), @txt, '') + SUBSTRING(@tDisplayFormat, PATINDEX('%}%', @tDisplayFormat), LEN(@tDisplayFormat))
+		--END
 
 		insert into @fieldValues
 			select	distinct

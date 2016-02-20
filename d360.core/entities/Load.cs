@@ -35,6 +35,9 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? DateCompleted { get; set; }
 
+        [DataMember]
+        public int? UpdatedBy { get; set; }
+
         #endregion
 
 

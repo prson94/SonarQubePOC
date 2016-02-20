@@ -115,5 +115,19 @@ namespace d360.utils.company
 
             return companies;
         }
+
+        public static bool IsCompanyDevelopmentEnvironment(int companyID)
+        {
+            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            cnn.Open();
+            var db = cnn.Query<int>(
+                @"select DatabaseServerID from Company where ID = @id",
+                new { id = companyID }
+            ).Single();
+            cnn.Close();
+            cnn.Dispose();
+
+            return (db == 6);
+        }
     }
 }

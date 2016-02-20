@@ -37,8 +37,8 @@
                 { name: 'ObjectName' },
                 { name: 'FromGroup' },
                 { name: 'Role' },
-                { name: 'CurrentScore' },
-                { name: 'RedFlagged' }
+                { name: 'CurrentScore' }//,
+                //{ name: 'RedFlagged' }
             ],
             datatype: "json",
             async: false,
@@ -80,46 +80,19 @@
                     cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                         return currentScoreRenderer(value, data);
                     } 
-                },
-                { 
-                    datafield: "RedFlagged", 
-                    text: "", 
-                    width: '30px', 
-                    filterable: false, 
-                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                        return redFlaggedRenderer(data, true);
-                    }, 
-                    hidden: !IsAdmin 
-                }
+                }//,
+                //{ 
+                //    datafield: "RedFlagged", 
+                //    text: "", 
+                //    width: '30px', 
+                //    filterable: false, 
+                //    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                //        return redFlaggedRenderer(data, true);
+                //    }, 
+                //    hidden: !IsAdmin 
+                //}
             ]
         });
-
-        //$('#OwnershipPart').on('rowunselect', function (event) {
-        //    amplify.publish("ClearFilteredBoard");
-        //});
-
-        //$('#OwnershipPart').on('rowselect', function (event) {
-        //    var args = event.args;
-        //    var row = args.rowindex;
-
-        //    var currentSelectedIndexes = $('#OwnershipPart').jqxGrid('getselectedrowindexes');
-        //    $.each(currentSelectedIndexes, function (p, ix) {
-        //        if (ix != row) $('#OwnershipPart').jqxGrid('unselectrow', ix);
-        //    })
-        //    amplify.publish("ClearOtherBoardFilters", { Origin: 'Ownership' });
-
-        //    var data = $('#OwnershipPart').jqxGrid('getrowdata', row);
-        //    amplify.publish("ShowFilteredBoard", { ObjectType: data.ObjectType, ObjectID: data.ObjectID });
-        //});
-
-        //amplify.subscribe("ClearOtherBoardFilters", function (data) {
-        //    if (data.Origin != 'Ownership') {
-        //        var currentSelectedIndexes = $('#OwnershipPart').jqxGrid('getselectedrowindexes');
-        //        $.each(currentSelectedIndexes, function (p, ix) {
-        //            $('#OwnershipPart').jqxGrid('unselectrow', ix);
-        //        })
-        //    }
-        //});
 
         amplify.subscribe("SaveAction", function (data) {
             try {

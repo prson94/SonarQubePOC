@@ -113,8 +113,6 @@
 
                 var loadAfterPermissionsRetrieved = function () {
 
-                    //$('#DetailTile').Detail({ context: contextList.ArtifactType, id: null, type: null });
-
                     var tools = [];
                     if (permissions.HasPermission("Root", "Create")) {
                         tools.push({ icon: 'plus', uri: '/form/AddArtifactType?parentID=0', context: contextList.ArtifactType, title: 'Add artifact type' });

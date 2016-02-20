@@ -30,10 +30,7 @@
         
         $("html, body").animate({ scrollTop: 0 }, "slow");
         
-        $('#OverlayDetail').Detail({
-            type: overDetailType,
-            id: overDetailID
-        });
+        ObjectDetail('OverlayDetail', overDetailType, overDetailID);
 
         //#region ResultsTile Configuration
 

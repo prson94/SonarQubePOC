@@ -127,6 +127,8 @@ namespace d360.core.entities
         public int Incomplete { get; set; }
         [DataMember]
         public int Total { get; set; }
+        [DataMember]
+        public string Requestor { get; set; }
     }
 
     public class TopNavigation

@@ -12,7 +12,7 @@
 
     $(document).ready(function () {
 
-        $(detailDivID).Detail({ context: dpContext, id: dpID, type: dpType });
+        ObjectDetail('@(divID)', dpType, dpID);
 
         //#region Event Subscriptions
 
@@ -20,10 +20,10 @@
             try {
                 switch (data.context) {
                     case dpContext:
-                        $(detailDivID).Detail('refresh', data);
+                        ObjectDetail('@(divID)', dpType, dpID);
                         break;
                 }
-                
+
             } catch (e) {
                 logError("Detail", e);
             }

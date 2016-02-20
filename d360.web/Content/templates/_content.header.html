@@ -3,18 +3,24 @@
         <div class="col l7 m7 s12">
             <h3>{{Title}}</h3>
             <div class="PageDescription">{{{Directions}}}</div>
-        </div>
-        <div class="col l5 m5 hide-on-small-and-down" style="text-align: right">
-            {{{Status}}}
-            <ol class="breadcrumb">
+            <ol class="breadcrumb" style="padding-left: 5px">
                 {{#each breadcrumbs}}
                 {{#if Active}}
                 <li class="active" id="BreadcrumbActiveName">{{Name}}</li>
                 {{else}}
+
+                {{#if Url}}
+                <li><a href="{{Url}}">{{Name}}</a></li>
+                {{else}}
                 <li>{{Name}}</li>
+                {{/if}}
+
                 {{/if}}
                 {{/each}}
             </ol>
+        </div>
+        <div class="col l5 m5 hide-on-small-and-down" style="text-align: right">
+            {{{Status}}}
         </div>
     </div>
 </div>

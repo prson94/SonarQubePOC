@@ -48,14 +48,7 @@
         </div>
     </div>
     <div id="{{control}}_popover_sourcerule_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:500px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px;">
-        <div>
-            <span class="FieldNameRequired">Name:</span>
-            <input id="{{control}}_popover_sourcerule_editor_name" type="text" />
-        </div>
-        <div>
-            <span class="FieldNameRequired">Source Order:</span>
-            <div id="{{control}}_popover_sourcerule_editor_sources"></div>
-        </div>
+        <div id="{{control}}_popover_sourcerule_editor_body" data-bind="template: {name: 'hierarchyRuleEditTmpl' }"></div>
     </div>
     <div id="{{control}}_ribbon_expander" style="width:100%;">
         <div style="font-size:1.1em;">
@@ -86,9 +79,9 @@
                                 <td colspan="2" style="padding-left:5px;">
                                     Edit
                                 </td>
-                                <!--<td colspan="2" style="padding-left:5px;">
+                                <td colspan="2" style="padding-left:5px;">
                                     Rules
-                                </td>-->
+                                </td>
                             </tr>
                             <tr>
                                 <td style="padding:5px;">
@@ -135,10 +128,10 @@
                                     <div id="{{control}}_ribbon_save_spinner" style="border:none; display:none;vertical-align:top;"><i class="fa fa-2x fa-spinner fa-spin"></i></div>
                                 </td>
 
-                                <!--<td style="width:1px;border-left:1px solid #ccc;"></td>
+                                <td style="width:1px;border-left:1px solid #ccc;"></td>
                                 <td style="padding:5px;vertical-align:top;">
                                     <button id="{{control}}_ribbon_sourcerule_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Source Rule</button>
-                                </td>-->
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -161,8 +154,8 @@
                             <div><i class="fa fa-info-circle"></i> Info</div>
                             <div style="padding: 10px" id="{{control}}_info_body"></div>
                         </div>
-                        <div id="{{control}}_sourcerules" style="display:none">
-                            <div><i class="fa fa-code-fork"></i> Source Rules</div>
+                        <div id="{{control}}_sourcerules">
+                            <div><i class="fa fa-code-fork"></i> Hierarchy Rules</div>
                             <div style="padding:10px">
                                 <div id="{{control}}_sourcerules_table"></div>
                             </div>

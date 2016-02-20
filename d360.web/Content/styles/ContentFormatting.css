@@ -101,16 +101,9 @@ h6 {
 .FieldDisplayName {
   font-weight: 600;
 }
-.FieldContent {
-  margin-bottom: 10px;
+.FieldDisplayContent p:first-child {
+  display: inline;
 }
-/*input[type=checkbox][disabled]{
-    color: @d3s-blue-1;
-    background-color: #fff;
-    opacity: 1;
-    width: 15px;
-    height: 15px;
-}*/
 .emptymessage {
   padding: 25px;
   color: #ddd;

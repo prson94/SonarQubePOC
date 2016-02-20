@@ -41,7 +41,7 @@
                 policyTypeID = data.ID;
 
                 $('#SideIcons').PageTools("reload", type, policyTypeID);
-                DetailTile('DetailTile', contextList, permissions, type, policyTypeID);
+                ObjectDetail('DetailTile', type, policyTypeID);
                 PolicyTypeLevelsGrid('LevelsTile', contextList, permissions, policyTypeID);
                 FieldsGrid("FieldsTile", contextList, permissions, type, policyTypeID, 'Policy Type Definition');
                 $('#ClaimsTile').load('/parts/ResponsibilityTypeObjectClaimGrid?type=' + type + '&id=' + policyTypeID);

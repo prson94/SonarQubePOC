@@ -18,6 +18,7 @@ using System.Xml.Linq;
 using Mandrill.Model;
 using Mandrill;
 using System.Data.SqlClient;
+using d360.extensions;
 
 namespace d360.workers.ProcessDatabaseTasksWorkerRole
 {
@@ -136,7 +137,7 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                     var checkDelayInSeconds = 10;
                     
                     await Task.Run(delegate {
-                        //var companies = new List<int>() { 15 };
+                        //var companies = new List<int>() { 4 };
                         var companies = CompanyConnectionUtils.GetActiveCompanyIDs();
                         var domainPrefixes = CompanyConnectionUtils.GetCompanyDomainPrefixes();
 
@@ -152,6 +153,8 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                         //companies.ForEach(companyID =>
                         companies.AsParallel().ForAll(companyID =>
                         {
+                            var isCompanyInDev = CompanyConnectionUtils.IsCompanyDevelopmentEnvironment(companyID);
+
                             var numberOfQueueItems = 1000;
                             var indexCollectionModel = new ObjectIndexCollectionModel();
 
@@ -476,7 +479,12 @@ from    [queue].[Task] T
 
                             try
                             {
-                                var search = new extensions.search.AzureSearchSource();
+
+                                ISearchSource search = null;
+                                if (isCompanyInDev)
+                                    search = new extensions.search.ElasticSearchSource();
+                                else
+                                    search = new extensions.search.AzureSearchSource();
 
                                 if (indexCollectionModel.Adds.Count > 0)
                                 {

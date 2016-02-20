@@ -44,7 +44,7 @@
             $('.FusionAttributeTypesTitle').text(data.Name);
 
             var loadPermissionsDependentTiles = function () {
-                DetailTile('DetailTile', contextList, permissions, 'FusionType', data.ID);
+                ObjectDetail('DetailTile', 'FusionType', data.ID);
                 FieldsGrid("FieldsTile", contextList, permissions, 'FusionType', data.ID);
                 FusionConfigurationsGrid('ConfigurationsTile', contextList, permissions, 'FusionType', data.ID);
                 PeopleResponsibilityTile('SecurityTile', contextList, permissions, 'FusionType', data.ID, 'Default Responsibilities', true);

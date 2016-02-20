@@ -103,7 +103,7 @@
                     $('#AggregatesTile').fadeOut(fadoutTime).html('');
                 }
 
-                DetailTile('DetailTile', contextList, permissions, selectedType, id);
+                ObjectDetail('DetailTile', selectedType, id);//DetailTile('DetailTile', contextList, permissions, selectedType, id);
 
                 ObjectStatisticsTile('SocialTile', selectedType, id);
             }

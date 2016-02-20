@@ -148,7 +148,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     var treeControlID = controlID + "AttributeTree";
     var viewerControlID = controlID + "AttributeViewer";
     var toolbarControlID = controlID + "AttributeToolbar";
-    var detailControlID = controlID + "AttributeDetail";
+    var _detailControlID = controlID + "AttributeDetail";
     var editorControlID = controlID + "AttributeEditor";
 
     //#region Build HTML
@@ -162,7 +162,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     html += '<div class="col l7 m7 s6">';
     html += '<div id="' + viewerControlID + '">';
     html += '<div id="' + toolbarControlID + '"></div>';
-    html += '<div id="' + detailControlID + '"></div>';
+    html += '<div id="' + _detailControlID + '"></div>';
     html += '</div>';
     html += '<div id="' + editorControlID + '"></div>';
     html += '</div>';
@@ -177,20 +177,17 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     treeControlID = '#' + treeControlID;
     viewerControlID = '#' + viewerControlID;
     toolbarControlID = '#' + toolbarControlID;
-    detailControlID = '#' + detailControlID;
+    var detailControlID = '#' + _detailControlID;
     editorControlID = '#' + editorControlID;
 
     //#endregion
 
     //#region Clean up previous control logic before re-creating
 
-    //try { $(treeControlID).unbind('rowSelect'); } catch (e) { }
     try { amplify.unsubscribe('AttributeToolAction'); } catch (e) { } 
     try { amplify.unsubscribe('CancelAction'); } catch (e) { } 
     try { amplify.unsubscribe('SaveAction'); } catch (e) { } 
     try { $(treeControlID).jqxTreeGrid('destroy'); } catch(e){}
-    //try { $(toolbarControlID).AttributeToolbar('destroy'); } catch (e) { }
-    try { $(detailControlID).Detail('destroy'); } catch (e) { }
     try { $(editorControlID).Editor('destroy'); } catch (e) { }
     $(controlID).html('');
     $(controlID).html(html);
@@ -252,7 +249,6 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     }
 
     var attributeSwitchToEditor = function (uri) {
-        $(detailControlID).Detail('clear');
         $(viewerControlID).hide();
         $(editorControlID).fadeIn();
         $(editorControlID).load(uri);
@@ -261,16 +257,14 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     var attributeSwitchToViewer = function (t, i) {
         $(editorControlID).html('');
         if (t === "Attribute" && i) {
-            $(detailControlID).Detail('reload', t, i);
+            ObjectDetail(_detailControlID, t, i);
         }
         else {
-            $(detailControlID).Detail('clear');
+            $(detailControlID).html('');
         }
         $(viewerControlID).fadeIn();
         $(editorControlID).hide();
     }
-
-    $(detailControlID).Detail({ context: contextList.Attribute, prefix: 'Attribute', listenfortoolactions: false });
 
     //#region TreeGrid Logic
 
@@ -411,7 +405,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             }
             badge.html("&#160;(<b>" + count + "</b>)");
             }
-            }
+        }
 
     function treeControlRowSelect(evt) {
         try {
@@ -448,10 +442,10 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
 
             attributeSwitchToViewer(targetType, row.TargetObjectID);
             if (detailid && detailtype === "Attribute") {
-                $(detailControlID).Detail('reload', detailtype, detailid);
+                ObjectDetail(_detailControlID, detailtype, detailid);
             }
             else {
-                $(detailControlID).Detail('clear');
+                $(detailControlID).html('');
             }
         } catch (e) {
             logError("Children : AttributeTree.select", e);
@@ -787,11 +781,8 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
 
     var m = new model();
 
-    //#region Detail Sub Tile
-
-    $(_DetailSubTile).Detail({ type: type, id: id, context: context });
-
-    //#endregion
+    //Detail Sub Tile
+    ObjectDetail('DetailSubTile', type, id);
 
     //#region Synonyms Grid
 
@@ -869,7 +860,7 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
         try {
             switch (data.context) {
                 case context:
-                    $(_DetailSubTile).Detail('reload', type, id);
+                    ObjectDetail('DetailSubTile', type, id);
                     break;
                 case contextList.Attribute:
                     if (data.custom) {
@@ -930,199 +921,129 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
     //#endregion
 }
 
-function DetailTile(controlID, contextList, permissions, type, id, hideTitle) {
-    var ribbonControlID = controlID + "_ribbon";
-    //var toolsControlID = controlID + "_tools";
-    var fieldControlPrefix = "det" + controlID;
-    controlID = '#' + controlID;
+function ObjectDetail(controlID, type, id) {
+    var tmpl = Handlebars.getTemplate('DetailTile');
 
-    if (!$(controlID).hasClass('tile'))
-    {
-        $(controlID).css('min-height', 125);
-        $(controlID).addClass('tile');
-        $(controlID).addClass('tile-detail');
-        //$(controlID).append('<div id="' + toolsControlID + '"></div>');
-
-        //toolsControlID = '#' + toolsControlID;
-        //TileTools(toolsControlID, [
-        //        { icon: 'plus', uri: '/relations/RelationOverlay?type=' + type + '&id=' + id, context: contextList.Intersect, title: 'Add field' }
-        //]);
-    }
-
-    //#region Parse
-
-    var parseSectionHeaders = function (sections) {
-        try {
-            var html = '<div class="col s12">';
-            if (sections.length > 1) {
-                html += '<ul id="DetailsTabControl" class="tabs">';
-                $.each(sections, function (idx, v) {
-                    html += '<li class="tab col s3">';
-                    html += '<a';
-                    if (idx === 0) {
-                        html += ' class="active"';
-                    }
-                    html += ' href="#Section' + v.ID + '">' + v.Name + '</a>';
-
-                    html += '</li>';
-                });
-                html += '</ul>';
-            }
-            html += '</div>';
-            return html;
-        } catch (e) {
-            logError("parts.js : DetailTile.parseSectionHeaders", e);
+    var processFieldLabel = function (fix, f) {
+        f.labelID = controlID + '_' + f.FieldName;
+        f.valueID = controlID + '_val_' + f.FieldName;
+        if (f.ScriptProperty) {
+            f.Name = eval(f.ScriptProperty);
         }
     }
 
-    var getFieldHtmlForColumn = function (fields, row, column, sectionID) {
-        var html = "";
+    var processFieldDetails = function (fix, f) {
+        var labelID = '#' + f.labelID;
+        var valueID = '#' + f.valueID;
 
-        $.each(fields, function (idx, f) {
-            if (f.Row === row && f.Column === column) {
-                var fieldFriendlyName = f.Name;
-                if (f.ScriptProperty) {
-                    fieldFriendlyName = eval(f.ScriptProperty);
+        //#region Create tooltips where there are field descriptions
+        if (f.FieldDescription && f.FieldDescription != '') {
+            $(labelID).qtip({
+                content: {
+                    text: f.FieldDescription,
+                    position: {
+                        at: 'bottom center', // Position the tooltip above the link
+                        my: 'top center',
+                        viewport: $(window), // Keep the tooltip on-screen at all times
+                        effect: false // Disable positioning animation
+                    }
+                },
+                style: {
+                    classes: 'qtip-blue qtip-rounded'
+                }
+            });
+        }
+        //#endregion
+
+        //#region Load field values
+
+        if (f.TooltipContext && f.TooltipID && f.TooltipType && f.TooltipUrl) {
+            $(valueID).html("<a href='" + f.TooltipUrl +
+                "' data-type='" + f.TooltipType +
+                "' data-context='" + f.TooltipContext +
+                "' data-id='" + f.TooltipID + "'>" +
+                f.Value + "</a>");
+        }
+        else if (f.FusionLookupGridUrl) {
+            $.getJSON(f.FusionLookupGridUrl, function (data) {
+
+                var res = data.Values;
+                var cols = data.Columns;
+                var source =
+                {
+                    localdata: res,
+                    datatype: 'json'
+                };
+
+                var dataAdapter = new $.jqx.dataAdapter(source, {
+                    downloadComplete: function (data, status, xhr) { },
+                    loadComplete: function (data) { },
+                    loadError: function (xhr, status, error) { },
+                    beforeLoadComplete: function (records) { }
+                });
+
+                var tooltiprenderer = function (element) {
+                    $(element).parent().jqxTooltip({ position: 'mouse', content: v.FieldDescription });
                 }
 
-                html += "<div id='" + fieldControlPrefix + f.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + sectionID + "_" + f.FieldName + "'>" + fieldFriendlyName + "</span></div>";
-                if (f.TooltipContext && f.TooltipID && f.TooltipType && f.TooltipUrl) {
-                    html += "<div><a href='" + f.TooltipUrl +
-                        "' data-type='" + f.TooltipType +
-                        "' data-context='" + f.TooltipContext +
-                        "' data-id='" + f.TooltipID + "'>" +
-                        f.Value + "</a></div>";
-                }
-                else {
-                    html += "<div>" + f.Value + "</div>";
-                }
-                return false;
+                cols.unshift(
+                     {
+                         datafield: "Name", text: 'Name', width: 'auto', cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                             return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a href='" + data.Url + "'>" + data.Name + "</a></div>";
+                             //return "<a href='" + data.Url + "'>" + data.Name + "</a>";
+                         }
+                     });
+
+                $(valueID).jqxGrid({
+                    altrows: true,
+                    width: grid_width,
+                    pagesizeoptions: ['10', '20', '50'],
+                    pagesize: 10,
+                    autoheight: true,
+                    sortable: true,
+                    filterable: true,
+                    showfilterrow: false,
+                    pageable: true,
+                    columnsresize: true,
+                    source: dataAdapter,
+                    theme: 'flat',
+                    pagermode: 'simple',
+                    columns: cols
+                });
+            });
+        }
+        else {
+            if (f.Value != null && f.Value.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})/)) {
+                f.Value = f.Value.replace(/["]/g, "");
+                var d = new Date(f.Value);
+                $(valueID).html(d.toLocaleString());
             }
+            else
+                $(valueID).html(f.Value);
+        }
+
+        //#endregion
+    }
+
+    $.getJSON('/api/' + type + '/' + id + '/detail', function (model) {
+
+        model.control = controlID;
+
+        //#region Update friendly names where there are script code items
+        $.each(model.rows, function (rix, r) {
+            r.hasOneColumn = (r.columns == 1);
+            $.each(r.FirstColumnFields, processFieldLabel);
+            $.each(r.SecondColumnFields, processFieldLabel);
+        });
+        //#endregion
+
+        $('#' + controlID).html(tmpl(model));
+
+        $.each(model.rows, function (rix, r) {
+            $.each(r.FirstColumnFields, processFieldDetails);
+            $.each(r.SecondColumnFields, processFieldDetails);
         });
 
-        return html;
-    }
-
-    var parseSectionFields = function(sections) {
-        try {
-            var html = "";
-
-            $.each(sections, function (idx, section) {
-
-                html += '<div class="col s12" id="Section' + section.ID + '">';
-
-                //#region Finds the row count/ column count
-
-                var tableMatrix = [];
-                var currentRow = 0;
-                var tabMatrixItem = null;
-                $.each(section.Fields, function (idx, v) {
-                    if (v.Row) {
-                        if (v.Row !== currentRow) {
-                            if (tabMatrixItem) tableMatrix.push(tabMatrixItem);
-                            currentRow = v.Row;
-                            tabMatrixItem = { Row: currentRow, Columns: 0, ColumnCount: 0 };
-                        }
-                        if (v.Column) {
-                            if (tabMatrixItem.ColumnCount < v.Column) {
-                                tabMatrixItem.ColumnCount = v.Column;
-                                tabMatrixItem.Columns = Math.round(12 / v.Column);
-                            }
-                        }
-                    }
-                });
-                if (tabMatrixItem) tableMatrix.push(tabMatrixItem);   //Add the last item to make sure we get the last row.
-
-                //#endregion
-
-                //#region Build the HTML
-
-                var currentColumn = 0;
-                $.each(tableMatrix, function (i, m) {
-                    html += "<div class='row'>";
-
-                    currentColumn = 1;
-                    while (currentColumn <= m.ColumnCount) {
-                        html += "<div class='col s" + m.Columns + "'>";
-                        html += getFieldHtmlForColumn(section.Fields, m.Row, currentColumn, section.ID);
-                        html += "</div>";
-                        currentColumn++;
-                    }
-
-                    html += "</div>";
-                });
-
-                //#endregion
-
-                html += '</div>';
-
-            });
-
-            return html;
-
-        } catch (e) {
-            logError("parts.js : DetailTile.parseSectionFields", e);
-        }
-    }
-
-    var parseTooltips = function (sections) {
-        try {
-
-            $.each(sections, function (idx, section) {
-
-                $.each(section.Fields, function (idx, field) {
-
-                    if (field.FieldDescription && field.FieldDescription !== '') {
-                        $('#Tip_' + section.ID + '_' + field.FieldName).qtip({
-                            content: {
-                                text: field.FieldDescription,
-                                position: {
-                                    at: 'bottom center', // Position the tooltip above the link
-                                    my: 'top center',
-                                    viewport: $(window), // Keep the tooltip on-screen at all times
-                                    effect: false // Disable positioning animation
-                                }
-                            },
-                            style: {
-                                classes: 'qtip-blue qtip-rounded'
-                            }
-                        });
-                    }
-
-                });
-
-            });
-
-        } catch (e) {
-            logError("parts.js : DetailTile.parseTooltips", e);
-        }
-    }
-
-    //#endregion
-
-    $.ajax('/api/' + type + '/' + id + '/detail', {
-        type: 'GET'
-    }).done(function (data, status, xhr) {
-        var html = '';
-        html += parseSectionHeaders(data);
-        html += parseSectionFields(data);
-
-        $(controlID).html('');
-        if (!hideTitle) {
-            $(controlID).append('<header>Definition</header>');
-        }
-        $(controlID).append('<div id="' + ribbonControlID + '" class="row"></div>');
-        ribbonControlID = '#' + ribbonControlID;
-        $(ribbonControlID).fadeOut(100);
-        $(ribbonControlID).append(html);
-
-        parseTooltips(data);
-
-        $('#DetailsTabControl').tabs();
-    }).fail(function (xhr, status, error) {
-        $(ribbonControlID).append('An error occured while trying to poll for object details: ' + error);
-    }).always(function () {
-        $(ribbonControlID).fadeIn(250);
     });
 }
 
@@ -1142,6 +1063,7 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType, t
     var controlID_title = controlID + '_title';
     $(controlID_title).text(title);
 
+    $(controlID).css('padding-bottom', '0px');
 
     var getAdapter = function (mapType, selector) {
         return {
@@ -1184,7 +1106,7 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType, t
     }
     var getTreeGrid = function (mapType, adapter, title, selector, ctrlID) {
         return {
-            width: 450,
+            width: '100%',
             source: adapter,
             sortable: false,
             showToolbar: true,
@@ -1507,7 +1429,7 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType, t
             },
             columns: [
                 {
-                    text: 'Artifact', dataField: 'Name', width: 350, align: "center", columnType: "custom",
+                    text: 'Artifact', dataField: 'Name', width: '80%', align: "center", columnType: "custom",
                     cellsRenderer: function (rowKey, dataField, value, data) {
                         var item = getRowDataItem(data);
                         if (item.type == type && item.id == id) {
@@ -1604,7 +1526,7 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType, t
                     }
                 },
                 {
-                    text: "Predicate", dataField: 'PredicatePhrase', width: 100, align: "center", columnType: "custom",
+                    text: "Predicate", dataField: 'PredicatePhrase', width: '20%', align: "center", columnType: "custom",
                     createEditor: function (row, cellvalue, editor, cellText, width, height) {
                         
                         //console.log(isAddingParent);
@@ -2353,7 +2275,7 @@ function FieldsGrid(controlID, contextList, permissions, type, id, title) {
             url: '/fields/' + type + '/' + id + '.json',
             datafields:
             [
-                { name: 'Object' },
+                { name: 'ObjectType' },
                 { name: 'ObjectID' },
                 { name: 'ID' },
                 { name: 'FriendlyName' },
@@ -2419,8 +2341,12 @@ function FieldsGrid(controlID, contextList, permissions, type, id, title) {
     //#region Event Subscriptions
 
     function commandExecuted(command) {
-        if (command == "FieldMove") {
-            $(gridControlID).jqxGrid('updatebounddata');
+        try {
+            if (command == "FieldMove") {
+                $(gridControlID).jqxGrid('updatebounddata');
+            }
+        } catch (e) {
+            logError("Parts.js : FieldsGrid", e);
         }
     }
 
@@ -5637,8 +5563,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_popover_add = controlID + '_popover_add';
 
     var controlID_popover_sourcerule_editor = controlID + '_popover_sourcerule_editor';
-    var controlID_popover_sourcerule_editor_name = controlID_popover_sourcerule_editor + '_name';
-    var controlID_popover_sourcerule_editor_sources = controlID_popover_sourcerule_editor + '_sources';
+    var controlID_popover_sourcerule_editor_body = controlID_popover_sourcerule_editor + '_body';
 
     //#endregion
 
@@ -5656,7 +5581,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $("#" + controlID_ribbon_zoom_out).jqxRepeatButton({ delay: 3, theme: theme });
     $("#" + controlID_ribbon_zoom_in).jqxRepeatButton({ delay: 3, theme: theme });
 
-    //$("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 });
 
     $("#" + controlID_sourcerules).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
@@ -5672,9 +5597,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         $('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
     });
 
-    //$("#" + controlID_ribbon_sourcerule_add).on('click', function () {
-    //    $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
-    //});
+    $("#" + controlID_ribbon_sourcerule_add).on('click', function () {
+        $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
+
+        var model = new HierarchyRuleViewModel(1, type, id);
+        ko.applyBindings(model, document.getElementById(controlID_popover_sourcerule_editor_body));
+    });
 
     $('#' + controlID_ribbon).jqxRibbon({
         width: "100%",
@@ -5959,8 +5887,9 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             key: null,
             id: null,
             from: null,
-            frompid: "OUT",
+            fromPortId: "OUT",
             to: null,
+            toPortId: "IN",
             text: null,
             predicateId: null,
             isDeletable: true,
@@ -6216,6 +6145,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         //get a deep copy of the selection as an array
         var sel = $.extend(true, [], selection.toArray()); //JSON.parse(JSON.stringify(selection.toArray()));
         var firstNodePopulated = false;
+        var sourceNodes = [];
 
         for (var i = 0; i < sel.length; i++ )
         {
@@ -6223,6 +6153,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
             if (data.diagramObjectType == 'Node') {
                 
+                 for (var it = sel[i].findNodesInto(); it.next(); ) {
+                    var n = it.value;  // n is now a Node.
+                    var d = n.data;
+                    sourceNodes.push(d);
+                 }
+
                 //#region Info
                 if (!firstNodePopulated) {
                     $.ajax({
@@ -6235,12 +6171,15 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                         async: true
                     });
 
-                    technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
-                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+                    try {
+                        technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
+                        $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+                    } catch (e) {
+                    }
                     $("#" + controlID_fusion).jqxExpander('expand');
 
-                    if (data.sourceRuleCount > 0) {
-                        $('#' + controlID_sourcerules).show();
+                    if (sourceNodes.length > 0) { //(data.sourceRuleCount > 0) {
+                        //$('#' + controlID_sourcerules).show();
                         $("#" + controlID_sourcerules).jqxExpander('expand');
 
                         $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function(rules) {
@@ -6249,14 +6188,18 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                         });
                     }
                     else {
-                        $('#' + controlID_sourcerules).hide();
-                        $("#" + controlID_sourcerules).jqxExpander('collapse');
                         $("#" + controlID_sourcerules_table).html('');
+                        $("#" + controlID_sourcerules).jqxExpander('collapse');
+                        //$('#' + controlID_sourcerules).hide();
                     }
 
                     $("#" + controlID_responsibilities).show();
-                    lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
-                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    try {
+                        lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
+                        $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    } catch (e) {
+
+                    }
                     $("#" + controlID_responsibilities).jqxExpander('expand');
                 }
                 //#endregion
@@ -6269,12 +6212,10 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 $("#" + controlID_info).jqxExpander('collapse');
 
                 $("#" + controlID_sourcerules).jqxExpander('collapse');
-                $('#' + controlID_sourcerules).hide();
 
                 lineageResponsibilitySource.url = null;
                 $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
                 $("#" + controlID_responsibilities).jqxExpander('collapse');
-                $('#' + controlID_responsibilities).hide();
 
                 if (data.intersectId != null) {
                     technicalRelationsSource.url = '/api/Intersect/' + data.intersectId + '/relations';
@@ -6773,8 +6714,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
     myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-    makeTemplate("FocalArtifact", 275, 150, '#000000', 14, [makePort("", true)], [makePort("OUT", false)]);
-    makeTemplate("Artifact", 225, 105, 'transparent', 10, [makePort("", true)], [makePort("OUT", false)]);
+    makeTemplate("FocalArtifact", 275, 150, '#000000', 14, [makePort("IN", true)], [makePort("OUT", false)]);
+    makeTemplate("Artifact", 225, 105, 'transparent', 10, [makePort("IN", true)], [makePort("OUT", false)]);
 
     myDiagram.linkTemplate = g(
         go.Link, { routing: go.Link.AvoidsNodes, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel

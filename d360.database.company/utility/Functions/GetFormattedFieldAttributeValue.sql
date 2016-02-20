@@ -1,32 +1,36 @@
-﻿CREATE FUNCTION utility.GetFormattedFieldAttributeValue
+﻿
+
+
+CREATE FUNCTION [utility].[GetFormattedFieldAttributeValue]
 (
-	@AttributeID int,
-	@DisplayFormat nvarchar(250)	
+--declare
+	@AttributeID int,-- = 67,
+	@DisplayFormat nvarchar(250)-- = '{Position1}, {Position2}, {Position3}, {Position4}'
 )
 RETURNS nvarchar(4000)
 AS
 BEGIN
 	declare @formattedValue nvarchar(4000),
 			@tDisplayFormat nvarchar(250)
-	declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
+	declare @tokens table(ID int identity(1,1), pos int, Token nvarchar(100), Field nvarchar(100))
 	declare @fieldValues table(Field nvarchar(100), Value nvarchar(4000))
 
 	set @formattedValue = @DisplayFormat
 	SET @tDisplayFormat = @DisplayFormat
-	
-	WHILE(PATINDEX('%{%', @tDisplayFormat) > 0)
-	BEGIN
+
+	Declare @pos int
+	Declare @oldpos int
+	Select @oldpos=0
+	select @pos=patindex('%{%',@DisplayFormat) 
+	while @pos > 0 and @oldpos<>@pos
+	 begin
 		declare @txt nvarchar(100)
-		SELECT @txt = SUBSTRING(@tDisplayFormat, PATINDEX('%{%', @tDisplayFormat), PATINDEX('%}%', @tDisplayFormat))
-		IF NOT EXISTS(SELECT 1 FROM @tokens WHERE Token = @txt)
-		BEGIN
-			INSERT INTO @tokens VALUES (
-				@txt,
-				(select SUBSTRING(@txt, 2, LEN(@txt)-2))
-			)
-		END
-		SET @tDisplayFormat = stuff(@tDisplayFormat, charindex(@txt, @tDisplayFormat), len(@txt), '')
-	END
+		SELECT @txt = SUBSTRING(@tDisplayFormat, @pos, PATINDEX('%}%', @tDisplayFormat))
+
+		insert into @tokens Values (@pos, @txt, SUBSTRING(@txt, 2, LEN(@txt)-2))
+		Select @oldpos = @pos
+		select @pos = patindex('%{%',Substring(@DisplayFormat, @pos + 1, len(@DisplayFormat))) + @pos
+	end
 
 	insert into @fieldValues
 		SELECT	Name,
@@ -34,6 +38,8 @@ BEGIN
 		FROM	FieldWithRelation 
 		WHERE	ObjectType = 'Attribute' 
 				and ObjectID = @AttributeID
+--select * from @fieldValues
+--select * from @tokens
 
 	declare @current int,
 			@max int
@@ -62,6 +68,10 @@ BEGIN
 		if @currentValue is not null
 		begin
 			SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
+		end
+		else
+		begin
+			SET @formattedValue = REPLACE(@formattedValue, @currentToken, '')
 		end
 
 		SET @current = @current + 1

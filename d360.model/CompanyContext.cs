@@ -301,10 +301,6 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
-        public DbSet<Tag> Tags { get; set; }
-
-        public DbSet<TagRelation> TagRelations { get; set; }
-
         public DbSet<Taxonomy> Taxonomies { get; set; }
 
         public DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
@@ -762,9 +758,11 @@ from	DomainType
         S.C as Success,
         E.C as Error,
         I.C as Incomplete,
-		T.C as Total
+		T.C as Total,
+        R.FirstName + ' ' + R.LastName as Requestor
 from	[Load] L
 		inner join cache.ObjectDetails D on D.[Object] = L.[Object] and D.ObjectID = L.ObjectID
+		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I

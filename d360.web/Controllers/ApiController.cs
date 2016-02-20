@@ -49,36 +49,30 @@ namespace d360.web.Controllers
             var fields = Company.GetFieldRelationsByObject(type, id);
             foreach (var k in fields)
             {
-                var ro = new DisplayField
-                {
+                list.Add(new DisplayField {
                     FriendlyName = k.FriendlyName,
                     Value = k.FormattedValue,
                     Name = k.Name
-                };
-                list.Add(ro);
+                });
             }
         }
 
-        int loadDynamicDisplayFields(List<ReadOnlyField> list, SystemObjects type, int id, int startRow) 
+        List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id) 
         {
+            var list = new List<DetailReadOnlyRowModel>();
             var fields = Company.GetFieldRelationsByObject(type, id);
-            var row = startRow-1;
 
             foreach (var k in fields)
             {
-                row++;
-
                 if (k.Type == DataType.FusionLookup.ToString())
                 {
                     //look at fusionlookup field and figure out what to show
-                    row += RenderFusionLookupField(k,list,row);
+                    list.AddRange(RenderFusionLookupField(k));
                 }
                 else
                 {
                     var ro = new ReadOnlyField
                     {
-                        Row = row,
-                        Column = 1,
                         Name = k.FriendlyName,
                         Value = k.FormattedValue,
                         FieldDescription = k.DisplayDescription,
@@ -92,26 +86,25 @@ namespace d360.web.Controllers
                         ro.TooltipUrl = k.LookupUrl;
                     }
 
-                    list.Add(ro);
-                }                
+                    list.Add(new DetailReadOnlyRowModel
+                    {
+                        columns = 1,
+                        FirstColumnFields = new List<ReadOnlyField> {ro}
+                    });
+                }
             }
-
-            return row+1;
+            return list;
         }
-            
 
-        int loadDisplayableRelationshipsAsFields(List<ReadOnlyField> list, SystemObjects type, int id, int row)
+        List<DetailReadOnlyRowModel> loadDisplayableRelationshipsAsFields(SystemObjects type, int id)
         {
+            var list = new List<DetailReadOnlyRowModel>();
             var relationships = Company.GetDetailDisplayableRelationships(type, id);
 
             foreach (var k in relationships)
             {
-                row++;
-
                 var ro = new ReadOnlyField
                 {
-                    Row = row,
-                    Column = 1,
                     Name = k.TargetTypeName,
                     Value = k.TargetObjectName,
                     FieldDescription = "",
@@ -125,10 +118,13 @@ namespace d360.web.Controllers
                     ro.TooltipUrl = k.TargetUrl;
                 }
 
-                list.Add(ro);
+                list.Add(new DetailReadOnlyRowModel
+                {
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> { ro }
+                });
             }
-
-            return row + 1;
+            return list;
         }
 
         
@@ -1461,12 +1457,46 @@ from	utility.RelationshipTypes T
 
             model.Add("AllowPredicateHierarchies", allowed);
 
-            // Dynamic fields
-            var values = Company.GetFieldRelationsByObject(SystemObjects.Artifact, a.ID).ToList();
-            values.ForEach(f =>
+            //// Dynamic fields
+            //var values = Company.GetFieldRelationsByObject(SystemObjects.Artifact, a.ID).ToList();
+            //values.ForEach(f =>
+            //{
+            //    model.Add(f.Name, f.FormattedValue);
+            //});
+
+            var hSql = $@"
+with h as
+	(
+	select	[ObjectID] as ID, [Name], [ParentID], [Url], [ObjectTypeName], [ObjectTypeID],
+			[dbo].GenerateObjectUrl(ObjectType, ObjectTypeID, ObjectTypeID) as TypeUrl,
+			0 as [Level]
+	from	[cache].[ObjectDetails]
+	where	[Object] = 'Artifact' and ObjectID = {id}
+	union all
+	select	P.[ObjectID] as ID, P.[Name], P.[ParentID], P.[Url], P.[ObjectTypeName], P.[ObjectTypeID],
+			[dbo].GenerateObjectUrl(P.ObjectType, P.ObjectTypeID, P.ObjectTypeID) as TypeUrl,
+			C.[Level]-1 as [Level]
+	from	[cache].[ObjectDetails] P
+			inner join h C on P.[Object] = 'Artifact' and P.ObjectID = C.ParentID
+	)
+select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]
+";
+            var breadcrumbItems = Company.Query<dynamic>(hSql).ToList();
+            var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+
+            var breadcrumbs = new List<BreadcrumbItem>() {
+                new BreadcrumbItem { Name = "Glossary" }
+            };
+            breadcrumbItems.ForEach(b =>
             {
-                model.Add(f.Name, f.FormattedValue);
+                breadcrumbs.Add(new BreadcrumbItem { Name = pluralize.Pluralize((string)b.TypeName), Url = (string)b.TypeUrl });
+                breadcrumbs.Add(new BreadcrumbItem { Name = (string)b.Name, Url = (string)b.Url });
             });
+            pluralize = null;
+
+            breadcrumbs.Last().Active = true;
+
+            model.Add("Breadcrumbs", breadcrumbs);
 
             return model;
         }
@@ -2168,15 +2198,12 @@ from	    ResponsibilityTypeHierarchy H
 
         #region Fusion Lookup Fields
 
-        private int RenderFusionLookupField(FieldWithRelation k, List<ReadOnlyField> list, int currentRowNumber)
+        private List<DetailReadOnlyRowModel> RenderFusionLookupField(FieldWithRelation k)
         {
+            var list = new List<DetailReadOnlyRowModel>();
             //load the definition of the field from the [FieldTypeFusionLookupDefinition] table
-            int fusionAttributeID = 0;
+            int fusionAttributeID = int.Parse(k.Value);
             var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
-
-            //field value has the fusion attribute this guy is associated with
-            if (!int.TryParse(k.Value, out fusionAttributeID))
-                return 0; // the value isnt populated or correct render nothing
 
             string sql, urlSql = string.Empty;
             //take def and look for intersects on the original id to the type specified
@@ -2237,19 +2264,19 @@ from	    ResponsibilityTypeHierarchy H
 
             if (results.Count() > 1 || def.FieldTypeFusionLookupDisplayFields != null && def.FieldTypeFusionLookupDisplayFields.Count > 0)
             {
-                var ro = new ReadOnlyField
+                list.Add(new DetailReadOnlyRowModel
                 {
-                    Row = currentRowNumber++,
-                    Column = 1,
-                    Name = k.FriendlyName,
-                    FieldDescription = k.DisplayDescription,
-                    FieldName = k.Name,
-                    FusionLookupGridUrl = string.Format("api/FusionLookupField/{0}/{1}/values", fusionAttributeID, def.ID)
-                };
-
-                list.Add(ro);
-
-                return currentRowNumber;
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> {
+                        new ReadOnlyField {
+                            Column = 1,
+                            Name = k.FriendlyName,
+                            FieldDescription = k.DisplayDescription,
+                            FieldName = k.Name,
+                            FusionLookupGridUrl = string.Format("api/FusionLookupField/{0}/{1}/values", fusionAttributeID, def.ID)
+                        }
+                    }
+                });
             }
 
             string url = null;
@@ -2261,7 +2288,6 @@ from	    ResponsibilityTypeHierarchy H
             {
                 var ro = new ReadOnlyField
                 {
-                    Row = currentRowNumber++,
                     Column = 1,
                     Name = k.FriendlyName,
                     FieldDescription = k.DisplayDescription,
@@ -2282,11 +2308,15 @@ from	    ResponsibilityTypeHierarchy H
 
                 ro.Value = value;
 
-                list.Add(ro);
+
+                list.Add(new DetailReadOnlyRowModel
+                {
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> { ro }
+                });
             }
 
-            return currentRowNumber;
-
+            return list;
         }
 
         [Route("FusionLookupField/{sourceFusionAttributeID:int}/{fieldTypeFusionLookupDefinitionID:int}/values")]
@@ -2938,7 +2968,7 @@ from	IntersectMapSourceRule J
 
         #endregion
 
-        #region Tags
+        #region Comment Tag Suggestions
 
         [DataContract]
         public class TagSuggestionModel
@@ -2976,51 +3006,6 @@ from	IntersectMapSourceRule J
             var list = Company.Query<TagSuggestionModel>(sql).ToList();
 
             return list;
-        }
-
-        [Route("tags")]
-        public IQueryable<Tag> GetTags()
-        {
-            return Company.Table<Tag>();
-        }
-
-        [Route("tags/{type}/{id:int}")]
-        public IQueryable<Tag> GetTagsByObject(SystemObjects type, int id)
-        { 
-            var sType = type.ToString();
-            return Company.Filter<TagRelation>(i => i.Object == sType && i.ObjectID == id).Select(i => i.Tag);
-        }
-
-        [HttpPost, Route("tags/{type}/{id:int}")]
-        public HttpResponseMessage RelateNewTagToObject(SystemObjects type, int id, Tag model)
-        {
-            var sType = type.ToString();
-            model.Name = model.Name.Trim();
-            var tag = Company.Filter<Tag>(i => i.Name == model.Name).SingleOrDefault();
-            if (tag == null)
-            {
-                tag = new Tag { Name = model.Name };
-                Company.Add<Tag>(tag);
-            }
-
-            if (tag.ID > 0)
-            {
-                var tagRelation = new TagRelation { Object = sType, ObjectID = id, TagID = tag.ID };
-                Company.Add<TagRelation>(tagRelation);
-            }
-            return Request.CreateResponse(HttpStatusCode.OK, new { context = "Tag" });
-        }
-
-        [HttpPut, Route("tags/{type}/{id:int}")]
-        public HttpResponseMessage RelateExistingTagToObject(SystemObjects type, int id, Tag model)
-        {
-            var sType = type.ToString();
-            if (!Company.Filter<TagRelation>(i => i.Object == sType && i.ObjectID == id && i.TagID == model.ID).Any())
-            {
-                var tagRelation = new TagRelation { Object = sType, ObjectID = id, TagID = model.ID };
-                Company.Add<TagRelation>(tagRelation);
-            }
-            return Request.CreateResponse(HttpStatusCode.OK, new { context = "Tag" });
         }
 
         #endregion
@@ -3196,8 +3181,10 @@ from	IntersectMapSourceRule J
         }
 
         [Route("{type}/{id:int}/detail")]
-        public HttpResponseMessage GetObjectDetailFields(SystemObjects type, int id)
+        public DetailReadOnlyModel GetObjectDetailFields(SystemObjects type, int id)
         {
+            var model = new DetailReadOnlyModel() { columns = 2 } ;
+
             var sections = new List<ReadOnlySection>();
 
             var list = new List<ReadOnlyField>();
@@ -3206,22 +3193,20 @@ from	IntersectMapSourceRule J
             {
                 case SystemObjects.Artifact:
                     #region Fields
+
                     var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType, i => i.TaxonomyType);
                     if (artifact != null)
                     {
-                        //list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = artifact.GetName(i => i.Name), FieldName = "ArtifactName", FieldDescription = artifact.GetDescription(i => i.Description), Value = artifact.Name });
-                        //list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = artifact.GetName(i => i.Status), FieldName = "ArtifactStatus", FieldDescription = artifact.GetDescription(i => i.Status), Value = artifact.Status });
-
-                        row = 1;
                         if (!string.IsNullOrEmpty(artifact.Description))
                         {
-
-                            list.Add(new ReadOnlyField { Row = row, Column = 1, Name = artifact.GetName(i => i.Description), FieldName = "ArtifactDescription", FieldDescription = artifact.GetDescription(i => i.Description), Value = artifact.Description });
-                            row++;
+                            model.rows.Add(new DetailReadOnlyRowModel {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.Description), FieldName = "ArtifactDescription", FieldDescription = artifact.GetDescription(i => i.Description), Value = artifact.Description }
+                                }
+                            });
                         }
 
-                        //list.Add(new ReadOnlyField { Row = row, Column = 1, Name = artifact.GetName(i => i.ArtifactTypeID), FieldName = "ArtifactArtifactType", FieldDescription = artifact.GetDescription(i => i.ArtifactTypeID), Value = artifact.ArtifactType.Name });
-                        list.Add(new ReadOnlyField { Row = row, Column = 1, Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "ArtifactTaxonomyType", FieldDescription = artifact.GetDescription(i => i.TaxonomyTypeID), Value = artifact.TaxonomyType.Name });
                         var nodes = "None assigned";
                         var owningModels = Company.Filter<Relationship>(i => i.SourceObjectType == "Artifact" && i.SourceObjectID == id && i.TargetType == "TaxonomyType" && i.TargetTypeID == artifact.TaxonomyTypeID).Select(i => new { i.TargetUrl, i.TargetName, i.TargetObjectID }).OrderBy(i => i.TargetName).ToList();
                         if (owningModels.Count > 0)
@@ -3232,11 +3217,19 @@ from	IntersectMapSourceRule J
                                 nodes += string.Format("<div><a data-context='Preview' data-type='Taxonomy' data-id='{2}' href='{0}'>{1}</a></div>", i.TargetUrl, i.TargetName, i.TargetObjectID);
                             });
                         }
-                        list.Add(new ReadOnlyField { Row = row, Column = 2, Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeIDNodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = nodes });
 
-                        row++;
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "ArtifactTaxonomyType", FieldDescription = artifact.GetDescription(i => i.TaxonomyTypeID), Value = artifact.TaxonomyType.Name }
+                                },
+                            SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeIDNodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = nodes }
+                                }
+                        });
 
-                        row = loadDynamicDisplayFields(list, type, id, row);
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     artifact = null;
                     break;
@@ -3246,14 +3239,41 @@ from	IntersectMapSourceRule J
                     var artifactType = Company.GetById<ArtifactType>(id);
                     if (artifactType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = artifactType.GetName(i => i.Name), FieldName = "ArtifactTypeName", FieldDescription = artifactType.GetDescription(i => i.Name), Value = artifactType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = artifactType.GetName(i => i.ID), FieldName = "ArtifactTypeID", FieldDescription = artifactType.GetDescription(i => i.ID), Value = artifactType.ID.ToString() });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = artifactType.GetName(i => i.Description), FieldName = "ArtifactTypeDescription", FieldDescription = artifactType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField { Name = artifactType.GetName(i => i.Name), FieldName = "ArtifactTypeName", FieldDescription = artifactType.GetDescription(i => i.Name), Value = artifactType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField { Name = artifactType.GetName(i => i.ID), FieldName = "ArtifactTypeID", FieldDescription = artifactType.GetDescription(i => i.ID), Value = artifactType.ID.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = artifactType.GetName(i => i.CanOwnFusion), FieldName = "ArtifactTypeCanOwnFusion", FieldDescription = artifactType.GetDescription(i => i.CanOwnFusion), Value = artifactType.CanOwnFusion.FormatBooleanReadOnlyValue() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField { Name = artifactType.GetName(i => i.Description), FieldName = "ArtifactTypeDescription", FieldDescription = artifactType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = artifactType.GetName(i => i.AllowRelatedArtifacts), FieldName = "ArtifactTypeAllowRelatedArtifacts", FieldDescription = artifactType.GetDescription(i => i.AllowRelatedArtifacts), Value = artifactType.AllowRelatedArtifacts.FormatBooleanReadOnlyValue() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField { Name = artifactType.GetName(i => i.CanOwnFusion), FieldName = "ArtifactTypeCanOwnFusion", FieldDescription = artifactType.GetDescription(i => i.CanOwnFusion), Value = artifactType.CanOwnFusion.FormatBooleanReadOnlyValue() }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField { Name = artifactType.GetName(i => i.AllowRelatedArtifacts), FieldName = "ArtifactTypeAllowRelatedArtifacts", FieldDescription = artifactType.GetDescription(i => i.AllowRelatedArtifacts), Value = artifactType.AllowRelatedArtifacts.FormatBooleanReadOnlyValue() }
+                            }
+                        });
+
                     }
                     artifactType = null;
                     break;
@@ -3263,7 +3283,9 @@ from	IntersectMapSourceRule J
                     var attr = Company.GetById<core.entities.Attribute>(id);
                     if (attr != null)
                     {
-                        row = loadDynamicDisplayFields(list, type, id, 1);
+                        model.columns = 1;
+
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     attr = null;
                     break;
@@ -3273,12 +3295,36 @@ from	IntersectMapSourceRule J
                     var attributeType = Company.GetById<AttributeType>(id);
                     if (attributeType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = attributeType.GetName(i => i.ID), FieldName = "AttributeTypeID", FieldDescription = attributeType.GetDescription(i => i.ID), Value = attributeType.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = attributeType.GetName(i => i.ID), FieldName = "AttributeTypeID", FieldDescription = attributeType.GetDescription(i => i.ID), Value = attributeType.ID.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = attributeType.GetName(i => i.Name), FieldName = "AttributeTypeName", FieldDescription = attributeType.GetDescription(i => i.Name), Value = attributeType.Name });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = attributeType.GetName(i => i.TextFormatString), FieldName = "AttributeTypeTextFormatString", FieldDescription = attributeType.GetDescription(i => i.TextFormatString), Value = attributeType.TextFormatString });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = attributeType.GetName(i => i.Name), FieldName = "AttributeTypeName", FieldDescription = attributeType.GetDescription(i => i.Name), Value = attributeType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = attributeType.GetName(i => i.TextFormatString), FieldName = "AttributeTypeTextFormatString", FieldDescription = attributeType.GetDescription(i => i.TextFormatString), Value = attributeType.TextFormatString }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = attributeType.GetName(i => i.Description), FieldName = "AttributeTypeDescription", FieldDescription = attributeType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = attributeType.GetName(i => i.Description), FieldName = "AttributeTypeDescription", FieldDescription = attributeType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description }
+                            }
+                        });
                     }
                     attributeType = null;
                     break;
@@ -3288,13 +3334,39 @@ from	IntersectMapSourceRule J
                     var domain = Company.GetById<Domain>(id, i => i.DomainType, i => i.DomainGroup);
                     if (domain != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = domain.GetName(i => i.Name), FieldName = "DomainGroupName", FieldDescription = domain.GetDescription(i => i.Name), Value = domain.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = domain.GetName(i => i.ID), FieldName = "DomainGroupID", FieldDescription = domain.GetDescription(i => i.ID), Value = domain.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domain.GetName(i => i.Name), FieldName = "DomainGroupName", FieldDescription = domain.GetDescription(i => i.Name), Value = domain.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domain.GetName(i => i.ID), FieldName = "DomainGroupID", FieldDescription = domain.GetDescription(i => i.ID), Value = domain.ID.ToString() }
+                            }
+                        });
 
                         if (!string.IsNullOrEmpty(domain.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = domain.GetName(i => i.Description), FieldName = "DomainGroupDescription", FieldDescription = domain.GetDescription(i => i.Description), Value = domain.Description });
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = domain.GetName(i => i.Description), FieldName = "DomainGroupDescription", FieldDescription = domain.GetDescription(i => i.Description), Value = domain.Description }
+                                }
+                            });
+                        }
 
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = domain.GetName(i => i.DomainType), FieldName = "DomainGroupDomainType", FieldDescription = domain.GetDescription(i => i.DomainType), Value = domain.DomainType.Name });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domain.GetName(i => i.DomainType), FieldName = "DomainGroupDomainType", FieldDescription = domain.GetDescription(i => i.DomainType), Value = domain.DomainType.Name }
+                            }
+                        });
                     }
                     domain = null;
                     break;
@@ -3304,16 +3376,42 @@ from	IntersectMapSourceRule J
                     var domainGroup = Company.GetById<DomainGroup>(id, d => d.DomainType);
                     if (domainGroup != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = domainGroup.GetName(i => i.Name), FieldName = "DomainGroupName", FieldDescription = domainGroup.GetDescription(i => i.Name), Value = domainGroup.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = domainGroup.GetName(i => i.ID), FieldName = "DomainGroupID", FieldDescription = domainGroup.GetDescription(i => i.ID), Value = domainGroup.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domainGroup.GetName(i => i.Name), FieldName = "DomainGroupName", FieldDescription = domainGroup.GetDescription(i => i.Name), Value = domainGroup.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domainGroup.GetName(i => i.ID), FieldName = "DomainGroupID", FieldDescription = domainGroup.GetDescription(i => i.ID), Value = domainGroup.ID.ToString() }
+                            }
+                        });
 
                         if (!string.IsNullOrEmpty(domainGroup.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = domainGroup.GetName(i => i.Description), FieldName = "DomainGroupDescription", FieldDescription = domainGroup.GetDescription(i => i.Description), Value = domainGroup.Description });
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = domainGroup.GetName(i => i.Description), FieldName = "DomainGroupDescription", FieldDescription = domainGroup.GetDescription(i => i.Description), Value = domainGroup.Description }
+                                }
+                            });
+                        }
 
                         if (domainGroup.MasterListID.HasValue)
                         {
                             var groupMasterList = Company.GetById<Domain>(domainGroup.MasterListID.Value);
-                            list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = domainGroup.GetName(i => i.MasterListID), FieldName = "DomainGroupMasterListID", FieldDescription = domainGroup.GetDescription(i => i.MasterListID), Value = groupMasterList.Name });
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = domainGroup.GetName(i => i.MasterListID), FieldName = "DomainGroupMasterListID", FieldDescription = domainGroup.GetDescription(i => i.MasterListID), Value = groupMasterList.Name }
+                                }
+                            });
                         }
                     }
                     domainGroup = null;
@@ -3324,10 +3422,27 @@ from	IntersectMapSourceRule J
                     var domainType = Company.GetById<DomainType>(id);
                     if (domainType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = domainType.GetName(i => i.Name), FieldName = "DomainTypeName", FieldDescription = domainType.GetDescription(i => i.Name), Value = domainType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = domainType.GetName(i => i.ID), FieldName = "DomainTypeID", FieldDescription = domainType.GetDescription(i => i.ID), Value = domainType.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domainType.GetName(i => i.Name), FieldName = "DomainTypeName", FieldDescription = domainType.GetDescription(i => i.Name), Value = domainType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domainType.GetName(i => i.ID), FieldName = "DomainTypeID", FieldDescription = domainType.GetDescription(i => i.ID), Value = domainType.ID.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = domainType.GetName(i => i.Description), FieldName = "DomainTypeDescription", FieldDescription = domainType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(domainType.Description) ? "None provided" : domainType.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domainType.GetName(i => i.Description), FieldName = "DomainTypeDescription", FieldDescription = domainType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(domainType.Description) ? "None provided" : domainType.Description }
+                            }
+                        });
                     }
                     domainType = null;
                     break;
@@ -3337,7 +3452,14 @@ from	IntersectMapSourceRule J
                     var group = Company.GetById<Group>(id);
                     if (group != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = group.GetName(i => i.Name), FieldName = "GroupName", FieldDescription = group.GetDescription(i => i.Name), Value = group.Name });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = group.GetName(i => i.Name), FieldName = "GroupName", FieldDescription = group.GetDescription(i => i.Name), Value = group.Name }
+                            }
+                        });
 
                         if (group.PrimaryOwnerResourceID.HasValue && group.SecondaryOwnerResourceID.HasValue)
                         {
@@ -3347,12 +3469,31 @@ from	IntersectMapSourceRule J
 
                             var groupOwners = GetCompanyResources().Where(i => groupOwnerIDs.Contains(i.ID)).ToList();
 
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = group.GetName(i => i.PrimaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.PrimaryOwnerResourceID.Value).FormatDisplayName() });
-                            list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = group.GetName(i => i.SecondaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.SecondaryOwnerResourceID.Value).FormatDisplayName() });                        
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = group.GetName(i => i.PrimaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.PrimaryOwnerResourceID.Value).FormatDisplayName() }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = group.GetName(i => i.SecondaryOwnerResourceID), FieldName = "GroupOwner", FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID), Value = groupOwners.Single(i => i.ID == group.SecondaryOwnerResourceID.Value).FormatDisplayName() }
+                                }
+                            });
                         }
 
                         if (!string.IsNullOrEmpty(group.Description))
-                            list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = group.GetName(i => i.Description), FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), Value = group.Description });
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = group.GetName(i => i.Description), FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), Value = group.Description }
+                                }
+                            });
+                        }
                     }
                     group = null;
                     break;
@@ -3362,29 +3503,113 @@ from	IntersectMapSourceRule J
                     var fieldType = Company.GetById<FieldType>(id);
                     if (fieldType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = fieldType.GetName(i => i.Name), FieldName = "FieldTypeName", FieldDescription = fieldType.GetDescription(i => i.Name), Value = fieldType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = fieldType.GetName(i => i.FriendlyName), FieldName = "FieldTypeFriendlyName", FieldDescription = fieldType.GetDescription(i => i.FriendlyName), Value = fieldType.FriendlyName });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fieldType.GetName(i => i.Name), FieldName = "FieldTypeName", FieldDescription = fieldType.GetDescription(i => i.Name), Value = fieldType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fieldType.GetName(i => i.FriendlyName), FieldName = "FieldTypeFriendlyName", FieldDescription = fieldType.GetDescription(i => i.FriendlyName), Value = fieldType.FriendlyName }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = fieldType.GetName(i => i.Type), FieldName = "FieldTypeType", FieldDescription = fieldType.GetDescription(i => i.Type), Value = fieldType.Type });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fieldType.GetName(i => i.Type), FieldName = "FieldTypeType", FieldDescription = fieldType.GetDescription(i => i.Type), Value = fieldType.Type }
+                            }
+                        });
 
-                        if (!string.IsNullOrEmpty(fieldType.Pattern)) list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = fieldType.GetName(i => i.Pattern), FieldName = "FieldTypePattern", FieldDescription = fieldType.GetDescription(i => i.Pattern), Value = fieldType.Pattern });
-                        if (fieldType.MinimumLength.HasValue) list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = fieldType.GetName(i => i.MinimumLength), FieldName = "FieldTypeMinimumLength", FieldDescription = fieldType.GetDescription(i => i.MinimumLength), Value = fieldType.MinimumLength.Value.ToString() });
-                        if (fieldType.MaximumLength.HasValue) list.Add(new ReadOnlyField { Row = 4, Column = 2, Name = fieldType.GetName(i => i.MaximumLength), FieldName = "FieldTypeMaximumLength", FieldDescription = fieldType.GetDescription(i => i.MaximumLength), Value = fieldType.MaximumLength.Value.ToString() });
+                        if (!string.IsNullOrEmpty(fieldType.Pattern))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fieldType.GetName(i => i.Pattern), FieldName = "FieldTypePattern", FieldDescription = fieldType.GetDescription(i => i.Pattern), Value = fieldType.Pattern }
+                            }
+                            });
+                        }
+
+                        var ftML = new DetailReadOnlyRowModel { columns = 2 };
+
+                        if (fieldType.MinimumLength.HasValue)
+                        {
+                            ftML.FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fieldType.GetName(i => i.MinimumLength), FieldName = "FieldTypeMinimumLength", FieldDescription = fieldType.GetDescription(i => i.MinimumLength), Value = fieldType.MinimumLength.Value.ToString() }
+                            };
+                        }
+                        if (fieldType.MaximumLength.HasValue)
+                        {
+                            ftML.SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fieldType.GetName(i => i.MaximumLength), FieldName = "FieldTypeMaximumLength", FieldDescription = fieldType.GetDescription(i => i.MaximumLength), Value = fieldType.MaximumLength.Value.ToString() }
+                            };
+                        }
+                        model.rows.Add(ftML);
 
                         if (!string.IsNullOrEmpty(fieldType.LookupObjectType))
                         {
-                            list.Add(new ReadOnlyField { Row = 5, Column = 1, Name = fieldType.GetName(i => i.LookupObjectType), FieldName = "FieldTypeLookupObjectType", FieldDescription = fieldType.GetDescription(i => i.LookupObjectType), Value = fieldType.LookupObjectType });
+                            var ftLO = new DetailReadOnlyRowModel
+                            {
+                                columns = (fieldType.LookupObjectID.HasValue) ? 2 : 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Row = 5, Column = 1, Name = fieldType.GetName(i => i.LookupObjectType), FieldName = "FieldTypeLookupObjectType", FieldDescription = fieldType.GetDescription(i => i.LookupObjectType), Value = fieldType.LookupObjectType }
+                                }
+                            };
                             if (fieldType.LookupObjectID.HasValue)
-                                list.Add(new ReadOnlyField { Row = 5, Column = 2, Name = fieldType.GetName(i => i.LookupObjectID), FieldName = "FieldTypeLookupObjectID", FieldDescription = fieldType.GetDescription(i => i.LookupObjectID), Value = fieldType.LookupObjectID.ToString() });
+                            {
+                                ftLO.SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Row = 5, Column = 2, Name = fieldType.GetName(i => i.LookupObjectID), FieldName = "FieldTypeLookupObjectID", FieldDescription = fieldType.GetDescription(i => i.LookupObjectID), Value = fieldType.LookupObjectID.ToString() }
+                                };
+                            }
+                            model.rows.Add(ftLO);
+
+
                             if (!string.IsNullOrEmpty(fieldType.LookupDisplayFormat))
-                                list.Add(new ReadOnlyField { Row = 6, Column = 1, Name = fieldType.GetName(i => i.LookupDisplayFormat), FieldName = "FieldTypeLookupDisplayFormat", FieldDescription = fieldType.GetDescription(i => i.LookupDisplayFormat), Value = fieldType.LookupDisplayFormat });
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Row = 6, Column = 1, Name = fieldType.GetName(i => i.LookupDisplayFormat), FieldName = "FieldTypeLookupDisplayFormat", FieldDescription = fieldType.GetDescription(i => i.LookupDisplayFormat), Value = fieldType.LookupDisplayFormat }
+                                }
+                                });
+                            }
                         }
 
                         if (!string.IsNullOrEmpty(fieldType.DisplayDescription))
-                            list.Add(new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.DisplayDescription), FieldName = "FieldTypeDisplayDescription", FieldDescription = fieldType.GetDescription(i => i.DisplayDescription), Value = fieldType.DisplayDescription });
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.DisplayDescription), FieldName = "FieldTypeDisplayDescription", FieldDescription = fieldType.GetDescription(i => i.DisplayDescription), Value = fieldType.DisplayDescription }
+                            }
+                            });
+                        }
 
                         if (!string.IsNullOrEmpty(fieldType.FormDescription))
-                            list.Add(new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.FormDescription), FieldName = "FieldTypeFormDescription", FieldDescription = fieldType.GetDescription(i => i.FormDescription), Value = fieldType.FormDescription });
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.FormDescription), FieldName = "FieldTypeFormDescription", FieldDescription = fieldType.GetDescription(i => i.FormDescription), Value = fieldType.FormDescription }
+                            }
+                            });
+                        }
                     }
                     fieldType = null;
                     break;
@@ -3396,15 +3621,39 @@ from	IntersectMapSourceRule J
                     if (fusion != null)
                     {
                         var fusionFields = Company.GetFieldRelationsByObject(SystemObjects.Fusion, id);
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = fusion.GetName(i => i.Name), FieldName = "FusionName", FieldDescription = fusion.GetDescription(i => i.Name), Value = fusion.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = fusion.GetName(i => i.ID), FieldName = "FusionID", FieldDescription = fusion.GetDescription(i => i.ID), Value = fusion.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusion.GetName(i => i.Name), FieldName = "FusionName", FieldDescription = fusion.GetDescription(i => i.Name), Value = fusion.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusion.GetName(i => i.ID), FieldName = "FusionID", FieldDescription = fusion.GetDescription(i => i.ID), Value = fusion.ID.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = fusion.GetName(i => i.Description), FieldName = "FusionDescription", FieldDescription = fusion.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(fusion.Description) ? "None provided" : fusion.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusion.GetName(i => i.Description), FieldName = "FusionDescription", FieldDescription = fusion.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(fusion.Description) ? "None provided" : fusion.Description }
+                            }
+                        });
 
                         row = 3;
                         foreach (var k in fusionFields)
                         {
-                            list.Add(new ReadOnlyField { Row = row, Column = 1, Name = k.FriendlyName, FieldName = "Fusion" + k.Name, FieldDescription = k.DisplayDescription, Value = k.FormattedValue });
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = k.FriendlyName, FieldName = "Fusion" + k.Name, FieldDescription = k.DisplayDescription, Value = k.FormattedValue }
+                                }
+                            });
                             row++;
                         }
                     }
@@ -3417,12 +3666,26 @@ from	IntersectMapSourceRule J
                     var fusionAttribute = Company.GetById<FusionAttribute>(id);
                     if (fusionAttribute != null)
                     {
-                        list.Add(new ReadOnlyField { Row = row, Column = 1, Name = fusionAttribute.GetName(i => i.Name), FieldName = "FAName", FieldDescription = fusionAttribute.GetDescription(i => i.Name), Value = fusionAttribute.Name });
-                        row++;
-                        list.Add(new ReadOnlyField { Row = row, Column = 1, Name = fusionAttribute.GetName(i => i.TextPath), FieldName = "FATextPath", FieldDescription = fusionAttribute.GetDescription(i => i.TextPath), Value = fusionAttribute.TextPath });
-                        row++;
-                        row = loadDynamicDisplayFields(list, type, id, row);
-                        row = loadDisplayableRelationshipsAsFields(list, type, id, row);
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionAttribute.GetName(i => i.Name), FieldName = "FAName", FieldDescription = fusionAttribute.GetDescription(i => i.Name), Value = fusionAttribute.Name }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionAttribute.GetName(i => i.TextPath), FieldName = "FATextPath", FieldDescription = fusionAttribute.GetDescription(i => i.TextPath), Value = fusionAttribute.TextPath }
+                            }
+                        });
+
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
+                        model.rows.AddRange(loadDisplayableRelationshipsAsFields(type, id));
                     }
                     fusionAttribute = null;
                     break;
@@ -3432,14 +3695,40 @@ from	IntersectMapSourceRule J
                     var fusionAttributeType = Company.GetById<FusionAttributeType>(id, i => i.FusionType);
                     if (fusionAttributeType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = fusionAttributeType.GetName(i => i.Name), FieldName = "FATName", FieldDescription = fusionAttributeType.GetDescription(i => i.Name), Value = fusionAttributeType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = fusionAttributeType.GetName(i => i.ID), FieldName = "FATID", FieldDescription = fusionAttributeType.GetDescription(i => i.ID), Value = fusionAttributeType.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.Name), FieldName = "FATName", FieldDescription = fusionAttributeType.GetDescription(i => i.Name), Value = fusionAttributeType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.ID), FieldName = "FATID", FieldDescription = fusionAttributeType.GetDescription(i => i.ID), Value = fusionAttributeType.ID.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = fusionAttributeType.GetName(i => i.FusionType), FieldName = "FATFusionType", FieldDescription = fusionAttributeType.GetDescription(i => i.FusionType), Value = fusionAttributeType.FusionType.Name });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = fusionAttributeType.GetName(i => i.TextPath), FieldName = "FATTextPath", FieldDescription = fusionAttributeType.GetDescription(i => i.TextPath), Value = fusionAttributeType.TextPath });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.FusionType), FieldName = "FATFusionType", FieldDescription = fusionAttributeType.GetDescription(i => i.FusionType), Value = fusionAttributeType.FusionType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.TextPath), FieldName = "FATTextPath", FieldDescription = fusionAttributeType.GetDescription(i => i.TextPath), Value = fusionAttributeType.TextPath }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = fusionAttributeType.GetName(i => i.Assignable), FieldName = "FATAssignable", FieldDescription = fusionAttributeType.GetDescription(i => i.Assignable), Value = fusionAttributeType.Assignable.FormatBooleanReadOnlyValue() });
-                        //list.Add(new ReadOnlyField { Row = 4, Column = 2, Name = fusionAttributeType.GetName(i => i.Tab), FieldName = "FATTab", FieldDescription = fusionAttributeType.GetDescription(i => i.Tab), Value = fusionAttributeType.Tab });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.Assignable), FieldName = "FATAssignable", FieldDescription = fusionAttributeType.GetDescription(i => i.Assignable), Value = fusionAttributeType.Assignable.FormatBooleanReadOnlyValue() }
+                            }
+                        });
                     }
                     fusionAttributeType = null;
                     break;
@@ -3449,12 +3738,40 @@ from	IntersectMapSourceRule J
                     var fusionExecution = Company.GetById<FusionExecution>(id);
                     if (fusionExecution != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = "Date Started", FieldName = "DateStarted", Value = fusionExecution.DateStarted.HasValue ? JsonConvert.SerializeObject(fusionExecution.DateStarted.Value) : "Not started" });                        
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = "Date Completed", FieldName = "DateCompleted", Value = fusionExecution.DateCompleted.HasValue ? JsonConvert.SerializeObject(fusionExecution.DateCompleted.Value) : "Not completed" });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Date Started", FieldName = "DateStarted", Value = fusionExecution.DateStarted.HasValue ? JsonConvert.SerializeObject(fusionExecution.DateStarted.Value) : "Not started" }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Date Completed", FieldName = "DateCompleted", Value = fusionExecution.DateCompleted.HasValue ? JsonConvert.SerializeObject(fusionExecution.DateCompleted.Value) : "Not completed" }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "# Added", FieldName = "Adds", Value = fusionExecution.Adds.HasValue ? fusionExecution.Adds.Value.ToString() : ""});
-                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "# Updated", FieldName = "Updates", Value = fusionExecution.Updates.HasValue ? fusionExecution.Updates.Value.ToString() : "" });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 3, Name = "# Deleted", FieldName = "Deletes", Value = fusionExecution.Deletes.HasValue ? fusionExecution.Deletes.Value.ToString() : "" });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "# Added", FieldName = "Adds", Value = fusionExecution.Adds.HasValue ? fusionExecution.Adds.Value.ToString() : ""}
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "# Updated", FieldName = "Updates", Value = fusionExecution.Updates.HasValue ? fusionExecution.Updates.Value.ToString() : "" }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "# Deleted", FieldName = "Deletes", Value = fusionExecution.Deletes.HasValue ? fusionExecution.Deletes.Value.ToString() : "" }
+                            }
+                        });
                     }
                     fusionExecution = null;
                     break;
@@ -3464,10 +3781,27 @@ from	IntersectMapSourceRule J
                     var fusionType = Company.GetById<FusionType>(id);
                     if (fusionType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = fusionType.GetName(i => i.Name), FieldName = "FusionTypeName", FieldDescription = fusionType.GetDescription(i => i.Name), Value = fusionType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = fusionType.GetName(i => i.ID), FieldName = "FusionTypeID", FieldDescription = fusionType.GetDescription(i => i.ID), Value = fusionType.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionType.GetName(i => i.Name), FieldName = "FusionTypeName", FieldDescription = fusionType.GetDescription(i => i.Name), Value = fusionType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionType.GetName(i => i.ID), FieldName = "FusionTypeID", FieldDescription = fusionType.GetDescription(i => i.ID), Value = fusionType.ID.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = fusionType.GetName(i => i.Description), FieldName = "FusionTypeDescription", FieldDescription = fusionType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = fusionType.GetName(i => i.Description), FieldName = "FusionTypeDescription", FieldDescription = fusionType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description }
+                            }
+                        });
                     }
                     fusionType = null;
                     break;
@@ -3477,8 +3811,25 @@ from	IntersectMapSourceRule J
                     var intersect = Company.GetById<Intersect>(id);
                     if (intersect != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = intersect.GetName(i => i.Classification), FieldName = "IntersectClassification", FieldDescription = intersect.GetDescription(i => i.Classification), Value = (Enum.IsDefined(typeof(IntersectClassification), intersect.Classification.GetValueOrDefault(IntersectClassification.Normal)) ? intersect.Classification.GetValueOrDefault(IntersectClassification.Normal).ToString() : IntersectClassification.Normal.ToString()) });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = intersect.GetName(i => i.Description), FieldName = "IntersectDescription", FieldDescription = intersect.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(intersect.Description) ? "None provided" : intersect.Description });
+                        model.columns = 1;
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = intersect.GetName(i => i.Classification), FieldName = "IntersectClassification", FieldDescription = intersect.GetDescription(i => i.Classification), Value = (Enum.IsDefined(typeof(IntersectClassification), intersect.Classification.GetValueOrDefault(IntersectClassification.Normal)) ? intersect.Classification.GetValueOrDefault(IntersectClassification.Normal).ToString() : IntersectClassification.Normal.ToString()) }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = intersect.GetName(i => i.Description), FieldName = "IntersectDescription", FieldDescription = intersect.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(intersect.Description) ? "None provided" : intersect.Description }
+                            }
+                        });
                     }
                     intersect = null;
                     break;
@@ -3488,14 +3839,16 @@ from	IntersectMapSourceRule J
                     var intersectType = Company.GetById<IntersectType>(id);
                     if (intersectType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = intersectType.GetName(i => i.Name), FieldName = "IntersectTypeName", FieldDescription = intersectType.GetDescription(i => i.Name), Value = intersectType.Name });
+                        model.columns = 1;
 
-                        //list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = intersectType.GetName(i => i.ReadOnly), FieldName = "IntersectTypeReadOnly", FieldDescription = intersectType.GetDescription(i => i.ReadOnly), Value = intersectType.ReadOnly.FormatBooleanReadOnlyValue() });
-                        //list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = intersectType.GetName(i => i.AllowGrouping), FieldName = "IntersectTypeAllowGrouping", FieldDescription = intersectType.GetDescription(i => i.AllowGrouping), Value = intersectType.AllowGrouping.FormatBooleanReadOnlyValue() });
-
-                        //list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = intersectType.GetName(i => i.IsTechnical), FieldName = "IntersectTypeIsTechnical", FieldDescription = intersectType.GetDescription(i => i.IsTechnical), Value = intersectType.IsTechnical.FormatBooleanReadOnlyValue() });
-                        //list.Add(new ReadOnlyField { Row = 3, Column = 2, Name = intersectType.GetName(i => i.AllowSourcing), FieldName = "IntersectTypeAllowSourcing", FieldDescription = intersectType.GetDescription(i => i.AllowSourcing), Value = intersectType.AllowSourcing.FormatBooleanReadOnlyValue() });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = intersectType.GetName(i => i.Name), FieldName = "IntersectTypeName", FieldDescription = intersectType.GetDescription(i => i.Name), Value = intersectType.Name }
+                            }
+                        });
                     }
                     intersectType = null;
                     break;
@@ -3505,16 +3858,62 @@ from	IntersectMapSourceRule J
                     var load = Company.GetLoadDetail(id);
                     if (load != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = "Action", FieldName = "LoadAction", FieldDescription = "", Value = load.Action });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = "Target", FieldName = "LoadObjectName", FieldDescription = "", Value = load.ObjectName });
-                        //list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Date Started", FieldName = "LoadDateStarted", FieldDescription = "", Value = load.DateStarted.FormatNullableDateTime() });
-                        //list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "Date Completed", FieldName = "LoadDateCompleted", FieldDescription = "", Value = load.DateCompleted.FormatNullableDateTime() });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Notes", FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Action", FieldName = "LoadAction", FieldDescription = "", Value = load.Action }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Target", FieldName = "LoadObjectName", FieldDescription = "", Value = load.ObjectName }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = "Total", FieldName = "LoadTotal", FieldDescription = "", Value = load.Total.ToString() });
-                        list.Add(new ReadOnlyField { Row = 3, Column = 2, Name = "# Incompletes", FieldName = "LoadIncomplete", FieldDescription = "", Value = load.Incomplete.ToString() });
-                        list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = "# Successes", FieldName = "LoadSuccess", FieldDescription = "", Value = load.Success.ToString() });
-                        list.Add(new ReadOnlyField { Row = 4, Column = 2, Name = "# Errors", FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Uploaded By", FieldName = "Requestor", FieldDescription = "", Value = load.Requestor }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Notes", FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Total", FieldName = "LoadTotal", FieldDescription = "", Value = load.Total.ToString() }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "# Incompletes", FieldName = "LoadIncomplete", FieldDescription = "", Value = load.Incomplete.ToString() }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "# Successes", FieldName = "LoadSuccess", FieldDescription = "", Value = load.Success.ToString() }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "# Errors", FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() }
+                            }
+                        });
                     }
                     load = null;
                     break;
@@ -3524,8 +3923,18 @@ from	IntersectMapSourceRule J
                     var lookupType = Company.GetById<LookupType>(id);
                     if (lookupType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = lookupType.GetName(i => i.Name), FieldName = "LookupTypeName", FieldDescription = lookupType.GetDescription(i => i.Name), Value = lookupType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = lookupType.GetName(i => i.ID), FieldName = "LookupTypeID", FieldDescription = lookupType.GetDescription(i => i.ID), Value = lookupType.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = lookupType.GetName(i => i.Name), FieldName = "LookupTypeName", FieldDescription = lookupType.GetDescription(i => i.Name), Value = lookupType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = lookupType.GetName(i => i.ID), FieldName = "LookupTypeID", FieldDescription = lookupType.GetDescription(i => i.ID), Value = lookupType.ID.ToString() }
+                            }
+                        });
                     }
                     lookupType = null;
                     break;
@@ -3535,19 +3944,50 @@ from	IntersectMapSourceRule J
                     var policy = Company.GetById<Policy>(id, i => i.Children);
                     if (policy != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = policy.GetName(i => i.Name), FieldName = "PolicyName", FieldDescription = policy.GetDescription(i => i.Description), Value = policy.Name });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = policy.GetName(i => i.Name), FieldName = "PolicyName", FieldDescription = policy.GetDescription(i => i.Description), Value = policy.Name }
+                            }
+                        });
 
                         var policyLevelInfo = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == policy.PolicyTypeID && i.Level == policy.Level).SingleOrDefault();
 
                         if (policyLevelInfo != null)
                         {
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Level Name", Value = policyLevelInfo.Name });
-                            list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "Level Number", Value = policy.Level.ToString() });
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Level Name", Value = policyLevelInfo.Name }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Level Number", Value = policy.Level.ToString() }
+                                }
+                            });
                         }
 
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = policy.GetName(i => i.TextPath), FieldName = "PolicyTextPath", FieldDescription = policy.GetDescription(i => i.TextPath), Value = policy.TextPath });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = policy.GetName(i => i.TextPath), FieldName = "PolicyTextPath", FieldDescription = policy.GetDescription(i => i.TextPath), Value = policy.TextPath }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = policy.GetName(i => i.Description), FieldName = "PolicyDescription", FieldDescription = policy.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policy.Description) ? "None provided" : policy.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = policy.GetName(i => i.Description), FieldName = "PolicyDescription", FieldDescription = policy.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policy.Description) ? "None provided" : policy.Description }
+                            }
+                        });
                     }
                     policy = null;
                     break;
@@ -3557,10 +3997,27 @@ from	IntersectMapSourceRule J
                     var rule = Company.GetById<Rule>(id);
                     if (rule != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = rule.GetName(i => i.Name), FieldName = "RuleName", FieldDescription = rule.GetDescription(i => i.Description), Value = rule.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = rule.GetName(i => i.RuleType), FieldName = "RuleRuleType", FieldDescription = rule.GetDescription(i => i.RuleType), Value = rule.RuleType.GetRuleTypeDisplayName() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = rule.GetName(i => i.Name), FieldName = "RuleName", FieldDescription = rule.GetDescription(i => i.Description), Value = rule.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = rule.GetName(i => i.RuleType), FieldName = "RuleRuleType", FieldDescription = rule.GetDescription(i => i.RuleType), Value = rule.RuleType.GetRuleTypeDisplayName() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = rule.GetName(i => i.Description), FieldName = "RuleDescription", FieldDescription = rule.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(rule.Description) ? "None provided" : rule.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = rule.GetName(i => i.Description), FieldName = "RuleDescription", FieldDescription = rule.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(rule.Description) ? "None provided" : rule.Description }
+                            }
+                        });
                     }
                     policy = null;
                     break;
@@ -3570,13 +4027,27 @@ from	IntersectMapSourceRule J
                     var responsibilityType = Company.GetById<ResponsibilityType>(id);
                     if (responsibilityType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = responsibilityType.GetName(i => i.Name), FieldName = "Name", FieldDescription = responsibilityType.GetDescription(i => i.Name), Value = responsibilityType.Name });
-                        //list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = responsibilityType.GetName(i => i.ResponsibilityTypeGroup), FieldName = "ResponsibilityTypeGroup", FieldDescription = responsibilityType.GetDescription(i => i.ResponsibilityTypeGroup), Value = responsibilityType.ResponsibilityTypeGroup.ToString() });
-                        int nextRow = 2;
+                        model.columns = 1;
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = responsibilityType.GetName(i => i.Name), FieldName = "Name", FieldDescription = responsibilityType.GetDescription(i => i.Name), Value = responsibilityType.Name }
+                            }
+                        });
+
                         if (!string.IsNullOrEmpty(responsibilityType.Description))
                         {
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = responsibilityType.GetName(i => i.Description), FieldName = "Description", FieldDescription = responsibilityType.GetDescription(i => i.Description), Value = responsibilityType.Description });
-                            nextRow = 3;
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = responsibilityType.GetName(i => i.Description), FieldName = "Description", FieldDescription = responsibilityType.GetDescription(i => i.Description), Value = responsibilityType.Description }
+                                }
+                            });
                         }
 
                         #region Allocation
@@ -3604,7 +4075,14 @@ from	IntersectMapSourceRule J
                         {
                             allocations = string.Format("<ul>{0}</ul>", allocations);
                         }
-                        list.Add(new ReadOnlyField { Row = nextRow, Column = 1, Name = "Allocations", FieldName = "Allocations", FieldDescription = "", Value = allocations });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Allocations", FieldName = "Allocations", FieldDescription = "", Value = allocations }
+                            }
+                        });
 
                         #endregion
                     }
@@ -3616,9 +4094,20 @@ from	IntersectMapSourceRule J
                     var evt = Company.GetById<Event>(id);
                     if (evt != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = evt.GetName(i => i.Status), FieldName = "EventStatus", FieldDescription = evt.GetDescription(i => i.Status), Value = evt.Status });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = evt.GetName(i => i.SourceID), FieldName = "EventSourceID", FieldDescription = evt.GetDescription(i => i.SourceID), Value = evt.SourceID });
-                        row = loadDynamicDisplayFields(list, type, id, 2);
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = evt.GetName(i => i.Status), FieldName = "EventStatus", FieldDescription = evt.GetDescription(i => i.Status), Value = evt.Status }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = evt.GetName(i => i.SourceID), FieldName = "EventSourceID", FieldDescription = evt.GetDescription(i => i.SourceID), Value = evt.SourceID }
+                            }
+                        });
+
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     evt = null;
                     break;
@@ -3635,14 +4124,44 @@ from	IntersectMapSourceRule J
                     }).SingleOrDefault();
                     if (evtgrp != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = core.resources.Fields.PublicID_Name, FieldName = "EventGroupPublicID", FieldDescription = core.resources.Fields.PublicID_Description, Value = evtgrp.PublicID });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = core.resources.Fields.ID_Name, FieldName = "EventGroupID", FieldDescription = core.resources.Fields.ID_Description, Value = evtgrp.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = core.resources.Fields.PublicID_Name, FieldName = "EventGroupPublicID", FieldDescription = core.resources.Fields.PublicID_Description, Value = evtgrp.PublicID }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = core.resources.Fields.ID_Name, FieldName = "EventGroupID", FieldDescription = core.resources.Fields.ID_Description, Value = evtgrp.ID.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = core.resources.Fields.Name_Name, FieldName = "EventGroupName", FieldDescription = core.resources.Fields.Name_Description, Value = evtgrp.Name });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "# Event Details", FieldName = "EventGroupEventCount", Value = evtgrp.EventCount.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = core.resources.Fields.Name_Name, FieldName = "EventGroupName", FieldDescription = core.resources.Fields.Name_Description, Value = evtgrp.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "# Event Details", FieldName = "EventGroupEventCount", Value = evtgrp.EventCount.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = core.resources.Fields.Rule_Name, FieldName = "EventGroupRuleName", FieldDescription = core.resources.Fields.Rule_Description, Value = evtgrp.RuleName });
-                        list.Add(new ReadOnlyField { Row = 3, Column = 2, Name = "Rule ID", FieldName = "EventGroupRuleID", Value = evtgrp.RuleID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = core.resources.Fields.Rule_Name, FieldName = "EventGroupRuleName", FieldDescription = core.resources.Fields.Rule_Description, Value = evtgrp.RuleName }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Rule ID", FieldName = "EventGroupRuleID", Value = evtgrp.RuleID.ToString() }
+                            }
+                        });
                     }
                     evtgrp = null;
                     break;
@@ -3652,10 +4171,27 @@ from	IntersectMapSourceRule J
                     var policyType = Company.GetById<PolicyType>(id);
                     if (policyType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = policyType.GetName(i => i.Name), FieldName = "PolicyTypeName", FieldDescription = policyType.GetDescription(i => i.Name), Value = policyType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = policyType.GetName(i => i.ID), FieldName = "PolicyTypeID", FieldDescription = policyType.GetDescription(i => i.ID), Value = policyType.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = policyType.GetName(i => i.Name), FieldName = "PolicyTypeName", FieldDescription = policyType.GetDescription(i => i.Name), Value = policyType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = policyType.GetName(i => i.ID), FieldName = "PolicyTypeID", FieldDescription = policyType.GetDescription(i => i.ID), Value = policyType.ID.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = policyType.GetName(i => i.Description), FieldName = "PolicyTypeDescription", FieldDescription = policyType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = policyType.GetName(i => i.Description), FieldName = "PolicyTypeDescription", FieldDescription = policyType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
+                            }
+                        });
                     }
                     policyType = null;
                     break;
@@ -3665,12 +4201,35 @@ from	IntersectMapSourceRule J
                     var report = Company.GetById<Report>(id, i => i.ReportLayout);
                     if (report != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = report.GetName(i => i.Name), FieldName = "ReportName", FieldDescription = report.GetDescription(i => i.Description), Value = report.Name });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = report.GetName(i => i.Name), FieldName = "ReportName", FieldDescription = report.GetDescription(i => i.Description), Value = report.Name }
+                            }
+                        });
 
                         if (!string.IsNullOrEmpty(report.Description))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = report.GetName(i => i.Description), FieldName = "ReportDescription", FieldDescription = report.GetDescription(i => i.Description), Value = report.Description });
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = report.GetName(i => i.Description), FieldName = "ReportDescription", FieldDescription = report.GetDescription(i => i.Description), Value = report.Description }
+                                }
+                            });
+                        }
 
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = report.GetName(i => i.ReportLayout), FieldName = "ReportReportLayout", FieldDescription = report.GetDescription(i => i.ReportLayout), Value = report.ReportLayout.Name });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = report.GetName(i => i.ReportLayout), FieldName = "ReportReportLayout", FieldDescription = report.GetDescription(i => i.ReportLayout), Value = report.ReportLayout.Name }
+                            }
+                        });
 
                         var sql = "";
                         //var targetObject = 
@@ -3709,16 +4268,18 @@ from	IntersectMapSourceRule J
                                 break;
                         }
 
-                        var objectName = "";
-                        if (!string.IsNullOrEmpty(sql))
+                        var objectName = (!string.IsNullOrEmpty(sql)) ?
+                            Company.Query<string>(sql, new { id = report.ObjectID }).SingleOrDefault() :
+                            "Not found.";
+
+                        model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            objectName = Company.Query<string>(sql, new { id = report.ObjectID }).SingleOrDefault();
-                        }
-                        else
-                        {
-                            objectName = "Not found.";
-                        }
-                        list.Add(new ReadOnlyField { Row = 3, Column = 2, Name = report.GetName(i => i.ObjectType), FieldName = "ReportObjectType", FieldDescription = report.GetDescription(i => i.ObjectType), Value = objectName });
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Row = 3, Column = 2, Name = report.GetName(i => i.ObjectType), FieldName = "ReportObjectType", FieldDescription = report.GetDescription(i => i.ObjectType), Value = objectName }
+                            }
+                        });
                     }
                     report = null;
                     break;
@@ -3728,9 +4289,27 @@ from	IntersectMapSourceRule J
                     var resolution = Company.GetById<Resolution>(id);
                     if (resolution != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = resolution.GetName(i => i.Name), FieldName = "ResolutionName", FieldDescription = resolution.GetDescription(i => i.Name), Value = resolution.Name });
+                        model.columns = 1;
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = resolution.GetName(i => i.Name), FieldName = "ResolutionName", FieldDescription = resolution.GetDescription(i => i.Name), Value = resolution.Name }
+                            }
+                        });
                         if (!string.IsNullOrEmpty(resolution.Body))
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = resolution.GetName(i => i.Body), FieldName = "ResolutionBody", FieldDescription = resolution.GetDescription(i => i.Body), Value = resolution.Body });
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = resolution.GetName(i => i.Body), FieldName = "ResolutionBody", FieldDescription = resolution.GetDescription(i => i.Body), Value = resolution.Body }
+                                }
+                            });
+                        }
                     }
                     resolution = null;
                     break;
@@ -3740,10 +4319,21 @@ from	IntersectMapSourceRule J
                     var resource = Community.GetById<Resource>(id);
                     if (resource != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = "Name", Value = resource.FormatDisplayName() });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = resource.GetName(i => i.Email), FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email });
-                        //list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Administrator?", FieldName = "ResourceAdministrator", FieldDescription = "Resource is a system administrator and can perform any task in the system.", Value = resource. });
-                        loadDynamicDisplayFields(list, type, id, 3);
+                        model.columns = 1;
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Name", Value = resource.FormatDisplayName() }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = resource.GetName(i => i.Email), FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
+                            }
+                        });
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     resource = null;
                     break;
@@ -3753,7 +4343,16 @@ from	IntersectMapSourceRule J
                     var resourceType = Community.GetById<ResourceType>(id);
                     if (resourceType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = resourceType.GetName(i => i.Name), FieldName = "ResourceTypeName", FieldDescription = resourceType.GetDescription(i => i.Name), Value = resourceType.Name });
+                        model.columns = 1;
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = resourceType.GetName(i => i.Name), FieldName = "ResourceTypeName", FieldDescription = resourceType.GetDescription(i => i.Name), Value = resourceType.Name }
+                            }
+                        });
                     }
                     resourceType = null;
                     break;
@@ -3763,9 +4362,27 @@ from	IntersectMapSourceRule J
                     var responseType = Company.GetById<ResponseType>(id);
                     if (responseType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = responseType.GetName(i => i.Name), FieldName = "ResponseTypeName", FieldDescription = responseType.GetDescription(i => i.Name), Value = responseType.Name });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = responseType.GetName(i => i.AllowOptions), FieldName = "ResponseTypeAllowOptions", FieldDescription = responseType.GetDescription(i => i.AllowOptions), Value = responseType.AllowOptions.FormatBooleanReadOnlyValue() });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = responseType.GetName(i => i.AllowValueOverride), FieldName = "ResponseTypeAllowValueOverride", FieldDescription = responseType.GetDescription(i => i.AllowValueOverride), Value = responseType.AllowValueOverride.FormatBooleanReadOnlyValue() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = responseType.GetName(i => i.Name), FieldName = "ResponseTypeName", FieldDescription = responseType.GetDescription(i => i.Name), Value = responseType.Name }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = responseType.GetName(i => i.AllowOptions), FieldName = "ResponseTypeAllowOptions", FieldDescription = responseType.GetDescription(i => i.AllowOptions), Value = responseType.AllowOptions.FormatBooleanReadOnlyValue() }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = responseType.GetName(i => i.AllowValueOverride), FieldName = "ResponseTypeAllowValueOverride", FieldDescription = responseType.GetDescription(i => i.AllowValueOverride), Value = responseType.AllowValueOverride.FormatBooleanReadOnlyValue() }
+                            }
+                        });
                     }
                     responseType = null;
                     break;
@@ -3775,9 +4392,28 @@ from	IntersectMapSourceRule J
                     var statisticType = Company.GetById<StatisticType>(id);
                     if (statisticType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = statisticType.GetName(i => i.Name), FieldName = "StatisticTypeName", FieldDescription = statisticType.GetDescription(i => i.Name), Value = statisticType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = statisticType.GetName(i => i.PartOfScore), FieldName = "StatisticTypePartOfScore", FieldDescription = statisticType.GetDescription(i => i.PartOfScore), Value = statisticType.PartOfScore.FormatBooleanReadOnlyValue() });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = statisticType.GetName(i => i.Description), FieldName = "StatisticTypeDescription", FieldDescription = statisticType.GetDescription(i => i.Description), Value = statisticType.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = statisticType.GetName(i => i.Name), FieldName = "StatisticTypeName", FieldDescription = statisticType.GetDescription(i => i.Name), Value = statisticType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = statisticType.GetName(i => i.PartOfScore), FieldName = "StatisticTypePartOfScore", FieldDescription = statisticType.GetDescription(i => i.PartOfScore), Value = statisticType.PartOfScore.FormatBooleanReadOnlyValue() }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = statisticType.GetName(i => i.Description), FieldName = "StatisticTypeDescription", FieldDescription = statisticType.GetDescription(i => i.Description), Value = statisticType.Description }
+                            }
+                        });
+
                         var fields = XElement.Parse(statisticType.Configuration);
                         var oType = SystemObjects.StatisticType;
                         int oID = 0;
@@ -3787,29 +4423,84 @@ from	IntersectMapSourceRule J
                             case StatisticCheckType.Count:
                                 oID = int.Parse(fields.Element("ObjectID").Value);
                                 oType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fields.Element("ObjectType").Value);
-                                list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = statisticType.GetName(i => i.CheckType), Value = "Count" });
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Count" }
+                                    }
+                                });
                                 break;
                             case StatisticCheckType.Existence:
                                 oID = int.Parse(fields.Element("ObjectID").Value);
                                 oType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fields.Element("ObjectType").Value);
-                                list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = statisticType.GetName(i => i.CheckType), Value = "Existence" });
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Existence" }
+                                    }
+                                });
                                 break;
                             case StatisticCheckType.PropertyValueCheck:
-                                list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = statisticType.GetName(i => i.CheckType), Value = "Property" });
-                                list.Add(new ReadOnlyField { Row = 3, Column = 2, Name = "Property Name", Value = fields.Element("PropertyName").Value });
-                                list.Add(new ReadOnlyField { Row = 3, Column = 3, Name = "Value", Value = fields.Element("Value").Value });
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 2,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Property" }
+                                    },
+                                    SecondColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = "Property Name", Value = fields.Element("PropertyName").Value }
+                                    }
+                                });
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = "Value", Value = fields.Element("Value").Value }
+                                    }
+                                });
                                 break;
                             case StatisticCheckType.PropertyPopulated:
-                                list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = statisticType.GetName(i => i.CheckType), Value = "Property" });
-                                list.Add(new ReadOnlyField { Row = 3, Column = 2, Name = "Property Name", Value = fields.Element("PropertyName").Value });
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 2,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Property" }
+                                    },
+                                    SecondColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = "Property Name", Value = fields.Element("PropertyName").Value }
+                                    }
+                                });
                                 break;
                             case StatisticCheckType.Relationship:
                                 oID = int.Parse(fields.Element("ObjectID").Value);
                                 oType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fields.Element("ObjectType").Value);
-                                list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = statisticType.GetName(i => i.CheckType), Value = "Relationship" });
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Relationship" }
+                                    }
+                                });
                                 break;
                             case StatisticCheckType.FusionOwnership:
-                                list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = statisticType.GetName(i => i.CheckType), Value = "Value" });
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Value" }
+                                    }
+                                });
                                 break;
                         }
 
@@ -3818,8 +4509,18 @@ from	IntersectMapSourceRule J
                             var dtlStatisticType = Company.GetObjectDetail(oType, oID);
                             if (dtlStatisticType != null)
                             {
-                                list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = "Type To Check", Value = dtlStatisticType.TypeName });
-                                list.Add(new ReadOnlyField { Row = 4, Column = 2, Name = "Item To Check", Value = dtlStatisticType.Name });
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 2,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Row = 4, Column = 1, Name = "Type To Check", Value = dtlStatisticType.TypeName }
+                                    },
+                                    SecondColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Row = 4, Column = 2, Name = "Item To Check", Value = dtlStatisticType.Name }
+                                    }
+                                });
                             }
                         }
                     }
@@ -3831,10 +4532,29 @@ from	IntersectMapSourceRule J
                     var surveyType = Company.GetById<SurveyType>(id);
                     if (surveyType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = surveyType.GetName(i => i.Name), FieldName = "SurveyTypeName", FieldDescription = surveyType.GetDescription(i => i.Name), Value = surveyType.Name });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = surveyType.GetName(i => i.Name), FieldName = "SurveyTypeName", FieldDescription = surveyType.GetDescription(i => i.Name), Value = surveyType.Name }
+                            }
+                        });
+
                         var dtlSurveyType = Company.GetObjectDetail(surveyType.ObjectType, surveyType.ObjectID);
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = surveyType.GetName(i => i.ObjectType), FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.ObjectType), Value = surveyType.ObjectType.ToString() });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = surveyType.GetName(i => i.ObjectID), FieldName = "SurveyTypeObjectID", FieldDescription = surveyType.GetDescription(i => i.ObjectID), Value = (dtlSurveyType != null) ? dtlSurveyType.Name : surveyType.ObjectID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = surveyType.GetName(i => i.ObjectType), FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.ObjectType), Value = surveyType.ObjectType.ToString() }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = surveyType.GetName(i => i.ObjectID), FieldName = "SurveyTypeObjectID", FieldDescription = surveyType.GetDescription(i => i.ObjectID), Value = (dtlSurveyType != null) ? dtlSurveyType.Name : surveyType.ObjectID.ToString() }
+                            }
+                        });
+
                     }
                     surveyType = null;
                     break;
@@ -3846,22 +4566,57 @@ from	IntersectMapSourceRule J
                     {
                         var levelInfo = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == taxonomy.TaxonomyTypeID && i.Level == taxonomy.Level).SingleOrDefault();
 
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = taxonomy.GetName(i => i.Name), FieldName = "TaxonomyName", FieldDescription = taxonomy.GetDescription(i => i.Name), Value = taxonomy.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = taxonomy.GetName(i => i.TaxonomyType.TaxonomyTypeClassID), FieldName = "TaxonomyTypeClass", FieldDescription = taxonomy.GetDescription(i => i.TaxonomyType.TaxonomyTypeClassID), Value = taxonomy.TaxonomyType.TaxonomyTypeClass.Name });
-                        //list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = taxonomy.GetName(i => i.TaxonomyType), FieldName = "TaxonomyTaxonomyType", FieldDescription = taxonomy.GetDescription(i => i.TaxonomyType), Value = taxonomy.TaxonomyType.Name });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = taxonomy.GetName(i => i.Name), FieldName = "TaxonomyName", FieldDescription = taxonomy.GetDescription(i => i.Name), Value = taxonomy.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = taxonomy.GetName(i => i.TaxonomyType.TaxonomyTypeClassID), FieldName = "TaxonomyTypeClass", FieldDescription = taxonomy.GetDescription(i => i.TaxonomyType.TaxonomyTypeClassID), Value = taxonomy.TaxonomyType.TaxonomyTypeClass.Name }
+                            }
+                        });
 
                         if (levelInfo != null)
                         {
-                            list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = "Level Name", Value = levelInfo.Name });
-                            list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = "Level Number", Value = taxonomy.Level.ToString() });
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Level Name", Value = levelInfo.Name }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Level Number", Value = taxonomy.Level.ToString() }
+                                }
+                            });
                         }
 
                         if (!string.IsNullOrEmpty(taxonomy.Description))
-                            list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = taxonomy.GetName(i => i.Description), FieldName = "TaxonomyDescription", FieldDescription = taxonomy.GetDescription(i => i.Description), Value = taxonomy.Description });
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = taxonomy.GetName(i => i.Description), FieldName = "TaxonomyDescription", FieldDescription = taxonomy.GetDescription(i => i.Description), Value = taxonomy.Description }
+                                }
+                            });
+                        }
 
-                        list.Add(new ReadOnlyField { Row = 4, Column = 1, Name = taxonomy.GetName(i => i.TextPath), FieldName = "TaxonomyTextPath", FieldDescription = taxonomy.GetDescription(i => i.TextPath), Value = taxonomy.TextPath });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = taxonomy.GetName(i => i.TextPath), FieldName = "TaxonomyTextPath", FieldDescription = taxonomy.GetDescription(i => i.TextPath), Value = taxonomy.TextPath }
+                            }
+                        });
 
-                        row = loadDynamicDisplayFields(list, type, id, 5);
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     taxonomy = null;
                     break;
@@ -3871,13 +4626,40 @@ from	IntersectMapSourceRule J
                     var taxonomyType = Company.GetById<TaxonomyType>(id, i => i.TaxonomyTypeClass);
                     if (taxonomyType != null)
                     {
-                        list.Add(new ReadOnlyField { Row = 1, Column = 1, Name = taxonomyType.GetName(i => i.Name), FieldName = "TaxonomyTypeName", FieldDescription = taxonomyType.GetDescription(i => i.Name), Value = taxonomyType.Name });
-                        list.Add(new ReadOnlyField { Row = 1, Column = 2, Name = taxonomyType.GetName(i => i.ID), FieldName = "TaxonomyTypeID", FieldDescription = taxonomyType.GetDescription(i => i.ID), Value = taxonomyType.ID.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.Name), FieldName = "TaxonomyTypeName", FieldDescription = taxonomyType.GetDescription(i => i.Name), Value = taxonomyType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.ID), FieldName = "TaxonomyTypeID", FieldDescription = taxonomyType.GetDescription(i => i.ID), Value = taxonomyType.ID.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 2, Column = 1, Name = taxonomyType.GetName(i => i.TaxonomyTypeClassID), FieldName = "TaxonomyTypeClass", FieldDescription = taxonomyType.GetDescription(i => i.TaxonomyTypeClassID), Value = taxonomyType.TaxonomyTypeClass.Name });
-                        list.Add(new ReadOnlyField { Row = 2, Column = 2, Name = taxonomyType.GetName(i => i.MaximumDepth), FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = taxonomyType.GetDescription(i => i.MaximumDepth), Value = taxonomyType.MaximumDepth.ToString() });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.TaxonomyTypeClassID), FieldName = "TaxonomyTypeClass", FieldDescription = taxonomyType.GetDescription(i => i.TaxonomyTypeClassID), Value = taxonomyType.TaxonomyTypeClass.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.MaximumDepth), FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = taxonomyType.GetDescription(i => i.MaximumDepth), Value = taxonomyType.MaximumDepth.ToString() }
+                            }
+                        });
 
-                        list.Add(new ReadOnlyField { Row = 3, Column = 1, Name = taxonomyType.GetName(i => i.Description), FieldName = "TaxonomyTypeDescription", FieldDescription = taxonomyType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.Description), FieldName = "TaxonomyTypeDescription", FieldDescription = taxonomyType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
+                            }
+                        });
                     }
                     taxonomyType = null;
                     break;
@@ -3888,15 +4670,38 @@ from	IntersectMapSourceRule J
                     if (wtr != null)
                     {
                         var rowNumber = 1;
-                        list.Add(new ReadOnlyField { Row = rowNumber, Column = 1, Name = "Type", FieldName = "WtrType", FieldDescription = "", Value = wtr.ObjectName });
-                        list.Add(new ReadOnlyField { Row = rowNumber, Column = 2, Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "WtrOwner", FieldDescription = "", Value = wtr.ParentName ?? "None" });
-                        rowNumber++;
-                        list.Add(new ReadOnlyField { Row = rowNumber, Column = 1, Name = "Responsibility", FieldName = "WtrResponsibility", FieldDescription = "", Value = wtr.ResponsibilityType });
-                        rowNumber++;
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Type", FieldName = "WtrType", FieldDescription = "", Value = wtr.ObjectName }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Row = rowNumber, Column = 2, Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "WtrOwner", FieldDescription = "", Value = wtr.ParentName ?? "None" }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Responsibility", FieldName = "WtrResponsibility", FieldDescription = "", Value = wtr.ResponsibilityType }
+                            }
+                        });
+
                         foreach (var p in wtr.Properties)
                         {
-                            list.Add(new ReadOnlyField { Row = rowNumber, Column = 1, Name = p.Key, FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = p.Value });
-                            rowNumber++;
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = p.Key, FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = p.Value }
+                                }
+                            });
                         }
                     }
                     wtr = null;
@@ -3906,7 +4711,9 @@ from	IntersectMapSourceRule J
 
             sections.Add(new ReadOnlySection { Name = "Governance", Fields = list, ID = 0 });
 
-            return Request.CreateResponse(HttpStatusCode.OK, sections);//new { Fields = list });
+            return model;
+
+            //return Request.CreateResponse(HttpStatusCode.OK, sections);//new { Fields = list });
         }
 
         [Route("{type}/{id:int}/object/statistics")]

@@ -1,23 +1,25 @@
 ﻿@model d360.core.entities.ObjectModel
 <div class="large-overlay">
     <div class="ui segment">
-        <h4>Events</h4>
-        <div class="form-instructions"></div>
-        <div id="EventsOverlayHeadersGrid"></div>
-
-        <h5 id="EventsOverlayHeaderName" class="overlay-tabs tile-tabs">Choose a header above</h5>
-
         <div class="row">
             <div class="col s12">
-                <ul id="EventHeaderTabs" class="tabs">
-                    <li class="tab col s4"><a class="active" href="#EventOverlayItems" data-index="0" style="position: relative">Items</a></li>
-                    <li class="tab col s4"><a href="#EventOverlayBoard" data-index="1" style="position: relative">Community</a></li>
-                </ul>
+                <h3>Events</h3>
+                <div class="form-instructions"></div>
             </div>
-            <div id="EventOverlayItems" class="col s12 active">
+        </div>
+        <div class="row" style="margin-top:15px">
+            <div class="col s12">
+                <div id="EventsOverlayHeadersGrid"></div>
+                <h4 id="EventsOverlayHeaderName" class="overlay-tabs tile-tabs">Choose a header above</h4>
+            </div>
+        </div>
+        <div class="row" style="margin-top:15px">
+            <div id="EventOverlayItems" class="col s12 m12 l6">
+                <h4>Items</h4>
                 <div id="EventsOverlayItemsGrid"></div>
             </div>
-            <div id="EventOverlayBoard" class="col s12">
+            <div id="EventOverlayBoard" class="col s12 m12 l6">
+                <h4>Community</h4>
                 <div id="EventsOverlaySocial" data-bind="template: {name: 'boardTmpl' }"></div>
             </div>
         </div>
@@ -33,7 +35,7 @@
     var EventsOverlayHeadersGridSource;
     var EventsOverlayHeadersGridAdapter;
 
-    $('#EventHeaderTabs').tabs();
+    //$('#EventHeaderTabs').tabs();
 
     function eventsOverlayHeadersGridBindingComplete(event) {
         var rowCount = $('#EventsOverlayHeadersGrid').jqxGrid('getdisplayrows').length;

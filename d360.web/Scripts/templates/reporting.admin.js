@@ -29,7 +29,7 @@
 
                 $('#SideIcons').PageTools("reload", type, data.ID);
 
-                DetailTile('DetailTile', contextList, permissions, type, data.ID);
+                ObjectDetail('DetailTile', type, data.ID);
 
                 if (permissions.HasPermission('Root', 'Update')) {
                     TileTools('#TilesTileTools', [

@@ -13,12 +13,7 @@
     var overDetailID = @(Model.ObjectID);
 
     $(function () {
-
-        $('#OverlayDetail').Detail({
-            type: overDetailType,
-            id: overDetailID
-        });
-
+        ObjectDetail('OverlayDetail', overDetailType, overDetailID);
         $("html, body").animate({ scrollTop: 0 }, "slow");
     });
 </script>

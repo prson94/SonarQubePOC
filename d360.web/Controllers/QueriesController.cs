@@ -170,10 +170,11 @@ group by ObjectType, ObjectTypeID, ObjectTypeName", new { id = id });
         {
             var query = Company.Query<dynamic>(@"select O.ResponsibilityType, O.ResponsibilityTypeID, count(1) as [Count]
 from	(
-		select	distinct T.Name as ResponsibilityType, T.ID as ResponsibilityTypeID, COALESCE(RG.ResourceID, O.ResponsibleObjectID) as ResourceID
-		from	Responsibility O
-				inner join ResponsibilityType T on T.ID = O.ResponsibilityTypeID and T.ResponsibilityTypeGroup = 1
-				left join ResourceGroup RG on O.ResponsibleObjectType = 'Group' and RG.GroupID = O.ResponsibleObjectID
+		select	distinct O.ResponsibilityType, O.ResponsibilityTypeID, COALESCE(RG.ResourceID, O.ResponsibleObjectID) as ResourceID
+		from	[cache].[ResponsibilityItem] O
+				left join ResourceGroup RG on O.ResponsibleObject = 'Group' and RG.GroupID = O.ResponsibleObjectID
+		where	O.ResponsibilityTypeGroup = 1
+                and COALESCE(RG.ResourceID, O.ResponsibleObjectID) in (select ResourceID from reporting.Global_Resource)
 		) O
 group by	O.ResponsibilityType, O.ResponsibilityTypeID");
 
@@ -183,13 +184,21 @@ group by	O.ResponsibilityType, O.ResponsibilityTypeID");
         [Route("{id:int}/ResourcesByResponsibilityType")]
         public JsonNetResult GetResourcesByResponsibilityType(int id)
         {
-            var query = Company.Query<dynamic>(@"select O.ResponsibilityTypeID, coalesce(RG.ResourceID, O.ResponsibleObjectID) as ResourceID, R.FirstName, R.LastName, COUNT(1) as OwnedItemCount
-			from	Responsibility O
-					left join ResourceGroup RG on O.ResponsibleObjectType = 'Group' and RG.GroupID = O.ResponsibleObjectID
-					inner join ResponsibilityDetail RD on RD.ResponsibilityID = O.ID
-					inner join reporting.Global_Resource R on R.ResourceID = coalesce(RG.ResourceID, O.ResponsibleObjectID)
-			where	O.ResponsibilityTypeID = @id
-			group by O.ResponsibilityTypeID, coalesce(RG.ResourceID, O.ResponsibleObjectID), R.FirstName,R.LastName", new { id = id }).ToList();
+            var query = Company.Query<dynamic>(@"
+select	O.ResponsibilityTypeID, O.ResourceID, R.FirstName, R.LastName, COUNT(1) as OwnedItemCount
+from	(
+		select		R.ResponsibilityType, 
+					R.ResponsibilityTypeID, 
+					COALESCE(RG.ResourceID, R.ResponsibleObjectID) as ResourceID
+		from		[cache].[ResponsibilityItem] R
+					left join ResourceGroup RG on R.ResponsibleObject = 'Group' and RG.GroupID = R.ResponsibleObjectID
+		where		R.ResponsibilityTypeID = @id
+		group by	R.ResponsibilityType, 
+					R.ResponsibilityTypeID, 
+					COALESCE(RG.ResourceID, R.ResponsibleObjectID)
+		) O
+		inner join reporting.Global_Resource R on R.ResourceID = O.ResourceID
+group by O.ResponsibilityTypeID, O.ResourceID, R.FirstName, R.LastName", new { id = id }).ToList();
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 

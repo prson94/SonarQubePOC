@@ -64,8 +64,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 4; //10
-            var fusionTypeID = 19;
+            var companyID = 23; //10
+            var fusionTypeID = 13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FieldTypes);
@@ -153,12 +153,12 @@ END
         [TestMethod]
         public void SaveCertificate_Success()
         {
-            var companyID = 15;
+            var companyID = 31;
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("GMO.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "GMO Certificate", File = bytes };
+            var bytes = File.ReadAllBytes("Macquarie.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Macquarie Certificate", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

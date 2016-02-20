@@ -463,6 +463,8 @@
     <Build Include="dbo\Stored Procedures\GetLineageDiagram_1.sql" />
     <Build Include="dbo\Stored Procedures\GetHierarchyByMapType_1.sql" />
     <Build Include="utility\User Defined Types\DiagramRelationshipTable_1.sql" />
+    <Build Include="dbo\Tables\IntersectMapGroup_1.sql" />
+    <Build Include="dbo\Stored Procedures\GetGroupHierarchy_1.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

@@ -469,6 +469,7 @@
     <Content Include="Content\styles\navigation.min.css">
       <DependentUpon>navigation.css</DependentUpon>
     </Content>
+    <Content Include="Content\templates\parts\DetailTile.html" />
     <Content Include="Content\templates\parts\LineageDiagram.html" />
     <Content Include="Content\templates\parts\LineageDiagramSourceRules.html" />
     <Content Include="Content\templates\rules.list.html" />
@@ -831,7 +832,6 @@
     <None Include="Scripts\colorpicker-color.js" />
     <None Include="Scripts\colorpicker.js" />
     <None Include="Scripts\Common.js" />
-    <None Include="Scripts\d3s.Detail.js" />
     <None Include="Scripts\d3s.Editor.js" />
     <None Include="Scripts\d3s.FormTools.js" />
     <None Include="Scripts\d3s.PageTools.js" />
@@ -1002,7 +1002,6 @@
     <Content Include="Views\Form\EditResponsibilityTypeClaims.cshtml" />
     <Content Include="Views\Parts\DisplayClaimsMatrix.cshtml" />
     <Content Include="Views\Relations\AggregateRelationOverlay.cshtml" />
-    <Content Include="Views\Shared\Diagram.cshtml" />
     <Content Include="Views\Overlays\Score.cshtml" />
     <Content Include="Views\Form\ReportEditForm.cshtml" />
     <Content Include="Views\Form\ReportTileEditForm.cshtml" />

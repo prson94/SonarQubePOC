@@ -78,8 +78,8 @@
                 { name: 'ResponsibleObjectName' },
                 { name: 'ResponsibleObjectUrl' },
                 { name: 'Role' },
-                { name: 'CurrentScore', type: 'number' },
-                { name: 'RedFlagged', type: 'bool' },
+                { name: 'CurrentScore', type: 'number' }//,
+                //{ name: 'RedFlagged', type: 'bool' },
             ],
             datatype: "json",
             async: false,
@@ -104,9 +104,9 @@
                 { datafield: "ObjectTypeName", text: "Type", width: '125px', columntype: 'dropdownlist', filtertype: 'checkedlist' },
                 { datafield: "ObjectName", text: "Name", cellsrenderer: ownershipObjectNameRenderer },
                 { datafield: "Role", text: "Role", columntype: 'dropdownlist', filtertype: 'checkedlist' },
-                { datafield: "CurrentScore", text: "Score", filterable: false, width: '60px', cellsrenderer: ownershipCurrentScoreRenderer, columntype: 'numberinput', filtertype: 'number' },
+                { datafield: "CurrentScore", text: "Score", filterable: false, width: '60px', cellsrenderer: ownershipCurrentScoreRenderer, columntype: 'numberinput', filtertype: 'number' }//,
                 //{ datafield: "AssigningItemID", text: "", width: '40px', filterable: false, cellsrenderer: assigningObjectNameRenderer }
-                { datafield: "RedFlagged", text: "", width: '50px', cellsrenderer: ownershipRedFlaggedRenderer, hidden: !IsAdmin, filtertype: 'bool' }
+                //{ datafield: "RedFlagged", text: "", width: '50px', cellsrenderer: ownershipRedFlaggedRenderer, hidden: !IsAdmin, filtertype: 'bool' }
             ]
         });
 

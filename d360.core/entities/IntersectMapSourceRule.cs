@@ -3,6 +3,8 @@ using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using d360.core.enums;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -10,9 +12,6 @@ namespace d360.core.entities
     public class IntersectMapSourceRule : BaseIntObject, IIntObject
     {
         #region Properties
-
-        [DataMember]
-        public string Name { get; set; }
 
         [DataMember]
         public int IntersectMapID { get; set; }
@@ -34,5 +33,8 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public SourceRule SourceRule { get; set; }
+
+        [IgnoreDataMember, ForeignKey("IntersectMapSourceRuleID")]
+        public virtual ICollection<IntersectMapSourceRuleContext> Contexts { get; set; }
     }
 }

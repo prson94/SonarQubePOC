@@ -49,30 +49,7 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Partials
-
-        //public ActionResult Allocations(int id)
-        //{
-        //    ViewData.Add("ID", id);
-        //    return PartialView();
-        //}
-
-        //[Route("{type}/{id:int}")]
-        //public ActionResult RelationsByObject(SystemObjects type, int id)
-        //{
-        //  var model = new FieldsViewModel { ObjectType = type.ToString(), ObjectTypeID = id, TabIndex = 1 };
-        //  return PartialView("_List", model);
-        //}
-
-        #endregion
-
         #region Json
-
-        //public JsonResult _Allocations(int id)
-        //{
-        //    var model = Company.Filter<FieldTypeWithRelation>(i => i.ID == id);
-        //    return Json(model, JsonRequestBehavior.AllowGet);
-        //}
 
         [Route("{type}/{id:int}.json")]
         public JsonResult _FieldTypesByObject(SystemObjects type, int id)
@@ -108,7 +85,8 @@ namespace d360.web.Controllers
             string successMessage = "Field moved successfully.";
             string errorMessage = string.Format("{0} with ID {1} could not be found.", type.ToString(), id);
 
-            var list = Company.GetFieldTypeRelationsByObject(type, id).OrderBy(i => i.SortOrder).ThenBy(i => i.Name).ToList();
+            var sType = type.ToString();
+            var list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.SortOrder).ThenBy(i => i.Name).ToList();
 
             if (list != null)
             {
@@ -139,7 +117,7 @@ namespace d360.web.Controllers
                     sorts.RemoveAt(0);
                 }
 
-                //Company.SaveFieldTypes(type, id, list); 
+                Company.SaveChanges();//.SaveFieldTypes(type, id, list); 
 
                 code = HttpStatusCode.OK;
                 message = successMessage;
@@ -152,7 +130,7 @@ namespace d360.web.Controllers
 
             Response.StatusCode = (int)code;
             Response.StatusDescription = message;
-            return Json(new { message = message, name = "Field moved", id = id, customdata = new { commandname = "FieldMove" } });
+            return Json(new { type = "confirm", title = "Success!", action = "update", message = message.Replace("\n", "  "), id = id, context = ContextList.FieldType, custom = new { commandname = "FieldMove" } });
         }
 
         #endregion

@@ -30,7 +30,7 @@
             amplify.publish(AmplifyActions.TileUnsubscribe, {});
             $('#SideIcons').PageTools("reload", type, data.ID);
 
-            DetailTile('DetailTile', contextList, permissions, type, data.ID);
+            ObjectDetail('DetailTile', type, data.ID);
             //$('#UsageTile').load('/parts/ResponsibilityTypeUsageGrid?id=' + data.ID);
         }
 

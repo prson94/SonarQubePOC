@@ -1404,6 +1404,186 @@ function CompanySettingsViewModel(data) {
     return self;
 }
 
+function HierarchyRuleContextModel(data) {
+    var self = this;
+    data = data || {};
+
+    self.Object = ko.observable(data.Object || "");
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+
+    self.ObjectIndex = ko.observable(data.ObjectIndex || -1);
+    self.ObjectIDIndex = ko.observable(data.ObjectIDIndex || -1);
+
+    return self;
+}
+
+function HierarchyRuleItemModel(data) {
+    var self = this;
+    data = data || {};
+
+    self.Name = ko.observable(data.Name || "");
+    self.Description = ko.observable(data.Description || "");
+    self.Order = ko.observable(data.Order || 1);
+
+    self.Contexts = ko.observableArray([]);
+
+    if (data.Contexts) {
+        $.each(data.Contexts, function (cxIx, cxItem) {
+            self.Contexts.push(
+                    new HierarchyRuleContextModel(cxItem)
+                );
+        });
+    }
+
+    return self;
+}
+
+function HierarchyRuleViewModel(id, object, objectID) {
+    var self = this;
+
+    //Simple Properties
+    self.ID = ko.observable(id || 0);
+    self.Name = ko.observable('');
+    self.Object = ko.observable(object || '');
+    self.ObjectID = ko.observable(objectID || 0);
+
+    self.InProgress = ko.observable(false);
+
+    //List Properties
+    self.Contexts = ko.observableArray();
+    self.Items = ko.observableArray();
+
+    //Computed Properties
+    //self.CurrentCompanyLogoPathPresent = ko.pureComputed(function () {
+    //    return (self.CurrentCompanyLogoPath().length > 0 && !self.SetLogoToDefault());
+    //}, self);
+
+    //Subscriptions
+    //self.DisableCommunityPosting.subscribe(function (value) {
+    //});
+
+    //#region Methods
+
+    self.addItem = function () {
+        self.Items.push(new HierarchyRuleItemModel({}));
+    };
+
+    self.deleteItem = function () {
+        self.Items.remove(this);
+    };
+
+    self.save = function () {
+        self.InProgress(true);
+        
+        var postModel = {
+            Name: self.Name(),
+            Contexts: [],
+            Items: []
+        }
+
+        //Load Contexts
+        for (var c = 0; c < self.Contexts().length; c++) {
+            var ctx = self.Contexts()[c];
+            postModel.Contexts.push({ Object: ctx.Object, ObjectID: ctx.ObjectID });
+        }
+
+        //Load Items
+        for (var r = 0; r < self.Items().length; r++) {
+            var item = {
+                Name: self.Items()[r].Name(),
+                Description: self.Items()[r].Description(),
+                Order: self.Items()[r].Order(),
+                Contexts: []
+            };
+
+            for (var c = 0; c < self.Items()[r].Contexts().length; c++) {
+                var ctx = self.Items()[r].Contexts()[c];
+                item.Contexts.push({ Object: ctx.Object, ObjectID: ctx.ObjectID });
+            }
+
+            postModel.Items.push(item);
+        }
+
+        var ruleID = self.ID();
+        var url = '/form/SourceRules' + ((ruleID > 0) ? '/' + ruleID : '');
+        var method = (ruleID > 0) ? 'put' : 'post';
+
+        $.ajax(url, {
+            data: postModel,
+            dataType: 'json',
+            method: method
+        }).done(function (data, status, xhr) {
+            amplify.publish("SaveAction", { context: 'CompanySettings', action: 'update', id: 0, custom: {} });
+            data.message += " Refreshing page momentarily.";
+            amplify.publish("ShowMessage", data);
+        }).fail(function (xhr, status, error) {
+            amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
+        }).always(function (data, status, error) {
+            self.InProgress(false);
+            console.log(status);
+            if (error.status == "200") {
+                setTimeout(function () { document.location.reload(); }, 3000);
+            }
+        });
+    };
+
+    //#endregion
+
+    if (self.ID() > 0) {
+        $.getJSON('/form/SourceRules/' + self.ID(), function (relData) {
+
+            self.Name(relData.Name);
+            self.Object(relData.Object);
+            self.ObjectID(relData.ObjectID);
+
+            $.each(relData.Contexts, function (cxIx, cxItem) {
+                self.Contexts.push(
+                        new HierarchyRuleContextModel(cxItem)
+                    );
+            });
+
+            $.each(relData.Items, function (roIx, roItem) {
+                self.Items.push(
+                        new HierarchyRuleItemModel(roItem)
+                    );
+            });
+        });
+
+        // Step 1
+        //$.getJSON('/form/IntersectType_Side1Options', function (relData) {
+        //    self.Side1Options(relData);
+        //}).then(function () {
+        //    // Step 2
+        //    $.getJSON(
+        //        '/form/IntersectType_FormData',
+        //        { id: self.ID() },
+        //        function (relData) {
+
+        //            //Side2 needs to be first, here.
+        //            self.Side2(relData.Side2);
+        //            self.Side2DisplayText(relData.Side2DisplayText);
+        //            self.Side1(relData.Side1);
+        //            self.Side1DisplayText(relData.Side1DisplayText);
+
+        //            self.LimitedChangesOnly(relData.LimitedChangesOnly);
+
+        //            var indexToSelect = -1;
+
+        //            $.each(self.Side1Options(), function (ix, item) {
+        //                if (item.value == relData.Side1) {
+        //                    indexToSelect = ix;
+        //                }
+        //            });
+        //            self.Side1Index(indexToSelect);
+        //        }
+        //    );
+        //});
+    }
+
+    return self;
+}
+
+
 function Statistic(data) {
     var self = this;
     data = data || {};

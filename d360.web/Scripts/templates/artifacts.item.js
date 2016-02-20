@@ -31,12 +31,7 @@
             pageViewModel.Title = json.Name;
             pageViewModel.Type = json.TypeName;
             pageViewModel.Status = "<h4>Status: <b style='color:" + getArtifactStatusForeColor(json.Status) + "'>" + json.Status + "</b></h4>";
-            pageViewModel.breadcrumbs = [];
-            pageViewModel.breadcrumbs.push({ Name: 'Glossary' });
-            pageViewModel.breadcrumbs.push({ Name: json.TypeName });
-            pageViewModel.breadcrumbs.push({ Name: json.Name, Active: true });
-            //pageViewModel.Directions = json.Description;
-
+            pageViewModel.breadcrumbs = json.Breadcrumbs;
             context.title(pageViewModel.Title);
 
             //#region Event Handlers
@@ -112,12 +107,13 @@
                         CertificationNotificationTile('CertificationNotification', id);
 
                         if (json.AllowPredicateHierarchies) {
-                            HierarchyTile('TypeHierarchyTile', contextList, permissions, type, id, 3, 'Type Hierarchy');
-                            HierarchyTile('GroupHierarchyTile', contextList, permissions, type, id, 4, 'Group Hierarchy');
-                           // HierarchyTile('ParentHierarchyTile', contextList, permissions, type, id, 5, 'Parent/Child Hierarchy');
+                            HierarchyTile('TypeHierarchyTile', contextList, permissions, type, id, 3, 'Definitional Structure');
+                            HierarchyTile('GroupHierarchyTile', contextList, permissions, type, id, 4, 'Groupings');
+                            // HierarchyTile('ParentHierarchyTile', contextList, permissions, type, id, 5, 'Parent/Child Hierarchy');
                         }
                         else {
-                            $('#HierarchyTileSection').hide();
+                            $('#TypeHierarchyTile').hide();
+                            $('#GroupHierarchyTile').hide();
                         }
 
                         if (json.AllowRelatedArtifacts) {

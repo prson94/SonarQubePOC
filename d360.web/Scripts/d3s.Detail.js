@@ -170,10 +170,7 @@
     function loadFields($obj, options) {
         amplify.request("ObjectDetailRequest", { type: options.type, id: options.id }, function (data) {
             $obj.html('');
-            //if (data.RedFlagged) {
-            //    $obj.append("<div class='detail-alert'><i class='fa fa-flag' /></div>");
-            //}
-            parseFields($obj, options, data[0].Fields);
+            //parseFields($obj, options, data[0].Fields);
         });
     };
 
@@ -213,7 +210,7 @@
 
                     currentColumn = 1;
                     while (currentColumn <= m.ColumnCount) {
-                        layoutHtml += "<div id='det" + controlID + options.prefix + options.type + options.id + "col_" + m.Row + "_" + currentColumn + "' class='col l" + m.Columns + " m" + m.Columns + "'></div>";
+                        layoutHtml += "<div id='det" + controlID + options.prefix + options.type + options.id + "col_" + m.Row + "_" + currentColumn + "' class='FieldCell col l" + m.Columns + " m" + m.Columns + "'></div>";
                         currentColumn++;
                     }
 
@@ -231,9 +228,8 @@
                         fieldFriendlyName = eval(v.ScriptProperty);
                     }
 
-                    
+                    cpnl.append("<div id='" + controlID + v.FieldName + "' class='left FieldName FieldDisplayName' style='width: 150px; max-width:200px; margin-right: 25px'><span id='Tip_" + controlID + v.FieldName + "'>" + fieldFriendlyName + "</span></div>");
                     if (v.FieldDescription && v.FieldDescription != '') {
-                        cpnl.append("<div id='" + controlID + v.FieldName + "' class='FieldName FieldDisplayName'><span id='Tip_" + controlID + v.FieldName + "'>" + fieldFriendlyName + "</span></div>");
                         $('#Tip_' + controlID + v.FieldName).qtip({
                             content: {
                                 text: v.FieldDescription,
@@ -248,9 +244,6 @@
                                 classes: 'qtip-blue qtip-rounded'
                             }
                         });
-                    }
-                    else {
-                        cpnl.append("<div class='FieldName FieldDisplayName'>" + fieldFriendlyName + "</div>");
                     }
                     
 
@@ -318,11 +311,11 @@
                         {
                             v.Value = v.Value.replace(/["]/g, "");
                             var d = new Date(v.Value);
-                            cpnl.append("<div class='FieldContent'>" + d.toLocaleString() + "</div>");
+                            cpnl.append("<div>" + d.toLocaleString() + "</div>");
                         }
                         else
-                            cpnl.append("<div class='FieldContent'>" + v.Value + "</div>");
-                    }                    
+                            cpnl.append("<div>" + v.Value + "</div>");
+                    }
                 });
             }
         } catch (e) {

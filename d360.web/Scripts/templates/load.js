@@ -34,7 +34,7 @@
 
             $('#SideIcons').PageTools("reload", type, data.ID);
 
-            DetailTile('DetailTile', contextList, permissions, type, data.ID);
+            ObjectDetail('DetailTile', type, data.ID);
 
             $.getJSON('/api/loads/' + data.ID + '/columns', {}, function (columnData) {
                 $('#LoadItemsTile').jqxGrid('clearselection');

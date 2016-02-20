@@ -8,11 +8,13 @@ begin
 
 	declare @Object varchar(50),
 			@ObjectID int,
-			@Action varchar(1)
+			@Action varchar(1),
+			@UpdatedBy int = 0
 
 	select	@Object = [Object],
 			@ObjectID = ObjectID,
-			@Action = [Action]
+			@Action = [Action],
+			@UpdatedBy = UpdatedBy
 	from	[Load]
 	where	ID = @LoadID
 
@@ -43,13 +45,13 @@ begin
 									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
 									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
 								
-									left join Artifact L_A on F.LookupObjectType = 'ArtifactType' and L_A.ArtifactTypeID = F.LookupObjectID and (L_A.[Name] = IC.Value OR L_A.TextPath = IC.Value)
-									left join Domain L_D on F.LookupObjectType = 'DomainType' and L_D.DomainTypeID = F.LookupObjectID and L_D.[Name] = IC.Value
+									left join Artifact L_A on F.LookupObjectType in ('Artifact', 'ArtifactType') and L_A.ArtifactTypeID = F.LookupObjectID and (L_A.[Name] = IC.Value OR L_A.TextPath = IC.Value)
+									left join Domain L_D on F.LookupObjectType in ('Domain', 'DomainType') and L_D.DomainTypeID = F.LookupObjectID and L_D.[Name] = IC.Value
 									left join DomainItem L_DI on F.LookupObjectType = 'DomainItem' and L_DI.DomainID = F.LookupObjectID and L_DI.[Name] = IC.Value
 									left join FusionAttribute L_F on F.LookupObjectType = 'FusionAttributeType' and L_F.FusionAttributeTypeID = F.LookupObjectID and (L_F.[Name] = IC.Value OR L_F.TextPath = IC.Value)
 									left join [Intersect] L_I on F.LookupObjectType = 'IntersectType' and L_I.IntersectTypeID = F.LookupObjectID and L_I.[Name] = IC.Value
 									left join [FieldLookupValue] L_L on F.ID = L_L.FieldTypeID and F.LookupObjectType = 'Lookup' and L_L.LookupObjectID = F.LookupObjectID and L_L.[Text] = IC.Value
-									left join Taxonomy L_T on F.LookupObjectType = 'TaxonomyType' and L_T.TaxonomyTypeID = F.LookupObjectID and (L_T.[Name] = IC.Value OR L_T.TextPath = IC.Value)
+									left join Taxonomy L_T on F.LookupObjectType in ('Taxonomy', 'TaxonomyType') and L_T.TaxonomyTypeID = F.LookupObjectID and (L_T.[Name] = IC.Value OR L_T.TextPath = IC.Value)
 							where	F.[Type] = 'Lookup'
 							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
 
@@ -198,10 +200,12 @@ begin
 					update	set T.[Description] = S.[Description],
 								T.[ParentID] = S.[ParentID],
 								T.[Status] = 'Draft',
-								T.TaxonomyTypeID = S.TaxonomyTypeID
+								T.TaxonomyTypeID = S.TaxonomyTypeID,
+								T.UpdatedBy = @UpdatedBy,
+								T.UpdatedOn = getutcdate()
 			when	not matched then
 					insert (ArtifactTypeID, TaxonomyTypeID, ParentID, Name, [Description], [Status], UpdatedOn, UpdatedBy)
-					values (S.ArtifactTypeID, S.TaxonomyTypeID, S.ParentID, S.Name, S.[Description], 'Draft', getutcdate(), 0)
+					values (S.ArtifactTypeID, S.TaxonomyTypeID, S.ParentID, S.Name, S.[Description], 'Draft', getutcdate(), @UpdatedBy)
 			output	'Artifact', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
 		end
 		else if @Object = 'AttributeType'
@@ -221,11 +225,45 @@ begin
 			on		(T.AttributeTypeID = S.AttributeTypeID and T.[ObjectType] = S.[Object] and T.[ObjectID] = S.[ObjectID] and T.ParentID = NULL)-- and T.Name = S.Name)
 			when	matched then
 					update	set T.[UpdatedOn] = getutcdate(),
-								T.UpdatedBy = 0
+								T.UpdatedBy = @UpdatedBy
 			when	not matched then
 					insert (AttributeTypeID, ObjectType, ObjectID, UpdatedOn, UpdatedBy)
-					values (S.AttributeTypeID, S.[Object], S.ObjectID, getutcdate(), 0)
+					values (S.AttributeTypeID, S.[Object], S.ObjectID, getutcdate(), @UpdatedBy)
 			output	'Attribute', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;		
+		end
+		else if @Object = 'Domain'
+		begin
+			merge	DomainItem T
+			using	(
+					select	distinct
+							LI.LoadID,
+							LI.RowIndex,
+							@ObjectID as DomainID,
+							IC_C.Value as Code,
+							IC_N.Value as Name,
+							D.[Description]
+					from	[LoadItem] LI
+							inner join [LoadItemColumn] IC_C on IC_C.LoadID = LI.LoadID and IC_C.RowIndex = LI.RowIndex inner join LoadColumn C_C on C_C.LoadID = LI.LoadID and C_C.ColumnIndex = IC_C.ColumnIndex and C_C.Name = 'Code'
+							inner join [LoadItemColumn] IC_N on IC_N.LoadID = LI.LoadID and IC_N.RowIndex = LI.RowIndex inner join LoadColumn C_N on C_N.LoadID = LI.LoadID and C_N.ColumnIndex = IC_N.ColumnIndex and C_N.Name = 'Name'
+							outer apply (
+										select	I.Value as Description
+										from	[LoadItemColumn] I
+												inner join LoadColumn C on I.LoadID = LI.LoadID and I.RowIndex = LI.RowIndex 
+																			 and C.LoadID = LI.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name = 'Description'
+										) D
+					where	LI.LoadID = @LoadID
+					) S
+			on		(T.DomainID = S.DomainID and T.Code = S.Code)
+			when	matched then
+					update	set T.[Name] = S.[Name],
+								T.[Description] = S.[Description],
+								T.[DomainID] = S.[DomainID],
+								T.UpdatedBy = @UpdatedBy,
+								T.UpdatedOn = getutcdate()
+			when	not matched then
+					insert (DomainID, Code, Name, [Description], UpdatedOn, UpdatedBy)
+					values (S.DomainID, S.Code, S.Name, S.[Description], getutcdate(), @UpdatedBy)
+			output	'DomainItem', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
 		end
 		else if @Object = 'DomainType'
 		begin
@@ -252,10 +290,12 @@ begin
 			on		(T.DomainTypeID = S.DomainTypeID and T.Name = S.Name)
 			when	matched then
 					update	set T.[Description] = S.[Description],
-								T.[DomainGroupID] = S.[DomainGroupID]
+								T.[DomainGroupID] = S.[DomainGroupID],
+								T.UpdatedOn = getutcdate(),
+								T.UpdatedBy = @UpdatedBy
 			when	not matched then
 					insert (DomainTypeID, DomainGroupID, Name, [Description], UpdatedOn, UpdatedBy)
-					values (S.DomainTypeID, S.DomainGroupID, S.Name, S.[Description], getutcdate(), 0)
+					values (S.DomainTypeID, S.DomainGroupID, S.Name, S.[Description], getutcdate(), @UpdatedBy)
 			output	'Domain', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
 		end
 		else if @Object = 'FusionAttributeType'
@@ -364,8 +404,8 @@ begin
 				begin
 					--insert the new taxonomy
 					insert into Taxonomy (TaxonomyTypeID, ParentID, Name, [Description], UpdatedOn, UpdatedBy)
-					select distinct
-						 L.ObjectID as TaxonomyTypeID
+					select	distinct
+							L.ObjectID as TaxonomyTypeID
 						,LVP.TaxonomyID as ParentID
 						,LV.Value as Name
 						,case when LV.Level = LV.MaxLevel then
@@ -374,7 +414,7 @@ begin
 							''
 						END as Description
 						,getdate() as UpdatedOn
-						,0 as UpdatedBy
+						,@UpdatedBy as UpdatedBy
 					from 
 						@levels LV
 					left join @levels LVP on LVP.ID = LV.ParentID
@@ -398,12 +438,14 @@ begin
 				--if level = max, update the description
 				if (select level from @levels where id = @rowCurr) = (select maxlevel from @levels where id = @rowCurr)
 				begin
-					update T
-					set T.Description = case when LI.Value = '' then T.Description else LI.Value end
-					from Taxonomy T
-					join @levels LV on LV.ID = @rowCurr and T.ID = LV.TaxonomyID
-					inner join LoadColumn LC on LC.Name = 'Description' and LC.LoadID = @LoadID
-					inner join LoadItemColumn LI on LI.RowIndex = LV.RowIndex AND LI.ColumnIndex = LC.ColumnIndex AND LI.LoadID = @LoadID;
+					update	T
+					set		T.Description = case when LI.Value = '' then T.Description else LI.Value end,
+							T.UpdatedOn = getutcdate(),
+							T.UpdatedBy = @UpdatedBy
+					from	Taxonomy T
+							join @levels LV on LV.ID = @rowCurr and T.ID = LV.TaxonomyID
+							inner join LoadColumn LC on LC.Name = 'Description' and LC.LoadID = @LoadID
+							inner join LoadItemColumn LI on LI.RowIndex = LV.RowIndex AND LI.ColumnIndex = LC.ColumnIndex AND LI.LoadID = @LoadID;
 
 				end
 			end --end while

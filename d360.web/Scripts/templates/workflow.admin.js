@@ -31,7 +31,7 @@
             
             var data = args.row;
             $('#SideIcons').PageTools("reload", type, data.ID);
-            DetailTile('DetailTile', contextList, permissions, type, data.ID);
+            ObjectDetail('DetailTile', type, data.ID);
             //$('#AllocationsTile').load('/fields/Allocations?id=' + data.ID);
         }
 
@@ -39,7 +39,7 @@
             try {
                 switch (data.context) {
                     case contextList.WorkflowTypeRelation:
-                        DetailTile('DetailTile', contextList, permissions, type, data.id);
+                        ObjectDetail('DetailTile', type, data.id);
                         $('#List').jqxGrid('updatebounddata');
                         break;
                 }

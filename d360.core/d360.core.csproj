@@ -96,8 +96,6 @@
     <Compile Include="entities\Queues\BulkLoadQueue.cs" />
     <Compile Include="entities\IntersectMapSourceRule.cs" />
     <Compile Include="entities\SourceRule.cs" />
-    <Compile Include="entities\TagRelation.cs" />
-    <Compile Include="entities\Tag.cs" />
     <Compile Include="entities\Audit.cs" />
     <Compile Include="entities\AuditField.cs" />
     <Compile Include="entities\CompanySetting.cs" />
