@@ -16,14 +16,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        [Route("board")]
-        public ActionResult MyBoard()
-        {
-            ViewData.Add("Type", "Resource");
-            ViewData.Add("ID", Company.CurrentResourceID);
-            return PartialView();
-        }
-
         [Route("groups/{id:int}/ownership")]
         public ActionResult OwnershipForGroup(int id)
         {
@@ -108,48 +100,6 @@ namespace d360.web.Controllers
         }
 
         #region Type/ID Queries
-
-        //[Route("{type}/{id}/image")]
-        //public ActionResult EditImage(SystemObjects type, int id)
-        //{
-        //    ViewData.Add("type", type);
-        //    ViewData.Add("id", id);
-        //    return PartialView("ImageEditor");
-        //}
-
-        //[Route("{type}/{id}/images"), HttpPost]
-        //public JsonResult PostImage(SystemObjects type, int id)
-        //{
-        //    if (Request.InputStream.Length > 0)
-        //    {
-        //        var rdr = new StreamReader(Request.InputStream);
-        //        string base64String = rdr.ReadToEnd();
-
-        //        if (base64String.StartsWith("data:"))
-        //        {
-        //            //remove unwanted ajax header
-        //            int indexOfBase64String = base64String.IndexOf(",") + 1;
-        //            int lenghtOfBase64String = base64String.Length - indexOfBase64String;
-        //            base64String = base64String.Substring(indexOfBase64String, lenghtOfBase64String);
-        //        }
-
-        //        var bytes = Convert.FromBase64String(base64String);
-        //        var stream = new MemoryStream(bytes);
-        //        var destStream = new MemoryStream();
-        //        var job = new ImageResizer.ImageJob(stream, destStream, new ImageResizer.Instructions("width=50;format=jpg;mode=max"));
-        //        ////http://imageresizing.net/docs/basics
-        //        job.Build();
-
-        //        SecurityService.EditResourceImage(id, (Stream)job.Dest, string.Format("{0}.png", Guid.NewGuid()));
-        //    }
-        //    return Json(new { id = 0, status = "success" });
-        //}
-
-        //[Route("{type}/{id}/allocations")]
-        //public ActionResult Allocations(SystemObjects type, int id)
-        //{
-        //    return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
-        //}
 
         [Route("{type}/{id}/audit/grid")]
         public ActionResult AuditGrid(SystemObjects type, int id)

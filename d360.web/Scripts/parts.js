@@ -3511,7 +3511,7 @@ function PeopleResponsibilityTile(controlID, contextList, permissions, type, id,
 
         if (permissions.HasPermission("Governance", "Create")) {
             TileTools(toolsControlID, [
-                { icon: 'plus', uri: "/form/AddPeopleResponsibility?type=" + type + "&id=" + id, context: contextList.Responsibility, title: 'Add responsibility' }
+                { icon: 'plus', uri: "/form/AddResponsibility?type=" + type + "&id=" + id, context: contextList.Responsibility, title: 'Add responsibility' }
             ]);
         }
 
@@ -3523,11 +3523,6 @@ function PeopleResponsibilityTile(controlID, contextList, permissions, type, id,
                 { name: 'ResponsibilityID' },
                 { name: 'AssigningItemType' },
                 { name: 'AssigningItemID' },
-                { name: 'AssigningIconBackColor' },
-                { name: 'AssigningIconForeColor' },
-                { name: 'AssigningIconText' },
-                { name: 'AssigningItemName' },
-                { name: 'AssigningItemUrl' },
                 { name: 'ResponsibleObjectType' },
                 { name: 'ResponsibleObjectID' },
                 { name: 'ResponsibleObjectName' },
@@ -3580,7 +3575,7 @@ function PeopleResponsibilityTile(controlID, contextList, permissions, type, id,
 
                         if (data.ObjectType == data.AssigningItemType && data.ObjectID == data.AssigningItemID) {
                             if (permissions.HasPermission("Governance", "Update")) {
-                                tools.push({ icon: 'pencil', urlprefix: '/form/EditPeopleResponsibility?id={0}' });
+                                tools.push({ icon: 'pencil', urlprefix: '/form/EditResponsibility?id={0}' });
                             }
                             if (permissions.HasPermission("Governance", "Delete")) {
                                 tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibility?id={0}' });
@@ -4179,136 +4174,6 @@ function Relationship_SimpleHierarchyTile(controlID, contextList, permissions, t
     //#endregion
 }
 
-function SourcingResponsibilityTile(controlID, contextList, permissions, type, id) {
-    var source = {
-        datatype: 'json',
-        url: "/api/" + type + "/" + id + "/sources",
-        datafields: [
-            { name: 'ResponsibilityID' },
-            { name: 'AssigningItemType' },
-            { name: 'AssigningIconBackColor' },
-            { name: 'AssigningIconForeColor' },
-            { name: 'AssigningIconText' },
-            { name: 'AssigningItemID' },
-            { name: 'AssigningItemName' },
-            { name: 'AssigningItemUrl' },
-            { name: 'ResponsibleObjectType' },
-            { name: 'ResponsibleObjectID' },
-            { name: 'ResponsibleObjectName' },
-            { name: 'ObjectName' },
-            { name: 'ObjectUrl' },
-            { name: 'ObjectType' },
-            { name: 'ObjectID' },
-            { name: 'Role' },
-            { name: 'ResponsibleObjectUrl' },
-            { name: 'ContextItems' }
-        ]
-    };
-
-    var adapter = new $.jqx.dataAdapter(source);
-
-    try {
-        if (gridExists(controlID)) {
-            $(controlID).jqxGrid('source', adapter);
-            $(controlID).jqxGrid('updatebounddata');
-        }
-        else {
-            $(controlID).jqxGrid({
-                altrows: true,
-                width: grid_width,
-                autoheight: true,
-                sortable: true,
-                filterable: true,
-                showfilterrow: true,
-                pagesizeoptions: ['10', '20', '50'],
-                pagesize: 20,
-                pageable: true,
-                autorowheight: true,
-                columnsresize: true,
-                source: adapter,
-                theme: list_theme,
-                columns: [
-                        {
-                            datafield: "ResponsibleObjectName",
-                            text: "Artifact",
-                            width: '22%',
-                            cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                                try {
-                                    var html = previewLinkRenderer(data.ResponsibleObjectType, data.ResponsibleObjectID, data.ResponsibleObjectUrl, data.ResponsibleObjectName);
-                                    data = null;
-                                    return html;
-                                } catch (e) {
-                                    console.log(e);
-                                }
-                            }
-                        },
-                        { datafield: "Role", text: "Role", width: '22%' },
-                        { datafield: "ContextItems", text: "Context", width: '40%', },
-                        {
-                            datafield: "ResponsibilityID",
-                            text: "",
-                            width: '80px',
-                            filterable: false,
-                            cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                                try {
-                                    var tools = [];
-
-                                    if (data.ObjectType == data.AssigningItemType && data.ObjectID == data.AssigningItemID && permissions.HasPermission("Governance", "Update")) {
-                                        tools.push({ icon: 'pencil', urlprefix: '/form/EditResponsibility?id={0}' });
-                                        tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteResponsibility?id={0}' });
-                                    }
-
-                                    return renderToolsHtml(value, tools, contextList.Responsibility, data);
-                                } catch (e) {
-                                    console.log(e);
-                                }
-                            }
-                        }
-                ]
-            });
-        }
-
-    } catch (e) {
-    }
-
-    //#region Event Subscriptions
-
-    function pageResized() {
-        $(controlID).jqxGrid('refresh');
-    }
-
-    function saveAction(data) {
-        try {
-            switch (data.context) {
-                case contextList.Artifact:
-                case contextList.DomainList:
-                case contextList.Responsibility:
-                case contextList.SourcingResponsibility:
-                case contextList.Taxonomy:
-                    $(controlID).jqxGrid('updatebounddata');
-                    break;
-            }
-        } catch (e) { }
-    }
-
-    function unsubscribe(data) {
-        source = null;
-        adapter = null;
-
-        amplify.unsubscribe("PageResized", pageResized);
-        amplify.unsubscribe("SaveAction", saveAction);
-        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
-    }
-
-    amplify.subscribe("PageResized", pageResized);
-    amplify.subscribe("SaveAction", saveAction);
-    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
-    //#endregion
-}
-
 function StatisticTypeAllocationGrid(controlID, contextList, permissions, id) {
 
     var toolsControlID = controlID + "_tools";
@@ -4522,166 +4387,6 @@ function SynonymTypeAllocationGrid(controlID, contextList, permissions, id) {
 
     amplify.subscribe("PageResized", pageResized);
     amplify.subscribe("SaveAction", saveAction);
-    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
-    //#endregion
-}
-
-function TagsTile(controlID, permissions, type, id) {
-    controlID = '#' + controlID;
-    var gridID = '#TagsTileGrid';
-    var textID = '#TagsTileText';
-    var tagApi = '/api/tags/' + type + '/' + id;
-    var source = $("#tagsTileTmpl").html();
-    var template = Handlebars.compile(source);
-    $(controlID).html(template({ }));
-
-    //#region Grid
-
-    var source = {
-        datatype: 'json',
-        url: tagApi,
-        datafields:
-        [
-            { name: 'ID' },
-            { name: 'Name' }
-        ]
-    };
-
-    var adapter = new $.jqx.dataAdapter(source);
-
-    $(gridID).jqxGrid({
-        source: adapter,
-        width: grid_width,
-        pagesizeoptions: ['5', '10', '20'],
-        pagesize: 5,
-        autoheight: true,
-        sortable: true,
-        altrows: true,
-        showemptyrow: false,
-        showheader: false,
-        showfilterrow: false,
-        filterable: false,
-        pageable: false,
-        theme: list_theme,
-        columns: [
-            {
-                datafield: "Name",
-                text: "Name"//,
-                //cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                //    return previewLinkRenderer('Artifact', data.ID, data.Url, data.Name);
-                //}
-            }//,
-            //{
-            //    datafield: "ID",
-            //    text: "",
-            //    width: '40px',
-            //    sortable: false,
-            //    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-            //        var tools = [
-            //            { icon: 'trash-o', urlprefix: '/form/RelatedArtifact/' + id + '/' + data.ID, context: 'action', method: 'DELETE' }
-            //        ];
-            //        return renderToolsHtml(value, tools, 'action');
-            //    }
-            //}
-        ]
-    });
-
-    //#endregion
-
-    //#region Textbox
-
-    var textDataSource = {
-        datatype: "json",
-        datafields: [
-            { name: 'ID' },
-            { name: 'Name' }
-        ],
-        url: '/api/tags/'
-    };
-    var textDataAdapter = new $.jqx.dataAdapter(textDataSource);
-
-    $(textID).jqxInput({ source: textDataAdapter, placeHolder: "Add a tag...", displayMember: "Name", valueMember: "ID", width: '100%', height: 25 });
-
-    //#endregion
-
-    //#region Events
-
-    //function commandExecuted(command) {
-    //    if (command == "TagAdded") {
-    //        $(gridID).jqxGrid('updatebounddata');
-    //        $(textID).jqxInput('val', '');
-    //    }
-    //    if (command == "TagDeleted") {
-    //        $(gridID).jqxGrid('updatebounddata');
-    //    }
-    //}
-
-    function pageResized() {
-        $(gridID).jqxGrid('refresh');
-    }
-
-    //function saveAction(data) {
-    //    try {
-    //        switch (data.context) {
-    //            case 'Tag':
-    //                $(gridID).jqxGrid('updatebounddata');
-    //                break;
-    //        }
-    //    } catch (e) {
-    //        logError("Parts.js : TagsTile : SaveAction", e);
-    //    }
-    //}
-
-    function textChange() {
-        var value = $(textID).val();
-        $.ajax({
-            url: tagApi,
-            dataType: 'json',
-            type: 'POST',
-            data: { Name: value }
-        }).done(function () {
-            $(gridID).jqxGrid('updatebounddata');
-            $(textID).jqxInput('val', '');
-        });
-    }
-
-    function textSelect(event) {
-        if (event.args) {
-            var item = event.args.item;
-            if (item) {
-                $.ajax({
-                    url: tagApi,
-                    dataType: 'json',
-                    type: 'PUT',
-                    data: { ID: item.value }
-                }).done(function () {
-                    $(gridID).jqxGrid('updatebounddata');
-                    $(textID).jqxInput('val', '');
-                });
-            }
-        }
-    }
-
-    function unsubscribe(data) {
-        source = null;
-        adapter = null;
-
-        //amplify.unsubscribe('CommandExecuted', commandExecuted);
-        amplify.unsubscribe("PageResized", pageResized);
-        $(textID).off('change', textChange);
-        $(textID).off('select', textSelect);
-        //amplify.unsubscribe("SaveAction", saveAction);
-        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
-    }
-
-    //amplify.subscribe("CommandExecuted", commandExecuted);
-    amplify.subscribe("PageResized", pageResized);
-    $(textID).on('change', textChange);
-    $(textID).on('select', textSelect);
-    //amplify.subscribe("SaveAction", saveAction);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 

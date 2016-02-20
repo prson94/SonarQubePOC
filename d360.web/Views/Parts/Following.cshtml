@@ -83,9 +83,7 @@
                      datafield: "CurrentScore",
                      text: "Score",
                      width: '60px',
-                     cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                         return currentScoreRenderer(value, data);
-                     }
+                     cellsrenderer: currentScoreRenderer
                  },
                  {
                      datafield: "ObjectID",

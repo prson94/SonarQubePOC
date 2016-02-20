@@ -51,6 +51,13 @@
             $('#SideIcons').PageTools('reload', 'Group',0,'list' );
         }
 
+        function onResize() {
+            var chartActualWidth = $("#ResponsibilityGrid").innerWidth();
+            $('#ResponsibilityGrid').jqxChart({ padding: { left: 5, top: 5, right: chartActualWidth / 2, bottom: 5 } });
+            $('#ResponsibilityGrid').jqxChart({ legendLayout: { left: chartActualWidth / 2, top: 70, width: 300, height: 200, flow: 'vertical' } });
+            $('#ResponsibilityGrid').jqxChart('refresh');
+        }
+
         function unsubscribe(data) {
             GroupsAdapter = null;
             GroupsSource = null;
@@ -68,6 +75,7 @@
             $('#PersonSearchResults').off('rowdoubleclick', personSearchResultsRowDoubleClick);
             $('#GroupSearchResults').off('rowdoubleclick', groupSearchResultsRowDoubleClick);
             amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
+            amplify.unsubscribe("PageResized", onResize);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
@@ -212,15 +220,15 @@
 
                 ResponsibilityAdapter = new $.jqx.dataAdapter(ResponsibilitySource);
 
+                var chartActualWidth = $("#ResponsibilityGrid").innerWidth();
                 $("#ResponsibilityGrid").jqxChart({
                     title: "",
                     description: "Select a slice below to view details.",
                     enableAnimations: true,
                     showLegend: true,
                     showBorderLine: false,
-                    padding: { left: 0, top: 25, right: 75, bottom: 0 },
-                    titlePadding: { left: 0, top: 0, right: 125, bottom: 0 },
-                    legendLayout: { left: 370, top: 75, width: 250, height: 200, flow: 'vertical' },
+                    legendLayout: { left: chartActualWidth/2, top: 70, width: 300, height: 200, flow: 'vertical' },
+                    padding: { left: 5, top: 5, right: chartActualWidth/2, bottom: 5 },
                     source: ResponsibilityAdapter,
                     colorScheme: chartDefaultTheme,
                     seriesGroups: [{
@@ -312,9 +320,9 @@
                         { name: 'ObjectID', type: 'number' },
                         { name: 'ObjectName', type: 'string' },
                         { name: 'ObjectTypeName', type: 'string' },
-                        { name: 'RedFlagged', type: 'boolean' },
+                        //{ name: 'RedFlagged', type: 'boolean' },
                         { name: 'ObjectUrl', type: 'string' },
-                        { name: 'ContextItems', type: 'string' },
+                        //{ name: 'ContextItems', type: 'string' },
                         { name: 'CurrentScore', type: 'number' }
                     ]
                 };
@@ -338,15 +346,15 @@
                         { datafield: "ObjectTypeName", text: "Type", width: '150px', columntype: 'dropdownlist', filtertype: 'checkedlist' },
                         {
                             datafield: "ObjectID",
-                            width: '300px',
+                            //width: '300px',
                             text: "Item",
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                                 return previewLinkRenderer(data.ObjectType, data.ObjectID, data.ObjectUrl, data.ObjectName);
                             }
                         },
-                        { datafield: "ContextItems", text: "Context" },
-                        { datafield: "RedFlagged", text: "Red-flagged", width: '125px', columntype: 'checkbox', filtertype: 'bool' }//,
-                        //{ datafield: "CurrentScore", text: "Score", cellsrenderer: currentScoreRenderer, width: '100px' }
+                        //{ datafield: "ContextItems", text: "Context" },
+                        //{ datafield: "RedFlagged", text: "Red-flagged", width: '125px', columntype: 'checkbox', filtertype: 'bool' }//,
+                        { datafield: "CurrentScore", text: "Score", cellsrenderer: currentScoreRenderer, width: '100px' }
                     ]
                 });
 
@@ -360,6 +368,7 @@
                 $('#GroupSearchResults').on('rowdoubleclick', groupSearchResultsRowDoubleClick);
                 amplify.subscribe("RefreshActionMenu", refreshActionMenu);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                amplify.subscribe("PageResized", onResize);
 
                 //#endregion
             });

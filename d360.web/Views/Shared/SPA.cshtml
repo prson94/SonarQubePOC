@@ -223,18 +223,18 @@
             workflow_item(this, new PageViewModel('Tasks', '', []), templatePath, contextList);
             workflow_item_status(this, new PageViewModel('Tasks', '', []), templatePath, contextList);
 
-            artifacts_list(this, new PageViewModel("@(Resources.PageInfo.Administration_Artifact_Title)", "@(Resources.PageInfo.Administration_Artifact_Description)", [{ Name: 'Glossary' }]), templatePath, contextList);
+            artifacts_list(this, new PageViewModel("@(Resources.PageInfo.Administration_Artifact_Title)", "@(Resources.PageInfo.Administration_Artifact_Description)", []), templatePath, contextList);
             artifacts_item(this, new PageViewModel("", "", [{ Name: "Glossary" }]), templatePath, contextList);
-            domains_list(this, new PageViewModel("@(Resources.PageInfo.Administration_DomainType_Title)", "@(Resources.PageInfo.Administration_DomainType_Description)", [{ Name: "Reference Data" }]), templatePath, contextList);
+            domains_list(this, new PageViewModel("@(Resources.PageInfo.Administration_DomainType_Title)", "@(Resources.PageInfo.Administration_DomainType_Description)", []), templatePath, contextList);
             fusion_list(this, new PageViewModel("", "", [{ Name: "Fusion" }]), templatePath, contextList);
             fusion_item(this, new PageViewModel("", "", [{ Name: "Fusion" }]), templatePath, contextList);
-            groups_list(this, new PageViewModel("@(Resources.PageInfo.People_Title)", "@(Resources.PageInfo.People_Description)", [{ Name: '@(Resources.PageInfo.People_Title)', Active: true }]), templatePath, contextList);
-            groups_item(this, new PageViewModel("@(Resources.PageInfo.Groups_Title)", "@(Resources.PageInfo.Groups_Description)", [{ Name: '@(Resources.PageInfo.Groups_Title)' }]), templatePath, contextList);
-            monitor_list(this, new PageViewModel("@(Resources.PageInfo.Monitor_Title)", "@(Resources.PageInfo.Monitor_Description)", [{ Name: '@(Resources.PageInfo.Monitor_Title)', Active: true }]), templatePath, contextList);
-            policies_list(this, new PageViewModel("@(Resources.PageInfo.Policies_Title)", "@(Resources.PageInfo.Policies_Description)", [{ Name: "@(Resources.PageInfo.Policies_Title)" }]), templatePath, contextList);
-            rules_list(this, new PageViewModel("@(Resources.PageInfo.Rules_Title)", "@(Resources.PageInfo.Rules_Description)", [{ Name: "@(Resources.PageInfo.Rules_Title)" }]), templatePath, contextList);
+            groups_list(this, new PageViewModel("@(Resources.PageInfo.People_Title)", "@(Resources.PageInfo.People_Description)", []), templatePath, contextList);
+            groups_item(this, new PageViewModel("@(Resources.PageInfo.Groups_Title)", "@(Resources.PageInfo.Groups_Description)", []), templatePath, contextList);
+            monitor_list(this, new PageViewModel("@(Resources.PageInfo.Monitor_Title)", "@(Resources.PageInfo.Monitor_Description)", []), templatePath, contextList);
+            policies_list(this, new PageViewModel("@(Resources.PageInfo.Policies_Title)", "@(Resources.PageInfo.Policies_Description)", []), templatePath, contextList);
+            rules_list(this, new PageViewModel("@(Resources.PageInfo.Rules_Title)", "@(Resources.PageInfo.Rules_Description)", []), templatePath, contextList);
             resources_item(this, new ResourcePageViewModel("", "", [{ Name: "@(Resources.PageInfo.People_Title)" }]), templatePath, contextList);
-            taxonomies_list(this, new PageViewModel("", "@(Resources.PageInfo.Taxonomies_Description)", [{ Name: "Models" }]), templatePath, contextList);
+            taxonomies_list(this, new PageViewModel("", "@(Resources.PageInfo.Taxonomies_Description)", []), templatePath, contextList);
 
             search(this, new PageViewModel("@(Resources.PageInfo.Search_Title)", "", [{ Name: '@(Resources.PageInfo.Search_Title)', Active: true }]), templatePath, contextList);
             home(this, new PageViewModel("@(Resources.PageInfo.Home_Title)", "@(Resources.PageInfo.Home_Description)", []), templatePath, contextList, @(CurrentResourceID));

@@ -9428,12 +9428,12 @@ order by	D.Name, I.Name";
             return list;
         }
 
-        public ActionResult AddPeopleResponsibility(SystemObjects type, int id)
+        public ActionResult AddResponsibility(SystemObjects type, int id)
         {
             var model = new PeopleResponsibilityEditorModel
             {
                 FormName = string.Format("Add Responsibility"),
-                FormUri = "/form/AddPeopleResponsibility",
+                FormUri = "/form/AddResponsibility",
                 FormMethod = "POST",
                 Contexts = getContextSelectList(),
                 FormDescription = "",
@@ -9442,12 +9442,12 @@ order by	D.Name, I.Name";
                 Responsibility = new Responsibility { ObjectType = type.ToString(), ObjectID = id, Visible = true }
             };
 
-            return PartialView("PeopleResponsibilityEditForm", model);
+            return PartialView("ResponsibilityEditForm", model);
         }
         
         [ValidateHttpAntiForgeryToken]
         [HttpPost]
-        public JsonResult AddPeopleResponsibility(FormCollection form)
+        public JsonResult AddResponsibility(FormCollection form)
         {
             try
             {
@@ -9527,7 +9527,7 @@ order by	D.Name, I.Name";
         }
 
 
-        public ActionResult EditPeopleResponsibility(int id)
+        public ActionResult EditResponsibility(int id)
         {
             var r = Company.GetById<Responsibility>(id, i => i.ResponsibilityType, i => i.ResponsibilityContextItems);
             if (r == null) return HttpNotFound();
@@ -9535,7 +9535,7 @@ order by	D.Name, I.Name";
             var model = new PeopleResponsibilityEditorModel
             {
                 FormName = "Edit Responsibility",
-                FormUri = "/form/EditPeopleResponsibility",
+                FormUri = "/form/EditResponsibility",
                 FormMethod = "PUT", 
                 Contexts = getContextSelectList(r.ResponsibilityContextItems.Select(i => i.ObjectID).ToList()),
                 FormDescription = "",
@@ -9544,11 +9544,11 @@ order by	D.Name, I.Name";
                 ResponsibilityTypes = getResponsibilityTypeSelectList((SystemObjects)Enum.Parse(typeof(SystemObjects), r.ObjectType), r.ObjectID, ResponsibilityTypeGroup.People, r.ResponsibilityTypeID)
             };
 
-            return PartialView("PeopleResponsibilityEditForm", model);
+            return PartialView("ResponsibilityEditForm", model);
         }
 
         [HttpPut]
-        public JsonResult EditPeopleResponsibility(FormCollection form)
+        public JsonResult EditResponsibility(FormCollection form)
         {
             try
             {

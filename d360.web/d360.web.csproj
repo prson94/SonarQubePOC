@@ -950,7 +950,6 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Views\Parts\AuditGrid.cshtml" />
-    <Content Include="Views\Parts\GovernanceGrid.cshtml" />
     <Content Include="Views\Parts\Board.cshtml" />
     <Content Include="Views\Parts\Detail.cshtml" />
     <Content Include="Views\Parts\SurveyReport.cshtml" />
@@ -963,7 +962,6 @@
     <Content Include="Views\Parts\Groups.cshtml" />
     <Content Include="Views\Parts\Members.cshtml" />
     <Content Include="Views\Parts\Ownership.cshtml" />
-    <Content Include="Views\Parts\Assignments.cshtml" />
     <Content Include="Views\Shared\EditableForm.cshtml" />
     <Content Include="Views\Parts\Resolutions.cshtml" />
     <Content Include="Views\Resources\_ResponseTypeOptions.cshtml" />
@@ -982,7 +980,6 @@
     <Content Include="Views\Parts\ResponsibilityTypeClaimGrid.cshtml" />
     <Content Include="Views\Parts\ResponsibilityTypeObjectClaimGrid.cshtml" />
     <Content Include="Views\Relations\AddRelationship.cshtml" />
-    <Content Include="Views\Parts\SourcingGrid.cshtml" />
     <Content Include="Views\Parts\ResponsibilityTypeUsageGrid.cshtml" />
     <Content Include="Views\Relations\EditRelationship.cshtml" />
     <Content Include="Views\Parts\DetailWithSynonyms.cshtml" />
@@ -996,7 +993,6 @@
     <Content Include="Views\Form\AddLoad.cshtml" />
     <Content Include="Views\Overlays\TaxonomyTypeDiagram_Catalog.cshtml" />
     <Content Include="Views\Form\EditorTemplates\LoadTypeRuleEditorModel.cshtml" />
-    <Content Include="Views\Form\EditLoadTypeRule.cshtml" />
     <Content Include="Views\Form\EditorTemplates\ClaimsMatrixEditorModel.cshtml" />
     <Content Include="Views\Form\AddResponsibilityTypeClaims.cshtml" />
     <Content Include="Views\Form\EditResponsibilityTypeClaims.cshtml" />
@@ -1025,7 +1021,7 @@
     <Content Include="Views\Shared\Apps.cshtml" />
     <Content Include="Views\Shared\FormHeader.cshtml" />
     <Content Include="Views\Form\ArtifactTypeEditForm.cshtml" />
-    <Content Include="Views\Form\PeopleResponsibilityEditForm.cshtml" />
+    <Content Include="Views\Form\ResponsibilityEditForm.cshtml" />
     <Content Include="Views\Overlays\ArtifactListMetricsDashboard.cshtml" />
     <Content Include="Views\Overlays\AttributeTypeCategories.cshtml" />
     <Content Include="Views\Overlays\ResponsibilityTypeHierarchies.cshtml" />

@@ -15,23 +15,23 @@ namespace d360.core.entities.Views
         [DataMember, Key, Column(Order = 2)]
         public int AssigningItemID { get; set; }
 
-        [DataMember]
-        public string AssigningItemName { get; set; }
+        //[DataMember]
+        //public string AssigningItemName { get; set; }
 
-        [DataMember]
-        public string AssigningItemUrl { get; set; }
+        //[DataMember]
+        //public string AssigningItemUrl { get; set; }
 
-        [DataMember]
-        public string AssigningTypeName { get; set; }
+        //[DataMember]
+        //public string AssigningTypeName { get; set; }
 
-        [DataMember]
-        public string AssigningIconBackColor { get; set; }
+        //[DataMember]
+        //public string AssigningIconBackColor { get; set; }
 
-        [DataMember]
-        public string AssigningIconForeColor { get; set; }
+        //[DataMember]
+        //public string AssigningIconForeColor { get; set; }
 
-        [DataMember]
-        public string AssigningIconText { get; set; }
+        //[DataMember]
+        //public string AssigningIconText { get; set; }
         
         [DataMember, Key, Column(Order = 3)]
         public int ResponsibilityID { get; set; }

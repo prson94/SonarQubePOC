@@ -37,8 +37,7 @@
                 { name: 'ObjectName' },
                 { name: 'FromGroup' },
                 { name: 'Role' },
-                { name: 'CurrentScore' }//,
-                //{ name: 'RedFlagged' }
+                { name: 'CurrentScore' }
             ],
             datatype: "json",
             async: false,
@@ -77,20 +76,8 @@
                     datafield: "CurrentScore", 
                     text: "Score", 
                     width: '60px', 
-                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                        return currentScoreRenderer(value, data);
-                    } 
-                }//,
-                //{ 
-                //    datafield: "RedFlagged", 
-                //    text: "", 
-                //    width: '30px', 
-                //    filterable: false, 
-                //    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                //        return redFlaggedRenderer(data, true);
-                //    }, 
-                //    hidden: !IsAdmin 
-                //}
+                    cellsrenderer: currentScoreRenderer 
+                }
             ]
         });
 

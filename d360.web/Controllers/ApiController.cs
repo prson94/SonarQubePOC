@@ -1998,39 +1998,18 @@ where   I.FusionAttributePromotionRuleID = @id
 
         #region Groups
 
-        //[HttpGet, Route("groups")]
-        //public IQueryable<Group> GetGroups()
-        //{
-        //    return Company.Table<Group>().OrderBy(i => i.Name).AsQueryable();
-        //}
-
         [HttpGet, Route("groups")]
         public IQueryable<GroupSearchResultModel> GetGroups()
         {
-            //if (!string.IsNullOrEmpty(search))
-            //{
-            //    search = search.Trim().ToLower();
-            //    return Company.Filter<Group>(i => i.Name.Trim().ToLower().StartsWith(search))
-            //            .OrderBy(i => i.Name)
-            //            .Select(i => new GroupSearchResultModel  { 
-            //                ID = i.ID, 
-            //                Name = i.Name, 
-            //                NumberOfMembers = i.ResourceGroups.Count, 
-            //                IsMember = i.ResourceGroups.Any(r => r.ResourceID == Company.CurrentResourceID) 
-            //            });
-            //}
-            //else
-            //{
-                return Company.Table<Group>()
-                        .OrderBy(i => i.Name)
-                        .Select(i => new GroupSearchResultModel
-                        {
-                            ID = i.ID,
-                            Name = i.Name,
-                            NumberOfMembers = i.ResourceGroups.Count,
-                            IsMember = i.ResourceGroups.Any(r => r.ResourceID == Company.CurrentResourceID)
-                        });
-            //}
+            return Company.Table<Group>()
+                .OrderBy(i => i.Name)
+                .Select(i => new GroupSearchResultModel
+                {
+                    ID = i.ID,
+                    Name = i.Name,
+                    NumberOfMembers = i.ResourceGroups.Count,
+                    IsMember = i.ResourceGroups.Any(r => r.ResourceID == Company.CurrentResourceID)
+                });
         }
 
         [Route("groups/{id:int}")]

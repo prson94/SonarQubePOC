@@ -46,9 +46,6 @@ namespace d360.core.entities.Views
         [DataMember]
         public double? CurrentScore { get; set; }
 
-        [DataMember]
-        public bool RedFlagged { get; set; }
-
         #endregion
     }
 }

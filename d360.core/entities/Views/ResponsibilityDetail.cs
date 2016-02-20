@@ -18,9 +18,6 @@ namespace d360.core.entities.Views
         public string PrimaryOwnerResourceUrl { get; set; }
 
         [DataMember]
-        public bool RedFlagged { get; set; }
-
-        [DataMember]
         public int ObjectTypeID { get; set; }
     }
 }

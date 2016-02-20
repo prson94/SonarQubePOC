@@ -268,7 +268,7 @@ var textrenderer = function (value) {
     return html;
 }
 
-var currentScoreRenderer = function (value, data) {
+var currentScoreRenderer = function (index, datafield, value, defaultvalue, column, data) {
     if (value != '') {
         var className = "Score";
         if (value <= .60) {
