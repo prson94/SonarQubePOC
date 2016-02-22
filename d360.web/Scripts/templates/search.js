@@ -63,14 +63,12 @@ function search(app, pageViewModel, templatePath, contextList) {
         function resultSelect(e) {            
             $('#ContentHeader').show();
             var el = $(e.target).closest('a');            
-            console.log(el.attr('data-url'));
             document.location.href = el.attr('data-url');
         }
 
         function unsubscribe(data) {
             searchVm = null;
             $('#ContentHeader').show();
-
             $("#SearchString").off('keypress', searchStringKeyPress);
             $('#SearchResults').off('click', '.search-result-link', resultSelect);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
@@ -207,9 +205,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                     pageSizeOptions: ['10', '20', '50'],
                     enableHover: false,
                     columns: [
-                        { text: ' ', dataField: 'Merged', width: '92%'},
-                        { text: 'Rank', dataField: 'NormalizedScore', width: '7%', cellsformat: 'p2', cellClassName: 'search-score-cell' },
-                        
+                        { text: ' ', dataField: 'Merged', width: '100%'}                        
                     ]
                 });
 
