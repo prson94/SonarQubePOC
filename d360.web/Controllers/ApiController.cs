@@ -23,6 +23,7 @@ using d360.workflow;
 using System.Runtime.Serialization;
 using d360.web.Models.Attributes;
 using System.Dynamic;
+using System.Web;
 
 namespace d360.web.Controllers
 {
@@ -1490,7 +1491,7 @@ select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]
             breadcrumbItems.ForEach(b =>
             {
                 breadcrumbs.Add(new BreadcrumbItem { Name = pluralize.Pluralize((string)b.TypeName), Url = (string)b.TypeUrl });
-                breadcrumbs.Add(new BreadcrumbItem { Name = (string)b.Name, Url = (string)b.Url });
+                breadcrumbs.Add(new BreadcrumbItem { Name = HttpUtility.HtmlDecode((string)b.Name), Url = (string)b.Url });
             });
             pluralize = null;
 
