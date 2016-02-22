@@ -231,7 +231,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                     pageSizeOptions: ['10', '20', '50'],
                     enableHover: false,
                     columns: [
-                        { text: ' ', dataField: 'Merged', width: '100%'}                        
+                        { text: ' ', dataField: 'Merged', width: '99%'}                        
                     ]
                 });
 
