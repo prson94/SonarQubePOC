@@ -959,11 +959,24 @@
 <script id="searchResultsCategoryTmpl" type="text/html">
     <div class="row">        
         <div class="col l10 m10 s11 entry">
+            <i class="search-category-type-group fa" data-bind="click: toggleVisibility,visible: showToggle,css: {'fa-angle-right' : showRow, 'fa-angle-down' : !showRow()}"></i>            
+            <a href="#" class="search-type-link" data-bind="attr: {'data-category-type': Name, 'title':DisplayName}, text: DisplayName"></a>            
+        </div>
+        <div class="col l2 m2 s1">
+            <span data-bind="text: ResultCount > 0 ? ResultCount.toLocaleString() : ''" style="float:right"></span>
+        </div>                 
+    </div>
+    <div data-bind="template: {name: 'searchResultsCategoryItemTmpl', foreach: Categories },visible: showRow"></div>
+</script>
+
+<script id="searchResultsCategoryItemTmpl" type="text/html">
+    <div class="row">
+        <div class="col l10 m10 s11 entry">            
             <a href="#" class="search-category-link" data-bind="attr: {'data-category': Name, 'title':Name}, text: Name"></a>
         </div>
         <div class="col l2 m2 s1">
             <span data-bind="text: ResultCount > 0 ? ResultCount.toLocaleString() : ''" style="float:right"></span>
-        </div>         
+        </div>
     </div>
 </script>
 

@@ -3,15 +3,21 @@ function SearchResultCategory(data) {
     var self = this;
     data = data || {};
     self.Name = data.Name;
+    self.DisplayName = data.DisplayName;
     self.ResultCount = data.ResultCount;
+    self.Categories = data.Categories;
+    self.showRow = ko.observable(data.Name == 'Artifact'? true : false);
+    self.toggleVisibility = function () {
+        self.showRow(!self.showRow());        
+    };
+    self.showToggle = data.Categories != null;
 }
 
 function SearchViewModel() {
     var self = this;
     self.categories = ko.observableArray();
     self.results = ko.observableArray();
-    self.elapsedTime = ko.observable();
-        
+    self.elapsedTime = ko.observable();    
     return self;
 }
 
@@ -29,11 +35,22 @@ function search(app, pageViewModel, templatePath, contextList) {
         var searchSource;
         var loadCategories;
 
+        var showOnlyRelevantType = function (categoryType, e) {
+            $('#CategoryResults a').removeClass('selected');
+            $(e.target).addClass('selected');
+
+            var searchSource = getSource(phrase, '', categoryType == 'All' ? '' : categoryType);
+
+            var dataAdapter = getDataAdapter(searchSource);
+
+            $('#SearchResults').jqxDataTable({ source: dataAdapter });
+        }
+
         var showOnlyRelevantCategory = function (category,e) {
             $('#CategoryResults a').removeClass('selected');
             $(e.target).addClass('selected');
                         
-            var searchSource = getSource(phrase, category == 'All' ? '':category);
+            var searchSource = getSource(phrase, category, '');
 
             var dataAdapter = getDataAdapter(searchSource);
 
@@ -49,7 +66,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                 $('#SearchResults').show();
                 loadCategories = true;
                 
-                var searchSource = getSource(phrase,'');
+                var searchSource = getSource(phrase,'','');
                 
                 var dataAdapter = getDataAdapter(searchSource);
 
@@ -70,13 +87,13 @@ function search(app, pageViewModel, templatePath, contextList) {
             searchVm = null;
             $('#ContentHeader').show();
             $("#SearchString").off('keypress', searchStringKeyPress);
-            $('#SearchResults').off('click', '.search-result-link', resultSelect);
+            $('#SearchResults').off('click', '.search-result-link', resultSelect);        
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
         //#endregion
 
-        function getSource(term, selGroup) {
+        function getSource(term, selGroup, selType) {
             return {
                 datatype: "json",
                 datafields: [
@@ -92,7 +109,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                 type: 'POST',
                 dataType: 'json',
                 url: '/search/results',
-                data: { search: term, from: 0, size: 10, group: selGroup },
+                data: { search: term, from: 0, size: 10, group: selGroup, type: selType },
                 id: 'ID',
                 sortcolumn: 'NormalizedScore',
                 sortdirection: 'desc',
@@ -128,7 +145,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                                 msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
                                 searchVm.elapsedTime(msg);
 
-                                data.Categories.unshift({ Name: 'All', ResultCount: data.Result.Matches });
+                                data.Categories.unshift({ Name: 'All', ResultCount: data.Result.Matches, DisplayName: 'All' });
                                 var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
                                 searchVm.categories(cats);
 
@@ -136,9 +153,17 @@ function search(app, pageViewModel, templatePath, contextList) {
                                     $(this).click(function (e) {
                                         var c = $(this).data("category");
                                         showOnlyRelevantCategory(c, e);
-                                    });
-                                    if ($(this).data("category") == "All") $(this).addClass('selected');
+                                    });                                    
                                 });
+
+                                $('.search-type-link').each(function () {
+                                    $(this).click(function (e) {
+                                        var c = $(this).data("category-type");
+                                        showOnlyRelevantType(c, e);
+                                    });
+                                    if ($(this).data("category-type") == "All") $(this).addClass('selected');
+                                });
+
                                 loadCategories = false;
                             }
                         },
@@ -186,10 +211,11 @@ function search(app, pageViewModel, templatePath, contextList) {
 
                 $('#SearchResults').on('click', '.search-result-link', resultSelect);
 
+                
                 //#endregion
                 phrase = $("#SearchString").val();
                              
-                var source = getSource(phrase, '');
+                var source = getSource(phrase, '','');
 
                 var dataAdapter = getDataAdapter(source);
                                 

@@ -75,10 +75,10 @@ namespace d360.web.Models
         public SearchResultsViewModel()
         {
             Result = new IndexResults();
-            Categories = new List<IndexCategory>();            
+            Categories = new List<IndexTypeList>();            
         }
 
         public IndexResults Result { get; set; }
-        public List<IndexCategory> Categories { get; set; }        
+        public List<IndexTypeList> Categories { get; set; }        
     }
 }

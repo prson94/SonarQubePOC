@@ -10,6 +10,21 @@ namespace d360.extensions
 {
     #region Extensions Models
 
+    public class IndexTypeList
+    {
+
+        public IndexTypeList()
+        {
+            Categories = new List<IndexCategory>();
+        }
+
+        public string Name { get; set; }
+        public string DisplayName { get; set; }
+        public int ResultCount { get; set; }
+
+        public List<IndexCategory> Categories { get; set; }
+    }
+
     public class IndexCategory
     {
         public string Name { get; set; }
@@ -106,7 +121,7 @@ namespace d360.extensions
         /// <param name="from">Start at result</param>
         /// <returns>A list of search results.</returns>
         /// <exception cref="SearchResultsException"></exception>
-        IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexCategory> categories, string group = "");
+        IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "");
 
 
         IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "");

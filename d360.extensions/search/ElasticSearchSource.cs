@@ -50,7 +50,7 @@ namespace d360.extensions.search
 
     public class SearchAggregationsModel
     {
-        public SearchAggregationTypeModel types { get; set; }
+        public SearchAggregationTypeModel all_types { get; set; }
     }
 
     public class SearchAggregationTypeModel
@@ -61,8 +61,20 @@ namespace d360.extensions.search
     public class SearchAggregationTypeBucketModel
     {
         public int doc_count { get; set; }
-        public string Key { get; set; }
+        public string key { get; set; }
+        public SearchAggregationCategoryTypeModel category {get; set;}        
     }
+
+    public class SearchAggregationCategoryTypeModel {
+        public List<SearchAggregationCategoryBucketModel> buckets { get; set; }
+    }
+
+    public class SearchAggregationCategoryBucketModel
+    {
+        public int doc_count { get; set; }
+        public string key { get; set; }
+    }
+
 
     public class SearchResultsHitModel
     {
@@ -319,13 +331,15 @@ namespace d360.extensions.search
         /// <param name="resourceID"></param>
         /// <param name="phrase"></param>
         /// <returns></returns>
-        public IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexCategory> categories, string group = "")
+        public IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "")
         {
             IndexResults result = new IndexResults();
 
             createIndexIfNotExists(companyID);
-            
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/_search", companyID);
+
+            var searchType = type != null ? type + "/" : null;
+
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/{searchType}_search", companyID);
 
             StringBuilder sb = new StringBuilder();
 
@@ -344,8 +358,8 @@ namespace d360.extensions.search
 
             // if no group filter then we need to get list of categories
             if (string.IsNullOrEmpty(group))
-            {
-                sb.Append(",\"aggs\" : { \"types\" : { \"terms\" : { \"field\" : \"Type.raw\",\"size\": 0 } } }");
+            {                
+                sb.Append(",\"aggs\" : { \"all_types\": {\"terms\": {\"field\": \"_type\"},\"aggs\": {\"category\": {\"terms\": {\"field\": \"Type.raw\",\"size\": 0}}}}}");
             }
 
             //turn on highlighting
@@ -375,13 +389,19 @@ namespace d360.extensions.search
                 }).ToList();
 
 
-            if (searchResults.aggregations != null && searchResults.aggregations.types != null && searchResults.aggregations.types.buckets != null)
+            if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
             {
-                categories.AddRange(searchResults.aggregations.types.buckets.Select(h => new IndexCategory
+                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
                 {
-                    Name = h.Key,
-                    ResultCount = h.doc_count
-                }).OrderBy(x =>x.Name));
+                    Name = h.key,
+                    DisplayName = mapTypeToFriendlyName(h.key),
+                    ResultCount = h.doc_count,
+                    Categories = h.category != null ? h.category.buckets.Select(c => new IndexCategory
+                    {
+                        Name = c.key,
+                        ResultCount = c.doc_count
+                    }).OrderBy(x =>x.Name).ToList() : null
+                }).OrderBy(x =>x.DisplayName));
             }
             
             result.ElapsedMS = searchResults.took;
@@ -390,6 +410,28 @@ namespace d360.extensions.search
                 result.Matches = searchResults.hits.total;
 
             return result;
+        }
+
+        private string mapTypeToFriendlyName(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return string.Empty;
+
+            var temp = key.Trim().ToUpper();
+
+            switch (temp)
+            {
+                case "FUSIONATTRIBUTES":
+                    return "Fusion";
+                case "ARTIFACT":
+                    return "Glossary";
+                case "TAXONOMY":
+                    return "Model";
+                case "DOMAIN":
+                    return "Reference";
+                default:
+                    return key;
+            }
+
         }
 
         /// <summary>
