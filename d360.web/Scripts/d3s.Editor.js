@@ -783,7 +783,8 @@
 
                                 addLabel(cpnl, v, false);
 
-                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" value="' + cleanedValue + '" />');
+                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" />');
+                                fld.val(cleanedValue)
                                 fld.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
                                 addValidator(v, validatorRules);
 

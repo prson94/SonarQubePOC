@@ -292,7 +292,7 @@ namespace d360.web.Controllers
             return list;
         }
 
-        List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldTypeWithRelation> fieldTypes, List<FieldWithRelation> fields, int startRow = 10)
+        List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldTypeWithRelation> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false)
         {
             var row = startRow;
 
@@ -373,7 +373,7 @@ namespace d360.web.Controllers
                 }
                 fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
                 /* Boolean, Date, DateTime, Decimal, Integer, String */
-                if (f != null) fld.Value = f.Value;
+                if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
                 list.Add(fld);
 
                 row++;
@@ -643,7 +643,7 @@ namespace d360.web.Controllers
             if (!workflowEnabled)
                 list = loadStatusField(list, SystemObjects.Artifact, a.Status, 4, 1);
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, a.ArtifactTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 5);
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, a.ArtifactTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 5, true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -741,7 +741,7 @@ namespace d360.web.Controllers
                 // Static fields
                 model.ArtifactTypeID = typeID;
                 model.TaxonomyTypeID = taxonomyTypeID;
-                model.Name = parseTextField(form, "Name");
+                model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.Status = (workflowEnabled) ? "Draft" : form["Status"];
 
@@ -858,7 +858,7 @@ namespace d360.web.Controllers
 
 
                 // Static fields
-                if (!isPromoted) model.Name = parseTextField(form, "Name", null, true);
+                if (!isPromoted) model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.TaxonomyTypeID = parseIntField(form, "TaxonomyTypeID");
                 if (!workflowEnabled) model.Status = form["Status"];

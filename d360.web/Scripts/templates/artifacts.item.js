@@ -28,7 +28,7 @@
 
             pageViewModel.ObjectType = 'Artifact';
             pageViewModel.ObjectID = id;
-            pageViewModel.Title = json.Name;
+            pageViewModel.Title = $('<div/>').html(json.Name).text();
             pageViewModel.Type = json.TypeName;
             pageViewModel.Status = "<h4>Status: <b style='color:" + getArtifactStatusForeColor(json.Status) + "'>" + json.Status + "</b></h4>";
             pageViewModel.breadcrumbs = json.Breadcrumbs;

@@ -263,6 +263,11 @@ var previewLinkRenderer = function (type, id, uri, name) {
     return "<div style='padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 7px;'><a data-context='Preview' data-type='" + type + "' data-id='" + id + "' href='" + uri + "'>" + name + "</a></div>";
 }
 
+var escapedHtmlRenderer = function (value) {
+    var encodedValue = $('<div/>').text(value).html();                                    
+    return "<div style=\"overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;\">" + encodedValue + "</div>";
+}
+
 var textrenderer = function (value) {
     var html = "<span style='margin: 4px; float: left;'>" + value + "</span>";
     return html;
