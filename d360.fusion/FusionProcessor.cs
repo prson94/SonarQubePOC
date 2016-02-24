@@ -1369,6 +1369,8 @@ namespace d360.fusion
 
         private void RemoveRelationSpaces(FusionRelationshipModels relationships)
         {
+            HashSet<string> existingRelations = new HashSet<string>();
+
             for (int i = relationships.Count - 1; i >= 0; i--)                
             {
                 relationships[i].EndID = relationships[i].EndID.Replace(" ", string.Empty).ToUpper();
@@ -1400,6 +1402,19 @@ namespace d360.fusion
 
                     continue;
                 }
+
+                var relKey = $"{relationships[i].EndID}-{relationships[i].StartID}";
+
+                if(existingRelations.Contains(relKey))
+                {
+                    Trace.TraceWarning("FUSION PROCESSING FOUND A DUPLICATE RELATION.  START ID:[{0}] END ID:[{1}] - IGNORING", relationships[i].StartID, relationships[i].EndID);
+
+                    relationships.RemoveAt(i);
+
+                    continue;
+                }
+
+                existingRelations.Add(relKey);
             }
         }
 
