@@ -332,20 +332,13 @@ namespace d360.fusion
             //TODO : remove queueID from fusion.execution table or make it nullable.
             //insert a record into the fusion execution table that logs the start of this execution
             //insert into fusion.execution (queueID,fusionID,RawLogFileName,DateStarted)
-            /*var result = await companyConnection.QueryAsync<int>(@"
+            var result = await companyConnection.QueryAsync<int>(@"
                     insert 
                         into [fusion].[execution] ([queueID],[fusionID],[RawLogFileName],[DateStarted],[Version])
                         values('F4EEC459-9DEF-4A3D-BDCA-EC34849CAE08',@inFusionID,@log,@started,@ver);
                         SELECT CAST(SCOPE_IDENTITY() as int)
-            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow,ver =version }, commandTimeout:ReadQueryTimeout);*/
-
-            var result = await companyConnection.QueryAsync<int>(@"
-                    insert 
-                        into [fusion].[execution] ([queueID],[fusionID],[RawLogFileName],[DateStarted])
-                        values('F4EEC459-9DEF-4A3D-BDCA-EC34849CAE08',@inFusionID,@log,@started);
-                        SELECT CAST(SCOPE_IDENTITY() as int)
-            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow }, commandTimeout: ReadQueryTimeout);
-
+            ", new { inFusionID = FusionID, log = LogFileName, started = DateTime.UtcNow,ver =version }, commandTimeout:ReadQueryTimeout);
+            
             return result.FirstOrDefault();
         }
 
