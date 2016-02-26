@@ -281,6 +281,15 @@
             }
         });
 
+        $(document).ajaxError(function (xhr, props) {
+            if (props.status === 401) {
+                console.log("ajaxError raised status = 401 reloading page.");
+                setTimeout(function () {
+                    location.reload()
+                }, 100);
+            }
+        });
+
         //$.connection.hub.logging = false;
         //var SocialHub = $.connection.socialHub;
 
