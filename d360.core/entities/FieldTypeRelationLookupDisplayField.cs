@@ -5,10 +5,10 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class FieldTypeFusionLookupDisplayField : BaseIntObject, IIntObject
+    public class FieldTypeRelationLookupDisplayField : BaseIntObject, IIntObject
     {
         [DataMember]
-        public int FieldTypeFusionLookupDefinitionID { get; set; }
+        public int FieldTypeRelationLookupDefinitionID { get; set; }
 
         [DataMember]        
         public int FieldTypeID { get; set; }
@@ -16,7 +16,7 @@ namespace d360.core.entities
         [DataMember]
         public string FieldTypeName { get; set; }
 
-        [IgnoreDataMember, ForeignKey("FieldTypeFusionLookupDefinitionID")]
-        public virtual FieldTypeFusionLookupDefinition FieldTypeFusionLookupDefinition { get; set; }
+        [IgnoreDataMember, ForeignKey("FieldTypeRelationLookupDefinitionID")]
+        public virtual FieldTypeRelationLookupDefinition FieldTypeRelationLookupDefinition { get; set; }
     }
 }

@@ -516,16 +516,19 @@
 
                                 fld = $('<div id="' + v.FieldName + '" name="' + v.FieldName + '"></div>');
                                 var date = new Date();
+
+                                fld.jqxDateTimeInput({ disabled: v.ReadOnly, theme: theme, formatString: 'd', showCalendarButton: true, height: field_height, value: null });
+
                                 if (cleanedValue != '') {
                                     if (moment(cleanedValue).isValid()) {
                                         date = moment(cleanedValue);
+                                        fld.jqxDateTimeInput('setDate', date.toDate());
                                     }
                                 }
-                                else {
-                                    date = moment();
-                                }
-                                fld.jqxDateTimeInput({ disabled: v.ReadOnly, theme: theme, formatString: 'd', showCalendarButton: true, height: field_height });
-                                fld.jqxDateTimeInput('setDate', date.toDate());
+                                //else {
+                                //    date = null;
+                                //}
+                                
                                 addValidator(v, validatorRules);
 
                                 cpnl.append(fld);

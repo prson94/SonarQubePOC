@@ -230,8 +230,14 @@
                 var data = node.data;
 
                 $('#Hierarchy_info').jqxExpander('expand');
+                var detailUrl = '/resources/Taxonomy/' + data.key + '/templates/tooltip/Preview';
+
+                if (data.key == 0) {
+                    detailUrl = '/resources/TaxonomyType/' + id + '/templates/tooltip/Preview';
+                }
+
                 $.ajax({
-                    url: '/resources/Taxonomy/' + data.key + '/templates/tooltip/Preview',
+                    url: detailUrl,
                     data: null,
                     success: function (html) {
                         $('#Hierarchy_info_body').html(html);

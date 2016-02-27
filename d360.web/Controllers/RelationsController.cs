@@ -11,6 +11,8 @@ using System.Xml.Linq;
 using Resources;
 using d360.web.Filters;
 using d360.core.exceptions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Controllers
 {
@@ -1113,6 +1115,93 @@ from	Relationship R
 										and S.TargetObjectType = @tType 
 										and S.TargetObjectID = @tID";
                 return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType, sID, tType, tID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
+            }
+        }
+
+        JArray convertList(JToken i)
+        {
+            if (i == null)
+            {
+                return null;
+            }
+            else
+            {
+                if (i is JArray)
+                {
+                    return (JArray)i;
+                }
+                else
+                {
+                    return new JArray(i);
+                }
+            }
+        }
+
+        [HttpGet, Route("{type}/{id:int}/RelationshipTypeTree.json")]
+        public JsonNetResult RelationshipTypeTree(SystemObjects type, int id)
+        {
+            var sql = $@"
+select	IntersectTypeID,
+		TargetObjectType,
+		TargetObjectID,
+		OD.TextPath,
+        1 as [Level],
+		(
+		select	    IntersectTypeID,
+				    TargetObjectType,
+				    TargetObjectID,
+				    ID.TextPath,
+                    2 as [Level]
+		from	    [utility].[RelationshipTypes] I
+				    inner join cache.ObjectDetails ID on ID.[Object] = I.TargetObjectType and ID.ObjectID = I.TargetObjectID
+		where	    SourceObjectType = 'IntersectType' and SourceObjectID = O.IntersectTypeID
+        order by    ID.TextPath
+		for         xml path('relationships'), TYPE
+		),
+		(
+		select	    P.*
+		from	    IntersectTypePredicate IP
+				    inner join Predicate P on P.ID = IP.PredicateID and IP.IntersectTypeID = O.IntersectTypeID
+		order by    P.Name
+        for         xml path('predicates'), TYPE
+		)
+from	    [utility].[RelationshipTypes] O
+		    inner join cache.ObjectDetails OD on OD.[Object] = O.TargetObjectType and OD.ObjectID = O.TargetObjectID 
+where	    SourceObjectType = @type and SourceObjectID = @id
+order by    OD.TextPath
+for		    xml path('relationship'), root('item')
+";
+            var xmls = Company.Query<string>(sql, new { type = type.ToString(), id }).ToList();
+            var xml = string.Join<string>("", xmls);
+            //var doc = XElement.Parse(xml);
+            //var obj = JObject.Parse(JsonConvert.SerializeXNode(XElement.Parse(xml)));
+            if (string.IsNullOrEmpty(xml))
+            {
+                return new JsonNetResult { Data = JArray.Parse("[]"), Formatting = Formatting.None };
+            }
+            else
+            {
+                try
+                {
+                    var rels = JObject.Parse(JsonConvert.SerializeXNode(XElement.Parse(xml)))["item"]["relationship"].Children().Select(i => new {
+                        IntersectTypeID = i["IntersectTypeID"].Value<int>(),
+                        TargetObjectType = i["TargetObjectType"],
+                        TargetObjectID = i["TargetObjectID"].Value<int>(),
+                        TextPath = i["TextPath"],
+                        Level = i["Level"].Value<int>(),
+                        relationships = convertList(i["relationships"]),
+                        predicates = convertList(i["predicates"])
+                    });
+                    return new JsonNetResult
+                    {
+                        Data = rels,//.SelectTokens("item.relationship"), //The SelectTokens method adds an extra [] hierarchy at the top. 
+                        Formatting = Formatting.None
+                    };
+                }
+                catch
+                {
+                    return new JsonNetResult { Data = JArray.Parse("[]"), Formatting = Formatting.None };
+                }
             }
         }
 

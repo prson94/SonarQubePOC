@@ -455,7 +455,7 @@ namespace d360.web.Models
         public List<string> MultipleValues { get; set; }
 
         [DataMember]
-        public string FusionLookupGridUrl { get; set; }
+        public string LookupGridUrl { get; set; }
 
         [DataMember]
         public int? Row { get; set; }

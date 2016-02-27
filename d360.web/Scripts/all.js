@@ -34081,6 +34081,11 @@ var previewLinkRenderer = function (type, id, uri, name) {
     return "<div style='padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 7px;'><a data-context='Preview' data-type='" + type + "' data-id='" + id + "' href='" + uri + "'>" + name + "</a></div>";
 }
 
+var escapedHtmlRenderer = function (value) {
+    var encodedValue = $('<div/>').text(value).html();                                    
+    return "<div style=\"overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;\">" + encodedValue + "</div>";
+}
+
 var textrenderer = function (value) {
     var html = "<span style='margin: 4px; float: left;'>" + value + "</span>";
     return html;
@@ -34929,16 +34934,19 @@ function ClickGridTool(event) {
 
                                 fld = $('<div id="' + v.FieldName + '" name="' + v.FieldName + '"></div>');
                                 var date = new Date();
+
+                                fld.jqxDateTimeInput({ disabled: v.ReadOnly, theme: theme, formatString: 'd', showCalendarButton: true, height: field_height, value: null });
+
                                 if (cleanedValue != '') {
                                     if (moment(cleanedValue).isValid()) {
                                         date = moment(cleanedValue);
+                                        fld.jqxDateTimeInput('setDate', date.toDate());
                                     }
                                 }
-                                else {
-                                    date = moment();
-                                }
-                                fld.jqxDateTimeInput({ disabled: v.ReadOnly, theme: theme, formatString: 'd', showCalendarButton: true, height: field_height });
-                                fld.jqxDateTimeInput('setDate', date.toDate());
+                                //else {
+                                //    date = null;
+                                //}
+                                
                                 addValidator(v, validatorRules);
 
                                 cpnl.append(fld);
@@ -35196,7 +35204,8 @@ function ClickGridTool(event) {
 
                                 addLabel(cpnl, v, false);
 
-                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" value="' + cleanedValue + '" />');
+                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" />');
+                                fld.val(cleanedValue)
                                 fld.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
                                 addValidator(v, validatorRules);
 
@@ -36818,35 +36827,44 @@ function ObjectDetail(controlID, type, id) {
                 "' data-id='" + f.TooltipID + "'>" +
                 f.Value + "</a>");
         }
-        else if (f.FusionLookupGridUrl) {
-            $.getJSON(f.FusionLookupGridUrl, function (data) {
+        else if (f.LookupGridUrl) {
+            $.getJSON(f.LookupGridUrl, function (data) {
 
+                var fields = data.Fields;
                 var res = data.Values;
                 var cols = data.Columns;
-                var source =
-                {
+
+                var source = {
                     localdata: res,
-                    datatype: 'json'
+                    datatype: 'json',
+                    datafields: fields
                 };
 
-                var dataAdapter = new $.jqx.dataAdapter(source, {
-                    downloadComplete: function (data, status, xhr) { },
-                    loadComplete: function (data) { },
-                    loadError: function (xhr, status, error) { },
-                    beforeLoadComplete: function (records) { }
-                });
+                var dataAdapter = new $.jqx.dataAdapter(source);
 
                 var tooltiprenderer = function (element) {
                     $(element).parent().jqxTooltip({ position: 'mouse', content: v.FieldDescription });
                 }
 
-                cols.unshift(
-                     {
-                         datafield: "Name", text: 'Name', width: 'auto', cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                             return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a href='" + data.Url + "'>" + data.Name + "</a></div>";
-                             //return "<a href='" + data.Url + "'>" + data.Name + "</a>";
-                         }
-                     });
+                var columnNameFinder = function (column) {
+                    return (column.datafield === "Name");
+                }
+                var columnTextPathFinder = function (column) {
+                    return (column.datafield === "TextPath");
+                }
+
+                var cn = cols.find(columnNameFinder);
+                if (cn) {
+                    cn.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
+                        return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.Name + "</a></div>";
+                    }
+                }
+                var cp = cols.find(columnTextPathFinder);
+                if (cp) {
+                    cp.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
+                        return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.TextPath + "</a></div>";
+                    }
+                }
 
                 $(valueID).jqxGrid({
                     altrows: true,
@@ -40028,6 +40046,159 @@ function Relationship_SimpleHierarchyTile(controlID, contextList, permissions, t
     //#endregion
 }
 
+function RelationshipTypeTreeTile(controlID, permissions, type, id) {
+    var toolsControlID = controlID + "_tools";
+    var gridControlID = controlID + "_grid";
+    controlID = '#' + controlID;
+
+    var source;
+    var adapter;
+
+    //#region Grid
+
+    var title = 'Relationship Types';
+
+    try {
+        $(controlID).html('<header>' + title + '<div id="' + toolsControlID + '"></div></header>' + '<div id="' + gridControlID + '"></div>');
+        gridControlID = '#' + gridControlID;
+        toolsControlID = '#' + toolsControlID;
+
+        var source = {
+            dataType: "json",
+            dataFields: [
+                { name: 'IntersectTypeID', type: 'number' },
+                { name: 'TargetObjectType', type: 'string' },
+                { name: 'TargetObjectID', type: 'number' },
+                { name: 'TextPath', type: 'string' },
+                { name: 'Level', type: 'number' },
+                { name: 'relationships', type: 'array' },
+                { name: 'predicates', type: 'array' }
+                //{ name: 'expanded', type: 'bool' }
+            ],
+            hierarchy:
+            {
+                root: 'relationships'
+            },
+            //id: 'IntersectTypeID',
+            url: '/relations/' + type + '/' + id + '/RelationshipTypeTree.json'
+        };
+        var dataAdapter = new $.jqx.dataAdapter(source);
+
+        if (permissions.HasPermission("Root", "Update")) {
+            TileTools(toolsControlID, [
+                { icon: 'plus', uri: '/form/AddIntersectType?type=' + type + '&id=' + id, context: contextList.IntersectType, title: 'Add relationship type' }
+            ]);
+        }
+
+        $(gridControlID).jqxTreeGrid({
+            width: grid_width,
+            pageable: true,
+            pagerMode: 'advanced',
+            pageSizeMode: 'root',
+            pageSize: 10,
+            pageSizeOptions: ['5', '10', '25'],
+            theme: theme,
+            source: dataAdapter,
+            sortable: true,
+            columns: [
+                {
+                    text: 'Name',
+                    dataField: 'TextPath',
+                    cellsRenderer: function (row, column, value, data) {
+                        var html = "";
+                        html += ((data.Level == 1) ? "<b>" : "") + data.TextPath + ((data.Level == 1) ? "</b>" : "");
+                        return html;
+                    }
+                },
+                {
+                    text: 'Predicates', dataField: 'predicates', width: '40%', filterable: false,
+                    cellsRenderer: function (row, column, value, data) {
+                        var html = "";
+                        if (data.predicates) {
+                            html += "";//"<ul>";
+                            $.each(data.predicates, function () {
+                                html += ((html !== "") ? ", " : "") + this.Name;//"<li>" + this.Name + "</li>";
+                            });
+                            //html += "</ul>";
+                        }
+                        return html;
+                    }
+                },
+                {
+                    text: '', dataField: 'IntersectTypeID', width: '160px', filterable: false,
+                    cellsRenderer: function (row, column, value, data) {
+                        var tools = [];
+
+                        if (permissions.HasPermission("Root", "Create")) {
+                            tools.push({ icon: 'plus', urlprefix: '/form/AddIntersectType?type=IntersectType&id={0}', title: 'Add fusion relationship type' });
+                        }
+                        if (permissions.HasPermission("Root", "Update")) {
+                            tools.push({ icon: 'pencil', urlprefix: '/form/EditPredicateAllocation?id={0}', title: 'Edit predicates' });
+                            tools.push({ icon: 'pencil', urlprefix: '/form/EditIntersectType?id={0}', title: 'Edit relationship type' });
+                        }
+                        if (permissions.HasPermission("Root", "Delete")) {
+                            tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteIntersectType?id={0}', title: 'Remove relationship type' });
+                        }
+
+                        return renderToolsHtml(value, tools, contextList.ArtifactType, data);
+                    }
+                }
+            ]
+        });
+    } catch (e) {
+        console.log(e);
+    }
+
+    //#endregion
+
+    //#region Event Subscriptions
+
+    function commandExecuted(command) {
+        //try {
+        //    if (command == "FieldMove") {
+        //        $(gridControlID).jqxTreeGrid('updateBoundData');
+        //    }
+        //} catch (e) {
+        //    logError("Parts.js : FieldsGrid", e);
+        //}
+    }
+
+    function pageResized() {
+        $(gridControlID).jqxTreeGrid('refresh');
+    }
+
+    function saveAction(data) {
+        try {
+            switch (data.context) {
+                case contextList.IntersectType:
+                    $(gridControlID).jqxTreeGrid('updateBoundData');
+                    break;
+            }
+        } catch (e) {
+            logError("Parts.js : FieldsGrid", e);
+        }
+    }
+
+    function unsubscribe(data) {
+        source = null;
+        adapter = null;
+
+        amplify.unsubscribe("CommandExecuted", commandExecuted);
+        amplify.unsubscribe("PageResized", pageResized);
+        amplify.unsubscribe("SaveAction", saveAction);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    amplify.subscribe('CommandExecuted', commandExecuted);
+    amplify.subscribe("PageResized", pageResized);
+    amplify.subscribe("SaveAction", saveAction);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+}
+
 function StatisticTypeAllocationGrid(controlID, contextList, permissions, id) {
 
     var toolsControlID = controlID + "_tools";
@@ -42669,15 +42840,21 @@ function SearchResultCategory(data) {
     var self = this;
     data = data || {};
     self.Name = data.Name;
+    self.DisplayName = data.DisplayName;
     self.ResultCount = data.ResultCount;
+    self.Categories = data.Categories;
+    self.showRow = ko.observable(data.Name == 'Artifact'? true : false);
+    self.toggleVisibility = function () {
+        self.showRow(!self.showRow());        
+    };
+    self.showToggle = data.Categories != null;
 }
 
 function SearchViewModel() {
     var self = this;
     self.categories = ko.observableArray();
     self.results = ko.observableArray();
-    self.elapsedTime = ko.observable();
-        
+    self.elapsedTime = ko.observable();    
     return self;
 }
 
@@ -42695,11 +42872,22 @@ function search(app, pageViewModel, templatePath, contextList) {
         var searchSource;
         var loadCategories;
 
+        var showOnlyRelevantType = function (categoryType, e) {
+            $('#CategoryResults a').removeClass('selected');
+            $(e.target).addClass('selected');
+
+            var searchSource = getSource(phrase, '', categoryType == 'All' ? '' : categoryType);
+
+            var dataAdapter = getDataAdapter(searchSource);
+
+            $('#SearchResults').jqxDataTable({ source: dataAdapter });
+        }
+
         var showOnlyRelevantCategory = function (category,e) {
             $('#CategoryResults a').removeClass('selected');
             $(e.target).addClass('selected');
                         
-            var searchSource = getSource(phrase, category == 'All' ? '':category);
+            var searchSource = getSource(phrase, category, '');
 
             var dataAdapter = getDataAdapter(searchSource);
 
@@ -42715,7 +42903,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                 $('#SearchResults').show();
                 loadCategories = true;
                 
-                var searchSource = getSource(phrase,'');
+                var searchSource = getSource(phrase,'','');
                 
                 var dataAdapter = getDataAdapter(searchSource);
 
@@ -42729,22 +42917,20 @@ function search(app, pageViewModel, templatePath, contextList) {
         function resultSelect(e) {            
             $('#ContentHeader').show();
             var el = $(e.target).closest('a');            
-            console.log(el.attr('data-url'));
             document.location.href = el.attr('data-url');
         }
 
         function unsubscribe(data) {
             searchVm = null;
             $('#ContentHeader').show();
-
             $("#SearchString").off('keypress', searchStringKeyPress);
-            $('#SearchResults').off('click', '.search-result-link', resultSelect);
+            $('#SearchResults').off('click', '.search-result-link', resultSelect);        
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
         //#endregion
 
-        function getSource(term, selGroup) {
+        function getSource(term, selGroup, selType) {
             return {
                 datatype: "json",
                 datafields: [
@@ -42760,7 +42946,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                 type: 'POST',
                 dataType: 'json',
                 url: '/search/results',
-                data: { search: term, from: 0, size: 10, group: selGroup },
+                data: { search: term, from: 0, size: 10, group: selGroup, type: selType },
                 id: 'ID',
                 sortcolumn: 'NormalizedScore',
                 sortdirection: 'desc',
@@ -42796,7 +42982,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                                 msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
                                 searchVm.elapsedTime(msg);
 
-                                data.Categories.unshift({ Name: 'All', ResultCount: data.Result.Matches });
+                                data.Categories.unshift({ Name: 'All', ResultCount: data.Result.Matches, DisplayName: 'All' });
                                 var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
                                 searchVm.categories(cats);
 
@@ -42804,9 +42990,17 @@ function search(app, pageViewModel, templatePath, contextList) {
                                     $(this).click(function (e) {
                                         var c = $(this).data("category");
                                         showOnlyRelevantCategory(c, e);
-                                    });
-                                    if ($(this).data("category") == "All") $(this).addClass('selected');
+                                    });                                    
                                 });
+
+                                $('.search-type-link').each(function () {
+                                    $(this).click(function (e) {
+                                        var c = $(this).data("category-type");
+                                        showOnlyRelevantType(c, e);
+                                    });
+                                    if ($(this).data("category-type") == "All") $(this).addClass('selected');
+                                });
+
                                 loadCategories = false;
                             }
                         },
@@ -42854,10 +43048,11 @@ function search(app, pageViewModel, templatePath, contextList) {
 
                 $('#SearchResults').on('click', '.search-result-link', resultSelect);
 
+                
                 //#endregion
                 phrase = $("#SearchString").val();
                              
-                var source = getSource(phrase, '');
+                var source = getSource(phrase, '','');
 
                 var dataAdapter = getDataAdapter(source);
                                 
@@ -42873,9 +43068,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                     pageSizeOptions: ['10', '20', '50'],
                     enableHover: false,
                     columns: [
-                        { text: ' ', dataField: 'Merged', width: '92%'},
-                        { text: 'Rank', dataField: 'NormalizedScore', width: '7%', cellsformat: 'p2', cellClassName: 'search-score-cell' },
-                        
+                        { text: ' ', dataField: 'Merged', width: '99%'}                        
                     ]
                 });
 
@@ -43469,6 +43662,8 @@ function artifacts_admin(app, pageViewModel, templatePath, contextList) {
                     var loadPermissionsDependentTiles = function () {
                         FieldsGrid("FieldsTile", contextList, permissions, type, row.ID);
                         PeopleResponsibilityTile('SecurityTile', contextList, permissions, type, row.ID, 'Default Responsibilities', true);
+
+                        RelationshipTypeTreeTile('RelationshipTypeTreeTile', permissions, type, row.ID);
                     }
                     permissions.GetPermissionsForObject(type, row.ID).then(loadPermissionsDependentTiles);
                 }
@@ -43619,7 +43814,7 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
 
             pageViewModel.ObjectType = 'Artifact';
             pageViewModel.ObjectID = id;
-            pageViewModel.Title = json.Name;
+            pageViewModel.Title = $('<div/>').html(json.Name).text();
             pageViewModel.Type = json.TypeName;
             pageViewModel.Status = "<h4>Status: <b style='color:" + getArtifactStatusForeColor(json.Status) + "'>" + json.Status + "</b></h4>";
             pageViewModel.breadcrumbs = json.Breadcrumbs;
@@ -43972,7 +44167,7 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                                     $('#' + this.id).jqxDropDownList({ theme: theme, height: field_height, width: field_width, source: this.items, placeHolder: 'Choose filter', filterable: (this.items.length > 15), searchMode: 'containsignorecase' });
                                     break;
                                 case 'date':
-                                    $('#' + this.id).jqxDateTimeInput({ theme: theme, height: field_height, width: field_width });
+                                    $('#' + this.id).jqxDateTimeInput({ theme: theme, height: field_height, width: field_width, value: null });
                                     $('#' + this.id).keypress(function (e) {
                                         var code = (e.keyCode ? e.keyCode : e.which);
                                         if (code == 13) { //Enter key

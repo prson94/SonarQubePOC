@@ -240,7 +240,7 @@
                                     $('#' + this.id).jqxDropDownList({ theme: theme, height: field_height, width: field_width, source: this.items, placeHolder: 'Choose filter', filterable: (this.items.length > 15), searchMode: 'containsignorecase' });
                                     break;
                                 case 'date':
-                                    $('#' + this.id).jqxDateTimeInput({ theme: theme, height: field_height, width: field_width });
+                                    $('#' + this.id).jqxDateTimeInput({ theme: theme, height: field_height, width: field_width, value: null });
                                     $('#' + this.id).keypress(function (e) {
                                         var code = (e.keyCode ? e.keyCode : e.which);
                                         if (code == 13) { //Enter key

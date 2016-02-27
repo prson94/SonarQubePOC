@@ -10,19 +10,16 @@ namespace d360.core.entities
     public class FieldTypeFusionLookupDefinition : BaseIntObject, IIntObject
     {
         [DataMember]
-        public string Display { get; set; }
-
-        [DataMember]
-        public int TargetFusionAttributeTypeID { get; set; }
-
-        [DataMember]
         public int SourceFusionAttributeTypeID { get; set; }
+
+        [DataMember]
+        public int? TargetFusionAttributeTypeID { get; set; }
 
         [DataMember]
         public int FieldTypeID { get; set; }
 
         [DataMember]
-        public bool IsParentChild { get; set; }
+        public int ReferenceType { get; set; }
 
         [IgnoreDataMember, ForeignKey("FieldTypeFusionLookupDefinitionID")]
         public virtual ICollection<FieldTypeFusionLookupDisplayField> FieldTypeFusionLookupDisplayFields { get; set; }

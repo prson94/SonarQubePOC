@@ -1095,7 +1095,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Content\materialize\css\" />
     <Folder Include="Views\Home\" />
     <Folder Include="Views\Queries\" />
     <Folder Include="Views\Tiles\" />

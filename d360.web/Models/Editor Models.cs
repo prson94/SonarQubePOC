@@ -283,6 +283,30 @@ namespace d360.web.Models
         public string Description { get; set; }
     }
 
+    public class FieldTypeItemDisplayFieldEditorModel
+    {
+        public int FieldTypeID { get; set; }
+        public string FieldTypeName { get; set; }
+    }
+
+    public class FieldTypeFusionItemEditorModel
+    {
+        public int ID { get; set; }
+        public int SourceFusionAttributeType { get; set; }
+        public int ReferenceType { get; set; }
+        public int? TargetFusionAttributeType { get; set; }
+        public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
+    }
+
+    public class FieldTypeRelationItemEditorModel
+    {
+        public int ID { get; set; }
+        public int IntersectType { get; set; }
+        public int ReferenceType { get; set; }
+        public int? ChildIntersectType { get; set; }
+        public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
+    }
+
     public class FieldTypeEditorModel
     {
         public FieldTypeEditorModel()
@@ -292,42 +316,11 @@ namespace d360.web.Models
 
         public bool FieldIsUsed { get; set; }
 
-        public string FormUri { get; set; }
-
-        public string FormMethod { get; set; }
-
-        public string FormName { get; set; }
-
         public FieldType FieldType { get; set; }
 
-        public List<SelectListItem> DataTypes
-        {
-            get
-            {
-                var t = d360.core.DataType.Boolean;
-                return t.GetDataTypeInfoList()
-                    .Where(i => !i.ReadOnly)
-                    .Select(i => new SelectListItem
-                    {
-                        Text = i.Description,
-                        Value = i.Name,
-                        Selected = false
-                    })
-                    .OrderBy(i => i.Text)
-                    .ToList();
-            }
-        }
+        public ICollection<FieldTypeFusionItemEditorModel> FusionItems { get; set; }
 
-        public List<SelectListItem> LookupLists { get; set; }
-
-        public List<SelectListItem> FusionDisplayList { get; set; }
-
-        public List<SelectListItem> FromFusionAttributeTypeList { get; set; }
-        public List<SelectListItem> ToFusionAttributeTypeList { get; set; }
-
-        public bool IsParentChildRel { get; set; }
-
-        public string FusionDisplayFieldList { get; set; }
+        public FieldTypeRelationItemEditorModel RelationItem { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

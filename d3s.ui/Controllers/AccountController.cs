@@ -193,10 +193,10 @@ namespace d3s.ui.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = null)
         {
-            if (User.IsSignedIn())
-            {
-                return RedirectToAction(nameof(ManageController.Index), "Manage");
-            }
+            //if (User.IsSignedIn())
+            //{
+            //    return RedirectToAction(nameof(ManageController.Index), "Manage");
+            //}
 
             if (ModelState.IsValid)
             {

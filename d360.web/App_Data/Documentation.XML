@@ -2571,6 +2571,21 @@
         <member name="M:d360.web.Controllers.FormController.EventGroup_EditFields(System.Int32)">
             <param name="id">EventGroupID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.FieldType_FusionLookup_DisplayFields(System.Int32)">
+            <summary>
+            Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
+            </summary>
+            <param name="id">The Source FusionAttributeType ID</param>
+            <returns>A list of relevant fusion attribute types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FieldType_FusionLookup_TargetAttributeTypes(System.Int32,System.Int32)">
+            <summary>
+            Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
+            </summary>
+            <param name="s">The Source FusionAttributeType ID</param>
+            <param name="r">The Reference Type we are checking</param>
+            <returns>A list of relevant fusion attribute types.</returns>
+        </member>
         <member name="M:d360.web.Controllers.FormController.FieldType_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>
         </member>

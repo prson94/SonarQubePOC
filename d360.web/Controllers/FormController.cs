@@ -20,6 +20,7 @@ using d360.workflow;
 using d360.workflow.entities;
 using d360.web.Filters;
 using d360.web.Models.Attributes;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Controllers
 {
@@ -209,83 +210,82 @@ namespace d360.web.Controllers
             var row = startRow;
 
             fields.ForEach(f =>
-            {                
-                var patternMessage = "";
-
-                if (string.IsNullOrEmpty(f.ValidationDescription))
+            {
+                if (f.Type != DataType.RelationLookup.ToString())
                 {
-                    switch (f.Type)
-                    { 
-                        case "Number":
-                            patternMessage = "must be a whole number";
-                            break;
-                        case "Decimal":
-                            patternMessage = "must be a decimal number";
-                            break;
-                    }
-                }
-                else 
-                {
-                    patternMessage = f.ValidationDescription;
-                }
+                    var patternMessage = "";
 
-
-                var fld = new EditableField
-                {
-                    Row = row,
-                    Column = 1,
-                    FieldName = f.Name,
-                    Name = f.FriendlyName,
-                    FieldType = f.Type.ToString(),
-                    FieldDescription = f.FormDescription,
-                    Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage)
-                };
-
-                if (f.Type == DataType.FusionLookup.ToString())
-                {
-                    //need to render drop down of all fusion attributes that have the same type as the current
-                    var fusionAttributeList = new List<SelectListItem>();
-
-                    var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == f.ID);
-
-                    if (def == null) throw new Exception("INVALID FUSION LOOKUP FIELD");
-
-                    if (!f.IsRequired)
-                        fusionAttributeList.Add(new SelectListItem { Text = "", Value = "" });
-
-                    foreach (var item in def)
+                    if (string.IsNullOrEmpty(f.ValidationDescription))
                     {
-                        var fusionAttributes = Company.Filter<FusionAttribute>(x => x.FusionAttributeTypeID == item.SourceFusionAttributeTypeID).OrderBy(x => x.Name);
-
-                        foreach (var fA in fusionAttributes)
+                        switch (f.Type)
                         {
-                            fusionAttributeList.Add(new SelectListItem { Text = fA.Name, Value = fA.ID.ToString() });
+                            case "Number":
+                                patternMessage = "must be a whole number";
+                                break;
+                            case "Decimal":
+                                patternMessage = "must be a decimal number";
+                                break;
                         }
-
-                        fld.Items.AddRange(fusionAttributeList);
                     }
-                }
-
-                if (!string.IsNullOrEmpty(f.LookupObjectType))
-                {
-                    fld.FieldType = DataType.Lookup.ToString();
-                    try
+                    else
                     {
-                        fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
-                            .OrderBy(o => o.Text)
-                            .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                            .ToList();
-                        if (!f.IsRequired) fld.Items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+                        patternMessage = f.ValidationDescription;
                     }
-                    catch
-                    {
-                        fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
-                    }
-                }
-                fld.Required = (f.MinimumLength > 0 || f.Length > 0);
-                /* Boolean, Date, DateTime, Decimal, Integer, String */
-                list.Add(fld);
 
+
+                    var fld = new EditableField
+                    {
+                        Row = row,
+                        Column = 1,
+                        FieldName = f.Name,
+                        Name = f.FriendlyName,
+                        FieldType = f.Type.ToString(),
+                        FieldDescription = f.FormDescription,
+                        Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage)
+                    };
+
+                    if (f.Type == DataType.FusionLookup.ToString())
+                    {
+                        //need to render drop down of all fusion attributes that have the same type as the current
+                        var IDs = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == f.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
+
+                        if (!f.IsRequired)
+                            fld.Items.Add(new SelectListItem { Text = "", Value = "" });
+
+                        fld.Items.AddRange(
+                            Company.Filter<FusionAttribute>(x => IDs.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
+                            .Select(i => new { i.ID, i.TextPath, Type = i.FusionAttributeType.Name })
+                            .ToList()
+                            .Select(i =>
+                                new SelectListItem
+                                {
+                                    Group = new SelectListGroup { Name = i.Type },
+                                    Text = i.TextPath,
+                                    Value = i.ID.ToString()
+                                })
+                        );
+                    }
+
+                    if (!string.IsNullOrEmpty(f.LookupObjectType))
+                    {
+                        fld.FieldType = DataType.Lookup.ToString();
+                        try
+                        {
+                            fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                                .OrderBy(o => o.Text)
+                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                .ToList();
+                            if (!f.IsRequired) fld.Items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+                        }
+                        catch
+                        {
+                            fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+                        }
+                    }
+                    fld.Required = (f.MinimumLength > 0 || f.Length > 0);
+                    /* Boolean, Date, DateTime, Decimal, Integer, String */
+                    list.Add(fld);
+                }
                 row++;
             });
 
@@ -331,28 +331,25 @@ namespace d360.web.Controllers
                 };
 
                 if (ft.Type == DataType.FusionLookup.ToString())
-                {                    
-                    //need to render drop down of all fusion attributes that have the same type as the current
-                    var fusionAttributeList = new List<SelectListItem>();
+                {
+                    var IDs = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == ft.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
 
-                    var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == ft.ID);
-                    
-                    if (def == null) throw new Exception("INVALID FUSION LOOKUP FIELD");
+                    if (!f.IsRequired)
+                        fld.Items.Add(new SelectListItem { Text = "", Value = "" });
 
-                    if(!ft.IsRequired)
-                        fusionAttributeList.Add(new SelectListItem { Text = "", Value = "" });
-
-                    foreach (var item in def)
-                    {
-                        var fusionAttributes = Company.Filter<FusionAttribute>(x => x.FusionAttributeTypeID == item.SourceFusionAttributeTypeID).OrderBy(x => x.Name);
-
-                        foreach (var fA in fusionAttributes)
-                        {
-                            fusionAttributeList.Add(new SelectListItem { Text = fA.Name, Value = fA.ID.ToString() });
-                        }
-
-                        fld.Items.AddRange(fusionAttributeList);
-                    }
+                    fld.Items.AddRange(
+                        Company.Filter<FusionAttribute>(x => IDs.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
+                            .Select(i => new { i.ID, i.TextPath, Type = i.FusionAttributeType.Name })
+                            .ToList()
+                            .Select(i =>
+                                new SelectListItem
+                                {
+                                    Group = new SelectListGroup { Name = i.Type },
+                                    Text = i.TextPath,
+                                    Value = i.ID.ToString()
+                            })
+                            .OrderBy(x => x.Text)
+                    );
                 }
 
                 if (!string.IsNullOrEmpty(ft.LookupObjectType))
@@ -449,7 +446,7 @@ namespace d360.web.Controllers
         {
             Response.StatusCode = (int)statusCode;
             Response.StatusDescription = ex.GetFullExceptionData();//.Replace("\n", "  ").Replace("\r", " ");
-            return Json(new { type = "error", title = title, message = Response.StatusDescription }, JsonRequestBehavior.AllowGet);
+            return Json(new { type = "error", title = title, message = ex.GetFullExceptionData() }, JsonRequestBehavior.AllowGet);
         }
 
         JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
@@ -3612,6 +3609,268 @@ namespace d360.web.Controllers
 
         #region FieldType
 
+        #region Supporting Json Feeds
+
+        /// <summary>
+        /// Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
+        /// </summary>
+        /// <param name="id">The Source FusionAttributeType ID</param>
+        /// <returns>A list of relevant fusion attribute types.</returns>
+        public JsonNetResult FieldType_FusionLookup_DisplayFields(int id)
+        {
+            var list = Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, id).Select(i => new { i.ID, i.Name }).ToDictionary(i => i.Name, i => i.ID);
+            list.Add("Name", 0);
+            list.Add("TextPath", 0);
+
+            return new JsonNetResult
+            {
+                Data = list.Select(i => new { title = i.Key, value = $"{i.Value}|{i.Key}" }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
+        /// Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
+        /// </summary>
+        /// <param name="s">The Source FusionAttributeType ID</param>
+        /// <param name="r">The Reference Type we are checking</param>
+        /// <returns>A list of relevant fusion attribute types.</returns>
+        public JsonNetResult FieldType_FusionLookup_TargetAttributeTypes(int s, int r)
+        {
+            IQueryable<FusionAttributeType> qry = null;
+            switch (r)
+            {
+                case 2: //Parent Reference
+                    var self = Company.GetById<FusionAttributeType>(s);
+                    if (self != null)
+                    {
+                        qry = Company.Filter<FusionAttributeType>(i => i.ID == self.ParentID);
+                    }
+                    break;
+                case 3: //Child Reference
+                    break;
+                    qry = Company.Filter<FusionAttributeType>(i => i.ParentID == s);
+                case 4: //Relationship Reference
+                    var relations = Company.Query<int>(@"select TargetObjectID from utility.RelationshipTypes where SourceObjectType  = 'FusionAttributeType' and SourceObjectID = @id and TargetObjectType = 'FusionAttributeType'", new { id = s }).ToList();
+                    qry = Company.Filter<FusionAttributeType>(i => relations.Contains(i.ID));
+                    break;
+            }
+
+            if (qry != null)
+            {
+                return new JsonNetResult
+                {
+                    Data = qry.OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID }),
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
+            else
+            {
+                return new JsonNetResult
+                {
+                    Data = JArray.Parse("[]"),
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
+        }
+
+        public JsonNetResult FieldType_RelationLookup_ChildIntersectTypes(int id)
+        {
+            var intersectTypes = Company.Query<dynamic>(@"
+select  distinct 
+        cast(RT.IntersectTypeID as varchar) + '|' + RT.TargetObjectType + '|' + cast(RT.TargetObjectID as varchar) as value, 
+        D.TextPath as title
+from    utility.RelationshipTypes RT
+        inner join cache.ObjectDetails D on D.[Object] = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
+        and RT.SourceObjectType = 'IntersectType' and RT.SourceObjectID = @id
+order by  D.TextPath
+", new { id });
+
+            return new JsonNetResult
+            {
+                Data = intersectTypes,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        public JsonNetResult FieldType_RelationLookup_DisplayFields(SystemObjects type, int id)
+        {
+            var list = Company.GetFieldTypeRelationsByObject(type, id).Select(i => new { i.ID, i.Name }).ToDictionary(i => i.Name, i => i.ID);
+            list.Add("Name", 0);
+            list.Add("TextPath", 0);
+
+            return new JsonNetResult
+            {
+                Data = list.Select(i => new { title = i.Key, value = $"{i.Value}|{i.Key}" }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        public JsonNetResult FieldType_Lookup_Tokens(SystemObjects type, int id)
+        {
+            Dictionary<string, string> list;
+
+            if (type != SystemObjects.DomainItem)
+            {
+                list = Company.GetFieldTypeRelationsByObject(type, id).Select(i => new { i.ID, i.Name }).ToDictionary(i => i.Name, i => i.Name);
+            }
+            else
+            {
+                list = new Dictionary<string, string>();
+            }
+
+            switch (type)
+            {
+                case SystemObjects.ArtifactType:
+                    list.Add("Name", "Name");
+                    list.Add("Status", "Status");
+                    list.Add("Description", "Description");
+                    list.Add("TextPath", "TextPath");
+                    break;
+                case SystemObjects.DomainItem:
+                case SystemObjects.DomainType:
+                    list.Add("Name", "Name");
+                    list.Add("Code", "Code");
+                    list.Add("Description", "Description");
+                    break;
+                case SystemObjects.PolicyType:
+                    list.Add("Name", "Name");
+                    list.Add("Description", "Description");
+                    list.Add("TextPath", "TextPath");
+                    break;
+                case SystemObjects.Resource:
+                case SystemObjects.ResourceType:
+                    list.Add("First Name", "FirstName");
+                    list.Add("Last Name", "LastName");
+                    list.Add("Email", "Email");
+                    break;
+                case SystemObjects.RuleType:
+                    list.Add("Name", "Name");
+                    list.Add("Description", "Description");
+                    break;
+                //default:
+                //    list.Add("Name", "Name");
+                //    list.Add("TextPath", "TextPath");
+                //    break;
+            }
+
+            return new JsonNetResult
+            {
+                Data = list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        public JsonNetResult FieldType_Lookups(string type, int id)
+        {
+            #region Load static lists
+
+            var intersectTypes = Company.Query<dynamic>(@"
+select  distinct 
+        cast(RT.IntersectTypeID as varchar) + '|' + RT.TargetObjectType + '|' + cast(RT.TargetObjectID as varchar) as value, 
+        D.TextPath as title
+from    utility.RelationshipTypes RT
+        inner join cache.ObjectDetails D on D.[Object] = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
+        and RT.SourceObjectType = @type and RT.SourceObjectID = @id
+order by  D.TextPath
+", new { type, id });
+            var fusionAttributeTypes = Company.FusionAttributeTypes.OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
+            var lookups = Company.GetFieldTypeLookupOptions().Select(i => new { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" });
+            var patterns = new Dictionary<string, string>() {
+                { "Choose sample...", "" },
+                { "Email", @"\b([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
+                { "IP Address", @"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b" },
+                { "North American Phone", @"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },
+                { "Numbers Only", @"\b\d+(\.\d{1,10})?\b" },
+                { "Unc/Network Path", @"(\\{2})([\da-z\.-]+)(\\)([\w \.-]+)" },
+                { "Internal Url", @"\b(https?:\/\/)?([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
+                { "Public Url", @"\b(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
+                { "US Zip Code", @"\b[0-9]{5}(?:-[0-9]{4})?\b" }
+            };
+            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList()
+                    .Where(i => !i.ReadOnly)
+                    .Select(i => new
+                    {
+                        title = i.Description,
+                        value = i.Name
+                    })
+                    .OrderBy(i => i.title)
+                    .ToList();
+
+            #endregion
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    DataTypes = dataTypeOptions,
+                    Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
+                    IntersectTypes = intersectTypes,
+                    FusionAttributeTypes = fusionAttributeTypes,
+                    Lookups = lookups
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        public JsonNetResult FieldType_FormData(int id)
+        {
+            FieldType ft = null;
+            List<dynamic> fusionItems = null;
+            List<dynamic> relationItems = null;
+            if (id > 0)
+            {
+                ft = Company.GetById<FieldType>(id, i => i.FieldTypeFusionLookupDefinitions, i => i.FieldTypeRelationLookupDefinitions);
+                if (ft.FieldTypeFusionLookupDefinitions != null)
+                {
+                    if (ft.FieldTypeFusionLookupDefinitions.Count > 0)
+                    {
+                        fusionItems = new List<dynamic>();
+                        foreach (var i in ft.FieldTypeFusionLookupDefinitions)
+                        {
+                            fusionItems.Add(new {
+                                ID = i.ID,
+                                SourceFusionAttributeType = i.SourceFusionAttributeTypeID,
+                                ReferenceType = i.ReferenceType,
+                                TargetFusionAttributeType = i.TargetFusionAttributeTypeID,
+                                DisplayFields = (i.FieldTypeFusionLookupDisplayFields != null) ? i.FieldTypeFusionLookupDisplayFields.Select(df => $"{df.FieldTypeID}|{df.FieldTypeName}").ToList() : null
+                            });
+                        }
+                    }
+                }
+                if (ft.FieldTypeRelationLookupDefinitions != null)
+                {
+                    if (ft.FieldTypeRelationLookupDefinitions.Count > 0)
+                    {
+                        relationItems = new List<dynamic>();
+                        foreach (var i in ft.FieldTypeRelationLookupDefinitions)
+                        {
+                            relationItems.Add(new {
+                                ID = i.ID,
+                                IntersectType = i.IntersectTypeID,
+                                ReferenceType = i.ReferenceType,
+                                ChildIntersectType = i.ChildIntersectTypeID,
+                                DisplayFields = (i.FieldTypeRelationLookupDisplayFields != null) ? i.FieldTypeRelationLookupDisplayFields.Select(df => $"{df.FieldTypeID}|{df.FieldTypeName}").ToList() : null
+                            });
+                        }
+                    }
+                }
+            }
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    FieldType = ft,
+                    FusionItems = fusionItems,
+                    RelationItems = relationItems
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        #endregion
+
         #region Field Generation
 
         /// <param name="id">ID of the object</param>
@@ -3635,136 +3894,119 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        private void CheckIsFieldTypeNameReserved(string name)
+        {
+            var nameUpper = name.ToUpper();
+
+            if (nameUpper == "STATUS" || nameUpper == "NAME" || nameUpper == "DESCRIPTION" || nameUpper == "PARENTID" || nameUpper == "DATELASTCERTIFIED" || nameUpper == "TAXONOMYTYPEID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
+        }
+
         public ActionResult AddFieldType(SystemObjects type, int id)
         {
             var model = new FieldTypeEditorModel
             {
-                LookupLists = convertToEditableFieldItems(Company.GetFieldTypeLookupOptions().ToList()),
-                FormUri = "/Form/AddFieldType",
-                FormMethod = "POST",
-                FormName = Resources.FormInfo.Add_FieldType_Title,
                 FieldType = new FieldType { Object = type.ToString(), ObjectID = id, Pattern = "", Type = DataType.Text.ToString(), MinimumLength = 0, MaximumLength = 1000, IsListable = true, IsRequired = true },
-                FusionDisplayList = fusionDisplayItemList(),
-                FromFusionAttributeTypeList = fusionAttributeTypeList(-1),
-                ToFusionAttributeTypeList = fusionAttributeTypeList(-1)                
             };
-
-            for (var i = 0; i < model.DataTypes.Count; i++)
-            {
-                model.DataTypes[i].Selected = (model.DataTypes[i].Value == model.FieldType.Type);
-            }
-
             return PartialView("FieldTypeEditForm", model);
         }
                 
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
-        public JsonResult AddFieldType(FormCollection form)
+        public JsonResult AddFieldType(FieldTypeEditorModel model)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
-
-                var model = new FieldType();
-
-                var type = (SystemObjects)Enum.Parse(typeof(SystemObjects), form["Object"]);
-                var id = parseIntField(form, "ObjectID");
-
                 int maxSort = 0;
-                try { maxSort = Company.GetFieldTypeRelationsByObject(type, id).Max(i => i.SortOrder); }
+                try { maxSort = Company.GetFieldTypeRelationsByObject((SystemObjects)Enum.Parse(typeof(SystemObjects), model.FieldType.Object), model.FieldType.ObjectID).Max(i => i.SortOrder); }
                 catch { }
 
-                // Static fields
-                model.Object = type.ToString();
-                model.ObjectID = id;
-                model.Name = parseTextField(form, "Name", null, true);
-
                 //dont let fields with reserved names in
-                CheckIsFieldTypeNameReserved(model.Name);
+                CheckIsFieldTypeNameReserved(model.FieldType.Name);
                 
+                model.FieldType.SortOrder = maxSort + 1;
 
-                model.FriendlyName = string.IsNullOrEmpty(form["FriendlyName"]) ? form["Name"] : form["FriendlyName"];
-                model.DisplayDescription = parseTextField(form, "DisplayDescription", "");
-                model.FormDescription = parseTextField(form, "FormDescription", "");
-                model.ValidationDescription = parseTextField(form, "ValidationDescription", "");
-                model.Type = parseTextField(form, "Type");
-                model.IsListable = (model.Type != DataType.FusionLookup.ToString()) ? parseBooleanField(form, "IsListable") : false;
-                model.IsRequired = parseBooleanField(form, "IsRequired");
-                model.SortOrder = maxSort + 1;
-
-                int value;
-                //if (int.TryParse(form["Length"], out value)) model.Length = value;
-                if (int.TryParse(form["MinimumLength"], out value)) model.MinimumLength = value;
-                if (model.MinimumLength.HasValue)
+                if (model.FieldType.MinimumLength.HasValue && model.FieldType.MaximumLength.HasValue)
                 {
-                    if (model.MinimumLength.Value == 0) model.MinimumLength = null;
-                }
-                if (int.TryParse(form["MaximumLength"], out value)) model.MaximumLength = value;
-                if (model.MaximumLength.HasValue)
-                {
-                    if (model.MaximumLength.Value == 0) model.MaximumLength = null;
-                }
-
-                if (model.MinimumLength.HasValue && model.MaximumLength.HasValue)
-                {
-                    if (model.MinimumLength.Value > model.MaximumLength.Value)
+                    if (model.FieldType.MinimumLength.Value > model.FieldType.MaximumLength.Value)
                     {
                         throw new ConflictException("Error Occurred!", "You may not have a minimum length that is greater than the maximum length.");
                     }
                 }
 
-                model.Pattern = parseTextField(form, "Pattern");
-                if (model.Type == DataType.Lookup.ToString())
+                if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
+
+                switch (model.FieldType.Type)
                 {
-                    var lookupValues = parseTextField(form, "LookupObject");
-                    if (!string.IsNullOrEmpty(lookupValues))
-                    {
-                        var split = lookupValues.Split('|');
-                        model.LookupObjectType = split[0].Replace("Type", "");
-                        model.LookupObjectID = int.Parse(split[1]);
-                        model.LookupDisplayFormat = parseTextField(form, "LookupDisplayFormat");
-                    }
-                }
-
-                if (!model.IsRequired) model.MinimumLength = 0;
-
-                Company.Add<FieldType>(model);
-
-                if(model.Type == DataType.FusionLookup.ToString())
-                {
-                    var def = new FieldTypeFusionLookupDefinition();
-                    //Display
-                    def.FieldTypeID = model.ID;
-
-                    var display = parseTextField(form, "FusionShow", "Name");
-                    
-                    var sourceFusionAttributeTypeID = parseIntField(form, "FromFusionAttributeTypeID");
-                    var targetFusionAttributeTypeID = parseIntField(form, "ToFusionAttributeTypeID");
-                    var isParentChild = parseBooleanField(form, "IsParentChildRel");
-
-                    var displayFields = parseTextField(form, "FusionLookupFields");
-
-                    if (!string.IsNullOrEmpty(displayFields))
-                    {
-                        def.FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>();
-
-                        foreach (var fieldTypeID in displayFields.Split(','))
+                    case "FusionLookup":
+                        #region
+                        foreach (var fi in model.FusionItems)
                         {
-                            def.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = def.ID, FieldTypeID = int.Parse(fieldTypeID) });
+                            var def = new FieldTypeFusionLookupDefinition
+                            {
+                                //FieldTypeID = model.FieldType.ID,
+                                ReferenceType = fi.ReferenceType,
+                                SourceFusionAttributeTypeID = fi.SourceFusionAttributeType,
+                                TargetFusionAttributeTypeID = fi.TargetFusionAttributeType
+                            };
+
+                            if (fi.DisplayFields != null)
+                            {
+                                if (fi.DisplayFields.Count > 0)
+                                {
+                                    def.FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>();
+
+                                    foreach (var df in fi.DisplayFields)
+                                    {
+                                        def.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = def.ID, FieldTypeName = df.FieldTypeName, FieldTypeID = df.FieldTypeID });
+                                    }
+                                }
+                            }
+                            model.FieldType.FieldTypeFusionLookupDefinitions = new List<FieldTypeFusionLookupDefinition>() { def };
                         }
-                    }
+                        break;
+                        #endregion
+                    case "RelationLookup":
+                        #region
+                        if (model.RelationItem != null)
+                        {
+                            var def = new FieldTypeRelationLookupDefinition
+                            {
+                                //FieldTypeID = model.FieldType.ID,
+                                ChildIntersectTypeID = model.RelationItem.ChildIntersectType,
+                                IntersectTypeID = model.RelationItem.IntersectType,
+                                ReferenceType = model.RelationItem.ReferenceType
+                            };
 
-                    def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
-                    def.TargetFusionAttributeTypeID = targetFusionAttributeTypeID;
-                    def.IsParentChild = isParentChild;
+                            if (model.RelationItem.DisplayFields != null)
+                            {
+                                if (model.RelationItem.DisplayFields.Count > 0)
+                                {
+                                    def.FieldTypeRelationLookupDisplayFields = new List<FieldTypeRelationLookupDisplayField>();
 
-                    def.Display = display;
+                                    foreach (var df in model.RelationItem.DisplayFields)
+                                    {
+                                        def.FieldTypeRelationLookupDisplayFields.Add(
+                                            new FieldTypeRelationLookupDisplayField
+                                            {
+                                                FieldTypeRelationLookupDefinitionID = def.ID,
+                                                FieldTypeName = df.FieldTypeName,
+                                                FieldTypeID = df.FieldTypeID
+                                            }
+                                        );
+                                    }
+                                }
+                            }
 
-                    Company.Add<FieldTypeFusionLookupDefinition>(def);
-
+                            model.FieldType.FieldTypeRelationLookupDefinitions = new List<FieldTypeRelationLookupDefinition>() { def };
+                            //Company.Add<FieldTypeRelationLookupDefinition>(def);
+                        }
+                        break;
+                        #endregion
                 }
 
-                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                Company.Add<FieldType>(model.FieldType);
+
+                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.FieldType.ID.ToString(), ContextList.FieldType, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -3775,60 +4017,6 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        private List<SelectListItem> fusionAttributeTypeList(int selectedID)
-        {
-            List<SelectListItem> lst = new List<SelectListItem>();
-
-            var fas = Company.FusionAttributeTypes.OrderBy(x => x.Name).ThenBy(x =>x.FusionType.Name);
-
-            foreach (var ftype in fas)
-            {
-                var parentName = string.Empty;
-
-                if (ftype.Parent != null) parentName = ftype.Parent.Name;
-
-                if(!string.IsNullOrEmpty(parentName))
-                    lst.Add(new SelectListItem { Text = string.Format("{0} - {1} (parent:{2})", ftype.Name, ftype.FusionType.Name,parentName), Value = ftype.ID.ToString(), Selected = selectedID == ftype.ID });
-                else
-                    lst.Add(new SelectListItem { Text = string.Format("{0} - {1}", ftype.Name, ftype.FusionType.Name), Value = ftype.ID.ToString(), Selected = selectedID == ftype.ID });
-            }
-
-            return lst;
-        }
-
-
-        private string fusionDisplayFieldList(FieldTypeFusionLookupDefinition fusDef)
-        {
-            if (fusDef == null) return string.Empty;
-
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-
-            foreach(var displayField in fusDef.FieldTypeFusionLookupDisplayFields)
-            {
-                if (sb.Length > 0) sb.Append(',');
-                sb.Append(displayField.FieldTypeID.ToString());
-            }
-
-            return sb.ToString();
-        }
-
-        private List<SelectListItem> fusionDisplayItemList(string selected = "")
-        {
-            List<SelectListItem> lst = new List<SelectListItem>();
-            lst.Add(new SelectListItem { Text = "Name", Value = "Name", Selected = (selected == "Name")});
-            lst.Add(new SelectListItem { Text = "TextPath", Value = "TextPath", Selected = (selected == "TextPath") });
-
-            return lst;
-        }
-
-
-        private void CheckIsFieldTypeNameReserved(string name)
-        {
-            var nameUpper = name.ToUpper();
-
-            if (nameUpper == "STATUS" || nameUpper == "NAME" || nameUpper == "DESCRIPTION" || nameUpper == "PARENTID" || nameUpper == "DATELASTCERTIFIED" || nameUpper == "TAXONOMYTYPEID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");            
         }
 
         public ActionResult DeleteFieldType(int id)
@@ -3886,159 +4074,223 @@ namespace d360.web.Controllers
 
             var model = new FieldTypeEditorModel
             {
-                LookupLists = convertToEditableFieldItems(Company.GetFieldTypeLookupOptions().ToList()),
-                FormUri = "/Form/EditFieldType",
                 FieldIsUsed = used,
-                FormMethod = "PUT",
-                FormName = Resources.FormInfo.Edit_FieldType_Title,
-                FieldType = a,
-                FusionDisplayList = fusionDisplayItemList((fusDef != null) ? fusDef.Display : string.Empty),
-                FromFusionAttributeTypeList = fusionAttributeTypeList((fusDef != null) ? fusDef.SourceFusionAttributeTypeID : -1),
-                ToFusionAttributeTypeList = fusionAttributeTypeList((fusDef != null) ? fusDef.TargetFusionAttributeTypeID : -1),
-                IsParentChildRel = (fusDef != null) ? fusDef.IsParentChild : false,
-                FusionDisplayFieldList = fusionDisplayFieldList(fusDef)
+                FieldType = a
             };
-
-            for (var i = 0; i < model.DataTypes.Count; i++)
-            {
-                model.DataTypes[i].Selected = (model.DataTypes[i].Value == model.FieldType.Type);
-            }
-
-            if (model.FieldType.Type == DataType.Lookup.ToString())
-            {
-                var selectedListValue = string.Format("{0}|{1}", model.FieldType.LookupObjectType, model.FieldType.LookupObjectID);
-                model.LookupLists.ForEach(l => {
-                    l.Selected = (l.Value == selectedListValue);
-                });
-            }
 
             return PartialView("FieldTypeEditForm", model);
         }
 
 
         [HttpPut, ValidateInput(false)]
-        public JsonResult EditFieldType(FormCollection form)
+        public JsonResult EditFieldType(FieldTypeEditorModel model)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+                //dont let fields with reserved names in
+                CheckIsFieldTypeNameReserved(model.FieldType.Name);
 
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<FieldType>(id);
-                var used = model.Fields.Any(i => i.FieldTypeID == id);
+                var ft = Company.GetById<FieldType>(model.FieldType.ID);
+                var used = Company.Fields.Any(i => i.FieldTypeID == ft.ID);
 
-                if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
+                if (ft == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
 
                 // Static fields
-                model.Name = parseTextField(form, "Name", null, true);
-
-                //dont let fields with reserved names in
-                CheckIsFieldTypeNameReserved(model.Name);
-
-                model.FriendlyName = string.IsNullOrEmpty(form["FriendlyName"]) ? form["Name"] : form["FriendlyName"];
-                model.DisplayDescription = parseTextField(form, "DisplayDescription", "");
-                model.FormDescription = parseTextField(form, "FormDescription", "");
-                model.ValidationDescription = parseTextField(form, "ValidationDescription", "");
+                ft.Name = model.FieldType.Name;
+                ft.FriendlyName = model.FieldType.FriendlyName;
+                ft.DisplayDescription = model.FieldType.DisplayDescription;
+                ft.FormDescription = model.FieldType.FormDescription;
+                ft.ValidationDescription = model.FieldType.ValidationDescription;
                 
-                model.IsListable = (model.Type != DataType.FusionLookup.ToString()) ? parseBooleanField(form, "IsListable") : false;
-                model.IsRequired = parseBooleanField(form, "IsRequired");
+                ft.IsListable = (model.FieldType.Type != DataType.FusionLookup.ToString()) ? model.FieldType.IsListable : false;
+                ft.IsRequired = model.FieldType.IsRequired;
 
-                int value;
-                //if (int.TryParse(form["Length"], out value)) model.Length = value; else model.Length = null;
-                if (int.TryParse(form["MinimumLength"], out value)) model.MinimumLength = value; else model.MinimumLength = null;
-                if (model.MinimumLength.HasValue)
-                {
-                    if (model.MinimumLength.Value == 0) model.MinimumLength = null;
-                }
-                if (int.TryParse(form["MaximumLength"], out value)) model.MaximumLength = value; else model.MaximumLength = null;
-                if (model.MaximumLength.HasValue)
-                {
-                    if (model.MaximumLength.Value == 0) model.MaximumLength = null;
-                }
-                model.Pattern = parseTextField(form, "Pattern");
+                ft.MinimumLength = model.FieldType.MinimumLength;
+                ft.MaximumLength = model.FieldType.MaximumLength;
+                ft.Pattern = model.FieldType.Pattern;
 
-                if (!model.IsRequired) model.MinimumLength = 0;
+                if (!ft.IsRequired) ft.MinimumLength = 0;
 
                 if (!used)
+                    ft.Type = model.FieldType.Type;
+
+                bool isNew;
+
+                switch (ft.Type)
                 {
-                    model.Type = parseTextField(form, "Type");
-                    if (model.Type == DataType.Lookup.ToString())
-                    {
-                        var lookupValues = parseTextField(form, "LookupObject");
-                        if (!string.IsNullOrEmpty(lookupValues))
+                    case "FusionLookup":
+                        #region
+                        var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
+
+                        foreach (var fi in model.FusionItems)
                         {
-                            var split = lookupValues.Split('|');
-                            model.LookupObjectType = split[0].Replace("Type", "");
-                            model.LookupObjectID = int.Parse(split[1]);
-                        }
-                    }
-                }
-                model.LookupDisplayFormat = parseTextField(form, "LookupDisplayFormat");
+                            isNew = false;
+                            FieldTypeFusionLookupDefinition efi = null;
 
-                Company.Update<FieldType>(model);
-                
-                if (model.Type == DataType.FusionLookup.ToString())
-                {
-                    var def = model.FieldTypeFusionLookupDefinitions.FirstOrDefault();
-
-                    if (def != null)
-                    {                        
-                        var display = parseTextField(form, "FusionShow", "Name");
-
-                        var sourceFusionAttributeTypeID = parseIntField(form, "FromFusionAttributeTypeID");
-                        var targetFusionAttributeTypeID = parseIntField(form, "ToFusionAttributeTypeID");
-                        var isParentChild = parseBooleanField(form, "IsParentChildRel");
-                        var displayFields = parseTextField(form, "FusionLookupFields");
-                        List<FieldTypeFusionLookupDisplayField> itemsToDelete = new List<FieldTypeFusionLookupDisplayField>();
-
-                        if (!string.IsNullOrEmpty(displayFields))
-                        {
-                            var fieldsTypeIds = displayFields.Split(',').ToList();
-                            
-                            foreach (var item in def.FieldTypeFusionLookupDisplayFields)
+                            if (fi.ID > 0)
                             {
-                                if (fieldsTypeIds.Contains(item.FieldTypeID.ToString()))
+                                efi = defs.SingleOrDefault(i => i.ID == fi.ID);
+                                if (efi == null)
                                 {
-                                    fieldsTypeIds.RemoveAt(fieldsTypeIds.IndexOf(item.FieldTypeID.ToString()));
-
-                                    continue;
+                                    isNew = true;
                                 }
-                                //item is in db but not wanted remove it
-                                itemsToDelete.Add(item);
                             }
-
-                            //anything left needs to be added
-                            foreach (var fieldTypeID in fieldsTypeIds)
+                            else
                             {
-                                def.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = def.ID, FieldTypeID = int.Parse(fieldTypeID) });
+                                isNew = true;
+                            }
+
+
+                            if (isNew)
+                            {
+                                efi = new FieldTypeFusionLookupDefinition
+                                {
+                                    FieldTypeID = ft.ID,
+                                    ReferenceType = fi.ReferenceType,
+                                    SourceFusionAttributeTypeID = fi.SourceFusionAttributeType,
+                                    TargetFusionAttributeTypeID = fi.TargetFusionAttributeType,
+                                    FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>()
+                                };
+                            }
+                            else
+                            {
+                                efi.ReferenceType = fi.ReferenceType;
+                                efi.SourceFusionAttributeTypeID = fi.SourceFusionAttributeType;
+                                efi.TargetFusionAttributeTypeID = fi.TargetFusionAttributeType;
+                            }
+
+
+                            var listToRemove = new List<FieldTypeFusionLookupDisplayField>();
+
+                            if (fi.DisplayFields != null)
+                            {
+                                // Add those that do not yet exist.
+                                foreach (var o in fi.DisplayFields)
+                                {
+                                    if (!efi.FieldTypeFusionLookupDisplayFields.Any(i => i.FieldTypeID == o.FieldTypeID && i.FieldTypeName == o.FieldTypeName))
+                                    {
+                                        efi.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = efi.ID, FieldTypeID = o.FieldTypeID, FieldTypeName = o.FieldTypeName });
+                                    }
+                                }
+
+                                // Remove those that no longer exist.
+                                foreach (var o in efi.FieldTypeFusionLookupDisplayFields)
+                                {
+                                    if (!fi.DisplayFields.Any(i => i.FieldTypeID == o.FieldTypeID && i.FieldTypeName == o.FieldTypeName))
+                                    {
+                                        listToRemove.Add(o);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (efi.FieldTypeFusionLookupDisplayFields != null)
+                                {
+                                    listToRemove.AddRange(efi.FieldTypeFusionLookupDisplayFields);
+                                }
+                            }
+
+                            if (listToRemove.Count > 0)
+                            {
+                                Company.FieldTypeFusionLookupDisplayFields.RemoveRange(listToRemove);
+                            }
+
+                            listToRemove = null;
+
+                            if (isNew)
+                                Company.Add<FieldTypeFusionLookupDefinition>(efi);
+                            else
+                                Company.Update<FieldTypeFusionLookupDefinition>(efi);
+                        }
+                        break;
+                        #endregion
+                    case "Lookup":
+                        #region
+                        ft.LookupObjectType = model.FieldType.LookupObjectType;
+                        ft.LookupObjectID = model.FieldType.LookupObjectID;
+                        ft.LookupDisplayFormat = model.FieldType.LookupDisplayFormat;
+                        break;
+                        #endregion
+                    case "RelationLookup":
+                        #region
+                        var eri = Company.Filter<FieldTypeRelationLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeRelationLookupDisplayFields).FirstOrDefault();
+                        isNew = false;
+                        if (model.RelationItem != null)
+                        {
+                            var listToRemove = new List<FieldTypeRelationLookupDisplayField>();
+
+                            if (eri == null)
+                            {
+                                isNew = true;
+                                eri = new FieldTypeRelationLookupDefinition
+                                {
+                                    FieldTypeID = model.FieldType.ID,
+                                    ChildIntersectTypeID = model.RelationItem.ChildIntersectType,
+                                    IntersectTypeID = model.RelationItem.IntersectType,
+                                    ReferenceType = model.RelationItem.ReferenceType
+                                };
+                            }
+                            else
+                            {
+                                eri.IntersectTypeID = model.RelationItem.IntersectType;
+                                eri.ReferenceType = model.RelationItem.ReferenceType;
+                                eri.ChildIntersectTypeID = model.RelationItem.ChildIntersectType;
+                            }
+
+                            if (model.RelationItem.DisplayFields != null)
+                            {
+                                // Add those that do not yet exist.
+                                foreach (var df in model.RelationItem.DisplayFields)
+                                {
+                                    if (!eri.FieldTypeRelationLookupDisplayFields.Any(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName))
+                                    {
+                                        eri.FieldTypeRelationLookupDisplayFields.Add(new FieldTypeRelationLookupDisplayField { FieldTypeRelationLookupDefinitionID = eri.ID, FieldTypeID = df.FieldTypeID, FieldTypeName = df.FieldTypeName });
+                                    }
+                                }
+
+                                // Remove those that no longer exist.
+                                foreach (var edf in eri.FieldTypeRelationLookupDisplayFields)
+                                {
+                                    if (!model.RelationItem.DisplayFields.Any(i => i.FieldTypeID == edf.FieldTypeID && i.FieldTypeName == edf.FieldTypeName))
+                                    {
+                                        listToRemove.Add(edf);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (eri.FieldTypeRelationLookupDisplayFields != null)
+                                {
+                                    listToRemove.AddRange(eri.FieldTypeRelationLookupDisplayFields);
+                                }
+                            }
+
+                            if (listToRemove.Count > 0)
+                            {
+                                Company.FieldTypeRelationLookupDisplayFields.RemoveRange(listToRemove);
+                            }
+
+                            listToRemove = null;
+
+                            if (isNew)
+                                Company.Add<FieldTypeRelationLookupDefinition>(eri);
+                            else
+                                Company.Update<FieldTypeRelationLookupDefinition>(eri);
+                        }
+                        else
+                        {
+                            if (eri != null)
+                            {
+                                ft.FieldTypeRelationLookupDefinitions.Remove(eri);
                             }
                         }
-                        else if(def.FieldTypeFusionLookupDisplayFields != null)
-                        {
-                            foreach (var item in def.FieldTypeFusionLookupDisplayFields)
-                            {                                
-                                //item is in db but not wanted remove it
-                                itemsToDelete.Add(item);
-                            }
-                        }
-
-                        def.SourceFusionAttributeTypeID = sourceFusionAttributeTypeID;
-                        def.TargetFusionAttributeTypeID = targetFusionAttributeTypeID;
-                        def.IsParentChild = isParentChild;
-
-                        def.Display = display;
-
-                        Company.Update<FieldTypeFusionLookupDefinition>(def);
-
-                        //remove items removed.
-                        foreach (var item in itemsToDelete)
-                        {
-                            Company.Delete<FieldTypeFusionLookupDisplayField>(item);
-                        }
-                    }
+                        break;
+                        #endregion
                 }
 
-                return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                Company.Update<FieldType>(ft);
+
+                return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, ft.ID.ToString(), ContextList.FieldType, "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

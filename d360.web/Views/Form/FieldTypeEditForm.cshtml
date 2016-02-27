@@ -1,547 +1,1116 @@
 ﻿@using d360.web.Models;
 @model FieldTypeEditorModel
 
+<script id="fieldTypeTmpl" type="text/html">
+    <div class="left form-header-info">
+        <h4>@((Model.FieldType.ID> 0) ? "Update Field" : "Add Field")</h4>
+    </div>
+    <div class="right">
+        <button type="button" data-bind="click: cancel" class="btn waves-effect waves-light brown lighten-4">Cancel</button>
+        <button type="button" data-bind="click: save" class="btn waves-effect waves-light brown lighten-1 saveButton">Save</button>
+    </div>
+    <div class="clear"></div>
+    <div class="form-instructions">Modify your field using the form below.  There are many types of fields from Simple Text and HTML to Lookups and Dates.</div>
+    <div id="progress" data-bind="visible: InProgress"><i class="fa fa-spinner fa-spin fa-4x"></i></div>
+
+    <div class="row">
+        <div class="col s6">
+            <div id='FriendlyNameTip' class="FieldNameRequired">@(Resources.FieldInfo.Name_Name)</div>
+            <input type="text" data-bind="jqxInput: {width: field_width, height: field_height, theme: theme, value: FriendlyName}" />
+        </div>
+        <div class="col s6">
+            <div id='NameTip' class="FieldNameRequired">@(Resources.FieldInfo.ApiName_Name)</div>
+            <input type="text" data-bind="jqxInput: {width: field_width, height: field_height, theme: theme, value: ApiName}" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col s6">
+            <div id='TypeTip' class="FieldNameRequired">@(Resources.FieldInfo.InputType_Name)</div>
+            <div data-bind="dataTypeFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: DataTypeIndex,
+                 source: DataTypeOptions,
+                 disabled: LimitedChangesOnly,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+        <div class="col s3 input-field">
+            <div data-bind="jqxCheckBox: { theme: theme, checked: IsListable }">@(Resources.FieldInfo.FilterEnabled_Name)</div>
+        </div>
+        <div class="col s3 input-field">
+            <div data-bind="jqxCheckBox: { theme: theme, checked: IsRequired }">@(Resources.FieldInfo.Required_Name)</div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: LookupDataTypeSelected">
+        <div class="col s6">
+            <div id='LookupObjectTip' class="FieldNameRequired">@(Resources.FieldInfo.ListType_Name)</div>
+            <div data-bind="lookupObjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: LookupObjectIndex,
+                 source: LookupObjectOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+        <div class="col s3">
+            <div id='LookupDisplayFormatTip' class="FieldNameRequired">@(Resources.FieldInfo.ListDisplayFormat_Name)</div>
+            <input type="text" data-bind="jqxInput: {width: field_width, height: field_height, theme: theme, value: LookupDisplayFormat}" />
+        </div>
+        <div class="col s3">
+            <div class="FieldName">&nbsp;</div>
+            <div data-bind="tokensFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 source: TokenOptions,
+                 displayMember: 'title',
+                 valueMember: 'value' 
+                 }"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: TextDataTypeSelected">
+        <div class="col s3">
+            <div id='PatternTip' class="FieldName">@(Resources.FieldInfo.Pattern_Name)</div>
+            <input type="text" data-bind="jqxInput: {width: field_width, height: field_height, theme: theme, value: Pattern }" />
+        </div>
+        <div class="col s3">
+            <div class="FieldName">&nbsp;</div>
+            <div data-bind="patternsFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 source: PatternOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+        <div class="col s3">
+            <div id='MinimumLengthTip' class="FieldName">@(Resources.FieldInfo.MinimumLength_Name)</div>
+            <div data-bind="jqxNumberInput: {value: MinimumLength, inputMode: 'simple', spinButtons: true, digits: 4, decimalDigits: 0, width: field_width, theme: theme}"></div>
+        </div>
+        <div class="col s3">
+            <div id='MaximumLengthTip' class="FieldName">@(Resources.FieldInfo.MaximumLength_Name)</div>
+            <div data-bind="jqxNumberInput: {value: MaximumLength, inputMode: 'simple', spinButtons: true, digits: 4, decimalDigits: 0, width: field_width, theme: theme}"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: PatternEnabled">
+        <div class="col s3">
+            <div class="FieldNameRequired">@(Resources.FieldInfo.TestPattern_Name)</div>
+            <input type="text" data-bind="jqxInput: {width: field_width, height: field_height, theme: theme, value: PatternValidationText}" />
+        </div>
+        <div class="col s3">
+            <div for="FieldNameRequired">&nbsp;</div>
+            <div data-bind="text: PatternValidationLabel"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: ValidationEnabled">
+        <div class="col s12">
+            <div id='ValidationDescriptionTip' class="FieldName">@(Resources.FieldInfo.ValidationDescription_Name)</div>
+            <textarea class="htmlArea" data-bind="value: ValidationDescription"></textarea>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: FusionLookupDataTypeSelected">
+        <div class="col s12" style="margin: 10px 0 10px 0">
+            <h5>Fusion Lookups</h5>
+            <table class="highlight, striped" cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>Target Item</th>
+                        <th>Reference Type</th>
+                        <th>Reference Item</th>
+                        <th>Reference Columns</th>
+                        <th style="width: 50px; text-align: right">
+                            <a class='btn-flat waves-effect blue-text' data-bind="click: addFusionItem"><i class='fa fa-plus' title='Add fusion item'></i></a>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: FusionItems">
+                    <tr>
+                        <td>
+                            <div data-bind="fusionSourceFusionAttributeTypeFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 selectedIndex: SourceFusionAttributeTypeIndex,
+                                 source: SourceFusionAttributeTypeOptions,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                        <td>
+                            <div data-bind="fusionReferenceTypeFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 selectedIndex: ReferenceTypeIndex,
+                                 source: ReferenceTypeOptions,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                        <td>
+                            <div data-bind="fusionTargetFusionAttributeTypeFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 selectedIndex: TargetFusionAttributeTypeIndex,
+                                 disabled: TargetFusionAttributeTypeDisabled,
+                                 source: TargetFusionAttributeTypeOptions,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                        <td>
+                            <div data-bind="fusionDisplayFieldFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 disabled: DisplayFieldsDisabled,
+                                 source: DisplayFieldOptions,
+                                 checkboxes: true,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                        <td><a class='btn-flat waves-effect red-text' data-bind="click: $parent.deleteFusionItem"><i class='fa fa-trash' title='Remove'></i></a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: RelationLookupDataTypeSelected">
+        <div class="col s12" style="margin: 10px 0 10px 0">
+            <table class="highlight, striped" cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>Relation</th>
+                        <th>Reference Type</th>
+                        <th>Child Relation</th>
+                        <th>Reference Columns</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: RelationItems">
+                    <tr>
+                        <td>
+                            <div data-bind="relationIntersectTypeFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 selectedIndex: IntersectTypeIndex,
+                                 source: IntersectTypeOptions,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                        <td>
+                            <div data-bind="relationReferenceTypeFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 selectedIndex: ReferenceTypeIndex,
+                                 source: ReferenceTypeOptions,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                        <td>
+                            <div data-bind="relationChildIntersectTypeFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 selectedIndex: ChildIntersectTypeIndex,
+                                 disabled: ChildIntersectTypeDisabled,
+                                 source: ChildIntersectTypeOptions,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                        <td>
+                            <div data-bind="relationDisplayFieldFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 disabled: DisplayFieldsDisabled,
+                                 source: DisplayFieldOptions,
+                                 checkboxes: true,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col s6">
+            <div id='DisplayDescriptionTip' class="FieldName">@(Resources.FieldInfo.DisplayDescription_Name)</div>
+            <textarea class="htmlArea" data-bind="value: DisplayDescription"></textarea>
+        </div>
+        <div class="col s6">
+            <div id='FormDescriptionTip' class="FieldName">@(Resources.FieldInfo.FormDescription_Name)</div>
+            <textarea class="htmlArea" data-bind="value: FormDescription"></textarea>
+        </div>
+    </div>
+</script>
+
 <div class="medium-overlay">
     <div class="ui segment">
-        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.FieldType, Description = "Modify your field using the form below.  There are many types of fields from Simple Text and HTML to Lookups and Dates.", Name = Model.FormName })
-        @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Model.FormUri, OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
-        {
-            <input type="hidden" id="_context" name="_context" value="@(ContextList.FieldType)" />
-            <input type="hidden" id="ID" name="ID" value="@(Model.FieldType.ID)" />
-            <input type="hidden" id="Object" name="Object" value="@(Model.FieldType.Object)" />
-            <input type="hidden" id="ObjectID" name="ObjectID" value="@(Model.FieldType.ObjectID)" />
-
-            <div class="row">
-                <div class="col s6">
-                    <div id='FriendlyNameTip' class="FieldNameRequired">@(Resources.FieldInfo.Name_Name)</div>
-                    <input id="FriendlyName" name="FriendlyName" type="text" value="@(Model.FieldType.FriendlyName)" />
-                </div>
-                <div class="col s6">
-                    <div id='NameTip' class="FieldNameRequired">@(Resources.FieldInfo.ApiName_Name)</div>
-                    <input id="Name" name="Name" type="text" value="@(Model.FieldType.Name)" />
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col s6">
-                    <div id='TypeTip' class="FieldNameRequired">@(Resources.FieldInfo.InputType_Name)</div>
-                    @Html.DropDownList("Type", Model.DataTypes, new { @class = "browser-default" })
-                </div>
-                <div class="col s3 input-field">
-                    <div id='IsListableTip' class="FieldName">@(Resources.FieldInfo.FilterEnabled_Name)</div>
-                    <input id="IsListable" name="IsListable" type="checkbox" value="@(Model.FieldType.IsListable)" @(Model.FieldType.IsListable ? "checked='checked'" : "") />
-                </div>
-                <div class="col s3 input-field">
-                    <div id='IsRequiredTip' class="FieldName">@(Resources.FieldInfo.Required_Name)</div>
-                    <input id="IsRequired" name="IsRequired" type="checkbox" value="@(Model.FieldType.IsRequired)" @(Model.FieldType.IsRequired ? "checked='checked'" : "") />
-                </div>
-            </div>
-            <div class="row LookupSection">
-                <div class="col s6">
-                    <div id='LookupObjectTip' class="FieldNameRequired">@(Resources.FieldInfo.ListType_Name)</div>
-                    @Html.DropDownList("LookupObject", Model.LookupLists, new { @class = "browser-default" })
-                </div>
-                <div class="col s3">
-                    <div id='LookupDisplayFormatTip' class="FieldNameRequired">@(Resources.FieldInfo.ListDisplayFormat_Name)</div>
-                    <input id="LookupDisplayFormat" name="LookupDisplayFormat" type="text" value="@(Model.FieldType.LookupDisplayFormat)" />
-                </div>
-                <div class="col s3">
-                    <div class="FieldName">&nbsp;</div>
-                    <select id="Tokens" class="browser-default">
-                        <option value="" disabled selected>Select token</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row ValidationSection">
-                <div class="col s3">
-                    <div id='PatternTip' class="FieldName">@(Resources.FieldInfo.Pattern_Name)</div>
-                    <input id="Pattern" name="Pattern" type="text" value="@(string.IsNullOrEmpty(Model.FieldType.Pattern) ? "" : Model.FieldType.Pattern.Replace(@"\\", @"\"))" />
-                </div>
-                <div class="col s3">
-                    <div class="FieldName">&nbsp;</div>
-                    <select id="CommonPatterns" class="browser-default">
-                        <option value="">Choose sample...</option>
-                        <option value="@(@"\b([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b")">Email</option>
-                        <option value="\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"> IP Address</option>
-                        <option value="\b\d{3}[-.]?\d{3}[-.]?\d{4}\b">North American Phone</option>
-                        <option value="\b\d+(\.\d{1,10})?\b">Numbers Only</option>
-                        <option value="(\\{2})([\da-z\.-]+)(\\)([\w \.-]+)">Unc/Network Path</option>
-                        <option value="\b(https?:\/\/)?([\da-z\.-]+)([\/\w \.-]*)*\/?\b">Internal Url</option>
-                        <option value="\b(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b">Public Url</option>
-                        <option value="\b[0-9]{5}(?:-[0-9]{4})?\b">US Zip Code</option>
-                    </select>
-                </div>
-                <div class="col s3">
-                    <div id='MinimumLengthTip' class="FieldName">@(Resources.FieldInfo.MinimumLength_Name)</div>
-                    <div id="MinimumLength" name="MinimumLength"></div>
-                </div>
-                <div class="col s3">
-                    <div id='MaximumLengthTip' class="FieldName">@(Resources.FieldInfo.MaximumLength_Name)</div>
-                    <div id="MaximumLength" name="MaximumLength"></div>
-                </div>
-            </div>
-            <div id="PatternValidationSection" class="row ValidationSection">
-                <div class="col s3">
-                    <div class="FieldNameRequired">@(Resources.FieldInfo.TestPattern_Name)</div>
-                    <input id="PatternValidationText" type="text" />
-                </div>
-                <div class="col s3">
-                    <div for="FieldNameRequired">&nbsp;</div>
-                    <div id="PatternValidationLabel"></div>
-                </div>
-                <div class="col s12">
-                    <div id='ValidationDescriptionTip' class="FieldName">@(Resources.FieldInfo.ValidationDescription_Name)</div>
-                    <textarea id="ValidationDescription" name="ValidationDescription" class="htmlArea">@Html.Raw(Model.FieldType.ValidationDescription)</textarea>
-                </div>
-            </div>
-            <div id="FusionLookupSection" class="row FusionLookupSection">
-                <div class="row">
-                    <div class="col s6">
-                        <div class="FieldNameRequired">For</div>
-                        @Html.DropDownList("FromFusionAttributeTypeID", Model.FromFusionAttributeTypeList, new { @class = "browser-default" })
-                    </div>
-                    <div class="col s6">
-                        <div class="FieldNameRequired">Display</div>
-                        @Html.DropDownList("ToFusionAttributeTypeID", Model.ToFusionAttributeTypeList, new { @class = "browser-default" })
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col s6">
-                        <div class="FieldNameRequired">Show</div>
-                        @Html.DropDownList("FusionShow", Model.FusionDisplayList, new { @class = "browser-default" })
-                    </div>                    
-                    <div class="col s6 input-field">
-                        <div class="FieldName">Show Parent Child</div>
-                        <input id="IsParentChildRel" name="IsParentChildRel" type="checkbox" value="@(Model.IsParentChildRel)" @(Model.IsParentChildRel ? "checked='checked'" : "") />
-                    </div>
-                </div>                
-                <div class="row">
-                    <div class="col s6">
-                        <div class="FieldNameRequired">Fields</div>
-                        <div  name="FusionLookupFields" id="FusionLookupFields"></div>                        
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s6">
-                    <div id='DisplayDescriptionTip' class="FieldName">@(Resources.FieldInfo.DisplayDescription_Name)</div>
-                    <textarea id="DisplayDescription" name="DisplayDescription" class="htmlArea">@Html.Raw(Model.FieldType.DisplayDescription)</textarea>
-                </div>
-                <div class="col s6">
-                    <div id='FormDescriptionTip' class="FieldName">@(Resources.FieldInfo.FormDescription_Name)</div>
-                    <textarea id="FormDescription" name="FormDescription" class="htmlArea">@Html.Raw(Model.FieldType.FormDescription)</textarea>
-                </div>
-            </div>
-        }
+        <div id="FieldTypeFormWrapper" data-bind="template: {name: 'fieldTypeTmpl' }"></div>
     </div>
 </div>
 
 <script type="text/javascript">
-    var used = @(Model.FieldIsUsed ? "true" : "false");
+    //#region Binding Handlers
+    ko.bindingHandlers.dataTypeFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.DataType(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.lookupObjectFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.LookupObject(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.patternsFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.Pattern(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
 
-    $(function () {
-        var w = '100%',
-            h = 25;
+    ko.bindingHandlers.fusionSourceFusionAttributeTypeFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.SourceFusionAttributeType(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.fusionReferenceTypeFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.ReferenceType(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.fusionTargetFusionAttributeTypeFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.TargetFusionAttributeType(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.fusionDisplayFieldFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('checkChange', function (event) {
+                var checked = event.args.item.checked;
+                var value = event.args.item.value;
+                if (checked) {
+                    viewModel.DisplayFields.push(value);
+                }
+                else {
+                    viewModel.DisplayFields.remove(value);
+                }
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
 
-        var switchControlsBasedOnType = function(value){
-            switch (value) {
-                case 'Text':
-                    $('.ValidationSection').fadeIn(100);
-                    $('.LookupSection').fadeOut(100);
-                    if ($('#Pattern').val() == '') {
-                        $('#PatternValidationSection').hide();
+    ko.bindingHandlers.tokensFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.LookupDisplayFormat(viewModel.LookupDisplayFormat() + event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+
+    ko.bindingHandlers.relationIntersectTypeFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.IntersectType(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.relationReferenceTypeFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.ReferenceType(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.relationChildIntersectTypeFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.ChildIntersectType(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.relationDisplayFieldFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('checkChange', function (event) {
+                var checked = event.args.item.checked;
+                var value = event.args.item.value;
+                if (checked) {
+                    viewModel.DisplayFields.push(value);
+                }
+                else {
+                    viewModel.DisplayFields.remove(value);
+                }
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+        }
+    };
+    //#endregion
+
+    function FieldTypeFusionItemViewModel(data, parent) {
+        var self = this;
+        data = data || {};
+
+        //#region Simple Properties
+
+        self.ID = ko.observable(data.ID);
+        
+        self.SourceFusionAttributeTypeIndex = ko.observable(data.SourceFusionAttributeTypeIndex || -1);
+        self.SourceFusionAttributeType = ko.observable(data.SourceFusionAttributeType);
+        
+        self.ReferenceTypeIndex = ko.observable(data.ReferenceTypeIndex || -1);
+        self.ReferenceType = ko.observable(data.ReferenceType || 0);
+
+        self.TargetFusionAttributeTypeIndex = ko.observable(data.TargetFusionAttributeTypeIndex || -1);
+        self.TargetFusionAttributeType = ko.observable(data.TargetFusionAttributeType);
+        
+        self.DisplayFields = ko.observableArray(data.DisplayFields);
+
+        self.TargetFusionAttributeTypeDisabled = ko.pureComputed(function () {
+            return (self.ReferenceType() == "1" || self.TargetFusionAttributeTypeOptions().length == 0);
+        }, self);
+
+        self.DisplayFieldsDisabled = ko.pureComputed(function () {
+            return (self.ReferenceType() != "1" && (
+                self.TargetFusionAttributeTypeOptions().length == 0 ||
+                (self.TargetFusionAttributeTypeOptions().length > 0 && self.TargetFusionAttributeType == ""))
+            );
+        }, self);
+
+        //#endregion
+
+        //#region List Properties
+
+        self.SourceFusionAttributeTypeOptions = ko.observableArray(parent.FusionAttributeTypeOptions());
+        self.ReferenceTypeOptions = ko.observableArray([
+            { title: 'Self Reference', value: '1' },
+            { title: 'Parent Reference', value: '2' },
+            { title: 'Child Reference', value: '3' },
+            { title: 'Relationship Reference', value: '4' }
+        ]);
+        self.TargetFusionAttributeTypeOptions = ko.observableArray();
+        self.DisplayFieldOptions = ko.observableArray();
+
+        //#endregion
+
+        //#region Internal Methods
+
+        var loadDisplayFields = function(id, existingItems) {
+            return $.getJSON('/form/FieldType_FusionLookup_DisplayFields', { id: id }, function(items) {
+                if (existingItems) {
+                    $.each(existingItems, function(e_ix, e_item){
+                        $.each(items, function(ix, item) {
+                            if (item.value === e_item) {
+                                item.checked = true;
+                            }
+                        });
+                    });
+                }
+                self.DisplayFieldOptions(items);
+            });
+        };
+
+        var loadTargetAttributeTypes = function(s, r) {
+            return $.getJSON(
+                '/form/FieldType_FusionLookup_TargetAttributeTypes',
+                {
+                    s: s,
+                    r: r
+                },
+                function(refTargets) {
+                    self.TargetFusionAttributeTypeOptions(refTargets);
+                }
+            );
+        };
+
+        var setSubscriptions = function() {
+
+            self.SourceFusionAttributeType.subscribe(function (value) {
+                self.TargetFusionAttributeTypeOptions.removeAll();
+                self.DisplayFieldOptions.removeAll();
+                self.DisplayFields.removeAll();
+
+                if (self.ReferenceType() != "" && self.ReferenceType() != "1") {
+                    loadTargetAttributeTypes(value, self.ReferenceType());
+                }
+            });
+
+            self.ReferenceType.subscribe(function (value) {
+                self.TargetFusionAttributeTypeOptions.removeAll();
+                self.DisplayFieldOptions.removeAll();
+                self.DisplayFields.removeAll();
+
+                if (value) {
+                    if (value == "1"){
+                        //Load the display fields for the Source Type.
+                        loadDisplayFields(self.SourceFusionAttributeType());
                     }
                     else {
-                        $('#PatternValidationSection').show();
+                        loadTargetAttributeTypes(self.SourceFusionAttributeType(), value);
                     }
-                    $('.FusionLookupSection').fadeOut(100);
-                    $('#IsListable').removeAttr("disabled");
-                    break;
-                case 'Lookup':
-                    $('.ValidationSection').fadeOut(100);
-                    $('.LookupSection').fadeIn(100);
-                    $('.FusionLookupSection').fadeOut(100);
-                    $('#IsListable').removeAttr("disabled");
-                    break;
-                case 'FusionLookup':
-                    $('.FusionLookupSection').fadeIn(100);
-                    $('.ValidationSection').fadeOut(100);
-                    $('.LookupSection').fadeOut(100);
-                    $('#IsListable').attr("disabled", true).attr('checked', false);
-                    break;
-                default:
-                    $('.ValidationSection').fadeOut(100);
-                    $('.LookupSection').fadeOut(100);
-                    $('.FusionLookupSection').fadeOut(100);
-                    $('#IsListable').removeAttr("disabled");
-                    break;
+                }
+            });
+
+            self.TargetFusionAttributeType.subscribe(function (value) {
+                self.DisplayFieldOptions.removeAll();
+                self.DisplayFields.removeAll();
+
+                if (value) {
+                    loadDisplayFields(value);
+                }
+            });
+
+        };
+
+        //#endregion
+
+        //#region Initialize before subscribes
+
+        if (self.ID() > 0) {
+            var indexToSelect = -1;
+
+            var fullSourceFusionAttributeType = 0;
+            $.each(self.SourceFusionAttributeTypeOptions(), function (ix, item) {
+                if (item.value == self.SourceFusionAttributeType()) {
+                    indexToSelect = ix;
+                    fullSourceFusionAttributeType = item.value;
+                }
+            });
+            self.SourceFusionAttributeTypeIndex(indexToSelect);
+
+            indexToSelect = -1;
+            var fullReferenceTypeValue = "";
+            $.each(self.ReferenceTypeOptions(), function (ix, item) {
+                if (item.value == self.ReferenceType()) {
+                    indexToSelect = ix;
+                    fullReferenceTypeValue = item.value;
+                }
+            });
+            self.ReferenceTypeIndex(indexToSelect);
+
+            if (fullSourceFusionAttributeType > 0 && fullReferenceTypeValue > "") {
+                
+                loadTargetAttributeTypes(fullSourceFusionAttributeType, fullReferenceTypeValue).then(function(){
+                    indexToSelect = -1;
+                    
+                    var fullTargetFusionAttributeType = 0;
+                    
+                    $.each(self.TargetFusionAttributeTypeOptions(), function (ix, item) {
+                        if (item.value == self.TargetFusionAttributeType()) {
+                            indexToSelect = ix;
+                            fullTargetFusionAttributeType = item.value;
+                        }
+                    });
+                    self.TargetFusionAttributeTypeIndex(indexToSelect);     
+                    if (indexToSelect > -1) {
+                        loadDisplayFields(fullTargetFusionAttributeType, self.DisplayFields());
+                    }
+                }).then(function(){
+                    setSubscriptions();
+                });
+
             }
+            else {
+                loadDisplayFields(self.SourceFusionAttributeType(), self.DisplayFields()).then(function(){
+                    setSubscriptions();
+                });
+            }
+
+        }
+        else {
+            setSubscriptions();
         }
 
-        var loadFusionAttributeFields = function() {
-            var sourceFusionLookup =
-                {
-                    datatype:'json',
-                    datafields:
-                        [
-                            {name:'Value',type:'string'},
-                            {name:'FriendlyName',type:'string'}
-                        ],
-                    id:'Value',
-                    url:'/api/fusionattributetype/' +$('#ToFusionAttributeTypeID').val() + '/info'
+        //#endregion
+    }
+
+    function FieldTypeRelationItemViewModel(data, parent) {
+        var self = this;
+        data = data || {};
+
+        //#region Simple Properties
+
+        self.ID = ko.observable(data.ID);
+
+        self.IntersectTypeIndex = ko.observable(data.IntersectTypeIndex || -1);
+        self.IntersectType = ko.observable(data.IntersectType);
+        self.ReferenceTypeIndex = ko.observable(data.ReferenceTypeIndex || -1);
+        self.ReferenceType = ko.observable(data.ReferenceType);
+        self.ChildIntersectTypeIndex = ko.observable(data.ChildIntersectTypeIndex || -1);
+        self.ChildIntersectType = ko.observable(data.ChildIntersectType);
+        self.DisplayFields = ko.observableArray(data.DisplayFields);
+
+        //#endregion
+
+        //#region Computed Properties
+
+        self.ChildIntersectTypeDisabled = ko.pureComputed(function () {
+            return (self.ReferenceType() == "1" || self.ChildIntersectTypeOptions().length == 0);
+        }, self);
+
+        self.DisplayFieldsDisabled = ko.pureComputed(function () {
+            return (self.ReferenceType() != "1" && (
+                self.ChildIntersectTypeOptions().length == 0 ||
+                (self.ChildIntersectTypeOptions().length > 0 && self.ChildIntersectType == ""))
+            );
+        }, self);
+
+        //#endregion
+
+        //#region List Properties
+
+        self.IntersectTypeOptions = ko.observableArray(parent.IntersectTypeOptions());
+        self.ReferenceTypeOptions = ko.observableArray([
+            { title: 'Self Reference', value: '1' },
+            { title: 'Child Reference', value: '2' }
+        ]);
+        self.ChildIntersectTypeOptions = ko.observableArray();
+        self.DisplayFieldOptions = ko.observableArray();
+
+        //#endregion
+
+        //#region Internal Methods
+
+        var loadChildIntersects = function(intersectTypeID) {
+            return $.getJSON(
+                '/form/FieldType_RelationLookup_ChildIntersectTypes',
+                { id: intersectTypeID },
+                function(items) {
+                    self.ChildIntersectTypeOptions(items);
                 }
-            var dataAdapterFL = new $.jqx.dataAdapter(sourceFusionLookup);
+            );
+        }
+        var loadDisplayFields = function(type, id, existingItems) {
+            return $.getJSON(
+                '/form/FieldType_RelationLookup_DisplayFields',
+                { type: type, id: id },
+                function(items) {
+                    if (existingItems) {
+                        $.each(existingItems, function(e_ix, e_item){
+                            $.each(items, function(ix, item) {
+                                if (item.value === e_item) {
+                                    item.checked = true;
+                                }
+                            });
+                        });
+                    }
+                    self.DisplayFieldOptions(items);
+                }
+            );
+        }
+        var setSubscriptions = function(){
+            self.IntersectType.subscribe(function (value) {
+                self.ChildIntersectTypeOptions.removeAll();
+                self.DisplayFieldOptions.removeAll();
+                self.DisplayFields.removeAll();
+                if (value) {
+                    var values = value.split('|');
 
-            $("#FusionLookupFields").jqxDropDownList({source:dataAdapterFL});
+                    if (self.ReferenceType() != "" && self.ReferenceType() != "1") {
+                        loadChildIntersects(values[0]);
+                    }
+                    else {
+                        loadDisplayFields(values[1], values[2]);
+                    }
+                }
+            });
 
-            var selected = arguments.length>0 ? arguments[0]:"";
+            self.ReferenceType.subscribe(function (value) {
+                self.ChildIntersectTypeOptions.removeAll();
+                self.DisplayFieldOptions.removeAll();
+                self.DisplayFields.removeAll();
 
-            $("#FusionLookupFields").on('bindingComplete', function (event) {            
-                if(selected.length > 0)
-                {                    
-                    var sel = selected.split(',');
-                    for(var j=0;j<sel.length;j++){
-                        var item = $("#FusionLookupFields").jqxDropDownList('getItemByValue',sel[j]); 
-                        if(item)
-                        {
-                            item.checked=true;
-                            $("#FusionLookupFields").jqxDropDownList('selectItem', item ); 
+                if (value) {
+                    var values = self.IntersectType().split('|');
+
+                    if (value == "1"){
+                        //Load the display fields for the Source Type.
+                        loadDisplayFields(values[1], values[2]);
+                    }
+                    else {
+                        loadChildIntersects(values[0]);
+                    }
+                }
+            });
+
+            self.ChildIntersectType.subscribe(function (value) {
+                self.DisplayFieldOptions.removeAll();
+                self.DisplayFields.removeAll();
+
+                if (value) {
+                    var values = value.split('|');
+                    loadDisplayFields(values[1], values[2]);
+                }
+            });
+        }
+        
+        //#endregion
+
+        //#region Initialize before subscribes
+
+        if (self.ID() > 0) {
+            var indexToSelect = -1;
+
+            var fullIntersectTypeValue = "";
+            $.each(self.IntersectTypeOptions(), function (ix, item) {
+                if (item.value.substring(0, item.value.indexOf('|')) == self.IntersectType()) {
+                    indexToSelect = ix;
+                    fullIntersectTypeValue = item.value;
+                }
+            });
+            self.IntersectTypeIndex(indexToSelect);
+
+            indexToSelect = -1;
+            var fullReferenceTypeValue = 0;
+            $.each(self.ReferenceTypeOptions(), function (ix, item) {
+                if (item.value == self.ReferenceType()) {
+                    indexToSelect = ix;
+                    fullReferenceTypeValue = item.value;
+                }
+            });
+            self.ReferenceTypeIndex(indexToSelect);
+            console.log(fullIntersectTypeValue + " -- " + fullReferenceTypeValue);
+            if (fullIntersectTypeValue > "" && fullReferenceTypeValue > 1) {
+                
+                var values = fullIntersectTypeValue.split('|');
+                
+                loadChildIntersects(values[0]).then(function(){
+                    indexToSelect = -1;
+                    
+                    var fullChildIntersectTypeValue = "";
+                    
+                    $.each(self.ChildIntersectTypeOptions(), function (ix, item) {
+                        if (item.value.substring(0, item.value.indexOf('|')) == self.ChildIntersectType()) {
+                            indexToSelect = ix;
+                            fullChildIntersectTypeValue = item.value;
                         }
-                    }                    
-                }            
+                    });
+                    self.ChildIntersectTypeIndex(indexToSelect);     
+                    if (indexToSelect > -1) {
+                        var values = fullChildIntersectTypeValue.split('|');
+                        loadDisplayFields(values[1], values[2], self.DisplayFields());
+                    }
+                }).then(function(){
+                    setSubscriptions();
+                });
+
+            }
+            else {
+                var values = fullIntersectTypeValue.split('|');
+                loadDisplayFields(values[1], values[2], self.DisplayFields()).then(function(){
+                    setSubscriptions();
+                });
+            }
+        }
+        else {
+            setSubscriptions();
+        }
+
+        //#endregion
+    }
+
+    function FieldTypeViewModel(data) {
+        var self = this;
+        data = data || {};
+
+        //#region Simple Properties
+
+        self.ID = ko.observable(data.ID);
+        self.Context = ko.observable(data.Context);
+        self.Object = ko.observable(data.Object);
+        self.ObjectID = ko.observable(data.ObjectID);
+
+        self.FriendlyName = ko.observable(data.FriendlyName || "");
+        self.ApiName = ko.observable(data.ApiName || "");
+        self.IsListable = ko.observable(data.IsListable || false);
+        self.IsRequired = ko.observable(data.IsRequired || false);
+
+        self.DataTypeIndex = ko.observable(data.DataTypeIndex || -1);
+        self.DataType = ko.observable(data.DataType || '');
+
+        self.DisplayDescription = ko.observable(data.DisplayDescription || "");
+        self.FormDescription = ko.observable(data.FormDescription || "");
+
+        self.LookupObjectIndex = ko.observable(data.LookupObjectIndex || -1);
+        self.LookupObject = ko.observable(data.LookupObject || '');
+        self.LookupDisplayFormat = ko.observable();
+
+        self.Pattern = ko.observable(data.Pattern || "");
+        self.MinimumLength = ko.observable(data.MinimumLength || 0);
+        self.MaximumLength = ko.observable(data.MaximumLength || 1000);
+        self.ValidationDescription = ko.observable(data.ValidationDescription || "");
+
+        self.PatternValidationText = ko.observable('');
+        //self.PatternValidationLabel = ko.observable();
+
+        self.LimitedChangesOnly = ko.observable(data.LimitedChangesOnly || false);
+        self.InProgress = ko.observable(false);
+
+        //#endregion
+
+        //#region Computed Properties
+
+        self.FusionLookupDataTypeSelected = ko.pureComputed(function () {
+            return (self.DataType() == "FusionLookup");
+        }, self);
+        self.LookupDataTypeSelected = ko.pureComputed(function () {
+            return (self.DataType() == "Lookup");
+        }, self);
+        self.RelationLookupDataTypeSelected = ko.pureComputed(function () {
+            return (self.DataType() == "RelationLookup");
+        }, self);
+        self.TextDataTypeSelected = ko.pureComputed(function () {
+            return (self.DataType() == "Text");
+        }, self);
+        self.NonTextDataTypeSelected = ko.pureComputed(function () {
+            return (self.DataType() != "FusionLookup" && self.DataType() != "Lookup" && self.DataType() != "RelationLookup" && self.DataType() != "Text");
+        }, self);
+        self.ValidationEnabled = ko.pureComputed(function () {
+            return (self.Pattern() > "" || self.MinimumLength() > 0 || self.IsRequired());
+        }, self);
+        self.PatternEnabled = ko.pureComputed(function () {
+            return (self.ValidationEnabled() && self.Pattern() > "");
+        }, self);
+
+        self.PatternValidationLabel = ko.pureComputed(function () {
+            if (self.Pattern() > "" && self.PatternValidationText() > "")
+            {
+                var patternRegex = new RegExp(self.Pattern());
+                return (patternRegex.test(self.PatternValidationText())) ? 'Success' : 'Fail';
+            }
+            else 
+            {
+                return '';
+            }
+        }, self);
+        //#endregion
+
+        //#region List Properties
+
+        self.DataTypeOptions = ko.observableArray();    // Data Types.
+
+        self.FusionItems = ko.observableArray();  // Target Fusion Look-through references.
+        self.FusionAttributeTypeOptions = ko.observableArray();
+
+        self.LookupObjectOptions = ko.observableArray();// Lookup lists.
+
+        self.PatternOptions = ko.observableArray();     // Patterns.
+
+        self.RelationItems = ko.observableArray();      // Target Relation Look-through references.
+        self.IntersectTypeOptions = ko.observableArray();
+
+        self.TokenOptions = ko.observableArray();
+
+        //#endregion
+
+        //#region Methods
+
+        var loadTokens = function(type, id){
+            if (type != "DomainItem") type += 'Type';
+            $.getJSON("/form/FieldType_Lookup_Tokens", { type, id }, function(tokens) {
+                self.TokenOptions.removeAll();
+                self.TokenOptions(tokens);
+                console.log(tokens[0]);
             });
         }
 
-        var switchTokensBasedOnLookup = function() {
-            try {
-                var textValue = $('#LookupObject').val();
-                if (textValue != '') {
-                    var values = textValue.split('|');
-                    if (values.length == 2) {
-                        var t = values[0];
-                        var i = values[1];
-                        if (t != "DomainItem") t += 'Type';
-                        $.getJSON("/api/" + t + "/" + i + "/fields", function(tokenData) {
-                            var tokensDdl = $('#Tokens');
-                            //tokensDdl.html('');
-                            //tokensDdl.append('<option value="" disabled selected>Select token</option>');
-                            tokensDdl.jqxDropDownList('clear');
-                            $.each(tokenData, function(){
-                                tokensDdl.jqxDropDownList('addItem', { label: this.Text, value: this.Value });
-                                //tokensDdl.append('<option value="' + this.Value + '">' + this.Text + '</option>');
-                            });
-                        })
-                    }
-                }
-            } catch (e) {
-                console.log(e);
-            }
-        }
-
-        //#region Control Instantiation
-
-        $("#Name").jqxInput({ width: field_width, theme: theme, height: h });
-        $("#FriendlyName").jqxInput({ width: field_width, theme: theme, height: h });
-        $("#Type").jqxDropDownList({ width: field_width, theme: theme });
-        $("#LookupObject").jqxDropDownList({ width: field_width, theme: theme, filterable:true, searchMode: 'containsignorecase' });
-        $("#LookupDisplayFormat").jqxInput({ width: field_width, theme: theme, height: h });
-        $("#Tokens").jqxDropDownList({ width: field_width, theme: theme });
-        $("#Pattern").jqxInput({ width: field_width, theme: theme, height: h });
-        $("#CommonPatterns").jqxDropDownList({ width: field_width, theme: theme });
-        $("#MinimumLength").jqxNumberInput({ width: field_width, height: h, min: 0, max: 100, decimalDigits: 0, inputMode: 'simple', spinButtons: true });
-        $('#MinimumLength').jqxNumberInput('val', @(Model.FieldType.MinimumLength.HasValue ? Model.FieldType.MinimumLength.Value : 1));
-        $("#MaximumLength").jqxNumberInput({ width: field_width, height: h, min: 1, max: 100000, decimalDigits: 0, inputMode: 'simple', spinButtons: true });
-        $('#MaximumLength').jqxNumberInput('val', @(Model.FieldType.MaximumLength.HasValue ? Model.FieldType.MaximumLength.Value : 1000));
-        $("#PatternValidationText").jqxInput({ width: field_width, theme: theme, height: h });
-        $("#FromFusionAttributeTypeID").jqxDropDownList({ width: field_width, theme: theme });
-        $("#ToFusionAttributeTypeID").jqxDropDownList({ width: field_width, theme: theme });
-        $("#FusionShow").jqxDropDownList({ width: field_width, theme: theme });
-        $("#FusionLookupFields").jqxDropDownList({ width: field_width, theme: theme, displayMember:'FriendlyName',valueMember:'Value',checkboxes: true });
-
-        $('#form0').jqxValidator({
-            hintType: 'label',
-            rules: [
-                {
-                    input: "#Name",
-                    rule: function () {
-                        var nameToTest = $('#Name').val();
-                        var nameRegex = new RegExp("^[a-zA-Z0-9_-]+$");
-                        return nameRegex.test(nameToTest);
-                    },
-                    action: 'blur',
-                    message: 'Name can only have uppercaseletters, lowercase letters, numbers, dash, or underscore.'
-                },
-                {
-                    input: "#Name",
-                    rule: 'required',
-                    action: 'blur',
-                    message: 'Name is required.'
-                },
-                {
-                    input: "#FriendlyName",
-                    rule: 'required',
-                    action: 'blur',
-                    message: 'Friendly Name is required.'
-                },
-                {
-                    input: '#MaximumLength', message: 'Maximum Length must be greater than or equal to Minimum Length.', action: 'blur',
-                    rule: function () {
-                        var minLength = $('#MinimumLength').val();
-                        var success = false;
-                        var maxLength = $('#MaximumLength').val();
-                        if (minLength != '' && maxLength != '') {
-                            success = (maxLength >= minLength);
-                        }
-                        else {
-                            success = true;
-                        }
-                        return success;
-                    }
-                },
-                {
-                    input: '#LookupDisplayFormat', message: 'Tokenized value required if the field type is List.', action: 'blur',
-                    rule: function () {
-                        var typeValue = $("select#Type option").filter(":selected").val();
-                        var success = false;
-                        if (typeValue == 'Lookup') {
-                            var format = $('#LookupDisplayFormat').val();
-                            var tokens = $("option", $("#Tokens"));
-                            //var tokens = $("#Tokens").jqxDropDownList('getItems');
-                            for (t in tokens) {
-                                var token = tokens[t];
-                                success = (format.indexOf(token.value) > -1)
-                                if (success)
-                                    break;
-                            }
-                        }
-                        else {
-                            success = true;
-                        }
-                        return success;
-                    }
-                }
-            ]
-        });
-
-        //#endregion
-
-        //#region Help Tooltips
-
-        tipCss = 'qtip-blue qtip-shadow';
-        $('#NameTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.ApiName_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#FriendlyNameTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.FriendlyName_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#TypeTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.InputType_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#IsListableTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.FilterEnabled_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#IsRequiredTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.Required_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#LookupObjectTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.ListType_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#LookupDisplayFormatTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.ListDisplayFormat_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#PatternTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.Pattern_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#MinimumLengthTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.MinimumLength_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#MaximumLengthTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.MaximumLength_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#DisplayDescriptionTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.DisplayDescription_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#FormDescriptionTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.FormDescription_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#ValidationDescriptionTip').qtip({
-            content: {
-                text: "@(Resources.FieldInfo.ValidationDescription_Description)"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-
-
-        //#endregion
-
-        //#region Events
-
-        $('#PatternValidationText').on('keyup', function(){
-            var textToTest = $('#PatternValidationText').val();
-            var patternToTest = $('#Pattern').val();
-            var patternRegex = new RegExp(patternToTest);
-            var success = patternRegex.test(textToTest);
-
-            if (textToTest != '') {
-                $('#PatternValidationLabel').removeClass(success ? "bg-danger" : "bg-success").addClass(success ? "bg-success" : "bg-danger");
-                $('#PatternValidationLabel').text(success ? "Success" : "Fail");
-            }
-            else {
-                $('#PatternValidationLabel').removeClass("bg-danger").removeClass("bg-success");
-                $('#PatternValidationLabel').text("");
-            }
-        });
-
-        $('#FriendlyName').on('change', function () {
-            var n = $('#Name').val();
-            var f = $('#FriendlyName').val();
-            if (n == "") {
-                f = f.replace(/[\s\W]/g, '');
-                $("#Name").val(f);
-            }
-        });
-
-        //$(document.body).on('change', '#Type', function (value) {
-        $('#Type').on('change', function (event) {
-            //var optionSelected = $("option:selected", this);
-            var valueSelected = event.args.item.value; //this.value;
-            switchControlsBasedOnType(valueSelected);
-        });
-
-        $('#LookupObject').on('change', function (event) {
-            switchTokensBasedOnLookup();
-        });
-
-        //$(document.body).on('change', '#Tokens', function (value) {
-        $('#Tokens').on('change', function (event) {
-            //var optionSelected = $("option:selected", this);
-            var valueSelected = event.args.item.value; //this.value;
-            var currentValue = $("#LookupDisplayFormat").val();
-            if (currentValue.indexOf(valueSelected) == -1){
-                $("#LookupDisplayFormat").val(currentValue + valueSelected);
-            }
-        });
-
-        $('#CommonPatterns').on('change', function (event) {
-            //var args = event.args;
-            //if (args) {
-            var text = event.args.item.value; //$('#CommonPatterns').val();
-            $("#Pattern").val(text);//(args.item.value);
-            if (text == '') {
-                $('#PatternValidationSection').hide();
-            }
-            else {
-                $('#PatternValidationSection').show();
-            }
-            //}
-        });
-
-        $('#ToFusionAttributeTypeID').on('change', function (event){
-            loadFusionAttributeFields();
-        })
-
-        $('#form0').on('validationSuccess', function (event) {
-            $('#form0').submit();
-        });
-        $('#EditableFormSaveButton').on('click', function () {
-            $('#form0').jqxValidator('validate');
-        });
-
-        $('#EditableFormCancelButton').on('click', function () {
-            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
-        });
-        amplify.subscribe("ErrorOccurredAction", function (data) {
-            $('#EditableFormSaveButton').hide();
-        });
-        amplify.subscribe("StartingAjax", function () {
-            $('#EditableFormSaveButton').attr('disabled', 'disabled');
-            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
-        });
-        amplify.subscribe("EndingAjax", function () {
-            $('#EditableFormSaveButton').removeAttr('disabled');
-            $('#progress').html('');
-        });
-
-        //#endregion
-
-        //#region Set Values
-
-        $("#Type").jqxDropDownList('val', '@(Model.FieldType.Type)');
-        switchTokensBasedOnLookup();
-
-        if ($('#Pattern').val() == '') {
-            $('#PatternValidationSection').hide();
-        }
-        else {
-            $('#PatternValidationSection').show();
-        }
-
-        //#endregion
-
-        loadFusionAttributeFields('@(Model.FusionDisplayFieldList)');
+        var setSubscriptions = function() {
         
+            self.IsRequired.subscribe(function (value) {
+
+                if (value) {
+                    if (self.MinimumLength() <= 0) {
+                        self.MinimumLength(1);
+                    }
+                }
+                else {
+                    self.MinimumLength(0);
+                }
+            });
+
+            self.FriendlyName.subscribe(function (value) {
+
+                if (value) {
+                    if (value.length > 0) {
+                        self.ApiName(value.replace(' ', ''));
+                    }
+                }
+            });
+
+            self.LookupObject.subscribe(function (value) {
+                if (value) {
+                    var values = value.split('|');
+                    loadTokens(values[0], values[1]);
+                    self.LookupDisplayFormat('');
+                }
+            });
+
+        }
+
+        self.addFusionItem = function() {
+            self.FusionItems.push(new FieldTypeFusionItemViewModel({}, self));
+        };
+
+        //self.addRelationItem = function() {
+        //    self.RelationItems.push(new FieldTypeRelationItemViewModel({}, self));
+        //};
+
+        self.cancel = function () {
+            amplify.publish("CancelAction", { context: self.Context() });
+        };
+
+        self.deleteFusionItem = function () {
+            self.RelationItems.remove(this);
+        };
+
+        //self.deleteRelationItem = function () {
+        //    self.RelationItems.remove(this);
+        //};
+
+        self.loadCurrentType = function () {
+
+            amplify.request.define( "FieldType_Lookups", "ajax", {
+                url: "/form/FieldType_Lookups?type={type}&id={id}",
+                dataType: "json",
+                type: "GET",
+                cache: true
+            });
+
+            amplify.request(
+                'FieldType_Lookups',
+                { type: self.Object(), id: self.ObjectID() },
+                function(lookups) {
+                    self.DataTypeOptions(lookups.DataTypes);
+                    self.PatternOptions(lookups.Patterns);
+                    if (lookups.FusionAttributeTypes) {
+                        self.FusionAttributeTypeOptions(lookups.FusionAttributeTypes);
+                    }
+                    if (lookups.IntersectTypes) {
+                        self.IntersectTypeOptions(lookups.IntersectTypes);
+                    }
+                    if (lookups.Lookups) {
+                        self.LookupObjectOptions(lookups.Lookups);
+                    }
+
+                    if (self.ID() > 0) {
+                        $.getJSON('/form/FieldType_FormData', { id: self.ID() }, function (ftData) {
+                            if (ftData.FieldType) {
+                                self.ApiName(ftData.FieldType.Name);
+                                self.FriendlyName(ftData.FieldType.FriendlyName);
+                                self.IsListable(ftData.FieldType.IsListable);
+                                self.IsRequired(ftData.FieldType.IsRequired);
+                                
+                                var indexToSelect = -1;
+
+                                self.DataType(ftData.FieldType.Type);
+                                $.each(self.DataTypeOptions(), function (ix, item) {
+                                    if (item.value == ftData.FieldType.Type) {
+                                        indexToSelect = ix;
+                                    }
+                                });
+                                self.DataTypeIndex(indexToSelect);
+
+                                self.DisplayDescription(ftData.FieldType.DisplayDescription);
+                                self.FormDescription(ftData.FieldType.FormDescription);
+
+                                if (ftData.FieldType.LookupObjectType && ftData.FieldType.LookupObjectID) {
+                                    indexToSelect = -1;
+                                    var searchString = ftData.FieldType.LookupObjectType + '|' + ftData.FieldType.LookupObjectID;
+                                    $.each(self.LookupObjectOptions(), function (ix, item) {
+                                        if (item.value == searchString) {
+                                            indexToSelect = ix;
+                                        }
+                                    });
+                                    if (indexToSelect > -1) {
+                                        self.LookupObjectIndex(indexToSelect);
+                                        self.LookupObject(searchString);
+                                        self.LookupDisplayFormat(ftData.FieldType.LookupDisplayFormat);
+                                        loadTokens(ftData.FieldType.LookupObjectType, ftData.FieldType.LookupObjectID);
+                                    }                                
+                                }
+
+                                self.Pattern(ftData.FieldType.Pattern);
+                                self.MinimumLength(ftData.FieldType.MinimumLength);
+                                self.MaximumLength(ftData.FieldType.MaximumLength);
+                                self.ValidationDescription(ftData.FieldType.ValidationDescription);
+
+                                if (ftData.FusionItems) {
+                                    var list = $.map(ftData.FusionItems, function (item) { return new FieldTypeFusionItemViewModel(item, self); });
+                                    self.FusionItems(list);
+                                }
+
+                                if (ftData.RelationItems) {
+                                    var list = $.map(ftData.RelationItems, function (item) { return new FieldTypeRelationItemViewModel(item, self); });
+                                    self.RelationItems(list);
+                                }
+                            }
+                        }).then(function(){
+                            setSubscriptions();
+                        });
+                    }
+                    else {
+                        self.RelationItems.push(new FieldTypeRelationItemViewModel({}, self));
+                        setSubscriptions();
+                    }
+                }
+            );
+        };
+
+        self.save = function () {
+            self.InProgress(true);
+
+            var postModel = {
+                FieldType: {
+                    ID: self.ID(),
+                    Name: self.ApiName(),
+                    DisplayDescription: self.DisplayDescription(),
+                    FormDescription: self.FormDescription(),
+                    ValidationDescription: self.ValidationDescription(),
+                    FriendlyName: self.FriendlyName(),
+                    Type: self.DataType(),
+                    LookupObjectType: null,
+                    LookupObjectID: null,
+                    LookupDisplayFormat: null,
+                    MinimumLength: self.MinimumLength(),
+                    MaximumLength: self.MaximumLength(),
+                    Pattern: self.Pattern(),
+                    Object: self.Object(),
+                    ObjectID: self.ObjectID(),
+                    IsListable: self.IsListable(),
+                    IsRequired: self.IsRequired()
+                },
+                FusionItems: [],
+                RelationItem: {
+                    IntersectType: 0,
+                    ReferenceType: 1,
+                    ChildIntersectType: null,
+                    DisplayFields: []
+                }
+            };
+
+            if (self.DataType() === "Lookup") {
+                var lookupType = self.LookupObject();
+                if (lookupType !== "") {
+                    postModel.FieldType.LookupObjectType = lookupType.split('|')[0];
+                    postModel.FieldType.LookupObjectID = lookupType.split('|')[1];
+                    postModel.FieldType.LookupDisplayFormat = self.LookupDisplayFormat();                
+                }
+            }
+
+            $.each(self.FusionItems(), function(fusionItemIx, fusionItem){
+                try {
+                    var fim = {
+                        ID: fusionItem.ID(),
+                        SourceFusionAttributeType: fusionItem.SourceFusionAttributeType(),
+                        ReferenceType: fusionItem.ReferenceType(),
+                        TargetFusionAttributeType: fusionItem.TargetFusionAttributeType(),
+                        DisplayFields: []
+                    };
+                    $.each(fusionItem.DisplayFields(), function(fix, fid){
+                        if (fid > "") {
+                            var values = fid.split('|');
+                            fim.DisplayFields.push({ 
+                                FieldTypeID: values[0], 
+                                FieldTypeName: values[1] 
+                            });
+                        }
+                    });
+                    postModel.FusionItems.push(fim);
+                } catch (e) {
+                    console.log(e);
+                }
+            });
+
+            if (self.RelationItems().length > 0) {
+                try {
+                    var ri = self.RelationItems()[0];
+                    if (ri.IntersectType() > '') {
+                        postModel.RelationItem["ID"] = ri.ID();
+                        postModel.RelationItem.IntersectType = ri.IntersectType().split('|')[0];
+                        postModel.RelationItem.ReferenceType = ri.ReferenceType();
+                        if (ri.ChildIntersectType() > '') {
+                            postModel.RelationItem.ChildIntersectType = ri.ChildIntersectType().split('|')[0];
+                        }
+                        $.each(ri.DisplayFields(), function(fix, fid){
+                            var values = fid.split('|');
+                            postModel.RelationItem.DisplayFields.push({ 
+                                FieldTypeID: values[0], 
+                                FieldTypeName: values[1] 
+                            });                
+                        });                    
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+
+            var uri = '';
+            var method = '';
+            if (self.ID() > 0) {
+                uri = '/form/EditFieldType';
+                method = 'PUT';
+            }
+            else {
+                uri = '/form/AddFieldType';
+                method = 'POST';
+            }
+
+            $.ajax(uri, {
+                data: postModel,
+                dataType: 'json',
+                method: method
+            }).done(function (data, status, xhr) {
+                amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
+                amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Mappings successfully created.' });
+            }).fail(function (xhr, status, error) {
+                amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
+            }).always(function (data, status, error) {
+                self.InProgress(false);
+            });
+        };
+
+        //#endregion
+
+        return self;
+    }
+
+    $(function () {
+        var model = new FieldTypeViewModel({
+            ID: @(Model.FieldType.ID),
+            Context: "@(ContextList.FieldType)",
+            Object: "@(Model.FieldType.Object)",
+            ObjectID: "@(Model.FieldType.ObjectID)"
+        });
+        ko.applyBindings(model, document.getElementById('FieldTypeFormWrapper'));
+        model.loadCurrentType();
 
         $("html, body").animate({ scrollTop: 0 }, "slow");
     });

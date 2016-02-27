@@ -61,39 +61,53 @@ namespace d360.web.Controllers
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id) 
         {
             var list = new List<DetailReadOnlyRowModel>();
-            var fields = Company.GetFieldRelationsByObject(type, id);
+            var fields = Company.GetFieldRelationsByObject(type, id).ToList();
+            var fieldTypes = Company.Query<FieldType>($"select * from FieldType F inner join cache.ObjectDetails D on D.Object = '{type.ToString()}' and D.ObjectID = {id} and D.ObjectType = F.Object and D.ObjectTypeID = F.ObjectID order by F.SortOrder").ToList();
 
-            foreach (var k in fields)
-            {
-                if (k.Type == DataType.FusionLookup.ToString())
+            fieldTypes.ForEach(ft => {
+                var k = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
+                if (k != null)
                 {
-                    //look at fusionlookup field and figure out what to show
-                    list.AddRange(RenderFusionLookupField(k));
+                    if (k.Type == DataType.FusionLookup.ToString())
+                    {
+                        //look at fusionlookup field and figure out what to show
+                        list.AddRange(RenderFusionLookupField(k));
+                    }
+                    else
+                    {
+                        var ro = new ReadOnlyField
+                        {
+                            Name = k.FriendlyName,
+                            Value = k.FormattedValue,
+                            FieldDescription = k.DisplayDescription,
+                            FieldName = k.Name
+                        };
+                        if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
+                        {
+                            ro.TooltipContext = TemplateAction.LookupPreview.ToString();
+                            ro.TooltipID = k.LookupObjectType == "Lookup" ? k.LookupObjectID : (string.IsNullOrEmpty(k.Value)) ? 0 : int.Parse(k.Value);
+                            ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
+                            ro.TooltipUrl = k.LookupUrl;
+                        }
+
+                        list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> { ro }
+                        });
+                    }
                 }
                 else
                 {
-                    var ro = new ReadOnlyField
+                    //Computed field, maybe.
+                    if (ft.Type == DataType.RelationLookup.ToString())
                     {
-                        Name = k.FriendlyName,
-                        Value = k.FormattedValue,
-                        FieldDescription = k.DisplayDescription,
-                        FieldName = k.Name
-                    };
-                    if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
-                    {
-                        ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-                        ro.TooltipID = k.LookupObjectType == "Lookup" ? k.LookupObjectID : (string.IsNullOrEmpty(k.Value)) ? 0 : int.Parse(k.Value);
-                        ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
-                        ro.TooltipUrl = k.LookupUrl;
+                        //look at fusionlookup field and figure out what to show
+                        list.AddRange(RenderRelationLookupField(type.ToString(), id, ft.ID));
                     }
-
-                    list.Add(new DetailReadOnlyRowModel
-                    {
-                        columns = 1,
-                        FirstColumnFields = new List<ReadOnlyField> {ro}
-                    });
                 }
-            }
+            });
+
             return list;
         }
 
@@ -2181,225 +2195,427 @@ from	    ResponsibilityTypeHierarchy H
         private List<DetailReadOnlyRowModel> RenderFusionLookupField(FieldWithRelation k)
         {
             var list = new List<DetailReadOnlyRowModel>();
+
             //load the definition of the field from the [FieldTypeFusionLookupDefinition] table
             int fusionAttributeID = int.Parse(k.Value);
             var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
 
-            string sql, urlSql = string.Empty;
-            //take def and look for intersects on the original id to the type specified
+            var sql =string.Empty;
 
-            if (def.IsParentChild)
+            switch (def.ReferenceType)
             {
-                sql = @"select 
-	                        fa.id as ID,
-	                        fa.parentId as ParentID,
-	                        fa.name as name,
-	                        fa.textpath as textpath,
-	                        fa.sourceid as SourceID
-                        from 
-	                        fusionattribute fa 
-                        where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID;";
+                case 1: //Self Reference
+                    sql = $@"
+select  ID,
+	    ParentID,
+	    Name,
+	    TextPath,
+	    SourceID,
+        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
+from    FusionAttribute
+where   ID = {fusionAttributeID}";
 
-                urlSql = @"select 
-	                            od.objectid as id,
-	                            od.url as url
-                            from 
-	                            fusionattribute fa 
-	                            inner join cache.ObjectDetails od on (od.objectid = fa.id and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
-                            where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID";
-            }
-            else
-            {
-                sql = @"select distinct  	
-                            fa.id as ID,
-                            fa.parentId as ParentID,
-	                        fa.name as name,
-	                        fa.textpath as textpath,
-                            fa.sourceid as SourceID
-                        from 
-	                        [intersectnode] inode
-	                        inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
-	                        inner join [fusionattribute] fa on (fa.id = inode2.objectid and fa.fusionattributetypeid = @targetAttributeTypeID)
-                        where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
+                    var selfReference = Company.Query<dynamic>(sql).SingleOrDefault();
 
-                urlSql = @" select distinct 	
-                                od.objectid as id,
-					            od.url as url
-                            from 
-	                            [intersectnode] inode
-	                            inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
-	                            inner join cache.ObjectDetails od on (od.objectid = inode2.objectid and od.objecttypeid = @targetAttributeTypeID and od.[object] = 'FusionAttribute')
-                            where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
-            }
-
-            var results = Company.Query<FusionAttribute>(sql, new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID });
-
-            //get all the items urls in one query otherwise its too slow
-
-            var urlDict = Company.Query<dynamic>(urlSql, new { currentObject = fusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID }).ToDictionary(
-                        row => (int)row.id,
-                        row => (string)row.url
-                    );
-                        
-
-            if (results.Count() > 1 || def.FieldTypeFusionLookupDisplayFields != null && def.FieldTypeFusionLookupDisplayFields.Count > 0)
-            {
-                list.Add(new DetailReadOnlyRowModel
-                {
-                    columns = 1,
-                    FirstColumnFields = new List<ReadOnlyField> {
-                        new ReadOnlyField {
-                            Column = 1,
-                            Name = k.FriendlyName,
-                            FieldDescription = k.DisplayDescription,
-                            FieldName = k.Name,
-                            FusionLookupGridUrl = string.Format("api/FusionLookupField/{0}/{1}/values", fusionAttributeID, def.ID)
-                        }
+                    if (selfReference != null)
+                    {
+                        list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField
+                                {
+                                    Column = 1,
+                                    Name = k.FriendlyName,
+                                    FieldDescription = k.DisplayDescription,
+                                    FieldName = k.Name,
+                                    Value = $"<a data-context='Preview' data-type='FusionAttribute' data-id='{selfReference.ID}' href='{selfReference.Url}'>{selfReference.TextPath}</a>"
+                                }
+                            }
+                        });
                     }
-                });
-            }
 
-            string url = null;
-            string value = string.Empty;
+                    break;
+                case 2: //Parent Reference
+                    sql = $@"
+select  ID,
+	    ParentID,
+	    Name,
+	    TextPath,
+	    SourceID,
+        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
+from    FusionAttribute c
+        inner join FusionAttribute p on c.ID = {fusionAttributeID} and p.ID = c.ParentID and p.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+                    var parentReference = Company.Query<dynamic>(sql).SingleOrDefault();
 
-            var firstItem = results.FirstOrDefault();
-
-            if (firstItem != null)
-            {
-                var ro = new ReadOnlyField
-                {
-                    Column = 1,
-                    Name = k.FriendlyName,
-                    FieldDescription = k.DisplayDescription,
-                    FieldName = k.Name                  
-                };
-
-                urlDict.TryGetValue(firstItem.ID, out url);
-
-
-                if (!string.IsNullOrEmpty(url))
-                {
-                    value = string.Format("<a href='{1}'>{0}</a>", (def.Display == "TextPath" ? firstItem.TextPath : firstItem.Name), url);
-                }
-                else
-                {
-                    value = (def.Display == "TextPath" ? firstItem.TextPath : firstItem.Name);
-                }
-
-                ro.Value = value;
-
-
-                list.Add(new DetailReadOnlyRowModel
-                {
-                    columns = 1,
-                    FirstColumnFields = new List<ReadOnlyField> { ro }
-                });
+                    if (parentReference != null)
+                    {
+                        list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField
+                                {
+                                    Column = 1,
+                                    Name = k.FriendlyName,
+                                    FieldDescription = k.DisplayDescription,
+                                    FieldName = k.Name,
+                                    Value = $"<a data-context='Preview' data-type='FusionAttribute' data-id='{parentReference.ID}' href='{parentReference.Url}'>{parentReference.TextPath}</a>"
+                                }
+                            }
+                        });
+                    }
+                    break;
+                case 3: //Child Reference
+                case 4: //Relationship Reference
+                    list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                            new ReadOnlyField {
+                                Column = 1,
+                                Name = k.FriendlyName,
+                                FieldDescription = k.DisplayDescription,
+                                FieldName = k.Name,
+                                LookupGridUrl = $"/api/FusionLookupField/{fusionAttributeID}/{def.ID}/values"
+                            }
+                        }
+                    });
+                    break;
             }
 
             return list;
         }
 
         [Route("FusionLookupField/{sourceFusionAttributeID:int}/{fieldTypeFusionLookupDefinitionID:int}/values")]
-        public HttpResponseMessage GetFusionLookupField(int sourceFusionAttributeID, int fieldTypeFusionLookupDefinitionID)
+        public HttpResponseMessage GetFusionLookupGridField(int sourceFusionAttributeID, int fieldTypeFusionLookupDefinitionID)
         {
+            var gridFields = new List<GridField>();
             var columns = new List<GridColumn>();
             var values = new List<dynamic>();
 
-            var def = Company.GetById<FieldTypeFusionLookupDefinition>(fieldTypeFusionLookupDefinitionID);
-
+            var def = Company.GetById<FieldTypeFusionLookupDefinition>(fieldTypeFusionLookupDefinitionID, i => i.FieldTypeFusionLookupDisplayFields);
             if (def == null) throw new Exception("Invalid fusion lookup field id specified");
 
-            var fieldTypeIds = def.FieldTypeFusionLookupDisplayFields.Select(x => x.FieldTypeID);
+            var displayFields = def.FieldTypeFusionLookupDisplayFields.ToList();
+            var fieldTypeIDs = displayFields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
 
-            if (fieldTypeIds != null)
+            #region Load Columns/Fields
+
+            if (displayFields.Any(i => i.FieldTypeName == "Name"))
             {
-                var fieldTypeInfo = (from f in Company.FieldTypes
-                                     where fieldTypeIds.Contains(f.ID)
-                                     select f);
-
+                gridFields.Add(new GridField { name = "Name", type = "string" });
+                columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "auto" });
+            }
+            if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
+            {
+                gridFields.Add(new GridField { name = "TextPath", type = "string" });
+                columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
+            }
+            if (fieldTypeIDs != null)
+            {
+                var fieldTypeInfo = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
                 foreach (var fieldType in fieldTypeInfo)
                 {
-                    columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.ID.ToString(), width = "auto" });
+                    gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
+                    columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
                 }
             }
-            
-            //load the values
+            gridFields.Add(new GridField { name = "Object", type = "string" });
+            gridFields.Add(new GridField { name = "Url", type = "string" });
+            gridFields.Add(new GridField { name = "ID", type = "number" });
+
+            #endregion
+
+            #region Calculate SQL statement
+
             string sql = string.Empty;
 
-            if (def.IsParentChild)
+            switch (def.ReferenceType)
             {
-                sql = @"select 	                        
-	                        fa.name as name,
-	                        fa.textpath as textpath,
-                            od.url as fusionUrl,
-                            fa.id as id
-                        from 
-	                        fusionattribute fa 
-                            inner join cache.ObjectDetails od on (od.objectid = fa.id and od.objecttypeid = fa.fusionattributetypeid and od.[object] = 'FusionAttribute')
-                        where fa.parentid = @currentObject and fa.fusionattributetypeid = @targetAttributeTypeID;";
+                case 1: //Self Reference
+                    sql = $@"
+select  ID,
+	    ParentID,
+	    Name,
+	    TextPath,
+	    SourceID,
+        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
+from    FusionAttribute
+where   ID = {sourceFusionAttributeID}";
+                    break;
+                case 2: //Parent Reference
+                    sql = $@"
+select  p.ID,
+	    p.ParentID,
+	    p.Name,
+	    p.TextPath,
+	    p.SourceID,
+        [dbo].GenerateObjectUrl('FusionAttribute', p.FusionAttributeTypeID, p.ID) as Url
+from    FusionAttribute c
+        inner join FusionAttribute p on c.ID = {sourceFusionAttributeID} and p.ID = c.ParentID and p.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+                    break;
+                case 3: //Child Reference
+                    sql = $@"
+select  ID,
+        ParentID,
+        Name,
+        TextPath,
+        SourceID,
+        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
+from    FusionAttribute
+where   ParentID = {sourceFusionAttributeID}
+        and FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+
+                    break;
+                default: //Relationship Reference
+                    sql = $@"
+select  fa.ID,
+        fa.ParentID,
+        fa.name,
+        fa.TextPath,
+        fa.SourceID,
+        [dbo].GenerateObjectUrl('FusionAttribute', fa.FusionAttributeTypeID, fa.ID) as Url
+from    IntersectNode S
+        inner join IntersectNode T on S.IntersectID = T.IntersectID and T.ID <> S.ID and S.ObjectType = 'FusionAttribute' and S.ObjectID = {sourceFusionAttributeID} and T.ObjectType = 'FusionAttribute'
+        inner join [fusionattribute] fa on fa.ID = T.ObjectID and fa.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+
+                    break;
             }
-            else
-            {
-                sql = @"select 	                            
-	                        fa.name as name,
-	                        fa.textpath as textpath,
-                            od.url as fusionUrl,
-                            fa.id as id
-                        from 
-	                        [intersectnode] inode
-	                        inner join [intersectnode] inode2 on (inode.intersectid = inode2.intersectid and inode.objectid != inode2.objectid and inode2.objecttype = 'FusionAttribute')
-	                        inner join [fusionattribute] fa on (fa.id = inode2.objectid and fa.fusionattributetypeid = @targetAttributeTypeID)
-                            inner join cache.ObjectDetails od on (od.objectid = fa.id and od.objecttypeid = fa.fusionattributetypeid and od.[object] = 'FusionAttribute')
-                        where inode.objectid = @currentObject and inode.objecttype = 'FusionAttribute'";
-            }
 
-            var results = Company.Query<dynamic>(sql, new { currentObject = sourceFusionAttributeID, targetAttributeTypeID = def.TargetFusionAttributeTypeID });
+            #endregion
 
-            IEnumerable<int> fusionAttributeIDs = results.Select(x => x.id).Cast<int>();
+            var results = Company.Query<dynamic>(sql);
 
+            IEnumerable<int> fusionAttributeIDs = results.Select(x => x.ID).Cast<int>();
 
-            var fieldValues = (from f in Company.Fields
-                               where f.ObjectType == "FusionAttribute"
-                                         &&
-                                     fusionAttributeIDs.Contains(f.ObjectID)
-                                         &&
-                                     fieldTypeIds.Contains(f.FieldTypeID)
-                               select f).ToDictionary(kvp => (kvp.ObjectID.ToString() + "_" + kvp.FieldTypeID.ToString()), kvp => kvp);
-
+            var fields = Company.Filter<Field>(i => i.ObjectType == "FusionAttribute" && fusionAttributeIDs.Contains(i.ObjectID) && fieldTypeIDs.Contains(i.FieldTypeID), 
+                i => i.FieldType).ToList();
 
             foreach (var row in results)
             {
                 dynamic r = new ExpandoObject();
 
-                r.Name = (def.Display == "TextPath" ? row.textpath : row.name.ToString());
-                r.Url = row.fusionUrl.ToString();
-
-                if (fieldTypeIds != null && fieldValues != null)
+                if (displayFields.Any(i => i.FieldTypeName == "Name"))
                 {
-                    foreach (var item in fieldTypeIds)
+                    r.Name = row.Name;
+                }
+                if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
+                {
+                    r.TextPath = row.TextPath;
+                }
+                r.Object = "FusionAttribute";
+                r.Url = row.Url;
+                r.ID = row.ID;
+
+                if (fieldTypeIDs != null && fields != null)
+                {
+                    foreach (var item in fieldTypeIDs)
                     {
-                        int fusionAttributeID = row.id;
+                        int fusionAttributeID = row.ID;
 
-                        Field field = null;
-
-                        if (fieldValues.TryGetValue(fusionAttributeID.ToString() + "_" + item, out field))
+                        foreach (var f in fields.Where(i => i.ObjectID == fusionAttributeID))
                         {
-                            ((IDictionary<string, object>)r)[item.ToString()] = field.FormattedValue;
-                        }                        
+                            ((IDictionary<string, object>)r)[f.FieldType.Name] = f.FormattedValue;
+                            break;
+                        }
                     }
                 }
 
                 values.Add(r);
             }
 
-            //create array of Name + any fields configured.
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
                 Values = values,
-                Columns = columns
+                Columns = columns,
+                Fields = gridFields
             });
         }
 
+        #endregion
+
+        #region Relation Lookup Fields
+
+        private List<DetailReadOnlyRowModel> RenderRelationLookupField(string type, int id, int fieldTypeID)
+        {
+            var list = new List<DetailReadOnlyRowModel>();
+
+            var ft = Company.GetById<FieldType>(fieldTypeID, i => i.FieldTypeRelationLookupDefinitions);
+
+            if (ft.FieldTypeRelationLookupDefinitions != null)
+            {
+                if (ft.FieldTypeRelationLookupDefinitions.Count > 0)
+                {
+                    var def = ft.FieldTypeRelationLookupDefinitions.First();
+                    switch (def.ReferenceType)
+                    {
+                        case 1: //Self Reference
+                        case 2: //Child Reference
+                            list.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Column = 1,
+                                        Name = ft.FriendlyName,
+                                        FieldDescription = ft.DisplayDescription,
+                                        FieldName = ft.Name,
+                                        LookupGridUrl = $"/api/RelationLookupField/{type}/{id}/{def.ID}/values"
+                                    }
+                                }
+                            });
+                            break;
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        [Route("RelationLookupField/{type}/{id:int}/{definitionID:int}/values")]
+        public HttpResponseMessage GetRelationLookupGridField(string type, int id, int definitionID)
+        {
+            var gridFields = new List<GridField>();
+            var columns = new List<GridColumn>();
+            var values = new List<dynamic>();
+
+            var def = Company.GetById<FieldTypeRelationLookupDefinition>(definitionID, i => i.FieldTypeRelationLookupDisplayFields);
+            if (def == null) throw new Exception("Invalid fusion lookup field is specified");
+
+            var displayFields = def.FieldTypeRelationLookupDisplayFields.ToList();
+            var fieldTypeIDs = displayFields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
+            var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
+
+            #region Load Columns/Fields
+
+            if (displayFields.Any(i => i.FieldTypeName == "Name"))
+            {
+                gridFields.Add(new GridField { name = "Name", type = "string" });
+                columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "auto" });
+            }
+            if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
+            {
+                gridFields.Add(new GridField { name = "TextPath", type = "string" });
+                columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
+            }
+            if (fieldTypeIDs != null)
+            {
+                var fieldTypeInfo = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
+                foreach (var fieldType in fieldTypeInfo)
+                {
+                    gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
+                    columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
+                }
+            }
+            gridFields.Add(new GridField { name = "Object", type = "string" });
+            gridFields.Add(new GridField { name = "Url", type = "string" });
+            gridFields.Add(new GridField { name = "ID", type = "number" });
+
+            #endregion
+
+            #region Calculate SQL statement
+
+            string sql = string.Empty;
+            string fieldSql = string.Empty;
+
+            switch (def.ReferenceType)
+            {
+                case 1: //Self Reference
+                    sql = $@"
+select  D.[Object],
+		D.ObjectID,
+        D.ObjectID as ID,
+		D.Name,
+		D.[TextPath],
+		D.Url
+from    cache.Relationship R
+		inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
+		inner join [cache].[ObjectDetails] D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID";
+
+                    fieldSql = $@"
+select  F.*
+from    cache.Relationship R
+		inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
+		inner join Field F on F.ObjectType = R.TargetObject and F.ObjectID = R.TargetObjectID";
+
+                    break;
+                default: //Child Reference
+                    sql = $@"
+select  D2.[Object],
+		D2.ObjectID,
+        D2.ObjectID as ID,
+		D2.Name,
+		D2.[TextPath],
+		D2.Url
+from    cache.Relationship R1
+		inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
+		inner join [cache].[ObjectDetails] D1 on D1.[Object] = R1.TargetObject and D1.ObjectID = R1.TargetObjectID
+		inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
+		inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
+		inner join [cache].[ObjectDetails] D2 on D2.[Object] = R2.TargetObject and D2.ObjectID = R2.TargetObjectID";
+
+                    fieldSql = $@"
+select  F.*
+from    cache.Relationship R1
+		inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
+		inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
+		inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
+        inner join Field F on F.ObjectType = R2.TargetObject and F.ObjectID = R2.TargetObjectID";
+
+                    break;
+            }
+
+            #endregion
+
+            var results = Company.Query<dynamic>(sql);
+
+            IEnumerable<int> relationIDs = results.Select(x => x.ID).Cast<int>();
+
+            var fields = Company.Query<Field>(fieldSql).ToList();
+
+            foreach (var row in results)
+            {
+                dynamic r = new ExpandoObject();
+
+                if (displayFields.Any(i => i.FieldTypeName == "Name"))
+                {
+                    r.Name = row.Name;
+                }
+                if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
+                {
+                    r.TextPath = row.TextPath;
+                }
+                r.Object = row.Object;
+                r.Url = row.Url;
+                r.ID = row.ID;
+
+                if (fieldTypeIDs != null && fields != null)
+                {
+                    foreach (var item in fieldTypeIDs)
+                    {
+                        foreach (var f in fields.Where(i => i.ObjectType == row.Object && i.ObjectID == row.ObjectID))
+                        {
+                            var ft = fieldTypes.SingleOrDefault(i => i.ID == item);
+                            if (ft != null)
+                            {
+                                ((IDictionary<string, object>)r)[ft.Name] = f.FormattedValue;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                values.Add(r);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                Values = values,
+                Columns = columns,
+                Fields = gridFields
+            });
+        }
 
         #endregion
 
@@ -4385,56 +4601,70 @@ from	IntersectMapSourceRule J
                             }
                         });
 
+                        if (!string.IsNullOrEmpty(statisticType.Description))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = statisticType.GetName(i => i.Description), FieldName = "StatisticTypeDescription", FieldDescription = statisticType.GetDescription(i => i.Description), Value = statisticType.Description }
+                            }
+                            });
+                        }
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = statisticType.GetName(i => i.Description), FieldName = "StatisticTypeDescription", FieldDescription = statisticType.GetDescription(i => i.Description), Value = statisticType.Description }
-                            }
+                        {
+                            new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), FieldName = "StatisticTypeCheckType", FieldDescription = statisticType.GetDescription(i => i.CheckType), Value = statisticType.CheckType.ToString() }
+                        }
                         });
 
                         var fields = XElement.Parse(statisticType.Configuration);
-                        var oType = SystemObjects.StatisticType;
                         int oID = 0;
+                        ObjectDetail dtl = null;
 
                         switch (statisticType.CheckType)
                         {
-                            case StatisticCheckType.Count:
+                            case StatisticCheckType.Existence:              //1
                                 oID = int.Parse(fields.Element("ObjectID").Value);
-                                oType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fields.Element("ObjectType").Value);
+                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Count" }
+                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
                                     }
                                 });
+                                dtl = null;
                                 break;
-                            case StatisticCheckType.Existence:
+                            case StatisticCheckType.Count:                  //2
                                 oID = int.Parse(fields.Element("ObjectID").Value);
-                                oType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fields.Element("ObjectType").Value);
+                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Existence" }
+                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
                                     }
                                 });
+                                dtl = null;
                                 break;
-                            case StatisticCheckType.PropertyValueCheck:
+                            case StatisticCheckType.PropertyValueCheck:     //3
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 2,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Property" }
+                                        new ReadOnlyField { Name = "Property Name", Value = fields.Element("PropertyName").Value }
                                     },
                                     SecondColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Property Name", Value = fields.Element("PropertyName").Value }
+                                        new ReadOnlyField { Name = "Property Value", Value = fields.Element("PropertyValue").Value }
                                     }
                                 });
                                 model.rows.Add(new DetailReadOnlyRowModel
@@ -4446,62 +4676,79 @@ from	IntersectMapSourceRule J
                                     }
                                 });
                                 break;
-                            case StatisticCheckType.PropertyPopulated:
+                            case StatisticCheckType.PropertyPopulated:  //4
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
-                                    columns = 2,
+                                    columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Property" }
-                                    },
-                                    SecondColumnFields = new List<ReadOnlyField>
                                     {
                                         new ReadOnlyField { Name = "Property Name", Value = fields.Element("PropertyName").Value }
                                     }
                                 });
                                 break;
-                            case StatisticCheckType.Relationship:
+                            case StatisticCheckType.Relationship:       //5
                                 oID = int.Parse(fields.Element("ObjectID").Value);
-                                oType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fields.Element("ObjectType").Value);
+                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Relationship" }
+                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
                                     }
                                 });
+                                dtl = null;
                                 break;
-                            case StatisticCheckType.FusionOwnership:
+                            case StatisticCheckType.FusionOwnership:    //6
+                                break;
+                            case StatisticCheckType.ScoreRollupViaRelationship:    //7
+                                oID = int.Parse(fields.Element("ObjectID").Value);
+                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), Value = "Value" }
+                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
                                     }
                                 });
+                                dtl = null;
                                 break;
-                        }
-
-                        if (oID > 0)
-                        {
-                            var dtlStatisticType = Company.GetObjectDetail(oType, oID);
-                            if (dtlStatisticType != null)
-                            {
+                            case StatisticCheckType.ScoreRollupViaOwnership:    //8
+                                oID = int.Parse(fields.Element("ObjectID").Value);
+                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
+                                    }
+                                });
+                                dtl = null;
+                                break;
+                            case StatisticCheckType.EventMetric:        //9
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 2,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Row = 4, Column = 1, Name = "Type To Check", Value = dtlStatisticType.TypeName }
+                                        new ReadOnlyField { Name = "Valid Field", Value = fields.Element("ValidField").Value }
                                     },
                                     SecondColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Row = 4, Column = 2, Name = "Item To Check", Value = dtlStatisticType.Name }
+                                        new ReadOnlyField { Name = "Invalid Field", Value = fields.Element("InvalidField").Value }
                                     }
                                 });
-                            }
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = "Threshold", Value = fields.Element("Threshold").Value }
+                                    }
+                                });
+                                break;
                         }
                     }
                     statisticType = null;

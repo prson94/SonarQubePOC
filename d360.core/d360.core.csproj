@@ -79,7 +79,9 @@
     <Compile Include="entities\Abstract\BaseObject.cs" />
     <Compile Include="entities\AlertFlag.cs" />
     <Compile Include="entities\Environment.cs" />
+    <Compile Include="entities\FieldTypeRelationLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDefinition.cs" />
+    <Compile Include="entities\FieldTypeRelationLookupDisplayField.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDisplayField.cs" />
     <Compile Include="entities\FusionAgentError.cs" />
     <Compile Include="entities\FusionAgentErrorItem.cs" />

@@ -36,7 +36,9 @@ namespace d360.core
         [Description("Color Picker")]
         Color,
         [Description("Fusion Lookup")]
-        FusionLookup
+        FusionLookup,
+        [Description("Relation Lookup")]
+        RelationLookup
     }
 
     public class DataTypeInfo
