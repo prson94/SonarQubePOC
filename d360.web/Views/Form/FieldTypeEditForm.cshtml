@@ -516,7 +516,7 @@
             });
             self.ReferenceTypeIndex(indexToSelect);
 
-            if (fullSourceFusionAttributeType > 0 && fullReferenceTypeValue > "") {
+            if (fullSourceFusionAttributeType > 0 && fullReferenceTypeValue > 1) {
                 
                 loadTargetAttributeTypes(fullSourceFusionAttributeType, fullReferenceTypeValue).then(function(){
                     indexToSelect = -1;
@@ -697,7 +697,7 @@
                 }
             });
             self.ReferenceTypeIndex(indexToSelect);
-            console.log(fullIntersectTypeValue + " -- " + fullReferenceTypeValue);
+
             if (fullIntersectTypeValue > "" && fullReferenceTypeValue > 1) {
                 
                 var values = fullIntersectTypeValue.split('|');

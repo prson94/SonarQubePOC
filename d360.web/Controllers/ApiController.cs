@@ -58,55 +58,82 @@ namespace d360.web.Controllers
             }
         }
 
+        public class TypeCheckModel
+        {
+            public string Type { get; set; }
+            public int ID { get; set; }
+        }
+
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id) 
         {
             var list = new List<DetailReadOnlyRowModel>();
-            var fields = Company.GetFieldRelationsByObject(type, id).ToList();
-            var fieldTypes = Company.Query<FieldType>($"select * from FieldType F inner join cache.ObjectDetails D on D.Object = '{type.ToString()}' and D.ObjectID = {id} and D.ObjectType = F.Object and D.ObjectTypeID = F.ObjectID order by F.SortOrder").ToList();
+            
 
-            fieldTypes.ForEach(ft => {
-                var k = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
-                if (k != null)
-                {
-                    if (k.Type == DataType.FusionLookup.ToString())
+            var typeCheckSql = "";
+            switch (type)
+            {
+                case SystemObjects.Attribute:
+                    typeCheckSql = $"select 'AttributeType' as [Type], AttributeTypeID as ID from [Attribute] where ID = {id}";
+                    break;
+                case SystemObjects.FusionAttribute:
+                    typeCheckSql = $"select 'FusionAttributeType' as [Type], FusionAttributeTypeID as ID from [FusionAttribute] where ID = {id}";
+                    break;
+                default:
+                    typeCheckSql = $"select ObjectType as [Type], ObjectTypeID as ID from cache.Object where Object = '{type.ToString()}' and ObjectID = {id}";
+                    break;
+            }
+
+            var typeCheck = Company.Query<TypeCheckModel>(typeCheckSql).FirstOrDefault();
+            if (typeCheck != null)
+            {
+                var fields = Company.GetFieldRelationsByObject(type, id).ToList();
+                var fieldTypes = Company.Filter<FieldType>(i => i.Object == typeCheck.Type && i.ObjectID == typeCheck.ID).OrderBy(i => i.SortOrder).ToList();
+
+                fieldTypes.ForEach(ft => {
+                    var k = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
+                    if (k != null)
                     {
-                        //look at fusionlookup field and figure out what to show
-                        list.AddRange(RenderFusionLookupField(k));
+                        if (k.Type == DataType.FusionLookup.ToString())
+                        {
+                            //look at fusionlookup field and figure out what to show
+                            list.AddRange(RenderFusionLookupField(k));
+                        }
+                        else
+                        {
+                            var ro = new ReadOnlyField
+                            {
+                                Name = k.FriendlyName,
+                                Value = k.FormattedValue,
+                                FieldDescription = k.DisplayDescription,
+                                FieldName = k.Name
+                            };
+                            if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
+                            {
+                                ro.TooltipContext = TemplateAction.LookupPreview.ToString();
+                                ro.TooltipID = k.LookupObjectType == "Lookup" ? k.LookupObjectID : (string.IsNullOrEmpty(k.Value)) ? 0 : int.Parse(k.Value);
+                                ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
+                                ro.TooltipUrl = k.LookupUrl;
+                            }
+
+                            list.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> { ro }
+                            });
+                        }
                     }
                     else
                     {
-                        var ro = new ReadOnlyField
+                        //Computed field, maybe.
+                        if (ft.Type == DataType.RelationLookup.ToString())
                         {
-                            Name = k.FriendlyName,
-                            Value = k.FormattedValue,
-                            FieldDescription = k.DisplayDescription,
-                            FieldName = k.Name
-                        };
-                        if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
-                        {
-                            ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-                            ro.TooltipID = k.LookupObjectType == "Lookup" ? k.LookupObjectID : (string.IsNullOrEmpty(k.Value)) ? 0 : int.Parse(k.Value);
-                            ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
-                            ro.TooltipUrl = k.LookupUrl;
+                            //look at fusionlookup field and figure out what to show
+                            list.AddRange(RenderRelationLookupField(type.ToString(), id, ft.ID));
                         }
+                    }
+                });
+            }
 
-                        list.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> { ro }
-                        });
-                    }
-                }
-                else
-                {
-                    //Computed field, maybe.
-                    if (ft.Type == DataType.RelationLookup.ToString())
-                    {
-                        //look at fusionlookup field and figure out what to show
-                        list.AddRange(RenderRelationLookupField(type.ToString(), id, ft.ID));
-                    }
-                }
-            });
 
             return list;
         }

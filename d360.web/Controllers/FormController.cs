@@ -334,7 +334,7 @@ namespace d360.web.Controllers
                 {
                     var IDs = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == ft.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
 
-                    if (!f.IsRequired)
+                    if (!ft.IsRequired)
                         fld.Items.Add(new SelectListItem { Text = "", Value = "" });
 
                     fld.Items.AddRange(
