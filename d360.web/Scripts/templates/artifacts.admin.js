@@ -64,7 +64,7 @@
                         FieldsGrid("FieldsTile", contextList, permissions, type, row.ID);
                         PeopleResponsibilityTile('SecurityTile', contextList, permissions, type, row.ID, 'Default Responsibilities', true);
 
-                        RelationshipTypeTreeTile('RelationshipTypeTreeTile', permissions, type, row.ID);
+                        //RelationshipTypeTreeTile('RelationshipTypeTreeTile', permissions, type, row.ID);
                     }
                     permissions.GetPermissionsForObject(type, row.ID).then(loadPermissionsDependentTiles);
                 }

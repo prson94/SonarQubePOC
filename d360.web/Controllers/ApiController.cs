@@ -2231,68 +2231,70 @@ from	    ResponsibilityTypeHierarchy H
 
             switch (def.ReferenceType)
             {
+//                case 1: //Self Reference
+//                    sql = $@"
+//select  ID,
+//	    ParentID,
+//	    Name,
+//	    TextPath,
+//	    SourceID,
+//        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
+//from    FusionAttribute
+//where   ID = {fusionAttributeID}";
+
+//                    var selfReference = Company.Query<dynamic>(sql).SingleOrDefault();
+
+//                    if (selfReference != null)
+//                    {
+//                        list.Add(new DetailReadOnlyRowModel
+//                        {
+//                            columns = 1,
+//                            FirstColumnFields = new List<ReadOnlyField> {
+//                                new ReadOnlyField
+//                                {
+//                                    Column = 1,
+//                                    Name = k.FriendlyName,
+//                                    FieldDescription = k.DisplayDescription,
+//                                    FieldName = k.Name,
+//                                    Value = $"<a data-context='Preview' data-type='FusionAttribute' data-id='{selfReference.ID}' href='{selfReference.Url}'>{selfReference.TextPath}</a>"
+//                                }
+//                            }
+//                        });
+//                    }
+
+//                    break;
+//                case 2: //Parent Reference
+//                    sql = $@"
+//select  ID,
+//	    ParentID,
+//	    Name,
+//	    TextPath,
+//	    SourceID,
+//        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
+//from    FusionAttribute c
+//        inner join FusionAttribute p on c.ID = {fusionAttributeID} and p.ID = c.ParentID and p.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+//                    var parentReference = Company.Query<dynamic>(sql).SingleOrDefault();
+
+//                    if (parentReference != null)
+//                    {
+//                        list.Add(new DetailReadOnlyRowModel
+//                        {
+//                            columns = 1,
+//                            FirstColumnFields = new List<ReadOnlyField> {
+//                                new ReadOnlyField
+//                                {
+//                                    Column = 1,
+//                                    Name = k.FriendlyName,
+//                                    FieldDescription = k.DisplayDescription,
+//                                    FieldName = k.Name,
+//                                    Value = $"<a data-context='Preview' data-type='FusionAttribute' data-id='{parentReference.ID}' href='{parentReference.Url}'>{parentReference.TextPath}</a>"
+//                                }
+//                            }
+//                        });
+//                    }
+//                    break;
                 case 1: //Self Reference
-                    sql = $@"
-select  ID,
-	    ParentID,
-	    Name,
-	    TextPath,
-	    SourceID,
-        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
-from    FusionAttribute
-where   ID = {fusionAttributeID}";
-
-                    var selfReference = Company.Query<dynamic>(sql).SingleOrDefault();
-
-                    if (selfReference != null)
-                    {
-                        list.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField
-                                {
-                                    Column = 1,
-                                    Name = k.FriendlyName,
-                                    FieldDescription = k.DisplayDescription,
-                                    FieldName = k.Name,
-                                    Value = $"<a data-context='Preview' data-type='FusionAttribute' data-id='{selfReference.ID}' href='{selfReference.Url}'>{selfReference.TextPath}</a>"
-                                }
-                            }
-                        });
-                    }
-
-                    break;
                 case 2: //Parent Reference
-                    sql = $@"
-select  ID,
-	    ParentID,
-	    Name,
-	    TextPath,
-	    SourceID,
-        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
-from    FusionAttribute c
-        inner join FusionAttribute p on c.ID = {fusionAttributeID} and p.ID = c.ParentID and p.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
-                    var parentReference = Company.Query<dynamic>(sql).SingleOrDefault();
-
-                    if (parentReference != null)
-                    {
-                        list.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField
-                                {
-                                    Column = 1,
-                                    Name = k.FriendlyName,
-                                    FieldDescription = k.DisplayDescription,
-                                    FieldName = k.Name,
-                                    Value = $"<a data-context='Preview' data-type='FusionAttribute' data-id='{parentReference.ID}' href='{parentReference.Url}'>{parentReference.TextPath}</a>"
-                                }
-                            }
-                        });
-                    }
-                    break;
                 case 3: //Child Reference
                 case 4: //Relationship Reference
                     list.Add(new DetailReadOnlyRowModel

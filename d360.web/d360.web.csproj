@@ -936,6 +936,7 @@
     <Content Include="Scripts\moment.js" />
     <Content Include="Scripts\packery.pkgd.js" />
     <Content Include="Scripts\packery.pkgd.min.js" />
+    <Content Include="Scripts\polyfills.js" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\templates\rules.list.js" />

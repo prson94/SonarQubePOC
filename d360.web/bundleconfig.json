@@ -3,6 +3,7 @@
     "outputFileName": "scripts/all.js",
     "inputFiles": [
       "Scripts/jquery-2.1.4.js",
+      "scripts/polyfills.js",
       "Scripts/handlebars-1.1.2.js",
       "Scripts/sammy-0.7.5.js",
       "Scripts/sammy.title.js",

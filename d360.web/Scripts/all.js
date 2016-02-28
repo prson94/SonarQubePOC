@@ -9209,6 +9209,7 @@ return jQuery;
 
 }));
 
+
 /*!
 
  handlebars v1.1.2
@@ -36846,20 +36847,24 @@ function ObjectDetail(controlID, type, id) {
                     $(element).parent().jqxTooltip({ position: 'mouse', content: v.FieldDescription });
                 }
 
-                var columnNameFinder = function (column) {
-                    return (column.datafield === "Name");
-                }
-                var columnTextPathFinder = function (column) {
-                    return (column.datafield === "TextPath");
-                }
-
-                var cn = cols.find(columnNameFinder);
+                var cn = null;
+                $.each(cols, function () {
+                    if (this.datafield == "Name") {
+                        cn = this;
+                    }
+                });
                 if (cn) {
                     cn.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
                         return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.Name + "</a></div>";
                     }
                 }
-                var cp = cols.find(columnTextPathFinder);
+
+                var cp = null;
+                $.each(cols, function () {
+                    if (this.datafield == "TextPath") {
+                        cp = this;
+                    }
+                });
                 if (cp) {
                     cp.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
                         return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.TextPath + "</a></div>";
@@ -43663,7 +43668,7 @@ function artifacts_admin(app, pageViewModel, templatePath, contextList) {
                         FieldsGrid("FieldsTile", contextList, permissions, type, row.ID);
                         PeopleResponsibilityTile('SecurityTile', contextList, permissions, type, row.ID, 'Default Responsibilities', true);
 
-                        RelationshipTypeTreeTile('RelationshipTypeTreeTile', permissions, type, row.ID);
+                        //RelationshipTypeTreeTile('RelationshipTypeTreeTile', permissions, type, row.ID);
                     }
                     permissions.GetPermissionsForObject(type, row.ID).then(loadPermissionsDependentTiles);
                 }

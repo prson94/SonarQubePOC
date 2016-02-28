@@ -30,7 +30,7 @@
             <div data-bind="dataTypeFilteredDropdown, jqxDropDownList: {
                  width: field_width,
                  theme: theme,
-                 filterable: true,
+                 filterable: false,
                  selectedIndex: DataTypeIndex,
                  source: DataTypeOptions,
                  disabled: LimitedChangesOnly,
@@ -52,7 +52,7 @@
             <div data-bind="lookupObjectFilteredDropdown, jqxDropDownList: {
                  width: field_width,
                  theme: theme,
-                 filterable: true,
+                 filterable: false,
                  selectedIndex: LookupObjectIndex,
                  source: LookupObjectOptions,
                  displayMember: 'title',
@@ -399,10 +399,7 @@
         }, self);
 
         self.DisplayFieldsDisabled = ko.pureComputed(function () {
-            return (self.ReferenceType() != "1" && (
-                self.TargetFusionAttributeTypeOptions().length == 0 ||
-                (self.TargetFusionAttributeTypeOptions().length > 0 && self.TargetFusionAttributeType == ""))
-            );
+            return (self.ReferenceType() != "1" && (self.TargetFusionAttributeTypeOptions().length == 0 || (self.TargetFusionAttributeTypeOptions().length > 0 && self.TargetFusionAttributeType == "")));
         }, self);
 
         //#endregion
@@ -440,11 +437,7 @@
 
         var loadTargetAttributeTypes = function(s, r) {
             return $.getJSON(
-                '/form/FieldType_FusionLookup_TargetAttributeTypes',
-                {
-                    s: s,
-                    r: r
-                },
+                '/form/FieldType_FusionLookup_TargetAttributeTypes', { s: s, r: r },
                 function(refTargets) {
                     self.TargetFusionAttributeTypeOptions(refTargets);
                 }
@@ -543,7 +536,6 @@
                     setSubscriptions();
                 });
             }
-
         }
         else {
             setSubscriptions();
@@ -811,6 +803,7 @@
                 return '';
             }
         }, self);
+
         //#endregion
 
         //#region List Properties
@@ -835,7 +828,7 @@
 
         var loadTokens = function(type, id){
             if (type != "DomainItem") type += 'Type';
-            $.getJSON("/form/FieldType_Lookup_Tokens", { type, id }, function(tokens) {
+            $.getJSON("/form/FieldType_Lookup_Tokens", { type: type, id: id }, function(tokens) {
                 self.TokenOptions.removeAll();
                 self.TokenOptions(tokens);
                 console.log(tokens[0]);
@@ -879,9 +872,9 @@
             self.FusionItems.push(new FieldTypeFusionItemViewModel({}, self));
         };
 
-        //self.addRelationItem = function() {
-        //    self.RelationItems.push(new FieldTypeRelationItemViewModel({}, self));
-        //};
+        ////self.addRelationItem = function() {
+        ////    self.RelationItems.push(new FieldTypeRelationItemViewModel({}, self));
+        ////};
 
         self.cancel = function () {
             amplify.publish("CancelAction", { context: self.Context() });
@@ -891,9 +884,9 @@
             self.RelationItems.remove(this);
         };
 
-        //self.deleteRelationItem = function () {
-        //    self.RelationItems.remove(this);
-        //};
+        ////self.deleteRelationItem = function () {
+        ////    self.RelationItems.remove(this);
+        ////};
 
         self.loadCurrentType = function () {
 
