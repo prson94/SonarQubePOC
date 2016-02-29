@@ -7,7 +7,7 @@ using d360.core.entities;
 using System.Data.SqlClient;
 using d360.core;
 using Dapper;
-
+using System.Text.RegularExpressions;
 
 namespace d360.jobs.GenerateReportingLayer
 {
@@ -17,7 +17,10 @@ namespace d360.jobs.GenerateReportingLayer
 
         static string cleanObjectName(string name)
         {
-            return name.Replace("'", "").Replace(" ", "").Replace("-", "").Replace("&", "And").Replace(":", "").Replace(";", "").Trim();
+            name = name.Replace("'", "").Replace(" ", "").Replace("-", "").Replace("&", "And").Replace(":", "").Replace(";", "").Trim();
+            Regex rgx = new Regex("[^a-zA-Z0-9-]");
+            name = rgx.Replace(name, "");
+            return name;
         }
 
         static void getDynamicFieldJoinStatements(List<FieldTypeWithRelation> fields, string type, out string joins, out string columns)
@@ -318,14 +321,14 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
 		R.PrimaryOwnerResourceName,
 		R.PrimaryOwnerResourceUrl,
 		R.Role,
-		R.RedFlagged,
+		--R.RedFlagged,
 		R.CurrentScore,
 		R.ContextItems,
 		R.AssigningItemType,
-		R.AssigningItemID,
-		R.AssigningItemName,
-		R.AssigningItemUrl,
-		R.AssigningTypeName
+		R.AssigningItemID--,
+		--R.AssigningItemName,
+		--R.AssigningItemUrl,
+		--R.AssigningTypeName
 from	ResponsibilityDetail R
 where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
@@ -903,9 +906,9 @@ from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner jo
     select	R.ResponsibilityID,
 		    R.AssigningItemType,
 		    R.AssigningItemID,
-		    R.AssigningItemUrl,
-		    R.AssigningItemName,
-		    R.AssigningTypeName,
+		    --R.AssigningItemUrl,
+		    --R.AssigningItemName,
+		    --R.AssigningTypeName,
 		    R.ObjectID as InformationModelID,
 		    R.ObjectName,
 		    R.ObjectTypeID,
@@ -917,7 +920,7 @@ from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner jo
 		    GU.FirstName + ' ' + GU.LastName as PrimaryOwnerResourceName,
 		    R.[Role],
 		    R.[CurrentScore],
-		    R.RedFlagged,
+		    --R.RedFlagged,
 		    O.TextPath,
 		    O.[Level],
 		    TL.Name as LevelName,
