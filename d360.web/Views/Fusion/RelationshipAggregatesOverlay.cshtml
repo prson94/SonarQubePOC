@@ -40,12 +40,9 @@
             {name: 'FusionAttributeType', type: 'string'},
             {name: 'Description', type: 'string'},
         ];
-        var columns = [
+        var columns = [          
             {
-                datafield: "FusionAttributeType", text: "Attribute Type", width: '10%', filtertype: 'checkedlist'
-            },
-            {
-                datafield: "FusionAttributeTextPath", text: "Attribute", width: '30%',
+                datafield: "FusionAttributeTextPath", text: "Attribute", width: '40%',
                 cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {                    
                     return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'" + (data.Description != null ? " title='" + data.Description.replace(/[']/g, "\"") + "'" : "") +">" + value + "</div>";
                 }
@@ -60,27 +57,18 @@
                 fields.push({name: 'SourceTypeName', type: 'string'});
                 fields.push({name: 'SourceUrl', type: 'string'});
                 fields.push({name: 'TargetUrl', type: 'string'});
-
-                columns.push({ datafield: "SourceTypeName", text: "Target Side 1 Type", width: '10%', filtertype: 'checkedlist' });
+                              
                 columns.push({
-                    datafield: "SourceName", text: "Target Side 1 Name", width: '20%'//,
-                    //cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                    //    return previewLinkRenderer(data.SourceType, data.SourceID, data.SourceUrl, data.SourceName);
-                    //}
-                });
-                columns.push({ datafield: "TargetTypeName", text: "Target Side 2 Type", width: '10%', filtertype: 'checkedlist' });
+                    datafield: "SourceName", text: "Target Side 1 Name", width: '30%'                    
+                });                
                 columns.push({
-                    datafield: "TargetName", text: "Target Side 2 Name", width: '20%'//,
-                    //cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                    //    return previewLinkRenderer(data.TargetType, data.TargetID, data.TargetUrl, data.TargetName);
-                    //}
+                    datafield: "TargetName", text: "Target Side 2 Name", width: '30%'                    
                 });
                 break;
-            default:
-                columns.push({ datafield: "TargetTypeName", text: "Target Type", width: '20%', filtertype: 'checkedlist' });
+            default:               
                 columns.push({
-                    datafield: "TargetName", text: "Target Name", width: '40%',
-                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    datafield: "TargetName", text: " ", width: '60%',
+                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {                    
                         return previewLinkRenderer(data.TargetType, data.TargetID, data.TargetUrl, data.TargetName);
                     }
                 });
@@ -101,7 +89,24 @@
             datafields: fields
         };
 
-        var RelationshipAggregatesOverlayAdapter = new $.jqx.dataAdapter(RelationshipAggregatesOverlaySource);
+        var RelationshipAggregatesOverlayAdapter = new $.jqx.dataAdapter(RelationshipAggregatesOverlaySource,
+            {
+                loadComplete: function (data) {
+                    if(data && data.length > 0 && data[0].TargetTypeName) 
+                    {
+                        $("#RelationshipAggregatesOverlayGrid").jqxGrid('setcolumnproperty', 'TargetName', 'text', data[0].TargetTypeName);
+                    }
+                    if(data && data.length > 0 && data[0].FusionAttributeType) 
+                    {
+                        $("#RelationshipAggregatesOverlayGrid").jqxGrid('setcolumnproperty', 'FusionAttributeTextPath', 'text', data[0].FusionAttributeType);
+                    }
+                    if(roagTargetType=='IntersectType' && data)
+                    {
+                        var val = data[0].SourceTypeName;
+                        $("#RelationshipAggregatesOverlayGrid").jqxGrid('setcolumnproperty', 'SourceName', 'text', val == null ? " " : val);
+                    }
+                }
+            });
 
         try {
             $('#RelationshipAggregatesOverlayGrid').jqxGrid({
@@ -122,8 +127,7 @@
         }
 
         $('#RelationshipAggregatesOverlayGrid').on('rowselect', function (event) {
-            var row = event.args.row;
-            //technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
+            var row = event.args.row;            
         });
     
         //#endregion

@@ -96,7 +96,7 @@ namespace d360.extensions
         /// <param name="item">The item to index, containing all relevant information to add to the index.</param>
         void AddToIndex(AddToIndexModel item);
 
-        void AddToIndex(List<AddToIndexModel> items);
+        void AddToIndex(IEnumerable<AddToIndexModel> items);
 
         /// <summary>
         /// Clears out all entries from a company's index.

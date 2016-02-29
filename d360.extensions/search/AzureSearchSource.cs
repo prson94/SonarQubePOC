@@ -90,15 +90,17 @@ namespace d360.extensions.search
             }
         }
 
-        public void AddToIndex(List<AddToIndexModel> items)
+        public void AddToIndex(IEnumerable<AddToIndexModel> items)
         {
             IndexWriter writer = null;
             Document doc = null;
 
+            var itemList = items.ToList();
+
             try
             {
-                writer = getWriter(items[0].CompanyID);
-                items.ForEach(item => {
+                writer = getWriter(itemList[0].CompanyID);
+                itemList.ForEach(item => {
                     doc = createDocument(item);
                     writer.AddDocument(doc);                
                 });

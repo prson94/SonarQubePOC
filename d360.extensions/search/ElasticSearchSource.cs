@@ -248,7 +248,7 @@ namespace d360.extensions.search
             AddToIndex(new List<AddToIndexModel> { item });
         }
 
-        public void AddToIndex(List<AddToIndexModel> items)
+        public void AddToIndex(IEnumerable<AddToIndexModel> items)
         {            
             if (!items.Any()) return;
 
