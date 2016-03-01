@@ -2808,14 +2808,15 @@ ReportLayoutModel.prototype = new BaseOverlayTileModel();
 
 //#region VIEW MODELS
 
-var PageViewModel = function (title, directions, breadcrumbs, type, id, redflagged) {
+var PageViewModel = function (title, directions, breadcrumbs, type, id, redflagged, hideHeader) {
     var self = this;
     self.Title = title;
     self.Directions = directions;
     self.breadcrumbs = breadcrumbs;
     self.ObjectType = type || "";
     self.ObjectID = id || 0;
-    self.RedFlagged = redflagged || false;
+    self.RedFlagged = redflagged || false;        
+    self.ShowHeader = !(hideHeader || false);
     return self;
 }
 

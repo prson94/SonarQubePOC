@@ -77,17 +77,9 @@ function search(app, pageViewModel, templatePath, contextList) {
             }
         }
 
-        function resultSelect(e) {            
-            $('#ContentHeader').show();
-            var el = $(e.target).closest('a');            
-            document.location.href = el.attr('data-url');
-        }
-
         function unsubscribe(data) {
-            searchVm = null;
-            $('#ContentHeader').show();
-            $("#SearchString").off('keypress', searchStringKeyPress);
-            $('#SearchResults').off('click', '.search-result-link', resultSelect);        
+            searchVm = null;            
+            $("#SearchString").off('keypress', searchStringKeyPress);            
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
@@ -174,7 +166,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                             var data = new Array();
                             for (var i = 0; i < records.length; i++) {
                                 var row = records[i];
-                                row.Merged = "<h4 class='search-result-name'><a data-url='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: <em class='result-category'>" + row.Type + "</em> &nbsp;&nbsp;Type: <em class='result-type'>" + row.Group + "</em></h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
+                                row.Merged = "<h4 class='search-result-name'><a href='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: <em class='result-category'>" + row.Type + "</em> &nbsp;&nbsp;Type: <em class='result-type'>" + row.Group + "</em></h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
                                 data.push(row);
                             }
 
@@ -191,8 +183,7 @@ function search(app, pageViewModel, templatePath, contextList) {
                 context.contentHeader(pageViewModel);
 
                 $('#SideIcons').PageTools({ type: '', id: 0 });
-                $('#SideIcons').PageTools("clear");
-                $('#ContentHeader').hide();
+                $('#SideIcons').PageTools("clear");                
 
                 loadCategories = true;
 
@@ -209,9 +200,6 @@ function search(app, pageViewModel, templatePath, contextList) {
                 $("#SearchString").on('keypress', searchStringKeyPress);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
-                $('#SearchResults').on('click', '.search-result-link', resultSelect);
-
-                
                 //#endregion
                 phrase = $("#SearchString").val();
                              
