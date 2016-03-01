@@ -7,6 +7,7 @@ using d360.core.queue;
 using d360.core;
 using Dapper;
 using d360.core.entities;
+using System.Data.SqlClient;
 
 namespace d360.jobs.ReIndex
 {
@@ -21,85 +22,52 @@ namespace d360.jobs.ReIndex
             try
             {
                 var companies = GetActiveCompanyIDs();
+                //var companies = GetActiveDevelopmentCompanyIDs();
 
-                companies.AsParallel().WithDegreeOfParallelism(4).ForAll(companyID =>
-                {
-                    var context = GetCompanyConnection(companyID);
-                    var search = new AzureSearchSource();
+#if DEBUG                       
+                companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
+#endif
+           
+              companies.ForEach(companyID =>
+              {
+                  try
+                  {
+                      var source = new ElasticSearchSource();                    
 
-                    var sType = "";
-                    var source = new AzureSearchSource();
-                    var list = new List<AddToIndexModel>();
+                      using (var context = GetCompanyConnection(companyID))
+                      {
+                          source.ClearIndex(companyID);
 
-                    #region Artifacts
+                          source.AddToIndex(LoadArtifacts(context, companyID, source));
 
-                    sType = SystemObjects.Artifact.ToString();
+                          source.AddToIndex(LoadAttributes(context, companyID, source));
 
-                    var fields = context.Query<FieldWithRelation>("select * from FieldWithRelation where ObjectType = @t", new { t = sType }).ToList();
+                          source.AddToIndex(LoadModels(context, companyID, source));
 
-                    foreach (var a in context.Query("select A.*, T.Name as ArtifactType, V.Name as Vocabulary from Artifact A inner join ArtifactType T on T.ID = A.ArtifactTypeID inner join Vocabulary V on V.ID = A.VocabularyID"))
-                    {
-                        var item = new AddToIndexModel { Group = "Artifact", CompanyID = companyID, ID = a.ID, Type = a.ArtifactType, RelativeUrl = string.Format("#/artifacts/{0}/{1}", a.ArtifactTypeID, a.ID) };
-                        item.Fields = new Dictionary<string, string>();
-                        item.Fields.Add("Name", a.Name);
-                        item.Fields.Add("Description", a.Description);
-                        item.Fields.Add("Status", a.Status);
-                        item.Fields.Add("Type", a.ArtifactType);
-                        item.Fields.Add("Vocabulary", a.Vocabulary);
-                        var subset = fields.Where(i => i.ObjectID == a.ID);
-                        foreach (var f in subset)
-                        {
-                            if (!item.Fields.ContainsKey(f.Name)) item.Fields.Add(f.Name, f.FormattedValue);
-                        }
-                        list.Add(item);
-                    }
+                          source.AddToIndex(LoadPolicies(context, companyID, source));
 
-                    #endregion
+                          source.AddToIndex(LoadFusionTypes(context, companyID, source));
 
-                    #region Models
+                          source.AddToIndex(LoadDomains(context, companyID, source));
 
-                    sType = SystemObjects.Taxonomy.ToString();
+                          source.AddToIndex(LoadGroups(context, companyID, source));
 
-                    fields = context.Query<FieldWithRelation>("select * from FieldWithRelation where ObjectType = @t", new { t = sType }).ToList();
+                          source.AddToIndex(LoadRules(context, companyID, source));
 
-                    foreach (var a in context.Query("select O.*, T.Name as TaxonomyType from Taxonomy O inner join TaxonomyType T on T.ID = O.TaxonomyTypeID"))
-                    {
-                        var item = new AddToIndexModel { Group = "Taxonomy", CompanyID = companyID, ID = a.ID, Type = a.TaxonomyType, RelativeUrl = string.Format("#/catalogs/{0}/{1}", a.TaxonomyTypeID, a.ID) };
-                        item.Fields = new Dictionary<string, string>();
-                        item.Fields.Add("Name", a.Name);
-                        item.Fields.Add("Description", a.Description);
-                        item.Fields.Add("TextPath", a.TextPath);
-                        item.Fields.Add("Type", a.TaxonomyType);
-                        var subset = fields.Where(i => i.ObjectID == a.ID);
-                        foreach (var f in subset)
-                        {
-                            if (!item.Fields.ContainsKey(f.Name)) item.Fields.Add(f.Name, f.FormattedValue);
-                        }
-                        list.Add(item);
-                    }
+                          source.AddToIndex(LoadFusionAttributes(context, companyID, source));
+                      }
 
-                    #endregion
+                      using (var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+                      {
+                          source.AddToIndex(LoadUsers(community, companyID, source));
+                      }
+                  }
+                  catch (Exception ex)
+                  {
+                      mex.Add(ex);
+                  }
 
-                    #region Attributes
-
-                    foreach (var a in context.Query(@"select	AD.ID, AD.Name,
-AD.FormattedValue,
-		OD.Url 
-from	AttributeDetail AD
-		inner join cache.ObjectDetails OD on OD.[Object] = AD.ObjectType and  OD.ObjectID = AD.ObjectID and OD.[Object] in ('Artifact', 'Taxonomy')  "))
-                    {
-                        var item = new AddToIndexModel { Group = "Attribute", CompanyID = companyID, ID = a.ID, Type = a.Name, RelativeUrl = a.Url };
-                        item.Fields = new Dictionary<string, string>();
-                        item.Fields.Add("Name", a.FormattedValue);
-                        item.Fields.Add("Type", a.Name);
-                        list.Add(item);
-                    }
-
-                    #endregion
-
-                    source.ClearIndex(companyID);
-                    source.AddToIndex(list);
-                });
+              });
             }
             catch (Exception ex)
             {
@@ -107,6 +75,304 @@ from	AttributeDetail AD
             }
 
             if (mex.Count > 0) throw new AggregateException("One or more exceptions occurred", mex);
+        }
+
+        private static void LoadFusionAttributesIncremental(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var list = new List<AddToIndexModel>();
+
+            var sql = @"select
+	                        f.ID,
+	                        f.Name,
+	                        f.FusionAttributeTypeID,
+	                        ft.Name as FusionAttributeTypeName,
+	                        fu.Name as FusionName
+                        from fusionattribute f
+	                        inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
+	                        inner join fusion fu on (f.fusionid = fu.id)";
+
+            foreach (var a in context.Query(sql, new { compid = companyID }))
+            {
+                var item = new AddToIndexModel { Group = "FusionAttributes", CompanyID = companyID, Type = a.FusionAttributeTypeName, ID = a.ID, RelativeUrl = string.Format("#/fusion/item/{0}/{1}", a.FusionAttributeTypeID, a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);
+                item.Fields.Add("Type", $"{a.FusionName} {a.FusionAttributeTypeName}");
+                
+                list.Add(item);
+
+                if(list.Count > 30000)
+                {
+                    source.AddToIndex(list);
+
+                    list.Clear();
+                }
+            }
+
+            source.AddToIndex(list);
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadFusionAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var sql = @"select
+	                        f.ID,
+	                        f.Name,
+	                        f.FusionAttributeTypeID,
+	                        ft.Name as FusionAttributeTypeName,
+	                        fu.Name as FusionName
+                        from fusionattribute f
+	                        inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
+	                        inner join fusion fu on (f.fusionid = fu.id)";
+
+            foreach (var a in context.Query(sql, new { compid = companyID }))
+            {
+                var item = new AddToIndexModel { Group = "FusionAttributes", CompanyID = companyID, Type = a.FusionAttributeTypeName, ID = a.ID, RelativeUrl = string.Format("#/fusion/item/{0}/{1}", a.FusionAttributeTypeID, a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);
+                item.Fields.Add("Type", $"{a.FusionName} {a.FusionAttributeTypeName}");
+
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadUsers(SqlConnection context, int companyID, ElasticSearchSource source)
+        {            
+            var sql = @"select 
+	                        r.ID,
+	                        r.Username,
+	                        r.LastName,
+	                        r.FirstName,
+	                        r.Email	                        
+                        from
+	                        [dbo].[resource] r
+	                        inner join [dbo].[companyresource] cr on (r.id = cr.resourceid)
+                        where cr.companyid = @compid";
+
+            foreach (var a in context.Query(sql, new { compid = companyID }))
+            {
+                var item = new AddToIndexModel { Group = "Users", CompanyID = companyID, Type = "User", ID = a.ID, RelativeUrl = string.Format("#/resources/{0}", a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", $"{a.FirstName} {a.LastName}");
+                
+                item.Fields.Add("Type", "User");
+                item.Fields.Add("Email", a.Email);
+                item.Fields.Add("Username", a.Username);
+
+                yield return item;
+            }            
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var sql = @"SELECT [ID]
+                                  ,[Name]
+                                  ,[Description]      
+                                  ,[RuleType]
+                              FROM [dbo].[Rule]";
+
+            foreach (var a in context.Query(sql))
+            {
+                var item = new AddToIndexModel { Group = "Rule", CompanyID = companyID, Type = "Rule", ID = a.ID, RelativeUrl = string.Format("#/rules/{0}", a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);
+                var ruleType = (core.enums.RuleType)a.RuleType;
+
+                item.Fields.Add("Type", $"{ruleType.ToString()} Rule");
+                item.Fields.Add("Description", a.Description);
+
+                yield return item;                
+            }
+        }
+
+        private static void LoadLookupTypes(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var list = new List<AddToIndexModel>();
+
+            var sql = @"select
+                            lt.ID,
+	                        lt.Name
+                        from[dbo].[lookuptype] lt";
+
+            foreach (var a in context.Query(sql))
+            {
+                var item = new AddToIndexModel { Group = "LookupType", CompanyID = companyID, Type = "Lookup Type", ID = a.ID, RelativeUrl = string.Format("#/lookups/administration/{0}", a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);                
+                item.Fields.Add("Type", "Lookup Type");
+                list.Add(item);
+            }
+
+            source.AddToIndex(list);
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var sql = @"SELECT [ID]
+                          ,[Name]
+                          ,[Description]
+                      FROM[dbo].[Group]";
+
+            foreach (var a in context.Query(sql))
+            {
+                var item = new AddToIndexModel { Group = "Group", CompanyID = companyID, Type = "Group", ID = a.ID, RelativeUrl = string.Format("#/groups/{0}", a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);
+                item.Fields.Add("Description", a.Description);
+                item.Fields.Add("Type", "Group");
+                yield return item;
+            }
+        }
+
+        private static void LoadDomainGroups(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var list = new List<AddToIndexModel>();
+
+            var sql = @"select
+                            dg.Name,
+	                        dg.ID,
+	                        dg.DomainTypeID,
+	                        dt.name as DomainType
+                        from[dbo].[domaingroup] dg
+                           inner join[dbo].[domaintype] dt on (dg.domaintypeid = dt.id)";
+
+            foreach (var a in context.Query(sql))
+            {
+                var item = new AddToIndexModel { Group = "DomainGroup", CompanyID = companyID, ID = a.ID, Type = a.DomainType, RelativeUrl = string.Format("#/domains/{0}/{1}", a.DomainTypeID, a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);
+                item.Fields.Add("Description", a.Description);
+                item.Fields.Add("Type", a.DomainType);
+                list.Add(item);
+            }
+
+            source.AddToIndex(list);
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadDomains(SqlConnection context, int companyID, ElasticSearchSource source)
+        {            
+            var sql = @"select
+                            d.ID,
+	                        d.Name,
+	                        d.[Description],
+	                        dt.id as DomainTypeID,
+	                        dt.Name as DomainType
+                        from domain d
+                            inner join domaintype dt on d.domaintypeid = dt.id";
+
+            foreach (var a in context.Query(sql))
+            {
+                var item = new AddToIndexModel { Group = "Domain", CompanyID = companyID, ID = a.ID, Type = a.DomainType, RelativeUrl = string.Format("#/domains/{0}/{1}", a.DomainTypeID, a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);
+                item.Fields.Add("Description", a.Description);
+                item.Fields.Add("Type", a.DomainType);
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
+        {            
+            foreach (var a in context.Query(@"select 
+                                                p.ID,
+                                                p.Name,
+                                                p.[Description],
+                                                pt.Name as [PolicyType],
+                                                p.PolicyTypeID as [PolicyTypeID]
+                                            from policy p
+
+                                                inner
+                                            join policytype pt on p.PolicyTypeID = pt.id"))
+            {
+                var item = new AddToIndexModel { Group = "Policy", CompanyID = companyID, ID = a.ID, Type = a.PolicyType, RelativeUrl = string.Format("#/policies/{0}/{1}", a.PolicyTypeID, a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);
+                item.Fields.Add("Description", a.Description);                
+                item.Fields.Add("Type", a.PolicyType);                
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
+        {            
+            var sType = SystemObjects.Artifact.ToString();
+
+            var fields = context.Query<FieldWithRelation>("select * from FieldWithRelation where ObjectType = @t", new { t = sType }).ToList();
+
+            foreach (var a in context.Query("select A.*, T.Name as ArtifactType, V.Name as Taxonomy from Artifact A inner join ArtifactType T on T.ID = A.ArtifactTypeID inner join TaxonomyType V on V.ID = A.TaxonomyTypeID"))
+            {
+                var item = new AddToIndexModel { Group = "Artifact", CompanyID = companyID, ID = a.ID, Type = a.ArtifactType, RelativeUrl = string.Format("#/artifacts/{0}/{1}", a.ArtifactTypeID, a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);
+                item.Fields.Add("Description", a.Description);
+                item.Fields.Add("Status", a.Status);
+                item.Fields.Add("Type", a.ArtifactType);
+                item.Fields.Add("Taxonomy", a.Taxonomy);
+                var subset = fields.Where(i => i.ObjectID == a.ID);
+                foreach (var f in subset)
+                {
+                    if (!item.Fields.ContainsKey(f.Name)) item.Fields.Add(f.Name, f.FormattedValue);
+                }
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
+        {            
+            foreach (var a in context.Query(@"select	AD.ID, AD.Name,
+                                        AD.FormattedValue,
+		                                        OD.Url 
+                                        from	AttributeDetail AD
+		                                        inner join cache.ObjectDetails OD on OD.[Object] = AD.ObjectType and  OD.ObjectID = AD.ObjectID and OD.[Object] in ('Artifact', 'Taxonomy')  "))
+            {
+                var item = new AddToIndexModel { Group = "Attribute", CompanyID = companyID, ID = a.ID, Type = a.Name, RelativeUrl = a.Url };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.FormattedValue);
+                item.Fields.Add("Type", a.Name);
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
+        {            
+            var sType = SystemObjects.Taxonomy.ToString();
+
+            var fields = context.Query<FieldWithRelation>("select * from FieldWithRelation where ObjectType = @t", new { t = sType }).ToList();
+
+            foreach (var a in context.Query("select O.*, T.Name as TaxonomyType from Taxonomy O inner join TaxonomyType T on T.ID = O.TaxonomyTypeID"))
+            {
+                var item = new AddToIndexModel { Group = "Taxonomy", CompanyID = companyID, ID = a.ID, Type = a.TaxonomyType, RelativeUrl = string.Format("#/catalogs/{0}/{1}", a.TaxonomyTypeID, a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Name);
+                item.Fields.Add("Description", a.Description);
+                item.Fields.Add("TextPath", a.TextPath);
+                item.Fields.Add("Type", a.TaxonomyType);
+                var subset = fields.Where(i => i.ObjectID == a.ID);
+                foreach (var f in subset)
+                {
+                    if (!item.Fields.ContainsKey(f.Name)) item.Fields.Add(f.Name, f.FormattedValue);
+                }
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadFusionTypes(SqlConnection context, int companyID, ElasticSearchSource source)
+        {            
+            foreach (var a in context.Query(@"select
+			                                                f.id as ID,
+			                                                f.Name as FusionName,
+			                                                f.Description as FusionDescription,			                                                
+			                                                ft.Name as FusionTypeName,
+			                                                ft.Description as FusionTypeDescription,
+                                                            ft.ID as FusionTypeID
+		                                                from fusion f		                                                
+		                                                inner join fusiontype ft on f.fusiontypeid = ft.id"))
+            {
+                var item = new AddToIndexModel { Group = "FusionType", CompanyID = companyID, ID = a.ID, Type = a.FusionTypeName, RelativeUrl = string.Format("#/fusion/{0}/{1}", a.FusionTypeID, a.ID) };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.FusionName);
+                item.Fields.Add("Description", a.FusionDescription);
+                item.Fields.Add("Type", a.FusionTypeName);
+                yield return item;
+            }
         }
     }
 }

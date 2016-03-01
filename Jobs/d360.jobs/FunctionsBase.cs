@@ -29,6 +29,11 @@ namespace d360.jobs
             return CompanyConnectionUtils.GetActiveCompanyIDs();
         }
 
+        public static List<int> GetActiveDevelopmentCompanyIDs()
+        {
+            return CompanyConnectionUtils.GetActiveDevelopmentCompanyIDs();
+        }
+
         public static Dictionary<int, string> GetCompanyDomainPrefixes()
         {
             return CompanyConnectionUtils.GetCompanyDomainPrefixes();

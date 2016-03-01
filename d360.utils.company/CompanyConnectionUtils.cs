@@ -129,5 +129,16 @@ namespace d360.utils.company
 
             return (db == 6);
         }
+
+        public static List<int> GetActiveDevelopmentCompanyIDs()
+        {
+            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            cnn.Open();
+            var companies = cnn.Query<int>(@"select c.id from company c inner join databaseserver ds on (c.databaseserverid = ds.id and ds.id = 6 and c.[status] ='Active')").ToList();
+            cnn.Close();
+            cnn.Dispose();
+
+            return companies;
+        }
     }
 }

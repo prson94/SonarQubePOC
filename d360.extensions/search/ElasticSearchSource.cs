@@ -10,6 +10,8 @@ using d360.core.entities;
 using d360.core;
 using System.Data.SqlClient;
 using Dapper;
+using System.Diagnostics;
+using MoreLinq;
 
 namespace d360.extensions.search
 {
@@ -90,7 +92,9 @@ namespace d360.extensions.search
     public class ElasticSearchSource : ISearchSource
     {
         private const string DEFAULT_SEARCH_SERVER = "search1-d3s.cloudapp.net:9200";
-        
+        private const int BULK_BATCH_SIZE = 5000;
+
+
         protected string SearchServerUrl { get; set; }
 
         #region Utility methods
@@ -169,7 +173,7 @@ namespace d360.extensions.search
             schemaStream.Write(schemaData, 0, schemaData.Length);
         }
 
-        JsonResponseModel getJsonResponse(HttpWebRequest webReq)
+        JsonResponseModel getJsonResponse(HttpWebRequest webReq, bool parseResult = true)
         {
             var model = new JsonResponseModel();
             var wr = "";
@@ -179,16 +183,19 @@ namespace d360.extensions.search
                     model.Status = resp.StatusCode;
                     model.StatusMessage = resp.StatusDescription;
 
-                    using (var responseStream = resp.GetResponseStream())
+                    if (parseResult)
                     {
-                        using (var rdr = new System.IO.StreamReader(responseStream))
+                        using (var responseStream = resp.GetResponseStream())
                         {
-                            wr = rdr.ReadToEnd();
+                            using (var rdr = new System.IO.StreamReader(responseStream))
+                            {
+                                wr = rdr.ReadToEnd();
+                            }
                         }
-                    }
 
-                    if (!string.IsNullOrEmpty(wr))
-                        model.Data = JObject.Parse(wr);
+                        if (!string.IsNullOrEmpty(wr))
+                            model.Data = JObject.Parse(wr);
+                    }
                 }
             }
             catch(WebException we)
@@ -249,53 +256,70 @@ namespace d360.extensions.search
         }
 
         public void AddToIndex(IEnumerable<AddToIndexModel> items)
-        {            
-            if (!items.Any()) return;
+        {
+            var firstItem = items.FirstOrDefault();
 
-            var companyId = items.First().CompanyID;
-
+            if (firstItem == null) return;         
+            
+            var companyId = firstItem.CompanyID;
+            
             createIndexIfNotExists(companyId);
-            var sb = new StringBuilder();
             
-            var indexName = getCompanyIndexName(companyId);
-            foreach(var item in items)
-            {             
-                sb.Append("{ \"index\" : { \"_id\" : \"" + $"{item.Group}|{item.ID}" + "\", \"_type\" : \"" + item.Group + "\" } }\n");
-                sb.Append("{\"Url\" : \"" + item.RelativeUrl + "\",");                
-                bool bFirst = true;
-                foreach (var f in item.Fields)
+            foreach (var batch in items.Batch(BULK_BATCH_SIZE))
+            {                
+                var sb = new StringBuilder();
+
+                var indexName = getCompanyIndexName(companyId);
+                foreach (var item in batch)
                 {
-                    if (string.IsNullOrEmpty(f.Value))
-                        continue;
+                    sb.Append("{\"index\":{\"_id\":\"");
+                    sb.Append($"{item.Group}|{item.ID}");
+                    sb.Append("\",\"_type\":\"");
+                    sb.Append(item.Group);
+                    sb.Append("\" } }\n");
+                    sb.Append("{\"Url\" : \"");
+                    sb.Append(item.RelativeUrl);
+                    sb.Append("\",");
+                    bool bFirst = true;
+                    foreach (var f in item.Fields)
+                    {
+                        if (string.IsNullOrEmpty(f.Value))
+                            continue;
 
-                    if (!bFirst)
-                        sb.Append(", ");
-                    else
-                        bFirst = false;
+                        if (!bFirst)
+                            sb.Append(',');
+                        else
+                            bFirst = false;
 
-                    var val = f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
-                    val = HtmlUtilities.RemoveTags(val);
-                    sb.Append(" \"" + f.Key + "\" : \"" + val  + "\" ");
-                }                
-                sb.Append(" }\n");                
-            }
-            sb.Append("\n");
-            
+                        var val = f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
+                        val = HtmlUtilities.RemoveTags(val);
 
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk", companyId);
-            loadMessageInRequestBody(webReq, sb.ToString());
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.OK)
-                throw new ApplicationException(response.StatusMessage);
+                        sb.Append("\"");
+                        sb.Append(f.Key);
+                        sb.Append("\":\"");
+                        sb.Append(val);
+                        sb.Append("\"");
+                    }
+                    sb.Append("}\n");
+                }
+                sb.Append("\n");
+                
+                var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk", companyId);
+                webReq.AllowWriteStreamBuffering = false;
+                loadMessageInRequestBody(webReq, sb.ToString());
+                var response = getJsonResponse(webReq);
+                if (response.Status != HttpStatusCode.OK)
+                    throw new ApplicationException(response.StatusMessage);
 
-            var result = response.Data;
+                var result = response.Data;
 
-            if (result == null) throw new Exception("Invalid response no data");
+                if (result == null) throw new Exception("Invalid response no data");
 
-            var hasErrors = result.GetValue("errors");
+                var hasErrors = result.GetValue("errors");
 
-            if (hasErrors.Value<bool>())
-                throw new Exception(response.Data.ToString());            
+                if (hasErrors.Value<bool>())
+                    throw new Exception(response.Data.ToString());                
+            }     
         }
 
         public void ClearIndex(int companyID)

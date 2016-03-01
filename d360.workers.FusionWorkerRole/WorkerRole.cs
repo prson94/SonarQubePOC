@@ -50,16 +50,20 @@ namespace d360.workers.FusionWorkerRole
 
             FusionProcessingData fusionData = new FusionProcessingData
             {
-                CompanyID = 31,
-                FusionID = 1,
+                CompanyID = 4,
+                FusionID = 49,
+                //CompanyID = 15,
+                //FusionID = 20,
                 //     LogFileName = "no_models.json"
                 //LogFileName = "1.48.2016-01-07_04.13.32.json"
                 //LogFileName = "null_value.json"
                 //LogFileName = "SELF_REFERENCE.JSON"
                 //LogFileName = "1.45.2015-12-10_07.28.12.json"                      
                 //LogFileName = "space.json",
-              //  LogFileName = "parentspace.json"
-                 LogFileName = "8.1.2016-02-20_09.50.35.json" // file contains one row modified from base for fusion id 46.
+                //  LogFileName = "parentspace.json"
+              //  LogFileName = "18.20.2016-02-09_11.14.02.json"
+                //   LogFileName = "1.45.modifytest.json" // file contains one row modified from base for fusion id 46.
+                LogFileName = "16.49.2016-01-28_05.20.58.json"
             };
             
             //the biggest fusion job i can find 30.9 MB for Demo dev - gmo has a 35.3MB file in fusion-15 22 has 38.6mb
