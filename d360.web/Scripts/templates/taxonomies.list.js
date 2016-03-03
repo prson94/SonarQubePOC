@@ -125,14 +125,18 @@
                     if (ctx == contextList.Taxonomy) {
 
                         $.getJSON('/api/Taxonomy/' + selectedID + '/flags', function (flagdata) {
-                            pageViewModel.RedFlagged = flagdata.RedFlagged;
+                            //pageViewModel.RedFlagged = flagdata.RedFlagged;
                             context.contentHeader(pageViewModel);
                         });
+
+                        ObjectDetail('DetailTile', type, selectedID);
 
                         var loadPermissionsDependentTiles = function () {
                             amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
-                            DetailsTile('DetailTile', contextList, permissions, type, selectedID, contextList.Taxonomy);
+                            CollapsibleSynonymsTile('SynonymsTile', contextList, permissions, type, selectedID);
+                            CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, selectedID);
+
                             ObjectStatisticsTile('StatisticsTile', type, selectedID);
                             PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, selectedID, '', false);
                             RelationshipAggregatesTile('AggregatesTileContainer', type, selectedID, permissions);

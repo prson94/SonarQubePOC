@@ -289,6 +289,17 @@ namespace d360.web.Models
         public string FieldTypeName { get; set; }
     }
 
+    public class FieldValidity
+    {
+        public FieldValidity()
+        {
+            Valid = true;
+        }
+
+        public bool Valid { get; set; }
+        public string Message { get; set; }
+    }
+
     public class FieldTypeFusionItemEditorModel
     {
         public int ID { get; set; }
@@ -296,6 +307,54 @@ namespace d360.web.Models
         public int ReferenceType { get; set; }
         public int? TargetFusionAttributeType { get; set; }
         public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
+        public bool HideHeader { get; set; }
+        public bool HideFooter { get; set; }
+
+        public FieldValidity Validation()
+        {
+            var prefix = "You are missing a";
+            var valid = new FieldValidity();
+            if (SourceFusionAttributeType <= 0)
+            {
+                valid.Valid = false;
+                valid.Message = $"{prefix} target item.";
+            }
+            else
+            {
+                if (ReferenceType <= 0)
+                {
+                    valid.Valid = false;
+                    valid.Message = $"{prefix} reference type.";
+                }
+                else
+                {
+                    if (ReferenceType > 1 && !TargetFusionAttributeType.HasValue)
+                    {
+                        valid.Valid = false;
+                        valid.Message = $"{prefix} reference item.";
+                    }
+                }
+            }
+
+            if (valid.Valid)
+            {
+                if (DisplayFields == null)
+                {
+                    valid.Valid = false;
+                    valid.Message = $"{prefix} reference column.";
+                }
+                else
+                {
+                    if (DisplayFields.Count == 0)
+                    {
+                        valid.Valid = false;
+                        valid.Message = $"{prefix} reference column.";
+                    }
+                }
+            }
+
+            return valid;
+        }
     }
 
     public class FieldTypeRelationItemEditorModel
@@ -305,14 +364,59 @@ namespace d360.web.Models
         public int ReferenceType { get; set; }
         public int? ChildIntersectType { get; set; }
         public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
+        public bool HideHeader { get; set; }
+        public bool HideFooter { get; set; }
+
+
+        public FieldValidity Validation()
+        {
+            var prefix = "You are missing a";
+            var valid = new FieldValidity();
+            if (IntersectType <= 0)
+            {
+                valid.Valid = false;
+                valid.Message = $"{prefix} relation.";
+            }
+            else
+            {
+                if (ReferenceType <= 0)
+                {
+                    valid.Valid = false;
+                    valid.Message = $"{prefix} reference type.";
+                }
+                else
+                {
+                    if (ReferenceType > 1 && !ChildIntersectType.HasValue)
+                    {
+                        valid.Valid = false;
+                        valid.Message = $"{prefix} child relation.";
+                    }
+                }
+            }
+
+            if (valid.Valid)
+            {
+                if (DisplayFields == null)
+                {
+                    valid.Valid = false;
+                    valid.Message = $"{prefix} reference column.";
+                }
+                else
+                {
+                    if (DisplayFields.Count == 0)
+                    {
+                        valid.Valid = false;
+                        valid.Message = $"{prefix} reference column.";
+                    }
+                }
+            }
+
+            return valid;
+        }
     }
 
     public class FieldTypeEditorModel
     {
-        public FieldTypeEditorModel()
-        {
-            FieldIsUsed = false;
-        }
 
         public bool FieldIsUsed { get; set; }
 
@@ -321,6 +425,39 @@ namespace d360.web.Models
         public ICollection<FieldTypeFusionItemEditorModel> FusionItems { get; set; }
 
         public FieldTypeRelationItemEditorModel RelationItem { get; set; }
+
+        public FieldValidity Validation()
+        {
+            var valid = new FieldValidity();
+
+            if (FieldType.Type == core.DataType.FusionLookup.ToString())
+            {
+                if (FusionItems == null)
+                {
+                    valid.Valid = false;
+                    valid.Message = "You are missing one or more fusion items.";
+                }
+                else
+                {
+                    if (FusionItems.Count == 0)
+                    {
+                        valid.Valid = false;
+                        valid.Message = "You are missing one or more fusion items.";
+                    }
+                }
+            }
+
+            if (FieldType.Type == core.DataType.RelationLookup.ToString())
+            {
+                if (RelationItem == null)
+                {
+                    valid.Valid = false;
+                    valid.Message = "You are missing a relation items.";
+                }
+            }
+
+            return valid;
+        }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

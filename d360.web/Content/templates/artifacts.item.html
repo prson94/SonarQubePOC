@@ -1,20 +1,12 @@
 ﻿<div class="row">
     <div class="col s8">
-        <div id="DetailTile"></div>
-        <div id="GovernanceTile" class="tile tile-detail"></div>
-        <div class="row" id="HierarchyTileSection">
-            <div class="col s6">
-                <div id="TypeHierarchyTile" class="tile tile-detail"></div>
-            </div>
-            <div class="col s6">
-                <div id="GroupHierarchyTile" class="tile tile-detail"></div>
-            </div>
+        <div id="DetailContainerTile" class="tile tile-detail">
+            <div id="DetailTile"></div>
+            <div id="SynonymsTile"></div>
+            <div id="AttributesTile"></div>
+            <div id="StructureTile"></div>
         </div>
-        <!--<div class="row">
-            <div class="col s6">
-                <div id="ParentHierarchyTile" class="tile tile-detail"></div>
-            </div>
-        </div>-->
+        <div id="GovernanceTile" class="tile tile-detail"></div>
     </div>
     <div class="col s4">
         <div id="CertificationNotification" class="tile tile-detail" style="display:none"></div>
@@ -22,7 +14,6 @@
         <div id="RandomQuestion" class="tile tile-detail"></div>
         <div id="AggregatesTileContainer" class="tile tile-detail">
             <div id="AggregatesTile"></div>
-            <!--<div id="SimpleHierarchyTile"></div>-->
         </div>
         <div id="RelatedArtifactsTile" class="tile tile-detail"></div>
     </div>

@@ -46,9 +46,10 @@
 
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
                 $('#SideIcons').PageTools('reload', type, ruleID, "");
+                ObjectDetail('DetailTile', type, ruleID);
 
                 var loadPermissionsDependentTiles = function () {
-                    DetailsTile('DetailTile', contextList, permissions, type, ruleID, contextList.Rule, true);
+                    CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, ruleID);
                     statisticsTileVm.ChangeObject(type, ruleID);
                     statisticsTileVm.GetStatistics();
 

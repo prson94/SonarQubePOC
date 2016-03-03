@@ -323,8 +323,8 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
         ready: function () {
             try {
                 var rows = $(treeControlID).jqxTreeGrid('getRows');
-                if (rows.length > 0) {                    
-                    $(treeControlID).jqxTreeGrid('selectRow', (rows[0].Items[0] !== null ? rows[0].Items[0].uid : rows[0].uid));
+                if (rows.length > 0) {
+                    $(treeControlID).jqxTreeGrid('selectRow', ((rows[0].Items[0]) ? rows[0].Items[0].uid : rows[0].uid));
                 }
             } catch (e) {
                 console.log(e);
@@ -382,30 +382,28 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     }
 
     function treeControlBindingComplete(evt) {
-        var badge = $('#AttributesCount');
-        if (badge) {
-            var calculateCount = function (row, count) {
-                if (row.records) {
-                    count += row.records.length;
-                    $.each(row.records, function () {
-                        count = calculateCount(this, count);
-                    });
-                }
-                return count;
-            };
-
-            var count = 0;
-            try {
-                var topRows = $(treeControlID).jqxTreeGrid('getRows');
-                $.each(topRows, function () {
+        var calculateCount = function (row, count) {
+            if (row.records) {
+                count += row.records.length;
+                $.each(row.records, function () {
                     count = calculateCount(this, count);
                 });
-            } catch (e) {
-                count = 0;
             }
-            badge.html("&#160;(<b>" + count + "</b>)");
-            }
+            return count;
+        };
+
+        var count = 0;
+        try {
+            var topRows = $(treeControlID).jqxTreeGrid('getRows');
+            $.each(topRows, function () {
+                count = calculateCount(this, count);
+            });
+        } catch (e) {
+            count = 0;
         }
+        amplify.publish("AttributeCount", { count: count });
+    }
+
 
     function treeControlRowSelect(evt) {
         try {
@@ -416,36 +414,38 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             // row key.
             var key = args.key;
 
-            var t = row.ObjectType;//null;
-            var i = row.ObjectID;//null;
-            var detailtype = null;
-            var detailid = null;
-            var roottype = row.ParentObjectType; //null;
-            var rootid = row.ParentObjectID; //null;
-            var attributeID = null;
-            var targetType = row.TargetObjectType;
+            if (row) {
+                var t = row.ObjectType;//null;
+                var i = row.ObjectID;//null;
+                var detailtype = null;
+                var detailid = null;
+                var roottype = row.ParentObjectType; //null;
+                var rootid = row.ParentObjectID; //null;
+                var attributeID = null;
+                var targetType = row.TargetObjectType;
 
-            if (t === 'Attribute') {
-                attributeID = i;
-            }
+                if (t === 'Attribute') {
+                    attributeID = i;
+                }
 
-            if (targetType) {
-                detailtype = targetType;
-                detailid = row.TargetObjectID;
-            }
-            else {
-                detailtype = t;
-                detailid = i;
-            }
+                if (targetType) {
+                    detailtype = targetType;
+                    detailid = row.TargetObjectID;
+                }
+                else {
+                    detailtype = t;
+                    detailid = i;
+                }
 
-            loadToolbar(t, i, roottype, rootid, attributeID);
+                loadToolbar(t, i, roottype, rootid, attributeID);
 
-            attributeSwitchToViewer(targetType, row.TargetObjectID);
-            if (detailid && detailtype === "Attribute") {
-                ObjectDetail(_detailControlID, detailtype, detailid);
-            }
-            else {
-                $(detailControlID).html('');
+                attributeSwitchToViewer(targetType, row.TargetObjectID);
+                if (detailid && detailtype === "Attribute") {
+                    ObjectDetail(_detailControlID, detailtype, detailid);
+                }
+                else {
+                    $(detailControlID).html('');
+                }
             }
         } catch (e) {
             logError("Children : AttributeTree.select", e);
@@ -721,75 +721,183 @@ function CriticalRelationshipsTile(controlID, type, id) {
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 }
 
-function DetailsTile(controlID, contextList, permissions, type, id, context, shouldHideSynonyms) {
-    controlID = '#' + controlID;
-    var _DetailSubTile = '#DetailSubTile';
-    var _SynonymsSubTile = '#SynonymsSubTile';
-    var _AttributesSubTile = '#AttributesSubTile';
+function CollapsibleAttributesTile(controlID, contextList, permissions, type, id) {
+    var controlID_count = controlID + '_Count';
+    var controlID_sub = controlID + '_Sub';
 
-    var source = shouldHideSynonyms ? $("#detailTileNoSynonymsTmpl").html() : $("#detailTileTmpl").html();
-    var template = Handlebars.compile(source);
-    $(controlID).html(template({}));
+    //#region Event Handlers
 
-    $(controlID).addClass('tile');
-    $(controlID).addClass('tile-detail');
+    function attributeCountNotice(data) {
+        $('#' + controlID_count).html("&#160;(<b>" + data.count + "</b>)");
+    }
 
-    var model = function () {
-        var self = this;
-        self.RibbonIndex = 0;
+    function expanded() {
+        AttributesTile(controlID_sub, contextList, permissions, type, id, '', false);
+    }
 
-        self.G_TargetType = '';
-        self.G_TargetID = -1;
-        self.S_TargetType = '';
-        self.S_TargetID = -1;
-        self.A_TargetType = '';
-        self.A_TargetID = -1;
+    function unsubscribe(data) {
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.unsubscribe("AttributeCount", attributeCountNotice);
+        $('#' + controlID).off('expanded', expanded);
+    }
 
-        self.updateRibbonData = function (selectedIndex) {
-            if (selectedIndex !== undefined)
-                self.RibbonIndex = selectedIndex;
+    //#endregion
 
-            switch (self.RibbonIndex) {
-                case 0:
-                    //#region
-                    if ((self.G_TargetType != type) || (self.G_TargetID != id)) {
-                        self.G_TargetType = type;
-                        self.G_TargetID = id;
+    //#region Clean up previous control logic before re-creating
+
+    var exists = false;
+    try {
+        var exp = $('#' + controlID).jqxExpander('animationType');
+        if (exp) {
+            exists = true;
+        }
+    } catch (e) { }
+    try { unsubscribe({}); } catch (e) { }
+
+    //#endregion
+
+    if (!exists) {
+        $('#' + controlID).css('margin', '10px');
+        $('#' + controlID).html('<div>Attributes<span id="' + controlID_count + '"></span></div><div style="min-height: 150px"><div id="' + controlID_sub + '"></div></div>');
+        $('#' + controlID).jqxExpander({ theme: theme, expanded: false });
+    }
+    AttributesTile(controlID_sub, contextList, permissions, type, id, '', false);
+
+    //#region Register Events
+
+    amplify.subscribe("AttributeCount", attributeCountNotice);
+    $('#' + controlID).on('expanded', expanded);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+
+    //#endregion
+}
+
+function CollapsibleTypeHierarchyTile(controlID, contextList, permissions, type, id) {
+    var controlID_sub = controlID + '_Sub';
+
+    //#region Event Handlers
+
+    function expanded() {
+        HierarchyTile(controlID_sub, contextList, permissions, type, id, 3);
+    }
+
+    function unsubscribe(data) {
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        $('#' + controlID).off('expanded', expanded);
+    }
+
+    //#endregion
+
+    //#region Clean up previous control logic before re-creating
+
+    try { unsubscribe({}); } catch (e) { }
+    var exists = false;
+    try {
+        var exp = $('#' + controlID).jqxExpander('animationType');
+        if (exp) {
+            exists = true;
+        }
+    } catch (e) { }
+
+    //#endregion
+
+    if (!exists) {
+        $('#' + controlID).css('margin', '10px');
+        $('#' + controlID).html('<div>Structure</div><div style="min-height: 150px"><div style="width:99%" id="' + controlID_sub + '"></div></div>');
+        $('#' + controlID).jqxExpander({ theme: theme, expanded: false });
+    }
+
+    HierarchyTile(controlID_sub, contextList, permissions, type, id, 3);
+
+    //#region Register Events
+
+    $('#' + controlID).on('expanded', expanded);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+
+    //#endregion
+}
+
+function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) {
+    var controlID_count = controlID + '_Count';
+    var controlID_sub = controlID + '_Sub';
+    var source;
+    var adapter;
+
+    //#region Event Handlers
+
+    function bindingComplete(event) {
+        var count = 0;
+        try {
+            count = $('#' + controlID_sub).jqxGrid('getrows').length;
+        } catch (e) {
+            count = 0;
+        }
+        $('#' + controlID_count).html("&#160;(<b>" + count + "</b>)");
+    }
+    
+    function saveAction(data) {
+        try {
+            switch (data.context) {
+                case contextList.Attribute:
+                    if (data.custom) {
+                        if (data.custom.AttributeTypeID === 1) {
+                            $('#' + controlID_sub).jqxGrid('updatebounddata');
+                        }
                     }
-                    //#endregion
                     break;
-                case 1:
-                    //#region
-                    if ((self.S_TargetType != type) || (self.S_TargetID != id)) {
-                        self.S_TargetType = type;
-                        self.S_TargetID = id;
-                    }
-                    //#endregion
-                    break;
-                case 2:
-                    //#region
-                    if ((self.A_TargetType != type) || (self.A_TargetID != id)) {
-                        self.A_TargetType = type;
-                        self.A_TargetID = id;
-                        AttributesTile('AttributesSubTile', contextList, permissions, self.A_TargetType, self.A_TargetID, '', false);
-                    }
-                    //#endregion
+                case contextList.Synonym:
+                    $('#' + controlID_sub).jqxGrid('updatebounddata');
                     break;
             }
+        } catch (e) {
+            logError("Parts.js : SynonymsTile : SaveAction", e);
         }
-    };
+    }
 
-    var m = new model();
+    function expanded() {
+        $('#' + controlID_sub).jqxGrid('updatebounddata');
+    }
 
-    //Detail Sub Tile
-    ObjectDetail('DetailSubTile', type, id);
+    function unsubscribe(data) {
+        source = null;
+        adapter = null;
 
-    //#region Synonyms Grid
+        $('#' + controlID_sub).off('bindingcomplete', bindingComplete);
+        amplify.unsubscribe("SaveAction", saveAction);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        $('#' + controlID).off('expanded', expanded);
+    }
 
-    if (!shouldHideSynonyms) {
-        $('#SynonymsExpander').jqxExpander({ theme: theme, expanded: false });
+    //#endregion
 
-        var srcSynonym = {
+    //#region Clean up previous control logic before re-creating
+
+//    try { unsubscribe({}); } catch (e) { }
+
+    var exists = false;
+    try {
+        var exp = $('#' + controlID).jqxExpander('animationType');
+        if (exp) {
+            exists = true;
+        }
+    } catch (e) { }
+
+    //#endregion
+    if (!exists) {
+        $('#' + controlID).css('margin', '10px');
+        $('#' + controlID).html('<div>Synonyms<span id="' + controlID_count + '"></span></div><div><div id="' + controlID_sub + '"></div></div>');
+        $('#' + controlID).jqxExpander({ theme: theme, expanded: false });
+    }
+
+    //#region Grid
+
+    try {
+        source = {
             datatype: 'json',
             url: '/api/' + type + '/' + id + '/synonyms',
             datafields:
@@ -801,10 +909,10 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
             ]
         };
 
-        var adapterSynonym = new $.jqx.dataAdapter(srcSynonym);
+        adapter = new $.jqx.dataAdapter(source);
 
-        $(_SynonymsSubTile).jqxGrid({
-            source: adapterSynonym,
+        $('#' + controlID_sub).jqxGrid({
+            source: adapter,
             width: overlay_grid_width,
             pagesizeoptions: ['5', '10', '20'],
             pagesize: 5,
@@ -823,100 +931,19 @@ function DetailsTile(controlID, contextList, permissions, type, id, context, sho
             ]
         });
     }
+    catch (e) {
+
+    }
 
     //#endregion
 
-    $('#AttributesExpander').jqxExpander({ theme: theme, expanded: false });
-    AttributesTile('AttributesSubTile', contextList, permissions, type, id, '', false);
+    //#region Register Events
 
-    //#region Events
-
-    function attributesExpanded() {
-        AttributesTile('AttributesSubTile', contextList, permissions, type, id, '', false);
-    }
-
-    function synonymsExpanded() {
-        if (!shouldHideSynonyms) {
-            $(_SynonymsSubTile).jqxGrid('updatebounddata');
-        }
-    }
-
-    function pageResized() {
-        try {
-            if (!shouldHideSynonyms) {
-                $(_SynonymsSubTile).jqxGrid('refresh');
-            }
-        } catch (e) {
-        }
-    }
-
-    function ribbonSelect() { //(event) {
-        var tab = $(this);
-        var ix = tab.data('index'); //event.args.selectedIndex
-        m.updateRibbonData(ix);
-    }
-
-    function saveAction(data) {
-        try {
-            switch (data.context) {
-                case context:
-                    ObjectDetail('DetailSubTile', type, id);
-                    break;
-                case contextList.Attribute:
-                    if (data.custom) {
-                        if (data.custom.AttributeTypeID === 1) {
-                            $(_SynonymsSubTile).jqxGrid('updatebounddata');
-                        }
-                    }
-                    break;
-                case contextList.Synonym:
-                    if (!shouldHideSynonyms) {
-                        $(_SynonymsSubTile).jqxGrid('updatebounddata');
-                    }
-                    break;
-            }
-        } catch (e) {
-            logError("Parts.js : TagsTile : SaveAction", e);
-        }
-    }
-
-    function unsubscribe(data) {
-        source = null;
-        adapter = null;
-
-        //amplify.unsubscribe('CommandExecuted', commandExecuted);
-        amplify.unsubscribe("PageResized", pageResized);
-
-        amplify.unsubscribe("SaveAction", saveAction);
-        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
-        //$('#DetailTileTabs > li > a').off('click', ribbonSelect);
-        $('#AttributesExpander').off('expanded', attributesExpanded)
-        if (!shouldHideSynonyms) {
-            $('#SynonymsExpander').off('expanded', synonymsExpanded);
-        }
-    }
-
-    //amplify.subscribe("CommandExecuted", commandExecuted);
-    amplify.subscribe("PageResized", pageResized);
+    $('#' + controlID_sub).on('bindingcomplete', bindingComplete);
+    $('#' + controlID).on('expanded', expanded);
     amplify.subscribe("SaveAction", saveAction);
-    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-    $('#AttributesExpander').on('expanded', attributesExpanded);
-    //$('#DetailTileTabs > li > a').on('click', ribbonSelect);
-
-    if (!shouldHideSynonyms) {
-        $('#SynonymsExpander').on('expanded', synonymsExpanded);
-        $(_SynonymsSubTile).on('bindingcomplete', function (event) {
-            var count = 0;
-            try {
-                count = $(_SynonymsSubTile).jqxGrid('getrows').length;
-            } catch (e) {
-                count = 0;
-            }
-            $('#SynonymsCount').html("&#160;(<b>" + count + "</b>)");
-        });
-    }
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
 
     //#endregion
 }
@@ -990,6 +1017,7 @@ function ObjectDetail(controlID, type, id) {
                     }
                 });
                 if (cn) {
+                    cn.width = "30%";
                     cn.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
                         return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.Name + "</a></div>";
                     }
@@ -1002,6 +1030,7 @@ function ObjectDetail(controlID, type, id) {
                     }
                 });
                 if (cp) {
+                    cp.width = "40%";
                     cp.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
                         return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.TextPath + "</a></div>";
                     }
@@ -1012,16 +1041,21 @@ function ObjectDetail(controlID, type, id) {
                     width: grid_width,
                     pagesizeoptions: ['10', '20', '50'],
                     pagesize: 10,
+                    showemptyrow: false,
                     autoheight: true,
                     sortable: true,
                     filterable: true,
                     showfilterrow: false,
-                    pageable: true,
+                    showheader: !f.HideHeader,
+                    pageable: !f.HideFooter,
                     columnsresize: true,
                     source: dataAdapter,
                     theme: 'flat',
                     pagermode: 'simple',
-                    columns: cols
+                    columns: cols//,
+                    //ready: function () {
+                    //    $(valueID).jqxGrid('autoresizecolumns');
+                    //}
                 });
             });
         }
@@ -1060,7 +1094,7 @@ function ObjectDetail(controlID, type, id) {
     });
 }
 
-function HierarchyTile(controlID, contextList, permissions, type, id, mapType, title) {
+function HierarchyTile(controlID, contextList, permissions, type, id, mapType) {
     var source = $("#hierarchyTileTmpl").html();
     var template = Handlebars.compile(source);
     var newRowID = null;
@@ -1073,10 +1107,10 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType, t
 
     controlID = '#' + controlID;
     var controlID_hierarchy = controlID + '_hierarchy';
-    var controlID_title = controlID + '_title';
-    $(controlID_title).text(title);
+    //var controlID_title = controlID + '_title';
+    //$(controlID_title).text(title);
 
-    $(controlID).css('padding-bottom', '0px');
+    //$(controlID).css('padding-bottom', '0px');
 
     var getAdapter = function (mapType, selector) {
         return {
@@ -1117,7 +1151,7 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType, t
             }
         };
     }
-    var getTreeGrid = function (mapType, adapter, title, selector, ctrlID) {
+    var getTreeGrid = function (mapType, adapter, selector, ctrlID) {
         return {
             width: '100%',
             source: adapter,
@@ -1600,8 +1634,8 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType, t
         }
     }
 
-    function initTreeGrid(selector, mapType, title, ctrlID) {
-        $(selector).jqxTreeGrid(getTreeGrid(mapType, new $.jqx.dataAdapter(getAdapter(mapType)), title, selector, ctrlID));
+    function initTreeGrid(selector, mapType, ctrlID) {
+        $(selector).jqxTreeGrid(getTreeGrid(mapType, new $.jqx.dataAdapter(getAdapter(mapType)), selector, ctrlID));
     }
 
     function getRowDataItem(data) {
@@ -1620,7 +1654,7 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType, t
     }
     
    var c = controlID.substring(1);
-   initTreeGrid(controlID_hierarchy, mapType, title, c);
+   initTreeGrid(controlID_hierarchy, mapType, c);
 
    function showFocalRow(treeGrid, event) {
        if (event == null || event.args == null)
@@ -1642,11 +1676,6 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType, t
 
        $(treeGrid).jqxTreeGrid('ensureRowVisible', focal.UID);
    }
-    
-   //amplify.subscribe("SaveAction", "hierarchyform", function () {
-   //    $(controlID_hierarchy).jqxTreeGrid('updateBoundData');
-   //   // $(controlID_group_hierarchy).jqxTreeGrid('updateBoundData');
-   //});
 }
 
 function DomainAllocationsTile(controlID, contextList, permissions, typeID, domainID) {

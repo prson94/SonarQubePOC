@@ -90,7 +90,7 @@ SELECT	'#Models' as MenuID,
 		0 as Feature,
 		(
 		SELECT	name, 
-				'#/' As url,
+				'#/catalogs?classification=' + name As url,
 				0 as feature,
 				(
 				SELECT	name, 

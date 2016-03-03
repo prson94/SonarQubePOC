@@ -21,6 +21,12 @@ namespace d360.core.entities
         [DataMember]
         public int ReferenceType { get; set; }
 
+        [DataMember]
+        public bool HideHeader { get; set; }
+
+        [DataMember]
+        public bool HideFooter { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeFusionLookupDefinitionID")]
         public virtual ICollection<FieldTypeFusionLookupDisplayField> FieldTypeFusionLookupDisplayFields { get; set; }
     }

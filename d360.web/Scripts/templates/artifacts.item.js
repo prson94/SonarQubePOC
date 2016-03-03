@@ -98,6 +98,7 @@
 
                     $('#SideIcons').PageTools({ type: type, id: id });
                     $("#RandomQuestion").RandomSurveyQuestion({ objectType: type, objectID: id });
+                    ObjectDetail('DetailTile', type, id);
 
                     var loadPermissionsDependentTiles = function () {
                         ObjectStatisticsTile('MicroWidget1', type, id);
@@ -106,23 +107,24 @@
                         LineageDiagram('SourcingTile', type, id, null, true);
                         CertificationNotificationTile('CertificationNotification', id);
 
-                        if (json.AllowPredicateHierarchies) {
-                            HierarchyTile('TypeHierarchyTile', contextList, permissions, type, id, 3, 'Definitional Structure');
-                            HierarchyTile('GroupHierarchyTile', contextList, permissions, type, id, 4, 'Groupings');
-                            // HierarchyTile('ParentHierarchyTile', contextList, permissions, type, id, 5, 'Parent/Child Hierarchy');
-                        }
-                        else {
-                            $('#TypeHierarchyTile').hide();
-                            $('#GroupHierarchyTile').hide();
-                        }
-
                         if (json.AllowRelatedArtifacts) {
                             RelatedArtifactsGrid('RelatedArtifactsTile', permissions, json.TypeName, typeID, id);
                         }
                         else {
                             $('#RelatedArtifactsTile').hide();
                         }
-                        DetailsTile('DetailTile', contextList, permissions, type, id, contextList.Artifact);
+
+                        CollapsibleSynonymsTile('SynonymsTile', contextList, permissions, type, id);
+                        CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, id);
+                        if (json.AllowPredicateHierarchies) {
+                            CollapsibleTypeHierarchyTile('StructureTile', contextList, permissions, type, id);
+                            //HierarchyTile('GroupHierarchyTile', contextList, permissions, type, id, 4, 'Groupings');
+                            // HierarchyTile('ParentHierarchyTile', contextList, permissions, type, id, 5, 'Parent/Child Hierarchy');
+                        }
+                        else {
+                            $('#StructureTile').hide();
+                            //$('#GroupHierarchyTile').hide();
+                        }
                     }
 
                     permissions.GetPermissionsForObject(type, id).then(loadPermissionsDependentTiles);

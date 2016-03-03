@@ -93,17 +93,21 @@
 
                         $('#AggregatesTile').fadeIn(fadoutTime);
                         RelationshipAggregatesTile('AggregatesTile', selectedType, id, permissions);
+
+                        $('#AttributesTile').fadeIn(fadoutTime);
+                        CollapsibleAttributesTile('AttributesTile', contextList, permissions, selectedType, id);
                     }
                     permissions.GetPermissionsForObject(selectedType, id).then(loadPermissionsDependentTiles);
                 }
                 else {
+                    $('#AttributesTile').fadeOut(fadoutTime).html('');
                     $('#AllocationsTile').fadeOut(fadoutTime).html('');
                     $('#ItemsTile').fadeOut(fadoutTime).html('');
                     $('#OwnerTile').fadeOut(fadoutTime).html('');
                     $('#AggregatesTile').fadeOut(fadoutTime).html('');
                 }
 
-                ObjectDetail('DetailTile', selectedType, id);//DetailTile('DetailTile', contextList, permissions, selectedType, id);
+                ObjectDetail('DetailTile', selectedType, id);
 
                 ObjectStatisticsTile('SocialTile', selectedType, id);
             }

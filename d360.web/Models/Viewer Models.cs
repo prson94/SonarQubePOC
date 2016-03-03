@@ -458,6 +458,12 @@ namespace d360.web.Models
         public string LookupGridUrl { get; set; }
 
         [DataMember]
+        public bool HideHeader { get; set; }
+
+        [DataMember]
+        public bool HideFooter { get; set; }
+
+        [DataMember]
         public int? Row { get; set; }
 
         [DataMember]

@@ -2,16 +2,14 @@
   {
     "outputFileName": "scripts/all.js",
     "inputFiles": [
-      "Scripts/jquery-2.1.4.js",
-      "scripts/polyfills.js",
-      "Scripts/handlebars-1.1.2.js",
+      "Scripts/jquery-2.2.1.js",
+      "Scripts/handlebars.js",
       "Scripts/sammy-0.7.5.js",
       "Scripts/sammy.title.js",
       "Scripts/sammy.handlebars.js",
       "Scripts/amplify.js",
       "Scripts/moment.js",
-      "Scripts/knockout-3.3.0.js",
-      //"Scripts/materialize/materialize.js", //{ "$ref": "#" },
+      "scripts/knockout-3.4.0.debug.js",
       "Scripts/colorpicker-color.js",
       "Scripts/colorpicker.js",
       "Scripts/redactor.js",
@@ -27,7 +25,6 @@
       "Scripts/ace/theme-dawn.js",
       "Scripts/knockout.models.js",
       "Scripts/Common.js",
-      //"Scripts/d3s.Detail.js",
       "Scripts/d3s.Editor.js",
       "Scripts/d3s.PageTools.js",
       "Scripts/d3s.SurveyReport.js",
@@ -38,6 +35,7 @@
       "Scripts/templates/community.home.js",
       "Scripts/templates/analytics.admin.js",
       "Scripts/templates/artifacts.admin.js",
+      "Scripts/templates/artifacts.root.js",
       "Scripts/templates/artifacts.item.js",
       "Scripts/templates/artifacts.list.js",
       "Scripts/templates/attributes.admin.js",
@@ -64,6 +62,7 @@
       "Scripts/templates/surveys.admin.js",
       "Scripts/templates/surveyresponsetypes.admin.js",
       "Scripts/templates/taxonomies.admin.js",
+      "Scripts/templates/taxonomies.root.js",
       "Scripts/templates/taxonomies.list.js",
       "Scripts/templates/templates.admin.js",
       "Scripts/templates/workflow.item.js",
@@ -77,8 +76,8 @@
   {
     "outputFileName": "scripts/apps.js",
     "inputFiles": [
-      "Scripts/jquery-2.1.4.js",
-      "Scripts/knockout-3.3.0.js"
+      "Scripts/jquery-2.2.1.js",
+      "scripts/knockout-3.4.0.debug.js"
     ]
   },
   {

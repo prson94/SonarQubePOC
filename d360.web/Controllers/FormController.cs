@@ -3833,7 +3833,9 @@ order by  D.TextPath
                                 SourceFusionAttributeType = i.SourceFusionAttributeTypeID,
                                 ReferenceType = i.ReferenceType,
                                 TargetFusionAttributeType = i.TargetFusionAttributeTypeID,
-                                DisplayFields = (i.FieldTypeFusionLookupDisplayFields != null) ? i.FieldTypeFusionLookupDisplayFields.Select(df => $"{df.FieldTypeID}|{df.FieldTypeName}").ToList() : null
+                                DisplayFields = (i.FieldTypeFusionLookupDisplayFields != null) ? i.FieldTypeFusionLookupDisplayFields.Select(df => $"{df.FieldTypeID}|{df.FieldTypeName}").ToList() : null,
+                                HideHeader = i.HideHeader,
+                                HideFooter = i.HideFooter
                             });
                         }
                     }
@@ -3850,7 +3852,9 @@ order by  D.TextPath
                                 IntersectType = i.IntersectTypeID,
                                 ReferenceType = i.ReferenceType,
                                 ChildIntersectType = i.ChildIntersectTypeID,
-                                DisplayFields = (i.FieldTypeRelationLookupDisplayFields != null) ? i.FieldTypeRelationLookupDisplayFields.Select(df => $"{df.FieldTypeID}|{df.FieldTypeName}").ToList() : null
+                                DisplayFields = (i.FieldTypeRelationLookupDisplayFields != null) ? i.FieldTypeRelationLookupDisplayFields.Select(df => $"{df.FieldTypeID}|{df.FieldTypeName}").ToList() : null,
+                                HideHeader = i.HideHeader,
+                                HideFooter = i.HideFooter
                             });
                         }
                     }
@@ -3935,18 +3939,32 @@ order by  D.TextPath
 
                 if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
 
+                var val = model.Validation();
+                if (!val.Valid)
+                {
+                    throw new ConflictException("Error Occurred!", val.Message);
+                }
+
                 switch (model.FieldType.Type)
                 {
                     case "FusionLookup":
                         #region
                         foreach (var fi in model.FusionItems)
                         {
+                            val = fi.Validation();
+                            if (!val.Valid)
+                            {
+                                throw new ConflictException("Error Occurred!", val.Message);
+                            }
+
                             var def = new FieldTypeFusionLookupDefinition
                             {
                                 //FieldTypeID = model.FieldType.ID,
                                 ReferenceType = fi.ReferenceType,
                                 SourceFusionAttributeTypeID = fi.SourceFusionAttributeType,
-                                TargetFusionAttributeTypeID = fi.TargetFusionAttributeType
+                                TargetFusionAttributeTypeID = fi.TargetFusionAttributeType,
+                                HideHeader = fi.HideHeader,
+                                HideFooter = fi.HideFooter
                             };
 
                             if (fi.DisplayFields != null)
@@ -3969,12 +3987,20 @@ order by  D.TextPath
                         #region
                         if (model.RelationItem != null)
                         {
+                            val = model.RelationItem.Validation();
+                            if (!val.Valid)
+                            {
+                                throw new ConflictException("Error Occurred!", val.Message);
+                            }
+
                             var def = new FieldTypeRelationLookupDefinition
                             {
                                 //FieldTypeID = model.FieldType.ID,
                                 ChildIntersectTypeID = model.RelationItem.ChildIntersectType,
                                 IntersectTypeID = model.RelationItem.IntersectType,
-                                ReferenceType = model.RelationItem.ReferenceType
+                                ReferenceType = model.RelationItem.ReferenceType,
+                                HideHeader = model.RelationItem.HideHeader,
+                                HideFooter = model.RelationItem.HideFooter
                             };
 
                             if (model.RelationItem.DisplayFields != null)
@@ -4095,6 +4121,12 @@ order by  D.TextPath
 
                 if (ft == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
 
+                var val = model.Validation();
+                if (!val.Valid)
+                {
+                    throw new ConflictException("Error Occurred!", val.Message);
+                }
+
                 // Static fields
                 ft.Name = model.FieldType.Name;
                 ft.FriendlyName = model.FieldType.FriendlyName;
@@ -4124,6 +4156,12 @@ order by  D.TextPath
 
                         foreach (var fi in model.FusionItems)
                         {
+                            val = fi.Validation();
+                            if (!val.Valid)
+                            {
+                                throw new ConflictException("Error Occurred!", val.Message);
+                            }
+
                             isNew = false;
                             FieldTypeFusionLookupDefinition efi = null;
 
@@ -4149,7 +4187,9 @@ order by  D.TextPath
                                     ReferenceType = fi.ReferenceType,
                                     SourceFusionAttributeTypeID = fi.SourceFusionAttributeType,
                                     TargetFusionAttributeTypeID = fi.TargetFusionAttributeType,
-                                    FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>()
+                                    FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>(),
+                                    HideHeader = fi.HideHeader,
+                                    HideFooter = fi.HideFooter
                                 };
                             }
                             else
@@ -4157,6 +4197,8 @@ order by  D.TextPath
                                 efi.ReferenceType = fi.ReferenceType;
                                 efi.SourceFusionAttributeTypeID = fi.SourceFusionAttributeType;
                                 efi.TargetFusionAttributeTypeID = fi.TargetFusionAttributeType;
+                                efi.HideHeader = fi.HideHeader;
+                                efi.HideFooter = fi.HideFooter;
                             }
 
 
@@ -4217,6 +4259,12 @@ order by  D.TextPath
                         isNew = false;
                         if (model.RelationItem != null)
                         {
+                            val = model.RelationItem.Validation();
+                            if (!val.Valid)
+                            {
+                                throw new ConflictException("Error Occurred!", val.Message);
+                            }
+
                             var listToRemove = new List<FieldTypeRelationLookupDisplayField>();
 
                             if (eri == null)
@@ -4227,7 +4275,9 @@ order by  D.TextPath
                                     FieldTypeID = model.FieldType.ID,
                                     ChildIntersectTypeID = model.RelationItem.ChildIntersectType,
                                     IntersectTypeID = model.RelationItem.IntersectType,
-                                    ReferenceType = model.RelationItem.ReferenceType
+                                    ReferenceType = model.RelationItem.ReferenceType,
+                                    HideHeader = model.RelationItem.HideHeader,
+                                    HideFooter = model.RelationItem.HideFooter
                                 };
                             }
                             else
@@ -4235,6 +4285,8 @@ order by  D.TextPath
                                 eri.IntersectTypeID = model.RelationItem.IntersectType;
                                 eri.ReferenceType = model.RelationItem.ReferenceType;
                                 eri.ChildIntersectTypeID = model.RelationItem.ChildIntersectType;
+                                eri.HideHeader = model.RelationItem.HideHeader;
+                                eri.HideFooter = model.RelationItem.HideFooter;
                             }
 
                             if (model.RelationItem.DisplayFields != null)
@@ -6966,7 +7018,7 @@ order by  D.TextPath
                 case "AttributeType":
                 case "DomainType":
                 case "TaxonomyType":
-                    fieldTypeNames = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == id).OrderBy(i => i.SortOrder).Select(i => i.Name).ToList();
+                    fieldTypeNames = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == id && i.Type != "FusionLookup" && i.Type != "RelationLookup").OrderBy(i => i.SortOrder).Select(i => i.Name).ToList();
                     break;
                 default:
                     fieldTypeNames = new List<string>();
@@ -9588,7 +9640,7 @@ order by    Name
 
         #region Form Get/Post
 
-        void processContextFormFieldForResponsibility(int responsibilityID, FormCollection form, bool isAdding = true)
+        List<ResponsibilityContextItem> getContextFormFieldForResponsibility(int responsibilityID, FormCollection form)
         {
             var contexts = new List<ResponsibilityContextItem>();
 
@@ -9602,18 +9654,25 @@ order by    Name
                         contexts.Add(new ResponsibilityContextItem { ObjectID = id, ObjectType = "DomainItem", ResponsibilityID = responsibilityID });
                     });
                 }
+            }
 
-                if (!isAdding)
-                    Company.Delete<ResponsibilityContextItem>(i => i.ResponsibilityID == responsibilityID);
+            return contexts;
+        }
 
-                if (contexts.Count > 0)
+        void processContextFormFieldForResponsibility(int responsibilityID, FormCollection form, bool isAdding = true)
+        {
+            var contexts = getContextFormFieldForResponsibility(responsibilityID, form);
+
+            if (!isAdding)
+                Company.Delete<ResponsibilityContextItem>(i => i.ResponsibilityID == responsibilityID);
+
+            if (contexts.Count > 0)
+            {
+                foreach (var o in contexts)
                 {
-                    foreach (var o in contexts)
-                    {
-                        Company.ResponsibilityContextItems.Add(o);
-                    }
-                    Company.SaveChanges();
+                    Company.ResponsibilityContextItems.Add(o);
                 }
+                Company.SaveChanges();
             }
         }
 
@@ -9717,6 +9776,29 @@ order by	D.Name, I.Name";
                     Visible = parseBooleanField(form, "IsVisible", true)
                 };
 
+                #region Existence check
+
+                var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == o.ResponsibilityTypeID && i.ObjectType == o.ObjectType && i.ObjectID == o.ObjectID, i => i.ResponsibilityContextItems).FirstOrDefault();
+                if (existing != null)
+                {
+                    var newContexts = getContextFormFieldForResponsibility(0, form);
+                    var existingContexts = existing.ResponsibilityContextItems.ToList();
+                    var matchingCount = 0;
+                    existingContexts.ForEach(ec =>
+                    {
+                        if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
+                        {
+                            matchingCount++;
+                        }
+                    });
+                    if (matchingCount == existingContexts.Count)
+                    {
+                        throw new ArgumentException("A responsibility with these settings already exists for the item.");
+                    }
+                }
+
+                #endregion
+
                 Company.Add<Responsibility>(o);
 
                 processContextFormFieldForResponsibility(o.ID, form);
@@ -9815,6 +9897,29 @@ order by	D.Name, I.Name";
                 model.ResponsibleObjectID = int.Parse(responsibleParty[1]);
                 model.ResponsibilityTypeID = parseIntField(form, "ResponsibilityType");
                 model.Visible = parseBooleanField(form, "IsVisible", true);
+
+                #region Existence check
+
+                var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == model.ResponsibilityTypeID && i.ObjectType == model.ObjectType && i.ObjectID == model.ObjectID && i.ID != model.ID, i => i.ResponsibilityContextItems).FirstOrDefault();
+                if (existing != null)
+                {
+                    var newContexts = getContextFormFieldForResponsibility(0, form);
+                    var existingContexts = existing.ResponsibilityContextItems.ToList();
+                    var matchingCount = 0;
+                    existingContexts.ForEach(ec =>
+                    {
+                        if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
+                        {
+                            matchingCount++;
+                        }
+                    });
+                    if (matchingCount == existingContexts.Count)
+                    {
+                        throw new ArgumentException("A responsibility with these settings already exists for the item.");
+                    }
+                }
+
+                #endregion
 
                 processContextFormFieldForResponsibility(id, form, false);
                 Company.Update<Responsibility>(model);  //Do this after context so the trigger will properly re-cache with the contextxs.

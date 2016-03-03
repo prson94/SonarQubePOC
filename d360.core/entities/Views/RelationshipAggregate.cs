@@ -19,8 +19,8 @@ namespace d360.core.entities
         [DataMember]
         public string GroupName { get; set; }
 
-        [DataMember]
-        public bool Critical { get; set; }
+        //[DataMember]
+        //public bool Critical { get; set; }
 
         [DataMember]
         public string TypeName { get; set; }

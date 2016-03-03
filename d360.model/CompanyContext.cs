@@ -1544,7 +1544,7 @@ where	R.SourceObject = 'FusionAttribute'
         {
             #region
             var sql =
-@"select	T.[Group], T.GroupName, T.Critical,
+@"select	T.[Group], T.GroupName, --T.Critical,
 		T.TargetTypeName as TypeName,
 		T.TargetTypeID as TypeID,
 		T.TargetType as [Type],
@@ -1552,19 +1552,19 @@ where	R.SourceObject = 'FusionAttribute'
 		T.[Count],
         T.IntersectTypeID
 from	(
-		select	'1' as [Group], 'All Glossary Items' as GroupName, cast(0 as bit) as Critical,
+		select	'1' as [Group], 'All Glossary Items' as GroupName, --cast(0 as bit) as Critical,
 				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 		from	cache.Relationships
 		where	SourceObject = @type and SourceObjectID = @id and TargetObject <> 'Taxonomy'
 		group by	TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 union
-		select	'2' as [Group], 'Critical Glossary Items' as GroupName, cast(1 as bit) as Critical,
+		select	'2' as [Group], 'Critical Glossary Items' as GroupName, --cast(1 as bit) as Critical,
 				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 		from	cache.Relationships
 		where	SourceObject = @type and SourceObjectID = @id and TargetObject <> 'Taxonomy' and Classification = 1
 		group by	TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 union
-		select	'3' as [Group], 'All Models' as GroupName, cast(0 as bit) as Critical,
+		select	'3' as [Group], 'All Models' as GroupName, --cast(0 as bit) as Critical,
 				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
 		from	cache.Relationships
 		where	SourceObject = @type and SourceObjectID = @id and TargetObject = 'Taxonomy'

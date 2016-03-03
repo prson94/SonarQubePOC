@@ -21,51 +21,13 @@ using d360.extensions.storage;
 namespace d360.test.jobs
 {
     [TestClass]
-    public class RunJobsTest
+    public class RunJobsTest: BaseTest
     {
-        List<int> getCompanies(bool developmentOnly = false)
-        {
-            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-            cnn.Open();
-            var sql = "select ID from Company where ";
-            if (developmentOnly)
-            {
-                sql += "DatabaseServerID = 6 and ";
-            }
-            sql += "Status = 'Active'";
-            var list = cnn.Query<int>(sql).ToList();
-            cnn.Close();
-            cnn.Dispose();
-
-            return list;
-        }
-
-        SqlConnection getCompanyConnection(int companyID)
-        {
-            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-            cnn.Open();
-            var db = cnn.Query<DatabaseServer>(
-                @"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id",
-                new { id = companyID }
-            ).SingleOrDefault();
-            cnn.Close();
-            cnn.Dispose();
-
-            if (db != null)
-            {
-                cnn = new SqlConnection(
-                    string.Format("server={0};Database=D3S_{1};User ID={2};Password={3}", db.Server, companyID, db.Username, db.Password)
-                );
-                db = null;
-            }
-            return cnn;
-        }
-
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 18; //10
-            var fusionTypeID = 13;
+            var companyID = 29; //10
+            var fusionTypeID = 16;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FieldTypes);
@@ -102,7 +64,50 @@ END",
         public void DeployDatabaseChanges()
         {
             #region SQL
-            var sql = @"";
+            var sql = @"alter view [dbo].[Relationship]
+as
+	select	R.IntersectTypeID,
+			R.IntersectID,
+			case R.Classification
+				when 0 then 2
+				else R.Classification
+			end as Classification,
+			R.Description,
+			R.[Role],
+			R.SourceIntersectTypeNodeID,
+			R.SourceObject as SourceObjectType,
+			R.SourceObjectID,
+			coalesce(S.TextPath, R.SourceObjectName) as SourceName, 
+			S.Parent as SourceParent,
+			S.ParentID as SourceParentID,
+			S.ParentName as SourceParentName,
+			R.SourceTypeID,
+			R.SourceType,
+			R.SourceTypeName,
+			dbo.GenerateObjectUrl(R.SourceObject, R.SourceTypeID, R.SourceObjectID) as SourceUrl,
+			R.TargetIntersectTypeNodeID,
+			R.TargetObject as TargetObjectType,
+			R.TargetObjectID,
+			coalesce(T.TextPath, R.TargetObjectName) as TargetName,
+			T.Parent as TargetParent,
+			T.ParentID as TargetParentID,
+			T.ParentName as TargetParentName,
+			R.TargetTypeID,
+			R.TargetType,
+			R.TargetTypeName,
+			dbo.GenerateObjectUrl(R.TargetObject, R.TargetTypeID, R.TargetObjectID) as TargetUrl,
+			TR.[Exists] as HasTechnicalRelationships
+	from	cache.Relationships R
+			left join [cache].[ObjectDetails] S on S.[Object] = R.SourceObject and S.ObjectID = R.SourceObjectID
+			left join [cache].[ObjectDetails] T on T.[Object] = R.TargetObject and T.ObjectID = R.TargetObjectID
+			cross apply (
+						select	case 
+									when count(1) > 0 then cast(1 as bit) 
+									else cast(0 as bit) 
+								end as [Exists]
+						from	cache.Relationships
+						where	SourceObject = 'Intersect' and SourceObjectID = R.IntersectID
+						) TR";
 
             #endregion
             var list = getCompanies().ToList();

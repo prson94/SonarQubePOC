@@ -56,9 +56,10 @@
 
                     amplify.publish(AmplifyActions.TileUnsubscribe, {});
                     
+                    ObjectDetail('DetailTile', iType, iID);
 
                     var loadPermissionsDependentTiles = function () {
-                        DetailsTile('DetailTile', contextList, permissions, iType, iID, contextList.Policy, true);
+                        CollapsibleAttributesTile('AttributesTile', contextList, permissions, iType, iID);
 
                         statisticsTileVm.ChangeObject(iType, iID);
                         statisticsTileVm.GetStatistics();

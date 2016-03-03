@@ -744,6 +744,8 @@ namespace d360.web.Controllers
                     {
                         if (context != "default")
                         {
+                            #region Non-admin sidebar
+
                             var wtr = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.Enabled).ToList();
                             if (wtr.Count(i => i.WorkflowType == WorkflowType.SuggestNewArtifact) > 0)
                             {
@@ -773,27 +775,35 @@ namespace d360.web.Controllers
 
                             var exportActionMenu = new PageActionItem { Context = ContextList.ActionExport, Icon = Resources.Actions.ExportToExcel_Icon, Title = Resources.Actions.ExportToExcel_Text, CustomData = { new PageActionItemData { Name = "ExportType", Value = "xls" } } };
                             list.Add(exportActionMenu);
+
+                            reportNode = appendReportMenu(type, id, SystemObjects.ArtifactType, id);
+                            if (reportNode != null) list.Add(reportNode);
+
+                            list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
+                            list.Add(
+                                new PageActionItem
+                                {
+                                    Context = ContextList.ActionGenericReport,
+                                    Icon = "line-chart",
+                                    Title = "Metrics",
+                                    Uri = string.Format("/overlays/ArtifactListMetricsDashboard?id={0}", id)
+                                }
+                            );
+
+                            #endregion Non-admin sidebar
                         }
-                        reportNode = appendReportMenu(type, id, SystemObjects.ArtifactType, id);
-                        if (reportNode != null) list.Add(reportNode);
+                        else
+                        {
+                            #region Admin sidebar
+                            list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                            #endregion
+                        }
                     }
                     else
                     {
                         reportNode = appendReportMenu(type, 0, type, 0);
                         if (reportNode != null) list.Add(reportNode);
                     }
-                    list.Add(
-                        new PageActionItem
-                        {
-                            Context = ContextList.ActionGenericReport,
-                            Icon = "line-chart",
-                            Title = "Metrics",
-                            Uri = string.Format("/overlays/ArtifactListMetricsDashboard?id={0}", id)
-                        }
-                    );
-                    list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
-                    //list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? "Unfollow Type" : "Follow Type", Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
                     break;
                     #endregion
                 case SystemObjects.AttributeType:
@@ -2306,6 +2316,8 @@ from	    ResponsibilityTypeHierarchy H
                                 Name = k.FriendlyName,
                                 FieldDescription = k.DisplayDescription,
                                 FieldName = k.Name,
+                                HideHeader = def.HideHeader,
+                                HideFooter = def.HideFooter,
                                 LookupGridUrl = $"/api/FusionLookupField/{fusionAttributeID}/{def.ID}/values"
                             }
                         }
@@ -2490,6 +2502,8 @@ from    IntersectNode S
                                         Name = ft.FriendlyName,
                                         FieldDescription = ft.DisplayDescription,
                                         FieldName = ft.Name,
+                                        HideHeader = def.HideHeader,
+                                        HideFooter = def.HideFooter,
                                         LookupGridUrl = $"/api/RelationLookupField/{type}/{id}/{def.ID}/values"
                                     }
                                 }
@@ -2725,7 +2739,10 @@ from    cache.Relationship R1
         { 
             var sType = type.ToString();
             var tType = targetType.ToString();
-            return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && ((i.Classification == IntersectClassification.Critical && criticalOnly) || !criticalOnly));
+            if (criticalOnly)
+                return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && i.Classification == IntersectClassification.Critical);
+            else
+                return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID);
         }
 
         public class RawSourceRuleItem
