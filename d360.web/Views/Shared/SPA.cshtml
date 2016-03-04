@@ -30,7 +30,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="description" content="Data3Sixty: Data Collaboration Suite" />
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
-    <link rel="Shortcut Icon" href="@(companyIcon)" />
+    <link rel="Shortcut Icon" href="@(companyIcon)" />    
     <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
     <style type="text/css">
         .nav-top .logo {
@@ -54,10 +54,10 @@
         //window.appInsights=appInsights;
         //appInsights.trackPageView();
         var CompanySettings = @(Html.Raw(settingsJson));
-    </script>
+    </script>    
     <script type="text/javascript"  src="/Scripts/GoJS/GoJS-1-5-18.js"></script>
     <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
-    @Html.Partial("KnockoutTemplates")
+    @Html.Partial("KnockoutTemplates")    
 </head>
 <body>
     <div style="position: fixed; left: 0px; top: 0px; width: 100px; height: 100%; z-index: 0" class="grey darken-2"></div>
@@ -238,7 +238,7 @@
             taxonomies_root(this, new PageViewModel("Models", "Double-click on a type below to view a list of items for that type.  Or click on the information icon at the end of the row.", []), templatePath, contextList);
             taxonomies_list(this, new PageViewModel("", "@(Resources.PageInfo.Taxonomies_Description)", []), templatePath, contextList);
 
-            search(this, new PageViewModel("", "", [],'',0,false,true), templatePath, contextList);
+            search(this, new PageViewModel("@(Resources.PageInfo.Search_Title)", "", [],'',0,false,true), templatePath, contextList);            
             home(this, new PageViewModel("@(Resources.PageInfo.Home_Title)", "@(Resources.PageInfo.Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
             community_home(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
             //community_alert(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
