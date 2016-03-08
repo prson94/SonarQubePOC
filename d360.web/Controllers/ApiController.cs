@@ -2819,7 +2819,7 @@ select	J.IntersectMapID,
 		) as ItemContexts,
 		J.SortOrder
 from	IntersectMapSourceRule J
-		inner join SourceRule S on S.ID = J.SourceRuleID and S.Object = @focal and S.ObjectID = @focalID 
+		inner join SourceRule S on S.ID = J.SourceRuleID and S.AppliesToObject = @focal and S.AppliesToObjectID = @focalID 
 		inner join IntersectMap M on J.IntersectMapID = M.ID
 		inner join cache.Relationships R on R.SourceIntersectNodeID = M.SubjectIntersectNodeID and R.TargetObject = @obj and R.TargetObjectID = @objID";
             var rawItems = Company.Query<RawSourceRuleItem>(sql, new { focal, focalID, obj, objID }).OrderBy(i => i.Name).ThenBy(i => i.SortOrder).ToList();

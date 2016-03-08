@@ -1055,16 +1055,16 @@ insert into @h
 	from	@tbl S
 			cross apply (
 						select	count(1) as [Count]
-						from	IntersectMapSourceRule
-						where	IntersectMapID = S.ID
+						from	SourceRule
+						where	AppliesToObject = @type and AppliesToObjectID = @id and Object = S.Subject and ObjectID = S.SubjectID
 						) R
 insert into @h
 	select	ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, PredicateID, Predicate, R.[Count] 
 	from	@tbl S
 			cross apply (
 						select	count(1) as [Count]
-						from	IntersectMapSourceRule
-						where	IntersectMapID = S.ID
+						from	SourceRule
+						where	AppliesToObject = @type and AppliesToObjectID = @id and Object = S.Object and ObjectID = S.ObjectID
 						) R
 
 update	T

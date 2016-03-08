@@ -24,8 +24,23 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+        #endregion
 
+        #region Not Mapped
+        [DataMember, NotMapped]
+        public int ObjectID { get; set; }
+        
+        [DataMember, NotMapped]
+        public string Object { get; set; }
 
+        [DataMember, NotMapped]
+        public string Name { get; set; }
+
+        [DataMember, NotMapped]
+        public string IconForeColor { get; set; }
+
+        [DataMember, NotMapped]
+        public string IconBackColor { get; set; }
         #endregion
 
         [IgnoreDataMember]
@@ -34,7 +49,7 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public SourceRule SourceRule { get; set; }
 
-        [IgnoreDataMember, ForeignKey("IntersectMapSourceRuleID")]
+        [DataMember, ForeignKey("IntersectMapSourceRuleID")]
         public virtual ICollection<IntersectMapSourceRuleContext> Contexts { get; set; }
     }
 }

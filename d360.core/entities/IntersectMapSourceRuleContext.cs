@@ -23,6 +23,18 @@ namespace d360.core.entities
 
         #endregion
 
+        #region Not Mapped
+        
+        [DataMember, NotMapped]
+        public string Name { get; set; }
+        [DataMember, NotMapped]
+        public string Type { get; set; }
+        [DataMember, NotMapped]
+        public string Category { get; set; }
+        [DataMember, NotMapped]
+        public string ID { get; set; }
+        #endregion
+
         [IgnoreDataMember]
         public IntersectMapSourceRule IntersectMapSourceRule { get; set; }
     }

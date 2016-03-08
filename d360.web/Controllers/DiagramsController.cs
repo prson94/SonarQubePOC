@@ -99,8 +99,9 @@ from	h
 
         public JsonNetResult GetArtifact(int id, string search)
         {
+            search = '%' + search.Trim('%') + '%';
             var items = Company.Query<dynamic>(@"
-select  top 8 
+select  top 50
         objectid as id, 
         c.name, 
         iconbackcolor as backColor, 
@@ -109,8 +110,7 @@ select  top 8
         c.url, 
         c.object as objectType 
 from    cache.objectdetails c 
-        inner join artifact a on a.artifacttypeid = @id and c.object = 'Artifact' and c.objectid = a.id 
-where lower(c.name) like lower('%' + @search + '%') ", new { id, search });
+where c.object = 'Artifact' and c.objecttypeid = @id and lower(c.name) like lower(@search)", new { id, search });
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 

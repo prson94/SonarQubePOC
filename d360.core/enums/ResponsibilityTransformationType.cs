@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace d360.core.enums
 {
-    public enum ResponsibilityTransformationType
+    public enum TransformationType
     {
         [Name("Business Transformation"), Description("A business definition of the transformation taking place.")]
         Business = 1,
@@ -16,24 +16,24 @@ namespace d360.core.enums
 
     public class ResponsibilityTransformationTypeInfo
     {
-        public ResponsibilityTransformationType ID { get; set; }
+        public TransformationType ID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }
 
     public static class ResponsibilityTransformationTypeExtensions
     {
-        public static string GetDisplayName(this ResponsibilityTransformationType type)
+        public static string GetDisplayName(this TransformationType type)
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
         }
 
-        public static string GetDescription(this ResponsibilityTransformationType type)
+        public static string GetDescription(this TransformationType type)
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DescriptionAttribute>().Description;
         }
 
-        public static List<ResponsibilityTransformationTypeInfo> GetEnumList(this ResponsibilityTransformationType type)
+        public static List<ResponsibilityTransformationTypeInfo> GetEnumList(this TransformationType type)
         {
             var list = new List<ResponsibilityTransformationTypeInfo>();
 
@@ -43,7 +43,7 @@ namespace d360.core.enums
                 {
                     Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
-                    ID = (ResponsibilityTransformationType)Enum.Parse(typeof(ResponsibilityTransformationType), tm.Name)
+                    ID = (TransformationType)Enum.Parse(typeof(TransformationType), tm.Name)
                 });
             }
 

@@ -323,7 +323,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
         ready: function () {
             try {
                 var rows = $(treeControlID).jqxTreeGrid('getRows');
-                if (rows.length > 0) {
+                if (rows.length > 0) {                    
                     $(treeControlID).jqxTreeGrid('selectRow', ((rows[0].Items[0]) ? rows[0].Items[0].uid : rows[0].uid));
                 }
             } catch (e) {
@@ -382,27 +382,27 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     }
 
     function treeControlBindingComplete(evt) {
-        var calculateCount = function (row, count) {
-            if (row.records) {
-                count += row.records.length;
-                $.each(row.records, function () {
+            var calculateCount = function (row, count) {
+                if (row.records) {
+                    count += row.records.length;
+                    $.each(row.records, function () {
+                        count = calculateCount(this, count);
+                    });
+                }
+                return count;
+            };
+
+            var count = 0;
+            try {
+                var topRows = $(treeControlID).jqxTreeGrid('getRows');
+                $.each(topRows, function () {
                     count = calculateCount(this, count);
                 });
+            } catch (e) {
+                count = 0;
             }
-            return count;
-        };
-
-        var count = 0;
-        try {
-            var topRows = $(treeControlID).jqxTreeGrid('getRows');
-            $.each(topRows, function () {
-                count = calculateCount(this, count);
-            });
-        } catch (e) {
-            count = 0;
-        }
         amplify.publish("AttributeCount", { count: count });
-    }
+            }
 
 
     function treeControlRowSelect(evt) {
@@ -415,37 +415,37 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             var key = args.key;
 
             if (row) {
-                var t = row.ObjectType;//null;
-                var i = row.ObjectID;//null;
-                var detailtype = null;
-                var detailid = null;
-                var roottype = row.ParentObjectType; //null;
-                var rootid = row.ParentObjectID; //null;
-                var attributeID = null;
-                var targetType = row.TargetObjectType;
+            var t = row.ObjectType;//null;
+            var i = row.ObjectID;//null;
+            var detailtype = null;
+            var detailid = null;
+            var roottype = row.ParentObjectType; //null;
+            var rootid = row.ParentObjectID; //null;
+            var attributeID = null;
+            var targetType = row.TargetObjectType;
 
-                if (t === 'Attribute') {
-                    attributeID = i;
-                }
+            if (t === 'Attribute') {
+                attributeID = i;
+            }
 
-                if (targetType) {
-                    detailtype = targetType;
-                    detailid = row.TargetObjectID;
-                }
-                else {
-                    detailtype = t;
-                    detailid = i;
-                }
+            if (targetType) {
+                detailtype = targetType;
+                detailid = row.TargetObjectID;
+            }
+            else {
+                detailtype = t;
+                detailid = i;
+            }
 
-                loadToolbar(t, i, roottype, rootid, attributeID);
+            loadToolbar(t, i, roottype, rootid, attributeID);
 
-                attributeSwitchToViewer(targetType, row.TargetObjectID);
-                if (detailid && detailtype === "Attribute") {
-                    ObjectDetail(_detailControlID, detailtype, detailid);
-                }
-                else {
-                    $(detailControlID).html('');
-                }
+            attributeSwitchToViewer(targetType, row.TargetObjectID);
+            if (detailid && detailtype === "Attribute") {
+                ObjectDetail(_detailControlID, detailtype, detailid);
+            }
+            else {
+                $(detailControlID).html('');
+            }
             }
         } catch (e) {
             logError("Children : AttributeTree.select", e);
@@ -751,17 +751,17 @@ function CollapsibleAttributesTile(controlID, contextList, permissions, type, id
         var exp = $('#' + controlID).jqxExpander('animationType');
         if (exp) {
             exists = true;
-        }
+                    }
     } catch (e) { }
     try { unsubscribe({}); } catch (e) { }
 
-    //#endregion
+                    //#endregion
 
     if (!exists) {
         $('#' + controlID).css('margin', '10px');
         $('#' + controlID).html('<div>Attributes<span id="' + controlID_count + '"></span></div><div style="min-height: 150px"><div id="' + controlID_sub + '"></div></div>');
         $('#' + controlID).jqxExpander({ theme: theme, expanded: false });
-    }
+                    }
     AttributesTile(controlID_sub, contextList, permissions, type, id, '', false);
 
     //#region Register Events
@@ -771,8 +771,8 @@ function CollapsibleAttributesTile(controlID, contextList, permissions, type, id
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
 
-    //#endregion
-}
+                    //#endregion
+                    }
 
 function CollapsibleTypeHierarchyTile(controlID, contextList, permissions, type, id) {
     var controlID_sub = controlID + '_Sub';
@@ -799,7 +799,7 @@ function CollapsibleTypeHierarchyTile(controlID, contextList, permissions, type,
         var exp = $('#' + controlID).jqxExpander('animationType');
         if (exp) {
             exists = true;
-        }
+    }
     } catch (e) { }
 
     //#endregion
@@ -819,7 +819,7 @@ function CollapsibleTypeHierarchyTile(controlID, contextList, permissions, type,
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
 
     //#endregion
-}
+        }
 
 function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) {
     var controlID_count = controlID + '_Count';
@@ -838,7 +838,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
         }
         $('#' + controlID_count).html("&#160;(<b>" + count + "</b>)");
     }
-    
+
     function saveAction(data) {
         try {
             switch (data.context) {
@@ -871,7 +871,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         $('#' + controlID).off('expanded', expanded);
-    }
+        }
 
     //#endregion
 
@@ -884,7 +884,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
         var exp = $('#' + controlID).jqxExpander('animationType');
         if (exp) {
             exists = true;
-        }
+    }
     } catch (e) { }
 
     //#endregion
@@ -896,7 +896,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
 
     //#region Grid
 
-    try {
+            try {
         source = {
             datatype: 'json',
             url: '/api/' + type + '/' + id + '/synonyms',
@@ -930,7 +930,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
                 { datafield: "Description", text: "Description" }
             ]
         });
-    }
+            }
     catch (e) {
 
     }
@@ -1164,249 +1164,249 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType) {
 
                 if (permissions.HasPermission("Relationship", "Update")) {
 
-                    var rowKey = null;
-                    var isUpdating = false;
+                var rowKey = null;
+                var isUpdating = false;
 
-                    var html = $("<div style='overflow: hidden; position: relative; height: 100%; width: 100%; margin-bottom: 4px'></div>");
-                    var spinner = $("<span style='display:none' id='" + ctrlID + "_toolbar_spinner'><i class='fa fa-spinner fa-2x fa-spin'></i></span>");
-                    var buttonTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa {fa-icon}'></i></div></div>";
-                    var addButton = $(buttonTemplate.replace("{fa-icon}", "fa-level-down"));
-                    var addParentButton = $(buttonTemplate.replace("{fa-icon}", "fa-level-up fa-flip-horizontal"));
-                    var saveButton = $(buttonTemplate.replace("{fa-icon}", "fa-save"));
-                    var editButton = $(buttonTemplate.replace("{fa-icon}", "fa-pencil"));
-                    var deleteButton = $(buttonTemplate.replace("{fa-icon}", "fa-trash"));
-                    var cancelButton = $(buttonTemplate.replace("{fa-icon}", "fa-remove"));
-                    html.append(addParentButton);
-                    html.append(addButton);
-                    html.append(saveButton);
-                    html.append(editButton);
-                    html.append(deleteButton);
-                    html.append(cancelButton);
-                    html.append(spinner);
-                    toolBar.append(html);
-                    addButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "add a child", position: 'top', theme: 'metro', opacity: 1 });
-                    addParentButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "add a parent", position: 'top', theme: 'metro', opacity: 1 });;
-                    saveButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "save changes", position: 'top', theme: 'metro', opacity: 1 });;
-                    editButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "edit selected artifact", position: 'top', theme: 'metro', opacity: 1 });;
-                    deleteButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "delete selected artifact", position: 'top', theme: 'metro', opacity: 1 });;
-                    cancelButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "cancel", position: 'top', theme: 'metro', opacity: 1 });;
+                var html = $("<div style='overflow: hidden; position: relative; height: 100%; width: 100%; margin-bottom: 4px'></div>");
+                var spinner = $("<span style='display:none' id='" + ctrlID + "_toolbar_spinner'><i class='fa fa-spinner fa-2x fa-spin'></i></span>");
+                var buttonTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa {fa-icon}'></i></div></div>";
+                var addButton = $(buttonTemplate.replace("{fa-icon}", "fa-level-down"));
+                var addParentButton = $(buttonTemplate.replace("{fa-icon}", "fa-level-up fa-flip-horizontal"));
+                var saveButton = $(buttonTemplate.replace("{fa-icon}", "fa-save"));
+                var editButton = $(buttonTemplate.replace("{fa-icon}", "fa-pencil"));
+                var deleteButton = $(buttonTemplate.replace("{fa-icon}", "fa-trash"));
+                var cancelButton = $(buttonTemplate.replace("{fa-icon}", "fa-remove"));
+                html.append(addParentButton);
+                html.append(addButton);
+                html.append(saveButton);
+                html.append(editButton);
+                html.append(deleteButton);
+                html.append(cancelButton);
+                html.append(spinner);
+                toolBar.append(html);
+                addButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "add a child", position: 'top', theme: 'metro', opacity: 1 });
+                addParentButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "add a parent", position: 'top', theme: 'metro', opacity: 1 });;
+                saveButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "save changes", position: 'top', theme: 'metro', opacity: 1 });;
+                editButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "edit selected artifact", position: 'top', theme: 'metro', opacity: 1 });;
+                deleteButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "delete selected artifact", position: 'top', theme: 'metro', opacity: 1 });;
+                cancelButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "cancel", position: 'top', theme: 'metro', opacity: 1 });;
 
-                    var setButtonState = function (state) {
-                        if (isUpdating)
-                            state = 'disable';
+                var setButtonState = function (state) {
+                    if (isUpdating)
+                        state = 'disable';
                         switch (state) {
-                            case 'select':
-                            case 'save':
-                                addButton.jqxButton({ disabled: false });
-                                addParentButton.jqxButton({ disabled: false });
-                                saveButton.jqxButton({ disabled: true });
-                                editButton.jqxButton({ disabled: false });
-                                deleteButton.jqxButton({ disabled: false });
-                                cancelButton.jqxButton({ disabled: true });
-                                break;
-                            case 'unselect':
-                                addButton.jqxButton({ disabled: true });
-                                addParentButton.jqxButton({ disabled: true });
-                                saveButton.jqxButton({ disabled: true });
-                                editButton.jqxButton({ disabled: true });
-                                deleteButton.jqxButton({ disabled: true });
-                                cancelButton.jqxButton({ disabled: true });
-                                break;
-                            case 'edit':
-                                addButton.jqxButton({ disabled: true });
-                                addParentButton.jqxButton({ disabled: true });
-                                saveButton.jqxButton({ disabled: false });
-                                editButton.jqxButton({ disabled: true });
-                                deleteButton.jqxButton({ disabled: true });
-                                cancelButton.jqxButton({ disabled: false });
-                                break;
-                            case 'disable':
-                                addButton.jqxButton({ disabled: true });
-                                addParentButton.jqxButton({ disabled: true });
-                                saveButton.jqxButton({ disabled: true });
-                                editButton.jqxButton({ disabled: true });
-                                deleteButton.jqxButton({ disabled: true });
-                                cancelButton.jqxButton({ disabled: true });
-                                break;
-                        }
-
-                        if (!permissions.HasPermission("Relationship", "Create"))
+                        case 'select':
+                        case 'save':
+                            addButton.jqxButton({ disabled: false });
+                            addParentButton.jqxButton({ disabled: false });
+                            saveButton.jqxButton({ disabled: true });
+                            editButton.jqxButton({ disabled: false });
+                            deleteButton.jqxButton({ disabled: false });
+                            cancelButton.jqxButton({ disabled: true });
+                            break;
+                        case 'unselect':
                             addButton.jqxButton({ disabled: true });
-                        if (!permissions.HasPermission("Relationship", "Update"))
+                            addParentButton.jqxButton({ disabled: true });
+                            saveButton.jqxButton({ disabled: true });
                             editButton.jqxButton({ disabled: true });
-                        if (!permissions.HasPermission("Relationship", "Delete"))
                             deleteButton.jqxButton({ disabled: true });
+                            cancelButton.jqxButton({ disabled: true });
+                            break;
+                        case 'edit':
+                            addButton.jqxButton({ disabled: true });
+                            addParentButton.jqxButton({ disabled: true });
+                            saveButton.jqxButton({ disabled: false });
+                            editButton.jqxButton({ disabled: true });
+                            deleteButton.jqxButton({ disabled: true });
+                            cancelButton.jqxButton({ disabled: false });
+                            break;
+                        case 'disable':
+                            addButton.jqxButton({ disabled: true });
+                            addParentButton.jqxButton({ disabled: true });
+                            saveButton.jqxButton({ disabled: true });
+                            editButton.jqxButton({ disabled: true });
+                            deleteButton.jqxButton({ disabled: true });
+                            cancelButton.jqxButton({ disabled: true });
+                            break;
                     }
 
-                    setButtonState('unselect');
+                    if (!permissions.HasPermission("Relationship", "Create"))
+                        addButton.jqxButton({ disabled: true });
+                    if (!permissions.HasPermission("Relationship", "Update"))
+                        editButton.jqxButton({ disabled: true });
+                    if (!permissions.HasPermission("Relationship", "Delete"))
+                        deleteButton.jqxButton({ disabled: true });
+                }
+                
+                setButtonState('unselect');
 
-                    $(selector).on('rowSelect', function (event) {
-                        setButtonState('select');
+                $(selector).on('rowSelect', function (event) {
+                    setButtonState('select');
 
-                        if (mode == 'edit') {
-                            $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
-                        }
-                        //console.log(mode);
-                        if (mode != 'saving') {
-                            mode = '';
-                        }
-                        rowKey = event.args.key;
-                        var row = $(selector).jqxTreeGrid('getRow', rowKey);
+                    if (mode == 'edit') {
+                        $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
+                    }
+                    //console.log(mode);
+                    if (mode != 'saving') {
+                        mode = '';
+                    }
+                    rowKey = event.args.key;
+                    var row = $(selector).jqxTreeGrid('getRow', rowKey);
 
 
-                        //console.log(mode);
-                        //if (mode != '') {
-                        //    console.log(mode + ',' + rowKey);
-                        //    $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
-                        //    if (mode == 'add')
-                        //        $(selector).jqxTreeGrid('deleteRow', rowKey);
-                        //}
+                    //console.log(mode);
+                    //if (mode != '') {
+                    //    console.log(mode + ',' + rowKey);
+                    //    $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
+                    //    if (mode == 'add')
+                    //        $(selector).jqxTreeGrid('deleteRow', rowKey);
+                    //}
 
-                        if (row != null)
-                            if (row.ParentID == null || row.ParentID == 0)
-                                if (mapType == 4)
-                                    addParentButton.jqxButton({ disabled: true });
-                    });
-                    $(selector).on('rowDoubleClick', function (event) {
-                        window.location.href = event.args.row.Url;
-                    });
-                    $(selector).on('bindingComplete', function (event) {
-                        showFocalRow($(selector), event);
-                    });
+                    if (row != null)
+                        if (row.ParentID == null || row.ParentID == 0)
+                            if (mapType == 4)
+                                addParentButton.jqxButton({ disabled: true });
+                });
+                $(selector).on('rowDoubleClick', function (event) {
+                    window.location.href = event.args.row.Url;
+                });
+                $(selector).on('bindingComplete', function (event) {
+                    showFocalRow($(selector), event);
+                });
                     $(selector).on('rowUnselect', function () { setButtonState('unselect') });
-                    $(selector).on('rowEndEdit', function (event) {
-                        setButtonState('save');
-                        if (mode == 'add') {
-                            $(selector).jqxTreeGrid('deleteRow', rowKey);
+                $(selector).on('rowEndEdit', function (event) {
+                    setButtonState('save');
+                    if (mode == 'add') {
+                        $(selector).jqxTreeGrid('deleteRow', rowKey);
+                        
+                    }
 
-                        }
+                    //console.log(mode);
+                    //console.log(event);
+                });
+                $(selector).on('rowBeginEdit', function () { setButtonState('edit') });
 
-                        //console.log(mode);
-                        //console.log(event);
-                    });
-                    $(selector).on('rowBeginEdit', function () { setButtonState('edit') });
-
-                    addButton.click(function (event) {
-                        if ($(selector).jqxTreeGrid('getSelection').length < 1)
-                            return;
-                        if (addButton.jqxButton('disabled'))
-                            return;
-                        if (mode != '')
-                            return;
-
-                        //console.log(mode);
-                        isAddingParent = false;
-                        var row = $(selector).jqxTreeGrid('getRow', rowKey);
-                        //console.log(rowKey);
-                        $(selector).jqxTreeGrid('expandRow', rowKey);
+                addButton.click(function (event) {
+                    if ($(selector).jqxTreeGrid('getSelection').length < 1)
+                        return;
+                    if (addButton.jqxButton('disabled'))
+                        return;
+                    if (mode != '')
+                        return;
+                    
+                    //console.log(mode);
+                    isAddingParent = false;
+                    var row = $(selector).jqxTreeGrid('getRow', rowKey);
+                    //console.log(rowKey);
+                    $(selector).jqxTreeGrid('expandRow', rowKey);
                         $(selector).jqxTreeGrid('addRow', newRowCounter--, { ID: row.ID, Level: row.Level }, 'first', rowKey);
-                        $(selector).jqxTreeGrid('clearSelection');
-                        $(selector).jqxTreeGrid('selectRow', newRowID);
-                        $(selector).jqxTreeGrid('beginRowEdit', newRowID);
-                        mode = 'add';
-                    });
-                    addParentButton.click(function (event) {
-                        if (addParentButton.jqxButton('disabled'))
-                            return;
-                        if (mode != '')
-                            return;
-                        if ($(selector).jqxTreeGrid('getSelection').length < 1)
-                            return;
+                    $(selector).jqxTreeGrid('clearSelection');
+                    $(selector).jqxTreeGrid('selectRow', newRowID);
+                    $(selector).jqxTreeGrid('beginRowEdit', newRowID);
+                    mode = 'add';
+                });
+                addParentButton.click(function (event) {
+                    if (addParentButton.jqxButton('disabled'))
+                        return;
+                    if (mode != '')
+                        return;
+                    if ($(selector).jqxTreeGrid('getSelection').length < 1)
+                        return;
+                    
+                    var intersectMapID = -1;
 
-                        var intersectMapID = -1;
+                    var row = $(selector).jqxTreeGrid('getRow', rowKey);
+                    var parent = null;
+                    if (row != null)
+                        parent = $(selector).jqxTreeGrid('getRow', row.ParentID);
+                    if (parent != null)
+                        rowKey = parent.UID;
+                    else {
+                        intersectMapId: row.ID;
+                    }
+                    //console.log($(selector).jqxTreeGrid('getRow', rowKey));
 
-                        var row = $(selector).jqxTreeGrid('getRow', rowKey);
-                        var parent = null;
-                        if (row != null)
-                            parent = $(selector).jqxTreeGrid('getRow', row.ParentID);
-                        if (parent != null)
-                            rowKey = parent.UID;
-                        else {
-                            intersectMapId: row.ID;
-                        }
-                        //console.log($(selector).jqxTreeGrid('getRow', rowKey));
-
-                        isAddingParent = true;
-                        $(selector).jqxTreeGrid('expandRow', rowKey);
+                    isAddingParent = true;
+                    $(selector).jqxTreeGrid('expandRow', rowKey);
                         $(selector).jqxTreeGrid('addRow', newRowCounter--, { ID: row.ID, Level: row.Level }, 'first', rowKey);
-                        $(selector).jqxTreeGrid('clearSelection');
-                        $(selector).jqxTreeGrid('selectRow', newRowID);
-                        $(selector).jqxTreeGrid('beginRowEdit', newRowID);
-                        mode = 'add';
-                    });
-                    saveButton.click(function (event) {
-                        var oldMode = mode;
-                        if (saveButton.jqxButton('disabled'))
-                            return;
-                        mode = 'saving';
-                        $(selector).jqxTreeGrid('endRowEdit', rowKey, false);
-                        var rowData = null;
-                        var parentData = null;
-                        rowData = $(selector).jqxTreeGrid('getRow', rowKey);
+                    $(selector).jqxTreeGrid('clearSelection');
+                    $(selector).jqxTreeGrid('selectRow', newRowID);
+                    $(selector).jqxTreeGrid('beginRowEdit', newRowID);
+                    mode = 'add';
+                });
+                saveButton.click(function (event) {
+                    var oldMode = mode;
+                    if (saveButton.jqxButton('disabled'))
+                        return;
+                    mode = 'saving';
+                    $(selector).jqxTreeGrid('endRowEdit', rowKey, false);
+                    var rowData = null;
+                    var parentData = null;
+                    rowData = $(selector).jqxTreeGrid('getRow', rowKey);
 
-                        if (rowData != null)
-                            parentData = getRowDataItem(rowData.parent);
+                    if (rowData != null)
+                        parentData = getRowDataItem(rowData.parent);
 
 
-                        var sub = null;
-                        var subid = null;
-                        var obj = null;
-                        var objid = null;
-                        var intersectMapId = null;
+                    var sub = null;
+                    var subid = null;
+                    var obj = null;
+                    var objid = null;
+                    var intersectMapId = null;
 
-                        //if (isAddingParent) {
-                        //    intersectMapId = rowData.ID;
-                        //} else {
-
-                        intersectMapId = (rowData.ID || 0);
-                        //console.log(rowData.ID);
-                        //}
-                        //console.log(rowData);
-                        //console.log(parentData);
-                        //if (isAddingParent) {
+                    //if (isAddingParent) {
+                    //    intersectMapId = rowData.ID;
+                    //} else {
+                    
+                    intersectMapId = (rowData.ID || 0);
+                    //console.log(rowData.ID);
+                    //}
+                    //console.log(rowData);
+                    //console.log(parentData);
+                    //if (isAddingParent) {
                         sub = parentData.type;
                         subid = parentData.id;
                         obj = rowData.Object;
                         objid = rowData.ObjectID;
-                        // intersectMapId = rowData.ID;
-                        //} else {
-                        //    sub = parentData.type;
-                        //    subid = parentData.id;
-                        //    obj = rowData.Object;
-                        //    objid = rowData.ObjectID;
-                        //    //intersectMapId = (rowData.parent.ID || 0);
-                        //}
+                       // intersectMapId = rowData.ID;
+                    //} else {
+                    //    sub = parentData.type;
+                    //    subid = parentData.id;
+                    //    obj = rowData.Object;
+                    //    objid = rowData.ObjectID;
+                    //    //intersectMapId = (rowData.parent.ID || 0);
+                    //}
 
-                        if (rowData != null) {
-
-                            var hierarchyPostModel = {
-                                Subject: sub,
-                                SubjectID: subid,
-                                'Object': obj,
-                                'ObjectID': objid,
+                    if (rowData != null) {
+                        
+                        var hierarchyPostModel = {
+                            Subject: sub,
+                            SubjectID: subid,
+                            'Object': obj,
+                            'ObjectID': objid,
                                 //PredicateID: rowData.PredicateID,
-                                IsAddingParent: isAddingParent,
-                                IntersectMapID: intersectMapId,
-                                HierarchyType: mapType,
-                                GroupNumber: rowData.parent.GroupNumber
-                            };
-                            //console.log(hierarchyPostModel);
-                            var url = '/relations/hierarchy/save';
-                            if (oldMode == 'edit') {
-                                url = '/relations/hierarchy/edit';
-                                hierarchyPostModel.IntersectMapId = rowData.ID;
+                            IsAddingParent: isAddingParent,
+                            IntersectMapID: intersectMapId,
+                            HierarchyType: mapType,
+                            GroupNumber: rowData.parent.GroupNumber
+                        };
+                        //console.log(hierarchyPostModel);
+                        var url = '/relations/hierarchy/save';
+                        if (oldMode == 'edit') {
+                            url = '/relations/hierarchy/edit';
+                            hierarchyPostModel.IntersectMapId = rowData.ID;
 
-                            }
+                        }
 
-                            //mode = 'saving';
-
-                            isUpdating = true;
-                            setButtonState('disable');
-
-                            $('#' + ctrlID + '_toolbar_spinner').show();
-                            $.ajax({
-                                url: url,
-                                data: hierarchyPostModel,
+                        //mode = 'saving';
+                            
+                        isUpdating = true;
+                        setButtonState('disable');
+                       
+                        $('#' + ctrlID + '_toolbar_spinner').show();
+                        $.ajax({
+                            url: url,
+                            data: hierarchyPostModel,
                                 method: 'POST'
                             }).success(function (data, status, xhr) {
                                 amplify.publish("ShowMessage", data);
@@ -1418,60 +1418,60 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType) {
                                 isUpdating = false;
                                 setButtonState('unselect');
                                 mode = '';
-                            });
+                        });
+                        $(selector).jqxTreeGrid('updateBoundData');
+                    }
+                });
+                cancelButton.click(function (event) {
+                    if (cancelButton.jqxButton('disabled'))
+                        return;
+                    $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
+                    if (mode == 'add')
+                        $(selector).jqxTreeGrid('deleteRow', rowKey);
+                });
+                deleteButton.click(function (event) {
+                    var oldMode = mode;
+                    if (deleteButton.jqxButton('disabled'))
+                        return;
+                    if (oldMode != '')
+                        return;
+                    var selection = $(selector).jqxTreeGrid('getSelection');
+                    if (selection == null || selection == [] || selection[0] == null)
+                        return;
+                    if (selection[0].ID == null || selection[0].ID < 1)
+                        return;
+
+                    isUpdating = true;
+                    setButtonState('disable');
+                    $('#' + ctrlID + '_toolbar_spinner').show();
+                    $.ajax({
+                        url: '/relations/hierarchy/delete/' + selection[0].ID,
+                        method: 'DELETE',
+                        success: function (d) {
                             $(selector).jqxTreeGrid('updateBoundData');
+                            $('#' + ctrlID + '_toolbar_spinner').hide();
+                            isUpdating = false;
+                            setButtonState('unselect');
+                            mode = '';
+                        },
+                        failure: function (d) {
+                            $(selector).jqxTreeGrid('updateBoundData');
+                            $('#' + ctrlID + '_toolbar_spinner').hide();
+                            isUpdating = false;
+                            setButtonState('unselect');
+                            mode = '';
                         }
                     });
-                    cancelButton.click(function (event) {
-                        if (cancelButton.jqxButton('disabled'))
-                            return;
-                        $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
-                        if (mode == 'add')
-                            $(selector).jqxTreeGrid('deleteRow', rowKey);
-                    });
-                    deleteButton.click(function (event) {
-                        var oldMode = mode;
-                        if (deleteButton.jqxButton('disabled'))
-                            return;
-                        if (oldMode != '')
-                            return;
-                        var selection = $(selector).jqxTreeGrid('getSelection');
-                        if (selection == null || selection == [] || selection[0] == null)
-                            return;
-                        if (selection[0].ID == null || selection[0].ID < 1)
-                            return;
-
-                        isUpdating = true;
-                        setButtonState('disable');
-                        $('#' + ctrlID + '_toolbar_spinner').show();
-                        $.ajax({
-                            url: '/relations/hierarchy/delete/' + selection[0].ID,
-                            method: 'DELETE',
-                            success: function (d) {
-                                $(selector).jqxTreeGrid('updateBoundData');
-                                $('#' + ctrlID + '_toolbar_spinner').hide();
-                                isUpdating = false;
-                                setButtonState('unselect');
-                                mode = '';
-                            },
-                            failure: function (d) {
-                                $(selector).jqxTreeGrid('updateBoundData');
-                                $('#' + ctrlID + '_toolbar_spinner').hide();
-                                isUpdating = false;
-                                setButtonState('unselect');
-                                mode = '';
-                            }
-                        });
-
-                    });
-                    editButton.click(function (event) {
-                        if (editButton.jqxButton('disabled'))
-                            return;
-                        if (mode != '')
-                            return;
-                        mode = 'edit';
-                        $(selector).jqxTreeGrid('beginRowEdit', rowKey);
-                    });
+                    
+                });
+                editButton.click(function (event) {
+                    if (editButton.jqxButton('disabled'))
+                        return;
+                    if (mode != '')
+                        return;
+                    mode = 'edit';
+                    $(selector).jqxTreeGrid('beginRowEdit', rowKey);
+                });
 
                 } //Permissions check
             },
@@ -1491,8 +1491,10 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType) {
                             var item = getRowDataItem(data);
                             if (item.type == type && item.id == id) {
                                 editor.append($("<div style='margin-left: 4px; display:inline-block;color:#33A'><div style='font-weight:600;'>" + data.Name + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"));
-                            }
+                            } else {
                             editor.append($("<div style='margin-left: 4px; display:inline-block;'><div style='font-weight:600;'>" + data.Name + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"));
+                            }
+                            
                             return;
                         }
                             
@@ -5459,12 +5461,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_ribbon_undo = controlID + '_ribbon_undo';
     var controlID_ribbon_redo = controlID + '_ribbon_redo';
     var controlID_ribbon_remove = controlID + '_ribbon_remove';
-    //var controlID_ribbon_sourcerule_add = controlID + '_ribbon_sourcerule_add';
+    var controlID_ribbon_sourcerule_add = controlID + '_ribbon_sourcerule_add';
 
     var controlID_popover_add = controlID + '_popover_add';
 
-    //var controlID_popover_sourcerule_editor = controlID + '_popover_sourcerule_editor';
-    //var controlID_popover_sourcerule_editor_body = controlID_popover_sourcerule_editor + '_body';
+    var controlID_popover_sourcerule_editor = controlID + '_popover_sourcerule_editor';
+    var controlID_popover_sourcerule_editor_body = controlID_popover_sourcerule_editor + '_body';
 
     //#endregion
 
@@ -5482,7 +5484,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $("#" + controlID_ribbon_zoom_out).jqxRepeatButton({ delay: 3, theme: theme });
     $("#" + controlID_ribbon_zoom_in).jqxRepeatButton({ delay: 3, theme: theme });
 
-    //$("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
 
     //$("#" + controlID_sourcerules).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
@@ -5498,12 +5500,31 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         $('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
     });
 
-    //$("#" + controlID_ribbon_sourcerule_add).on('click', function () {
-    //    $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
+    $("#" + controlID_ribbon_sourcerule_add).on('click', function () {
+        var selected = myDiagram.selection;
+        if (selected == null)
+            return;
+        var selected = selected.first().data;
+        if (selected == null)
+            return;
+        //console.log(selected);
+        $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
 
-    //    var model = new HierarchyRuleViewModel(1, type, id);
-    //    ko.applyBindings(model, document.getElementById(controlID_popover_sourcerule_editor_body));
-    //});
+        //TODO: logic for nothing selected
+        var data = {
+            target: type,
+            targetID: id,
+            object: selected.type,
+            objectID: selected.id,
+            ID: 0,
+            controlID: controlID
+        };
+
+        var model = new HierarchyPanelViewModel(data);
+        ko.cleanNode($('#' + controlID_popover_sourcerule_editor_body)[0]);
+        ko.applyBindings(model, $('#' + controlID_popover_sourcerule_editor_body)[0]);
+        //model.ApplyJqxBindings();
+    });
 
     $('#' + controlID_ribbon).jqxRibbon({
         width: "100%",
@@ -5565,7 +5586,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         //confirmDialog(message.add(ok).add(cancel), 'Save Changes?', 'Save', saveChanges);
     });
-
 
     function confirmDialog(content, title, id, func) {
         $('<div />').qtip({
@@ -5647,7 +5667,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var predicates = [];
     var overlayEditLinkKey = null;
     var selection = null;
-
     //#region Responsibilities
 
     var lineageResponsibilitySource = {
@@ -5882,12 +5901,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             {
                 alignment: go.Spot.LeftCenter
             },
-            //g(go.Shape, "Circle",
-            //    {
-            //        fill: '#DD1148',
-            //        toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: 'Source rule defined' })))
-            //    }
-            //),
+            g(go.Shape, "Circle",
+                {
+                    fill: '#DD1148',
+                    toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: 'Source rule defined' })))
+                }
+            ),
             g(go.TextBlock,
                 {
                     row: 0,
@@ -5953,8 +5972,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                    mouseLeave: mouseLeave
                },
            g(go.Panel, "Auto", {
-               width: 125,
-               height: 50,
+               width: 250,
+               height: 22,
                name: "NodePanel"
            },
            g(go.Shape, "RoundedRectangle", {
@@ -5972,7 +5991,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                    margin: 3,
                    alignment: go.Spot.Top,
                    editable: false,
-                   maxSize: new go.Size(180, 50),
+                   maxSize: new go.Size(250, 22),
                    font: "8pt sans-serif"
                },
                    new go.Binding("text", "name").makeTwoWay()
@@ -6032,6 +6051,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         selection = e.diagram.selection;
 
         if (selection.count < 1) {
+            $("#" + controlID_ribbon_sourcerule_add).hide(200);
             $("#" + controlID_ribbon_remove).hide(200);
             $('#' + controlID_fusion).jqxExpander('collapse');
             $('#' + controlID_responsibilities).jqxExpander('collapse');
@@ -6040,6 +6060,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         } else {
             if (!readonly) {
             $("#" + controlID_ribbon_remove).show(200);
+                $("#" + controlID_ribbon_sourcerule_add).show(200);
+
         }
         }
 
@@ -6079,20 +6101,20 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                     }
                     $("#" + controlID_fusion).jqxExpander('expand');
 
-                    //if (sourceNodes.length > 0) { //(data.sourceRuleCount > 0) {
-                    //    //$('#' + controlID_sourcerules).show();
-                    //    $("#" + controlID_sourcerules).jqxExpander('expand');
+                    if (sourceNodes.length > 0) { //(data.sourceRuleCount > 0) {
+                        //$('#' + controlID_sourcerules).show();
+                        $("#" + controlID_sourcerules).jqxExpander('expand');
 
-                    //    $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function(rules) {
-                    //        var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
-                    //        $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
-                    //    });
-                    //}
-                    //else {
-                    //    $("#" + controlID_sourcerules_table).html('');
-                    //    $("#" + controlID_sourcerules).jqxExpander('collapse');
-                    //    //$('#' + controlID_sourcerules).hide();
-                    //}
+                        $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function(rules) {
+                            var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
+                            $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
+                        });
+                    }
+                    else {
+                        $("#" + controlID_sourcerules_table).html('');
+                        $("#" + controlID_sourcerules).jqxExpander('collapse');
+                        //$('#' + controlID_sourcerules).hide();
+                    }
 
                     $("#" + controlID_responsibilities).show();
                     try {
@@ -6112,7 +6134,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 $('#' + controlID_info_body).html('');
                 $("#" + controlID_info).jqxExpander('collapse');
 
-                //$("#" + controlID_sourcerules).jqxExpander('collapse');
+                $("#" + controlID_sourcerules).jqxExpander('collapse');
 
                 lineageResponsibilitySource.url = null;
                 $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
@@ -6125,6 +6147,20 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 }
             }
         }
+    }
+
+    function getImmediateParents(key) {
+        //console.log(key);
+        var parents = [];
+        var links = [];
+        for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
+            if (myDiagram.model.linkDataArray[i].to == key) {
+                //console.log(myDiagram.model.linkDataArray[i]);
+                parents.push(myDiagram.model.findNodeDataForKey(myDiagram.model.linkDataArray[i].from));
+            }
+        }
+       // console.log(parents);
+        return parents;
     }
 
     function onViewportBoundsChanged() {
@@ -6638,7 +6674,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     function initializePalette() {
 
         var pl = g(go.Palette, controlID_palette, {
-            contentAlignment: go.Spot.BottomCenter
+            contentAlignment: go.Spot.TopCenter
             , allowDrop: true
             , initialAutoScale: go.Diagram.Uniform
             , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
@@ -6646,7 +6682,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         pl.model.nodeCategoryProperty = 'template';
         pl.model.nodeDataArray = [];
         pl.model.class = 'go.GraphLinksModel';
-
+        pl.layout.spacing = new go.Size(3,3);
         return pl;
     }
 

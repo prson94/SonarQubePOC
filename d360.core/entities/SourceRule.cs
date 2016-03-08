@@ -28,14 +28,15 @@ namespace d360.core.entities
         [DataMember]
         public int AppliesToObjectID { get; set; }
 
+        [DataMember]
         public bool IsTemplate { get; set; }
 
         #endregion
 
-        [IgnoreDataMember, ForeignKey("SourceRuleID")]
+        [DataMember, ForeignKey("SourceRuleID")]
         public virtual ICollection<SourceRuleContext> Contexts { get; set; }
 
-        [IgnoreDataMember, ForeignKey("SourceRuleID")]
+        [DataMember, ForeignKey("SourceRuleID")]
         public virtual ICollection<IntersectMapSourceRule> Items { get; set; }
     }
 }

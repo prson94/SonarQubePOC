@@ -36,64 +36,105 @@
     <div class="row">
         <div class="col s3 FieldNameRequired">Order</div>
         <div class="col s9">
-            <div data-bind="jqxListBox: { width: field_width98, height: field_height, theme: theme, value: Order}"></div>
+            <div data-bind="jqxListBox: { width: field_width98, height: field_height, theme: theme }, value: Order"></div>
         </div>
     </div>
     <div class="row">
         <div class="col s3 FieldNameRequired">Name</div>
         <div class="col s9">
-            <div data-bind="jqxListBox: { width: field_width98, height: field_height, theme: theme, value: Name}"></div>
+            <div data-bind="jqxListBox: { width: field_width98, height: field_height, theme: theme }, value: Name"></div>
         </div>
     </div>
     <div class="row">
         <div class="col s3 FieldName">Description</div>
         <div class="col s9">
-            <input type="text" data-bind="jqxInput: { width: field_width98, height: 300, theme: theme, value: Description}" />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col s3 FieldName">Context</div>
-        <div class="col s9">
-            <table class="responsive-table">
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Item</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody data-bind="template: {name: 'hierarchyRuleItemEditTmpl', foreach: Items }"></tbody>
-            </table>
+            <input type="text" data-bind="jqxInput: { width: field_width98, height: 300, theme: theme }, value: Description" />
         </div>
     </div>
 </script>
 <script id="hierarchyRuleEditTmpl" type="text/html">
-    <div class="row">
-        <div class="col s3 FieldNameRequired">Name</div>
-        <div class="col s9">
-            <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme, value: Name}" />
+    <div style="margin:5px">
+        <div data-bind="visible: InProgress" style="width:100%;height:100%;position:absolute;left:0;top:0;z-index:100000; background-color:#fff; display: flex">
+            <div style="vertical-align:middle;text-align:center;display:block;margin: auto">
+                <i class="fa fa-3x fa-spinner fa-spin"></i>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col s3 FieldName">Context</div>
-        <div class="col s9">
-            <div data-bind="template: {name: 'hierarchyRuleItemEditTmpl', foreach: Items }"></div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col s3 FieldName">Items</div>
-        <div class="col s9">
-            <table class="responsive-table">
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Item</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody data-bind="template: {name: 'hierarchyRuleContextEditTmpl', foreach: Contexts }"></tbody>
-            </table>
+        <div id="hierarchyRuleAddRadioButton" data-bind="jqxRadioButton: { theme: theme, groupName: 'ruletype', checked: true, disabled: Sources().length < 1 }"> Add Hierarchy Rules</div>
+        <div id="hierarchyRuleEditRadioButton" data-bind="jqxRadioButton: { theme: theme, groupName: 'ruletype', disabled: (SourceRules().length < 1) }"> Edit Hierarchy Rules</div>
+        <div id="hierarchyRuleTemplateRadioButton" data-bind="jqxRadioButton: { theme: theme, groupName: 'ruletype' }" style="display:none;"> Apply a Hierarchy Rule Template</div>
+        <div data-bind="fadeVisible: Mode() != 'template'">
+            <div style="padding-left: 20px" data-bind="fadeVisible: Mode() == 'edit'">
+                <div class="FieldName">Choose a Rule</div>
+                <div id="hierarchyRuleList" data-bind="jqxDropDownList: {source: SourceRules }"></div>
+            </div>
+            <div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td rowspan="9" width="20"></td>
+                            <td colspan="3">
+                                <div class="FieldName" style="padding-top:9px">Rule Name</div>
+                                <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme }, value: SelectedRule().Name" />
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="FieldName" style="padding-top:9px">Available Sources</div>
+                                <div id="hierarchyRuleSourceList" data-bind="jqxListBox: { source: Sources }"></div>
+                            </td>
+                            <td style="padding-right:9px">
+                                <button id="hierarchyRuleAddButton"><i class="fa fa-chevron-right"></i></button>
+                                <div style="height:9px"></div>
+                                <button id="hierarchyRuleRemoveButton"><i class="fa fa-chevron-left"></i></button>
+                            </td>
+                            <td style="padding-right:9px">
+                                <div class="FieldName">Rule Sources</div>
+                                <div id="hierarchyRuleItemList" data-bind="jqxListBox: { source: SelectedRule().Items }"></div>
+                            </td>
+                            <td>
+                                <button id="hierarchyRuleUpButton"><i class="fa fa-chevron-up"></i></button>
+                                <div style="height:9px"></div>
+                                <button id="hierarchyRuleDownButton"><i class="fa fa-chevron-down"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="row">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td rowspan="9" width="20"></td>
+                                <td style="vertical-align: top">
+                                    <div class="FieldName" style="padding-top:9px">Description</div>
+                                    <textarea data-bind="value: SelectedRule().SelectedItem().Description, enable: IsItemSelected" rows="3"></textarea>
+                                </td>
+                                <td style="vertical-align: top">
+                                    <div class="FieldName" style="padding-top:9px">Order</div>
+                                    <div style="padding-left:5px" data-bind="text: SelectedRule().SelectedItem().SortOrder"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <div class="FieldName" style="padding-top:9px">Contexts</div>
+                                    <div style="font-size:.9em" data-bind="text: SelectedRule().SelectedItem().ContextCount, fadeVisible: IsItemSelected"></div>
+                                    <div id="hierarchyRuleContextGrid" data-bind="jqxGrid: { source: Contexts }"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <div id="hierarchyRuleIsTemplate" data-bind="jqxCheckBox: { checked: SelectedRule().IsTemplate }" style="display:none;"> Save as template</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div >
+                        <div style="padding-top:9px"></div>
+                        <div class="red-text" style="white-space: pre-wrap" data-bind="text: SelectedRule().ErrorMessage, fadeVisible: SelectedRule().ErrorMessage().length > 0"></div>
+                        <button style="float:right" id="hierarchyRuleSaveButton" data-bind="jqxButton: {disabled: SelectedRule().IsSaving }">Save</button><span data-bind="visible: SelectedRule().IsSaving" style="float:right;"> <i class="fa fa-spinner fa-spin"></i> </span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </script>
@@ -517,24 +558,24 @@
     <div title="Get more info">
         <div data-bind="template: {name: 'scoreMicroTileItemTmpl', foreach: statistics }"></div>
         @*<div class="clear">
-                <div class="left tile-stat-name">Governance</div>
-                <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
-                <div class="right tile-stat-value tile-stat-value-green">84%</div>
+            <div class="left tile-stat-name">Governance</div>
+            <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+            <div class="right tile-stat-value tile-stat-value-green">84%</div>
             </div>
             <div class="clear">
-                <div class="left tile-stat-name">Steward</div>
-                <div class="right tile-stat-value tile-stat-value-red"><i class="fa fa-arrow-down"></i></div>
-                <div class="right tile-stat-value tile-stat-value-yellow">72%</div>
+            <div class="left tile-stat-name">Steward</div>
+            <div class="right tile-stat-value tile-stat-value-red"><i class="fa fa-arrow-down"></i></div>
+            <div class="right tile-stat-value tile-stat-value-yellow">72%</div>
             </div>
             <div class="clear">
-                <div class="left tile-stat-name">Owner</div>
-                <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
-                <div class="right tile-stat-value tile-stat-value-yellow">77%</div>
+            <div class="left tile-stat-name">Owner</div>
+            <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+            <div class="right tile-stat-value tile-stat-value-yellow">77%</div>
             </div>
             <div class="clear">
-                <div class="left tile-stat-name">Consumers</div>
-                <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
-                <div class="right tile-stat-value tile-stat-value-red">49%</div>
+            <div class="left tile-stat-name">Consumers</div>
+            <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+            <div class="right tile-stat-value tile-stat-value-red">49%</div>
             </div>*@
     </div>
 </script>
@@ -921,7 +962,7 @@
     </div>
 </script>
 <script id="searchResultsCategoryTmpl" type="text/html">
-    <div class="row">        
+    <div class="row">
         <div class="col l10 m10 s11 entry">
             <i class="search-category-type-group fa" data-bind="click: toggleVisibility,visible: showToggle,css: {'fa-angle-right' : showRow, 'fa-angle-down' : !showRow()}"></i>            
             <a href="#" class="search-type-link" data-bind="attr: {'data-category-type': Name, 'title':DisplayName}, text: DisplayName"></a>            

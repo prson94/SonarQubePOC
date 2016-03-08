@@ -1411,9 +1411,16 @@ function HierarchyRuleContextModel(data) {
     self.Object = ko.observable(data.Object || "");
     self.ObjectID = ko.observable(data.ObjectID || 0);
 
-    self.ObjectIndex = ko.observable(data.ObjectIndex || -1);
-    self.ObjectIDIndex = ko.observable(data.ObjectIDIndex || -1);
+    self.ID = ko.computed(function () {
+        return self.Object() + self.ObjectID().toString();
+    });
 
+    self.Checked = ko.observable(data.Checked || false);
+
+    self.Category = ko.observable(data.Category || '');
+    self.Type = ko.observable(data.Type || '');
+    self.Name = ko.observable(data.Name || '');
+    
     return self;
 }
 
@@ -1421,14 +1428,34 @@ function HierarchyRuleItemModel(data) {
     var self = this;
     data = data || {};
 
+    //#region Observables
+
+    self.ID = ko.observable(data.ID || 0);
+    self.IntersectMapID = ko.observable(data.IntersectMapID || 0);
     self.Name = ko.observable(data.Name || "");
+    self.TypeName = ko.observable(data.TypeName || "");
+    self.Object = ko.observable(data.Object || "");
+    self.ObjectID = ko.observable(data.ObjectID || 0);
     self.Description = ko.observable(data.Description || "");
-    self.Order = ko.observable(data.Order || 1);
+    self.SortOrder = ko.observable(data.SortOrder || 1);
+    self.IconForeColor = ko.observable(data.IconForeColor || "#000");
+    self.IconBackColor = ko.observable(data.IconBackColor || "#fff");
 
     self.Contexts = ko.observableArray([]);
 
+    self.RuleName = ko.computed(function () {
+        return self.SortOrder() + '. ' + self.Name();
+    });
+    self.ContextCount = ko.computed(function () {
+        return (self.Contexts().length == 1) ? self.Contexts().length.toString() + ' context selected' : self.Contexts().length.toString() + ' contexts selected';
+    });
+
+    //#endregion
+
+    //load Contexts
     if (data.Contexts) {
         $.each(data.Contexts, function (cxIx, cxItem) {
+            cxItem.Checked = true;
             self.Contexts.push(
                     new HierarchyRuleContextModel(cxItem)
                 );
@@ -1438,147 +1465,503 @@ function HierarchyRuleItemModel(data) {
     return self;
 }
 
-function HierarchyRuleViewModel(id, object, objectID) {
+function HierarchySourceRuleModel(data) {
     var self = this;
 
-    //Simple Properties
-    self.ID = ko.observable(id || 0);
-    self.Name = ko.observable('');
-    self.Object = ko.observable(object || '');
-    self.ObjectID = ko.observable(objectID || 0);
+    if (data == null) {
+        data = { ID: -1, Name: '', Target: '', TargetID: '', Object: '', ObjectID: '', Description: '' };
+    }
+    
+    //#region Observables
 
-    self.InProgress = ko.observable(false);
+    self.ID = ko.observable(data.ID || 0);
+    self.Name = ko.observable(data.Name || '');
+    self.Target = ko.observable(data.AppliesToObject || '');
+    self.TargetID = ko.observable(data.AppliesToObjectID || 0);
+    self.Object = ko.observable(data.Object || '');
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+    self.Description = ko.observable(data.Description || '');
+    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
+    self.ErrorMessage = ko.observable('');
+    self.SourceRuleID = ko.observable(data.SourceRuleID || -1);
+    self.IsTemplate = ko.observable(data.IsTemplate || false);
+    self.IsSaving = ko.observable(false);
 
-    //List Properties
-    self.Contexts = ko.observableArray();
     self.Items = ko.observableArray();
 
-    //Computed Properties
-    //self.CurrentCompanyLogoPathPresent = ko.pureComputed(function () {
-    //    return (self.CurrentCompanyLogoPath().length > 0 && !self.SetLogoToDefault());
-    //}, self);
+    //#endregion
+    
+    //load Items
+    if (data.Items) {
+        for (var i = 0; i < data.Items.length; i++) {
+            self.Items.push(new HierarchyRuleItemModel(data.Items[i]));
+        }
+    }
 
-    //Subscriptions
-    //self.DisableCommunityPosting.subscribe(function (value) {
-    //});
+    //#region Functions
 
-    //#region Methods
+    self.SaveRule = function () {
+        self.IsSaving(true);
+        self.ErrorMessage('');
+        var msg = "";
+        if (self.Items().length < 1)
+            msg += 'Source rule must have at least 1 source item.\n';
+        if (self.Name().length < 1)
+            msg += 'Source rule requires a name.\n';
 
-    self.addItem = function () {
-        self.Items.push(new HierarchyRuleItemModel({}));
-    };
+        for (var i = 0; i < self.Items().length; i++) {
+            if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
+                msg += 'The source "' + self.Items()[i].Name() + '" is missing a context and/or description.\n';
+            }
+        }
 
-    self.deleteItem = function () {
-        self.Items.remove(this);
-    };
+        self.ErrorMessage(msg);
 
-    self.save = function () {
-        self.InProgress(true);
-        
-        var postModel = {
+        if (self.ErrorMessage() != '') {
+            self.IsSaving(false);
+            return;
+        }
+            
+
+        var SourceRule = {
+            ID: self.ID(),
             Name: self.Name(),
-            Contexts: [],
-            Items: []
+            Object: self.Object(),
+            ObjectID: self.ObjectID(),
+            AppliesToObject: self.Target(),
+            AppliesToObjectID: self.TargetID(),
+            AppliesToObjectList: "",
+            Items: ko.toJS(self.Items())
         }
 
-        //Load Contexts
-        for (var c = 0; c < self.Contexts().length; c++) {
-            var ctx = self.Contexts()[c];
-            postModel.Contexts.push({ Object: ctx.Object, ObjectID: ctx.ObjectID });
-        }
-
-        //Load Items
-        for (var r = 0; r < self.Items().length; r++) {
-            var item = {
-                Name: self.Items()[r].Name(),
-                Description: self.Items()[r].Description(),
-                Order: self.Items()[r].Order(),
-                Contexts: []
-            };
-
-            for (var c = 0; c < self.Items()[r].Contexts().length; c++) {
-                var ctx = self.Items()[r].Contexts()[c];
-                item.Contexts.push({ Object: ctx.Object, ObjectID: ctx.ObjectID });
-            }
-
-            postModel.Items.push(item);
-        }
-
-        var ruleID = self.ID();
-        var url = '/form/SourceRules' + ((ruleID > 0) ? '/' + ruleID : '');
-        var method = (ruleID > 0) ? 'put' : 'post';
-
-        $.ajax(url, {
-            data: postModel,
-            dataType: 'json',
-            method: method
-        }).done(function (data, status, xhr) {
-            amplify.publish("SaveAction", { context: 'CompanySettings', action: 'update', id: 0, custom: {} });
-            data.message += " Refreshing page momentarily.";
-            amplify.publish("ShowMessage", data);
-        }).fail(function (xhr, status, error) {
-            amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
-        }).always(function (data, status, error) {
-            self.InProgress(false);
-            console.log(status);
-            if (error.status == "200") {
-                setTimeout(function () { document.location.reload(); }, 3000);
-            }
+        $.ajax({
+            url: '/form/SourceRules/save',
+            data: SourceRule,
+            method: 'POST'
+        }).always(function () {
+            self.IsSaving(false);
         });
-    };
+    }
 
     //#endregion
 
-    if (self.ID() > 0) {
-        $.getJSON('/form/SourceRules/' + self.ID(), function (relData) {
+    return self;
+}
 
-            self.Name(relData.Name);
-            self.Object(relData.Object);
-            self.ObjectID(relData.ObjectID);
+function HierarchyPanelViewModel(data) {
+    var self = this;
+    self.jqxLoaded = false;
+    //#region Observables
 
-            $.each(relData.Contexts, function (cxIx, cxItem) {
-                self.Contexts.push(
-                        new HierarchyRuleContextModel(cxItem)
-                    );
-            });
+    self.ID = ko.observable(data.ID || 0);
+    self.Name = ko.observable('');
+    self.Target = ko.observable(data.target || '');
+    self.TargetID = ko.observable(data.targetID || 0);
+    self.Object = ko.observable(data.object || '');
+    self.ObjectID = ko.observable(data.objectID || 0);
+    self.NewRule = ko.observable(new HierarchySourceRuleModel(null));
+    self.NewRule().Name('New Rule');
+    self.NewRule().Object(self.Object());
+    self.NewRule().ObjectID(self.ObjectID());
+    self.NewRule().Target(self.Target());
+    self.NewRule().TargetID(self.TargetID());
+    self.InProgress = ko.observable(false);
+    self.IsGridLoading = ko.observable(false);
+    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null));
+    self.Mode = ko.observable('add'); 
 
-            $.each(relData.Items, function (roIx, roItem) {
-                self.Items.push(
+    self.Contexts = ko.observableArray([]);
+    self.Items = ko.observableArray();
+    self.Sources = ko.observableArray();
+    self.SourceRules = ko.observableArray();
+
+    self.IsItemSelected = ko.computed(function () {
+        var val = true;
+        if (self.SelectedRule() == null)
+            val = false;
+        if (self.SelectedRule().SelectedItem() == null)
+            val = false;
+        if (self.SelectedRule().SelectedItem().ID() == 0)
+            val = false;
+        if (self.jqxLoaded) {
+           $('#hierarchyRuleContextGrid').jqxGrid({ disabled: !val });
+        }
+        return val;
+    });
+
+    //#endregion
+ 
+    //#region Functions
+
+    self.LoadRules = function () {
+        self.InProgress(true);
+        $.ajax({
+            url: '/form/SourceRules/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
+            method: 'GET'
+        }).done(function (data) {
+            if (data == [] || data == null || data.length < 1)
+                return;
+            self.SourceRules([]);
+            for (var i = 0; i < data.length; i++) {
+                data[i].SourceRuleID = self.ID();
+                var rule = new HierarchySourceRuleModel(data[i]);
+                self.SourceRules.push(rule);
+                for (var j = 0; j < data[i].Items.length; j++) {
+                    for (var k = 0; k < self.Sources().length; k++) {
+                        if (data[i].Items[j].IntersectMapID == self.Sources()[k].IntersectMapID()) {
+                            self.Sources.remove(self.Sources()[k]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }).always(function () {
+            self.SelectRule(self.NewRule());
+            self.InProgress(false);
+            if (!self.jqxLoaded)
+                self.ApplyJqxBindings();
+        });
+    }
+
+    self.LoadSources = function () {
+        self.InProgress(true);
+
+        $.ajax({
+            url: '/form/SourceRules/sources/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
+            method: 'GET'
+        }).done(function (data) {
+            if (data.Contexts)
+                $.each(data.Contexts, function (cxIx, cxItem) {
+                    self.Contexts.push(
+                            new HierarchyRuleContextModel(cxItem)
+                        );
+                });
+            $.each(data, function (roIx, roItem) {
+                self.Sources.push(
                         new HierarchyRuleItemModel(roItem)
                     );
             });
+
+        }).always(function () {
+            self.InProgress(false);
+            self.LoadContexts();
+            self.LoadRules();
+        });
+    }
+
+    self.LoadSources();
+
+    self.LoadContexts = function () {
+        $.ajax({
+            url: '/form/SourceRules/contexts',
+            method: 'GET'
+        }).done(function (data) {
+            if (data == null)
+                return;
+            if (data.count == null || data.items == null)
+                return;
+            if (data.items.length < 1)
+                return;
+            self.Contexts([]);
+            self.Contexts(data.items);
+        });
+    };
+
+    self.ApplyJqxBindings = function () {
+
+        $('#hierarchyRuleList').jqxDropDownList({
+            theme: theme,
+            displayMember: 'Name',
+            valueMember: 'ID'
+        })
+        .on('select', function (event) {
+            var args = event.args;
+            if (args == null)
+                return;
+
+            var value = args.item.value;
+
+            for (var i = 0; i < self.SourceRules().length; i++) {
+                if (self.SourceRules()[i].ID() == value) {
+                    self.SelectRule(self.SourceRules()[i]);
+                    break;
+                }
+            }
+
         });
 
-        // Step 1
-        //$.getJSON('/form/IntersectType_Side1Options', function (relData) {
-        //    self.Side1Options(relData);
-        //}).then(function () {
-        //    // Step 2
-        //    $.getJSON(
-        //        '/form/IntersectType_FormData',
-        //        { id: self.ID() },
-        //        function (relData) {
+        $('#hierarchyRuleSourceList').jqxListBox({
+            theme: 'metro',
+            displayMember: 'Name',
+            valueMember: 'Order',
+            allowDrag: false,
+            allowDrop: false,
+            renderer: function (index, label, value) {
+                var data = $('#hierarchyRuleSourceList').jqxListBox('getItem', index);
+                data = data.originalItem;
+                if (data == null)
+                    return "";
+                return "<div style='padding:3px;border-radius:3px;font-size:.9em;background-color:" + (data.IconBackColor || "#000") + ";color:" + (data.IconForeColor || "#fff") + "'>" + data.Name + "</div>"
+            }
+        })
 
-        //            //Side2 needs to be first, here.
-        //            self.Side2(relData.Side2);
-        //            self.Side2DisplayText(relData.Side2DisplayText);
-        //            self.Side1(relData.Side1);
-        //            self.Side1DisplayText(relData.Side1DisplayText);
+        $("#hierarchyRuleItemList").jqxListBox({
+            theme: 'metro',
+            displayMember: 'RuleName',
+            valueMember: 'Order',
+            allowDrag: false,
+            allowDrop: false,
+            renderer: function (index, label, value) {
+                var data = $('#hierarchyRuleItemList').jqxListBox('getItem', index);
+                data = data.originalItem;
+                if (data == null)
+                    return "";
+                return "<div style='padding:3px;border-radius:3px;font-size:.9em;background-color:" + (data.IconBackColor || "#000") + ";color:" + (data.IconForeColor || "#fff") + "'>" + data.RuleName + "</div>"
+            }
+        })
+        .on('select', function (event) {
+            var args = event.args;
+            if (args == null)
+                return;
+            var index = args.index;
+            if (index == null)
+                return;
+            self.SelectItem(self.SelectedRule().Items()[index]);
+        });
 
-        //            self.LimitedChangesOnly(relData.LimitedChangesOnly);
+        $("#hierarchyRuleAddButton").jqxButton({
+            theme: theme,
+            width: '100%'
+        })
+            .on('click', function () {
+                var items = $('#hierarchyRuleSourceList').jqxListBox('getSelectedItems');
 
-        //            var indexToSelect = -1;
+                if (items == null || items == [])
+                    return;
 
-        //            $.each(self.Side1Options(), function (ix, item) {
-        //                if (item.value == relData.Side1) {
-        //                    indexToSelect = ix;
-        //                }
-        //            });
-        //            self.Side1Index(indexToSelect);
-        //        }
-        //    );
-        //});
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i] == null)
+                        continue;
+                    var item = items[i].originalItem;
+                    if (item == null)
+                        continue;
+
+                    var obj = self.FindItemByOrder(item.SortOrder, self.Sources());
+
+                    if (obj == null)
+                        continue;
+                    self.Sources.remove(obj);
+                    self.SelectedRule().Items.push(obj);
+                    self.ReorderItems(self.SelectedRule().Items());
+                    self.ReorderItems(self.Sources());
+                }
+                $('#hierarchyRuleSourceList').jqxListBox('clearSelection');
+            });
+
+        $("#hierarchyRuleRemoveButton").jqxButton({
+            theme: theme,
+            width: '100%'
+        })
+            .on('click', function () {
+                var items = $('#hierarchyRuleItemList').jqxListBox('getSelectedItems');
+
+                if (items == null || items == [])
+                    return;
+
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i] == null)
+                        continue;
+                    var item = items[i].originalItem;
+                    if (item == null)
+                        continue;
+
+                    console.log(item);
+                    var obj = self.FindItemByOrder(item.SortOrder, self.SelectedRule().Items());
+                    console.log(obj);
+                    if (obj == null)
+                        continue;
+                    $('#hierarchyRuleItemList').jqxListBox('clearSelection');
+                    self.SelectedRule().Items.remove(obj);
+                    if (self.SelectedRule().Items().length > 0)
+                        self.SelectItem(self.SelectedRule().Items()[0]);
+
+
+                    self.Sources.push(obj);
+                    self.ReorderItems(self.SelectedRule().Items());
+                    self.ReorderItems(self.Sources());
+                }
+
+            });
+
+        $('#hierarchyRuleUpButton').jqxButton({
+            theme: theme,
+            width: '100%'
+        })
+            .on('click', function () {
+                var item = $('#hierarchyRuleItemList').jqxListBox('getSelectedItem');
+                if (item == null || item == [] || item.index == 0)
+                    return;
+                var index = item.index;
+                if (item.originalItem == null)
+                    return;
+                item = item.originalItem;
+
+                var itemAbove = self.SelectedRule().Items()[index - 1];
+                var itemCurrent = self.FindItemByOrder(item.SortOrder, self.SelectedRule().Items());
+                self.SelectedRule().Items()[index - 1] = itemCurrent;
+                self.SelectedRule().Items()[index] = itemAbove;
+                self.ReorderItems(self.SelectedRule().Items());
+                $('#hierarchyRuleItemList').jqxListBox('selectIndex', index - 1);
+
+            });
+
+        $('#hierarchyRuleDownButton').jqxButton({
+            theme: theme,
+            width: '100%'
+        })
+            .on('click', function () {
+                var item = $('#hierarchyRuleItemList').jqxListBox('getSelectedItem');
+                if (item == null || item == [] || item.index == self.SelectedRule().Items().length - 1)
+                    return;
+                var index = item.index;
+                if (item.originalItem == null)
+                    return;
+                item = item.originalItem;
+
+                var itemBelow = self.SelectedRule().Items()[index + 1];
+                var itemCurrent = self.FindItemByOrder(item.SortOrder, self.SelectedRule().Items());
+                self.SelectedRule().Items()[index + 1] = itemCurrent;
+                self.SelectedRule().Items()[index] = itemBelow;
+                self.ReorderItems(self.SelectedRule().Items());
+                $('#hierarchyRuleItemList').jqxListBox('selectIndex', index + 1);
+            });
+
+        $('#hierarchyRuleSaveButton').jqxButton({
+            theme: theme,
+            width: 60
+        })
+        .on('click', function () {
+            self.SelectedRule().SaveRule();
+            //self.LoadSources();
+        });
+
+        $('#hierarchyRuleIsTemplate').jqxCheckBox({
+            theme: theme,
+            disabled: true
+        });
+
+        $('#hierarchyRuleAddRadioButton').jqxRadioButton({})
+            .on('checked', function () {
+                self.Mode('add');
+                self.SelectRule(self.NewRule());
+            });
+
+        $('#hierarchyRuleEditRadioButton').jqxRadioButton({})
+            .on('checked', function () {
+                self.Mode('edit');
+                if (self.SourceRules().length > 0) {
+                    self.SelectRule(self.SourceRules()[0]);
+                }
+                $('#hierarchyRuleList').jqxDropDownList({ selectedIndex: 0 });
+            });
+
+        $('#hierarchyRuleTemplateRadioButton').jqxRadioButton({ disabled: true })
+            .on('checked', function () {
+                self.Mode('template');
+            });
+
+
+        $('#hierarchyRuleContextGrid').jqxGrid({
+            theme: theme,
+            width: '100%',
+            height: 150,
+            disabled: true,
+            showfilterrow: true,
+            filterable: true,
+            editable: true,
+            columns: [
+                  { text: '', dataField: 'Checked', columntype: 'checkbox', width: 25, editable: true, filtertype: 'bool', filterable: true },
+                  { text: 'Category', dataField: 'Category', width: 100, filtertype: 'checkedlist', editable: false },
+                  { text: 'Type', dataField: 'Type', width: 100, filtertype: 'checkedlist', editable: false },
+                  { text: 'Name', dataField: 'Name', editable: false }
+            ]
+        })
+        .on('cellendedit', function (event) {
+            var args = event.args;
+            var dataField = event.args.datafield;
+
+            if (dataField != 'Checked')
+                return;
+
+            setTimeout(function () { self.IsGridLoading(true); }, 1);
+
+            var value = args.value;
+            console.log(args);
+
+            var rowData = self.Contexts()[args.rowindex];
+            rowData.Checked = value;
+            if (value === true)
+                self.SelectedRule().SelectedItem().Contexts.push(new HierarchyRuleContextModel(rowData));
+            else {
+                for (var i = 0; i < self.SelectedRule().SelectedItem().Contexts().length; i++) {
+                    var c = self.SelectedRule().SelectedItem().Contexts()[i];
+                    if (c.Object() == rowData.Object && c.ObjectID() == rowData.ObjectID) {
+                        self.SelectedRule().SelectedItem().Contexts.remove(c);
+                        break;
+                    }
+                }
+            };
+
+            self.CheckUsedContextItems();
+            setTimeout(function () { self.IsGridLoading(false); }, 1);
+
+
+        });
+
+        self.jqxLoaded = true;
+        
     }
+
+    self.FindItemByOrder = function (order, array) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i].SortOrder() == order)
+                return array[i];
+        }
+    }
+
+    self.ReorderItems = function (array) {
+        for (var i = 0; i < array.length; i++) {
+            array[i].SortOrder(i + 1);
+        }
+    }
+
+    self.CheckUsedContextItems = function () {
+        self.IsGridLoading(true);
+        for (var i = 0; i < self.Contexts().length; i++) {
+            var c = self.Contexts()[i];
+            c.Checked = false;
+            for (var j = 0; j < self.SelectedRule().SelectedItem().Contexts().length; j++) {
+                var rc = self.SelectedRule().SelectedItem().Contexts()[j];
+                if (rc.Object() == c.Object && rc.ObjectID() == c.ObjectID) {
+                    c.Checked = true;
+                }
+            }
+        }
+        self.Contexts.valueHasMutated();
+        self.IsGridLoading(false);
+    }
+
+    self.SelectRule = function (selectedRule) {
+        self.SelectedRule(selectedRule);
+
+    }
+
+    self.SelectItem = function (selectedItem) {
+        self.SelectedRule().SelectedItem(selectedItem);
+        self.CheckUsedContextItems();
+    }
+
+    //#endregion
 
     return self;
 }
