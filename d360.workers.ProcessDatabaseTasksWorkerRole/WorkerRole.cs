@@ -481,10 +481,10 @@ from    [queue].[Task] T
                             {
 
                                 ISearchSource search = null;
-                                if (isCompanyInDev)
+                                //if (isCompanyInDev)
                                     search = new extensions.search.ElasticSearchSource();
-                                else
-                                    search = new extensions.search.AzureSearchSource();
+                                //else
+                                //    search = new extensions.search.AzureSearchSource();
 
                                 if (indexCollectionModel.Adds.Count > 0)
                                 {

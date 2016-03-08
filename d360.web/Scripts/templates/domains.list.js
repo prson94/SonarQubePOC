@@ -84,8 +84,8 @@
 
                 if (load) {
                     var loadPermissionsDependentTiles = function () {
-                        $('#AllocationsTile').fadeIn(fadoutTime);
-                        DomainAllocationsTile('AllocationsTile', contextList, permissions, typeID, id);
+                        //$('#AllocationsTile').fadeIn(fadoutTime);
+                        //DomainAllocationsTile('AllocationsTile', contextList, permissions, typeID, id);
                         $('#ItemsTile').fadeIn(fadoutTime);
                         DomainItemsTile('ItemsTile', contextList, permissions, typeID, id);
                         $('#OwnerTile').fadeIn(fadoutTime);
@@ -94,6 +94,8 @@
                         $('#AggregatesTile').fadeIn(fadoutTime);
                         RelationshipAggregatesTile('AggregatesTile', selectedType, id, permissions);
 
+                        LineageDiagram('SourcingTile', selectedType, id, null, true);
+
                         $('#AttributesTile').fadeIn(fadoutTime);
                         CollapsibleAttributesTile('AttributesTile', contextList, permissions, selectedType, id);
                     }
@@ -101,7 +103,7 @@
                 }
                 else {
                     $('#AttributesTile').fadeOut(fadoutTime).html('');
-                    $('#AllocationsTile').fadeOut(fadoutTime).html('');
+                    //$('#AllocationsTile').fadeOut(fadoutTime).html('');
                     $('#ItemsTile').fadeOut(fadoutTime).html('');
                     $('#OwnerTile').fadeOut(fadoutTime).html('');
                     $('#AggregatesTile').fadeOut(fadoutTime).html('');

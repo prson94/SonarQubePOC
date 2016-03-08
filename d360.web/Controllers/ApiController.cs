@@ -2637,7 +2637,7 @@ from    cache.Relationship R1
                 {
                     foreach (var item in fieldTypeIDs)
                     {
-                        foreach (var f in fields.Where(i => i.ObjectType == row.Object && i.ObjectID == row.ObjectID))
+                        foreach (var f in fields.Where(i => i.ObjectType == row.Object && i.ObjectID == row.ObjectID && i.FieldTypeID == item))
                         {
                             var ft = fieldTypes.SingleOrDefault(i => i.ID == item);
                             if (ft != null)

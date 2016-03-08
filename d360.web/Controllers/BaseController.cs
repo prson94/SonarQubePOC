@@ -11,6 +11,9 @@ using System.Web.Mvc;
 using System.Net.Http;
 using Microsoft.ApplicationInsights;
 using d360.web.Models.Attributes;
+using d360.web.Models;
+using d360.core;
+using Resources;
 
 namespace System.Net.Http
 {
@@ -329,6 +332,61 @@ namespace d360.web.Controllers
             Company = company;
         }
 
+        internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, int? minLength, int? maxLength, string validationMessage = "")
+        {
+            var models = new List<FieldValidationModel>();
+
+            #region Validation
+
+            if (fieldType != "Lookup")
+            {
+                if (string.IsNullOrEmpty(validationMessage))
+                {
+                    switch (fieldType)
+                    {
+                        case "Number":
+                            validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a whole number");
+                            break;
+                        case "Decimal":
+                            validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a decimal number");
+                            break;
+                    }
+                }
+
+                // Required validation
+                if (required)
+                {
+                    models.Add(new FieldValidationModel { action = "blur", message = string.Format(Validation.Required_Tokenized, friendlyName), rule = "required" });
+                }
+
+                // Pattern validation
+                if (!string.IsNullOrEmpty(pattern))
+                {
+                    models.Add(new FieldValidationModel { action = "blur", message = validationMessage, regex = pattern });
+                }
+
+                // Min/Max next precedent
+                if (maxLength.HasValue && minLength.HasValue)
+                {
+                    models.Add(new FieldValidationModel { action = "blur", message = string.Format(Validation.Length_Tokenized, friendlyName, minLength.Value, maxLength.Value), rule = string.Format("length={0},{1}", minLength.Value, maxLength.Value) });
+                }
+                // Min next precedent
+                else if (minLength.HasValue)
+                {
+                    models.Add(new FieldValidationModel { action = "blur", message = string.Format(Validation.MaxLength_Tokenized, friendlyName, minLength.Value), rule = string.Format("minLength={0}", minLength.Value) });
+                }
+                // Max next precedent
+                else if (maxLength.HasValue)
+                {
+                    models.Add(new FieldValidationModel { action = "blur", message = string.Format(Validation.MinLength_Tokenized, friendlyName, maxLength.Value), rule = string.Format("maxLength={0}", maxLength.Value) });
+                }
+            }
+
+            #endregion
+
+            return models.Count > 0 ? models : null;
+        }
+
         internal IQueryable<GlobalReportingResource> GetCompanyResources()
         {
             var hideData3SixtyUsers = HideData3SixtyUsers();
@@ -364,6 +422,180 @@ namespace d360.web.Controllers
                 JsonRequestBehavior = behavior,
                 MaxJsonLength = Int32.MaxValue
             };
+        }
+
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldTypeWithRelation> fields, int startRow = 10)
+        {
+            var row = startRow;
+
+            fields.ForEach(f =>
+            {
+                if (f.Type != DataType.RelationLookup.ToString())
+                {
+                    var patternMessage = "";
+
+                    if (string.IsNullOrEmpty(f.ValidationDescription))
+                    {
+                        switch (f.Type)
+                        {
+                            case "Number":
+                                patternMessage = "must be a whole number";
+                                break;
+                            case "Decimal":
+                                patternMessage = "must be a decimal number";
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        patternMessage = f.ValidationDescription;
+                    }
+
+
+                    var fld = new EditableField
+                    {
+                        Row = row,
+                        Column = 1,
+                        FieldName = f.Name,
+                        Name = f.FriendlyName,
+                        FieldType = f.Type.ToString(),
+                        FieldDescription = f.FormDescription,
+                        Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage)
+                    };
+
+                    if (f.Type == DataType.FusionLookup.ToString())
+                    {
+                        //need to render drop down of all fusion attributes that have the same type as the current
+                        var IDs = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == f.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
+
+                        if (!f.IsRequired)
+                            fld.Items.Add(new SelectListItem { Text = "", Value = "" });
+
+                        fld.Items.AddRange(
+                            Company.Filter<FusionAttribute>(x => IDs.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
+                            .Select(i => new { i.ID, i.TextPath, Type = i.FusionAttributeType.Name })
+                            .ToList()
+                            .Select(i =>
+                                new SelectListItem
+                                {
+                                    Group = new SelectListGroup { Name = i.Type },
+                                    Text = i.TextPath,
+                                    Value = i.ID.ToString()
+                                })
+                        );
+                    }
+
+                    if (!string.IsNullOrEmpty(f.LookupObjectType))
+                    {
+                        fld.FieldType = DataType.Lookup.ToString();
+                        try
+                        {
+                            fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                                .OrderBy(o => o.Text)
+                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                .ToList();
+                            if (!f.IsRequired) fld.Items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+                        }
+                        catch
+                        {
+                            fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+                        }
+                    }
+                    fld.Required = (f.MinimumLength > 0 || f.Length > 0);
+                    /* Boolean, Date, DateTime, Decimal, Integer, String */
+                    list.Add(fld);
+                }
+                row++;
+            });
+
+            return list;
+        }
+
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldTypeWithRelation> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false)
+        {
+            var row = startRow;
+
+            fieldTypes.ForEach(ft =>
+            {
+                var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
+
+                var patternMessage = "";
+
+                if (string.IsNullOrEmpty(ft.ValidationDescription))
+                {
+                    switch (ft.Type)
+                    {
+                        case "Number":
+                            patternMessage = "must be a whole number";
+                            break;
+                        case "Decimal":
+                            patternMessage = "must be a decimal number";
+                            break;
+                    }
+                }
+                else
+                {
+                    patternMessage = ft.ValidationDescription;
+                }
+
+                var fld = new EditableField
+                {
+                    Row = row,
+                    Column = 1,
+                    FieldName = ft.Name,
+                    Name = ft.FriendlyName,
+                    FieldType = ft.Type.ToString(),
+                    FieldDescription = ft.FormDescription,
+                    Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage)
+                };
+
+                if (ft.Type == DataType.FusionLookup.ToString())
+                {
+                    var IDs = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == ft.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
+
+                    if (!ft.IsRequired)
+                        fld.Items.Add(new SelectListItem { Text = "", Value = "" });
+
+                    fld.Items.AddRange(
+                        Company.Filter<FusionAttribute>(x => IDs.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
+                            .Select(i => new { i.ID, i.TextPath, Type = i.FusionAttributeType.Name })
+                            .ToList()
+                            .Select(i =>
+                                new SelectListItem
+                                {
+                                    Group = new SelectListGroup { Name = i.Type },
+                                    Text = i.TextPath,
+                                    Value = i.ID.ToString()
+                                })
+                            .OrderBy(x => x.Text)
+                    );
+                }
+
+                if (!string.IsNullOrEmpty(ft.LookupObjectType))
+                {
+                    fld.FieldType = DataType.Lookup.ToString();
+                    try
+                    {
+                        fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
+                            .OrderBy(o => o.Text)
+                            .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                            .ToList();
+                        if (!ft.IsRequired) fld.Items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+                    }
+                    catch
+                    {
+                        fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+                    }
+                }
+                fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
+                /* Boolean, Date, DateTime, Decimal, Integer, String */
+                if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
+                list.Add(fld);
+
+                row++;
+            });
+
+            return list;
         }
 
         internal Dictionary<string, object> SerializeDynamicObject(ExpandoObject obj)

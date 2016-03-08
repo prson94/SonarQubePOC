@@ -9,8 +9,8 @@
     <AzureEnableRemoteDesktop>True</AzureEnableRemoteDesktop>
     <AzureEnableWebDeploy>False</AzureEnableWebDeploy>
     <AzureFallbackToDeleteAndRecreateIfUpgradeFails>False</AzureFallbackToDeleteAndRecreateIfUpgradeFails>
-    <AzureHostedServiceLabel>ProcessDatabaseTasks3</AzureHostedServiceLabel>
-    <AzureHostedServiceName>processdatabasetasks3</AzureHostedServiceName>
+    <AzureHostedServiceLabel>PrcoessDatabaseTasks</AzureHostedServiceLabel>
+    <AzureHostedServiceName>prcoessdatabasetasks</AzureHostedServiceName>
     <AzureEnableIntelliTrace>False</AzureEnableIntelliTrace>
     <AzureEnableProfiling>False</AzureEnableProfiling>
     <AzureServiceConfiguration>Cloud</AzureServiceConfiguration>

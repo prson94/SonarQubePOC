@@ -252,6 +252,38 @@ where	D.ObjectTypeID <> D.ObjectID
 					)
 order by F.Name, D.TextPath";
             }
+            else if (targetType == "Group" || targetType == "GroupType")
+            {
+                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name, D.Url
+from	cache.ObjectDetails D
+where	D.[ObjectType] = 'Group'
+        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+        and not exists  (
+					select	1 
+					from	[cache].[Relationship] R 
+					where	R.SourceObject = @source 
+							and R.SourceObjectID = @id
+							and R.TargetObject = D.[Object] 
+							and R.TargetObjectID = D.ObjectID
+					)
+order by D.TextPath";
+            }
+            else if (targetType == "Resource" || targetType == "ResourceType")
+            {
+                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name, D.Url
+from	cache.ObjectDetails D
+where   D.[ObjectType] = 'ResourceType'
+        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+        and not exists  (
+					select	1 
+					from	[cache].[Relationship] R 
+					where	R.SourceObject = @source 
+							and R.SourceObjectID = @id
+							and R.TargetObject = D.[Object] 
+							and R.TargetObjectID = D.ObjectID
+					)
+order by D.TextPath";
+            }
             else
             {
                 sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name, D.Url
@@ -381,7 +413,20 @@ order by D.TextPath";
                 message = $"The hierarchy type is invalid.";
             }
 
-            var predicate = Company.GetById<Predicate>(model.PredicateID);
+            Predicate predicate = null; //Company.GetById<Predicate>(model.PredicateID);
+            if (model.HierarchyType == MapType.GroupHierarchy)
+            {
+                predicate = Company.Filter<Predicate>(i => i.Type == MapType.GroupHierarchy).FirstOrDefault();
+            }
+            else
+            {
+                predicate = Company.Filter<Predicate>(i => i.Type == MapType.TypeHierarchy).FirstOrDefault();
+            }
+
+            if (predicate == null)
+            {
+                message = "No predicate exists to fulfill this request.";
+            }
 
             if (message == "")
             {
@@ -422,7 +467,7 @@ order by D.TextPath";
                                 var intersectMap = new IntersectMap
                                 {
                                     ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
-                                    PredicateID = model.PredicateID,
+                                    PredicateID = predicate.ID, //model.PredicateID,
                                     SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
                                     Type = model.HierarchyType
                                 };
@@ -519,7 +564,7 @@ order by D.TextPath";
                             var intersectMap = new IntersectMap
                             {
                                 ObjectIntersectNodeID = intersect2.ObjectNodeID,// objectIntersectNode.ID,
-                                PredicateID = model.PredicateID,
+                                PredicateID = predicate.ID,
                                 SubjectIntersectNodeID = intersect2.SubjectNodeID,// subjectIntersectNode.ID,
                                 Type = model.HierarchyType
                             };
@@ -556,11 +601,23 @@ order by D.TextPath";
                 }
             }
 
-            return new JsonNetResult
+
+            if (string.IsNullOrEmpty(message))
             {
-                Data = message,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
+                return new JsonNetResult
+                {
+                    Data = new { type = "success", title = "Success", message = "Updated structure" },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
+            else
+            {
+                return new JsonNetResult
+                {
+                    Data = new { type = "error", title = "An error occured", message = message },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost]
@@ -1215,7 +1272,11 @@ for		    xml path('relationship'), root('item')
             ViewData.Add("SourceID", sourceID);
             ViewData.Add("TargetType", target.ToString());
             ViewData.Add("TargetTypeID", targetID);
-            return PartialView();
+
+            //var row = 0;
+            //var list = new List<EditableField>();
+            //list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, at).ToList(), row + 1);
+            return PartialView();// (list);
         }
 
         [HttpGet, Route("sources/{type}/{id:int}/add")]

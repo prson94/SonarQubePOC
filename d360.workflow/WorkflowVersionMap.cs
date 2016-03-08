@@ -10,12 +10,13 @@ namespace d360.workflow
 
         // Current version identities.
         public static WorkflowIdentity SuggestNewArtifactIdentity_v1000;
-        public static WorkflowIdentity CertifyArtifactIdentity_v1000;
-        public static WorkflowIdentity WorkIssue_v1000;
-
         public static WorkflowIdentity SuggestNewArtifactIdentity_vCurrent;
+
+        public static WorkflowIdentity CertifyArtifactIdentity_v1000;
         public static WorkflowIdentity CertifyArtifactIdentity_vCurrent;
 
+        public static WorkflowIdentity WorkIssue_v1000;
+        public static WorkflowIdentity WorkIssue_v1001;
         public static WorkflowIdentity WorkIssue_vCurrent;
 
         static WorkflowVersionMap()
@@ -36,8 +37,11 @@ namespace d360.workflow
             WorkIssue_v1000 = new WorkflowIdentity { Name = "WorkIssue v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(WorkIssue_v1000, new WorkIssue_v1000());
 
-            WorkIssue_vCurrent = new WorkflowIdentity { Name = "WorkIssue v1.0.0.1", Version = new Version(1, 0, 0, 1) };
-            map.Add(WorkIssue_vCurrent, new WorkIssue_v1001());
+            WorkIssue_v1001 = new WorkflowIdentity { Name = "WorkIssue v1.0.0.1", Version = new Version(1, 0, 0, 1) };
+            map.Add(WorkIssue_v1001, new WorkIssue_v1001());
+
+            WorkIssue_vCurrent = new WorkflowIdentity { Name = "WorkIssue v1.0.0.2", Version = new Version(1, 0, 0, 2) };
+            map.Add(WorkIssue_vCurrent, new WorkIssue_v1002());
         }
 
         public static Activity GetWorkflowDefinition(WorkflowIdentity identity)

@@ -28,7 +28,7 @@ namespace d360.core.entities
         [DataMember]
         public int AppliesToObjectID { get; set; }
 
-        public string AppliesToObjectList { get; set; }
+        public bool IsTemplate { get; set; }
 
         #endregion
 

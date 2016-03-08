@@ -1,4 +1,5 @@
-﻿<div class="small-overlay">
+﻿@model List<d360.web.Models.EditableField>
+<div class="small-overlay">
     <div class="ui segment">
         @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.Intersect, Description = "Please provide as much detail as possible in the form below.  You may select one or more relationships by clicking/highlighting the items in the list below.", Name = "Add Relationship" })
 
@@ -17,7 +18,6 @@
 <script type="text/javascript">
     var Source = "@(ViewData["Source"])";
     var SourceID = "@(ViewData["SourceID"])";
-    @*var IntersectTypeID = "@(ViewData["IntersectTypeID"])";*@
     var TargetType = "@(ViewData["TargetType"])";
     var TargetTypeID = "@(ViewData["TargetTypeID"])";
 
@@ -47,13 +47,9 @@
                 { name: 'ObjectID' },
                 { name: 'Name' },
                 { name: 'Url' }
-                //{ name: 'TargetID' },
-                //{ name: 'TargetName' },
-                //{ name: 'TargetType' },
-                //{ name: 'IntersectTypeID' }
             ],
             datatype: "json",
-            url: '/relations/PossibleRelationshipsBySource?source=' + Source + '&id=' + SourceID + '&targetType=' + TargetType + '&targetTypeID=' + TargetTypeID// + '&intersectTypeID=' + IntersectTypeID
+            url: '/relations/PossibleRelationshipsBySource?source=' + Source + '&id=' + SourceID + '&targetType=' + TargetType + '&targetTypeID=' + TargetTypeID
         };
 
         var ItemsAdapter = new $.jqx.dataAdapter(ItemsSource);
@@ -64,7 +60,6 @@
             source: ItemsAdapter,
             filterable: true,
             showfilterrow: true,
-            //autorowheight: true,
             selectionmode: 'multiplerows',
             scrollmode: 'logical',
             sortable: true,
@@ -94,7 +89,7 @@
 
         //#endregion
 
-        //#region Question 3
+        //#region Question 2
 
         var ImportanceSource = {
             datatype: "json",
@@ -112,7 +107,7 @@
 
         //#endregion
 
-        //#region Question 4
+        //#region Question 3
 
         $('#Description').redactor({
             buttons: ['bold', 'italic', 'unorderedlist', 'link']
