@@ -90,7 +90,8 @@
                 $('#List').jqxGrid('updatebounddata');
             }
 
-            function runFilter() {
+            function runFilter() {                
+                $("#List").jqxGrid('gotopage', 0); //if user is paging around send them back to begining in case search results change number of pages.
                 $('#List').jqxGrid('updatebounddata');
             }
 
