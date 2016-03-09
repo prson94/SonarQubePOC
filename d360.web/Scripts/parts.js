@@ -2445,7 +2445,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
         var args = event.args;
         var boundIndex = args.rowindex;     // row's bound index.
         var data = $(gridControlID).jqxGrid('getrowdata', boundIndex);
-        
+
         var dataUri = '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID;
 
         if (data.Type == 'FusionAttribute') {
@@ -2462,7 +2462,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
                 id: data.ID
             });
         }
-        else {
+        else {            
             // The next level will be the attributes under this parent attribute type.
             dataUri += "&parentType=FusionAttribute&parentID=" + data.ParentFusionAttributeID;
             dataUri += "&parentFusionAttributeTypeID=" + data.ID;
@@ -2477,7 +2477,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
                     id: data.ID
                 });
             });
-        }
+        }        
     }
 
     var gridRowSelect = function(event) {
@@ -2684,13 +2684,13 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
     amplify.subscribe('FusionItemSelected', fusionItemSelected);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
+    
     //#endregion
     if (initialData != null) {
         // build the breadcrumb for current item
         buildCurrentItemBreadcrumb(initialData);
-        
-        _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + initialData.FusionAttributeTypeID + '&parentFusionAttributeID=' + initialData.ParentID);
+
+        _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + initialData.FusionAttributeTypeID + '&parentFusionAttributeID=' + initialData.ID);
     }
     else
         _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType');
@@ -5069,7 +5069,7 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                 ];
                 $(gridControlID).jqxGrid('columns', [
                     {
-                        datafield: "Name", text: "Type", filtertype: 'checkedlist', 
+                        datafield: "Name", text: "Type", filtertype: 'checkedlist',
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return previewLinkRenderer('ArtifactType', data.ID, data.Url, data.Name);
                         }
@@ -5259,15 +5259,15 @@ function YourWorkflowTasks(controlID, title, showTitle) {
 
     function saveAction(data) {
         var reloadControlData = function () {
-                    var reloadChartData = function () {
-                        var pr = new $.Deferred();
-                        chartAdapter.dataBind();
-                        return pr.promise();
-                    }
-                    reloadChartData().then(function () {
-                        chart.jqxGrid('updatebounddata');
-                        $(gridControlID).jqxGrid('updatebounddata');
-                    });
+            var reloadChartData = function () {
+                var pr = new $.Deferred();
+                chartAdapter.dataBind();
+                return pr.promise();
+            }
+            reloadChartData().then(function () {
+                chart.jqxGrid('updatebounddata');
+                $(gridControlID).jqxGrid('updatebounddata');
+            });
         }
         try {
             switch (data.context) {
@@ -5280,7 +5280,7 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                 case "commentform":
                     if (data.custom.CommentTypeID == 5) {
                         reloadControlData();
-            }
+                    }
                     break;
             }
         } catch (e) { }

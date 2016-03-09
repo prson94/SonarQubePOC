@@ -77,7 +77,9 @@
                     permissions.GetPermissionsForObject(type, id);
 
                     $('#SideIcons').PageTools({ type: type, id: id });
-                    FusionItemsGrid('ItemsTile', contextList, permissions, typeID, id, (fusionAttributeID != null) ? json : null);
+
+                    if (fusionAttributeID != null) json.ID = fusionAttributeID;                    
+                    FusionItemsGrid('ItemsTile', contextList, permissions, typeID, id, (fusionAttributeID != null) ? json : null);                   
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '', false);
 
                     //#region Events
