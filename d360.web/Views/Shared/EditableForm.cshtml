@@ -1,7 +1,7 @@
 ﻿@model d360.web.Models.EditableForm
 <div class="@(Model.FormSize)-overlay">
     <div class="ui segment">
-        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = Model.Context, Description = Model.FormDescription, Name = Model.FormTitle })
+        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = Model.Context, Description = Model.FormDescription, Name = Server.HtmlDecode(Model.FormTitle) })
         @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Html.Raw(Model.FormUri).ToHtmlString(), OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
         { }
     </div>
