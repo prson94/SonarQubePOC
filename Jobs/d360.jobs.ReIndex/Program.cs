@@ -36,29 +36,54 @@ namespace d360.jobs.ReIndex
 
                       using (var context = GetCompanyConnection(companyID))
                       {
+
+                          Console.WriteLine("Starting to rebuild search index [company id: {0}]", companyID);
+
+                          Console.WriteLine("reseting search index [company id: {0}]", companyID);
+
                           source.ClearIndex(companyID);
+
+                          Console.WriteLine("loading artifacts [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadArtifacts(context, companyID, source));
 
+                          Console.WriteLine("loading attributes [company id: {0}]", companyID);
+
                           source.AddToIndex(LoadAttributes(context, companyID, source));
+
+                          Console.WriteLine("loading models [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadModels(context, companyID, source));
 
+                          Console.WriteLine("loading policies [company id: {0}]", companyID);
+
                           source.AddToIndex(LoadPolicies(context, companyID, source));
+
+                          Console.WriteLine("loading fusion types [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadFusionTypes(context, companyID, source));
 
+                          Console.WriteLine("loading domains [company id: {0}]", companyID);
+
                           source.AddToIndex(LoadDomains(context, companyID, source));
+
+                          Console.WriteLine("loading groups [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadGroups(context, companyID, source));
 
+                          Console.WriteLine("loading rules [company id: {0}]", companyID);
+
                           source.AddToIndex(LoadRules(context, companyID, source));
+
+                          Console.WriteLine("loading fusion attributes [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadFusionAttributes(context, companyID, source));
                       }
 
                       using (var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                       {
+                          Console.WriteLine("loading users [company id: {0}]", companyID);
+
                           source.AddToIndex(LoadUsers(community, companyID, source));
                       }
                   }
