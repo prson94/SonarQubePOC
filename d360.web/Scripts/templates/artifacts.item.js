@@ -48,7 +48,16 @@
                 $('#SideIcons').PageTools('reload', type, id);
             }
 
-            function saveAction(data) {
+            function refreshArtifactTitle() {                
+                $.getJSON('/api/artifact/' + id, function (json) {
+                    pageViewModel.Title = $('<div/>').html(json.Name).text();
+                    pageViewModel.Status = "<h4>Status: <b style='color:" + getArtifactStatusForeColor(json.Status) + "'>" + json.Status + "</b></h4>";
+                    pageViewModel.breadcrumbs = json.Breadcrumbs;
+                    context.contentHeader(pageViewModel);
+                });
+            }
+
+            function saveAction(data) {                
                 try {
                     switch (data.context) {
                         case contextList.Comment:
@@ -66,10 +75,15 @@
                         case contextList.SourceToTarget:
                             LineageDiagram('SourcingTile', type, id, null, true);
                             break;
-                        case contextList.Responsibility:
+                        case contextList.Responsibility:                        
+                            $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
+                            ObjectStatisticsTile('MicroWidget1', type, id);                            
+                            break;
                         case contextList.Artifact:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             ObjectStatisticsTile('MicroWidget1', type, id);
+                            ObjectDetail('DetailTile', type, id);
+                            refreshArtifactTitle();
                             break;
                         case contextList.Synonym:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
