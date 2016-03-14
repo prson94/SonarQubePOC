@@ -274,7 +274,8 @@
                             filter: function () {
                                 $("#List").jqxGrid('updatebounddata');
                             },
-                            sort: function () {
+                            sort: function () {                                
+                                $("#List").jqxGrid('gotopage', 0); //if user is paging around send them back to begining
                                 $("#List").jqxGrid('updatebounddata');
                             }
                         };
