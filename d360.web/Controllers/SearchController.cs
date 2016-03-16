@@ -32,13 +32,13 @@ namespace d360.web.Controllers
         #region Json
 
         [HttpPost]
-        public JsonResult Results(string search, int size, int from, string group, string type)
+        public JsonResult Results(string search, int? size, int? from, string group, string type)
         {
             var o = new SearchResultsViewModel();
             
             if (!string.IsNullOrEmpty(search))
             {
-                o.Result = SearchSource.GetSearchResultsWithCategory(Company.CurrentCompanyID, Company.CurrentResourceID, search, size, from, o.Categories, group, type);                
+                o.Result = SearchSource.GetSearchResultsWithCategory(Company.CurrentCompanyID, Company.CurrentResourceID, search, size.GetValueOrDefault(100), from.GetValueOrDefault(0), o.Categories, group, type);                
             }
             
             return Json(o);
