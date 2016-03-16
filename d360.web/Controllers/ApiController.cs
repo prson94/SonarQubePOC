@@ -3456,7 +3456,9 @@ from	IntersectMapSourceRule J
                             nodes = "";
                             owningModels.ForEach(i =>
                             {
-                                nodes += string.Format("<div><a data-context='Preview' data-type='Taxonomy' data-id='{2}' href='{0}'>{1}</a></div>", i.TargetUrl, i.TargetName, i.TargetObjectID);
+                                var displayName = (i.TargetName ?? string.Empty).ReplaceFirst($"{artifact.TaxonomyType.Name}/","");
+                                
+                                nodes += string.Format("<div><a data-context='Preview' data-type='Taxonomy' data-id='{2}' href='{0}'>{1}</a></div>", i.TargetUrl, displayName, i.TargetObjectID);
                             });
                         }
 
