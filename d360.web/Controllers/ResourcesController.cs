@@ -65,7 +65,7 @@ namespace d360.web.Controllers
                 sBuilder.Append(data[i].ToString("x2"));
             }
 
-            return Redirect(string.Format("https://secure.gravatar.com/avatar/{0}?s={1}", sBuilder.ToString(), size));
+            return Redirect(string.Format("https://secure.gravatar.com/avatar/{0}?s={1}&d=mm", sBuilder.ToString(), size));
         }
 
         [Route("image/me")]
