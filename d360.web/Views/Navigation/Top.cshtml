@@ -24,8 +24,13 @@
     <div class="nav-top">
         <div class="logo"></div>
         <div class="profile hide-on-small-and-down">
-            <a href="@(Model.ResourceUrl)">@(Model.ResourceName)@*<img src="/resources/image/@(Model.ResourceID)?size=25">*@</a>
-            <input type="text" id="SearchString" placeholder="Search" style="color: #000" />
+            <a href="@(Model.ResourceUrl)" class="photo"><img src="/resources/image/@(Model.ResourceID)?size=25"></a><a class="hide-on-med-and-down" href="@(Model.ResourceUrl)">@(Model.ResourceName)</a>
+            <div class="search">
+                <input type="text" id="SearchString" placeholder="Search Data3Sixty"/>
+                <button type="button" name="action" id="SearchStringBtn">
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
         </div>
     </div>
     <div id="TopMenu" class="main-nav">
@@ -88,11 +93,11 @@
                     <li>
                         <a href="#/fusion">Fusion</a>
                         @*<ul>
-                            @foreach (var n in navItem.NavigationItems)
-                                    {
-                                    @MenuLink(n)
-                                    }
-                        </ul>*@
+                                @foreach (var n in navItem.NavigationItems)
+                                        {
+                                        @MenuLink(n)
+                                        }
+                            </ul>*@
                     </li>
                 }
 
@@ -155,6 +160,12 @@
                 }
             }
         });
+
+        $('#SearchStringBtn').click(function (e) {
+            if (document.location.href.indexOf("#/search") == -1) {
+                document.location.assign('#/search');
+            }
+        })
 
         $(window).resize(function () {
             resizeMenubar();

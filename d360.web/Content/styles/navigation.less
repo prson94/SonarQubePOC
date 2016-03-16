@@ -46,8 +46,8 @@
     -o-transition: all .3s;
     transition: all .3s;
 
-    .fa {
-        color: #888;
+    .fa {        
+        color:white;
         font-size: 28px;
     }
 
@@ -58,23 +58,64 @@
         position: absolute;
         right: 20px;
         a {
-            margin-right: 15px;
-            height: 25px;
-            line-height: 25px;
+            display:inline-block;
+            vertical-align:middle;
+            margin-right: 25px;
+            height: 30px;
+            line-height: 30px;
+            border: 1px solid transparent;
             img {
-                border-radius: 5px;
-                height: 25px;
-                margin-left: 5px;
+                border-radius: 20px;
+                height: 30px;
+                margin: 0 5px -10px 0;
             }
         }
-        :hover {
+        a.photo {
+            margin-right:0;            
+        }
+        a:hover {
             border: 1px solid #ddd;
         }
+        
 
-        input[type=text] {
-            width: 200px;
-        }
-    }
+        .search{
+            display:inline-block;
+            vertical-align:middle;
+            
+            input[type="text"]{
+                height:30px;
+                width: 250px;
+                border-radius: 5px 0 0 5px;
+                border-left:1px solid @d3s-gray-3;
+                border-top:1px solid @d3s-gray-3;
+                border-bottom:1px solid @d3s-gray-3;
+                border-right:none;
+                float:left;
+                background-color:@d3s-gray-4;
+                padding-left:5px;
+                color:#333;
+            }
+            input[type="text"]:focus{
+                outline: none;
+            }
+            button, input[type="submit"], input[type="button"]{
+                float:right;
+                height:30px;
+                border-radius:0 5px 5px 0;
+                border-left:none;
+                border-top:1px solid @d3s-gray-3;
+                border-right:1px solid @d3s-gray-3;
+                border-bottom:1px solid @d3s-gray-3;                
+                padding:0;
+                background-color:@d3s-gray-6;
+            }
+            i{
+                float:left;
+                font-size:16px;
+                padding: 0 10px 0 10px;
+            }
+        }        
+    }    
 } 
 
 .navbar-collapse {
