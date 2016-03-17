@@ -72,13 +72,14 @@ namespace d360.jobs.queue.ProcessBulkLoad
     {
         static void Main()
         {
+
             var host = new JobHost(new JobHostConfiguration(constants.WEBJOBS_STORAGE_CONNECTION));
 
             var mex = new List<Exception>();
 
             try
             {
-                //var companies = new List<int>() { 15 };
+                //var companies = new List<int>() { 4 };
                 var companies = GetActiveCompanyIDs();//.Where(i => i == 4).ToList();
                 var domainPrefixes = GetCompanyDomainPrefixes();
 
@@ -118,11 +119,19 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                 var rowIndex = stats.StartRowIndex + 1;
                                 while (rowIndex <= stats.EndRowIndex)
                                 {
+
                                     var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>() };
 
                                     foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
                                     {
-                                        loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = xls.GetCellValueAsString(rowIndex, c.ColumnIndex) });
+                                        var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
+                                        var isDate = false;
+
+                                        if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
+                                            format.Contains("[$-F400]") || format.Contains("[$-409]"))
+                                            isDate = true;
+
+                                        loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex) )});
                                     }
 
                                     ctx.LoadItems.Add(loadItem);
