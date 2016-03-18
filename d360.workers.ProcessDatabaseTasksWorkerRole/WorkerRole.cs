@@ -185,6 +185,9 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
 
                                     if (fields.ContainsKey("TextPath")) fields["TextPath"] = detail.TextPath;
                                     else fields.Add("TextPath", detail.TextPath);
+
+                                    if (fields.ContainsKey("Type")) fields["Type"] = detail.TypeName;
+                                    else fields.Add("Type", detail.TypeName);
                                 }
 
                                 #endregion
