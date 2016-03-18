@@ -95,9 +95,11 @@
                 //#region Tiles
                                 
                 assignmentsTile = new HomePageCountTileModel('Your Assignments', daysToLookBack);
+                assignmentsTile.NoDataMessage('');
                 ko.applyBindings(assignmentsTile, document.getElementById('AssignmentsTile'));
 
                 socialTile = new HomePageCountTileModel('Board', daysToLookBack);
+                socialTile.NoDataMessage('');
                 ko.applyBindings(socialTile, document.getElementById('SocialTile'));
                                 
                 activityTile = new HomePageCountTileModel('Activity', daysToLookBack);
