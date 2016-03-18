@@ -59,6 +59,20 @@ namespace d360.extensions
         public float NormalizedScore { get; set; }
     }
 
+    public enum SearchConnector
+    {
+        And,
+        Or
+    }
+
+    public class AdvancedSearchParameters
+    {
+        public string field { get; set; }
+        public string value { get; set; }
+        public bool exact { get; set; }
+        public SearchConnector connector { get; set; }
+    }
+
     #endregion
 
     #region Extensions Exceptions
@@ -121,7 +135,7 @@ namespace d360.extensions
         /// <param name="from">Start at result</param>
         /// <returns>A list of search results.</returns>
         /// <exception cref="SearchResultsException"></exception>
-        IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "");
+        IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "", string advancedFilterJSON = "");
 
 
         IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "");

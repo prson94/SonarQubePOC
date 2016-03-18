@@ -31,5 +31,13 @@ namespace d360.web.Controllers
             ViewBag.Phrase = phrase;
             return View();
         }
+
+        public ActionResult SearchRedirect(string phrase)
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("ResourceID", Company.CurrentResourceID);
+            ViewBag.Phrase = phrase;
+            return View();
+        }
     }
 }

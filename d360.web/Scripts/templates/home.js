@@ -2,29 +2,75 @@
     app.get('#/', function (context) {
         context.app.swap('');
 
-        var type = "Resource";
-        var id = currentResourceID;
-
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: pageViewModel.Title, Active: true });
-
-        var homeSocialTile;
-        var HomeSocial;
-        var ResponsibilityAdapter;
-        var ResponsibilitySource;
+                
+        var assignmentsTile;
+        var socialTile;
+        var activityTile;
+        var daysToLookBack = 7;
+        var searchCtrl;
 
         //#region Event Handlers
 
         function unsubscribe(data) {
-            HomeSocial = null;
-            homeSocialTile = null;
-            ResponsibilityAdapter = null;
-            ResponsibilitySource = null;
+            assignmentsTile = null;
+            socialTile = null;
+            activityTile = null;
+            searchCtrl = null;
 
+            $("#home-search-btn").off('click', simpleSearch);
+            $("#home-search-btn").off('click', showAdvancedSearch);
+            $("#home-search-text").off('keypress', searchTextKeyPress);
+            
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
+        function simpleSearch() {
+            searchCtrl.doSearch($("#home-search-text").val())
+            $("#SearchArea").show();
+        }
+
+        function showAdvancedSearch() {
+            console.log('search' + $("#home-search-text").val());
+            $("#SearchString").val($("#home-search-text").val());
+            location.href = '#/search';
+        }
+
+        function searchTextKeyPress(e) {
+            if (e.which == 13) {
+                simpleSearch();
+            }
+        }
+                
         //#endregion
+
+        function loadAssignments() {
+            assignmentsTile.LookBackDays = daysToLookBack;
+            $.getJSON("/api/Count/Assignments/" + daysToLookBack, function (data) {
+                assignmentsTile.Rows(data);
+            });
+        }
+
+        function loadSocial() {
+            socialTile.LookBackDays = daysToLookBack;
+            $.getJSON("/api/Count/Social/" + daysToLookBack, function (data) {
+                socialTile.Rows(data);
+            });
+        }
+
+        function loadActivity() {
+            activityTile.LookBackDays = daysToLookBack;
+            $.getJSON("/api/Count/Activity/" + daysToLookBack, function (data) {
+                activityTile.Rows(data);
+            });
+        }
+
+        function loadTileData() {
+            loadAssignments();
+            loadSocial();
+            loadActivity();
+        }
 
         context.title(pageViewModel.Title);
         context
@@ -35,25 +81,45 @@
 
                 $('#SideIcons').PageTools({ type: 'Resource', id: currentResourceID });
                 $('#SideIcons').PageTools("clear");
+                $("#SearchArea").hide();
 
                 //#region Tiles
+                                
+                assignmentsTile = new HomePageCountTileModel('Your Assignments', daysToLookBack);
+                ko.applyBindings(assignmentsTile, document.getElementById('AssignmentsTile'));
 
-                HomeSocial = new BoardViewModel();
-                ko.applyBindings(HomeSocial, document.getElementById('HomeBoard'));
-                HomeSocial.getMoreComments();
-
-                YourFollowedItemsTile('#FollowingTile', id, 'Items You Follow');
-                YourOwnedItemsTile('#OwnedTile', id, 'Items You Own');
-
-                homeSocialTile = new HomeSocialMicroTileModel(id);
-                ko.applyBindings(homeSocialTile, document.getElementById('HomeSocialTile'));
-                homeSocialTile.GetStatistics();
-
-                YourWorkflowTasks('WorkflowTasksTile', 'Your Assigned Tasks', true);
+                socialTile = new HomePageCountTileModel('Board', daysToLookBack);
+                ko.applyBindings(socialTile, document.getElementById('SocialTile'));
+                                
+                activityTile = new HomePageCountTileModel('Activity', daysToLookBack);
+                ko.applyBindings(activityTile, document.getElementById('ActivityTile'));
 
                 //#endregion
 
+                $("#dropDownButton").jqxDropDownButton({ width: 250, height: 25, autoOpen: true });
+                $('#jqxTree').on('select', function (event) {
+                    var args = event.args;
+                    var item = $('#jqxTree').jqxTree('getItem', args.element);                    
+                    daysToLookBack = $(args.element).data('days');
+                    loadTileData()
+                    var dropDownContent = '<div style="position: relative; margin-left: 3px; margin-top: 5px;">' + item.label + '</div>';
+                    $("#dropDownButton").jqxDropDownButton('setContent', dropDownContent);
+                });
+                $("#jqxTree").jqxTree({ width: 200 });
+               
+                loadTileData();
+
+                searchCtrl = new SearchResultsGrid(contextList, 5);
+
+                $("#home-search-btn").click(simpleSearch);
+                    
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+                $("#home-adv-btn").click(showAdvancedSearch);
+
+                $("#home-search-text").on("keypress", searchTextKeyPress);
+                
+                $("#home-search-text").focus();
             });
     });
 }

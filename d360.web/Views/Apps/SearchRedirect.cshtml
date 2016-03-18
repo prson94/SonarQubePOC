@@ -1,0 +1,11 @@
+﻿
+@{
+    ViewBag.Title = "SearchRedirect";
+    Layout = "~/Views/Shared/Apps.cshtml";
+    var phrase = ViewBag.Phrase;
+}
+<script type="text/javascript">
+    $(function () {
+        window.location.replace('/#/search/@phrase');
+    })
+</script>

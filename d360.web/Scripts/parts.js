@@ -5010,255 +5010,27 @@ function YourOwnedItemsTile(controlID, resourceID, title) {
     }
 }
 
-function YourWorkflowTasks(controlID, title, showTitle) {
-    var chartControlID = controlID + "_chart";
-    var gridControlID = controlID + "_grid";
-    var labelControlID = controlID + "_label";
+function YourWorkflowTasks(controlID,givenWorkflowType) {    
+    var gridControlID = controlID + "_grid";    
     controlID = '#' + controlID;
     var html = "";
-    if (showTitle) html = "<header>" + title + "</header>";//<span id='" + controlID + "_HelpTip'><i class='fa fa-question'></i></span></header>";
-    html += '<div class="directions">Click on a pie slice in the chart to get a list of your tasks by type.</div>';
-    html += '<div class="row">';
-    html += '<div class="col l4 m12 s12"><div id="' + chartControlID + '"></div></div>';
-    html += '<div class="col l8 m12 s12"><h4 id="' + labelControlID + '"></h4><div id="' + gridControlID + '"></div></div>';
+    html += '<div class="row">';    
+    html += '<div class="col s12"><div id="' + gridControlID + '"></div></div>';
     html += '</div>';
-    $(controlID).html(html);
-    chartControlID = '#' + chartControlID;
+    $(controlID).html(html);    
     gridControlID = '#' + gridControlID;
-    labelControlID = '#' + labelControlID;
-
-    var chart = $(chartControlID);
-    var chartSource;
-    var chartAdapter;
+    
+            
     var gridSource;
     var gridAdapter;
-
+    var inputWorkflowID = givenWorkflowType;
+    
     //#region Event Subscriptions
 
-    var itemsBindComplete = function (event) {
-        $(gridControlID).jqxGrid('autoresizecolumns');
-    };
+    
 
-    var bindComplete = function (event) {
-        $(chart).jqxGrid('selectrow', 0);
-    };
-
-    var rowSelect = function (event) {
-        var args = event.args;
-        var rowBoundIndex = args.rowindex;
-
-        var data = args.row;
-        switch (data.WorkflowTypeID) {
-            case 1:
-                //#region Suggest
-                gridSource.datafields = [
-                    { name: 'WorkflowID' },
-                    { name: 'ID', type: 'number' },
-                    { name: 'StartDate', type: 'date' },
-                    { name: 'Name', type: 'string' },
-                    { name: 'Url', type: 'string' },
-                    { name: 'ProposedName', type: 'string' },
-                    { name: 'ProposedDescription', type: 'string' },
-                    { name: 'RequestingResourceID', type: 'number' },
-                    { name: 'RequestingResourceName', type: 'string' },
-                    { name: 'TaxonomyTypeID', type: 'number' },
-                    { name: 'TaxonomyTypeName', type: 'string' },
-                    { name: 'Activity', type: 'string' },
-                    { name: 'ActivityDescription', type: 'string' },
-                    { name: 'ActivityName', type: 'string' }
-                ];
-                $(gridControlID).jqxGrid('columns', [
-                    {
-                        datafield: "Name", text: "Type", filtertype: 'checkedlist',
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return previewLinkRenderer('ArtifactType', data.ID, data.Url, data.Name);
-                        }
-                    },
-                    {
-                        filtertype: 'checkedlist', datafield: "RequestingResourceName", text: "Requestor",
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return previewLinkRenderer('Resource', data.RequestingResourceID, '#/resources/' + data.RequestingResourceID, data.RequestingResourceName);
-                        }
-                    },
-                    { datafield: "StartDate", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
-                    { datafield: "ProposedName", text: "Proposed Name" },
-                    //{ datafield: "ProposedDescription", text: "Proposed Description" },
-                    { datafield: "TaxonomyTypeName", text: "Subject Area", filtertype: 'checkedlist' },
-                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
-                    {
-                        datafield: "WorkflowID",
-                        text: "",
-                        sortable: false,
-                        filterable: false,
-                        width: '40px',
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            var tools = [];
-
-                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
-
-                            return renderToolsHtml(value, tools, contextList.Artifact, data);
-                        }
-                    }
-                ]);
-                //#endregion
-                break;
-            case 2:
-                //#region Certify
-                gridSource.datafields = [
-                    { name: 'WorkflowID' },
-                    { name: 'ID', type: 'number' },
-                    { name: 'Name', type: 'string' },
-                    { name: 'TypeName', type: 'string' },
-                    { name: 'Url', type: 'string' },
-                    { name: 'StartDate', type: 'date' },
-                    { name: 'DueDate', type: 'date' },
-                    { name: 'Activity', type: 'string' },
-                    { name: 'ActivityDescription', type: 'string' },
-                    { name: 'ActivityName', type: 'string' }
-                ];
-                $(gridControlID).jqxGrid('columns', [
-                    { datafield: "TypeName", text: "Type", filtertype: 'checkedlist' },
-                    {
-                        filtertype: 'checkedlist', datafield: "Name", text: "Name",
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return previewLinkRenderer('Artifact', data.ID, data.Url, data.Name);
-                        }
-                    },
-                    { datafield: "StartDate", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
-                    { datafield: "DueDate", text: "Date Due", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
-                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
-                    {
-                        datafield: "WorkflowID",
-                        text: "",
-                        sortable: false,
-                        filterable: false,
-                        width: '40px',
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            var tools = [];
-
-                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
-
-                            return renderToolsHtml(value, tools, contextList.Artifact, data);
-                        }
-                    }
-                ]);
-                //#endregion
-                break;
-            case 3:
-                //#region WorkIssue
-                gridSource.datafields = [
-                    { name: 'WorkflowID' },
-                    { name: 'Issue', type: 'string' },
-                    { name: 'ResourceID', type: 'number' },
-                    { name: 'ResourceName', type: 'string' },
-                    { name: 'ResourceUrl', type: 'string' },
-                    { name: 'DateStarted', type: 'date' },
-                    { name: 'Activity', type: 'string' },
-                    { name: 'ActivityDescription', type: 'string' },
-                    { name: 'ActivityName', type: 'string' }
-                ];
-                $(gridControlID).jqxGrid('columns', [
-                    { datafield: "Issue", text: "Issue" },
-                    { filtertype: 'checkedlist', datafield: "ResourceName", text: "Reporting User",
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return previewLinkRenderer('Resource', data.ResourceID, data.ResourceUrl, data.ResourceName);
-                        }
-                    },
-                    { datafield: "DateStarted", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
-                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
-                    {
-                        datafield: "WorkflowID",
-                        text: "",
-                        sortable: false,
-                        filterable: false,
-                        width: '40px',
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            var tools = [];
-
-                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
-
-                            return renderToolsHtml(value, tools, contextList.Workflow, data);
-                        }
-                    }
-                ]);
-                //#endregion
-                break;
-            default:
-                //#region Not known
-                gridSource.datafields = [
-                    { name: 'Activity' },
-                    { name: 'ActivityDescription', type: 'string' },
-                    { name: 'ActivityName', type: 'string' },
-                    { name: 'DateStarted', type: 'date' },
-                    { name: 'Workflow' },
-                    { name: 'WorkflowDescription', type: 'string' },
-                    { name: 'WorkflowName', type: 'string' },
-                    { name: 'WorkflowID' },
-                    { name: 'Properties', type: 'array' }
-                ];
-                $(gridControlID).jqxGrid('columns', [
-                    {
-                        columntype: 'dropdownlist',
-                        filtertype: 'checkedlist',
-                        datafield: "WorkflowName",
-                        text: "Workflow",
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return quickTipRenderer(data.WorkflowName, data.WorkflowDescription);
-                        }
-                    },
-                    {
-                        columntype: 'dropdownlist',
-                        filtertype: 'checkedlist',
-                        datafield: "ActivityName",
-                        text: "Activity",
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return quickTipRenderer(data.ActivityName, data.ActivityDescription);
-                        }
-                    },
-                    {
-                        datafield: "Properties", text: "Properties",
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            var html = "";
-                            for (var key in data.Properties) {
-                                if (data.Properties.hasOwnProperty(key)) {
-                                    if (html != "") html += ", ";
-                                    html += "<b>" + key + ":</b> " + data.Properties[key];
-                                }
-                            }
-                            return html;
-                        }
-                    },
-                    {
-                        datafield: "DateStarted", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy", // hh:mm:ss tt
-                    },
-                    {
-                        datafield: "WorkflowID", text: "", sortable: false, filterable: false, width: '40px',
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            var tools = [];
-
-                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
-
-                            return renderToolsHtml(value, tools, contextList.Artifact, data);
-                        }
-                    }
-                ]);
-                //#endregion
-                break;
-        }
-
-        $(labelControlID).text(data.WorkflowTypeName + " Tasks");
-
-        gridSource.url = '/services/workflow/tasks/types/' + data.WorkflowTypeID + '?$orderby=DateStarted%20asc';
-        $(gridControlID).jqxGrid('updatebounddata');
-    };
-
-    function pageResized() {
-        chart.jqxGrid('refresh');
-        $(gridControlID).jqxGrid('refresh');
-    }
-
-    function saveAction(data) {
-        var reloadControlData = function () {
+    //function saveAction(data) {
+        /*var reloadControlData = function () {
             var reloadChartData = function () {
                 var pr = new $.Deferred();
                 chartAdapter.dataBind();
@@ -5283,12 +5055,56 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                     }
                     break;
             }
-        } catch (e) { }
+        } catch (e) { }*/
+    //}
+
+    function saveAction(data) {
+        //console.log(data);
+        try {
+            switch (data.context) {
+                case "workflowform":
+                case "artifactform":
+                    switchToViewer();
+                   // $(gridControlID).jqxGrid('updatebounddata');
+            }
+        } catch (e) {
+            logError("YourWorkflowTasks : SaveAction", e);
+        }
     }
 
+    function pageResized() {
+        $(gridControlID).jqxGrid('autoresizecolumns');
+    }
+
+   /* function cancelAction(data) {
+        console.log(data);
+        try {
+            switch (data.context) {
+                case "workflowform":
+                case "artifactform":
+                    switchToViewer();
+                    break;
+            }
+        } catch (e) {
+            logError("YourWorkflowTasks : CancelAction", e);
+        }
+    }*/
+
+    function localAction(data) {
+        //console.log(data.context);
+        try {
+            switch (data.context) {
+                case "workflowform":
+                case "artifactform":                
+                    switchToEditor(data.uri);
+                    break;
+            }
+        } catch (e) {
+            logError("YourWorkflowTasks : LocalAction", e);
+        }
+    };
+
     function unsubscribe(data) {
-        chartSource = null;
-        chartAdapter = null;
         gridSource = null;
         gridAdapter = null;
 
@@ -5296,32 +5112,216 @@ function YourWorkflowTasks(controlID, title, showTitle) {
         amplify.unsubscribe("SaveAction", saveAction);
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
-        $(chart).off('rowselect', rowSelect);
-        $(chart).off("bindingcomplete", bindComplete);
-        $(gridControlID).off("bindingcomplete", itemsBindComplete);
-        chart = null;
+        amplify.unsubscribe('ToolAction', localAction);
+   //     amplify.unsubscribe('CancelAction', cancelAction);
     }
 
-    $(gridControlID).on("bindingcomplete", itemsBindComplete);
-    $(chart).on("bindingcomplete", bindComplete);
-    $(chart).on('rowselect', rowSelect);
     amplify.subscribe("PageResized", pageResized);
     amplify.subscribe("SaveAction", saveAction);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    amplify.subscribe('ToolAction', localAction);
+   // amplify.subscribe('CancelAction', cancelAction);
+
+    //#endregion
+    
+    //#region Helper Functions
+
+    var switchToViewer = function () {
+        $('#assignmentoverlay').show();
+    }
+
+    var switchToEditor = function (uri) {
+        try {
+            $('#assignmentoverlay').fadeOut(10);
+          /*  $('#PromotionEditor').fadeIn(10);
+            $('#PromotionEditor').html(progressIndicatorHtml);
+            $('#PromotionEditor').load(uri, function (response, status, xhr) {
+                if (status == "error") {
+                    amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.status + ' ' + xhr.statusText, type: 'error' });
+                    switchToViewer();
+                }
+            });*/
+        } catch (e) {
+
+        }
+    }
+
+    var gridDataSource = function (workflowTypeID) {
+        var gridSource;
+        switch (workflowTypeID) {
+            case 1:
+                // Suggest
+                gridSource = {
+                    datatype: 'json',
+                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    datafields: [
+                        { name: 'WorkflowID' },
+                        { name: 'ID', type: 'number' },
+                        { name: 'StartDate', type: 'date' },
+                        { name: 'Name', type: 'string' },
+                        { name: 'Url', type: 'string' },
+                        { name: 'ProposedName', type: 'string' },
+                        { name: 'ProposedDescription', type: 'string' },
+                        { name: 'RequestingResourceID', type: 'number' },
+                        { name: 'RequestingResourceName', type: 'string' },
+                        { name: 'TaxonomyTypeID', type: 'number' },
+                        { name: 'TaxonomyTypeName', type: 'string' },
+                        { name: 'Activity', type: 'string' },
+                        { name: 'ActivityDescription', type: 'string' },
+                        { name: 'ActivityName', type: 'string' }
+                        ]
+                };
+                
+                break;
+            case 2:
+                // Certify
+                gridSource = {
+                    datatype: 'json',
+                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    datafields: [
+                        { name: 'WorkflowID' },
+                        { name: 'ID', type: 'number' },
+                        { name: 'Name', type: 'string' },
+                        { name: 'TypeName', type: 'string' },
+                        { name: 'Url', type: 'string' },
+                        { name: 'StartDate', type: 'date' },
+                        { name: 'DueDate', type: 'date' },
+                        { name: 'Activity', type: 'string' },
+                        { name: 'ActivityDescription', type: 'string' },
+                        { name: 'ActivityName', type: 'string' }
+                    ]
+                };                
+                break;
+            case 3:
+                // WorkIssue
+                gridSource = {
+                    datatype: 'json',
+                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    datafields: [
+                        { name: 'WorkflowID' },
+                        { name: 'Issue', type: 'string' },
+                        { name: 'ResourceID', type: 'number' },
+                        { name: 'ResourceName', type: 'string' },
+                        { name: 'ResourceUrl', type: 'string' },
+                        { name: 'DateStarted', type: 'date' },
+                        { name: 'Activity', type: 'string' },
+                        { name: 'ActivityDescription', type: 'string' },
+                        { name: 'ActivityName', type: 'string' }
+                    ]
+                };                
+                break;
+        }
+        return gridSource;
+    }
+
+    var gridColumns = function (workflowTypeID) {
+        var cols = null;
+        switch (workflowTypeID) {
+            case 1:
+                //#region Suggest                
+                cols = [
+                    {
+                        datafield: "Name", text: "Type", filtertype: 'checkedlist',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewLinkRenderer('ArtifactType', data.ID, data.Url, data.Name);
+                        }
+                    },
+                    {
+                        filtertype: 'checkedlist', datafield: "RequestingResourceName", text: "Requestor",
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewLinkRenderer('Resource', data.RequestingResourceID, '#/resources/' + data.RequestingResourceID, data.RequestingResourceName);
+                        }
+                    },
+                    { datafield: "StartDate", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
+                    { datafield: "ProposedName", text: "Proposed Name" },                    
+                    { datafield: "TaxonomyTypeName", text: "Subject Area", filtertype: 'checkedlist' },
+                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
+                    {
+                        datafield: "WorkflowID",
+                        text: "",
+                        sortable: false,
+                        filterable: false,
+                        width: '40px',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            var tools = [];
+
+                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
+
+                            return renderToolsHtml(value, tools, contextList.Artifact, data);
+                        }
+                    }
+                ];
+                //#endregion
+                break;
+            case 2:
+                
+                cols = [
+                    { datafield: "TypeName", text: "Type", filtertype: 'checkedlist' },
+                    {
+                        filtertype: 'checkedlist', datafield: "Name", text: "Name",
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewLinkRenderer('Artifact', data.ID, data.Url, data.Name);
+                        }
+                    },
+                    { datafield: "StartDate", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
+                    { datafield: "DueDate", text: "Date Due", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
+                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
+                    {
+                        datafield: "WorkflowID",
+                        text: "",
+                        sortable: false,
+                        filterable: false,
+                        width: '40px',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            var tools = [];
+
+                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
+
+                            return renderToolsHtml(value, tools, contextList.Artifact, data);
+                        }
+                    }
+                ];
+                //#endregion
+                break;
+            case 3:                
+                cols = [
+                    { datafield: "Issue", text: "Issue" },
+                    { filtertype: 'checkedlist', datafield: "ResourceName", text: "Reporting User",
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewLinkRenderer('Resource', data.ResourceID, data.ResourceUrl, data.ResourceName);
+                        }
+                    },
+                    { datafield: "DateStarted", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
+                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
+                    {
+                        datafield: "WorkflowID",
+                        text: "",
+                        sortable: false,
+                        filterable: false,
+                        width: '40px',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            var tools = [];
+
+                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
+
+                            return renderToolsHtml(value, tools, contextList.Workflow, data);
+                        }
+                    }
+                ];
+                //#endregion
+                break;            
+        }
+        return cols;
+
+    };
 
     //#endregion
 
     //#region Item Grid
 
-    var gridSource = {
-        datatype: 'json',
-        url: null,
-        datafields: [{ name: 'WorkflowID' } ]
-    };
-
-    var gridAdapter = new $.jqx.dataAdapter(gridSource);
-
+    var gridAdapter = new $.jqx.dataAdapter(gridDataSource(inputWorkflowID));
+    
     try {
         $(gridControlID).jqxGrid({
             altrows: true,
@@ -5337,61 +5337,13 @@ function YourWorkflowTasks(controlID, title, showTitle) {
             autorowheight: true,
             source: gridAdapter,
             theme: list_theme,
-            columns: [
-                {
-                    datafield: "WorkflowID",
-                    text: "",
-                    sortable: false,
-                    filterable: false
-                }
-            ]
+            columns: gridColumns(inputWorkflowID)            
         });
     } catch (e) {
     }
 
     //#endregion
-
-    //#region Type Grid
-
-    try {
-        chartSource = {
-            datatype: 'json',
-            url: '/services/workflow/tasks/types/breakdown',
-            datafields:
-            [
-                { name: 'Workflow' },
-                { name: 'WorkflowTypeID' },
-                { name: 'WorkflowTypeName' },
-                { name: 'Count' }
-            ]
-        };
-
-        chartAdapter = new $.jqx.dataAdapter(chartSource, { async: false });
-
-        $(chart).jqxGrid({
-            altrows: true,
-            width: grid_width,
-            autoheight: true,
-            sortable: true,
-            filterable: true,
-            showfilterrow: true,
-            pagesizeoptions: ['10', '20', '50'],
-            pagesize: 10,
-            pageable: true,
-            autorowheight: true,
-            source: chartAdapter,
-            theme: list_theme,
-            columns: [
-                    { datafield: "WorkflowTypeName", text: "Workflow" },
-                    { datafield: "Count", text: "# Assignments", width: '30%' }
-            ]
-        });
-    } catch (e) {
-        console.log(e);
-    }
-
-    //#endregion
-
+        
     //#endregion
 }
 
@@ -6981,4 +6933,225 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             logError("artifact.item : SaveAction", e);
         }
     });
+}
+
+
+function SearchResultsGrid(contextList, defaultItemsPerPage,initialPhrase) {
+    var phrase;
+    var searchSource;
+    var loadCategories;
+    var searchVm;
+    var self = this;
+    var advSearchText;
+
+    mainCtrlId = 'SearchArea';
+    categoriesCtrlId = 'CategoryResults';
+    resultsCtrlId = 'SearchResults';
+    if (defaultItemsPerPage === undefined) defaultItemsPerPage = 10;
+    if (initialPhrase !== undefined) phrase = initialPhrase;
+    
+
+    var resultsctrl = '#' + resultsCtrlId;
+    var categoryctrl = '#' + categoriesCtrlId;
+
+    searchVm = new SearchViewModel();
+    try {
+        ko.applyBindings(searchVm, document.getElementById(mainCtrlId));
+    }
+    catch (e) {
+        console.log(e);
+    }
+
+    //#region Event Registration
+
+    
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+
+    loadCategories = true;
+
+    if ($("#SearchString").val().length == 0 && phrase !== undefined && phrase.length > 0)
+        $("#SearchString").val(phrase);
+
+    phrase = $("#SearchString").val();
+
+    var source = getSource(phrase, '', '');
+
+    var dataAdapter = getDataAdapter(source);
+
+    //region Event Handlers
+
+    function unsubscribe(data) {
+        searchVm = null;        
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+    
+    //#endregion
+
+    $(resultsctrl).jqxDataTable(
+    {
+        pageable: true,
+        pagerButtonsCount: 10,
+        serverProcessing: true,
+        pagerMode: 'default',
+        source: dataAdapter,
+        theme: 'transparent',
+        width: '98%',      
+        enableHover: false,
+        showHeader: false,
+        columns: [
+            { text: ' ', dataField: 'Merged', width: '99%' }           
+        ]
+    });
+
+    self.doSearch = function (val) {
+        phrase = val;
+        advSearchText = '';
+
+        $(resultsctrl).show();
+        loadCategories = true;
+
+        var searchSource = getSource(phrase, '', '');
+
+        var dataAdapter = getDataAdapter(searchSource);
+
+        $(resultsctrl).jqxDataTable('goToPage', 0);
+
+        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+    }
+
+    self.doAdvancedSearch = function () {
+        advSearchText = searchVm.advancedFilterJSON();
+        phrase = '';
+        
+        $(resultsctrl).show();
+        loadCategories = true;
+
+        var searchSource = getSource(phrase, '', '', advSearchText);
+
+        var dataAdapter = getDataAdapter(searchSource);
+
+        $(resultsctrl).jqxDataTable('goToPage', 0);
+
+        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+    }
+
+    self.showAdvanced = function (text) {
+        searchVm.showAdvanced(text);
+    }
+
+    var showOnlyRelevantType = function (categoryType, e) {
+        $(categoryctrl + ' a').removeClass('selected');
+        $(e.target).addClass('selected');
+
+        var searchSource = getSource(phrase, '', categoryType == 'All' ? '' : categoryType, advSearchText);
+
+        var dataAdapter = getDataAdapter(searchSource);
+
+        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+    }
+
+    var showOnlyRelevantCategory = function (category, e) {
+        $(categoryctrl + ' a').removeClass('selected');
+        $(e.target).addClass('selected');
+
+        var searchSource = getSource(phrase, category, '', advSearchText);
+
+        var dataAdapter = getDataAdapter(searchSource);
+
+        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+    }
+
+    function getSource(term, selGroup, selType, advCriteria) {
+        return {
+            datatype: "json",
+            pagesize: defaultItemsPerPage,
+            datafields: [
+                { name: 'NormalizedScore', type: 'float' },
+                { name: 'Name', type: 'string' },
+                { name: 'Type', type: 'string' },
+                { name: 'Group', type: 'string' },
+                { name: 'Description', type: 'string' },
+                { name: 'ID', type: 'number' },
+                { name: 'Url', type: 'string' },
+                { name: 'Merged', type: 'string' },
+            ],
+            type: 'POST',
+            dataType: 'json',
+            url: '/search/results',
+            data: { search: term, from: 0, size: defaultItemsPerPage, group: selGroup, type: selType, adv: (advCriteria === undefined ? '' : advCriteria) },
+            id: 'ID',
+            sortcolumn: 'NormalizedScore',
+            sortdirection: 'desc',
+            root: "Results",
+        };
+    }
+
+    function getDataAdapter(source) {
+        return new $.jqx.dataAdapter(source,
+                {
+                    formatData: function (data) {
+                        data.from = data.pagenum * data.pagesize;
+                        data.size = data.pagesize;
+                        return data;
+                    },
+                    downloadComplete: function (data, status, xhr) {
+                        if (!source.totalRecords) {
+                            source.totalRecords = parseInt(data.Result.Matches);
+                            if (source.totalRecords > 10000) source.totalRecords = 10000;
+                        }
+                    },
+                    loadComplete: function (data) {
+                        var msg = "";
+
+                        if (data) {
+                            if (data.Result.Matches == 0) {
+                                $(resultsctrl).hide();
+                                searchVm.elapsedTime("No search results found for the specified search term.");
+                            }
+                        }
+
+                        if (loadCategories) {
+                            msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
+                            searchVm.elapsedTime(msg);
+
+                            data.Categories.unshift({ Name: 'All', ResultCount: data.Result.Matches, DisplayName: 'All' });
+                            var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
+                            searchVm.categories(cats);
+
+                            $('.search-category-link').each(function () {
+                                $(this).click(function (e) {
+                                    var c = $(this).data("category");
+                                    showOnlyRelevantCategory(c, e);
+                                });
+                            });
+
+                            $('.search-type-link').each(function () {
+                                $(this).click(function (e) {
+                                    var c = $(this).data("category-type");
+                                    showOnlyRelevantType(c, e);
+                                });
+                                if ($(this).data("category-type") == "All") $(this).addClass('selected');
+                            });
+
+                            loadCategories = false;
+                        }
+                    },
+                    loadError: function (xhr, status, error) {
+                        throw new Error(error.toString());
+                    },
+                    beforeLoadComplete: function (records) {
+                        var data = new Array();
+                        for (var i = 0; i < records.length; i++) {
+                            var row = records[i];
+                            row.Merged = "<div class='search-res-container'><h4 class='search-result-name'><a href='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p><h5 class='search-result-attributes'>Category: <em class='result-category'>" + row.Type + "</em> &nbsp;&nbsp;Type: <em class='result-type'>" + row.Group + "</em></h5></div>";
+                            data.push(row);
+                        }
+
+                        return data;
+                    }
+                }
+            );
+    }
 }

@@ -162,7 +162,7 @@ namespace d360.extensions.search
         };
 
 
-        public IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "")
+        public IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "", string advancedFilterJSON = "")
         {
             throw new Exception("NOT IMPLEMENTED");
         }

@@ -1,0 +1,85 @@
+﻿<div class="medium-overlay">
+    <div class="ui segment">
+        <h4 id="title">Activity for past @(ViewBag.LookBackDays) day(s) for @(ViewBag.ArtifactType.Name)</h4>
+        <div class="form-instructions"></div>
+        <div id="ArtifactActivityGrid"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var id = "@(ViewBag.ID)";
+    $(function () {
+
+        var ArtifactGridSource;
+        var ArtifactGridAdapter;
+
+        ArtifactGridSource = {
+            datatype: 'json',
+            url: '/api/CountItems/Activity/@(ViewBag.ArtifactType.ID)/@(ViewBag.LookBackDays)?$orderby=Name',
+            datafields: [
+                { name: "ID", type: "number", hidden: true },
+                { name: "ArtifactTypeID", type: "number", hidden: true },
+                { name: "Name", type: "string" },
+                { name: "Status", type: "string"},
+            ]
+        };
+
+        ArtifactGridAdapter = new $.jqx.dataAdapter(ArtifactGridSource);
+
+        $("#ArtifactActivityGrid").jqxGrid({
+            altrows: true,
+            width: grid_width,
+            autoheight: true,
+            sortable: true,
+            filterable: true,
+            showfilterrow: true,
+            pageable: true,
+            pagesizeoptions: ['5', '10', '20'],
+            pagesize: 10,
+            columnsresize: true,
+            source: ArtifactGridAdapter,
+            theme: list_theme,
+            groupable: false,
+            columns: [
+                {
+                    text: '',
+                    datafield: "ID",
+                    sortable: false,
+                    filterable: false,
+                    width: '70px',
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        var detailUri = '/artifacts/@(ViewBag.ArtifactType.ID)/{0}';
+                        var tools = [];
+
+                        var foreColor = '#fff';
+                        switch (data.Status) {
+                            case 'Certified':
+                                foreColor = '#3f9d40';
+                                break;
+                            case 'Under Review':
+                                foreColor = '#e2792a';
+                                break;
+                            default:
+                                foreColor = '#ebebeb';
+                                break;
+                        }
+                        var title = (data.DateLastCertified) ? 'Last certified on ' + moment(data.DateLastCertified).format('MMM Do YYYY') : 'Not yet certified';
+
+                        tools.push({ isitemlink: true, urlprefix: '#' + detailUri, type: 'Artifact', context: 'Certificate', iconBackColor: 'transparent', iconForeColor: foreColor, iconText: 'certificate', title: title });
+                        tools.push({ isitemlink: true, urlprefix: '#' + detailUri, type: 'Artifact', context: 'Preview' });
+
+                        return renderToolsHtml(value, tools, contextList.Artifact, data);
+                    }
+                },
+                { text: 'Name', datafield: 'Name', //width: '70%',
+                        cellsRenderer : function (index, datafield, value, defaultvalue, column, data) {
+                        return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a href='/#/artifacts/" + data.ArtifactTypeID + "/" + data.ID + "'>" + value + "</a></div>";
+                    }
+                },
+                { text: 'Status', datafield: 'Status', width: '20%' }                
+            ]
+        });
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

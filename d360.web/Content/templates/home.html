@@ -1,26 +1,57 @@
 ﻿<div class="row">
-    <div class="col l4 s12">
-        <div class="tile tile-detail">
-            <div id="HomeBoard" data-bind="template: {name: 'boardTmpl' }"></div>
+    <div class="col s9">&nbsp;</div>
+    <div class="col s3">
+        <div id="dropDownButton" class="right">
+            <div style="border: none;" id='jqxTree'>
+                <ul>
+                    <li item-expanded='true'>
+                        Timeframe
+                        <ul>
+                            <li data-days="1">Today</li>
+                            <li data-days="7" item-selected="true">This week</li>
+                            <li data-days="30">This month</li>
+                            <li data-days="90">This quarter</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
-    <div class="col l8 s12">
-        <div class="row">
+</div>
+<div class="row home-tiles">
+    <div class="col l4 s12"><div id="AssignmentsTile" class="tile tile-detail" data-bind="template: {name: 'homePageCountTileTmpl' }"></div></div>
+    <div class="col l4 s12"><div id="SocialTile" class="tile tile-detail" data-bind="template: {name: 'homePageCountTileTmpl' }"></div></div>
+    <div class="col l4 s12"><div id="ActivityTile" class="tile tile-detail" data-bind="template: {name: 'homePageCountTileTmpl' }"></div></div>
+</div>
 
-            <div class="col l7 m12 s12">
-                <div class="tile tile-detail">
-                    <div class="row">
-                        <div class="col l6 m12 s12"><div id="OwnedTile"></div></div>
-                        <div class="col l6 m12 s12"><div id="FollowingTile"></div></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col l5 m12 s12">
-                <div id="HomeSocialTile" class="tile tile-detail" data-bind="template: { name: 'homeSocialMicroTileTmpl' }"></div>
-            </div>
+<div class="search-input-container">
+    <div class="search-input-text-container">
+        <input type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />
+    </div>
+    <div class="search-input-adv-container">
+        <button type="button" name="action" id="home-adv-btn" class="adv-search-btn">
+            Advanced&nbsp;<i class="fa fa-caret-down"></i>
+        </button>
+    </div>
+    <div class="search-input-button-container">
+        <button type="submit" name="action" id="home-search-btn" class="search-input-btn">
+            <i class="fa fa-search"></i>
+        </button>
+    </div>
+</div>
 
-            <div class="col s12">
-                <div id="WorkflowTasksTile" class="tile tile-detail"></div>
+<div id="SearchArea">
+    <div class="row">
+        <div class="col l2 m4 hide-on-small-only">
+            <div>
+                <h4 class="search-result-categories">Categories</h4>
+                <div class="widget search-category-area" id="CategoryResults" data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
+            </div>
+        </div>
+        <div class="col l10 m8">
+            <div>
+                <h6 data-bind="text: elapsedTime" class="search-result-summary"></h6>
+                <div id="SearchResults"></div>
             </div>
         </div>
     </div>

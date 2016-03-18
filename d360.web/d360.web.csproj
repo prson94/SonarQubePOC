@@ -329,6 +329,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Actions.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\Core.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Core.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\FieldInfo.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1043,6 +1048,10 @@
     <Content Include="Views\Fusion\FusionErrorsAgentOverlay.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsProcessOverlay.cshtml" />
     <Content Include="Views\Shared\Core.cshtml" />
+    <Content Include="Views\Home\ArtifactActivityOverlay.cshtml" />
+    <Content Include="Views\Home\SocialActivityOverlay.cshtml" />
+    <Content Include="Views\Home\AssignmentActivityOverlay.cshtml" />
+    <Content Include="Views\Apps\SearchRedirect.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1089,7 +1098,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Views\Home\" />
     <Folder Include="Views\Queries\" />
     <Folder Include="Views\Tiles\" />
   </ItemGroup>
@@ -1134,6 +1142,12 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_GlobalResources\Core.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>Core.designer.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>

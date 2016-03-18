@@ -711,17 +711,21 @@
         <div class="Board-Spacer" data-bind="visible: ShowAddCommentControls"></div>
 
         <div class="FilterForm">
+            <!-- ko if: ShowDateFilter -->
             <div>
                 <span style="color:#000; font-size:10pt; font-weight:600;">
                     Threads
                 </span>
                 <select id="BoardDateFilter" data-bind="options: dateFilterOptions, optionsText: 'Text', optionsValue: 'Value', value: selectedDateFilterOption, event: {change: filterComments}" class="browser-default socialDropDown" style="display:inline-block;" />
             </div>
+            <!-- /ko-->
+            <!-- ko if: ShowTypeFilter -->
             <div style="display: block; /*text-align: justify; -ms-text-justify: distribute-all-lines; text-justify: distribute-all-lines;*/ overflow-x:auto;white-space:nowrap;overflow:auto;">
                 <!-- ko template: {name: 'commentCountTmpl', foreach: commentCounts } -->
                 <!-- /ko -->
                 <!--<span style="width:100%;display:inline-block;font-size:0;line-height:0;"></span>-->
             </div>
+            <!-- /ko-->
             <div style="white-space: nowrap;">
                 <div style="width:100%;position:relative;display:inline-block;">
                     <input data-bind="value: searchFilter,valueUpdate:'afterkeydown'" type="text" placeholder="Search for keyword" style="display:inline-block;width:100%;line-height:1.5;padding:2px;" />
@@ -964,19 +968,19 @@
 <script id="searchResultsCategoryTmpl" type="text/html">
     <div class="row">
         <div class="col l10 m10 s11 entry">
-            <i class="search-category-type-group fa" data-bind="click: toggleVisibility,visible: showToggle,css: {'fa-angle-right' : showRow, 'fa-angle-down' : !showRow()}"></i>            
-            <a href="#" class="search-type-link" data-bind="attr: {'data-category-type': Name, 'title':DisplayName}, text: DisplayName"></a>            
+            <i class="search-category-type-group fa" data-bind="click: toggleVisibility,visible: showToggle,css: {'fa-angle-right' : showRow, 'fa-angle-down' : !showRow()}"></i>
+            <a href="#" class="search-type-link" data-bind="attr: {'data-category-type': Name, 'title':DisplayName}, text: DisplayName"></a>
         </div>
         <div class="col l2 m2 s1">
             <span data-bind="text: ResultCount > 0 ? ResultCount.toLocaleString() : ''" style="float:right"></span>
-        </div>                 
+        </div>
     </div>
     <div data-bind="template: {name: 'searchResultsCategoryItemTmpl', foreach: Categories },visible: showRow"></div>
 </script>
 
 <script id="searchResultsCategoryItemTmpl" type="text/html">
     <div class="row">
-        <div class="col l10 m10 s11 entry">            
+        <div class="col l10 m10 s11 entry">
             <a href="#" class="search-category-link" data-bind="attr: {'data-category': Name, 'title':Name}, text: Name"></a>
         </div>
         <div class="col l2 m2 s1">
@@ -999,4 +1003,80 @@
             <td rowspan="2"><h6>&nbsp;* Percentage is based off statistics for the past 7 days.  Click on charts for more information.</h6></td>
         </tr>
     </table>
+</script>
+
+<script id="homePageCountTileTmpl" type="text/html">
+    <header data-bind="text: Title"></header>
+    <div class="count-tile">
+        <!-- ko if: Rows().length -->
+        <!-- ko foreach: Rows-->
+        <!-- ko if: $index() == 0 -->
+        <div class="Row">
+            <div class="col l8 s8">&nbsp;</div>
+            <!-- ko if: Total == null && New != null -->
+            <div class="col l4 s4 center-align title">New</div>
+            <!-- /ko -->
+            <!-- ko if: Total != null && New == null -->
+            <div class="col l4 s4 center-align title">Total</div>
+            <!-- /ko -->
+            <!-- ko if: Total != null && New != null  -->
+            <div class="col l2 s2 center-align title">New</div>
+            <div class="col l2 s2 center-align title">Total</div>
+            <!-- /ko -->
+        </div>
+        <!-- /ko -->
+        <div class="row">
+            <div data-bind="text: Name" class="col l8 s8 truncate"></div>
+            <!-- ko if: Total == null && New != null -->
+            <div class="col l4 s4 center-align">
+                <a class="tile-clickable home-count-link" data-bind="text:New, attr: {'data-tile':'', 'data-uri': NewUri + '&lookBackDays=' + $parent.LookBackDays, 'data-context': 'TileOverlay'}"></a>
+            </div>
+            <!-- /ko -->
+            <!-- ko if: Total != null && New == null -->
+            <div class="col l4 s4 center-align">
+                <a class="tile-clickable home-count-link" data-bind="text:Total, attr: {'data-tile':'', 'data-uri': TotalUri + '&lookBackDays=' + $parent.LookBackDays, 'data-context': 'TileOverlay'}"></a>
+            </div>
+            <!-- /ko -->
+            <!-- ko if: Total != null && New != null -->
+            <div class="col l2 s2 center-align">
+                <a class="tile-clickable home-count-link" data-bind="text:New, attr: {'data-tile':'', 'data-uri': NewUri + '&lookBackDays=' + $parent.LookBackDays, 'data-context': 'TileOverlay'}"></a>
+            </div>
+            <div class="col l2 s2 center-align">
+                <a class="tile-clickable home-count-link" data-bind="text:Total, attr: {'data-tile':'', 'data-uri': TotalUri + '&lookBackDays=' + $parent.LookBackDays, 'data-context': 'TileOverlay'}"></a>
+            </div>
+            <!-- /ko -->
+        </div>
+        <!-- /ko -->
+        <!-- /ko -->
+        <!-- ko ifnot: Rows().length -->
+            <div data-bind="text:NoDataMessage" class="center-align"></div>
+        <!-- /ko -->
+    </div>
+</script>
+
+<script id="advancedSearchFilterTmpl" type="text/html">
+    <!-- ko foreach: advancedFilter-->
+    <div class="row advSearchRow">
+        <div class="col s1 center-align">Field:</div>        
+        <div class="col s3">
+            <div data-bind="jqxDropDownList: {placeHolder: 'Choose Field:',source: $parent.FieldNames, selectedIndex: SelectedFieldIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,}"></div>
+        </div>
+        <div class="col s3">
+                <input type="text" data-bind="jqxInput: { placeHolder:'Enter a value:', width: field_width98, height: field_height, theme: theme, value: Term},visible: ShowText()" />
+                <div data-bind="jqxDropDownList: {placeHolder: 'Choose Type:', source: TypeNames, selectedIndex: SelectedTypeIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,},visible: !ShowText()"></div>
+        </div>
+        <div class="col s1" data-bind="visible: ShowConnectors() && ($index() !== ($parent.advancedFilter().length - 1))">
+            <div data-bind="jqxDropDownList: {source: Connectors, selectedIndex: SelectedConnectorIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,}"></div>
+        </div>
+        <div class="col s1" data-bind="visible: ShowConnectors() && ($index() === ($parent.advancedFilter().length - 1))">&nbsp;</div>
+        <div class="col s1" data-bind="visible: ShowText()"><div data-bind="jqxCheckBox: {checked: exactMatch, theme: theme,width: field_width98, height: field_height}">Exact match</div> </div>
+        <div class="col s1" data-bind="visible: !ShowText()">&nbsp;</div>        
+        <!-- ko if: ($index() === ($parent.advancedFilter().length - 1)) -->
+        <div class="col s1"><button class="btn btn-flat waves-effect blue-text" type="button" name="advAddButton" data-bind="click: $parent.addFilter"><i class="fa fa-plus" title="Add filter condition"></i></button></div>
+        <!-- /ko -->
+        <!-- ko ifnot: ($index() === ($parent.advancedFilter().length - 1)) -->
+        <div class="col s1"><button class="btn btn-flat waves-effect red-text" style="height:25px" type="button" name="advAddButton" data-bind="click: function(){$parent.removeFilter($index())}"><i class="fa fa-minus" title="Remove filter condition"></i></button></div>
+        <!-- /ko -->
+    </div>
+    <!-- /ko -->
 </script>

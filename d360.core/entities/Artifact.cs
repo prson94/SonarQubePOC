@@ -73,5 +73,19 @@ namespace d360.core.entities
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
+
+        public DateTime CreatedOn
+        {
+            get
+            {
+                return this.createdon.HasValue
+                   ? this.createdon.Value
+                   : DateTime.UtcNow;
+            }
+
+            set { this.createdon = value; }
+        }
+
+        private DateTime? createdon = null;
     }
 }

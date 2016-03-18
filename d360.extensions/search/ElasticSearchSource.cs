@@ -355,7 +355,7 @@ namespace d360.extensions.search
         /// <param name="resourceID"></param>
         /// <param name="phrase"></param>
         /// <returns></returns>
-        public IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "")
+        public IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "", string advancedFilterJSON = "")
         {
             IndexResults result = new IndexResults();
 
@@ -366,11 +366,38 @@ namespace d360.extensions.search
             var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/{searchType}_search", companyID);
 
             StringBuilder sb = new StringBuilder();
-
+            
             if(!string.IsNullOrEmpty(phrase))
-                phrase = phrase.Replace("\"","\\\"");
+            {
+                phrase = phrase.Replace("\"", "\\\"");
 
-            sb.Append( "{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+                sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+            }
+            else if(!string.IsNullOrEmpty(advancedFilterJSON))
+            {
+                var advFilters = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AdvancedSearchParameters>>(advancedFilterJSON);
+                //deserialize advanced search parameters
+
+                var compositeSearchTerm = string.Empty;
+                SearchConnector con = SearchConnector.And;
+
+                foreach (var item in advFilters)
+                {
+                    if (!string.IsNullOrEmpty(compositeSearchTerm)) compositeSearchTerm += $" {con.ToString().ToUpper()} ";
+
+                    if (string.IsNullOrEmpty(item.value)) continue;
+
+                    con = item.connector;
+
+                    var searchTerm = item.value.Replace("\"", "\\\"");
+
+                    if (item.exact) searchTerm = "\\\"" + searchTerm + "\\\"";
+
+                    compositeSearchTerm += $"{item.field}:{searchTerm}";
+                }
+
+                sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + compositeSearchTerm + "\"} }");
+            }                
 
             //if a group was specified filter by it
             if (!string.IsNullOrEmpty(group))
@@ -533,7 +560,7 @@ namespace d360.extensions.search
         {
             JToken jToken = null;
             
-            if (_source.TryGetValue(propName, out jToken))
+            if (_source != null && _source.TryGetValue(propName, out jToken))
             {
                 if(jToken.Type == JTokenType.Array)
                 {

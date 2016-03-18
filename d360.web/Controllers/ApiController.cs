@@ -5435,5 +5435,118 @@ from	A
         }
 
         #endregion
+
+
+        #region Counts
+
+        public class CountModel
+        {
+            public string Name { get; set; }
+            public int? New { get; set; }
+            public int? Total { get; set; }
+            public string NewUri { get; set; }
+            public string TotalUri { get; set; }
+        }
+
+        public class CountTempModel
+        {
+            public int TypeID { get; set; }
+            public int Count { get; set; }
+        }
+
+
+
+        [Route("CountItems/Activity/{artifactTypeId}/{days}")]
+        public IQueryable GetAreaActivityItems(int artifactTypeId, int days)
+        {
+            DateTime startDate = DateTime.Now.AddDays(days * -1);
+
+            return Company.Filter<Artifact>(i => i.CreatedOn > startDate && i.ArtifactTypeID == artifactTypeId).AsQueryable();
+        }
+
+        [Route("Count/{area}/{days}")]
+        public IEnumerable<CountModel> GetHomeCounts(string area, int days)
+        {
+            var areaName = (area ?? string.Empty).ToUpper();
+
+            switch (areaName)
+            {
+                case "SOCIAL":
+                    return LoadSocialActivityCount(days);
+                case "ACTIVITY":
+                    return LoadArtifactActivityCount(days);
+                case "ASSIGNMENTS":
+                    return LoadWorkflowAssignmentsCount();
+            }
+
+            return null;
+        }
+
+        private IEnumerable<CountModel> LoadArtifactActivityCount(int days)
+        {
+            days = days * -1;
+            var sql = @"select
+                            at.name as Name,
+	                        count(1) as New,
+                            '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri,
+							'/Home/ArtifactActivityOverlay?mode=all&artifactTypeID=' + cast(at.id as varchar) as TotalUri
+                        from
+                            artifact a
+
+                            inner
+                        join artifacttype at on a.artifacttypeid = at.id
+                        where
+                            a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP)
+                        group by at.name,at.id order by at.name";
+
+            return Company.Query<CountModel>(sql, new { d = days });
+        }
+
+        private IEnumerable<CountModel> LoadSocialActivityCount(int days)
+        {
+            days = days * -1;
+            var socialUri = "/Home/SocialActivityOverlay";
+
+            var counts = Company.GetCommentCountByFollower(Company.CurrentResourceID, days).ToList().OrderBy(i => i.CommentTypeName);
+
+            //var sql = @"select commenttypeid as TypeID, count(1) as Count from comment where datecreated > DATEADD(day, @d,CURRENT_TIMESTAMP) group by commenttypeid";
+
+            //var counts = Company.Query<CountTempModel>(sql, new { d = days });
+            List<CountModel> items = new List<CountModel>();
+
+            //need to add a record for social, Issue, Task, DataEvent, Question
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social), TotalUri = $"{socialUri}?type={(int)CommentType.Social}" });
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Issue, Total = getCommentCategoryCount(counts, CommentType.Issue), TotalUri = $"{socialUri}?type={(int)CommentType.Issue}" });
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Task, Total = getCommentCategoryCount(counts, CommentType.Task), TotalUri = $"{socialUri}?type={(int)CommentType.Task}" });
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_DataEvent, Total = getCommentCategoryCount(counts, CommentType.DataEvent), TotalUri = $"{socialUri}?type={(int)CommentType.DataEvent}" });
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Question, Total = getCommentCategoryCount(counts, CommentType.Question), TotalUri = $"{socialUri}?type={(int)CommentType.Question}" });
+
+            return items.OrderBy(x => x.Name);
+        }
+
+        private int getCommentCategoryCount(IEnumerable<CommentCount> counts, CommentType commentType)
+        {
+            var commentsItem = (counts.FirstOrDefault(x => x.CommentType == commentType));
+            return commentsItem == null ? 0 : commentsItem.Count;
+        }
+
+        private IEnumerable<CountModel> LoadWorkflowAssignmentsCount()
+        {
+            var sql = @"(select '/Home/AssignmentActivityOverlay?mode=total&type=1' as TotalUri, '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 1
+                        union
+                        select '/Home/AssignmentActivityOverlay?mode=total&type=2' as TotalUri, '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
+                        union
+                        select '/Home/AssignmentActivityOverlay?mode=total&type=3' as TotalUri, '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3)
+                        order by Name";
+
+            return Company.Query<CountModel>(sql, new { r = Company.CurrentResourceID });
+        }
+
+        #endregion
     }
 }

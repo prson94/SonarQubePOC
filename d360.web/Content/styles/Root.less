@@ -476,7 +476,7 @@ fieldset legend {
 .search-result-name
 {
     font-weight:bold;
-    margin: 10px 0 5px 0;
+    margin: 10px 0 5px 0;    
 }
 
 .search-result-attributes
@@ -500,6 +500,7 @@ fieldset legend {
 .search-result-desc
 {
     color:@rgba-primary-1;
+    margin:2px 0 2px 0;
 }
 
 .search-result-link
@@ -521,6 +522,16 @@ fieldset legend {
 {
     color:@d3s-gray-2;
     cursor:pointer;
+}
+
+.search-res-container
+{
+    border-bottom:1px solid #dddddd;
+}
+
+.search-control-area
+{
+    margin-bottom: 10px;
 }
 
 #SearchButton {
@@ -615,4 +626,111 @@ fieldset legend {
     margin: 10px 10px 20px 10px;
 }
  
+/*#endregion */
+
+
+/*#region home*/
+.home-tiles {
+    padding-top:5px;
+}
+
+.home-tiles .title{
+    font-weight:bold;
+}
+
+.home-count-link{
+    font-weight:bold;
+}
+
+.count-tile{
+    height:150px;
+    overflow:auto;
+}
+
+/*#endregion */
+
+/*#region search input box*/
+
+.search-input-container{
+    display:table;
+    width:100%;
+}
+
+.search-input-text-container{
+    padding-left: 0.75rem;    
+    width:auto;
+    display:table-cell;  
+    box-sizing:border-box;
+}
+
+.search-input-adv-container, .search-input-button-container{
+    display:table-cell;    
+    box-sizing:border-box;
+    vertical-align:top;
+}
+
+.search-input-button-container{
+    padding-right: 0.75rem;    
+    width:100px;    
+}
+
+.search-input-adv-container{        
+    width:100px;    
+}
+
+.search-input-text{
+    font-size: x-large;
+    border:none;
+    padding:10px;
+    border-radius:4px 0 0 4px;
+    border:1px solid @d3s-gray-2;
+    border-right:none;
+    width:100%;
+    height:45px;
+}
+
+.search-input-text:focus{
+    outline: none;
+}
+
+.search-input-btn{
+    width:100%;
+    padding:10px;
+    border:1px solid @d3s-gray-2;
+    background-color:@d3s-gray-6;
+    border-radius: 0 4px 4px 0;
+    color:white;
+    height:45px;
+    overflow:hidden;    
+    &:focus{
+        background-color:@d3s-gray-6;
+    }
+}
+
+.simple-search-btn, .adv-search-btn{
+    width:100%;
+    padding:10px;
+    border:none;
+    border-top: 1px solid @d3s-gray-2;
+    border-bottom: 1px solid @d3s-gray-2;    
+    background-color: white;    
+    font-weight:bold;
+    color:@d3s-gray-3;
+    height:45px;           
+    white-space: nowrap;
+    &:focus{
+        background-color:white;
+    }
+}
+
+.simple-search-btn{
+    border:none;
+    width:100px;
+}
+
+
+.advSearchRow{
+    padding: 5px 0 5px 0;
+}
+
 /*#endregion */
