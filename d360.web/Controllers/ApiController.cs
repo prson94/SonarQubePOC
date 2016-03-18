@@ -339,7 +339,32 @@ namespace d360.web.Controllers
                     fields.Add(new GridField { name = "DateLastCertified", type = "date" });
                     fields.Add(new GridField { name = "Url", type = "string" });
                     break;
-                    #endregion
+                #endregion
+                case SystemObjects.IntersectType:
+                    #region
+
+                    var intersectType = Company.GetById<IntersectType>(id);
+
+                    staticFieldCount = 4;
+                    remainingWidth = 50;
+                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+
+                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+
+                    fields.Add(new GridField { name = "IntersectID", type = "number" });
+                    fields.Add(new GridField { name = "Description", type = "string" });
+                    fields.Add(new GridField { name = "Role", type = "string" });
+                    fields.Add(new GridField { name = "TargetName", type = "string" });
+                    fields.Add(new GridField { name = "TargetObjectID", type = "string" });
+                    fields.Add(new GridField { name = "TargetObjectType", type = "date" });
+                    fields.Add(new GridField { name = "TargetTypeID", type = "string" });
+                    fields.Add(new GridField { name = "TargetType", type = "string" });
+                    fields.Add(new GridField { name = "TargetTypeName", type = "string" });
+                    fields.Add(new GridField { name = "Classification", type = "string" });
+                    fields.Add(new GridField { name = "TargetUrl", type = "string" });
+                    fields.Add(new GridField { name = "HasTechnicalRelationships", type = "string" });
+                    break;
+                #endregion
                 case SystemObjects.LookupType:
                     #region
                     staticFieldCount = 1;
@@ -2734,15 +2759,35 @@ from    cache.Relationship R1
             return Company.GetCriticalRelationshipsByObject(type, id);
         }
 
-        [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{criticalOnly:bool=false?}"), HttpGet]
-        public IQueryable<Relationship> GetRelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, bool criticalOnly)
+        [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/{criticalOnly:bool=false?}"), HttpGet]
+        public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly)
         { 
             var sType = type.ToString();
             var tType = targetType.ToString();
+
+            var joins = "";
+            var columns = "";
+            getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns);
+
+            var querySql = $@"
+select  {columns} 
+        A.*
+from	(
+        select  IntersectID as ID, 
+                * 
+        from    Relationship 
+        where   SourceObjectType = '{type.ToString()}' 
+                and SourceObjectID = {id}
+                and TargetType = '{targetType.ToString()}' 
+                and TargetTypeID = {targetID}
+        ) A {joins}";
+
             if (criticalOnly)
-                return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && i.Classification == IntersectClassification.Critical);
-            else
-                return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID);
+                querySql += $" and A.Classification = {(int)IntersectClassification.Critical}";
+
+            querySql += " order by A.TargetName";
+
+            return Company.Query<dynamic>(querySql);
         }
 
         public class RawSourceRuleItem
@@ -4074,6 +4119,8 @@ from	IntersectMapSourceRule J
                                 new ReadOnlyField { Name = intersect.GetName(i => i.Description), FieldName = "IntersectDescription", FieldDescription = intersect.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(intersect.Description) ? "None provided" : intersect.Description }
                             }
                         });
+
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     intersect = null;
                     break;
@@ -4232,6 +4279,8 @@ from	IntersectMapSourceRule J
                                 new ReadOnlyField { Name = policy.GetName(i => i.Description), FieldName = "PolicyDescription", FieldDescription = policy.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policy.Description) ? "None provided" : policy.Description }
                             }
                         });
+
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     policy = null;
                     break;

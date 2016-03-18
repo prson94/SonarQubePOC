@@ -270,6 +270,62 @@
               Looks up a localized string similar to retweet.
             </summary>
         </member>
+        <member name="T:Resources.Core">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.CommentType_DataEvent">
+            <summary>
+              Looks up a localized string similar to Data Event.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.CommentType_Issue">
+            <summary>
+              Looks up a localized string similar to Issue.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.CommentType_Question">
+            <summary>
+              Looks up a localized string similar to Question.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.CommentType_Social">
+            <summary>
+              Looks up a localized string similar to Comment.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.CommentType_Task">
+            <summary>
+              Looks up a localized string similar to Task.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.WorkflowType_CertifyArtifact">
+            <summary>
+              Looks up a localized string similar to Certify Artifact.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.WorkflowType_SuggestNewArtifact">
+            <summary>
+              Looks up a localized string similar to Propose New Artifact.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.WorkflowType_WorkIssue">
+            <summary>
+              Looks up a localized string similar to Work Issue.
+            </summary>
+        </member>
         <member name="T:Resources.FieldInfo">
             <summary>
               A strongly-typed resource class, for looking up localized strings, etc.
@@ -2674,6 +2730,17 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.Predicate_EditFields(System.Int32)">
             <param name="id">PredicateID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Relationship_AddFields(System.Int32,d360.core.SystemObjects,System.Int32)">
+            <param name="it">IntersectTypeID</param>
+            <param name="type">Object</param>
+            <param name="id">ObjectID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Relationship_DeleteFields(System.Int32)">
+            <param name="id">RelationshipID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Relationship_EditFields(System.Int32)">
+            <param name="id">RelationshipID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Report_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>

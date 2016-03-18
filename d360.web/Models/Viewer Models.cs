@@ -420,6 +420,7 @@ namespace d360.web.Models
 
     public class OptionsToRelateDbModel
     {
+        public int IntersectTypeID { get; set; }
         public string Menu { get; set; }
         public string SubMenu { get; set; }
         public string Type { get; set; }

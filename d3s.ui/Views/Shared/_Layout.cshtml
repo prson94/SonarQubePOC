@@ -12,8 +12,7 @@
     </environment>
     <environment names="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/underscore/underscore.js"></script>
-        <script src="~/lib/backbone/backbone.js"></script>
+        <script src="~/lib/angular/angular.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
     <environment names="Staging,Production">
@@ -21,14 +20,13 @@
                 asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
                 asp-fallback-test="window.jQuery">
         </script>
-        <script src="~/lib/underscore/underscore-min.js"></script>
-        <script src="~/lib/backbone/backbone-min.js"></script>
+        <script src="~/lib/angular/angular.min.js"></script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
     @RenderSection("scripts", required: false)
 </head>
 <body>
-    @await Html.PartialAsync("_LoginPartial")
+    @*@await Html.PartialAsync("_LoginPartial")*@
     @RenderBody()
 </body>
 </html>

@@ -47,5 +47,24 @@ namespace d360.test.jobs
             }
             return cnn;
         }
+
+        internal string getCompanyConnectionString(int companyID)
+        {
+            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            cnn.Open();
+            var db = cnn.Query<DatabaseServer>(
+                @"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id",
+                new { id = companyID }
+            ).SingleOrDefault();
+            cnn.Close();
+            cnn.Dispose();
+
+            if (db != null)
+            {
+                return $"server={db.Server};Database=D3S_{companyID};User ID={db.Username};Password={db.Password}";
+            }
+            else 
+                return "";
+        }
     }
 }

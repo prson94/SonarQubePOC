@@ -24,6 +24,18 @@
                 </div>
                 <div id="DiagramTile"></div>
             </div>
+            <div class="container-fluid" id="Details" style="display:none;">
+                <div class="row" style="margin-top: 20px">
+                    <div class="col l11 m11">
+                        <ol class="breadcrumb" style="padding:0;">
+                            <li class="breadcrumb-name"></li>
+                            <li class="active">Relationship Details</li>
+                        </ol>
+                    </div>
+                    <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                </div>
+                <div id="RelationshipDetailsTile" class="tile"></div>
+            </div>
             <div class="container-fluid" id="Attributes" style="display:none;">
                 <div class="row" style="margin-top: 20px">
                     <div class="col l11 m11">
@@ -82,6 +94,8 @@
 <div id="TreeGridRelationshipEditor"></div>
 
 <script type="text/javascript">
+    var o = "@(ViewData["Object"])";
+    var oid = "@(ViewData["ObjectID"])";
     var type = "@(Model.ParentType)";
     var typeID = "@(Model.ID)";
     var intersectID = 0;
@@ -93,18 +107,6 @@
     var technicalRelationsAdapter;
 
     //#region Amplify Methods
-
-    //function cancelAction(data) {
-    //    try {
-    //        switch (data.context) {
-    //            case contextList.SourceToTarget:
-    //                switchToViewer();
-    //                break;
-    //        }
-    //    } catch (e) {
-    //        logError("RelationOverlay : CancelAction", e);
-    //    }
-    //}
 
     function commandExecuted(data) {
         try {
@@ -167,46 +169,17 @@
         try {
             switchToViewer();
             if (data.action == 'Add') {
-                if (data.technical) {
+                try{
                     $("#TechnicalRelationsGrid").jqxGrid('updatebounddata');
                 }
-                else {
-                    $('#TreeGrid').one('bindingcomplete', function (event) {
-                        var selectActiveRow = false;
-
-                        if (data.targets.length > 0) {
-                            selectActiveRow = true;
-                        }
-
-                        if (selectActiveRow) {
-                            try {
-                                var boundRows = $("#TreeGrid").jqxGrid('getboundrows', data.id);
-                                var index = -1;
-
-                                $.each(boundRows, function () {
-                                    if (this.TargetObjectType == data.targets[0].ObjectType && this.TargetObjectID == data.targets[0].ObjectID) {
-                                        index = $('#TreeGrid').jqxGrid('getrowboundindexbyid', this.uid);
-                                    }
-                                });
-
-                                if (index >= 0) {
-                                    $("#TreeGrid").jqxGrid('selectrow', index);
-                                }
-                            } catch (e) { }
-                        }
-                        else {
-                            var rows = $("#TreeGrid").jqxGrid('getrows');
-                            if (rows.length > 0) {
-                                $("#TreeGrid").jqxGrid('selectrow', 0);
-                            }
-                        }
-                    });
-                    $("#TreeGrid").jqxGrid('updatebounddata');
-
-                    technicalRelationsSource.url = null;
-                    $("#TechnicalRelationsGrid").jqxGrid('updatebounddata');
-                    $('#TreeGridAttributesDetail').html('');
+                catch(e){
                 }
+                $("#TreeGrid").jqxGrid('updatebounddata');
+            }
+            else {
+                technicalRelationsSource.url = null;
+                $("#TechnicalRelationsGrid").jqxGrid('updatebounddata');
+                $('#TreeGridAttributesDetail').html('');
             }
             amplify.publish('SaveAction', { context: "intersectform" });
         } catch (e) {
@@ -241,18 +214,6 @@
             logError("RelationOverlay : SourceSave", e);
         }
     }
-
-    //function saveAction(data) {
-    //    try {
-    //        switch (data.context) {
-    //            case contextList.SourceToTarget:
-    //                switchToViewer();
-    //                break;
-    //        }
-    //    } catch (e) {
-    //        logError("RelationOverlay : SaveAction", e);
-    //    }
-    //}
 
     //#endregion
 
@@ -357,12 +318,12 @@
         try {
             var relationUri = '/relations/OptionsToRelate';
 
-            $.getJSON(relationUri, function (data) {
+            $.getJSON(relationUri, { type: o, id: oid }, function (data) {
 
                 var addMenuItem = { html: '<span>Add Relationships</span>', items: data };
                 var items = [
                     addMenuItem,
-                    { html: '<span data-a="Source">Add Source</span>' },
+                    //{ html: '<span data-a="Source">Add Source</span>' },
                     {
                         html: '<span>Views</span>', items: [
                             { html: '<span data-a="Relationships">All Relationships</span>' },
@@ -393,11 +354,12 @@
 
                         switch (selectedView) {
                             case 'Intersect':
-                                url = '/Relations/AddRelationship?source=' + type + '&sourceID=' + typeID + '&target=' + span.data('t') + '&targetID=' + span.data('i');
+                                //url = '/Relations/AddRelationship?source=' + type + '&sourceID=' + typeID + '&target=' + span.data('t') + '&targetID=' + span.data('i');
+                                url = '/form/AddRelationship?' + 'intersectTypeID=' + span.data('it') + '&type=' + type + '&id=' + typeID;
                                 break;
-                            case 'Source':
-                                url = '/relations/sources/' + type + '/' + typeID + '/add';
-                                break;
+                            //case 'Source':
+                            //    url = '/relations/sources/' + type + '/' + typeID + '/add';
+                            //    break;
                         }
 
                         if (url != '') {
@@ -463,11 +425,17 @@
         var getselectedrowindexes = $('#TreeGrid').jqxGrid('getselectedrowindexes');
 
         if (getselectedrowindexes.length > 0) {
+            console.log($icon.html());
             var row = $('#TreeGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
             if ($icon.hasClass('attribute')) {
                 $('#Attributes').show();
                 setBreadCrumb('#Attributes', row);
                 AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.IntersectID, 'Business Attributes');
+            }
+            else if ($icon.hasClass('details')) {
+                $('#Details').show();
+                setBreadCrumb('#Details', row);
+                ObjectDetail('RelationshipDetailsTile', "Intersect", row.IntersectID);
             }
             else if ($icon.hasClass('fusion')) {
                 $('#Fusion').show();
@@ -553,12 +521,12 @@
                 { text: 'Name', width: '250px', datafield: 'TargetName' },
                 { text: 'Criticality', width: '125px', datafield: 'Classification', filtertype: 'checkedlist' },
                 { text: 'Description', datafield: 'Description' },
-                { text: 'Role', datafield: 'Role', width: '100px', filtertype: 'checkedlist' },
+                { text: 'Role', datafield: 'Role', width: '125px', filtertype: 'checkedlist' },
                 {
                     text: '',
                     groupable: false,
                     datafield: 'IntersectID',
-                    width: '100px',
+                    width: '140px',
                     filterable: false,
                     sortable: false,
                     cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
@@ -567,9 +535,10 @@
 
                             html += "<div class='RowMultiTools'>";
                             //html += (data.HasLineage ? "<i class='lineage fa fa-" + iconLineage + "' title='Lineage'></i> " : "");
-                            html += "<i class='fusion fa fa-" + iconFusion + "' title='Fusion'></i> ";
-                            html += "<i class='attribute fa fa-" + iconAttributes + "' title='Attributes'></i>";
-                            html += "<a title='Edit relationship' data-context='editrelation' data-local data-uri='/relations/EditRelationship?id=" + data.IntersectID + "'><i class='fa fa-pencil'></i></a>";
+                            html += "<a><i class='fusion fa fa-" + iconFusion + "' title='Fusion'></i></a>";
+                            html += "<a><i class='attribute fa fa-" + iconAttributes + "' title='Attributes'></i></a>";
+                            html += "<a><i class='details fa fa-list-alt' title='Details'></i></a>";
+                            html += "<a title='Edit relationship' data-context='editrelation' data-local data-uri='/form/EditRelationship?id=" + data.IntersectID + "'><i class='fa fa-pencil'></i></a>";
                             html += "<a title='Remove relationship' data-context='deleterelation' data-command data-method='DELETE' data-uri='/api/relationships/" + data.IntersectID + "'><i class='fa fa-trash-o'></i></a>";
                             html += "</div>";
 
@@ -634,7 +603,7 @@
                         var html = "";
 
                         html += "<div class='RowMultiTools'>";
-                        html += "<a title='Edit relationship' data-context='edittechnicalrelation' data-local data-uri='/relations/EditRelationship?id=" + data.IntersectID + "'><i class='fa fa-pencil'></i></a>";
+                        html += "<a title='Edit relationship' data-context='edittechnicalrelation' data-local data-uri='/form/EditRelationship?id=" + data.IntersectID + "'><i class='fa fa-pencil'></i></a>";
                         html += "<a title='Remove relationship' data-context='deletetechnicalrelation' data-command data-method='DELETE' data-uri='/api/relationships/" + data.IntersectID + "'><i class='fa fa-trash-o'></i></a>";
                         html += "</div>";
 
@@ -656,8 +625,6 @@
         amplify.subscribe("SourceFormStatus", sourceFormStatus);
         amplify.subscribe("SourceCancel", sourceCancel);
         amplify.subscribe("SourceSave", sourceSave);
-        //amplify.subscribe("CancelAction", cancelAction);
-        //amplify.subscribe("SaveAction", saveAction);
         amplify.subscribe("CommandExecuted", commandExecuted);
         amplify.subscribe(AmplifyActions.Local, localAction);
         amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
@@ -666,7 +633,8 @@
         $('#TechnicalRelationsGrid').on('rowselect', technicalRelationsGridRowSelect);
         $("#TechnicalRelationsGrid").on("bindingcomplete", technicalRelationsGridBindingComplete);
 
-        $("#TreeGrid").on("click", ".lineage", activateIconTool);
+        //$("#TreeGrid").on("click", ".lineage", activateIconTool);
+        $("#TreeGrid").on("click", ".details", activateIconTool);
         $("#TreeGrid").on("click", ".fusion", activateIconTool);
         $("#TreeGrid").on("click", ".attribute", activateIconTool);
         $("div.large-overlay").on("click", ".detailclose", closeDetailTab);

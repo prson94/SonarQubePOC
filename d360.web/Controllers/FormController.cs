@@ -3701,6 +3701,12 @@ order by  D.TextPath
                 
                 model.FieldType.SortOrder = maxSort + 1;
 
+                var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
+                if (!nameRegex.IsMatch(model.FieldType.Name))
+                {
+                    throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
+                }
+
                 if (model.FieldType.MinimumLength.HasValue && model.FieldType.MaximumLength.HasValue)
                 {
                     if (model.FieldType.MinimumLength.Value > model.FieldType.MaximumLength.Value)
@@ -3719,6 +3725,14 @@ order by  D.TextPath
 
                 switch (model.FieldType.Type)
                 {
+                    case "Lookup":
+                        #region
+                        if (string.IsNullOrEmpty(model.FieldType.LookupDisplayFormat))
+                        {
+                            throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
+                        }
+                        break;
+                        #endregion
                     case "FusionLookup":
                         #region
                         foreach (var fi in model.FusionItems)
@@ -3899,6 +3913,12 @@ order by  D.TextPath
                     throw new ConflictException("Error Occurred!", val.Message);
                 }
 
+                var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
+                if (!nameRegex.IsMatch(model.FieldType.Name))
+                {
+                    throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
+                }
+
                 // Static fields
                 ft.Name = model.FieldType.Name;
                 ft.FriendlyName = model.FieldType.FriendlyName;
@@ -4023,6 +4043,10 @@ order by  D.TextPath
                         ft.LookupObjectType = model.FieldType.LookupObjectType;
                         ft.LookupObjectID = model.FieldType.LookupObjectID;
                         ft.LookupDisplayFormat = model.FieldType.LookupDisplayFormat;
+                        if (string.IsNullOrEmpty(model.FieldType.LookupDisplayFormat))
+                        {
+                            throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
+                        }
                         break;
                         #endregion
                     case "RelationLookup":
@@ -8869,6 +8893,386 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         //}
 
         //#endregion
+
+        #endregion
+
+        #region Relationship
+
+        #region Field Generation
+
+        /// <param name="it">IntersectTypeID</param>
+        /// <param name="type">Object</param>
+        /// <param name="id">ObjectID</param>
+        public JsonResult Relationship_AddFields(int it, SystemObjects type, int id)
+        {
+            if (!Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            var relationshipType = Company.GetById<IntersectType>(it, i => i.Nodes);
+            var obj = Company.GetObjectDetail(type, id);
+
+            if (obj == null || relationshipType == null)
+            {
+                return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
+            }
+
+            var targetType = "";
+            var targetTypeID = 0;
+            var firstNode = relationshipType.Nodes.First();
+            var lastNode = relationshipType.Nodes.Last();
+            if (firstNode.ObjectType == obj.Type && firstNode.ObjectID == obj.TypeID)
+            {
+                targetType = lastNode.ObjectType;
+                targetTypeID = lastNode.ObjectID;
+            }
+            else
+            {
+                targetType = firstNode.ObjectType;
+                targetTypeID = firstNode.ObjectID;
+            }
+
+            list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = it.ToString() });
+            list.Add(new EditableField { FieldName = "Source", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
+            list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            #region
+
+            var sql = "";
+
+            if (targetType == "FusionAttributeType")
+            {
+                sql = @"select	D.[Object], D.ObjectID, F.Name + '.' + D.TextPath as Name
+from	cache.ObjectDetails D
+		inner join FusionAttribute FA on D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID and FA.ID = D.ObjectID
+		inner join Fusion F on F.ID = FA.FusionID
+where	D.ObjectTypeID <> D.ObjectID 
+        and D.ObjectTypeID <> 0
+        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+        and not exists  (
+					select	1 
+					from	[cache].[Relationship] R 
+					where	R.SourceObject = @source 
+							and R.SourceObjectID = @id
+							and R.TargetObject = D.[Object] 
+							and R.TargetObjectID = D.ObjectID
+					)
+order by F.Name, D.TextPath";
+            }
+            else if (targetType == "Group" || targetType == "GroupType")
+            {
+                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name
+from	cache.ObjectDetails D
+where	D.[ObjectType] = 'Group'
+        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+        and not exists  (
+					select	1 
+					from	[cache].[Relationship] R 
+					where	R.SourceObject = @source 
+							and R.SourceObjectID = @id
+							and R.TargetObject = D.[Object] 
+							and R.TargetObjectID = D.ObjectID
+					)
+order by D.TextPath";
+            }
+            else if (targetType == "Resource" || targetType == "ResourceType")
+            {
+                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name
+from	cache.ObjectDetails D
+where   D.[ObjectType] = 'ResourceType'
+        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+        and not exists  (
+					select	1 
+					from	[cache].[Relationship] R 
+					where	R.SourceObject = @source 
+							and R.SourceObjectID = @id
+							and R.TargetObject = D.[Object] 
+							and R.TargetObjectID = D.ObjectID
+					)
+order by D.TextPath";
+            }
+            else
+            {
+                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name
+from	cache.ObjectDetails D
+where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
+        and D.ObjectTypeID <> D.ObjectID 
+        and D.ObjectTypeID <> 0
+        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+		and not exists (
+						select	1 
+						from	[cache].[Relationship] R 
+						where	R.SourceObject = @source 
+								and R.SourceObjectID = @id
+								and R.TargetObject = D.[Object] 
+								and R.TargetObjectID = D.ObjectID
+						)
+order by D.TextPath";
+            }
+
+            #endregion
+
+            list.Add(new EditableField
+            {
+                Row = 1,
+                Column = 2,
+                Required = true,
+                FieldName = "Items",
+                Name = "What Items Are You Relating?",
+                //DataUri = $"",
+                MultiSelect = true,
+                //FieldDescription = Resources.FieldInfo.,
+                FieldType = DataType.Lookup.ToString(),
+                Items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source = type.ToString(), id }).Select(i => new SelectListItem { Text = i.Name, Value = $"{i.Object}|{i.ObjectID}" }).ToList()
+            });
+
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Classification", Name = "Critical?", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Is There Anything Else We Should Know?", FieldType = DataType.Html.ToString() });
+
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, it).ToList(), 4);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">RelationshipID</param>
+        public JsonResult Relationship_DeleteFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.Intersect, id, Claim.Delete, ClaimObject.Root))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">RelationshipID</param>
+        public JsonResult Relationship_EditFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.Intersect, id, Claim.Create, ClaimObject.Relationship))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var relationship = Company.GetById<Intersect>(id, i => i.IntersectType);
+            var critical = (relationship.Classification.HasValue) ? (relationship.Classification.Value == IntersectClassification.Critical) : false;
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Classification", Name = "Critical?", FieldType = DataType.Boolean.ToString(), Value = critical.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Is There Anything Else We Should Know?", FieldType = DataType.Html.ToString(), Value = relationship.Description });
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(), 3);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        //[Route("relationships/{intersectTypeID:int}/{type}/{id:int}/add")]
+        public ActionResult AddRelationship(int intersectTypeID, string type, int id)
+        {
+            var intersectType = Company.GetById<IntersectType>(intersectTypeID);
+            if (intersectType == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.Intersect,
+                FieldUri = $"/form/Relationship_AddFields?it={intersectTypeID}&type={type}&id={id}",
+                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Relationships"),
+                FormUri = "/form/AddRelationship",
+                FormMethod = "POST"
+            };
+
+            return PartialView("AddRelationship", model);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddRelationship(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("relationship");
+
+                var source = parseTextField(form, "Source");
+                var sourceID = parseIntField(form, "SourceID");
+                int typeID = parseIntField(form, "IntersectTypeID");
+                var relationshipType = Company.GetById<IntersectType>(typeID, i => i.Nodes);
+                var sourceObject = Company.GetObjectDetail(source, sourceID);
+
+                if (!Company.HasPermission(SystemObjects.IntersectType, typeID, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (relationshipType == null) throw new NotFoundException("relationship");
+
+                var rawItems = parseTextField(form, "Items");
+                if (string.IsNullOrEmpty(rawItems))
+                    return jsonException("No selected items", HttpStatusCode.BadRequest);
+
+                var items = rawItems.Split(',').ToList();
+
+                var sourceIntersectTypeNodeID = 0;
+                var targetIntersectTypeNodeID = 0;
+                var firstNode = relationshipType.Nodes.First();
+                var lastNode = relationshipType.Nodes.Last();
+                if (firstNode.ObjectType == sourceObject.Type && firstNode.ObjectID == sourceObject.TypeID)
+                {
+                    sourceIntersectTypeNodeID = firstNode.ID;
+                    targetIntersectTypeNodeID = lastNode.ID;
+                }
+                else
+                {
+                    sourceIntersectTypeNodeID = lastNode.ID;
+                    targetIntersectTypeNodeID = firstNode.ID;
+                }
+
+                items.ForEach(item =>
+                {
+                    var itemInfo = item.Split('|');
+                    if (itemInfo.Length == 2)
+                    {
+                        var classification = parseBooleanField(form, "Classification");
+                        var description = parseTextField(form, "Description");
+
+                        var intersect = Company.Query<Intersect>(
+                            @"AddSingleIntersect @ResourceID, @IntersectTypeID, @Subject, @SubjectID, @Object, @ObjectID, @Classification, @Description",
+                            new {
+                                ResourceID = Company.CurrentResourceID,
+                                IntersectTypeID = typeID,
+                                Subject = source,
+                                SubjectID = sourceID,
+                                Object = itemInfo[0],
+                                ObjectID = int.Parse(itemInfo[1]),
+                                Classification = (classification) ? IntersectClassification.Critical : IntersectClassification.Normal,
+                                Description = description
+                            }
+                        ).SingleOrDefault();
+                        var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, typeID).ToList(), form, Server);
+                        Company.AddOrUpdateFields(fields);
+                    }
+                });
+
+                return jsonSuccess(relationshipType.Name + " successfully created.", "0", form["_context"], "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        ////[Route("relationships/{id:int}/delete")]
+        //public ActionResult DeleteRelationship(int id)
+        //{
+        //    var a = Company.GetById<Intersect>(id);
+        //    if (a == null) return HttpNotFound();
+        //    var model = new EditableForm
+        //    {
+        //        Context = ContextList.Intersect,
+        //        FieldUri = string.Format("/form/Intersect_DeleteFields?id={0}", id),
+        //        FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Relationship"),
+        //        FormUri = "/form/DeleteRelationship",
+        //        FormMethod = "DELETE"
+        //    };
+
+        //    return PartialView("DeleteForm", model);
+        //}
+
+        //[HttpDelete]
+        //public JsonResult DeleteRelationship(FormCollection form)
+        //{
+        //    try
+        //    {
+        //        if (!form.HasKeys()) throw new NoFormDataException("relationship");
+
+        //        var id = parseIntField(form, "ID");
+        //        var model = Company.GetById<Intersect>(id);
+        //        if (model == null) throw new NotFoundException("relationship");
+
+        //        //if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Delete, ClaimObject.Root))
+        //        //    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+        //        Company.DeleteRelationship(id);
+
+        //        return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = id });
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
+
+
+        //[Route("relationships/{id:int}/edit")]
+        public ActionResult EditRelationship(int id)
+        {
+            var a = Company.GetById<Intersect>(id, i => i.IntersectType);
+            if (a == null) return HttpNotFound();
+
+            var model = new EditableForm
+            {
+                Context = ContextList.Intersect,
+                FormDescription = "Please provide as much detail as possible in the form below.  You may select one or more relationships by clicking/highlighting the items in the list below.",
+                FieldUri = string.Format("/form/Relationship_EditFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Relationship"),
+                FormUri = "/form/EditRelationship",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditRelationship", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditRelationship(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("relationship");
+
+                int id = parseIntField(form, "ID");
+                var intersect = Company.GetById<Intersect>(id, i => i.Nodes);
+
+                if (intersect == null) throw new NotFoundException("relationship");
+
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.Nodes.First().ObjectType), intersect.Nodes.First().ObjectID, Claim.Update, ClaimObject.Relationship))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.Nodes.Last().ObjectType), intersect.Nodes.Last().ObjectID, Claim.Update, ClaimObject.Relationship))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var classification = parseBooleanField(form, "Classification");
+                var description = parseTextField(form, "Description");
+
+                intersect.Classification = classification ? IntersectClassification.Critical : IntersectClassification.Normal;
+                intersect.Description = description;
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server);
+                Company.AddOrUpdateFields(fields);
+
+                return jsonSuccess("Relationship successfully updated.", intersect.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        #endregion
 
         #endregion
 

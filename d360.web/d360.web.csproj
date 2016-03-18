@@ -978,9 +978,9 @@
     <Content Include="Views\Form\FusionAttributePromotionRuleEditForm.cshtml" />
     <Content Include="Views\Parts\ResponsibilityTypeClaimGrid.cshtml" />
     <Content Include="Views\Parts\ResponsibilityTypeObjectClaimGrid.cshtml" />
-    <Content Include="Views\Relations\AddRelationship.cshtml" />
+    <Content Include="Views\Form\AddRelationship.cshtml" />
     <Content Include="Views\Parts\ResponsibilityTypeUsageGrid.cshtml" />
-    <Content Include="Views\Relations\EditRelationship.cshtml" />
+    <Content Include="Views\Form\EditRelationship.cshtml" />
     <Content Include="Views\Parts\DetailWithSynonyms.cshtml" />
     <Content Include="Views\Overlays\Events.cshtml" />
     <Content Include="Views\Overlays\Followers.cshtml" />
@@ -1043,7 +1043,6 @@
     <Content Include="Views\Apps\Search.cshtml" />
     <Content Include="Views\Diagrams\LineageTest.cshtml" />
     <Content Include="Views\Diagrams\Map.cshtml" />
-    <Content Include="Views\Relations\AddSource.cshtml" />
     <Content Include="Views\Form\IntersectTypePredicateEditForm.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsAgentOverlay.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsProcessOverlay.cshtml" />

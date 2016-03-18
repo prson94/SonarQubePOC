@@ -31,7 +31,7 @@
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
                 $('#SideIcons').PageTools("reload", type, data.ID);
-                //FieldsGrid("FieldsTile", contextList, permissions, type, data.ID);
+                FieldsGrid("FieldsTile", contextList, permissions, type, data.ID);
             }
         }
 

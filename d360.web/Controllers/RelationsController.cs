@@ -108,14 +108,18 @@ order by	SD.Name,
             return Json(models, JsonRequestBehavior.AllowGet);
         }
 
-        public JsonNetResult OptionsToRelate()
+        public JsonNetResult OptionsToRelate(SystemObjects type, int id)
         {
             #region SQL
-            var sql = @"select	Menu,
-		SubMenu,
-		Type,
-        ID,
-		Name
+            var sql = @"
+select  distinct
+        RT.IntersectTypeID,
+        O.SortOrder,
+        O.Menu,
+		O.SubMenu,
+		O.Type,
+        O.ID,
+		O.Name
 from	(
 		select	1 as SortOrder,
 				'ArtifactType' as [Type],
@@ -128,11 +132,10 @@ from	(
 		SELECT	1 as SortOrder,
 				'TaxonomyType' as [Type],
 				T.ID,
-				T.Name as Name, --C.Name + ' : ' + 
+				T.Name as Name,
 				'Models' as Menu,
 				NULL as SubMenu
 		FROM	TaxonomyType T
-				--inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
 		union
 		SELECT	4 as SortOrder,
 				'DomainType' as [Type],
@@ -176,20 +179,13 @@ from	(
 				'Group' as Name,
 				'People' as Menu,
 				NULL as SubMenu
-		--union
-		--SELECT	2 as SortOrder,
-		--		'FusionAttributeType' as [Type],
-		--		A.ID,
-		--		REPLACE(A.TextPath, T.Name + '.', '') as Name,
-		--		'Fusion' as Menu,
-		--		T.Name as SubMenu
-		--FROM	FusionAttributeType A
-		--		inner join FusionType T on T.ID = A.FusionTypeID
 		) O
-order by	SortOrder, Menu, SubMenu, Name";
+		inner join [utility].[RelationshipTypes] RT on RT.SourceObjectType = O.[Type] and RT.SourceObjectID = O.[ID]
+		inner join cache.[Object] SO on SO.[ObjectType] = RT.TargetObjectType and SO.ObjectTypeID = RT.TargetObjectID and SO.[Object] = @type and SO.ObjectID = @id
+order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             #endregion
 
-            var list = Company.Query<OptionsToRelateDbModel>(sql).ToList();
+            var list = Company.Query<OptionsToRelateDbModel>(sql, new { type = type.ToString(), id }).ToList();
             var jsonItems = new List<OptionsToRelateJsonModel>();
             var jsonMenus = list.Select(i => new { i.Menu }).Distinct().ToList();
             var jsonSubMenus = list.Select(i => new { i.Menu, i.SubMenu }).Distinct().ToList();
@@ -209,7 +205,7 @@ order by	SortOrder, Menu, SubMenu, Name";
 
                         foreach (var listItem in list.Where(i => i.Menu == m.Menu && i.SubMenu == s.SubMenu))
                         {
-                            var listItemMenu = new OptionsToRelateJsonModel { html = string.Format("<span data-a='Intersect' data-t='{0}' data-i='{1}'>{2}</span>", listItem.Type, listItem.ID, listItem.Name) };
+                            var listItemMenu = new OptionsToRelateJsonModel { html = $"<span data-a='Intersect' data-t='{listItem.Type}' data-i='{listItem.ID}' data-it='{listItem.IntersectTypeID}'>{listItem.Name}</span>" };
                             if (addToSubMenu)
                                 submenu.items.Add(listItemMenu);
                             else
@@ -1500,7 +1496,8 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
 	        {
                 ViewData.Add("CanCreateRelationships", false);
 	        }
-
+            ViewData.Add("Object", type.ToString());
+            ViewData.Add("ObjectID", id.ToString());
             var model = Company.GetObjectDetail(type, id);
             return PartialView(model);
         }

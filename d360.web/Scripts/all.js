@@ -39817,9 +39817,16 @@ function HierarchyRuleContextModel(data) {
     self.Object = ko.observable(data.Object || "");
     self.ObjectID = ko.observable(data.ObjectID || 0);
 
-    self.ObjectIndex = ko.observable(data.ObjectIndex || -1);
-    self.ObjectIDIndex = ko.observable(data.ObjectIDIndex || -1);
+    self.ID = ko.computed(function () {
+        return self.Object() + self.ObjectID().toString();
+    });
 
+    self.Checked = ko.observable(data.Checked || false);
+
+    self.Category = ko.observable(data.Category || '');
+    self.Type = ko.observable(data.Type || '');
+    self.Name = ko.observable(data.Name || '');
+    
     return self;
 }
 
@@ -39827,14 +39834,34 @@ function HierarchyRuleItemModel(data) {
     var self = this;
     data = data || {};
 
+    //#region Observables
+
+    self.ID = ko.observable(data.ID || 0);
+    self.IntersectMapID = ko.observable(data.IntersectMapID || 0);
     self.Name = ko.observable(data.Name || "");
+    self.TypeName = ko.observable(data.TypeName || "");
+    self.Object = ko.observable(data.Object || "");
+    self.ObjectID = ko.observable(data.ObjectID || 0);
     self.Description = ko.observable(data.Description || "");
-    self.Order = ko.observable(data.Order || 1);
+    self.SortOrder = ko.observable(data.SortOrder || 1);
+    self.IconForeColor = ko.observable(data.IconForeColor || "#000");
+    self.IconBackColor = ko.observable(data.IconBackColor || "#fff");
 
     self.Contexts = ko.observableArray([]);
 
+    self.RuleName = ko.computed(function () {
+        return self.SortOrder() + '. ' + self.Name();
+    });
+    self.ContextCount = ko.computed(function () {
+        return (self.Contexts().length == 1) ? self.Contexts().length.toString() + ' context selected' : self.Contexts().length.toString() + ' contexts selected';
+    });
+
+    //#endregion
+
+    //load Contexts
     if (data.Contexts) {
         $.each(data.Contexts, function (cxIx, cxItem) {
+            cxItem.Checked = true;
             self.Contexts.push(
                     new HierarchyRuleContextModel(cxItem)
                 );
@@ -39844,147 +39871,503 @@ function HierarchyRuleItemModel(data) {
     return self;
 }
 
-function HierarchyRuleViewModel(id, object, objectID) {
+function HierarchySourceRuleModel(data) {
     var self = this;
 
-    //Simple Properties
-    self.ID = ko.observable(id || 0);
-    self.Name = ko.observable('');
-    self.Object = ko.observable(object || '');
-    self.ObjectID = ko.observable(objectID || 0);
+    if (data == null) {
+        data = { ID: -1, Name: '', Target: '', TargetID: '', Object: '', ObjectID: '', Description: '' };
+    }
+    
+    //#region Observables
 
-    self.InProgress = ko.observable(false);
+    self.ID = ko.observable(data.ID || 0);
+    self.Name = ko.observable(data.Name || '');
+    self.Target = ko.observable(data.AppliesToObject || '');
+    self.TargetID = ko.observable(data.AppliesToObjectID || 0);
+    self.Object = ko.observable(data.Object || '');
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+    self.Description = ko.observable(data.Description || '');
+    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
+    self.ErrorMessage = ko.observable('');
+    self.SourceRuleID = ko.observable(data.SourceRuleID || -1);
+    self.IsTemplate = ko.observable(data.IsTemplate || false);
+    self.IsSaving = ko.observable(false);
 
-    //List Properties
-    self.Contexts = ko.observableArray();
     self.Items = ko.observableArray();
 
-    //Computed Properties
-    //self.CurrentCompanyLogoPathPresent = ko.pureComputed(function () {
-    //    return (self.CurrentCompanyLogoPath().length > 0 && !self.SetLogoToDefault());
-    //}, self);
+    //#endregion
+    
+    //load Items
+    if (data.Items) {
+        for (var i = 0; i < data.Items.length; i++) {
+            self.Items.push(new HierarchyRuleItemModel(data.Items[i]));
+        }
+    }
 
-    //Subscriptions
-    //self.DisableCommunityPosting.subscribe(function (value) {
-    //});
+    //#region Functions
 
-    //#region Methods
+    self.SaveRule = function () {
+        self.IsSaving(true);
+        self.ErrorMessage('');
+        var msg = "";
+        if (self.Items().length < 1)
+            msg += 'Source rule must have at least 1 source item.\n';
+        if (self.Name().length < 1)
+            msg += 'Source rule requires a name.\n';
 
-    self.addItem = function () {
-        self.Items.push(new HierarchyRuleItemModel({}));
-    };
+        for (var i = 0; i < self.Items().length; i++) {
+            if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
+                msg += 'The source "' + self.Items()[i].Name() + '" is missing a context and/or description.\n';
+            }
+        }
 
-    self.deleteItem = function () {
-        self.Items.remove(this);
-    };
+        self.ErrorMessage(msg);
 
-    self.save = function () {
-        self.InProgress(true);
-        
-        var postModel = {
+        if (self.ErrorMessage() != '') {
+            self.IsSaving(false);
+            return;
+        }
+            
+
+        var SourceRule = {
+            ID: self.ID(),
             Name: self.Name(),
-            Contexts: [],
-            Items: []
+            Object: self.Object(),
+            ObjectID: self.ObjectID(),
+            AppliesToObject: self.Target(),
+            AppliesToObjectID: self.TargetID(),
+            AppliesToObjectList: "",
+            Items: ko.toJS(self.Items())
         }
 
-        //Load Contexts
-        for (var c = 0; c < self.Contexts().length; c++) {
-            var ctx = self.Contexts()[c];
-            postModel.Contexts.push({ Object: ctx.Object, ObjectID: ctx.ObjectID });
-        }
-
-        //Load Items
-        for (var r = 0; r < self.Items().length; r++) {
-            var item = {
-                Name: self.Items()[r].Name(),
-                Description: self.Items()[r].Description(),
-                Order: self.Items()[r].Order(),
-                Contexts: []
-            };
-
-            for (var c = 0; c < self.Items()[r].Contexts().length; c++) {
-                var ctx = self.Items()[r].Contexts()[c];
-                item.Contexts.push({ Object: ctx.Object, ObjectID: ctx.ObjectID });
-            }
-
-            postModel.Items.push(item);
-        }
-
-        var ruleID = self.ID();
-        var url = '/form/SourceRules' + ((ruleID > 0) ? '/' + ruleID : '');
-        var method = (ruleID > 0) ? 'put' : 'post';
-
-        $.ajax(url, {
-            data: postModel,
-            dataType: 'json',
-            method: method
-        }).done(function (data, status, xhr) {
-            amplify.publish("SaveAction", { context: 'CompanySettings', action: 'update', id: 0, custom: {} });
-            data.message += " Refreshing page momentarily.";
-            amplify.publish("ShowMessage", data);
-        }).fail(function (xhr, status, error) {
-            amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
-        }).always(function (data, status, error) {
-            self.InProgress(false);
-            console.log(status);
-            if (error.status == "200") {
-                setTimeout(function () { document.location.reload(); }, 3000);
-            }
+        $.ajax({
+            url: '/form/SourceRules/save',
+            data: SourceRule,
+            method: 'POST'
+        }).always(function () {
+            self.IsSaving(false);
         });
-    };
+    }
 
     //#endregion
 
-    if (self.ID() > 0) {
-        $.getJSON('/form/SourceRules/' + self.ID(), function (relData) {
+    return self;
+}
 
-            self.Name(relData.Name);
-            self.Object(relData.Object);
-            self.ObjectID(relData.ObjectID);
+function HierarchyPanelViewModel(data) {
+    var self = this;
+    self.jqxLoaded = false;
+    //#region Observables
 
-            $.each(relData.Contexts, function (cxIx, cxItem) {
-                self.Contexts.push(
-                        new HierarchyRuleContextModel(cxItem)
-                    );
-            });
+    self.ID = ko.observable(data.ID || 0);
+    self.Name = ko.observable('');
+    self.Target = ko.observable(data.target || '');
+    self.TargetID = ko.observable(data.targetID || 0);
+    self.Object = ko.observable(data.object || '');
+    self.ObjectID = ko.observable(data.objectID || 0);
+    self.NewRule = ko.observable(new HierarchySourceRuleModel(null));
+    self.NewRule().Name('New Rule');
+    self.NewRule().Object(self.Object());
+    self.NewRule().ObjectID(self.ObjectID());
+    self.NewRule().Target(self.Target());
+    self.NewRule().TargetID(self.TargetID());
+    self.InProgress = ko.observable(false);
+    self.IsGridLoading = ko.observable(false);
+    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null));
+    self.Mode = ko.observable('add'); 
 
-            $.each(relData.Items, function (roIx, roItem) {
-                self.Items.push(
+    self.Contexts = ko.observableArray([]);
+    self.Items = ko.observableArray();
+    self.Sources = ko.observableArray();
+    self.SourceRules = ko.observableArray();
+
+    self.IsItemSelected = ko.computed(function () {
+        var val = true;
+        if (self.SelectedRule() == null)
+            val = false;
+        if (self.SelectedRule().SelectedItem() == null)
+            val = false;
+        if (self.SelectedRule().SelectedItem().ID() == 0)
+            val = false;
+        if (self.jqxLoaded) {
+           $('#hierarchyRuleContextGrid').jqxGrid({ disabled: !val });
+        }
+        return val;
+    });
+
+    //#endregion
+ 
+    //#region Functions
+
+    self.LoadRules = function () {
+        self.InProgress(true);
+        $.ajax({
+            url: '/form/SourceRules/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
+            method: 'GET'
+        }).done(function (data) {
+            if (data == [] || data == null || data.length < 1)
+                return;
+            self.SourceRules([]);
+            for (var i = 0; i < data.length; i++) {
+                data[i].SourceRuleID = self.ID();
+                var rule = new HierarchySourceRuleModel(data[i]);
+                self.SourceRules.push(rule);
+                for (var j = 0; j < data[i].Items.length; j++) {
+                    for (var k = 0; k < self.Sources().length; k++) {
+                        if (data[i].Items[j].IntersectMapID == self.Sources()[k].IntersectMapID()) {
+                            self.Sources.remove(self.Sources()[k]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }).always(function () {
+            self.SelectRule(self.NewRule());
+            self.InProgress(false);
+            if (!self.jqxLoaded)
+                self.ApplyJqxBindings();
+        });
+    }
+
+    self.LoadSources = function () {
+        self.InProgress(true);
+
+        $.ajax({
+            url: '/form/SourceRules/sources/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
+            method: 'GET'
+        }).done(function (data) {
+            if (data.Contexts)
+                $.each(data.Contexts, function (cxIx, cxItem) {
+                    self.Contexts.push(
+                            new HierarchyRuleContextModel(cxItem)
+                        );
+                });
+            $.each(data, function (roIx, roItem) {
+                self.Sources.push(
                         new HierarchyRuleItemModel(roItem)
                     );
             });
+
+        }).always(function () {
+            self.InProgress(false);
+            self.LoadContexts();
+            self.LoadRules();
+        });
+    }
+
+    self.LoadSources();
+
+    self.LoadContexts = function () {
+        $.ajax({
+            url: '/form/SourceRules/contexts',
+            method: 'GET'
+        }).done(function (data) {
+            if (data == null)
+                return;
+            if (data.count == null || data.items == null)
+                return;
+            if (data.items.length < 1)
+                return;
+            self.Contexts([]);
+            self.Contexts(data.items);
+        });
+    };
+
+    self.ApplyJqxBindings = function () {
+
+        $('#hierarchyRuleList').jqxDropDownList({
+            theme: theme,
+            displayMember: 'Name',
+            valueMember: 'ID'
+        })
+        .on('select', function (event) {
+            var args = event.args;
+            if (args == null)
+                return;
+
+            var value = args.item.value;
+
+            for (var i = 0; i < self.SourceRules().length; i++) {
+                if (self.SourceRules()[i].ID() == value) {
+                    self.SelectRule(self.SourceRules()[i]);
+                    break;
+                }
+            }
+
         });
 
-        // Step 1
-        //$.getJSON('/form/IntersectType_Side1Options', function (relData) {
-        //    self.Side1Options(relData);
-        //}).then(function () {
-        //    // Step 2
-        //    $.getJSON(
-        //        '/form/IntersectType_FormData',
-        //        { id: self.ID() },
-        //        function (relData) {
+        $('#hierarchyRuleSourceList').jqxListBox({
+            theme: 'metro',
+            displayMember: 'Name',
+            valueMember: 'Order',
+            allowDrag: false,
+            allowDrop: false,
+            renderer: function (index, label, value) {
+                var data = $('#hierarchyRuleSourceList').jqxListBox('getItem', index);
+                data = data.originalItem;
+                if (data == null)
+                    return "";
+                return "<div style='padding:3px;border-radius:3px;font-size:.9em;background-color:" + (data.IconBackColor || "#000") + ";color:" + (data.IconForeColor || "#fff") + "'>" + data.Name + "</div>"
+            }
+        })
 
-        //            //Side2 needs to be first, here.
-        //            self.Side2(relData.Side2);
-        //            self.Side2DisplayText(relData.Side2DisplayText);
-        //            self.Side1(relData.Side1);
-        //            self.Side1DisplayText(relData.Side1DisplayText);
+        $("#hierarchyRuleItemList").jqxListBox({
+            theme: 'metro',
+            displayMember: 'RuleName',
+            valueMember: 'Order',
+            allowDrag: false,
+            allowDrop: false,
+            renderer: function (index, label, value) {
+                var data = $('#hierarchyRuleItemList').jqxListBox('getItem', index);
+                data = data.originalItem;
+                if (data == null)
+                    return "";
+                return "<div style='padding:3px;border-radius:3px;font-size:.9em;background-color:" + (data.IconBackColor || "#000") + ";color:" + (data.IconForeColor || "#fff") + "'>" + data.RuleName + "</div>"
+            }
+        })
+        .on('select', function (event) {
+            var args = event.args;
+            if (args == null)
+                return;
+            var index = args.index;
+            if (index == null)
+                return;
+            self.SelectItem(self.SelectedRule().Items()[index]);
+        });
 
-        //            self.LimitedChangesOnly(relData.LimitedChangesOnly);
+        $("#hierarchyRuleAddButton").jqxButton({
+            theme: theme,
+            width: '100%'
+        })
+            .on('click', function () {
+                var items = $('#hierarchyRuleSourceList').jqxListBox('getSelectedItems');
 
-        //            var indexToSelect = -1;
+                if (items == null || items == [])
+                    return;
 
-        //            $.each(self.Side1Options(), function (ix, item) {
-        //                if (item.value == relData.Side1) {
-        //                    indexToSelect = ix;
-        //                }
-        //            });
-        //            self.Side1Index(indexToSelect);
-        //        }
-        //    );
-        //});
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i] == null)
+                        continue;
+                    var item = items[i].originalItem;
+                    if (item == null)
+                        continue;
+
+                    var obj = self.FindItemByOrder(item.SortOrder, self.Sources());
+
+                    if (obj == null)
+                        continue;
+                    self.Sources.remove(obj);
+                    self.SelectedRule().Items.push(obj);
+                    self.ReorderItems(self.SelectedRule().Items());
+                    self.ReorderItems(self.Sources());
+                }
+                $('#hierarchyRuleSourceList').jqxListBox('clearSelection');
+            });
+
+        $("#hierarchyRuleRemoveButton").jqxButton({
+            theme: theme,
+            width: '100%'
+        })
+            .on('click', function () {
+                var items = $('#hierarchyRuleItemList').jqxListBox('getSelectedItems');
+
+                if (items == null || items == [])
+                    return;
+
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i] == null)
+                        continue;
+                    var item = items[i].originalItem;
+                    if (item == null)
+                        continue;
+
+                    console.log(item);
+                    var obj = self.FindItemByOrder(item.SortOrder, self.SelectedRule().Items());
+                    console.log(obj);
+                    if (obj == null)
+                        continue;
+                    $('#hierarchyRuleItemList').jqxListBox('clearSelection');
+                    self.SelectedRule().Items.remove(obj);
+                    if (self.SelectedRule().Items().length > 0)
+                        self.SelectItem(self.SelectedRule().Items()[0]);
+
+
+                    self.Sources.push(obj);
+                    self.ReorderItems(self.SelectedRule().Items());
+                    self.ReorderItems(self.Sources());
+                }
+
+            });
+
+        $('#hierarchyRuleUpButton').jqxButton({
+            theme: theme,
+            width: '100%'
+        })
+            .on('click', function () {
+                var item = $('#hierarchyRuleItemList').jqxListBox('getSelectedItem');
+                if (item == null || item == [] || item.index == 0)
+                    return;
+                var index = item.index;
+                if (item.originalItem == null)
+                    return;
+                item = item.originalItem;
+
+                var itemAbove = self.SelectedRule().Items()[index - 1];
+                var itemCurrent = self.FindItemByOrder(item.SortOrder, self.SelectedRule().Items());
+                self.SelectedRule().Items()[index - 1] = itemCurrent;
+                self.SelectedRule().Items()[index] = itemAbove;
+                self.ReorderItems(self.SelectedRule().Items());
+                $('#hierarchyRuleItemList').jqxListBox('selectIndex', index - 1);
+
+            });
+
+        $('#hierarchyRuleDownButton').jqxButton({
+            theme: theme,
+            width: '100%'
+        })
+            .on('click', function () {
+                var item = $('#hierarchyRuleItemList').jqxListBox('getSelectedItem');
+                if (item == null || item == [] || item.index == self.SelectedRule().Items().length - 1)
+                    return;
+                var index = item.index;
+                if (item.originalItem == null)
+                    return;
+                item = item.originalItem;
+
+                var itemBelow = self.SelectedRule().Items()[index + 1];
+                var itemCurrent = self.FindItemByOrder(item.SortOrder, self.SelectedRule().Items());
+                self.SelectedRule().Items()[index + 1] = itemCurrent;
+                self.SelectedRule().Items()[index] = itemBelow;
+                self.ReorderItems(self.SelectedRule().Items());
+                $('#hierarchyRuleItemList').jqxListBox('selectIndex', index + 1);
+            });
+
+        $('#hierarchyRuleSaveButton').jqxButton({
+            theme: theme,
+            width: 60
+        })
+        .on('click', function () {
+            self.SelectedRule().SaveRule();
+            //self.LoadSources();
+        });
+
+        $('#hierarchyRuleIsTemplate').jqxCheckBox({
+            theme: theme,
+            disabled: true
+        });
+
+        $('#hierarchyRuleAddRadioButton').jqxRadioButton({})
+            .on('checked', function () {
+                self.Mode('add');
+                self.SelectRule(self.NewRule());
+            });
+
+        $('#hierarchyRuleEditRadioButton').jqxRadioButton({})
+            .on('checked', function () {
+                self.Mode('edit');
+                if (self.SourceRules().length > 0) {
+                    self.SelectRule(self.SourceRules()[0]);
+                }
+                $('#hierarchyRuleList').jqxDropDownList({ selectedIndex: 0 });
+            });
+
+        $('#hierarchyRuleTemplateRadioButton').jqxRadioButton({ disabled: true })
+            .on('checked', function () {
+                self.Mode('template');
+            });
+
+
+        $('#hierarchyRuleContextGrid').jqxGrid({
+            theme: theme,
+            width: '100%',
+            height: 150,
+            disabled: true,
+            showfilterrow: true,
+            filterable: true,
+            editable: true,
+            columns: [
+                  { text: '', dataField: 'Checked', columntype: 'checkbox', width: 25, editable: true, filtertype: 'bool', filterable: true },
+                  { text: 'Category', dataField: 'Category', width: 100, filtertype: 'checkedlist', editable: false },
+                  { text: 'Type', dataField: 'Type', width: 100, filtertype: 'checkedlist', editable: false },
+                  { text: 'Name', dataField: 'Name', editable: false }
+            ]
+        })
+        .on('cellendedit', function (event) {
+            var args = event.args;
+            var dataField = event.args.datafield;
+
+            if (dataField != 'Checked')
+                return;
+
+            setTimeout(function () { self.IsGridLoading(true); }, 1);
+
+            var value = args.value;
+            console.log(args);
+
+            var rowData = self.Contexts()[args.rowindex];
+            rowData.Checked = value;
+            if (value === true)
+                self.SelectedRule().SelectedItem().Contexts.push(new HierarchyRuleContextModel(rowData));
+            else {
+                for (var i = 0; i < self.SelectedRule().SelectedItem().Contexts().length; i++) {
+                    var c = self.SelectedRule().SelectedItem().Contexts()[i];
+                    if (c.Object() == rowData.Object && c.ObjectID() == rowData.ObjectID) {
+                        self.SelectedRule().SelectedItem().Contexts.remove(c);
+                        break;
+                    }
+                }
+            };
+
+            self.CheckUsedContextItems();
+            setTimeout(function () { self.IsGridLoading(false); }, 1);
+
+
+        });
+
+        self.jqxLoaded = true;
+        
     }
+
+    self.FindItemByOrder = function (order, array) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i].SortOrder() == order)
+                return array[i];
+        }
+    }
+
+    self.ReorderItems = function (array) {
+        for (var i = 0; i < array.length; i++) {
+            array[i].SortOrder(i + 1);
+        }
+    }
+
+    self.CheckUsedContextItems = function () {
+        self.IsGridLoading(true);
+        for (var i = 0; i < self.Contexts().length; i++) {
+            var c = self.Contexts()[i];
+            c.Checked = false;
+            for (var j = 0; j < self.SelectedRule().SelectedItem().Contexts().length; j++) {
+                var rc = self.SelectedRule().SelectedItem().Contexts()[j];
+                if (rc.Object() == c.Object && rc.ObjectID() == c.ObjectID) {
+                    c.Checked = true;
+                }
+            }
+        }
+        self.Contexts.valueHasMutated();
+        self.IsGridLoading(false);
+    }
+
+    self.SelectRule = function (selectedRule) {
+        self.SelectedRule(selectedRule);
+
+    }
+
+    self.SelectItem = function (selectedItem) {
+        self.SelectedRule().SelectedItem(selectedItem);
+        self.CheckUsedContextItems();
+    }
+
+    //#endregion
 
     return self;
 }
@@ -41210,6 +41593,106 @@ var ReportLayoutModel = function (reportLayoutID) {
 }
 ReportLayoutModel.prototype = new BaseOverlayTileModel();
 
+
+
+var HomePageCountTileModel = function (title,days) {
+    var self = this;
+
+    self.Title = ko.observable(title);
+    self.Rows = ko.observableArray();
+    self.LookBackDays = ko.observable(days);
+    self.NoDataMessage = ko.observable("No " + title);
+    //rows has name, total count, new count
+    
+
+    return self;
+}
+
+function SearchResultCategory(data) {
+    var self = this;
+    data = data || {};
+    self.Name = data.Name;
+    self.DisplayName = data.DisplayName;
+    self.ResultCount = data.ResultCount;
+    self.Categories = data.Categories;
+    self.showRow = ko.observable(data.Name == 'Artifact' ? true : false);
+    self.toggleVisibility = function () {
+        self.showRow(!self.showRow());
+    };
+    self.showToggle = data.Categories != null;
+}
+
+function SearchAdvancedFilter(selectedField, search, exact) {
+    var self = this;    
+    self.Term = ko.observable(search);
+    self.exactMatch = ko.observable(exact);
+    self.SelectedFieldIndex = ko.observable(selectedField);
+    self.SelectedTypeIndex = ko.observable();
+    self.TypeNames = ko.observableArray([
+        { title: "Attribute", value: "Attribute" },
+        { title: "Fusion", value: "FusionAttributes" },
+        { title: "Fusion Type", value: "FusionType" },
+        { title: "Glossary", value: "Artifact" },
+        { title: "Group", value: "Group" },
+        { title: "Model", value: "Taxonomy" },
+        { title: "Reference", value: "Domain" },
+        { title: "User", value: "User" },
+    ]);
+    self.ShowConnectors = ko.observable(false);
+    self.Connectors = ko.observableArray([
+        { title: "And", value: "and" },
+        { title: "Or", value: "or" },
+    ]);
+    self.SelectedConnectorIndex = ko.observable(0);
+    self.ShowText = ko.computed(function () {        
+        return (self.SelectedFieldIndex() != 3);
+    });
+}
+
+function SearchViewModel() {
+    var self = this;
+    self.categories = ko.observableArray();
+    self.results = ko.observableArray();
+    self.elapsedTime = ko.observable();
+
+    self.addFilter = function () {
+        self.advancedFilter.push(new SearchAdvancedFilter(-1,"", false));
+    };
+
+    self.removeFilter = function (index) {
+        if (index > -1) {            
+            self.advancedFilter.splice(index, 1);
+        }
+    };
+
+    self.advancedFilterJSON = function () {
+        var filter = new Array();
+        for (var i = 0 ; i < self.advancedFilter().length; i++) {            
+            var fieldName = (self.advancedFilter()[i].SelectedFieldIndex() >= 0 ? self.FieldNames()[self.advancedFilter()[i].SelectedFieldIndex()].value : "");            
+            if (fieldName == "") continue;
+            var val = self.advancedFilter()[i].Term();
+            if (fieldName == '_type') {                
+                val = self.advancedFilter()[i].TypeNames()[self.advancedFilter()[i].SelectedTypeIndex()].value;
+            }
+            var con = self.advancedFilter()[i].Connectors()[self.advancedFilter()[i].SelectedConnectorIndex()].value;
+
+            filter[i] = { field: fieldName, value: val, exact: self.advancedFilter()[i].exactMatch(), connector: con };
+        }
+        return JSON.stringify(filter);
+    }
+
+    self.FieldNames = ko.observableArray([{ title: "Category", value: "Type" }, { title: "Description", value: "Description" }, { title: "Name", value: "Name" }, { title: "Type", value: "_type" } ]);
+    self.advancedFilter = ko.observableArray();
+
+    self.showAdvanced = function (phrase) {
+        self.advancedFilter([]);        
+        self.advancedFilter.push(new SearchAdvancedFilter(2,phrase, false));
+    }
+    return self;
+}
+
+
+
 //#endregion
 
 //#region VIEW MODELS
@@ -41235,7 +41718,7 @@ var ResourcePageViewModel = function (title, directions, breadcrumbs) {
     return self;
 }
 
-var BoardViewModel = function () {
+var BoardViewModel = function (initialDaysToLookBack) {
     var self = this;
     self.comments = ko.observableArray();
     self.newMessage = ko.observable();
@@ -41245,6 +41728,9 @@ var BoardViewModel = function () {
     self.moreComments = ko.observable();
     self.searchFilter = ko.observable('');
     self.ProcessingCount = ko.observable(0);
+    self.ShowDateFilter = ko.observable(true);
+    self.ShowTypeFilter = ko.observable(true);
+
     self.IsProcessing = ko.computed(function () {
         return (self.ProcessingCount() != 0);
     });
@@ -41334,7 +41820,7 @@ var BoardViewModel = function () {
     self.dateFilterOptions = ko.observableArray([
         { Text: ' over past day', Value: -1 },
         { Text: 'over past week', Value: -7 },
-        { Text: 'over past month', Value: -30 },
+        { Text: 'over past month', Value: -30 },        
         { Text: 'All time', Value: 0 }
     ]);
 
@@ -41384,7 +41870,7 @@ var BoardViewModel = function () {
         { Text: 'Questions', Value: 9 }
     ]);
 
-    self.selectedDateFilterOption = ko.observable(-7);
+    self.selectedDateFilterOption = ko.observable(initialDaysToLookBack === undefined ? -7 : initialDaysToLookBack);
     self.selectedTypeFilterOption = ko.observable();
 
     self.tagSuggestions = ko.observableArray();
@@ -41459,7 +41945,7 @@ var BoardViewModel = function () {
             self.ObjectType = objectType;
             self.ObjectID = objectID;
 
-            self.selectedDateFilterOption(-7);
+            self.selectedDateFilterOption(initialDaysToLookBack === undefined ? -7 : initialDaysToLookBack);
 
 
             self.getMoreComments();
@@ -43085,7 +43571,7 @@ function ClickGridTool(event) {
                                 addLabel(cpnl, v, false);
 
                                 fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" />');
-                                fld.val(cleanedValue)
+                                fld.val($('<div/>').html(cleanedValue).text());
                                 fld.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
                                 addValidator(v, validatorRules);
 
@@ -44066,7 +44552,7 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
         ready: function () {
             try {
                 var rows = $(treeControlID).jqxTreeGrid('getRows');
-                if (rows.length > 0) {
+                if (rows.length > 0) {                    
                     $(treeControlID).jqxTreeGrid('selectRow', ((rows[0].Items[0]) ? rows[0].Items[0].uid : rows[0].uid));
                 }
             } catch (e) {
@@ -44125,27 +44611,27 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     }
 
     function treeControlBindingComplete(evt) {
-        var calculateCount = function (row, count) {
-            if (row.records) {
-                count += row.records.length;
-                $.each(row.records, function () {
+            var calculateCount = function (row, count) {
+                if (row.records) {
+                    count += row.records.length;
+                    $.each(row.records, function () {
+                        count = calculateCount(this, count);
+                    });
+                }
+                return count;
+            };
+
+            var count = 0;
+            try {
+                var topRows = $(treeControlID).jqxTreeGrid('getRows');
+                $.each(topRows, function () {
                     count = calculateCount(this, count);
                 });
+            } catch (e) {
+                count = 0;
             }
-            return count;
-        };
-
-        var count = 0;
-        try {
-            var topRows = $(treeControlID).jqxTreeGrid('getRows');
-            $.each(topRows, function () {
-                count = calculateCount(this, count);
-            });
-        } catch (e) {
-            count = 0;
-        }
         amplify.publish("AttributeCount", { count: count });
-    }
+            }
 
 
     function treeControlRowSelect(evt) {
@@ -44158,37 +44644,37 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
             var key = args.key;
 
             if (row) {
-                var t = row.ObjectType;//null;
-                var i = row.ObjectID;//null;
-                var detailtype = null;
-                var detailid = null;
-                var roottype = row.ParentObjectType; //null;
-                var rootid = row.ParentObjectID; //null;
-                var attributeID = null;
-                var targetType = row.TargetObjectType;
+            var t = row.ObjectType;//null;
+            var i = row.ObjectID;//null;
+            var detailtype = null;
+            var detailid = null;
+            var roottype = row.ParentObjectType; //null;
+            var rootid = row.ParentObjectID; //null;
+            var attributeID = null;
+            var targetType = row.TargetObjectType;
 
-                if (t === 'Attribute') {
-                    attributeID = i;
-                }
+            if (t === 'Attribute') {
+                attributeID = i;
+            }
 
-                if (targetType) {
-                    detailtype = targetType;
-                    detailid = row.TargetObjectID;
-                }
-                else {
-                    detailtype = t;
-                    detailid = i;
-                }
+            if (targetType) {
+                detailtype = targetType;
+                detailid = row.TargetObjectID;
+            }
+            else {
+                detailtype = t;
+                detailid = i;
+            }
 
-                loadToolbar(t, i, roottype, rootid, attributeID);
+            loadToolbar(t, i, roottype, rootid, attributeID);
 
-                attributeSwitchToViewer(targetType, row.TargetObjectID);
-                if (detailid && detailtype === "Attribute") {
-                    ObjectDetail(_detailControlID, detailtype, detailid);
-                }
-                else {
-                    $(detailControlID).html('');
-                }
+            attributeSwitchToViewer(targetType, row.TargetObjectID);
+            if (detailid && detailtype === "Attribute") {
+                ObjectDetail(_detailControlID, detailtype, detailid);
+            }
+            else {
+                $(detailControlID).html('');
+            }
             }
         } catch (e) {
             logError("Children : AttributeTree.select", e);
@@ -44494,17 +44980,17 @@ function CollapsibleAttributesTile(controlID, contextList, permissions, type, id
         var exp = $('#' + controlID).jqxExpander('animationType');
         if (exp) {
             exists = true;
-        }
+                    }
     } catch (e) { }
     try { unsubscribe({}); } catch (e) { }
 
-    //#endregion
+                    //#endregion
 
     if (!exists) {
         $('#' + controlID).css('margin', '10px');
         $('#' + controlID).html('<div>Attributes<span id="' + controlID_count + '"></span></div><div style="min-height: 150px"><div id="' + controlID_sub + '"></div></div>');
         $('#' + controlID).jqxExpander({ theme: theme, expanded: false });
-    }
+                    }
     AttributesTile(controlID_sub, contextList, permissions, type, id, '', false);
 
     //#region Register Events
@@ -44514,8 +45000,8 @@ function CollapsibleAttributesTile(controlID, contextList, permissions, type, id
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
 
-    //#endregion
-}
+                    //#endregion
+                    }
 
 function CollapsibleTypeHierarchyTile(controlID, contextList, permissions, type, id) {
     var controlID_sub = controlID + '_Sub';
@@ -44542,7 +45028,7 @@ function CollapsibleTypeHierarchyTile(controlID, contextList, permissions, type,
         var exp = $('#' + controlID).jqxExpander('animationType');
         if (exp) {
             exists = true;
-        }
+    }
     } catch (e) { }
 
     //#endregion
@@ -44562,7 +45048,7 @@ function CollapsibleTypeHierarchyTile(controlID, contextList, permissions, type,
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
 
     //#endregion
-}
+        }
 
 function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) {
     var controlID_count = controlID + '_Count';
@@ -44581,7 +45067,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
         }
         $('#' + controlID_count).html("&#160;(<b>" + count + "</b>)");
     }
-    
+
     function saveAction(data) {
         try {
             switch (data.context) {
@@ -44614,7 +45100,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         $('#' + controlID).off('expanded', expanded);
-    }
+        }
 
     //#endregion
 
@@ -44627,7 +45113,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
         var exp = $('#' + controlID).jqxExpander('animationType');
         if (exp) {
             exists = true;
-        }
+    }
     } catch (e) { }
 
     //#endregion
@@ -44639,7 +45125,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
 
     //#region Grid
 
-    try {
+            try {
         source = {
             datatype: 'json',
             url: '/api/' + type + '/' + id + '/synonyms',
@@ -44673,7 +45159,7 @@ function CollapsibleSynonymsTile(controlID, contextList, permissions, type, id) 
                 { datafield: "Description", text: "Description" }
             ]
         });
-    }
+            }
     catch (e) {
 
     }
@@ -44907,249 +45393,249 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType) {
 
                 if (permissions.HasPermission("Relationship", "Update")) {
 
-                    var rowKey = null;
-                    var isUpdating = false;
+                var rowKey = null;
+                var isUpdating = false;
 
-                    var html = $("<div style='overflow: hidden; position: relative; height: 100%; width: 100%; margin-bottom: 4px'></div>");
-                    var spinner = $("<span style='display:none' id='" + ctrlID + "_toolbar_spinner'><i class='fa fa-spinner fa-2x fa-spin'></i></span>");
-                    var buttonTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa {fa-icon}'></i></div></div>";
-                    var addButton = $(buttonTemplate.replace("{fa-icon}", "fa-level-down"));
-                    var addParentButton = $(buttonTemplate.replace("{fa-icon}", "fa-level-up fa-flip-horizontal"));
-                    var saveButton = $(buttonTemplate.replace("{fa-icon}", "fa-save"));
-                    var editButton = $(buttonTemplate.replace("{fa-icon}", "fa-pencil"));
-                    var deleteButton = $(buttonTemplate.replace("{fa-icon}", "fa-trash"));
-                    var cancelButton = $(buttonTemplate.replace("{fa-icon}", "fa-remove"));
-                    html.append(addParentButton);
-                    html.append(addButton);
-                    html.append(saveButton);
-                    html.append(editButton);
-                    html.append(deleteButton);
-                    html.append(cancelButton);
-                    html.append(spinner);
-                    toolBar.append(html);
-                    addButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "add a child", position: 'top', theme: 'metro', opacity: 1 });
-                    addParentButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "add a parent", position: 'top', theme: 'metro', opacity: 1 });;
-                    saveButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "save changes", position: 'top', theme: 'metro', opacity: 1 });;
-                    editButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "edit selected artifact", position: 'top', theme: 'metro', opacity: 1 });;
-                    deleteButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "delete selected artifact", position: 'top', theme: 'metro', opacity: 1 });;
-                    cancelButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "cancel", position: 'top', theme: 'metro', opacity: 1 });;
+                var html = $("<div style='overflow: hidden; position: relative; height: 100%; width: 100%; margin-bottom: 4px'></div>");
+                var spinner = $("<span style='display:none' id='" + ctrlID + "_toolbar_spinner'><i class='fa fa-spinner fa-2x fa-spin'></i></span>");
+                var buttonTemplate = "<div style='float: left; padding: 3px; margin: 2px;'><div style='margin: 4px; width: 16px; height: 16px;'><i class='fa {fa-icon}'></i></div></div>";
+                var addButton = $(buttonTemplate.replace("{fa-icon}", "fa-level-down"));
+                var addParentButton = $(buttonTemplate.replace("{fa-icon}", "fa-level-up fa-flip-horizontal"));
+                var saveButton = $(buttonTemplate.replace("{fa-icon}", "fa-save"));
+                var editButton = $(buttonTemplate.replace("{fa-icon}", "fa-pencil"));
+                var deleteButton = $(buttonTemplate.replace("{fa-icon}", "fa-trash"));
+                var cancelButton = $(buttonTemplate.replace("{fa-icon}", "fa-remove"));
+                html.append(addParentButton);
+                html.append(addButton);
+                html.append(saveButton);
+                html.append(editButton);
+                html.append(deleteButton);
+                html.append(cancelButton);
+                html.append(spinner);
+                toolBar.append(html);
+                addButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "add a child", position: 'top', theme: 'metro', opacity: 1 });
+                addParentButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "add a parent", position: 'top', theme: 'metro', opacity: 1 });;
+                saveButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "save changes", position: 'top', theme: 'metro', opacity: 1 });;
+                editButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "edit selected artifact", position: 'top', theme: 'metro', opacity: 1 });;
+                deleteButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "delete selected artifact", position: 'top', theme: 'metro', opacity: 1 });;
+                cancelButton.jqxButton({ cursor: "pointer", height: 25, width: 25, theme: 'metro' }).jqxTooltip({ content: "cancel", position: 'top', theme: 'metro', opacity: 1 });;
 
-                    var setButtonState = function (state) {
-                        if (isUpdating)
-                            state = 'disable';
+                var setButtonState = function (state) {
+                    if (isUpdating)
+                        state = 'disable';
                         switch (state) {
-                            case 'select':
-                            case 'save':
-                                addButton.jqxButton({ disabled: false });
-                                addParentButton.jqxButton({ disabled: false });
-                                saveButton.jqxButton({ disabled: true });
-                                editButton.jqxButton({ disabled: false });
-                                deleteButton.jqxButton({ disabled: false });
-                                cancelButton.jqxButton({ disabled: true });
-                                break;
-                            case 'unselect':
-                                addButton.jqxButton({ disabled: true });
-                                addParentButton.jqxButton({ disabled: true });
-                                saveButton.jqxButton({ disabled: true });
-                                editButton.jqxButton({ disabled: true });
-                                deleteButton.jqxButton({ disabled: true });
-                                cancelButton.jqxButton({ disabled: true });
-                                break;
-                            case 'edit':
-                                addButton.jqxButton({ disabled: true });
-                                addParentButton.jqxButton({ disabled: true });
-                                saveButton.jqxButton({ disabled: false });
-                                editButton.jqxButton({ disabled: true });
-                                deleteButton.jqxButton({ disabled: true });
-                                cancelButton.jqxButton({ disabled: false });
-                                break;
-                            case 'disable':
-                                addButton.jqxButton({ disabled: true });
-                                addParentButton.jqxButton({ disabled: true });
-                                saveButton.jqxButton({ disabled: true });
-                                editButton.jqxButton({ disabled: true });
-                                deleteButton.jqxButton({ disabled: true });
-                                cancelButton.jqxButton({ disabled: true });
-                                break;
-                        }
-
-                        if (!permissions.HasPermission("Relationship", "Create"))
+                        case 'select':
+                        case 'save':
+                            addButton.jqxButton({ disabled: false });
+                            addParentButton.jqxButton({ disabled: false });
+                            saveButton.jqxButton({ disabled: true });
+                            editButton.jqxButton({ disabled: false });
+                            deleteButton.jqxButton({ disabled: false });
+                            cancelButton.jqxButton({ disabled: true });
+                            break;
+                        case 'unselect':
                             addButton.jqxButton({ disabled: true });
-                        if (!permissions.HasPermission("Relationship", "Update"))
+                            addParentButton.jqxButton({ disabled: true });
+                            saveButton.jqxButton({ disabled: true });
                             editButton.jqxButton({ disabled: true });
-                        if (!permissions.HasPermission("Relationship", "Delete"))
                             deleteButton.jqxButton({ disabled: true });
+                            cancelButton.jqxButton({ disabled: true });
+                            break;
+                        case 'edit':
+                            addButton.jqxButton({ disabled: true });
+                            addParentButton.jqxButton({ disabled: true });
+                            saveButton.jqxButton({ disabled: false });
+                            editButton.jqxButton({ disabled: true });
+                            deleteButton.jqxButton({ disabled: true });
+                            cancelButton.jqxButton({ disabled: false });
+                            break;
+                        case 'disable':
+                            addButton.jqxButton({ disabled: true });
+                            addParentButton.jqxButton({ disabled: true });
+                            saveButton.jqxButton({ disabled: true });
+                            editButton.jqxButton({ disabled: true });
+                            deleteButton.jqxButton({ disabled: true });
+                            cancelButton.jqxButton({ disabled: true });
+                            break;
                     }
 
-                    setButtonState('unselect');
+                    if (!permissions.HasPermission("Relationship", "Create"))
+                        addButton.jqxButton({ disabled: true });
+                    if (!permissions.HasPermission("Relationship", "Update"))
+                        editButton.jqxButton({ disabled: true });
+                    if (!permissions.HasPermission("Relationship", "Delete"))
+                        deleteButton.jqxButton({ disabled: true });
+                }
+                
+                setButtonState('unselect');
 
-                    $(selector).on('rowSelect', function (event) {
-                        setButtonState('select');
+                $(selector).on('rowSelect', function (event) {
+                    setButtonState('select');
 
-                        if (mode == 'edit') {
-                            $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
-                        }
-                        //console.log(mode);
-                        if (mode != 'saving') {
-                            mode = '';
-                        }
-                        rowKey = event.args.key;
-                        var row = $(selector).jqxTreeGrid('getRow', rowKey);
+                    if (mode == 'edit') {
+                        $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
+                    }
+                    //console.log(mode);
+                    if (mode != 'saving') {
+                        mode = '';
+                    }
+                    rowKey = event.args.key;
+                    var row = $(selector).jqxTreeGrid('getRow', rowKey);
 
 
-                        //console.log(mode);
-                        //if (mode != '') {
-                        //    console.log(mode + ',' + rowKey);
-                        //    $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
-                        //    if (mode == 'add')
-                        //        $(selector).jqxTreeGrid('deleteRow', rowKey);
-                        //}
+                    //console.log(mode);
+                    //if (mode != '') {
+                    //    console.log(mode + ',' + rowKey);
+                    //    $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
+                    //    if (mode == 'add')
+                    //        $(selector).jqxTreeGrid('deleteRow', rowKey);
+                    //}
 
-                        if (row != null)
-                            if (row.ParentID == null || row.ParentID == 0)
-                                if (mapType == 4)
-                                    addParentButton.jqxButton({ disabled: true });
-                    });
-                    $(selector).on('rowDoubleClick', function (event) {
-                        window.location.href = event.args.row.Url;
-                    });
-                    $(selector).on('bindingComplete', function (event) {
-                        showFocalRow($(selector), event);
-                    });
+                    if (row != null)
+                        if (row.ParentID == null || row.ParentID == 0)
+                            if (mapType == 4)
+                                addParentButton.jqxButton({ disabled: true });
+                });
+                $(selector).on('rowDoubleClick', function (event) {
+                    window.location.href = event.args.row.Url;
+                });
+                $(selector).on('bindingComplete', function (event) {
+                    showFocalRow($(selector), event);
+                });
                     $(selector).on('rowUnselect', function () { setButtonState('unselect') });
-                    $(selector).on('rowEndEdit', function (event) {
-                        setButtonState('save');
-                        if (mode == 'add') {
-                            $(selector).jqxTreeGrid('deleteRow', rowKey);
+                $(selector).on('rowEndEdit', function (event) {
+                    setButtonState('save');
+                    if (mode == 'add') {
+                        $(selector).jqxTreeGrid('deleteRow', rowKey);
+                        
+                    }
 
-                        }
+                    //console.log(mode);
+                    //console.log(event);
+                });
+                $(selector).on('rowBeginEdit', function () { setButtonState('edit') });
 
-                        //console.log(mode);
-                        //console.log(event);
-                    });
-                    $(selector).on('rowBeginEdit', function () { setButtonState('edit') });
-
-                    addButton.click(function (event) {
-                        if ($(selector).jqxTreeGrid('getSelection').length < 1)
-                            return;
-                        if (addButton.jqxButton('disabled'))
-                            return;
-                        if (mode != '')
-                            return;
-
-                        //console.log(mode);
-                        isAddingParent = false;
-                        var row = $(selector).jqxTreeGrid('getRow', rowKey);
-                        //console.log(rowKey);
-                        $(selector).jqxTreeGrid('expandRow', rowKey);
+                addButton.click(function (event) {
+                    if ($(selector).jqxTreeGrid('getSelection').length < 1)
+                        return;
+                    if (addButton.jqxButton('disabled'))
+                        return;
+                    if (mode != '')
+                        return;
+                    
+                    //console.log(mode);
+                    isAddingParent = false;
+                    var row = $(selector).jqxTreeGrid('getRow', rowKey);
+                    //console.log(rowKey);
+                    $(selector).jqxTreeGrid('expandRow', rowKey);
                         $(selector).jqxTreeGrid('addRow', newRowCounter--, { ID: row.ID, Level: row.Level }, 'first', rowKey);
-                        $(selector).jqxTreeGrid('clearSelection');
-                        $(selector).jqxTreeGrid('selectRow', newRowID);
-                        $(selector).jqxTreeGrid('beginRowEdit', newRowID);
-                        mode = 'add';
-                    });
-                    addParentButton.click(function (event) {
-                        if (addParentButton.jqxButton('disabled'))
-                            return;
-                        if (mode != '')
-                            return;
-                        if ($(selector).jqxTreeGrid('getSelection').length < 1)
-                            return;
+                    $(selector).jqxTreeGrid('clearSelection');
+                    $(selector).jqxTreeGrid('selectRow', newRowID);
+                    $(selector).jqxTreeGrid('beginRowEdit', newRowID);
+                    mode = 'add';
+                });
+                addParentButton.click(function (event) {
+                    if (addParentButton.jqxButton('disabled'))
+                        return;
+                    if (mode != '')
+                        return;
+                    if ($(selector).jqxTreeGrid('getSelection').length < 1)
+                        return;
+                    
+                    var intersectMapID = -1;
 
-                        var intersectMapID = -1;
+                    var row = $(selector).jqxTreeGrid('getRow', rowKey);
+                    var parent = null;
+                    if (row != null)
+                        parent = $(selector).jqxTreeGrid('getRow', row.ParentID);
+                    if (parent != null)
+                        rowKey = parent.UID;
+                    else {
+                        intersectMapId: row.ID;
+                    }
+                    //console.log($(selector).jqxTreeGrid('getRow', rowKey));
 
-                        var row = $(selector).jqxTreeGrid('getRow', rowKey);
-                        var parent = null;
-                        if (row != null)
-                            parent = $(selector).jqxTreeGrid('getRow', row.ParentID);
-                        if (parent != null)
-                            rowKey = parent.UID;
-                        else {
-                            intersectMapId: row.ID;
-                        }
-                        //console.log($(selector).jqxTreeGrid('getRow', rowKey));
-
-                        isAddingParent = true;
-                        $(selector).jqxTreeGrid('expandRow', rowKey);
+                    isAddingParent = true;
+                    $(selector).jqxTreeGrid('expandRow', rowKey);
                         $(selector).jqxTreeGrid('addRow', newRowCounter--, { ID: row.ID, Level: row.Level }, 'first', rowKey);
-                        $(selector).jqxTreeGrid('clearSelection');
-                        $(selector).jqxTreeGrid('selectRow', newRowID);
-                        $(selector).jqxTreeGrid('beginRowEdit', newRowID);
-                        mode = 'add';
-                    });
-                    saveButton.click(function (event) {
-                        var oldMode = mode;
-                        if (saveButton.jqxButton('disabled'))
-                            return;
-                        mode = 'saving';
-                        $(selector).jqxTreeGrid('endRowEdit', rowKey, false);
-                        var rowData = null;
-                        var parentData = null;
-                        rowData = $(selector).jqxTreeGrid('getRow', rowKey);
+                    $(selector).jqxTreeGrid('clearSelection');
+                    $(selector).jqxTreeGrid('selectRow', newRowID);
+                    $(selector).jqxTreeGrid('beginRowEdit', newRowID);
+                    mode = 'add';
+                });
+                saveButton.click(function (event) {
+                    var oldMode = mode;
+                    if (saveButton.jqxButton('disabled'))
+                        return;
+                    mode = 'saving';
+                    $(selector).jqxTreeGrid('endRowEdit', rowKey, false);
+                    var rowData = null;
+                    var parentData = null;
+                    rowData = $(selector).jqxTreeGrid('getRow', rowKey);
 
-                        if (rowData != null)
-                            parentData = getRowDataItem(rowData.parent);
+                    if (rowData != null)
+                        parentData = getRowDataItem(rowData.parent);
 
 
-                        var sub = null;
-                        var subid = null;
-                        var obj = null;
-                        var objid = null;
-                        var intersectMapId = null;
+                    var sub = null;
+                    var subid = null;
+                    var obj = null;
+                    var objid = null;
+                    var intersectMapId = null;
 
-                        //if (isAddingParent) {
-                        //    intersectMapId = rowData.ID;
-                        //} else {
-
-                        intersectMapId = (rowData.ID || 0);
-                        //console.log(rowData.ID);
-                        //}
-                        //console.log(rowData);
-                        //console.log(parentData);
-                        //if (isAddingParent) {
+                    //if (isAddingParent) {
+                    //    intersectMapId = rowData.ID;
+                    //} else {
+                    
+                    intersectMapId = (rowData.ID || 0);
+                    //console.log(rowData.ID);
+                    //}
+                    //console.log(rowData);
+                    //console.log(parentData);
+                    //if (isAddingParent) {
                         sub = parentData.type;
                         subid = parentData.id;
                         obj = rowData.Object;
                         objid = rowData.ObjectID;
-                        // intersectMapId = rowData.ID;
-                        //} else {
-                        //    sub = parentData.type;
-                        //    subid = parentData.id;
-                        //    obj = rowData.Object;
-                        //    objid = rowData.ObjectID;
-                        //    //intersectMapId = (rowData.parent.ID || 0);
-                        //}
+                       // intersectMapId = rowData.ID;
+                    //} else {
+                    //    sub = parentData.type;
+                    //    subid = parentData.id;
+                    //    obj = rowData.Object;
+                    //    objid = rowData.ObjectID;
+                    //    //intersectMapId = (rowData.parent.ID || 0);
+                    //}
 
-                        if (rowData != null) {
-
-                            var hierarchyPostModel = {
-                                Subject: sub,
-                                SubjectID: subid,
-                                'Object': obj,
-                                'ObjectID': objid,
+                    if (rowData != null) {
+                        
+                        var hierarchyPostModel = {
+                            Subject: sub,
+                            SubjectID: subid,
+                            'Object': obj,
+                            'ObjectID': objid,
                                 //PredicateID: rowData.PredicateID,
-                                IsAddingParent: isAddingParent,
-                                IntersectMapID: intersectMapId,
-                                HierarchyType: mapType,
-                                GroupNumber: rowData.parent.GroupNumber
-                            };
-                            //console.log(hierarchyPostModel);
-                            var url = '/relations/hierarchy/save';
-                            if (oldMode == 'edit') {
-                                url = '/relations/hierarchy/edit';
-                                hierarchyPostModel.IntersectMapId = rowData.ID;
+                            IsAddingParent: isAddingParent,
+                            IntersectMapID: intersectMapId,
+                            HierarchyType: mapType,
+                            GroupNumber: rowData.parent.GroupNumber
+                        };
+                        //console.log(hierarchyPostModel);
+                        var url = '/relations/hierarchy/save';
+                        if (oldMode == 'edit') {
+                            url = '/relations/hierarchy/edit';
+                            hierarchyPostModel.IntersectMapId = rowData.ID;
 
-                            }
+                        }
 
-                            //mode = 'saving';
-
-                            isUpdating = true;
-                            setButtonState('disable');
-
-                            $('#' + ctrlID + '_toolbar_spinner').show();
-                            $.ajax({
-                                url: url,
-                                data: hierarchyPostModel,
+                        //mode = 'saving';
+                            
+                        isUpdating = true;
+                        setButtonState('disable');
+                       
+                        $('#' + ctrlID + '_toolbar_spinner').show();
+                        $.ajax({
+                            url: url,
+                            data: hierarchyPostModel,
                                 method: 'POST'
                             }).success(function (data, status, xhr) {
                                 amplify.publish("ShowMessage", data);
@@ -45161,60 +45647,60 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType) {
                                 isUpdating = false;
                                 setButtonState('unselect');
                                 mode = '';
-                            });
+                        });
+                        $(selector).jqxTreeGrid('updateBoundData');
+                    }
+                });
+                cancelButton.click(function (event) {
+                    if (cancelButton.jqxButton('disabled'))
+                        return;
+                    $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
+                    if (mode == 'add')
+                        $(selector).jqxTreeGrid('deleteRow', rowKey);
+                });
+                deleteButton.click(function (event) {
+                    var oldMode = mode;
+                    if (deleteButton.jqxButton('disabled'))
+                        return;
+                    if (oldMode != '')
+                        return;
+                    var selection = $(selector).jqxTreeGrid('getSelection');
+                    if (selection == null || selection == [] || selection[0] == null)
+                        return;
+                    if (selection[0].ID == null || selection[0].ID < 1)
+                        return;
+
+                    isUpdating = true;
+                    setButtonState('disable');
+                    $('#' + ctrlID + '_toolbar_spinner').show();
+                    $.ajax({
+                        url: '/relations/hierarchy/delete/' + selection[0].ID,
+                        method: 'DELETE',
+                        success: function (d) {
                             $(selector).jqxTreeGrid('updateBoundData');
+                            $('#' + ctrlID + '_toolbar_spinner').hide();
+                            isUpdating = false;
+                            setButtonState('unselect');
+                            mode = '';
+                        },
+                        failure: function (d) {
+                            $(selector).jqxTreeGrid('updateBoundData');
+                            $('#' + ctrlID + '_toolbar_spinner').hide();
+                            isUpdating = false;
+                            setButtonState('unselect');
+                            mode = '';
                         }
                     });
-                    cancelButton.click(function (event) {
-                        if (cancelButton.jqxButton('disabled'))
-                            return;
-                        $(selector).jqxTreeGrid('endRowEdit', rowKey, true);
-                        if (mode == 'add')
-                            $(selector).jqxTreeGrid('deleteRow', rowKey);
-                    });
-                    deleteButton.click(function (event) {
-                        var oldMode = mode;
-                        if (deleteButton.jqxButton('disabled'))
-                            return;
-                        if (oldMode != '')
-                            return;
-                        var selection = $(selector).jqxTreeGrid('getSelection');
-                        if (selection == null || selection == [] || selection[0] == null)
-                            return;
-                        if (selection[0].ID == null || selection[0].ID < 1)
-                            return;
-
-                        isUpdating = true;
-                        setButtonState('disable');
-                        $('#' + ctrlID + '_toolbar_spinner').show();
-                        $.ajax({
-                            url: '/relations/hierarchy/delete/' + selection[0].ID,
-                            method: 'DELETE',
-                            success: function (d) {
-                                $(selector).jqxTreeGrid('updateBoundData');
-                                $('#' + ctrlID + '_toolbar_spinner').hide();
-                                isUpdating = false;
-                                setButtonState('unselect');
-                                mode = '';
-                            },
-                            failure: function (d) {
-                                $(selector).jqxTreeGrid('updateBoundData');
-                                $('#' + ctrlID + '_toolbar_spinner').hide();
-                                isUpdating = false;
-                                setButtonState('unselect');
-                                mode = '';
-                            }
-                        });
-
-                    });
-                    editButton.click(function (event) {
-                        if (editButton.jqxButton('disabled'))
-                            return;
-                        if (mode != '')
-                            return;
-                        mode = 'edit';
-                        $(selector).jqxTreeGrid('beginRowEdit', rowKey);
-                    });
+                    
+                });
+                editButton.click(function (event) {
+                    if (editButton.jqxButton('disabled'))
+                        return;
+                    if (mode != '')
+                        return;
+                    mode = 'edit';
+                    $(selector).jqxTreeGrid('beginRowEdit', rowKey);
+                });
 
                 } //Permissions check
             },
@@ -45234,8 +45720,10 @@ function HierarchyTile(controlID, contextList, permissions, type, id, mapType) {
                             var item = getRowDataItem(data);
                             if (item.type == type && item.id == id) {
                                 editor.append($("<div style='margin-left: 4px; display:inline-block;color:#33A'><div style='font-weight:600;'>" + data.Name + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"));
-                            }
+                            } else {
                             editor.append($("<div style='margin-left: 4px; display:inline-block;'><div style='font-weight:600;'>" + data.Name + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"));
+                            }
+                            
                             return;
                         }
                             
@@ -46186,7 +46674,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
         var args = event.args;
         var boundIndex = args.rowindex;     // row's bound index.
         var data = $(gridControlID).jqxGrid('getrowdata', boundIndex);
-        
+
         var dataUri = '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID;
 
         if (data.Type == 'FusionAttribute') {
@@ -46203,7 +46691,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
                 id: data.ID
             });
         }
-        else {
+        else {            
             // The next level will be the attributes under this parent attribute type.
             dataUri += "&parentType=FusionAttribute&parentID=" + data.ParentFusionAttributeID;
             dataUri += "&parentFusionAttributeTypeID=" + data.ID;
@@ -46218,7 +46706,7 @@ function _FusionItemsGrid(controlID, fusionTypeID, fusionID, defaultTypeDefiniti
                     id: data.ID
                 });
             });
-        }
+        }        
     }
 
     var gridRowSelect = function(event) {
@@ -46425,13 +46913,13 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
     amplify.subscribe('FusionItemSelected', fusionItemSelected);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
+    
     //#endregion
     if (initialData != null) {
         // build the breadcrumb for current item
         buildCurrentItemBreadcrumb(initialData);
-        
-        _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + initialData.FusionAttributeTypeID + '&parentFusionAttributeID=' + initialData.ParentID);
+
+        _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType&parentID=' + initialData.FusionAttributeTypeID + '&parentFusionAttributeID=' + initialData.ID);
     }
     else
         _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType');
@@ -48751,66 +49239,219 @@ function YourOwnedItemsTile(controlID, resourceID, title) {
     }
 }
 
-function YourWorkflowTasks(controlID, title, showTitle) {
-    var chartControlID = controlID + "_chart";
-    var gridControlID = controlID + "_grid";
-    var labelControlID = controlID + "_label";
+function YourWorkflowTasks(controlID,givenWorkflowType) {    
+    var gridControlID = controlID + "_grid";    
     controlID = '#' + controlID;
     var html = "";
-    if (showTitle) html = "<header>" + title + "</header>";//<span id='" + controlID + "_HelpTip'><i class='fa fa-question'></i></span></header>";
-    html += '<div class="directions">Click on a pie slice in the chart to get a list of your tasks by type.</div>';
-    html += '<div class="row">';
-    html += '<div class="col l4 m12 s12"><div id="' + chartControlID + '"></div></div>';
-    html += '<div class="col l8 m12 s12"><h4 id="' + labelControlID + '"></h4><div id="' + gridControlID + '"></div></div>';
+    html += '<div class="row">';    
+    html += '<div class="col s12"><div id="' + gridControlID + '"></div></div>';
     html += '</div>';
-    $(controlID).html(html);
-    chartControlID = '#' + chartControlID;
+    $(controlID).html(html);    
     gridControlID = '#' + gridControlID;
-    labelControlID = '#' + labelControlID;
-
-    var chart = $(chartControlID);
-    var chartSource;
-    var chartAdapter;
+    
+            
     var gridSource;
     var gridAdapter;
-
+    var inputWorkflowID = givenWorkflowType;
+    
     //#region Event Subscriptions
 
-    var itemsBindComplete = function (event) {
+    
+
+    //function saveAction(data) {
+        /*var reloadControlData = function () {
+            var reloadChartData = function () {
+                var pr = new $.Deferred();
+                chartAdapter.dataBind();
+                return pr.promise();
+            }
+            reloadChartData().then(function () {
+                chart.jqxGrid('updatebounddata');
+                $(gridControlID).jqxGrid('updatebounddata');
+            });
+        }
+        try {
+            switch (data.context) {
+                case "Workflow":
+                case "OwnerApprovalWorkflow":
+                case "OwnerCertificationWorkflow":
+                case "IssueWorkflow":
+                    reloadControlData();
+                    break;
+                case "commentform":
+                    if (data.custom.CommentTypeID == 5) {
+                        reloadControlData();
+                    }
+                    break;
+            }
+        } catch (e) { }*/
+    //}
+
+    function saveAction(data) {
+        //console.log(data);
+        try {
+            switch (data.context) {
+                case "workflowform":
+                case "artifactform":
+                    switchToViewer();
+                   // $(gridControlID).jqxGrid('updatebounddata');
+            }
+        } catch (e) {
+            logError("YourWorkflowTasks : SaveAction", e);
+        }
+    }
+
+    function pageResized() {
         $(gridControlID).jqxGrid('autoresizecolumns');
+    }
+
+   /* function cancelAction(data) {
+        console.log(data);
+        try {
+            switch (data.context) {
+                case "workflowform":
+                case "artifactform":
+                    switchToViewer();
+                    break;
+            }
+        } catch (e) {
+            logError("YourWorkflowTasks : CancelAction", e);
+        }
+    }*/
+
+    function localAction(data) {
+        //console.log(data.context);
+        try {
+            switch (data.context) {
+                case "workflowform":
+                case "artifactform":                
+                    switchToEditor(data.uri);
+                    break;
+            }
+        } catch (e) {
+            logError("YourWorkflowTasks : LocalAction", e);
+        }
     };
 
-    var bindComplete = function (event) {
-        $(chart).jqxGrid('selectrow', 0);
-    };
+    function unsubscribe(data) {
+        gridSource = null;
+        gridAdapter = null;
 
-    var rowSelect = function (event) {
-        var args = event.args;
-        var rowBoundIndex = args.rowindex;
+        amplify.unsubscribe("PageResized", pageResized);
+        amplify.unsubscribe("SaveAction", saveAction);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.unsubscribe('ToolAction', localAction);
+   //     amplify.unsubscribe('CancelAction', cancelAction);
+    }
 
-        var data = args.row;
-        switch (data.WorkflowTypeID) {
+    amplify.subscribe("PageResized", pageResized);
+    amplify.subscribe("SaveAction", saveAction);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    amplify.subscribe('ToolAction', localAction);
+   // amplify.subscribe('CancelAction', cancelAction);
+
+    //#endregion
+    
+    //#region Helper Functions
+
+    var switchToViewer = function () {
+        $('#assignmentoverlay').show();
+    }
+
+    var switchToEditor = function (uri) {
+        try {
+            $('#assignmentoverlay').fadeOut(10);
+          /*  $('#PromotionEditor').fadeIn(10);
+            $('#PromotionEditor').html(progressIndicatorHtml);
+            $('#PromotionEditor').load(uri, function (response, status, xhr) {
+                if (status == "error") {
+                    amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.status + ' ' + xhr.statusText, type: 'error' });
+                    switchToViewer();
+                }
+            });*/
+        } catch (e) {
+
+        }
+    }
+
+    var gridDataSource = function (workflowTypeID) {
+        var gridSource;
+        switch (workflowTypeID) {
             case 1:
-                //#region Suggest
-                gridSource.datafields = [
-                    { name: 'WorkflowID' },
-                    { name: 'ID', type: 'number' },
-                    { name: 'StartDate', type: 'date' },
-                    { name: 'Name', type: 'string' },
-                    { name: 'Url', type: 'string' },
-                    { name: 'ProposedName', type: 'string' },
-                    { name: 'ProposedDescription', type: 'string' },
-                    { name: 'RequestingResourceID', type: 'number' },
-                    { name: 'RequestingResourceName', type: 'string' },
-                    { name: 'TaxonomyTypeID', type: 'number' },
-                    { name: 'TaxonomyTypeName', type: 'string' },
-                    { name: 'Activity', type: 'string' },
-                    { name: 'ActivityDescription', type: 'string' },
-                    { name: 'ActivityName', type: 'string' }
-                ];
-                $(gridControlID).jqxGrid('columns', [
+                // Suggest
+                gridSource = {
+                    datatype: 'json',
+                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    datafields: [
+                        { name: 'WorkflowID' },
+                        { name: 'ID', type: 'number' },
+                        { name: 'StartDate', type: 'date' },
+                        { name: 'Name', type: 'string' },
+                        { name: 'Url', type: 'string' },
+                        { name: 'ProposedName', type: 'string' },
+                        { name: 'ProposedDescription', type: 'string' },
+                        { name: 'RequestingResourceID', type: 'number' },
+                        { name: 'RequestingResourceName', type: 'string' },
+                        { name: 'TaxonomyTypeID', type: 'number' },
+                        { name: 'TaxonomyTypeName', type: 'string' },
+                        { name: 'Activity', type: 'string' },
+                        { name: 'ActivityDescription', type: 'string' },
+                        { name: 'ActivityName', type: 'string' }
+                        ]
+                };
+                
+                break;
+            case 2:
+                // Certify
+                gridSource = {
+                    datatype: 'json',
+                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    datafields: [
+                        { name: 'WorkflowID' },
+                        { name: 'ID', type: 'number' },
+                        { name: 'Name', type: 'string' },
+                        { name: 'TypeName', type: 'string' },
+                        { name: 'Url', type: 'string' },
+                        { name: 'StartDate', type: 'date' },
+                        { name: 'DueDate', type: 'date' },
+                        { name: 'Activity', type: 'string' },
+                        { name: 'ActivityDescription', type: 'string' },
+                        { name: 'ActivityName', type: 'string' }
+                    ]
+                };                
+                break;
+            case 3:
+                // WorkIssue
+                gridSource = {
+                    datatype: 'json',
+                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    datafields: [
+                        { name: 'WorkflowID' },
+                        { name: 'Issue', type: 'string' },
+                        { name: 'ResourceID', type: 'number' },
+                        { name: 'ResourceName', type: 'string' },
+                        { name: 'ResourceUrl', type: 'string' },
+                        { name: 'DateStarted', type: 'date' },
+                        { name: 'Activity', type: 'string' },
+                        { name: 'ActivityDescription', type: 'string' },
+                        { name: 'ActivityName', type: 'string' }
+                    ]
+                };                
+                break;
+        }
+        return gridSource;
+    }
+
+    var gridColumns = function (workflowTypeID) {
+        var cols = null;
+        switch (workflowTypeID) {
+            case 1:
+                //#region Suggest                
+                cols = [
                     {
-                        datafield: "Name", text: "Type", filtertype: 'checkedlist', 
+                        datafield: "Name", text: "Type", filtertype: 'checkedlist',
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return previewLinkRenderer('ArtifactType', data.ID, data.Url, data.Name);
                         }
@@ -48822,8 +49463,7 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                         }
                     },
                     { datafield: "StartDate", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
-                    { datafield: "ProposedName", text: "Proposed Name" },
-                    //{ datafield: "ProposedDescription", text: "Proposed Description" },
+                    { datafield: "ProposedName", text: "Proposed Name" },                    
                     { datafield: "TaxonomyTypeName", text: "Subject Area", filtertype: 'checkedlist' },
                     { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
                     {
@@ -48840,24 +49480,12 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                             return renderToolsHtml(value, tools, contextList.Artifact, data);
                         }
                     }
-                ]);
+                ];
                 //#endregion
                 break;
             case 2:
-                //#region Certify
-                gridSource.datafields = [
-                    { name: 'WorkflowID' },
-                    { name: 'ID', type: 'number' },
-                    { name: 'Name', type: 'string' },
-                    { name: 'TypeName', type: 'string' },
-                    { name: 'Url', type: 'string' },
-                    { name: 'StartDate', type: 'date' },
-                    { name: 'DueDate', type: 'date' },
-                    { name: 'Activity', type: 'string' },
-                    { name: 'ActivityDescription', type: 'string' },
-                    { name: 'ActivityName', type: 'string' }
-                ];
-                $(gridControlID).jqxGrid('columns', [
+                
+                cols = [
                     { datafield: "TypeName", text: "Type", filtertype: 'checkedlist' },
                     {
                         filtertype: 'checkedlist', datafield: "Name", text: "Name",
@@ -48882,23 +49510,11 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                             return renderToolsHtml(value, tools, contextList.Artifact, data);
                         }
                     }
-                ]);
+                ];
                 //#endregion
                 break;
-            case 3:
-                //#region WorkIssue
-                gridSource.datafields = [
-                    { name: 'WorkflowID' },
-                    { name: 'Issue', type: 'string' },
-                    { name: 'ResourceID', type: 'number' },
-                    { name: 'ResourceName', type: 'string' },
-                    { name: 'ResourceUrl', type: 'string' },
-                    { name: 'DateStarted', type: 'date' },
-                    { name: 'Activity', type: 'string' },
-                    { name: 'ActivityDescription', type: 'string' },
-                    { name: 'ActivityName', type: 'string' }
-                ];
-                $(gridControlID).jqxGrid('columns', [
+            case 3:                
+                cols = [
                     { datafield: "Issue", text: "Issue" },
                     { filtertype: 'checkedlist', datafield: "ResourceName", text: "Reporting User",
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
@@ -48921,148 +49537,20 @@ function YourWorkflowTasks(controlID, title, showTitle) {
                             return renderToolsHtml(value, tools, contextList.Workflow, data);
                         }
                     }
-                ]);
-                //#endregion
-                break;
-            default:
-                //#region Not known
-                gridSource.datafields = [
-                    { name: 'Activity' },
-                    { name: 'ActivityDescription', type: 'string' },
-                    { name: 'ActivityName', type: 'string' },
-                    { name: 'DateStarted', type: 'date' },
-                    { name: 'Workflow' },
-                    { name: 'WorkflowDescription', type: 'string' },
-                    { name: 'WorkflowName', type: 'string' },
-                    { name: 'WorkflowID' },
-                    { name: 'Properties', type: 'array' }
                 ];
-                $(gridControlID).jqxGrid('columns', [
-                    {
-                        columntype: 'dropdownlist',
-                        filtertype: 'checkedlist',
-                        datafield: "WorkflowName",
-                        text: "Workflow",
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return quickTipRenderer(data.WorkflowName, data.WorkflowDescription);
-                        }
-                    },
-                    {
-                        columntype: 'dropdownlist',
-                        filtertype: 'checkedlist',
-                        datafield: "ActivityName",
-                        text: "Activity",
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return quickTipRenderer(data.ActivityName, data.ActivityDescription);
-                        }
-                    },
-                    {
-                        datafield: "Properties", text: "Properties",
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            var html = "";
-                            for (var key in data.Properties) {
-                                if (data.Properties.hasOwnProperty(key)) {
-                                    if (html != "") html += ", ";
-                                    html += "<b>" + key + ":</b> " + data.Properties[key];
-                                }
-                            }
-                            return html;
-                        }
-                    },
-                    {
-                        datafield: "DateStarted", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy", // hh:mm:ss tt
-                    },
-                    {
-                        datafield: "WorkflowID", text: "", sortable: false, filterable: false, width: '40px',
-                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            var tools = [];
-
-                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
-
-                            return renderToolsHtml(value, tools, contextList.Artifact, data);
-                        }
-                    }
-                ]);
                 //#endregion
-                break;
+                break;            
         }
+        return cols;
 
-        $(labelControlID).text(data.WorkflowTypeName + " Tasks");
-
-        gridSource.url = '/services/workflow/tasks/types/' + data.WorkflowTypeID + '?$orderby=DateStarted%20asc';
-        $(gridControlID).jqxGrid('updatebounddata');
     };
-
-    function pageResized() {
-        chart.jqxGrid('refresh');
-        $(gridControlID).jqxGrid('refresh');
-    }
-
-    function saveAction(data) {
-        var reloadControlData = function () {
-                    var reloadChartData = function () {
-                        var pr = new $.Deferred();
-                        chartAdapter.dataBind();
-                        return pr.promise();
-                    }
-                    reloadChartData().then(function () {
-                        chart.jqxGrid('updatebounddata');
-                        $(gridControlID).jqxGrid('updatebounddata');
-                    });
-        }
-        try {
-            switch (data.context) {
-                case "Workflow":
-                case "OwnerApprovalWorkflow":
-                case "OwnerCertificationWorkflow":
-                case "IssueWorkflow":
-                    reloadControlData();
-                    break;
-                case "commentform":
-                    if (data.custom.CommentTypeID == 5) {
-                        reloadControlData();
-            }
-                    break;
-            }
-        } catch (e) { }
-    }
-
-    function unsubscribe(data) {
-        chartSource = null;
-        chartAdapter = null;
-        gridSource = null;
-        gridAdapter = null;
-
-        amplify.unsubscribe("PageResized", pageResized);
-        amplify.unsubscribe("SaveAction", saveAction);
-        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
-        $(chart).off('rowselect', rowSelect);
-        $(chart).off("bindingcomplete", bindComplete);
-        $(gridControlID).off("bindingcomplete", itemsBindComplete);
-        chart = null;
-    }
-
-    $(gridControlID).on("bindingcomplete", itemsBindComplete);
-    $(chart).on("bindingcomplete", bindComplete);
-    $(chart).on('rowselect', rowSelect);
-    amplify.subscribe("PageResized", pageResized);
-    amplify.subscribe("SaveAction", saveAction);
-    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
     //#endregion
 
     //#region Item Grid
 
-    var gridSource = {
-        datatype: 'json',
-        url: null,
-        datafields: [{ name: 'WorkflowID' } ]
-    };
-
-    var gridAdapter = new $.jqx.dataAdapter(gridSource);
-
+    var gridAdapter = new $.jqx.dataAdapter(gridDataSource(inputWorkflowID));
+    
     try {
         $(gridControlID).jqxGrid({
             altrows: true,
@@ -49078,61 +49566,13 @@ function YourWorkflowTasks(controlID, title, showTitle) {
             autorowheight: true,
             source: gridAdapter,
             theme: list_theme,
-            columns: [
-                {
-                    datafield: "WorkflowID",
-                    text: "",
-                    sortable: false,
-                    filterable: false
-                }
-            ]
+            columns: gridColumns(inputWorkflowID)            
         });
     } catch (e) {
     }
 
     //#endregion
-
-    //#region Type Grid
-
-    try {
-        chartSource = {
-            datatype: 'json',
-            url: '/services/workflow/tasks/types/breakdown',
-            datafields:
-            [
-                { name: 'Workflow' },
-                { name: 'WorkflowTypeID' },
-                { name: 'WorkflowTypeName' },
-                { name: 'Count' }
-            ]
-        };
-
-        chartAdapter = new $.jqx.dataAdapter(chartSource, { async: false });
-
-        $(chart).jqxGrid({
-            altrows: true,
-            width: grid_width,
-            autoheight: true,
-            sortable: true,
-            filterable: true,
-            showfilterrow: true,
-            pagesizeoptions: ['10', '20', '50'],
-            pagesize: 10,
-            pageable: true,
-            autorowheight: true,
-            source: chartAdapter,
-            theme: list_theme,
-            columns: [
-                    { datafield: "WorkflowTypeName", text: "Workflow" },
-                    { datafield: "Count", text: "# Assignments", width: '30%' }
-            ]
-        });
-    } catch (e) {
-        console.log(e);
-    }
-
-    //#endregion
-
+        
     //#endregion
 }
 
@@ -49202,12 +49642,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_ribbon_undo = controlID + '_ribbon_undo';
     var controlID_ribbon_redo = controlID + '_ribbon_redo';
     var controlID_ribbon_remove = controlID + '_ribbon_remove';
-    //var controlID_ribbon_sourcerule_add = controlID + '_ribbon_sourcerule_add';
+    var controlID_ribbon_sourcerule_add = controlID + '_ribbon_sourcerule_add';
 
     var controlID_popover_add = controlID + '_popover_add';
 
-    //var controlID_popover_sourcerule_editor = controlID + '_popover_sourcerule_editor';
-    //var controlID_popover_sourcerule_editor_body = controlID_popover_sourcerule_editor + '_body';
+    var controlID_popover_sourcerule_editor = controlID + '_popover_sourcerule_editor';
+    var controlID_popover_sourcerule_editor_body = controlID_popover_sourcerule_editor + '_body';
 
     //#endregion
 
@@ -49225,7 +49665,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $("#" + controlID_ribbon_zoom_out).jqxRepeatButton({ delay: 3, theme: theme });
     $("#" + controlID_ribbon_zoom_in).jqxRepeatButton({ delay: 3, theme: theme });
 
-    //$("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
 
     //$("#" + controlID_sourcerules).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
@@ -49241,12 +49681,31 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         $('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
     });
 
-    //$("#" + controlID_ribbon_sourcerule_add).on('click', function () {
-    //    $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
+    $("#" + controlID_ribbon_sourcerule_add).on('click', function () {
+        var selected = myDiagram.selection;
+        if (selected == null)
+            return;
+        var selected = selected.first().data;
+        if (selected == null)
+            return;
+        //console.log(selected);
+        $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
 
-    //    var model = new HierarchyRuleViewModel(1, type, id);
-    //    ko.applyBindings(model, document.getElementById(controlID_popover_sourcerule_editor_body));
-    //});
+        //TODO: logic for nothing selected
+        var data = {
+            target: type,
+            targetID: id,
+            object: selected.type,
+            objectID: selected.id,
+            ID: 0,
+            controlID: controlID
+        };
+
+        var model = new HierarchyPanelViewModel(data);
+        ko.cleanNode($('#' + controlID_popover_sourcerule_editor_body)[0]);
+        ko.applyBindings(model, $('#' + controlID_popover_sourcerule_editor_body)[0]);
+        //model.ApplyJqxBindings();
+    });
 
     $('#' + controlID_ribbon).jqxRibbon({
         width: "100%",
@@ -49308,7 +49767,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         //confirmDialog(message.add(ok).add(cancel), 'Save Changes?', 'Save', saveChanges);
     });
-
 
     function confirmDialog(content, title, id, func) {
         $('<div />').qtip({
@@ -49390,7 +49848,6 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var predicates = [];
     var overlayEditLinkKey = null;
     var selection = null;
-
     //#region Responsibilities
 
     var lineageResponsibilitySource = {
@@ -49625,12 +50082,12 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
             {
                 alignment: go.Spot.LeftCenter
             },
-            //g(go.Shape, "Circle",
-            //    {
-            //        fill: '#DD1148',
-            //        toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: 'Source rule defined' })))
-            //    }
-            //),
+            g(go.Shape, "Circle",
+                {
+                    fill: '#DD1148',
+                    toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: 'Source rule defined' })))
+                }
+            ),
             g(go.TextBlock,
                 {
                     row: 0,
@@ -49696,8 +50153,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                    mouseLeave: mouseLeave
                },
            g(go.Panel, "Auto", {
-               width: 125,
-               height: 50,
+               width: 250,
+               height: 22,
                name: "NodePanel"
            },
            g(go.Shape, "RoundedRectangle", {
@@ -49715,7 +50172,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                    margin: 3,
                    alignment: go.Spot.Top,
                    editable: false,
-                   maxSize: new go.Size(180, 50),
+                   maxSize: new go.Size(250, 22),
                    font: "8pt sans-serif"
                },
                    new go.Binding("text", "name").makeTwoWay()
@@ -49775,6 +50232,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         selection = e.diagram.selection;
 
         if (selection.count < 1) {
+            $("#" + controlID_ribbon_sourcerule_add).hide(200);
             $("#" + controlID_ribbon_remove).hide(200);
             $('#' + controlID_fusion).jqxExpander('collapse');
             $('#' + controlID_responsibilities).jqxExpander('collapse');
@@ -49783,6 +50241,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         } else {
             if (!readonly) {
             $("#" + controlID_ribbon_remove).show(200);
+                $("#" + controlID_ribbon_sourcerule_add).show(200);
+
         }
         }
 
@@ -49868,6 +50328,20 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 }
             }
         }
+    }
+
+    function getImmediateParents(key) {
+        //console.log(key);
+        var parents = [];
+        var links = [];
+        for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
+            if (myDiagram.model.linkDataArray[i].to == key) {
+                //console.log(myDiagram.model.linkDataArray[i]);
+                parents.push(myDiagram.model.findNodeDataForKey(myDiagram.model.linkDataArray[i].from));
+            }
+        }
+       // console.log(parents);
+        return parents;
     }
 
     function onViewportBoundsChanged() {
@@ -50381,7 +50855,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     function initializePalette() {
 
         var pl = g(go.Palette, controlID_palette, {
-            contentAlignment: go.Spot.BottomCenter
+            contentAlignment: go.Spot.TopCenter
             , allowDrop: true
             , initialAutoScale: go.Diagram.Uniform
             , model: new go.GraphLinksModel([{ template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }])
@@ -50389,7 +50863,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         pl.model.nodeCategoryProperty = 'template';
         pl.model.nodeDataArray = [];
         pl.model.class = 'go.GraphLinksModel';
-
+        pl.layout.spacing = new go.Size(3,3);
         return pl;
     }
 
@@ -50690,33 +51164,298 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     });
 }
 
+
+function SearchResultsGrid(contextList, defaultItemsPerPage,initialPhrase) {
+    var phrase;
+    var searchSource;
+    var loadCategories;
+    var searchVm;
+    var self = this;
+    var advSearchText;
+
+    mainCtrlId = 'SearchArea';
+    categoriesCtrlId = 'CategoryResults';
+    resultsCtrlId = 'SearchResults';
+    if (defaultItemsPerPage === undefined) defaultItemsPerPage = 10;
+    if (initialPhrase !== undefined) phrase = initialPhrase;
+    
+
+    var resultsctrl = '#' + resultsCtrlId;
+    var categoryctrl = '#' + categoriesCtrlId;
+
+    searchVm = new SearchViewModel();
+    try {
+        ko.applyBindings(searchVm, document.getElementById(mainCtrlId));
+    }
+    catch (e) {
+        console.log(e);
+    }
+
+    //#region Event Registration
+
+    
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+
+    loadCategories = true;
+
+    if ($("#SearchString").val().length == 0 && phrase !== undefined && phrase.length > 0)
+        $("#SearchString").val(phrase);
+
+    phrase = $("#SearchString").val();
+
+    var source = getSource(phrase, '', '');
+
+    var dataAdapter = getDataAdapter(source);
+
+    //region Event Handlers
+
+    function unsubscribe(data) {
+        searchVm = null;        
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+    
+    //#endregion
+
+    $(resultsctrl).jqxDataTable(
+    {
+        pageable: true,
+        pagerButtonsCount: 10,
+        serverProcessing: true,
+        pagerMode: 'default',
+        source: dataAdapter,
+        theme: 'transparent',
+        width: '98%',      
+        enableHover: false,
+        showHeader: false,
+        columns: [
+            { text: ' ', dataField: 'Merged', width: '99%' }           
+        ]
+    });
+
+    self.doSearch = function (val) {
+        phrase = val;
+        advSearchText = '';
+
+        $(resultsctrl).show();
+        loadCategories = true;
+
+        var searchSource = getSource(phrase, '', '');
+
+        var dataAdapter = getDataAdapter(searchSource);
+
+        $(resultsctrl).jqxDataTable('goToPage', 0);
+
+        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+    }
+
+    self.doAdvancedSearch = function () {
+        advSearchText = searchVm.advancedFilterJSON();
+        phrase = '';
+        
+        $(resultsctrl).show();
+        loadCategories = true;
+
+        var searchSource = getSource(phrase, '', '', advSearchText);
+
+        var dataAdapter = getDataAdapter(searchSource);
+
+        $(resultsctrl).jqxDataTable('goToPage', 0);
+
+        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+    }
+
+    self.showAdvanced = function (text) {
+        searchVm.showAdvanced(text);
+    }
+
+    var showOnlyRelevantType = function (categoryType, e) {
+        $(categoryctrl + ' a').removeClass('selected');
+        $(e.target).addClass('selected');
+
+        var searchSource = getSource(phrase, '', categoryType == 'All' ? '' : categoryType, advSearchText);
+
+        var dataAdapter = getDataAdapter(searchSource);
+
+        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+    }
+
+    var showOnlyRelevantCategory = function (category, e) {
+        $(categoryctrl + ' a').removeClass('selected');
+        $(e.target).addClass('selected');
+
+        var searchSource = getSource(phrase, category, '', advSearchText);
+
+        var dataAdapter = getDataAdapter(searchSource);
+
+        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+    }
+
+    function getSource(term, selGroup, selType, advCriteria) {
+        return {
+            datatype: "json",
+            pagesize: defaultItemsPerPage,
+            datafields: [
+                { name: 'NormalizedScore', type: 'float' },
+                { name: 'Name', type: 'string' },
+                { name: 'Type', type: 'string' },
+                { name: 'Group', type: 'string' },
+                { name: 'Description', type: 'string' },
+                { name: 'ID', type: 'number' },
+                { name: 'Url', type: 'string' },
+                { name: 'Merged', type: 'string' },
+            ],
+            type: 'POST',
+            dataType: 'json',
+            url: '/search/results',
+            data: { search: term, from: 0, size: defaultItemsPerPage, group: selGroup, type: selType, adv: (advCriteria === undefined ? '' : advCriteria) },
+            id: 'ID',
+            sortcolumn: 'NormalizedScore',
+            sortdirection: 'desc',
+            root: "Results",
+        };
+    }
+
+    function getDataAdapter(source) {
+        return new $.jqx.dataAdapter(source,
+                {
+                    formatData: function (data) {
+                        data.from = data.pagenum * data.pagesize;
+                        data.size = data.pagesize;
+                        return data;
+                    },
+                    downloadComplete: function (data, status, xhr) {
+                        if (!source.totalRecords) {
+                            source.totalRecords = parseInt(data.Result.Matches);
+                            if (source.totalRecords > 10000) source.totalRecords = 10000;
+                        }
+                    },
+                    loadComplete: function (data) {
+                        var msg = "";
+
+                        if (data) {
+                            if (data.Result.Matches == 0) {
+                                $(resultsctrl).hide();
+                                searchVm.elapsedTime("No search results found for the specified search term.");
+                            }
+                        }
+
+                        if (loadCategories) {
+                            msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
+                            searchVm.elapsedTime(msg);
+
+                            data.Categories.unshift({ Name: 'All', ResultCount: data.Result.Matches, DisplayName: 'All' });
+                            var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
+                            searchVm.categories(cats);
+
+                            $('.search-category-link').each(function () {
+                                $(this).click(function (e) {
+                                    var c = $(this).data("category");
+                                    showOnlyRelevantCategory(c, e);
+                                });
+                            });
+
+                            $('.search-type-link').each(function () {
+                                $(this).click(function (e) {
+                                    var c = $(this).data("category-type");
+                                    showOnlyRelevantType(c, e);
+                                });
+                                if ($(this).data("category-type") == "All") $(this).addClass('selected');
+                            });
+
+                            loadCategories = false;
+                        }
+                    },
+                    loadError: function (xhr, status, error) {
+                        throw new Error(error.toString());
+                    },
+                    beforeLoadComplete: function (records) {
+                        var data = new Array();
+                        for (var i = 0; i < records.length; i++) {
+                            var row = records[i];
+                            row.Merged = "<div class='search-res-container'><h4 class='search-result-name'><a href='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p><h5 class='search-result-attributes'>Category: <em class='result-category'>" + row.Type + "</em> &nbsp;&nbsp;Type: <em class='result-type'>" + row.Group + "</em></h5></div>";
+                            data.push(row);
+                        }
+
+                        return data;
+                    }
+                }
+            );
+    }
+}
 function home(app, pageViewModel, templatePath, contextList, currentResourceID) {
     app.get('#/', function (context) {
         context.app.swap('');
 
-        var type = "Resource";
-        var id = currentResourceID;
-
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: pageViewModel.Title, Active: true });
-
-        var homeSocialTile;
-        var HomeSocial;
-        var ResponsibilityAdapter;
-        var ResponsibilitySource;
+                
+        var assignmentsTile;
+        var socialTile;
+        var activityTile;
+        var daysToLookBack = 7;
+        var searchCtrl;
 
         //#region Event Handlers
 
         function unsubscribe(data) {
-            HomeSocial = null;
-            homeSocialTile = null;
-            ResponsibilityAdapter = null;
-            ResponsibilitySource = null;
+            assignmentsTile = null;
+            socialTile = null;
+            activityTile = null;
+            searchCtrl = null;
 
+            $("#home-search-btn").off('click', simpleSearch);
+            $("#home-search-btn").off('click', showAdvancedSearch);
+            $("#home-search-text").off('keypress', searchTextKeyPress);
+            
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
 
+        function simpleSearch() {
+            searchCtrl.doSearch($("#home-search-text").val())
+            $("#SearchArea").show();
+        }
+
+        function showAdvancedSearch() {            
+            $("#SearchString").val($("#home-search-text").val());
+            location.href = '#/search';
+        }
+
+        function searchTextKeyPress(e) {
+            if (e.which == 13) {
+                simpleSearch();
+            }
+        }
+                
         //#endregion
+
+        function loadAssignments() {
+            assignmentsTile.LookBackDays = daysToLookBack;
+            $.getJSON("/api/Count/Assignments/" + daysToLookBack, function (data) {
+                assignmentsTile.Rows(data);
+            });
+        }
+
+        function loadSocial() {
+            socialTile.LookBackDays = daysToLookBack;
+            $.getJSON("/api/Count/Social/" + daysToLookBack, function (data) {
+                socialTile.Rows(data);
+            });
+        }
+
+        function loadActivity() {
+            activityTile.LookBackDays = daysToLookBack;
+            $.getJSON("/api/Count/Activity/" + daysToLookBack, function (data) {
+                activityTile.Rows(data);
+            });
+        }
+
+        function loadTileData() {
+            loadAssignments();
+            loadSocial();
+            loadActivity();
+        }
 
         context.title(pageViewModel.Title);
         context
@@ -50727,253 +51466,139 @@ function home(app, pageViewModel, templatePath, contextList, currentResourceID) 
 
                 $('#SideIcons').PageTools({ type: 'Resource', id: currentResourceID });
                 $('#SideIcons').PageTools("clear");
+                $("#SearchArea").hide();
 
                 //#region Tiles
+                                
+                assignmentsTile = new HomePageCountTileModel('Your Assignments', daysToLookBack);
+                ko.applyBindings(assignmentsTile, document.getElementById('AssignmentsTile'));
 
-                HomeSocial = new BoardViewModel();
-                ko.applyBindings(HomeSocial, document.getElementById('HomeBoard'));
-                HomeSocial.getMoreComments();
-
-                YourFollowedItemsTile('#FollowingTile', id, 'Items You Follow');
-                YourOwnedItemsTile('#OwnedTile', id, 'Items You Own');
-
-                homeSocialTile = new HomeSocialMicroTileModel(id);
-                ko.applyBindings(homeSocialTile, document.getElementById('HomeSocialTile'));
-                homeSocialTile.GetStatistics();
-
-                YourWorkflowTasks('WorkflowTasksTile', 'Your Assigned Tasks', true);
+                socialTile = new HomePageCountTileModel('Board', daysToLookBack);
+                ko.applyBindings(socialTile, document.getElementById('SocialTile'));
+                                
+                activityTile = new HomePageCountTileModel('Activity', daysToLookBack);
+                ko.applyBindings(activityTile, document.getElementById('ActivityTile'));
 
                 //#endregion
 
+                $("#dropDownButton").jqxDropDownButton({ width: 250, height: 25, autoOpen: true });
+                $('#jqxTree').on('select', function (event) {
+                    var args = event.args;
+                    var item = $('#jqxTree').jqxTree('getItem', args.element);                    
+                    daysToLookBack = $(args.element).data('days');
+                    loadTileData()
+                    var dropDownContent = '<div style="position: relative; margin-left: 3px; margin-top: 5px;">' + item.label + '</div>';
+                    $("#dropDownButton").jqxDropDownButton('setContent', dropDownContent);
+                });
+                $("#jqxTree").jqxTree({ width: 200 });
+               
+                loadTileData();
+
+                searchCtrl = new SearchResultsGrid(contextList, 5);
+
+                $("#home-search-btn").click(simpleSearch);
+                    
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+                $("#home-adv-btn").click(showAdvancedSearch);
+
+                $("#home-search-text").on("keypress", searchTextKeyPress);
+                
+                $("#home-search-text").focus();
             });
     });
 }
-
-function SearchResultCategory(data) {
-    var self = this;
-    data = data || {};
-    self.Name = data.Name;
-    self.DisplayName = data.DisplayName;
-    self.ResultCount = data.ResultCount;
-    self.Categories = data.Categories;
-    self.showRow = ko.observable(data.Name == 'Artifact'? true : false);
-    self.toggleVisibility = function () {
-        self.showRow(!self.showRow());        
-    };
-    self.showToggle = data.Categories != null;
-}
-
-function SearchViewModel() {
-    var self = this;
-    self.categories = ko.observableArray();
-    self.results = ko.observableArray();
-    self.elapsedTime = ko.observable();    
-    return self;
-}
-
 function search(app, pageViewModel, templatePath, contextList) {
     var searchRoute = function(context) {
         context.app.swap('');
-                
+
+        var searchCtrl;
+                                
+        //#region Event Handlers
+
+        function unsubscribe(data) {
+            searchCtrl = null;
+                    
+            $("#home-search-btn").off('click', simpleSearch);            
+            $("#home-search-text").off('keypress', searchTextKeyPress);
+            $(".adv-search-btn").off('click', toggleAdvancedSearch);
+            $(".simple-search-btn").off('click', toggleAdvancedSearch);
+            $("#do-adv-search-btn").off('click', advancedSearch);
+            $("#SearchString").off('keypress', profileSearchKeyPress);
+
+            amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        }
+
+        function simpleSearch() {
+            searchCtrl.doSearch($("#home-search-text").val());
+            $("#SearchString").val('');
+        }
+
+        function advancedSearch() {
+            searchCtrl.doAdvancedSearch();
+        }
+
+        function searchTextKeyPress(e) {
+            var code = (e.keyCode ? e.keyCode : e.which);
+            if (code == 13) { //Enter key 
+                simpleSearch();
+            }
+        }
+
+        function toggleAdvancedSearch() {
+            $(".searchinput").toggle();
+            if ($("#advancedSearch").is(":visible"))
+                searchCtrl.showAdvanced($("#home-search-text").val());
+        }
+
+        function profileSearchKeyPress(e) {
+            var code = (e.keyCode ? e.keyCode : e.which);
+            if (code == 13) { //Enter key 
+                $("#home-search-text").val($("#SearchString").val());
+                simpleSearch();                
+            }
+        }
+        
+        //#endregion
+                        
         context.title(pageViewModel.Title);
 
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: pageViewModel.Title, Active: true });
 
-        var searchVm;
-        var phrase;
-        var searchSource;
-        var loadCategories;
-
-        var showOnlyRelevantType = function (categoryType, e) {
-            $('#CategoryResults a').removeClass('selected');
-            $(e.target).addClass('selected');
-
-            var searchSource = getSource(phrase, '', categoryType == 'All' ? '' : categoryType);
-
-            var dataAdapter = getDataAdapter(searchSource);
-
-            $('#SearchResults').jqxDataTable({ source: dataAdapter });
-        }
-
-        var showOnlyRelevantCategory = function (category,e) {
-            $('#CategoryResults a').removeClass('selected');
-            $(e.target).addClass('selected');
-                        
-            var searchSource = getSource(phrase, category, '');
-
-            var dataAdapter = getDataAdapter(searchSource);
-
-            $('#SearchResults').jqxDataTable({ source: dataAdapter });
-        }
-
-        //region Event Handlers
-
-        function searchStringKeyPress(e) {
-            var code = (e.keyCode ? e.keyCode : e.which);
-            if (code == 13) { //Enter key 
-                phrase = $("#SearchString").val();                
-                $('#SearchResults').show();
-                loadCategories = true;
-                
-                var searchSource = getSource(phrase,'','');
-                
-                var dataAdapter = getDataAdapter(searchSource);
-
-                $('#SearchResults').jqxDataTable('goToPage', 0);
-                                
-                $('#SearchResults').jqxDataTable({ source: dataAdapter });
-                
-            }
-        }
-
-        function unsubscribe(data) {
-            searchVm = null;            
-            $("#SearchString").off('keypress', searchStringKeyPress);            
-            amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
-        }
-
-        //#endregion
-
-        function getSource(term, selGroup, selType) {
-            return {
-                datatype: "json",
-                datafields: [
-                    { name: 'NormalizedScore', type: 'float' },
-                    { name: 'Name', type: 'string' },
-                    { name: 'Type', type: 'string' },
-                    { name: 'Group', type: 'string' },
-                    { name: 'Description', type: 'string' },
-                    { name: 'ID', type: 'number' },
-                    { name: 'Url', type: 'string' },
-                    { name: 'Merged', type: 'string' },
-                ],
-                type: 'POST',
-                dataType: 'json',
-                url: '/search/results',
-                data: { search: term, from: 0, size: 10, group: selGroup, type: selType },
-                id: 'ID',
-                sortcolumn: 'NormalizedScore',
-                sortdirection: 'desc',
-                root: "Results",              
-            };
-        }
-
-        function getDataAdapter(source) {
-            return new $.jqx.dataAdapter(source,
-                    {
-                        formatData: function (data) {
-                            data.from = data.pagenum * data.pagesize;
-                            data.size = data.pagesize;
-                            return data;
-                        },
-                        downloadComplete: function (data, status, xhr) {
-                            if (!source.totalRecords) {
-                                source.totalRecords = parseInt(data.Result.Matches);
-                                if (source.totalRecords > 10000) source.totalRecords = 10000;
-                            }
-                        },
-                        loadComplete: function (data) {
-                            var msg = "";
-
-                            if (data) {                                
-                                if (data.Result.Matches == 0) {
-                                    $('#SearchResults').hide();
-                                    searchVm.elapsedTime("No search results found for the specified search term.");
-                                }
-                            }                            
-
-                            if (loadCategories) {
-                                msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
-                                searchVm.elapsedTime(msg);
-
-                                data.Categories.unshift({ Name: 'All', ResultCount: data.Result.Matches, DisplayName: 'All' });
-                                var cats = $.map(data.Categories, function (item) { return new SearchResultCategory(item); });
-                                searchVm.categories(cats);
-
-                                $('.search-category-link').each(function () {
-                                    $(this).click(function (e) {
-                                        var c = $(this).data("category");
-                                        showOnlyRelevantCategory(c, e);
-                                    });                                    
-                                });
-
-                                $('.search-type-link').each(function () {
-                                    $(this).click(function (e) {
-                                        var c = $(this).data("category-type");
-                                        showOnlyRelevantType(c, e);
-                                    });
-                                    if ($(this).data("category-type") == "All") $(this).addClass('selected');
-                                });
-
-                                loadCategories = false;
-                            }
-                        },
-                        loadError: function (xhr, status, error) {
-                            throw new Error(error.toString());
-                        },
-                        beforeLoadComplete: function (records) {
-                            var data = new Array();
-                            for (var i = 0; i < records.length; i++) {
-                                var row = records[i];
-                                row.Merged = "<h4 class='search-result-name'><a href='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><h5 class='search-result-attributes'>Category: <em class='result-category'>" + row.Type + "</em> &nbsp;&nbsp;Type: <em class='result-type'>" + row.Group + "</em></h5><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p>";
-                                data.push(row);
-                            }
-
-                            return data;
-                        }
-                    }
-                );
-        }
-
+        
         context
             .render(templatePath + 'search.html', pageViewModel)
             .appendTo(context.$element())
-            .then(function (content) {
+            .then(function (content) {                
                 context.contentHeader(pageViewModel);
 
                 $('#SideIcons').PageTools({ type: '', id: 0 });
-                $('#SideIcons').PageTools("clear");                
+                $('#SideIcons').PageTools("clear");
+                
+                $("#advancedSearch").hide();
 
-                loadCategories = true;
+                searchCtrl = new SearchResultsGrid(contextList,10,context.params['phrase']);
 
-                searchVm = new SearchViewModel();
-                try {
-                    ko.applyBindings(searchVm, document.getElementById("SearchArea"));
+                $("#SearchString").on('keypress', profileSearchKeyPress);
+
+                if ($("#SearchString").val().length != 0) {
+                    $("#home-search-text").val($("#SearchString").val())
+                    $("#SearchString").val('');
                 }
-                catch (e) {
-                    console.log(e);
-                }
 
-                //#region Event Registration
-                                
-                $("#SearchString").on('keypress', searchStringKeyPress);
+                $("#home-search-text").focus();
+
+                $("#home-search-text").on("keypress", searchTextKeyPress);
+
+                $("#home-search-btn").click(simpleSearch);
+
+                $(".simple-search-btn").click(toggleAdvancedSearch);
+                $(".adv-search-btn").click(toggleAdvancedSearch);
+
+                $("#do-adv-search-btn").click(advancedSearch);
+
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
-                //#endregion
-                phrase = $("#SearchString").val();
-                             
-                var source = getSource(phrase, '','');
-
-                var dataAdapter = getDataAdapter(source);
-                                
-                $("#SearchResults").jqxDataTable(
-                {                    
-                    pageable: true,
-                    pagerButtonsCount: 10,
-                    serverProcessing: true,
-                    pagerMode: 'default',
-                    source: dataAdapter,                    
-                    theme: 'transparent',
-                    width: '98%',                    
-                    pageSizeOptions: ['10', '20', '50'],
-                    enableHover: false,
-                    columns: [
-                        { text: ' ', dataField: 'Merged', width: '99%'}                        
-                    ]
-                });
-
             });
     }
     app.get('#/search/:phrase', searchRoute);
@@ -51837,7 +52462,16 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                 $('#SideIcons').PageTools('reload', type, id);
             }
 
-            function saveAction(data) {
+            function refreshArtifactTitle() {                
+                $.getJSON('/api/artifact/' + id, function (json) {
+                    pageViewModel.Title = $('<div/>').html(json.Name).text();
+                    pageViewModel.Status = "<h4>Status: <b style='color:" + getArtifactStatusForeColor(json.Status) + "'>" + json.Status + "</b></h4>";
+                    pageViewModel.breadcrumbs = json.Breadcrumbs;
+                    context.contentHeader(pageViewModel);
+                });
+            }
+
+            function saveAction(data) {                
                 try {
                     switch (data.context) {
                         case contextList.Comment:
@@ -51855,10 +52489,15 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                         case contextList.SourceToTarget:
                             LineageDiagram('SourcingTile', type, id, null, true);
                             break;
-                        case contextList.Responsibility:
+                        case contextList.Responsibility:                        
+                            $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
+                            ObjectStatisticsTile('MicroWidget1', type, id);                            
+                            break;
                         case contextList.Artifact:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             ObjectStatisticsTile('MicroWidget1', type, id);
+                            ObjectDetail('DetailTile', type, id);
+                            refreshArtifactTitle();
                             break;
                         case contextList.Synonym:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
@@ -52022,7 +52661,8 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                 $('#List').jqxGrid('updatebounddata');
             }
 
-            function runFilter() {
+            function runFilter() {                
+                $("#List").jqxGrid('gotopage', 0); //if user is paging around send them back to begining in case search results change number of pages.
                 $('#List').jqxGrid('updatebounddata');
             }
 
@@ -52205,7 +52845,8 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                             filter: function () {
                                 $("#List").jqxGrid('updatebounddata');
                             },
-                            sort: function () {
+                            sort: function () {                                
+                                $("#List").jqxGrid('gotopage', 0); //if user is paging around send them back to begining
                                 $("#List").jqxGrid('updatebounddata');
                             }
                         };
@@ -52711,6 +53352,7 @@ function domains_admin(app, pageViewModel, templatePath, contextList) {
                 $('#SideIcons').PageTools("reload", type, data.ID);
                 var loadPermissionsDependentTiles = function () {
                     ObjectDetail('DetailTile', type, data.ID);
+                    FieldsGrid("FieldsTile", contextList, permissions, type, data.ID);
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, data.ID, 'Default Responsibilities', true);
                 }
                 permissions.GetPermissionsForObject(type, data.ID).then(loadPermissionsDependentTiles);
@@ -53365,7 +54007,9 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                     permissions.GetPermissionsForObject(type, id);
 
                     $('#SideIcons').PageTools({ type: type, id: id });
-                    FusionItemsGrid('ItemsTile', contextList, permissions, typeID, id, (fusionAttributeID != null) ? json : null);
+
+                    if (fusionAttributeID != null) json.ID = fusionAttributeID;                    
+                    FusionItemsGrid('ItemsTile', contextList, permissions, typeID, id, (fusionAttributeID != null) ? json : null);                   
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '', false);
 
                     //#region Events
@@ -55495,7 +56139,7 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
                 $('#SideIcons').PageTools("reload", type, data.ID);
-                //FieldsGrid("FieldsTile", contextList, permissions, type, data.ID);
+                FieldsGrid("FieldsTile", contextList, permissions, type, data.ID);
             }
         }
 

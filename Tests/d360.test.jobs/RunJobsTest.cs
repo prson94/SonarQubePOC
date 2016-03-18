@@ -396,9 +396,9 @@ from    Artifact A
                 list.Add(item);
             }
 
-            var source = new AzureSearchSource();
-            source.ClearIndex(companyID, "Taxonomy");
-            source.AddToIndex(list);
+            //var source = new AzureSearchSource();
+            //source.ClearIndex(companyID, "Taxonomy");
+            //source.AddToIndex(list);
         }
 
         [TestMethod]

@@ -6053,20 +6053,20 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                     }
                     $("#" + controlID_fusion).jqxExpander('expand');
 
-                    if (sourceNodes.length > 0) { //(data.sourceRuleCount > 0) {
-                        //$('#' + controlID_sourcerules).show();
-                        $("#" + controlID_sourcerules).jqxExpander('expand');
+                    //if (sourceNodes.length > 0) { //(data.sourceRuleCount > 0) {
+                    //    //$('#' + controlID_sourcerules).show();
+                    //    $("#" + controlID_sourcerules).jqxExpander('expand');
 
-                        $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function(rules) {
-                            var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
-                            $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
-                        });
-                    }
-                    else {
-                        $("#" + controlID_sourcerules_table).html('');
-                        $("#" + controlID_sourcerules).jqxExpander('collapse');
-                        //$('#' + controlID_sourcerules).hide();
-                    }
+                    //    $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function(rules) {
+                    //        var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
+                    //        $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
+                    //    });
+                    //}
+                    //else {
+                    //    $("#" + controlID_sourcerules_table).html('');
+                    //    $("#" + controlID_sourcerules).jqxExpander('collapse');
+                    //    //$('#' + controlID_sourcerules).hide();
+                    //}
 
                     $("#" + controlID_responsibilities).show();
                     try {
@@ -6086,7 +6086,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 $('#' + controlID_info_body).html('');
                 $("#" + controlID_info).jqxExpander('collapse');
 
-                $("#" + controlID_sourcerules).jqxExpander('collapse');
+                //$("#" + controlID_sourcerules).jqxExpander('collapse');
 
                 lineageResponsibilitySource.url = null;
                 $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');

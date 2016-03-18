@@ -233,205 +233,193 @@
 
         //#region Main Grid
 
-        aggregateRelationshipOverlaySource = {
-            datatype: 'json',
-            url: '/api/' + aggregateRelationshipOverlayType + '/' + aggregateRelationshipOverlayId + '/relationships/' + aggregateRelationshipOverlayTargetType + '/' + aggregateRelationshipOverlayTargetID + '/' + aggregateRelationshipCriticalOnly + '?$orderby=TargetName',
-            datafields:
-            [
-                { name: 'IntersectID' },
-                { name: 'Description' },
-                { name: 'Classification' },
-                { name: 'Role' },
-                { name: 'TargetName' },
-                { name: 'TargetObjectID' },
-                { name: 'TargetParentName' },
-                { name: 'TargetParentID' },
-                { name: 'TargetObjectType' },
-                { name: 'TargetTypeID' },
-                { name: 'TargetType' },
-                { name: 'TargetTypeName' },
-                { name: 'TargetUrl' },
-                { name: 'HasTechnicalRelationships' }
-            ]
-        };
-
-        var addColumns = function(newColumns){
-            var existing = $("#AggregateRelationsOverlayGrid").jqxGrid("columns");
-            var end = existing.length;
-            for(var i=0;i<newColumns.length;i++){
-                existing.splice(end,0, newColumns[i]);
-            }
-            return existing;
-        }
-
-        //add dynamic fields
-        var fields = getDisplayFields();
-        // i no likey  syncy
-        var values = getDynamicValues();
-        var gridColumns = [];
-
-        var findDynamicValue = function(attributeID, TargetID){
-            var val='';
-            for(var i = 0 ; i < values.length;i++)
-            {
-                if(values[i].TargetID==TargetID && values[i].AttributeTypeID==attributeID){
-                    if(val.length) val+=', ';
-                    val +=values[i].Value
-                }
-            }
-            return val;
-        }
-
-        var relationIconRowRender = function (type, id, uri, data) {
-            return "<div class='RowMultiTools'>" + (data.HasLineage ? "<i class='lineage fa fa-@Resources.Actions.Lineage_Icon' title='Lineage'></i> " : "") + (data.HasTechnicalRelationships ? "<i class='fusion fa fa-@Resources.Actions.Fusion_Icon' title='Fusion'></i> " :"") + (data.HasAttributes ? "<i class='attribute fa fa-@Resources.Actions.Attributes_Icon' title='Attributes'></i>" : "") + previewIconLink(type, id, uri) + " </div>";
-        }
-
-        var complexAttributeColumnRenderer = function(index, datafield, value, defaultvalue, column, data) {
-            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ? "<div data-context='Preview' data-type='complexvalue' data-id='" + data.IntersectID + "/" + column.datafield + "' >Populated <i class='fusion fa fa-info-circle'></i></div>" : "") + "</div>";
-        }
-
-        var attributeColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
-            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + value + "</div>";
-        }
-
-        var multipleFieldColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {            
-            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ?  "<div data-context='Preview' data-type='fieldvalues' data-id='" + data.IntersectID + "/" + column.datafield + "' >" + value + " <i class='fusion fa fa-info-circle'></i></div></div>" : "") + "</div>";
-        }
-
-        var headerTooltipRenderer = function(text) {
-            return function (columnHeaderElement) {
-                if(text!=null && text.length>0)
-                    $(columnHeaderElement).parent().jqxTooltip({ position: 'mouse', content: text });                
+        $.getJSON('/api/IntersectType/' + aggregateRelationshipIntersectTypeID + '/grid/definition', function (gridinfo) {
+            aggregateRelationshipOverlaySource = {
+                datatype: 'json',
+                url: '/api/' + aggregateRelationshipOverlayType + '/' + aggregateRelationshipOverlayId + '/relationships/' + aggregateRelationshipOverlayTargetType + '/' + aggregateRelationshipOverlayTargetID + '/' + aggregateRelationshipIntersectTypeID + '/' + aggregateRelationshipCriticalOnly,
+                datafields: gridinfo.Fields
             };
-        };
-        
-        for(var i = 0 ; i < fields.length;i++){
-            aggregateRelationshipOverlaySource.datafields.push({name:fields[i].attributeID});            
-            gridColumns.push({
-                text:fields[i].label,
-                datafield:fields[i].attributeID,
-                width:'250px',
-                filterable: !fields[i].isComplex,
-                cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : fields[i].fieldCount > 1 ? multipleFieldColumnCellRenderer : attributeColumnCellRenderer,            
-                rendered: headerTooltipRenderer (fields[i].description)
-            });
-        }
 
-        aggregateRelationshipOverlayAdapter = new $.jqx.dataAdapter(aggregateRelationshipOverlaySource, {
-            beforeLoadComplete: function (records) {
-                var data = new Array();
-                for (var i = 0; i < records.length; i++) {
-                    var row = records[i];
-                    var bHasAttributes=false;
-                    for(var j = 0 ; j < fields.length;j++){
-                        var val=findDynamicValue(fields[j].attributeID,row.IntersectID);
-                        bHasAttributes=(bHasAttributes || (val!=null&&val.length>0));
-                        row[fields[j].attributeID]=val
-                    }
-                    row.Classification = row.Classification == @((int)d360.core.enums.IntersectClassification.Normal) ? "Normal" : "Critical";
-                    row.HasAttributes = bHasAttributes;
-                    row.HasLineage = true;                    
-                    data.push(row);
+            var addColumns = function(newColumns){
+                var existing = $("#AggregateRelationsOverlayGrid").jqxGrid("columns");
+                var end = existing.length;
+                for(var i=0;i<newColumns.length;i++){
+                    existing.splice(end,0, newColumns[i]);
                 }
-                return data;
+                return existing;
+            }
+
+            //add dynamic fields
+            var fields = getDisplayFields();
+            // i no likey  syncy
+            var values = getDynamicValues();
+            var gridColumns = [];
+
+            var findDynamicValue = function(attributeID, TargetID){
+                var val='';
+                for(var i = 0 ; i < values.length;i++)
+                {
+                    if(values[i].TargetID==TargetID && values[i].AttributeTypeID==attributeID){
+                        if(val.length) val+=', ';
+                        val +=values[i].Value
+                    }
+                }
+                return val;
+            }
+
+            var relationIconRowRender = function (type, id, uri, data) {
+                return "<div class='RowMultiTools'>" + (data.HasLineage ? "<i class='lineage fa fa-@Resources.Actions.Lineage_Icon' title='Lineage'></i> " : "") + (data.HasTechnicalRelationships ? "<i class='fusion fa fa-@Resources.Actions.Fusion_Icon' title='Fusion'></i> " :"") + (data.HasAttributes ? "<i class='attribute fa fa-@Resources.Actions.Attributes_Icon' title='Attributes'></i>" : "") + previewIconLink(type, id, uri) + " </div>";
+            }
+
+            var complexAttributeColumnRenderer = function(index, datafield, value, defaultvalue, column, data) {
+                return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ? "<div data-context='Preview' data-type='complexvalue' data-id='" + data.IntersectID + "/" + column.datafield + "' >Populated <i class='fusion fa fa-info-circle'></i></div>" : "") + "</div>";
+            }
+
+            var attributeColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
+                return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + value + "</div>";
+            }
+
+            var multipleFieldColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {            
+                return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ?  "<div data-context='Preview' data-type='fieldvalues' data-id='" + data.IntersectID + "/" + column.datafield + "' >" + value + " <i class='fusion fa fa-info-circle'></i></div></div>" : "") + "</div>";
+            }
+
+            var headerTooltipRenderer = function(text) {
+                return function (columnHeaderElement) {
+                    if(text!=null && text.length>0)
+                        $(columnHeaderElement).parent().jqxTooltip({ position: 'mouse', content: text });                
+                };
+            };
+        
+            for(var i = 0 ; i < fields.length;i++){
+                aggregateRelationshipOverlaySource.datafields.push({name:fields[i].attributeID});            
+                gridColumns.push({
+                    text:fields[i].label,
+                    datafield:fields[i].attributeID,
+                    width:'250px',
+                    filterable: !fields[i].isComplex,
+                    cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : fields[i].fieldCount > 1 ? multipleFieldColumnCellRenderer : attributeColumnCellRenderer,            
+                    rendered: headerTooltipRenderer (fields[i].description)
+                });
+            }
+
+            aggregateRelationshipOverlayAdapter = new $.jqx.dataAdapter(aggregateRelationshipOverlaySource, {
+                beforeLoadComplete: function (records) {
+                    var data = new Array();
+                    for (var i = 0; i < records.length; i++) {
+                        var row = records[i];
+                        var bHasAttributes=false;
+                        for(var j = 0 ; j < fields.length;j++){
+                            var val=findDynamicValue(fields[j].attributeID,row.IntersectID);
+                            bHasAttributes=(bHasAttributes || (val!=null&&val.length>0));
+                            row[fields[j].attributeID]=val
+                        }
+                        row.Classification = row.Classification == @((int)d360.core.enums.IntersectClassification.Normal) ? "Normal" : "Critical";
+                        row.HasAttributes = bHasAttributes;
+                        row.HasLineage = true;                    
+                        data.push(row);
+                    }
+                    return data;
+                }
+            });
+
+            $('#AggregateRelationsOverlayGrid').on('mouseenter', '[data-gridtip]', function (event) {          
+                var tipText=$(event.currentTarget).attr('data-gridtip');                         
+                $(this).qtip({ // Grab all elements with a non-blank data-tooltip attr.                
+                    content: {
+                        text: tipText
+                    },
+                    position: {
+                        at: 'left center',
+                        my: 'right center',
+                        viewport: $(window), // Keep the tooltip on-screen at all times
+                        effect: false // Disable positioning animation
+                    },
+                    overwrite: false,
+                    show: {
+                        event: event.type,  // show using same event as above.
+                        solo: false,         // Only show one tooltip at a time
+                        ready: true
+                    },
+                    hide: {
+                        fixed: true,
+                        delay: 1000,
+                    },                
+                    style: {
+                        classes: 'qtip-blue qtip-rounded'
+                    }
+                });
+            });
+    
+            try {
+                var mainGridHeight = 500; 
+                
+                //#region Static fields
+
+                gridinfo.Columns.push({
+                    datafield: "Role",
+                    text: "Role",
+                    width: '125px',
+                    filtertype: 'checkedlist'
+                });
+                gridinfo.Columns.unshift({
+                    datafield: "Classification",
+                    text: "Classification",
+                    width: '100px',
+                    filtertype: 'checkedlist'
+                });
+                gridinfo.Columns.unshift({
+                    datafield: "TargetParentName",
+                    text: "Parent",
+                    filtertype: 'checkedlist',
+                    width: '200px',
+                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return "<div class='d3s-cell'>" + data.TargetParentName + "</div>";
+                    }
+                });
+                gridinfo.Columns.unshift({
+                    datafield: "TargetName",
+                    text: "Name",
+                    width: '350px',
+                    pinned: true,
+                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;' " + (data.Description != null ? "data-gridtip='" + data.Description + "'" : "") +" >" + data.TargetName + "</div>";
+                    }
+                });
+                gridinfo.Columns.unshift({
+                    text: '',
+                    groupable: false,
+                    datafield: 'IntersectID',
+                    width: '85px',
+                    filterable: false,
+                    pinned: true,
+                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        return relationIconRowRender(data.TargetObjectType, data.TargetObjectID, data.TargetUrl,data);
+                    }
+                });
+
+                //#endregion
+
+                $('#AggregateRelationsOverlayGrid').jqxGrid({
+                    altrows: true,
+                    width: grid_width,
+                    height: mainGridHeight,
+                    showheader: true,
+                    showfilterrow: true,
+                    sortable: true,
+                    columnsresize: true,
+                    filterable: true,
+                    pageable: false,
+                    scrollmode: 'deferred',
+                    deferreddatafields: ['TargetName'],
+                    source: aggregateRelationshipOverlayAdapter,                
+                    theme: theme,                
+                    columns: gridinfo.Columns
+                });
+
+                $("#AggregateRelationsOverlayGrid").jqxGrid({ columns: addColumns(gridColumns) });
+            } catch (e) {
             }
         });
-
-        $('#AggregateRelationsOverlayGrid').on('mouseenter', '[data-gridtip]', function (event) {          
-            var tipText=$(event.currentTarget).attr('data-gridtip');                         
-            $(this).qtip({ // Grab all elements with a non-blank data-tooltip attr.                
-                content: {
-                    text: tipText
-                },
-                position: {
-                    at: 'left center',
-                    my: 'right center',
-                    viewport: $(window), // Keep the tooltip on-screen at all times
-                    effect: false // Disable positioning animation
-                },
-                overwrite: false,
-                show: {
-                    event: event.type,  // show using same event as above.
-                    solo: false,         // Only show one tooltip at a time
-                    ready: true
-                },
-                hide: {
-                    fixed: true,
-                    delay: 1000,
-                },                
-                style: {
-                    classes: 'qtip-blue qtip-rounded'
-                }
-            });
-        });
-    
-        try {
-            var mainGridHeight = 500;            
-            $('#AggregateRelationsOverlayGrid').jqxGrid({
-                altrows: true,
-                width: grid_width,
-                height: mainGridHeight,
-                showheader: true,
-                showfilterrow: true,
-                sortable: true,
-                columnsresize: true,
-                filterable: true,
-                pageable: false,
-                scrollmode: 'deferred',
-                deferreddatafields: ['TargetName'],
-                source: aggregateRelationshipOverlayAdapter,                
-                theme: theme,                
-                columns: [
-                    {
-                        text: '',
-                        groupable: false,
-                        datafield: 'IntersectID',
-                        width: '85px',
-                        filterable: false,
-                        pinned: true,
-                        cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return relationIconRowRender(data.TargetObjectType, data.TargetObjectID, data.TargetUrl,data);
-                        }
-                    },
-                    {
-                        datafield: "TargetName",
-                        text: "Name",
-                        width: '350px',
-                        pinned: true,
-                        cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;' " + (data.Description != null ? "data-gridtip='" + data.Description + "'" : "") +" >" + data.TargetName + "</div>";
-                        }
-                    },                    
-                    {
-                        datafield: "TargetParentName",
-                        text: "Parent",
-                        filtertype: 'checkedlist',
-                        width: '200px',
-                        cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return "<div class='d3s-cell'>" + data.TargetParentName + "</div>";
-                        }
-                    },
-                    {
-                        datafield: "Classification",
-                        text: "Classification",
-                        width: '100px',
-                        filtertype: 'checkedlist'
-                    },
-                    {
-                        datafield: "Role",
-                        text: "Role",
-                        width: '125px',
-                        filtertype: 'checkedlist'
-                    }       
-                ]
-            });
-
-            $("#AggregateRelationsOverlayGrid").jqxGrid({ columns: addColumns(gridColumns) });
-
-            
-
-        } catch (e) {
-        }
 
         //#endregion
     

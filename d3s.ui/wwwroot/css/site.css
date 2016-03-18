@@ -274,3 +274,9 @@
     margin-left: 100%;
   }
 }
+.warn {
+  border: 1px solid red;
+}
+.ok {
+  border: 1px solid green;
+}
