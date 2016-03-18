@@ -31,8 +31,7 @@
             $("#SearchArea").show();
         }
 
-        function showAdvancedSearch() {
-            console.log('search' + $("#home-search-text").val());
+        function showAdvancedSearch() {            
             $("#SearchString").val($("#home-search-text").val());
             location.href = '#/search';
         }

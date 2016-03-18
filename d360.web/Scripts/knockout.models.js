@@ -3187,6 +3187,106 @@ var ReportLayoutModel = function (reportLayoutID) {
 }
 ReportLayoutModel.prototype = new BaseOverlayTileModel();
 
+
+
+var HomePageCountTileModel = function (title,days) {
+    var self = this;
+
+    self.Title = ko.observable(title);
+    self.Rows = ko.observableArray();
+    self.LookBackDays = ko.observable(days);
+    self.NoDataMessage = ko.observable("No " + title);
+    //rows has name, total count, new count
+    
+
+    return self;
+}
+
+function SearchResultCategory(data) {
+    var self = this;
+    data = data || {};
+    self.Name = data.Name;
+    self.DisplayName = data.DisplayName;
+    self.ResultCount = data.ResultCount;
+    self.Categories = data.Categories;
+    self.showRow = ko.observable(data.Name == 'Artifact' ? true : false);
+    self.toggleVisibility = function () {
+        self.showRow(!self.showRow());
+    };
+    self.showToggle = data.Categories != null;
+}
+
+function SearchAdvancedFilter(selectedField, search, exact) {
+    var self = this;    
+    self.Term = ko.observable(search);
+    self.exactMatch = ko.observable(exact);
+    self.SelectedFieldIndex = ko.observable(selectedField);
+    self.SelectedTypeIndex = ko.observable();
+    self.TypeNames = ko.observableArray([
+        { title: "Attribute", value: "Attribute" },
+        { title: "Fusion", value: "FusionAttributes" },
+        { title: "Fusion Type", value: "FusionType" },
+        { title: "Glossary", value: "Artifact" },
+        { title: "Group", value: "Group" },
+        { title: "Model", value: "Taxonomy" },
+        { title: "Reference", value: "Domain" },
+        { title: "User", value: "User" },
+    ]);
+    self.ShowConnectors = ko.observable(false);
+    self.Connectors = ko.observableArray([
+        { title: "And", value: "and" },
+        { title: "Or", value: "or" },
+    ]);
+    self.SelectedConnectorIndex = ko.observable(0);
+    self.ShowText = ko.computed(function () {        
+        return (self.SelectedFieldIndex() != 3);
+    });
+}
+
+function SearchViewModel() {
+    var self = this;
+    self.categories = ko.observableArray();
+    self.results = ko.observableArray();
+    self.elapsedTime = ko.observable();
+
+    self.addFilter = function () {
+        self.advancedFilter.push(new SearchAdvancedFilter(-1,"", false));
+    };
+
+    self.removeFilter = function (index) {
+        if (index > -1) {            
+            self.advancedFilter.splice(index, 1);
+        }
+    };
+
+    self.advancedFilterJSON = function () {
+        var filter = new Array();
+        for (var i = 0 ; i < self.advancedFilter().length; i++) {            
+            var fieldName = (self.advancedFilter()[i].SelectedFieldIndex() >= 0 ? self.FieldNames()[self.advancedFilter()[i].SelectedFieldIndex()].value : "");            
+            if (fieldName == "") continue;
+            var val = self.advancedFilter()[i].Term();
+            if (fieldName == '_type') {                
+                val = self.advancedFilter()[i].TypeNames()[self.advancedFilter()[i].SelectedTypeIndex()].value;
+            }
+            var con = self.advancedFilter()[i].Connectors()[self.advancedFilter()[i].SelectedConnectorIndex()].value;
+
+            filter[i] = { field: fieldName, value: val, exact: self.advancedFilter()[i].exactMatch(), connector: con };
+        }
+        return JSON.stringify(filter);
+    }
+
+    self.FieldNames = ko.observableArray([{ title: "Category", value: "Type" }, { title: "Description", value: "Description" }, { title: "Name", value: "Name" }, { title: "Type", value: "_type" } ]);
+    self.advancedFilter = ko.observableArray();
+
+    self.showAdvanced = function (phrase) {
+        self.advancedFilter([]);        
+        self.advancedFilter.push(new SearchAdvancedFilter(2,phrase, false));
+    }
+    return self;
+}
+
+
+
 //#endregion
 
 //#region VIEW MODELS
@@ -3212,7 +3312,7 @@ var ResourcePageViewModel = function (title, directions, breadcrumbs) {
     return self;
 }
 
-var BoardViewModel = function () {
+var BoardViewModel = function (initialDaysToLookBack) {
     var self = this;
     self.comments = ko.observableArray();
     self.newMessage = ko.observable();
@@ -3222,6 +3322,9 @@ var BoardViewModel = function () {
     self.moreComments = ko.observable();
     self.searchFilter = ko.observable('');
     self.ProcessingCount = ko.observable(0);
+    self.ShowDateFilter = ko.observable(true);
+    self.ShowTypeFilter = ko.observable(true);
+
     self.IsProcessing = ko.computed(function () {
         return (self.ProcessingCount() != 0);
     });
@@ -3311,7 +3414,7 @@ var BoardViewModel = function () {
     self.dateFilterOptions = ko.observableArray([
         { Text: ' over past day', Value: -1 },
         { Text: 'over past week', Value: -7 },
-        { Text: 'over past month', Value: -30 },
+        { Text: 'over past month', Value: -30 },        
         { Text: 'All time', Value: 0 }
     ]);
 
@@ -3361,7 +3464,7 @@ var BoardViewModel = function () {
         { Text: 'Questions', Value: 9 }
     ]);
 
-    self.selectedDateFilterOption = ko.observable(-7);
+    self.selectedDateFilterOption = ko.observable(initialDaysToLookBack === undefined ? -7 : initialDaysToLookBack);
     self.selectedTypeFilterOption = ko.observable();
 
     self.tagSuggestions = ko.observableArray();
@@ -3436,7 +3539,7 @@ var BoardViewModel = function () {
             self.ObjectType = objectType;
             self.ObjectID = objectID;
 
-            self.selectedDateFilterOption(-7);
+            self.selectedDateFilterOption(initialDaysToLookBack === undefined ? -7 : initialDaysToLookBack);
 
 
             self.getMoreComments();
