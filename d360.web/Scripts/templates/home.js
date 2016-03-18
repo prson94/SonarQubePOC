@@ -24,6 +24,15 @@
             $("#home-search-text").off('keypress', searchTextKeyPress);
             
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            amplify.unsubscribe("SaveAction", saveAction);
+        }
+
+        function saveAction(data) {                        
+            try {
+                loadAssignments();
+            } catch (e) {
+                logError("Home : SaveAction", e);
+            }
         }
 
         function simpleSearch() {
@@ -47,6 +56,7 @@
         function loadAssignments() {
             assignmentsTile.LookBackDays = daysToLookBack;
             $.getJSON("/api/Count/Assignments/" + daysToLookBack, function (data) {
+                assignmentsTile.Rows([]);
                 assignmentsTile.Rows(data);
             });
         }
@@ -113,6 +123,7 @@
                 $("#home-search-btn").click(simpleSearch);
                     
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                amplify.subscribe("SaveAction", saveAction);
 
                 $("#home-adv-btn").click(showAdvancedSearch);
 
