@@ -678,26 +678,26 @@ namespace d360.web.Controllers
                     switch (fCondition)
                     {
                         case "CONTAINS":
-                            fFormat = "[{0}] LIKE '%{1}%'";
+                            fFormat = "[{0}] LIKE N'%{1}%'";
                             break;
                         case "DOES_NOT_CONTAIN":
-                            fFormat = "[{0}] NOT LIKE '%{1}%'";
+                            fFormat = "[{0}] NOT LIKE N'%{1}%'";
                             break;
                         case "EQUAL":
-                            fFormat = "[{0}] = '{1}'";
+                            fFormat = "[{0}] = N'{1}'";
                             break;
                         case "NOT_EQUAL":
-                            fFormat = "[{0}] <> '{1}'";
+                            fFormat = "[{0}] <> N'{1}'";
                             break;
                         case "STARTS_WITH":
-                            fFormat = "[{0}] LIKE '{1}%'";
+                            fFormat = "[{0}] LIKE N'{1}%'";
                             break;
                         case "ENDS_WITH":
-                            fFormat = "[{0}] LIKE '%{1}'";
+                            fFormat = "[{0}] LIKE N'%{1}'";
                             break;
                     }
 
-                    filter = string.Format(fFormat, fField, fValue.Replace("--", "").Replace("'", "''"));   //SQL Injection check
+                    filter = string.Format(fFormat, fField.Replace("]","").Replace("[",""), fValue.Replace("--", "").Replace("'", "''"));   //SQL Injection check
 
                     if (!string.IsNullOrEmpty(filter))
                     {
