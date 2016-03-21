@@ -42,7 +42,7 @@
 
         function showAdvancedSearch() {            
             $("#SearchString").val($("#home-search-text").val());
-            location.href = '#/search';
+            location.href = '#/search/mode/advanced';
         }
 
         function searchTextKeyPress(e) {
