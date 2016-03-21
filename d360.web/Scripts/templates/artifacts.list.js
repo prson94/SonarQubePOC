@@ -277,13 +277,12 @@
                             autoheight: true,
                             sortable: true,
                             altrows: true,
-                            filterable: false,
-                            autoshowfiltericon: false,
+                            filterable: false,                         
                             showfilterrow: false,
                             virtualmode: true,
                             rendergridrows: function () {
                                 return ArtifactListAdapter.records;
-                            },
+                            },                            
                             pageable: true,
                             columnsresize: true,
                             source: ArtifactListAdapter,
