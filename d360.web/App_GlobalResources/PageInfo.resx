@@ -214,7 +214,7 @@
     <value>Manage all your policies and rules.  Each rule can maintain a list of fields.  These fields will define what an event looks like that the selected rule.</value>
   </data>
   <data name="Monitor_Title" xml:space="preserve">
-    <value>Events</value>
+    <value>Policies</value>
   </data>
   <data name="Search_Description" xml:space="preserve">
     <value>Are you looking for the info you need?  Find it here...</value>

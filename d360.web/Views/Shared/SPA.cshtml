@@ -32,15 +32,23 @@
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
     <link rel="Shortcut Icon" href="@(companyIcon)" />
     <style type="text/css">
+        #nav {
+            background: @(settings["HeaderBackgroundColor"]);
+        }
+        .nav-top .profile a {
+            color: @(settings["HeaderProfileLinkColor"]);
+        }
         .nav-top .logo {
         position: absolute;
-        top: 1px;
-        left: 25px;
+        top: 3px;
+        left: 5px;
         background-image: url(@(companyLogo));
         background-repeat: no-repeat;
         background-position: left top;
-        height: 75px;
-        width: 150px;
+        background-size: auto 44px;
+        height: 44px;
+        width: 400px;
+        z-index: 1001;
     }
     </style>
     <script type="text/javascript">
@@ -54,13 +62,13 @@
         //appInsights.trackPageView();
         var CompanySettings = @(Html.Raw(settingsJson));
     </script>
-    @Html.Partial("KnockoutTemplates")    
+    @Html.Partial("KnockoutTemplates")
     <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
     <script type="text/javascript" src="/Scripts/GoJS/GoJS-1-5-18.js"></script>
-    <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>    
+    <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
 </head>
 <body>
-    <div style="position: fixed; left: 0px; top: 0px; width: 100px; height: 100%; z-index: 0" class="grey darken-2"></div>
+    <div style="position: fixed; left: 0px; top: 0px; width: 50px; height: 100%; z-index: 0" class="grey darken-2"></div>
     <div id="TopNav">@Html.Action("Top", "Navigation", new { area = string.Empty })</div>
     <table class="d3s-page">
         <tr>
@@ -676,7 +684,7 @@
         $(window).resize(function () {
             amplify.publish("PageResized");
         });
-    </script>    
+    </script>
     <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
 </body>
 </html>

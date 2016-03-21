@@ -10,6 +10,7 @@
       "Scripts/amplify.js",
       "Scripts/moment.js",
       "scripts/knockout-3.4.0.debug.js",
+      "scripts/metafizzy/isotope.pkgd.js",
       "Scripts/colorpicker-color.js",
       "Scripts/colorpicker.js",
       "Scripts/redactor.js",

@@ -1,12 +1,11 @@
 ﻿@import "_Variables.less";
 
-@height: 80px;
-@logoheight: 75px;
-@search-margin: ceil((@height - 35 - 2) / 2);
+@height: 50px;
+@logoheight: 44px;
+@search-margin: ceil((@height - 6 - 2) / 2);
 
 #nav {
-    background: #fff;
-    border-bottom: 1px solid #ccc;
+    /*background: #54a4da;*/
     width: 100%;
     position:fixed;
     top:0;
@@ -18,25 +17,8 @@
     transition: all .3s;
 }
 
-#TopLine {
-    position: fixed;
-    z-index: 1000;
-    top: 0px;
-    width: 100%;
-}
-
-.top-line {
-    line-height: 3px;
-    font-size: 3px;
-}
- 
-.blue1 { background-color: @d3s-blue-1; }
-.blue2 { background-color: @d3s-blue-2; }
-.blue3 { background-color: @d3s-blue-3; }
-.blue4 { background-color: @d3s-blue-4; }
-
 .nav-top-small {
-    margin-top: -77px;
+    margin-top: -50px;
 }
 
 .nav-top {
@@ -58,12 +40,13 @@
         position: absolute;
         right: 20px;
         a {
+            /*color: #fff;*/
             display:inline-block;
             vertical-align:middle;
             margin-right: 25px;
             height: 30px;
             line-height: 30px;
-            border: 1px solid transparent;
+            border: none;
             img {
                 border-radius: 20px;
                 height: 30px;
@@ -128,10 +111,9 @@
 
 .main-nav {
   width:100%;
-  box-shadow:inset 0 1px #e2e2e2;
   ul {
       li {
-          font-size: 20px;
+          font-size: 13px;
           a {
               color: #fff;
           }

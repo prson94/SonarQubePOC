@@ -230,7 +230,7 @@
                         });
 
                         $.each(gridinfo.Columns, function () {
-                            if (this.text == "Parent") {
+                            if (this.text === "Parent") {
                                 this.cellsrenderer = function (index, datafield, value, defaultvalue, column, data) {
                                     return previewLinkRenderer('Artifact', data.ParentID, data.ParentUrl, data.Parent);
                                 }

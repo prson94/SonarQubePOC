@@ -109,15 +109,16 @@
                         pageable: true,
                         source: IntersectTypeAdapter,
                         theme: theme,
+                        columnsresize: true,
                         columngroups: 
                             [
                                 { text: 'Relationship Side 1', align: 'center', name: 'S1' },
                                 { text: 'Relationship Side 2', align: 'center', name: 'S2' }
                             ],
                         columns: [
-                            { datafield: "Source", text: "Type", columngroup: 'S1', filtertype: 'checkedlist', width: '150px' },
+                            { datafield: "Source", text: "Type", columngroup: 'S1', filtertype: 'checkedlist', width: '125px' },
                             { datafield: "SourceName", text: "Name", columngroup: 'S1', filtertype: 'checkedlist' },
-                            { datafield: "Target", text: "Type", columngroup: 'S2', filtertype: 'checkedlist', width: '150px' },
+                            { datafield: "Target", text: "Type", columngroup: 'S2', filtertype: 'checkedlist', width: '125px' },
                             { datafield: "TargetName", text: "Name", columngroup: 'S2', filtertype: 'checkedlist' },
                             {
                                 text: '',

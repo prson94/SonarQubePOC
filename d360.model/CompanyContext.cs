@@ -1549,7 +1549,9 @@ where	R.SourceObject = 'FusionAttribute'
 		T.TargetTypeID as TypeID,
 		T.TargetType as [Type],
 		coalesce(S.IconBackColor, '#000') as IconBackColor,
-		T.[Count],
+        coalesce(S.IconForeColor, '#fff') as IconForeColor,
+        coalesce(S.IconText, substring(T.TargetTypeName, 1, 2)) as IconText,
+        T.[Count],
         T.IntersectTypeID
 from	(
 		select	'1' as [Group], 'All Glossary Items' as GroupName, --cast(0 as bit) as Critical,
@@ -2161,7 +2163,7 @@ order by Name", new { workflowType, type, id });
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw resolveToRealException(ex);
             }
         }
 
@@ -2177,7 +2179,7 @@ order by Name", new { workflowType, type, id });
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw resolveToRealException(ex);
             }
         }
 
@@ -2256,6 +2258,9 @@ order by Name", new { workflowType, type, id });
                             var any = false;
                             any = IntersectNodes.Any(i => i.ObjectType == "Artifact" && i.ObjectID == o.ID);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
+
+                            any = Artifacts.Any(i => i.ParentID == o.ID);
+                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);
                             break;
                         case EntityState.Modified:
                             if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);

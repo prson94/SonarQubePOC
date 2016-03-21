@@ -634,10 +634,10 @@
                 }
             );
         }
-        var loadDisplayFields = function(type, id, existingItems) {
+        var loadDisplayFields = function(intersectTypeID, type, id, existingItems) {
             return $.getJSON(
                 '/form/FieldType_RelationLookup_DisplayFields',
-                { type: type, id: id },
+                { intersectTypeID: intersectTypeID, type: type, id: id },
                 function(items) {
                     if (existingItems) {
                         $.each(existingItems, function(e_ix, e_item){
@@ -664,7 +664,7 @@
                         loadChildIntersects(values[0]);
                     }
                     else {
-                        loadDisplayFields(values[1], values[2]);
+                        loadDisplayFields(values[0], values[1], values[2]);
                     }
                 }
             });
@@ -679,7 +679,7 @@
 
                     if (value == "1"){
                         //Load the display fields for the Source Type.
-                        loadDisplayFields(values[1], values[2]);
+                        loadDisplayFields(values[0], values[1], values[2]);
                     }
                     else {
                         loadChildIntersects(values[0]);
@@ -693,7 +693,7 @@
 
                 if (value) {
                     var values = value.split('|');
-                    loadDisplayFields(values[1], values[2]);
+                    loadDisplayFields(values[0], values[1], values[2]);
                 }
             });
         }
@@ -742,7 +742,7 @@
                     self.ChildIntersectTypeIndex(indexToSelect);
                     if (indexToSelect > -1) {
                         var values = fullChildIntersectTypeValue.split('|');
-                        loadDisplayFields(values[1], values[2], self.DisplayFields());
+                        loadDisplayFields(values[0], values[1], values[2], self.DisplayFields());
                     }
                 }).then(function(){
                     setSubscriptions();
@@ -751,7 +751,7 @@
             }
             else {
                 var values = fullIntersectTypeValue.split('|');
-                loadDisplayFields(values[1], values[2], self.DisplayFields()).then(function(){
+                loadDisplayFields(values[0], values[1], values[2], self.DisplayFields()).then(function(){
                     setSubscriptions();
                 });
             }

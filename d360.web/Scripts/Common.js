@@ -90,7 +90,9 @@ function OnSuccess(data, status, xhr) {
         if (data.context) { a = data.context; }
         if (data.action) { action = data.action; }
         if (data.id) { id = data.id; }
-        amplify.publish("SaveAction", { context: a, action: action, id: id, custom : data.custom });
+        if (data.type != "error") {
+            amplify.publish("SaveAction", { context: a, action: action, id: id, custom: data.custom });
+        }
         amplify.publish("ShowMessage", data);
     } catch (e) {
         logError("Common.js : OnSuccess", e);
@@ -110,7 +112,21 @@ function OnFailed(data, status, xhr) {
                 message = json.message;
             }
         }
-    } catch (e) {}
+        else {
+            if (data) {
+                title = data.title;
+                if (data.message) {
+                    message = data.message;
+                }
+            }
+        }
+    } catch (e) {
+        if (data) {
+            if (data.message) {
+                message = data.message;
+            }
+        }
+    }
     amplify.publish("ShowMessage", { title: title, message: message, type: 'error' });
 }
 //#endregion

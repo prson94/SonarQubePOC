@@ -120,6 +120,9 @@
   <data name="Error_ArtifactsAssignedToType" xml:space="preserve">
     <value>There are existing artifacts based on this type.</value>
   </data>
+  <data name="Error_Artifact_ExistingChildren" xml:space="preserve">
+    <value>There are child artifacts assigned to this artifact.  You must first remove the child artifacts.</value>
+  </data>
   <data name="Error_AttributeType_Allocations" xml:space="preserve">
     <value>This attribute type is allocated to one ore more system objects.</value>
   </data>

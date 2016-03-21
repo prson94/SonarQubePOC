@@ -223,18 +223,13 @@
     <Compile Include="entities\Transitive\FusionAttributeItem.cs" />
     <Compile Include="entities\Transitive\BulkFusionImport.cs" />
     <Compile Include="entities\Transitive\CommentDetail.cs" />
-    <Compile Include="entities\Transitive\CommentCategory.cs" />
     <Compile Include="entities\Transitive\FusionPromotionOption.cs" />
-    <Compile Include="entities\Transitive\GetRelationshipModel.cs" />
     <Compile Include="entities\Transitive\GroupResourceInfo.cs" />
     <Compile Include="entities\Transitive\MostActiveUserReportModel.cs" />
-    <Compile Include="entities\Transitive\AttributeTreeItem.cs" />
     <Compile Include="entities\Transitive\MicroModels.cs" />
-    <Compile Include="entities\Transitive\RelationNode.cs" />
     <Compile Include="entities\Transitive\RenderTemplateModel.cs" />
     <Compile Include="entities\Transitive\ResponsibilityTypeClaimDetail.cs" />
     <Compile Include="entities\Transitive\StatisticDetail.cs" />
-    <Compile Include="entities\Transitive\UIColumnDefinition.cs" />
     <Compile Include="entities\Views\DomainAllocationDetail.cs" />
     <Compile Include="entities\Views\ResponsibilitySummaryDetail.cs" />
     <Compile Include="entities\Views\ResponsibilityDetailForResource.cs" />
@@ -254,7 +249,6 @@
     <Compile Include="entities\Views\FieldLookupValue.cs" />
     <Compile Include="entities\Views\FieldWithRelation.cs" />
     <Compile Include="entities\Views\FieldTypeWithRelation.cs" />
-    <Compile Include="entities\Transitive\NonIntersectionPoint.cs" />
     <Compile Include="entities\Transitive\ObjectDetail.cs" />
     <Compile Include="entities\Views\TaxonomyDetail.cs">
       <SubType>Code</SubType>

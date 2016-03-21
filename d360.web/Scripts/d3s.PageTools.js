@@ -102,7 +102,7 @@
 
     function loadLevel(node, level) {
         var html = "";
-        var iconSize = (level == 0) ? "fa-2x" : "";
+        var iconSize = "";//(level == 0) ? "fa-2x" : "";
 
         try {
             //var dataAttributes = " data-commandname='" + node.Context + "' data-context='" + (node.CommandName ? node.CommandName : '') + "' data-uri='" + node.Uri + "'";
@@ -136,7 +136,7 @@
             //    html += "</div>";
             //}
 
-            html += "<li id='" + node.Title + "' ";
+            html += "<li alt='" + node.Title + "' title='" + node.Title + "' id='" + node.Title + "' ";
             html += "data-uri='" + node.Uri + "' data-context='" + node.Context + "' data-commandname='" + (node.CommandName ? node.CommandName : '') + "'";
             $.each(node.CustomData, function (idx, c) {
                 html += " data-" + c.Name + "='" + c.Value + "'";
@@ -151,7 +151,7 @@
                 html += "<i data-toggle='tooltip'";
                 if (node.Warning) html += " title=\"" + node.Warning + "\" ";
                 html += "class='fa fa-" + node.Icon + " " + iconSize + "'></i>";
-                if (node.Title) html += "<div style='font-size: 75%'>" + node.Title + "</div>";
+                //if (node.Title) html += "<div style='font-size: 75%'>" + node.Title + "</div>";
             }
             if (level > 0) html += node.Title;
 
@@ -188,7 +188,7 @@
 
                     $obj.html(html);
 
-                    $("#tools").jqxMenu({ theme: 'plain', mode: 'vertical', showTopLevelArrows: false });
+                    $("#tools").jqxMenu({ theme: 'plain', width:'46px', mode: 'vertical', showTopLevelArrows: false });
                     //$('.tool').bind('click', function (event) {
                     $('#tools').bind('itemclick', function (event) {
                         var li = event.args;

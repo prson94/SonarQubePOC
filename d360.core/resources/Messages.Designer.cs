@@ -61,6 +61,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are child artifacts assigned to this artifact.  You must first remove the child artifacts..
+        /// </summary>
+        public static string Error_Artifact_ExistingChildren {
+            get {
+                return ResourceManager.GetString("Error_Artifact_ExistingChildren", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are existing artifacts based on this type..
         /// </summary>
         public static string Error_ArtifactsAssignedToType {

@@ -5,6 +5,6 @@
         public const string TITLE_PREFIX = "Data3Sixty";
         public const string COMPANY = "Data3Sixty, Inc.";
         public const string COPYRIGHT = "Copyright © Data3Sixty, Inc. 2015";
-        public const string PRODUCT_VERSION = "2015.11.1.*";
+        public const string PRODUCT_VERSION = "2016.3.2.*";
     }
 }

@@ -121,8 +121,8 @@ namespace d360.core
         TaxonomyTypeClass = 56,
         [Description("Predicate"), AllowSurvey(false)]
         Predicate = 57,
-        [Description("Predicate Phrase"), AllowSurvey(false)]
-        PredicatePhrase = 58
+        [Description("Group Type"), AllowSurvey(false)]
+        GroupType = 58
     }
 
     public class SystemObjectInfo

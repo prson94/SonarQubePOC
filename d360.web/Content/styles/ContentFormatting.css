@@ -1,5 +1,4 @@
-﻿/* Main Primary color */
-/* Main Secondary color (1) */
+﻿/* Main Secondary color (1) */
 /* Main Secondary color (2) */
 /* Main Complement color */
 /*@import "../bootstrap/variables";*/
@@ -9,7 +8,7 @@ body {
   background-color: #f1f1f1;
   font-family: Tahoma, Helvetica, Verdana, sans-serif;
   text-rendering: optimizeLegibility;
-  font-size: 0.9em;
+  font-size: 0.8em;
 }
 /** {
     outline: none;
@@ -32,28 +31,28 @@ h6 {
   margin: 2px;
 }
 h1 {
-  font-size: 35px;
-  line-height: 38px;
+  font-size: 30px;
+  line-height: 33px;
 }
 h2 {
-  font-size: 29px;
-  line-height: 31px;
+  font-size: 25px;
+  line-height: 27px;
 }
 h3 {
-  font-size: 27px;
-  line-height: 29px;
+  font-size: 23px;
+  line-height: 25px;
 }
 h4 {
-  font-size: 19px;
-  line-height: 20px;
+  font-size: 16px;
+  line-height: 17px;
 }
 h5 {
-  font-size: 14px;
-  line-height: 15px;
+  font-size: 12px;
+  line-height: 13px;
 }
 h6 {
-  font-size: 13px;
-  line-height: 14px;
+  font-size: 11px;
+  line-height: 12px;
 }
 .NoResultsMessage,
 .EmptyMessage {
@@ -340,7 +339,7 @@ ul.hierarchy :last-child {
 .tile header {
   font-family: "Roboto", Tahoma !important;
   padding: 3px 0px 5px 5px !important;
-  font-size: 19px !important;
+  font-size: 16px !important;
   font-weight: 600 !important;
   color: #000 !important;
   background-color: transparent !important;
@@ -386,7 +385,7 @@ ul.hierarchy :last-child {
 }
 .tile .tiletools button {
   color: #b0b2b6;
-  font-size: 19px !important;
+  font-size: 16px !important;
   border: none;
   background-color: transparent;
 }
@@ -583,6 +582,35 @@ ul.hierarchy :last-child {
 }
 .report-schema-column {
   font-weight: 400;
+}
+.kpi-grid-item {
+  width: 100px;
+  height: 70px;
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.kpi-grid-item .title {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  font-size: 10px;
+  line-height: 10px;
+}
+.kpi-grid-item .icon {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 55px;
+  line-height: 60px;
+  opacity: 0.1;
+}
+.kpi-grid-item .value {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 46px;
+  line-height: 46px;
 }
 .kpi-inner-text {
   fill: #000;
@@ -836,14 +864,13 @@ ul.hierarchy :last-child {
 }
 .d3s-sidebar {
   vertical-align: top;
-  width: 100px;
-  padding-left: 10px;
+  width: 50px;
 }
 .d3s-contentarea {
   vertical-align: top;
 }
 #SideIcons {
-  padding: 10px;
+  padding: 5px;
 }
 #SideIcons .action {
   color: #51a6dc;

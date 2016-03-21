@@ -12,51 +12,27 @@
             <div id="TreeGrid"></div>
         </div>
         <div id="ViewSelectionDetail" style="display:none">
-            <div class="container-fluid" id="Lineage" style="display:none;">
-                <div class="row" style="margin-top: 20px">
-                    <div class="col l11 m11">
-                        <ol class="breadcrumb" style="padding:0;">
-                            <li class="breadcrumb-name"></li>
-                            <li class="active">Lineage</li>
-                        </ol>
-                    </div>
-                    <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
-                </div>
-                <div id="DiagramTile"></div>
-            </div>
             <div class="container-fluid" id="Details" style="display:none;">
-                <div class="row" style="margin-top: 20px">
-                    <div class="col l11 m11">
-                        <ol class="breadcrumb" style="padding:0;">
-                            <li class="breadcrumb-name"></li>
-                            <li class="active">Relationship Details</li>
-                        </ol>
-                    </div>
-                    <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                <div style="background-color: #ebebeb;">
+                    <div class="pull-left" style="font-size: 1.2em; line-height: 1.2em; margin: 10px 0 0 10px" id="detail_heading"></div>
+                    <div class="pull-right"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                    <div class="clearfix"></div>
                 </div>
                 <div id="RelationshipDetailsTile" class="tile"></div>
             </div>
             <div class="container-fluid" id="Attributes" style="display:none;">
-                <div class="row" style="margin-top: 20px">
-                    <div class="col l11 m11">
-                        <ol class="breadcrumb" style="padding:0;">
-                            <li class="breadcrumb-name"></li>
-                            <li class="active">Business Attributes</li>
-                        </ol>
-                    </div>
-                    <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                <div style="background-color: #ebebeb;">
+                    <div class="pull-left" style="font-size: 1.2em; line-height: 1.2em; margin: 10px 0 0 10px" id="attribute_heading"></div>
+                    <div class="pull-right"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                    <div class="clearfix"></div>
                 </div>
                 <div id="RelationshipAttributesTile" class="tile"></div>
             </div>
             <div class="container-fluid" id="Fusion" style="display:none;">
-                <div class="row" style="margin-top: 20px">
-                    <div class="col l11 m11">
-                        <ol class="breadcrumb" style="padding:0;">
-                            <li class="breadcrumb-name"></li>
-                            <li class="active">Relationships</li>
-                        </ol>
-                    </div>
-                    <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                <div style="background-color: #ebebeb;">
+                    <div class="pull-left" style="font-size: 1.2em; line-height: 1.2em; margin: 10px 0 0 10px" id="fusion_heading"></div>
+                    <div class="pull-right"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                    <div class="clearfix"></div>
                 </div>
                 <div class="pull-left" style="width: 49%">
                     <div class="tile">
@@ -98,6 +74,7 @@
     var oid = "@(ViewData["ObjectID"])";
     var type = "@(Model.ParentType)";
     var typeID = "@(Model.ID)";
+    var name = "@(Model.TextPath)";
     var intersectID = 0;
     var selectedView = 'Fusion';
 
@@ -169,10 +146,10 @@
         try {
             switchToViewer();
             if (data.action == 'Add') {
-                try{
+                try {
                     $("#TechnicalRelationsGrid").jqxGrid('updatebounddata');
                 }
-                catch(e){
+                catch (e) {
                 }
                 $("#TreeGrid").jqxGrid('updatebounddata');
             }
@@ -357,9 +334,9 @@
                                 //url = '/Relations/AddRelationship?source=' + type + '&sourceID=' + typeID + '&target=' + span.data('t') + '&targetID=' + span.data('i');
                                 url = '/form/AddRelationship?' + 'intersectTypeID=' + span.data('it') + '&type=' + type + '&id=' + typeID;
                                 break;
-                            //case 'Source':
-                            //    url = '/relations/sources/' + type + '/' + typeID + '/add';
-                            //    break;
+                                //case 'Source':
+                                //    url = '/relations/sources/' + type + '/' + typeID + '/add';
+                                //    break;
                         }
 
                         if (url != '') {
@@ -412,10 +389,6 @@
         }
     }
 
-    function setBreadCrumb(parent, row) {
-        $(parent).find('.breadcrumb-name').html(row.TargetName);
-    }
-
     var activateIconTool = function (tool) {
         var $icon = $(this);
 
@@ -425,21 +398,20 @@
         var getselectedrowindexes = $('#TreeGrid').jqxGrid('getselectedrowindexes');
 
         if (getselectedrowindexes.length > 0) {
-            console.log($icon.html());
             var row = $('#TreeGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
             if ($icon.hasClass('attribute')) {
                 $('#Attributes').show();
-                setBreadCrumb('#Attributes', row);
+                $('#attribute_heading').text('Business Attributes for ' + name + ' / ' + row.TargetName);
                 AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.IntersectID, 'Business Attributes');
             }
             else if ($icon.hasClass('details')) {
                 $('#Details').show();
-                setBreadCrumb('#Details', row);
+                $('#detail_heading').text('Details for ' + name + ' / ' + row.TargetName);
                 ObjectDetail('RelationshipDetailsTile', "Intersect", row.IntersectID);
             }
             else if ($icon.hasClass('fusion')) {
                 $('#Fusion').show();
-                setBreadCrumb('#Fusion', row);
+                $('#fusion_heading').text('Child Relationships for ' + name + ' / ' + row.TargetName);
                 $('#TechnicalRelationsGrid').jqxGrid('clearselection');
                 technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
                 $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
@@ -535,7 +507,7 @@
 
                             html += "<div class='RowMultiTools'>";
                             //html += (data.HasLineage ? "<i class='lineage fa fa-" + iconLineage + "' title='Lineage'></i> " : "");
-                            html += "<a><i class='fusion fa fa-" + iconFusion + "' title='Fusion'></i></a>";
+                            html += "<a><i class='fusion fa fa-" + iconFusion + "' title='Child Relationships'></i></a>";
                             html += "<a><i class='attribute fa fa-" + iconAttributes + "' title='Attributes'></i></a>";
                             html += "<a><i class='details fa fa-list-alt' title='Details'></i></a>";
                             html += "<a title='Edit relationship' data-context='editrelation' data-local data-uri='/form/EditRelationship?id=" + data.IntersectID + "'><i class='fa fa-pencil'></i></a>";

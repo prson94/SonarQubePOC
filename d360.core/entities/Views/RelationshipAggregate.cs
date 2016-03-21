@@ -29,6 +29,12 @@ namespace d360.core.entities
         public string IconBackColor { get; set; }
 
         [DataMember]
+        public string IconForeColor { get; set; }
+
+        [DataMember]
+        public string IconText { get; set; }
+
+        [DataMember]
         public int Count { get; set; }
 
         [DataMember]

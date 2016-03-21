@@ -2,6 +2,7 @@
     var title = ViewData["Title"];
     var type = (d360.core.SystemObjects)ViewData["type"];
     var id = (int)ViewData["id"];
+    var source = ViewData["source"];
     var targetType = (d360.core.SystemObjects)ViewData["targetType"];
     var targetID = (int)ViewData["targetID"];
     var criticalOnly = (bool)ViewData["criticalOnly"];
@@ -15,60 +16,45 @@
             <div class="row">
                 <div class="col l12 m12 s12">
                     <div id="AggregateRelationsOverlayGrid"></div>
-                </div>                
+                </div>
             </div>
             <div class="row">
                 <div class="col l12 m12 s12" style="padding-top:10px">&nbsp;</div>
             </div>
         </div>
         <div class="container-fluid" id="lineage" style="display:none;">
-            <div id="DiagramTile"></div>
-            <div id="zd"></div>
-            <div class="row">
-                <div class="col l11 m11">
-                    <ol class="breadcrumb" style="padding:0;">
-                        <li>@title</li>
-                        <li class="active">Lineage</li>
-                    </ol>
-                </div>
-                <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+            <div style="background-color: #ebebeb;">
+                <div class="pull-left" style="font-size: 1.2em; line-height: 1.2em; margin: 10px 0 0 10px" id="lineage_heading"></div>
+                <div class="pull-right"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                <div class="clearfix"></div>
             </div>
+            <div id="DiagramTile"></div>
         </div>
         <div class="container-fluid" id="attribute" style="display:none;">
-            <div id="RelationshipAttributesTile" class="tile"></div>
-            <div class="row">
-                <div class="col l11 m11">
-                    <ol class="breadcrumb" style="padding:0;">
-                        <li>@title</li>
-                        <li class="active">Lineage</li>
-                    </ol>
-                </div>
-                <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+            <div style="background-color: #ebebeb;">
+                <div class="pull-left" style="font-size: 1.2em; line-height: 1.2em; margin: 10px 0 0 10px" id="attribute_heading"></div>
+                <div class="pull-right"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                <div class="clearfix"></div>
             </div>
+            <div id="RelationshipAttributesTile" class="tile"></div>
         </div>
         <div class="container-fluid" id="fusion" style="display:none;">
+            <div style="background-color: #ebebeb;">
+                <div class="pull-left" style="font-size: 1.2em; line-height: 1.2em; margin: 10px 0 0 10px" id="fusion_heading"></div>
+                <div class="pull-right"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
+                <div class="clearfix"></div>
+            </div>
             <div class="pull-left" style="width: 49%">
-                <div class="tile">
-                    <header>Relationships</header>
-                    <article id="TechnicalRelationsGrid"></article>
-                </div>
+                <div class="tile" id="TechnicalRelationsGrid"></div>
             </div>
             <div class="pull-right" style="width: 49%">
+                <div id="ChildRelationshipDetail" class="tile"></div>
                 <div id="TechnicalRelationDetailWrapper" class="tile">
                     <header id="TechnicalRelationDetailHeader"></header>
                     <article id="TechnicalRelationDetail"></article>
                 </div>
             </div>
             <div class="clearfix"></div>
-            <div class="row">
-                <div class="col l11 m11">
-                    <ol class="breadcrumb" style="padding:0;">
-                        <li>@title</li>
-                        <li class="active">Lineage</li>
-                    </ol>
-                </div>
-                <div class="col l1 m1"><a class="detailclose btn waves-effect white-text blue">Close</a></div>
-            </div>
         </div>
     </div>
 </div>
@@ -79,6 +65,8 @@
     var aggregateRelationshipOverlayTargetType = "@targetType.ToString()";
     var aggregateRelationshipOverlayTargetID = @targetID;
     var aggregateRelationshipIntersectTypeID = @intersectTypeID;
+    var aggregateRelationshipSourceName = "@Html.Raw(source)";
+
     var aggregateRelationsModelType = function() {
         var self = this;
 
@@ -146,23 +134,20 @@
         $('#TechnicalRelationDetailWrapper').fadeIn(250);
         $('#TechnicalRelationDetailHeader').text(row.TargetTypeName + ' Information');
         $('#TechnicalRelationDetail').load('/parts/' + row.TargetObjectType + '/' + row.TargetObjectID + '/detail');
-    }
-
-    function setBreadCrumb(parent, action){
-        $(parent).find('.active').html(aggregateRelationsModel.TargetName + ' ' + action);
+        ObjectDetail('ChildRelationshipDetail', 'Intersect', row.IntersectID);
     }
 
     function lineageShow(event) {
         $('#main-rel').hide();
         $('#lineage').show();
-        setBreadCrumb('#lineage','Lineage');
+        $('#lineage_heading').text('Lineage for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.TargetName);
         LineageDiagram('DiagramTile', aggregateRelationsModel.TargetObjectType, aggregateRelationsModel.TargetObjectID, null, true);
     }
 
     function fusionShow(event) {
         $('#main-rel').hide();
         $('#fusion').show();
-        setBreadCrumb('#fusion','Fusion');
+        $('#fusion_heading').text('Child Relationships for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.TargetName);
         var getselectedrowindexes = $('#AggregateRelationsOverlayGrid').jqxGrid('getselectedrowindexes');
         if(getselectedrowindexes.length > 0){
             var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
@@ -177,7 +162,7 @@
     function attributeShow(event) {
         $('#main-rel').hide();
         $('#attribute').show();
-        setBreadCrumb('#attribute','Attributes');
+        $('#attribute_heading').text('Attributes for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.TargetName);
         var getselectedrowindexes = $('#AggregateRelationsOverlayGrid').jqxGrid('getselectedrowindexes');
         if(getselectedrowindexes.length > 0){
             var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
@@ -268,7 +253,7 @@
             }
 
             var relationIconRowRender = function (type, id, uri, data) {
-                return "<div class='RowMultiTools'>" + (data.HasLineage ? "<i class='lineage fa fa-@Resources.Actions.Lineage_Icon' title='Lineage'></i> " : "") + (data.HasTechnicalRelationships ? "<i class='fusion fa fa-@Resources.Actions.Fusion_Icon' title='Fusion'></i> " :"") + (data.HasAttributes ? "<i class='attribute fa fa-@Resources.Actions.Attributes_Icon' title='Attributes'></i>" : "") + previewIconLink(type, id, uri) + " </div>";
+                return "<div class='RowMultiTools'>" + (data.HasLineage ? "<i class='lineage fa fa-@Resources.Actions.Lineage_Icon' title='Lineage'></i> " : "") + (data.HasTechnicalRelationships ? "<i class='fusion fa fa-@Resources.Actions.Fusion_Icon' title='Child Relationships'></i> " :"") + (data.HasAttributes ? "<i class='attribute fa fa-@Resources.Actions.Attributes_Icon' title='Attributes'></i>" : "") + previewIconLink(type, id, uri) + " </div>";
             }
 
             var complexAttributeColumnRenderer = function(index, datafield, value, defaultvalue, column, data) {
@@ -279,25 +264,25 @@
                 return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + value + "</div>";
             }
 
-            var multipleFieldColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {            
+            var multipleFieldColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
                 return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ?  "<div data-context='Preview' data-type='fieldvalues' data-id='" + data.IntersectID + "/" + column.datafield + "' >" + value + " <i class='fusion fa fa-info-circle'></i></div></div>" : "") + "</div>";
             }
 
             var headerTooltipRenderer = function(text) {
                 return function (columnHeaderElement) {
                     if(text!=null && text.length>0)
-                        $(columnHeaderElement).parent().jqxTooltip({ position: 'mouse', content: text });                
+                        $(columnHeaderElement).parent().jqxTooltip({ position: 'mouse', content: text });
                 };
             };
-        
+
             for(var i = 0 ; i < fields.length;i++){
-                aggregateRelationshipOverlaySource.datafields.push({name:fields[i].attributeID});            
+                aggregateRelationshipOverlaySource.datafields.push({name:fields[i].attributeID});
                 gridColumns.push({
                     text:fields[i].label,
                     datafield:fields[i].attributeID,
                     width:'250px',
                     filterable: !fields[i].isComplex,
-                    cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : fields[i].fieldCount > 1 ? multipleFieldColumnCellRenderer : attributeColumnCellRenderer,            
+                    cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : fields[i].fieldCount > 1 ? multipleFieldColumnCellRenderer : attributeColumnCellRenderer,
                     rendered: headerTooltipRenderer (fields[i].description)
                 });
             }
@@ -315,16 +300,16 @@
                         }
                         row.Classification = row.Classification == @((int)d360.core.enums.IntersectClassification.Normal) ? "Normal" : "Critical";
                         row.HasAttributes = bHasAttributes;
-                        row.HasLineage = true;                    
+                        row.HasLineage = true;
                         data.push(row);
                     }
                     return data;
                 }
             });
 
-            $('#AggregateRelationsOverlayGrid').on('mouseenter', '[data-gridtip]', function (event) {          
-                var tipText=$(event.currentTarget).attr('data-gridtip');                         
-                $(this).qtip({ // Grab all elements with a non-blank data-tooltip attr.                
+            $('#AggregateRelationsOverlayGrid').on('mouseenter', '[data-gridtip]', function (event) {
+                var tipText=$(event.currentTarget).attr('data-gridtip');
+                $(this).qtip({ // Grab all elements with a non-blank data-tooltip attr.
                     content: {
                         text: tipText
                     },
@@ -343,16 +328,16 @@
                     hide: {
                         fixed: true,
                         delay: 1000,
-                    },                
+                    },
                     style: {
                         classes: 'qtip-blue qtip-rounded'
                     }
                 });
             });
-    
+
             try {
-                var mainGridHeight = 500; 
-                
+                var mainGridHeight = 500;
+
                 //#region Static fields
 
                 gridinfo.Columns.push({
@@ -411,8 +396,8 @@
                     pageable: false,
                     scrollmode: 'deferred',
                     deferreddatafields: ['TargetName'],
-                    source: aggregateRelationshipOverlayAdapter,                
-                    theme: theme,                
+                    source: aggregateRelationshipOverlayAdapter,
+                    theme: theme,
                     columns: gridinfo.Columns
                 });
 
@@ -422,7 +407,7 @@
         });
 
         //#endregion
-    
+
         //#region Technical Relations Grid
 
         technicalRelationsSource = {

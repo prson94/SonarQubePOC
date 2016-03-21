@@ -184,8 +184,6 @@ namespace d360.web.Controllers
             switch (type)
             { 
                 case "Rule":
-                case "Policy":
-                    break;
                 default:
                     fieldTypeRelationTypeString += "Type";
                     break;

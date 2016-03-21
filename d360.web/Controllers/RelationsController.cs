@@ -94,10 +94,10 @@ namespace d360.web.Controllers
 @"select    I.ID,
 			S.ObjectType as Source,
 			S.ObjectID as SourceID,
-			SD.Name as SourceName,
+			SD.TextPath as SourceName,
 			T.ObjectType as Target,
 			T.ObjectID as TargetID,
-			TD.Name as TargetName
+			TD.TextPath as TargetName
 from		IntersectType I
 			inner join IntersectTypeNode S on S.IntersectTypeID = I.ID and S.[Order] = 1
 			inner join IntersectTypeNode T on T.IntersectTypeID = I.ID and T.ID <> S.ID
@@ -167,14 +167,14 @@ from	(
 				) O
 		union
 		SELECT	5 as SortOrder,
-				'Resource' as [Type],
+				'ResourceType' as [Type],
 				1,
 				'Resource' as Name,
 				'People' as Menu,
 				NULL as SubMenu
 		union
 		SELECT	5 as SortOrder,
-				'Group' as [Type],
+				'GroupType' as [Type],
 				1,
 				'Group' as Name,
 				'People' as Menu,
@@ -1478,6 +1478,7 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
                 )
             );
             ViewData.Add("criticalOnly", criticalOnly);
+            ViewData.Add("source", source.Name);
             ViewData.Add("type", type);
             ViewData.Add("id", id);
             ViewData.Add("targetType", targetType);

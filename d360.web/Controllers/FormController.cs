@@ -216,16 +216,16 @@ namespace d360.web.Controllers
 
         JsonResult jsonException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
-            Response.StatusCode = (int)statusCode;
-            Response.StatusDescription = ex.GetFullExceptionData();//.Replace("\n", "  ").Replace("\r", " ");
+            //Response.StatusCode = (int)statusCode;
+            //Response.StatusDescription = ex.GetFullExceptionData();//.Replace("\n", "  ").Replace("\r", " ");
             return Json(new { type = "error", title = title, message = ex.GetFullExceptionData() }, JsonRequestBehavior.AllowGet);
         }
 
         JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
         {
-            Response.StatusCode = (int)statusCode;
-            Response.StatusDescription = message.Replace("\n", "  ").Replace("\r", " ");
-            return Json(new { type = "error", title = title, message = Response.StatusDescription }, JsonRequestBehavior.AllowGet);
+            //Response.StatusCode = (int)statusCode;
+            //Response.StatusDescription = message.Replace("\n", "  ").Replace("\r", " ");
+            return Json(new { type = "error", title = title, message = message }, JsonRequestBehavior.AllowGet);
         }
 
         JsonResult jsonSuccess(string message, string id, string context, string action, HttpStatusCode statusCode, dynamic customdata)
@@ -3465,11 +3465,18 @@ order by  D.TextPath
             };
         }
 
-        public JsonNetResult FieldType_RelationLookup_DisplayFields(SystemObjects type, int id)
+        public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
             var list = Company.GetFieldTypeRelationsByObject(type, id).Select(i => new { i.ID, i.Name }).ToDictionary(i => i.Name, i => i.ID);
             list.Add("Name", 0);
             list.Add("TextPath", 0);
+
+            var relList = Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersectTypeID).Select(i => new { i.ID, i.Name }).ToList();
+            relList.ForEach(r =>
+            {
+                list.Add($"Relation.{r.Name}", r.ID);
+            });
+
 
             return new JsonNetResult
             {
@@ -7628,6 +7635,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
 
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, typeID).ToList(), 3);
+
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -7655,6 +7664,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = model.Description });
+
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Policy, id).ToList(), 5, true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -7703,8 +7714,10 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     model.ParentID = parseIntField(form, "ParentID");
                     if (model.ParentID == 0) model.ParentID = null;
                 }
-
                 Company.Add<Policy>(model);
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
+                Company.AddOrUpdateFields(fields);
 
                 dynamic custom = new
                 {
@@ -7813,6 +7826,9 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 model.Description = parseTextField(form, "Description");
                 
                 Company.Update<Policy>(model);
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
+                Company.AddOrUpdateFields(fields);
 
                 dynamic custom = new
                 {
@@ -8964,7 +8980,7 @@ order by F.Name, D.TextPath";
             {
                 sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name
 from	cache.ObjectDetails D
-where	D.[ObjectType] = 'Group'
+where	D.[ObjectType] = 'GroupType'
         and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
         and not exists  (
 					select	1 
@@ -9016,7 +9032,7 @@ order by D.TextPath";
             list.Add(new EditableField
             {
                 Row = 1,
-                Column = 2,
+                Column = 1,
                 Required = true,
                 FieldName = "Items",
                 Name = "What Items Are You Relating?",
@@ -9027,10 +9043,10 @@ order by D.TextPath";
                 Items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source = type.ToString(), id }).Select(i => new SelectListItem { Text = i.Name, Value = $"{i.Object}|{i.ObjectID}" }).ToList()
             });
 
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Classification", Name = "Critical?", FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Is There Anything Else We Should Know?", FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 2, FieldName = "Classification", Name = "Critical?", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Is There Anything Else We Should Know?", FieldType = DataType.Html.ToString() });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, it).ToList(), 4);
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, it).ToList(), 3);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -9255,6 +9271,7 @@ order by D.TextPath";
                 intersect.Classification = classification ? IntersectClassification.Critical : IntersectClassification.Normal;
                 intersect.Description = description;
 
+                Company.Update<Intersect>(intersect);
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server);
                 Company.AddOrUpdateFields(fields);
 

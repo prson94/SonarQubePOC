@@ -376,7 +376,27 @@ namespace d360.web.Controllers
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "LookupTypeID", type = "number" });
                     break;
-                    #endregion
+                #endregion
+                case SystemObjects.PolicyType:
+                    #region
+
+                    var policyType = Company.GetById<PolicyType>(id);
+
+                    staticFieldCount = 1;
+                    remainingWidth = 45;
+                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", width = calculateStaticColumnWidth(55, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+
+                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+
+                    fields.Add(new GridField { name = "ID", type = "number" });
+                    fields.Add(new GridField { name = "ParentID", type = "number" });
+                    fields.Add(new GridField { name = "Name", type = "string" });
+                    //fields.Add(new GridField { name = "Description", type = "string" });
+                    fields.Add(new GridField { name = "PolicyTypeID", type = "number" });
+                    break;
+                #endregion
                 case SystemObjects.Rule:
                     #region
                     staticFieldCount = 4;
@@ -2591,7 +2611,8 @@ from    IntersectNode S
             {
                 case 1: //Self Reference
                     sql = $@"
-select  D.[Object],
+select  R.IntersectID,
+        D.[Object],
 		D.ObjectID,
         D.ObjectID as ID,
 		D.Name,
@@ -2605,12 +2626,13 @@ from    cache.Relationship R
 select  F.*
 from    cache.Relationship R
 		inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
-		inner join Field F on F.ObjectType = R.TargetObject and F.ObjectID = R.TargetObjectID";
+		inner join Field F on (F.ObjectType = R.TargetObject and F.ObjectID = R.TargetObjectID) or (F.ObjectType = 'Intersect' and F.ObjectID = R.IntersectID)";
 
                     break;
                 default: //Child Reference
                     sql = $@"
-select  D2.[Object],
+select  R2.IntersectID,
+        D2.[Object],
 		D2.ObjectID,
         D2.ObjectID as ID,
 		D2.Name,
@@ -2629,7 +2651,7 @@ from    cache.Relationship R1
 		inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
 		inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
 		inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
-        inner join Field F on F.ObjectType = R2.TargetObject and F.ObjectID = R2.TargetObjectID";
+        inner join Field F on (F.ObjectType = R2.TargetObject and F.ObjectID = R2.TargetObjectID) or (F.ObjectType = 'Intersect' and F.ObjectID = R2.IntersectID)";
 
                     break;
             }
@@ -2662,7 +2684,7 @@ from    cache.Relationship R1
                 {
                     foreach (var item in fieldTypeIDs)
                     {
-                        foreach (var f in fields.Where(i => i.ObjectType == row.Object && i.ObjectID == row.ObjectID && i.FieldTypeID == item))
+                        foreach (var f in fields.Where(i => ( (i.ObjectType == row.Object && i.ObjectID == row.ObjectID) || (i.ObjectType == "Intersect" && i.ObjectID == row.IntersectID)) && i.FieldTypeID == item))
                         {
                             var ft = fieldTypes.SingleOrDefault(i => i.ID == item);
                             if (ft != null)
@@ -2767,6 +2789,7 @@ from    cache.Relationship R1
 
             var joins = "";
             var columns = "";
+            //var whereClause = "";
             getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns);
 
             var querySql = $@"
@@ -2783,7 +2806,7 @@ from	(
         ) A {joins}";
 
             if (criticalOnly)
-                querySql += $" and A.Classification = {(int)IntersectClassification.Critical}";
+                querySql += $" where A.Classification = {(int)IntersectClassification.Critical}";
 
             querySql += " order by A.TargetName";
 
@@ -3143,18 +3166,27 @@ from	IntersectMapSourceRule J
         }
 
         [Route("policytypes/{id:int}/policies")]
-        public List<Policy> GetPoliciesByType(int id)
+        public IEnumerable<dynamic> GetPoliciesByType(int id)
         {
-            var list = Company.Filter<Policy>(i => i.PolicyTypeID == id).OrderBy(i => i.TextPath).ToList();
-           // var type = Company.GetById<PolicyType>(id);
-            //foreach (var p in list.Where(i => !i.ParentID.HasValue))
-            //{
-            //    p.ParentID = 0;
-            //}
-            //list.Add(new Policy { PolicyTypeID = id, ID = 0, Name = ((type != null) ? type.Name : "Root") });
+            var joins = "";
+            var columns = "";
+            getDynamicFieldJoinStatements(id, "Policy", out joins, out columns);
 
-            return list;
+            var querySql = string.Format(@"select	A.ID,
+        A.ParentID,
+        {0}
+		A.Name,
+		A.Description
+from	[Policy] A  {1} 
+where    A.PolicyTypeID = @id", columns, joins);
+
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+            sql = applyFilteringSuffix(sql, Request);
+
+            return Company.Query<dynamic>(sql, new { id = id });
         }
+
 
         [Route("PolicyType/{id:int}/levels")]
         public IQueryable<PolicyTypeLevel> GetPolicyTypeLevels(int id)
@@ -3396,6 +3428,7 @@ from	IntersectMapSourceRule J
                         list.Add(new DisplayField { FriendlyName = policy.GetName(i => i.Name), Name = "Name", Value = policy.Name });
                         list.Add(new DisplayField { FriendlyName = policy.GetName(i => i.Description), Name = "Description", Value = policy.Description });
                         list.Add(new DisplayField { FriendlyName = policy.GetName(i => i.TextPath), Name = "TextPath", Value = policy.TextPath });
+                        loadDisplayFields(list, type, id);
                     }
                     policy = null;
                     break;

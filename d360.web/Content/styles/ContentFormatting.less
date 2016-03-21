@@ -646,6 +646,36 @@ ul.hierarchy {
     font-weight: 400;
 }
 
+.kpi-grid-item {
+    width: 100px;
+    height: 70px;
+    position: relative;
+    cursor: pointer;
+    margin-bottom: 10px;
+    .title {
+        position: absolute;
+        bottom: 2px;
+        left: 2px;
+        font-size: 10px;
+        line-height: 10px;
+    }
+    .icon {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        font-size: 55px;
+        line-height: 60px;
+        opacity: 0.1;
+    }
+    .value {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        font-size: 46px;
+        line-height: 46px;
+    }
+}
+
 .kpi-inner-text
 {
     fill: #000;
@@ -842,15 +872,14 @@ ul.hierarchy {
 
 .d3s-sidebar {
     vertical-align: top;
-    width: 100px; 
-    padding-left: 10px;
+    width: 50px; 
 }
 .d3s-contentarea {
     vertical-align: top;
 }
 
 #SideIcons {
-    padding: 10px;
+    padding: 5px;
 
     .action {
         color: @d3s-blue-2;

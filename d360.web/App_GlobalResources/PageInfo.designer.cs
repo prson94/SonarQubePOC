@@ -565,7 +565,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Events.
+        ///   Looks up a localized string similar to Policies.
         /// </summary>
         internal static string Monitor_Title {
             get {

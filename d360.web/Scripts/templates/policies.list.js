@@ -132,59 +132,58 @@
 
                     //#region PolicyGrid
 
-                    PolicyGridSource = {
-                        dataType: "json",
-                        url: '/api/policytypes/' + policyTypeID + '/policies',
-                        dataFields: [
-                            { name: 'ID' },
-                            { name: 'ParentID' },
-                            { name: 'Name', type: 'string' }
-                        ],
-                        hierarchy:
-                        {
-                            keyDataField: { name: 'ID' },
-                            parentDataField: { name: 'ParentID' }
-                        },
-                        id: 'ID'
-                    };
+                    $.getJSON('/api/PolicyType/' + policyTypeID + '/grid/definition', function (gridinfo) {
 
-                    PolicyGridAdapter = new $.jqx.dataAdapter(PolicyGridSource, {
-                        beforeLoadComplete: function (records) {
-                            $.each(records, function () {
-                                this.expanded = "true";
-                            });
-                            return records;
-                        }
-                    });
+                        PolicyGridSource = {
+                            dataType: "json",
+                            url: '/api/policytypes/' + policyTypeID + '/policies',
+                            dataFields: gridinfo.Fields,
+                            hierarchy:
+                            {
+                                keyDataField: { name: 'ID' },
+                                parentDataField: { name: 'ParentID' }
+                            },
+                            id: 'ID'
+                        };
 
-                    $("#PolicyGrid").jqxTreeGrid({
-                        width: '99.5%',
-                        height: '500px',
-                        theme: list_theme,
-                        //showHeader: false,
-                        selectionMode: 'singleRow',
-                        source: PolicyGridAdapter,
-                        filterable: true,
-                        filterMode: 'simple',
-                        sortable: true,
-                        icons: true,
-                        columns: [
-                          { text: 'Name', dataField: 'Name', width: '90%' }
-                        ],
-                        ready: function () {
-                            try {
-                                if (policyID) {
-                                    $('#PolicyGrid').jqxTreeGrid('selectRow', policyID);
-                                }
-                                else {
-                                    var firstRow = $('#PolicyGrid').jqxTreeGrid('getRows')[0];
-                                    var key = $("#PolicyGrid").jqxTreeGrid('getKey', firstRow);
-                                    $('#PolicyGrid').jqxTreeGrid('selectRow', key);
-                                }
-                            } catch (e) {
-                                console.log(e);
+                        PolicyGridAdapter = new $.jqx.dataAdapter(PolicyGridSource, {
+                            beforeLoadComplete: function (records) {
+                                $.each(records, function () {
+                                    this.expanded = "true";
+                                });
+                                return records;
                             }
-                        }
+                        });
+
+                        $("#PolicyGrid").jqxTreeGrid({
+                            width: '99.5%',
+                            height: '500px',
+                            theme: list_theme,
+                            //showHeader: false,
+                            selectionMode: 'singleRow',
+                            source: PolicyGridAdapter,
+                            filterable: true,
+                            filterMode: 'simple',
+                            sortable: true,
+                            icons: true,
+                            columns: gridinfo.Columns,
+                            columnsResize: true,
+                            ready: function () {
+                                try {
+                                    if (policyID) {
+                                        $('#PolicyGrid').jqxTreeGrid('selectRow', policyID);
+                                    }
+                                    else {
+                                        var firstRow = $('#PolicyGrid').jqxTreeGrid('getRows')[0];
+                                        var key = $("#PolicyGrid").jqxTreeGrid('getKey', firstRow);
+                                        $('#PolicyGrid').jqxTreeGrid('selectRow', key);
+                                    }
+                                } catch (e) {
+                                    console.log(e);
+                                }
+                            }
+                        });
+
                     });
 
                     //#endregion

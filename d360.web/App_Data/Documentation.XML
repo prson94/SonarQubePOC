@@ -1251,7 +1251,7 @@
         </member>
         <member name="P:Resources.PageInfo.Monitor_Title">
             <summary>
-              Looks up a localized string similar to Events.
+              Looks up a localized string similar to Policies.
             </summary>
         </member>
         <member name="P:Resources.PageInfo.People_Description">
