@@ -128,7 +128,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <div >
+                    <div>
                         <div style="padding-top:9px"></div>
                         <div class="red-text" style="white-space: pre-wrap" data-bind="text: SelectedRule().ErrorMessage, fadeVisible: SelectedRule().ErrorMessage().length > 0"></div>
                         <button style="float:right" id="hierarchyRuleSaveButton" data-bind="jqxButton: {disabled: SelectedRule().IsSaving }">Save</button><span data-bind="visible: SelectedRule().IsSaving" style="float:right;"> <i class="fa fa-spinner fa-spin"></i> </span>
@@ -1049,7 +1049,7 @@
         <!-- /ko -->
         <!-- /ko -->
         <!-- ko ifnot: Rows().length -->
-            <div data-bind="text:NoDataMessage" class="center-align"></div>
+        <div data-bind="text:NoDataMessage" class="center-align"></div>
         <!-- /ko -->
     </div>
 </script>
@@ -1057,25 +1057,60 @@
 <script id="advancedSearchFilterTmpl" type="text/html">
     <!-- ko foreach: advancedFilter-->
     <div class="row advSearchRow">
-        <div class="col s1 center-align">Field:</div>        
+        <div class="col s1 center-align">Field:</div>
         <div class="col s3">
             <div data-bind="jqxDropDownList: {placeHolder: 'Choose Field:',source: $parent.FieldNames, selectedIndex: SelectedFieldIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,}"></div>
         </div>
         <div class="col s3">
-                <input type="text" data-bind="jqxInput: { placeHolder:'Enter a value:', width: field_width98, height: field_height, theme: theme, value: Term},visible: ShowText()" />
-                <div data-bind="jqxDropDownList: {placeHolder: 'Choose Type:', source: TypeNames, selectedIndex: SelectedTypeIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,},visible: !ShowText()"></div>
+            <input type="text" data-bind="jqxInput: { placeHolder:'Enter a value:', width: field_width98, height: field_height, theme: theme, value: Term},visible: ShowText()" />
+            <div data-bind="jqxDropDownList: {placeHolder: 'Choose Type:', source: TypeNames, selectedIndex: SelectedTypeIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,},visible: !ShowText()"></div>
         </div>
         <div class="col s1" data-bind="visible: ShowConnectors() && ($index() !== ($parent.advancedFilter().length - 1))">
             <div data-bind="jqxDropDownList: {source: Connectors, selectedIndex: SelectedConnectorIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,}"></div>
         </div>
         <div class="col s1" data-bind="visible: ShowConnectors() && ($index() === ($parent.advancedFilter().length - 1))">&nbsp;</div>
         <div class="col s1" data-bind="visible: ShowText()"><div data-bind="jqxCheckBox: {checked: exactMatch, theme: theme,width: field_width98, height: field_height}">Exact match</div> </div>
-        <div class="col s1" data-bind="visible: !ShowText()">&nbsp;</div>        
+        <div class="col s1" data-bind="visible: !ShowText()">&nbsp;</div>
         <!-- ko if: ($index() === ($parent.advancedFilter().length - 1)) -->
         <div class="col s1"><button class="btn btn-flat waves-effect blue-text" type="button" name="advAddButton" data-bind="click: $parent.addFilter"><i class="fa fa-plus" title="Add filter condition"></i></button></div>
         <!-- /ko -->
         <!-- ko ifnot: ($index() === ($parent.advancedFilter().length - 1)) -->
         <div class="col s1"><button class="btn btn-flat waves-effect red-text" style="height:25px" type="button" name="advAddButton" data-bind="click: function(){$parent.removeFilter($index())}"><i class="fa fa-minus" title="Remove filter condition"></i></button></div>
+        <!-- /ko -->
+    </div>
+    <!-- /ko -->
+</script>
+
+
+<script id="artifactFiltersTmpl" type="text/html">
+    <!-- ko foreach: Filters-->
+    <div class="row advSearchRow">
+        <div class="col s1 center-align">Field:</div>
+        <div class="col s3">
+            <div data-bind="jqxDropDownList: {placeHolder: 'Choose a field:',source: $parent.Columns, selectedIndex: SelectedColumnIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'text', valueMember: 'datafield',theme: theme,}"></div>
+        </div>
+        <div class="col s3">
+            <!-- ko if: (inputType() == 'string') -->
+            <input type="text" data-bind="jqxInput: { placeHolder:'Enter a value:', width: field_width, height: field_height, theme: theme, value: TextValue},event: {keyup: $parent.onEnter}" />
+            <!-- /ko -->
+            <!-- ko if: (inputType() == 'number') -->
+            <div data-bind="jqxNumberInput:{ theme: theme, height: field_height, width: field_width, value: NumberValue },event: {keyup: $parent.onEnter}"></div>
+            <!-- /ko -->
+            <!-- ko if: (inputType() == 'date') -->
+            <div data-bind="jqxDateTimeInput: {value: DateValue, theme: theme, height: field_height, width: field_width, formatString:'d'}, visible: (inputType() == 'date'),event: {keyup: $parent.onEnter}"></div>
+            <!-- /ko -->
+            <!-- ko if: (inputType() == 'list') -->
+            <div data-bind="jqxDropDownList:{ theme: theme, height: field_height, width: field_width, source: listItems, selectedIndex: SelectedListIndex, placeHolder: 'Choose a value', filterable: listFilterable, searchMode: 'containsignorecase' }"></div>
+            <!-- /ko -->
+            <!-- ko if: (inputType() == 'bool') -->
+            <div data-bind="jqxCheckBox: {checked: BoolValue, theme: theme, height: field_height, width: field_width}"> <!--ko text: columnName--><!--/ko--></div>
+            <!-- /ko -->
+        </div>
+        <!-- ko if: ($index() === ($parent.Filters().length - 1)) -->
+        <div class="col s1"><button class="btn btn-flat waves-effect blue-text" type="button" data-bind="click: $parent.addFilter"><i class="fa fa-plus" title="Add filter"></i></button></div>
+        <!-- /ko -->
+        <!-- ko ifnot: ($index() === ($parent.Filters().length - 1)) -->
+        <div class="col s1"><button class="btn btn-flat waves-effect red-text" style="height:25px" type="button" data-bind="click: function(){$parent.removeFilter($index())}"><i class="fa fa-minus" title="Remove filter"></i></button></div>
         <!-- /ko -->
     </div>
     <!-- /ko -->

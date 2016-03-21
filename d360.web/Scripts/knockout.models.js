@@ -3775,4 +3775,117 @@ var StatisticsBarViewModel = function () {
     return self;
 }
 
+function ArtifactFilterItemViewModel(columns,selectedColumn) {
+    var self = this;
+    self.SelectedColumnIndex = ko.observable(selectedColumn !== undefined ? selectedColumn : -1);
+    self.Columns = ko.observableArray(columns);
+    self.TextValue = ko.observable('');
+    self.DateValue = ko.observable(new Date());
+    self.BoolValue = ko.observable(false);
+    self.NumberValue = ko.observable(0);
+    self.SelectedListIndex = ko.observable();
+    self.ListBoxIsFilterable = ko.observable(false);
+    self.inputType = ko.computed(function () {        
+        var inputType = (self.SelectedColumnIndex() >= 0 ? self.Columns()[self.SelectedColumnIndex()].columntype : "string");        
+        var filterType = 'string';
+        switch (inputType) {
+            case 'number':
+            case 'numberinput':
+                filterType = 'number';
+                break;
+            case 'checkbox':
+                filterType = 'bool';
+                break;
+            case 'combobox':
+            case 'dropdownlist':
+                filterType = 'list';
+                break;
+            case 'datetimeinput':
+                filterType = 'date';
+                break;
+        }
+        
+        return filterType;
+    });
+    self.selectedColumn = ko.computed(function () {
+        return (self.SelectedColumnIndex() >= 0 ? self.Columns()[self.SelectedColumnIndex()] : null);
+    });
+    self.columnName = ko.computed(function () {
+        return self.selectedColumn() != null ? self.selectedColumn().text : "";        
+    });
+    self.listItems = ko.computed(function () {        
+        return self.selectedColumn() != null ? self.selectedColumn().filteritems : [];
+    });
+    self.listFilterable = ko.computed(function () {        
+        return self.selectedColumn() != null ? self.listItems().length > 15 : false;
+    });
+    self.value = ko.computed(function () {
+        switch (self.inputType()) {
+            case 'number':
+                return self.NumberValue().toFixed(3);
+            case 'bool':
+                return self.BoolValue() ? "true" : "false";
+            case 'list':
+                return self.listItems()[self.SelectedListIndex()];
+            case 'date':
+                var yyyy = self.DateValue().getFullYear().toString();
+                var mm = (self.DateValue().getMonth() + 1).toString(); // getMonth() is zero-based
+                var dd = self.DateValue().getDate().toString();
+                return mm + '/' + dd + '/' + yyyy;
+            default:
+                return self.TextValue();
+        }
+    });
+    self.condition = ko.computed(function () {
+        if (self.inputType() == 'string') return 'CONTAINS';
+        return 'EQUAL';
+    });
+    self.field = ko.computed(function () {
+        return self.selectedColumn() != null ? self.selectedColumn().datafield : '';
+    });
+}
+
+function ArtifactFiltersViewModel(columns) {
+    var self = this;
+    self.Columns = ko.observableArray(columns);
+    self.Filters = ko.observableArray();
+    self.FilterCallback = null;
+
+    self.addFilter = function () {
+        self.Filters.push(new ArtifactFilterItemViewModel(columns));
+    };
+
+    self.removeFilter = function (index) {
+        if (index > -1) {
+            self.Filters.splice(index, 1);
+        }
+    };
+
+    self.filterData = function () {
+        var filters = [];
+        for (var i = 0 ; i < self.Filters().length; i++) {
+            filters.push({ field: self.Filters()[i].field(), condition: self.Filters()[i].condition(), value: self.Filters()[i].value() });            
+        }
+        return filters;
+    };
+
+    self.clearFilters = function () {
+        self.Filters([]);
+        self.Filters.push(new ArtifactFilterItemViewModel(self.Columns(), 0));
+    };
+
+    self.onEnter = function (d, e) {
+        if (e.keyCode === 13)
+        {
+            if (self.FilterCallback) self.FilterCallback();            
+        }
+        return true;
+    };
+
+    self.Filters.push(new ArtifactFilterItemViewModel(columns,0));
+    
+    return self;
+}
+
+
 //#endregion

@@ -4,8 +4,8 @@
 
         var typeID = context.params['typeid'];
         var type = 'ArtifactType';
-        var id = context.params['id'];
-        var filters = [];
+        var id = context.params['id'];       
+        var filterVM;        
 
         $.getJSON('/api/artifacts/' + typeID, function (json) {
 
@@ -17,7 +17,7 @@
             var permissions = new PermissionsModel();
 
             context.title(pageViewModel.Title);
-
+            
             var ArtifactListSource;
             var ArtifactListAdapter;
 
@@ -54,25 +54,7 @@
             }
 
             function clearFilter() {
-                $.each(filters, function () {
-                    switch (this.type) {
-                        case 'number':
-                            $('#' + this.id).jqxNumberInput('val', '');
-                            break;
-                        case 'bool':
-                            $('#' + this.id).jqxCheckBox('val', false);
-                            break;
-                        case 'list':
-                            $('#' + this.id).jqxDropDownList('clearSelection');
-                            break;
-                        case 'date':
-                            $('#' + this.id).val(null);
-                            break;
-                        default: //string
-                            $('#' + this.id).jqxInput('val', '');
-                            break;
-                    }
-                });
+                filterVM.clearFilters();                
                 try {
                     $('#RelationshipTypeFilter').jqxDropDownList('clearSelection');
                     var disabled = $('#RelationshipFilter').jqxDropDownList('disabled');
@@ -98,8 +80,7 @@
             function showFilterAdvanced() {
                 var adv = $('#ShowFilterAdvanced');
                 if (adv.data('visible')) {
-                    adv.html('<i class="fa fa-gear brown-text lighten-4"></i> Show Advanced')
-                    //adv.text('Show Advanced');
+                    adv.html('<i class="fa fa-gear brown-text lighten-4"></i> Show Advanced')                    
                     adv.removeData('visible');
                     $('#FilterAdvanced').fadeOut(200);
                 }
@@ -113,8 +94,7 @@
             function toolAction(data) {
                 switch (data.context) {
                     case contextList.ActionExport:
-                        var data = [];
-                        //data = createFilterModel(data);
+                        var data = [];                        
                         $.fileDownload('/artifacts/' + typeID + '.xls', {
                             httpMethod: "POST",
                             data: {}//{ Name: data.Name, Description: data.Description, Statuses: data.Statuses, InformationModels: data.InformationModels, OwnerDomains: data.OwnerDomains }
@@ -126,6 +106,7 @@
             function unsubscribe(data) {
                 ArtifactListAdapter = null;
                 ArtifactListSource = null;
+                filterVM = null;
 
                 amplify.unsubscribe("PageResized", artifactListPageResized);
                 $('#List').off('rowdoubleclick', listRowDoubleClick);
@@ -150,117 +131,22 @@
 
                     $('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
 
+                    
                     //#region Grid
 
                     $.getJSON('/api/ArtifactType/' + typeID + '/grid/definition', function (gridinfo) {
 
                         //#region Build Filters
-
-                        $.each(gridinfo.Columns, function () {
-                            var filterType = 'string';
-                            switch (this.columntype) {
-                                case 'number':
-                                case 'numberinput':
-                                    filterType = 'number';
-                                    break;
-                                case 'checkbox':
-                                    filterType = 'bool';
-                                    break;
-                                case 'combobox':
-                                case 'dropdownlist':
-                                    filterType = 'list';
-                                    break;
-                                case 'datetimeinput':
-                                    filterType = 'date';
-                                    break;
-                            }
-
-                            filters.push({ field: this.datafield, type: filterType, id: 'Filter_' + this.datafield, name: this.text, items: this.filteritems });
-                        });
-
-                        var filterColClass = 'col ';
-                        switch (filters.length) {
-                            case 5:
-                            case 6:
-                            case 7:
-                                filterColClass += 's12 m2 l2';
-                                break;
-                            case 4:
-                                filterColClass += 's12 m3 l3';
-                                break;
-                            default: //3
-                                filterColClass += 's12 m4 l4';
-                                break;
+                                          
+                        filterVM = new ArtifactFiltersViewModel(gridinfo.Columns);
+                        filterVM.FilterCallback = runFilter;
+                        try {                        
+                            ko.applyBindings(filterVM, document.getElementById('Filters'));
                         }
-
-                        var filterHtml = '';
-                        filterHtml += '<div class="row">';
-
-                        $.each(filters, function () {
-
-                            filterHtml += '<div class="' + filterColClass + '">';
-                            filterHtml += '<div class="FieldFilter">' + this.name + '</div>';
-                            switch (this.type) {
-                                case 'number':
-                                    filterHtml += '<div id="' + this.id + '"></div>';
-                                    break;
-                                case 'bool':
-                                    filterHtml += '<div id="' + this.id + '"></div>';
-                                    break;
-                                case 'list':
-                                    filterHtml += '<div id="' + this.id + '"></div>';
-                                    break;
-                                case 'date':
-                                    filterHtml += '<div id="' + this.id + '"></div>';
-                                    break;
-                                default: //string
-                                    filterHtml += '<input id="' + this.id + '" type="text" />';
-                                    break;
-                            }
-                            filterHtml += '</div>';
-                        });
-                        filterHtml += '</div>';
-
-                        $('#FilterBasic').append(filterHtml);
-
-                        $.each(filters, function () {
-                            switch (this.type) {
-                                case 'number':
-                                    $('#' + this.id).jqxNumberInput({ theme: theme, height: field_height, width: field_width });
-                                    $('#' + this.id).keypress(function (e) {
-                                        var code = (e.keyCode ? e.keyCode : e.which);
-                                        if (code == 13) { //Enter key
-                                            runFilter()
-                                        }
-                                    });
-                                    break;
-                                case 'bool':
-                                    $('#' + this.id).jqxCheckBox({ theme: theme, height: field_height, width: field_width });
-                                    break;
-                                case 'list':
-                                    $('#' + this.id).jqxDropDownList({ theme: theme, height: field_height, width: field_width, source: this.items, placeHolder: 'Choose filter', filterable: (this.items.length > 15), searchMode: 'containsignorecase' });
-                                    break;
-                                case 'date':
-                                    $('#' + this.id).jqxDateTimeInput({ theme: theme, height: field_height, width: field_width, value: null });
-                                    $('#' + this.id).keypress(function (e) {
-                                        var code = (e.keyCode ? e.keyCode : e.which);
-                                        if (code == 13) { //Enter key
-                                            runFilter()
-                                        }
-                                    });
-                                    break;
-                                default: //string
-                                    $('#' + this.id).jqxInput({ theme: theme, height: field_height, width: field_width });
-                                    $('#' + this.id).keypress(function (e) {
-                                        var code = (e.keyCode ? e.keyCode : e.which);
-                                        if (code == 13) { //Enter key
-                                            runFilter()
-                                        }
-                                    });
-                                    break;
-                            }
-                        });
-
+                        catch (e) {
+                            console.log(e);
+                        }
+                        
                         //#endregion
 
                         ArtifactListSource = {
@@ -282,41 +168,16 @@
 
                         ArtifactListAdapter = new $.jqx.dataAdapter(ArtifactListSource, {
                             formatData: function (data) {
-                                var i = 0;
-                                $.each(filters, function (ix, item) {
-                                    // type, field, id, name, items
-                                    var filtertype = 'stringfilter';
-                                    var filtercondition = 'EQUAL';
-                                    var value = '';
-                                    switch (item.type) {
-                                        case 'number':
-                                            filtertype = 'numericfilter';
-                                            value = $('#' + item.id).jqxNumberInput('val');
-                                            break;
-                                        case 'bool':
-                                            value = $('#' + item.id).jqxCheckBox('val');
-                                            break;
-                                        case 'list':
-                                            value = $('#' + item.id).jqxDropDownList('val');
-                                            break;
-                                        case 'date':
-                                            filtertype = 'datefilter';
-                                            value = $('#' + item.id).jqxDateTimeInput('val');
-                                            break;
-                                        default: //string
-                                            filtercondition = 'CONTAINS';
-                                            value = $('#' + item.id).jqxInput('val');
-                                            break;
-                                    }
-                                    if (value != '') {
-                                        data.filterscount++;
-
-                                        data['filterdatafield' + i] = item.field;
-                                        data['filtercondition' + i] = filtercondition;
-                                        data['filtervalue' + i] = value;
-                                        i++;
+                                
+                                var indx = 0;
+                                $.each(filterVM.filterData(), function (ix, item) {                                    
+                                    if (item.value != '' && item.value != null) {                                        
+                                        data['filterdatafield' + data.filterscount] = item.field;
+                                        data['filtercondition' + data.filterscount] = item.condition;
+                                        data['filtervalue' + (data.filterscount++)] = item.value;                                                                                
                                     }
                                 });
+                                                               
 
                                 //#region Relationship filter logic
 
