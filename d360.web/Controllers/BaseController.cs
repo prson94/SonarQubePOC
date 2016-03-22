@@ -625,6 +625,23 @@ namespace d360.web.Controllers
 
         #region Private Methods
 
+        internal void getDynamicRelationshipFieldJoinStatements(int typeID, string type, out string joins)
+        {
+            joins = "";
+
+            var intersectTypes = Company.Query<int>("select intersecttypeid from utility.relationshiptypes where sourceobjecttype = 'ArtifactType' and sourceobjectid = @objectid", new { objectid = typeID });
+
+            var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && intersectTypes.Contains(i.ObjectID) && i.IsListable).ToList();
+
+            foreach (var f in fields)
+            {
+                var name = f.Name.Replace("'", "''").Replace("--", "");                
+                joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = '{2}' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID, type);
+            }
+
+            fields = null;
+        }
+
         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true)
         {
             columns = "";
@@ -654,6 +671,82 @@ namespace d360.web.Controllers
             fields = null;
         }
 
+        internal string getFilteringCondition(string field, string condition)
+        {
+            switch (condition)
+            {
+                case "CONTAINS":
+                    return field + " LIKE N'%{1}%'";
+                case "DOES_NOT_CONTAIN":
+                    return field + " NOT LIKE N'%{1}%'";
+                case "EQUAL":
+                    return field + " = N'{1}'";
+                case "NOT_EQUAL":
+                    return field + " <> N'{1}'";
+                case "STARTS_WITH":
+                    return field + " LIKE N'{1}%'";
+                case "ENDS_WITH":
+                    return field + " LIKE N'%{1}'";
+                case "GREATER_THAN":
+                    return $"CAST({field} as numeric) > CAST('{{1}}' as numeric)";
+                case "GREATER_THAN_OR_EQUAL":
+                    return $"CAST({field} as numeric) >= CAST('{{1}}' as numeric)";
+                case "LESS_THAN":
+                    return $"CAST({field} as numeric) < CAST('{{1}}' as numeric)";
+                case "LESS_THAN_OR_EQUAL":
+                    return $"CAST({field} as numeric) <= CAST('{{1}}' as numeric)";
+                case "NULL":
+                    return field + " is null";
+                case "NOT_NULL":
+                    return field + " is not null";
+                case "EMPTY":
+                    return field + " = ''";
+                case "NOT_EMPTY":
+                    return field + " <> ''";
+                default:
+                    return field + " = N'{1}'";
+            }
+        }
+
+        internal string sqlInjectionFixValues(string val)
+        {
+            return val.Replace("--", "").Replace("'", "''");
+        }
+
+        internal string applyRelationFilteringExists(string sql, System.Web.HttpRequestBase Request)
+        {
+            var query = Request.Params;
+            int filterscount = 0;            
+
+            if (int.TryParse(query["relfilterscount"], out filterscount) && filterscount > 0)
+            {
+                StringBuilder sb = new StringBuilder();
+                for (var i = 0; i < filterscount; i++)
+                {                    
+                    var fFieldId = int.Parse(query["relfilterdatafield" + i]);
+                    var fCondition = query["relfiltercondition" + i];
+                    var fValue = query["relfiltervalue" + i];
+
+                    var existsql = @" and exists (select  B.sourceobjectid
+                                from(
+                                        select  IntersectID as ID,
+                                                SourceObjectID
+                                        from Relationship
+                                        where SourceObjectType = 'Artifact'
+                                                and SourceObjectID = A.id
+                                        ) B left join FieldWithRelation relField on (relField.ObjectType = 'Intersect' and relField.ObjectID = B.ID and relField.FieldTypeID = {0})
+                                        where " + getFilteringCondition("relField.FormattedValue", fCondition) + ")";
+
+                    existsql = string.Format(existsql, fFieldId, sqlInjectionFixValues(fValue));
+                                        
+                    sb.Append(existsql);
+                }
+
+                return sql + sb.ToString();                
+            }
+            return sql;            
+        }
+
         internal string applyFilteringSuffix(string sql, System.Web.HttpRequestBase Request)
         {
             var query = Request.Params; 
@@ -678,29 +771,10 @@ namespace d360.web.Controllers
                     var fValue = query["filtervalue" + i];
                     var fFormat = "";
 
-                    switch (fCondition)
-                    {
-                        case "CONTAINS":
-                            fFormat = "[{0}] LIKE N'%{1}%'";
-                            break;
-                        case "DOES_NOT_CONTAIN":
-                            fFormat = "[{0}] NOT LIKE N'%{1}%'";
-                            break;
-                        case "EQUAL":
-                            fFormat = "[{0}] = N'{1}'";
-                            break;
-                        case "NOT_EQUAL":
-                            fFormat = "[{0}] <> N'{1}'";
-                            break;
-                        case "STARTS_WITH":
-                            fFormat = "[{0}] LIKE N'{1}%'";
-                            break;
-                        case "ENDS_WITH":
-                            fFormat = "[{0}] LIKE N'%{1}'";
-                            break;
-                    }
+                    fFormat = getFilteringCondition("[{0}]", fCondition);
 
-                    filter = string.Format(fFormat, fField.Replace("]","").Replace("[",""), fValue.Replace("--", "").Replace("'", "''"));   //SQL Injection check
+
+                    filter = string.Format(fFormat, fField.Replace("]","").Replace("[",""), sqlInjectionFixValues(fValue));   //SQL Injection check prevent field names from being blocked out
 
                     if (!string.IsNullOrEmpty(filter))
                     {

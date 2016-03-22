@@ -339,7 +339,30 @@ namespace d360.web.Models
         public string filtertype { get; set; }
 
         [DataMember]
-        public List<string> filteritems { get; set; }
+        public List<string> filteritems { get; set; }        
+    }
+
+    [DataContract]
+    public class GridFilterColumn : GridColumn
+    {
+        public GridFilterColumn(GridColumn val)
+        {
+            relatedfield = false;
+            cellsformat = val.cellsformat;
+            datafield = val.datafield;
+            text = val.text;
+            width = val.width;
+            sortable = val.sortable;
+            filterable = val.filterable;
+            columntype = val.columntype;
+            filtertype = val.filtertype;
+            filteritems = val.filteritems;
+        }
+        [DataMember]
+        public bool relatedfield { get; set; }        
+
+        [DataMember]
+        public string id { get; set; }
     }
 
     public class GridField

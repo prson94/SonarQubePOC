@@ -135,9 +135,9 @@ from	Artifact A
             Trace.TraceInformation("Calling ArtifactsController.ByType : {0}", id);
 
             var joins = "";
-            var columns = "";
+            var columns = "";            
             getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns);
-
+           
             var querySql = string.Format(@"select	A.ID,
 		A.Name,
 		A.Description,
@@ -154,6 +154,9 @@ from	Artifact A
         inner join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
         left join Artifact P on P.ID = A.ParentID 
 where    A.ArtifactTypeID = @id", columns, joins);
+
+            
+            querySql = applyRelationFilteringExists(querySql, Request);
 
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
             var sql = string.Format(@"select * from ({0}) A", querySql);

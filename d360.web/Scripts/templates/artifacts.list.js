@@ -23,8 +23,7 @@
 
             //#region Event Handlers
 
-            function refreshActionMenu(data) {
-                //$('#SideIcons').PageTools('reload', type: type, id: id, context: 'list');
+            function refreshActionMenu(data) {                
                 $('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
             }
 
@@ -42,12 +41,10 @@
             function saveAction(data) {
                 try {
                     switch (data.context) {
-                        case contextList.Artifact:
-                            //$('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
+                        case contextList.Artifact:                            
                             $('#List').jqxGrid('updatebounddata');
                             break;
-                        case contextList.ArtifactType:
-                            //$('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
+                        case contextList.ArtifactType:                            
                             break;
                     }
                 } catch (e) { }
@@ -130,7 +127,6 @@
                     permissions.GetPermissionsForObject('ArtifactType', typeID);
 
                     $('#SideIcons').PageTools({ type: 'ArtifactType', id: typeID, context: 'list' });
-
                     
                     //#region Grid
 
@@ -138,7 +134,7 @@
 
                         //#region Build Filters
                                           
-                        filterVM = new ArtifactFiltersViewModel(gridinfo.Columns);
+                        filterVM = new ArtifactFiltersViewModel(gridinfo.FilterColumns);
                         filterVM.FilterCallback = runFilter;
                         try {                        
                             ko.applyBindings(filterVM, document.getElementById('Filters'));
@@ -168,16 +164,25 @@
 
                         ArtifactListAdapter = new $.jqx.dataAdapter(ArtifactListSource, {
                             formatData: function (data) {
-                                
-                                var indx = 0;
-                                $.each(filterVM.filterData(), function (ix, item) {                                    
+                                data.filterscount = 0;
+                                data.relfilterscount = 0;
+                                //normal filters
+                                $.each(filterVM.filterData(false), function (ix, item) {                                    
                                     if (item.value != '' && item.value != null) {                                        
                                         data['filterdatafield' + data.filterscount] = item.field;
                                         data['filtercondition' + data.filterscount] = item.condition;
                                         data['filtervalue' + (data.filterscount++)] = item.value;                                                                                
                                     }
                                 });
-                                                               
+
+                                //relation filters
+                                $.each(filterVM.filterData(true), function (ix, item) {
+                                    if (item.value != '' && item.value != null) {
+                                        data['relfilterdatafield' + data.relfilterscount] = item.field;
+                                        data['relfiltercondition' + data.relfilterscount] = item.condition;
+                                        data['relfiltervalue' + (data.relfilterscount++)] = item.value;
+                                    }
+                                });
 
                                 //#region Relationship filter logic
 

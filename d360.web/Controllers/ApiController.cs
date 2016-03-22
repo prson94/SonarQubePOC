@@ -192,68 +192,109 @@ namespace d360.web.Controllers
             return string.Format("{0}%", thisColumnWidth + ((dynamicFieldWidth == 0) ? remainingWidth / staticFieldCount : 0));
         }
 
+        GridColumn getGridColumnForColumn(FieldTypeWithRelation item, decimal dynamicFieldWidth, bool serverPaged)
+        {
+            string cellsFormat = "";            
+            string columnType = GridColumn.COLUMN_TYPE_STRING;
+            string filterType = GridColumn.FILTER_TYPE_STRING;
+            List<string> filterItems = new List<string>();
+
+            switch (item.Type)
+            {
+                case "":
+                case "Lookup":
+                    switch (item.LookupObjectType)
+                    {
+                        case "Artifact":
+                            filterItems = Company.Filter<Artifact>(o => o.ArtifactTypeID == item.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
+                            break;
+                        case "Domain":
+                            filterItems = Company.Filter<DomainItem>(o => o.DomainID == item.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
+                            break;
+                        case "Lookup":
+                            filterItems = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && o.LookupObjectType == "Lookup" && o.LookupObjectID == item.LookupObjectID).OrderBy(o => o.Text).Select(o => o.Text).ToList();
+                            break;
+                    }
+                    columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
+                    filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
+                    break;
+                case "Date":
+                    cellsFormat = "MM/dd/yyyy";                    
+                    columnType = GridColumn.COLUMN_TYPE_DATE;
+                    filterType = serverPaged ? GridColumn.FILTER_TYPE_DATE : GridColumn.FILTER_TYPE_RANGE;
+                    break;
+                case "DateTime":
+                    cellsFormat = "MM/dd/yyyy HH:mm:ss";                    
+                    columnType = GridColumn.COLUMN_TYPE_DATE;
+                    filterType = serverPaged ? GridColumn.FILTER_TYPE_DATE : GridColumn.FILTER_TYPE_RANGE;
+                    break;
+                case "Number":
+                    cellsFormat = "n";                    
+                    columnType = GridColumn.COLUMN_TYPE_NUMBER;
+                    filterType = GridColumn.FILTER_TYPE_NUMBER;
+                    break;
+                case "Decimal":
+                    cellsFormat = "d4";                    
+                    columnType = GridColumn.COLUMN_TYPE_NUMBER;
+                    filterType = GridColumn.FILTER_TYPE_NUMBER;
+                    break;
+                case "Boolean":                    
+                    columnType = GridColumn.COLUMN_TYPE_CHECKBOX;
+                    filterType = GridColumn.FILTER_TYPE_CHECKBOX;
+                    break;
+            }
+
+            return new GridColumn { text = item.FriendlyName, datafield = item.Name, width = string.Format("{0}%", dynamicFieldWidth), columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat };
+        }
+
+        GridField getGridFieldForColumn(FieldTypeWithRelation item)
+        {            
+            string fieldType = "string";
+
+            switch (item.Type)
+            {                
+                case "Date":                    
+                    fieldType = "date";                    
+                    break;
+                case "DateTime":                    
+                    fieldType = "date";                    
+                    break;
+                case "Number":                    
+                    fieldType = "number";                    
+                    break;
+                case "Decimal":                    
+                    fieldType = "number";                    
+                    break;
+                case "Boolean":
+                    fieldType = "bool";                    
+                    break;
+            }
+
+            return new GridField { name = item.Name, type = fieldType };
+        }
+
         void parseDynamicColumnsAndFields(List<FieldTypeWithRelation> items, List<GridColumn> columns, List<GridField> fields, decimal dynamicFieldWidth, bool serverPaged = false)
         {
             items.ForEach(i =>
             {
-                string cellsFormat = "";
-                string fieldType = "string";
-                string columnType = GridColumn.COLUMN_TYPE_STRING;
-                string filterType = GridColumn.FILTER_TYPE_STRING;
-                List<string> filterItems = new List<string>();
+                columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged));
 
-                switch (i.Type)
-                {
-                    case "":
-                    case "Lookup":
-                        switch (i.LookupObjectType)
-                        {
-                            case "Artifact":
-                                filterItems = Company.Filter<Artifact>(o => o.ArtifactTypeID == i.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
-                                break;
-                            case "Domain":
-                                filterItems = Company.Filter<DomainItem>(o => o.DomainID == i.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
-                                break;
-                            case "Lookup":
-                                filterItems = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == i.ID && o.LookupObjectType == "Lookup" && o.LookupObjectID == i.LookupObjectID).OrderBy(o => o.Text).Select(o => o.Text).ToList();
-                                break;
-                        }
-                        columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
-                        filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
-                        break;
-                    case "Date":
-                        cellsFormat = "MM/dd/yyyy";
-                        fieldType = "date";
-                        columnType = GridColumn.COLUMN_TYPE_DATE;
-                        filterType = serverPaged ? GridColumn.FILTER_TYPE_DATE : GridColumn.FILTER_TYPE_RANGE;
-                        break;
-                    case "DateTime":
-                        cellsFormat = "MM/dd/yyyy HH:mm:ss";
-                        fieldType = "date";
-                        columnType = GridColumn.COLUMN_TYPE_DATE;
-                        filterType = serverPaged ? GridColumn.FILTER_TYPE_DATE : GridColumn.FILTER_TYPE_RANGE;
-                        break;
-                    case "Number":
-                        cellsFormat = "n";
-                        fieldType = "number";
-                        columnType = GridColumn.COLUMN_TYPE_NUMBER;
-                        filterType = GridColumn.FILTER_TYPE_NUMBER;
-                        break;
-                    case "Decimal":
-                        cellsFormat = "d4";
-                        fieldType = "number";
-                        columnType = GridColumn.COLUMN_TYPE_NUMBER;
-                        filterType = GridColumn.FILTER_TYPE_NUMBER;
-                        break;
-                    case "Boolean":
-                        fieldType = "bool";
-                        columnType = GridColumn.COLUMN_TYPE_CHECKBOX;
-                        filterType = GridColumn.FILTER_TYPE_CHECKBOX;
-                        break;
-                }
-                columns.Add(new GridColumn { text = i.FriendlyName, datafield = i.Name, width = string.Format("{0}%", dynamicFieldWidth), columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat });
-                fields.Add(new GridField { name = i.Name, type = fieldType });
+                fields.Add(getGridFieldForColumn(i));
             });        
+        }
+
+        void parseDynamicRelationFields(List<FieldTypeWithRelation> items, List<GridFilterColumn> columns, decimal dynamicFieldWidth)
+        {
+            items.ForEach(i =>
+            {
+                GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
+
+                col.id = i.ID.ToString();
+                col.relatedfield = true;
+
+                columns.Add(col);
+                
+            });
         }
 
         [HttpGet, Route("{type}/{id:int}/grid/definition")]
@@ -289,6 +330,7 @@ namespace d360.web.Controllers
             
             var columns = new List<GridColumn>();
             var fields = new List<GridField>();
+            var filterColumns = new List<GridFilterColumn>();
             decimal dynamicFieldWidth = 0;
             int remainingWidth = 0;
             //int columnWidth = 0;
@@ -338,6 +380,25 @@ namespace d360.web.Controllers
                     fields.Add(new GridField { name = "Status", type = "string" });
                     fields.Add(new GridField { name = "DateLastCertified", type = "date" });
                     fields.Add(new GridField { name = "Url", type = "string" });
+
+
+                    filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
+
+                    //Load any fields that are displayed on relationships so we can show them as 
+                    // filters in the grid
+                    IEnumerable<int> intersectTypeIDs = Company.Query<int>("select  intersecttypeid from utility.relationshiptypes where sourceobjecttype = 'ArtifactType' and sourceobjectid = @objectid", new { objectid = id });
+
+                    if (intersectTypeIDs.Any())
+                    {
+                        var totalRelItems = Company.Filter<FieldTypeWithRelation>(i => i.Object == "IntersectType" && intersectTypeIDs.Contains(i.ObjectID)).ToList();
+                        var relItems = totalRelItems.Where(i => i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+
+                        if (relItems.Any())
+                        {                            
+                            parseDynamicRelationFields(relItems, filterColumns, dynamicFieldWidth);                         
+                        }
+                    }
+
                     break;
                 #endregion
                 case SystemObjects.IntersectType:
@@ -495,7 +556,8 @@ namespace d360.web.Controllers
                 ID = id,
                 FieldsCount = totalItems.Count,
                 Fields = fields,
-                Columns = columns
+                Columns = columns,
+                FilterColumns = filterColumns
             });
         }
 

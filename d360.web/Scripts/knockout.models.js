@@ -3819,6 +3819,9 @@ function ArtifactFilterItemViewModel(columns,selectedColumn) {
     self.listFilterable = ko.computed(function () {        
         return self.selectedColumn() != null ? self.listItems().length > 15 : false;
     });
+    self.isRelationFieldFilter = ko.computed(function () {
+        return self.selectedColumn() != null ? self.selectedColumn().relatedfield : false;
+    });
     self.value = ko.computed(function () {
         switch (self.inputType()) {
             case 'number':
@@ -3841,6 +3844,8 @@ function ArtifactFilterItemViewModel(columns,selectedColumn) {
         return 'EQUAL';
     });
     self.field = ko.computed(function () {
+        if (self.isRelationFieldFilter())
+            return self.selectedColumn() != null ? self.selectedColumn().id: '';
         return self.selectedColumn() != null ? self.selectedColumn().datafield : '';
     });
 }
@@ -3861,10 +3866,14 @@ function ArtifactFiltersViewModel(columns) {
         }
     };
 
-    self.filterData = function () {
+    self.filterData = function (relations) {
         var filters = [];
         for (var i = 0 ; i < self.Filters().length; i++) {
-            filters.push({ field: self.Filters()[i].field(), condition: self.Filters()[i].condition(), value: self.Filters()[i].value() });            
+            var relField = self.Filters()[i].isRelationFieldFilter();
+            if (relations && relField)
+                filters.push({ field: self.Filters()[i].field(), condition: self.Filters()[i].condition(), value: self.Filters()[i].value() });
+            if (!relations && !relField)
+                filters.push({ field: self.Filters()[i].field(), condition: self.Filters()[i].condition(), value: self.Filters()[i].value() });
         }
         return filters;
     };
