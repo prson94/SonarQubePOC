@@ -12,6 +12,7 @@ using System.Data.SqlClient;
 using Dapper;
 using System.Diagnostics;
 using MoreLinq;
+using System.Text.RegularExpressions;
 
 namespace d360.extensions.search
 {
@@ -348,6 +349,26 @@ namespace d360.extensions.search
             return null;
         }
 
+        private bool isElasticSearchSpecialChar(char ch)
+        {
+            if (ch == '\\' || ch == '/' || ch == '"') return true;
+
+            return false;
+        }
+
+        private string EscapeSpecialCharacters(string phrase)
+        {
+            if(phrase.Any( ch => isElasticSearchSpecialChar(ch)))
+            {
+                phrase = phrase.Replace("\\", "?");
+
+                phrase = phrase.Replace("/", "\\\\/");
+                
+                phrase = phrase.Replace("\"", "\\\"");
+            }
+
+            return phrase;
+        }
         /// <summary>
         /// Gets the search results from elastic search and converts them to index results
         /// </summary>
@@ -369,7 +390,7 @@ namespace d360.extensions.search
             
             if(!string.IsNullOrEmpty(phrase))
             {
-                phrase = phrase.Replace("\"", "\\\"");
+                phrase = EscapeSpecialCharacters(phrase);
 
                 sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
             }
@@ -389,7 +410,7 @@ namespace d360.extensions.search
 
                     con = item.connector;
 
-                    var searchTerm = item.value.Replace("\"", "\\\"");
+                    var searchTerm = phrase = EscapeSpecialCharacters(item.value);
 
                     if (item.exact) searchTerm = "\\\"" + searchTerm + "\\\"";
 
