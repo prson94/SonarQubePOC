@@ -519,9 +519,13 @@
                                 fld.jqxDateTimeInput({ disabled: v.ReadOnly, theme: theme, formatString: 'd', showCalendarButton: true, height: field_height, value: null });
 
                                 if (cleanedValue != '') {
-                                    if (moment(cleanedValue).isValid()) {
-                                        date = moment(cleanedValue);
-                                        fld.jqxDateTimeInput('setDate', date.toDate());
+                                    try {
+                                        //if (moment(cleanedValue).isValid()) {
+                                        //    date = moment(cleanedValue);
+                                        fld.jqxDateTimeInput('setDate', new Date(cleanedValue));//date.toDate());
+                                        //}
+                                    } catch (e) {
+                                        console.log("Invalid date: " + cleanedValue);
                                     }
                                 }
                                 //else {
