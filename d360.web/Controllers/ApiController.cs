@@ -697,7 +697,7 @@ namespace d360.web.Controllers
                     var artifact = Company.GetById<Artifact>(id);
                     following = Company.IsUserFollowing(type, id, null);
                     followParent = Company.GetFollowingParent(type, id, null);
-                    followingParent = (followParent != null);
+                    followingParent = (followParent != null && followParent.FollowTypeID == FollowType.Parent);
                     followText = "";
                     if (!followingParent)
                         if (!following)
