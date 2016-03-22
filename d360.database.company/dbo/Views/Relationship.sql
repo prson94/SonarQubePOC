@@ -3,7 +3,10 @@ CREATE view [dbo].[Relationship]
 as
 	select	R.IntersectTypeID,
 			R.IntersectID,
-			R.Classification,
+			case R.Classification
+				when 0 then 2
+				else R.Classification
+			end as Classification,
 			R.Description,
 			R.[Role],
 			R.SourceIntersectTypeNodeID,

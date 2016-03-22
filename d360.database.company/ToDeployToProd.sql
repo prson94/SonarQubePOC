@@ -170,8 +170,8 @@ alter table cache.[Object] drop column [IconBackColor]
 alter table cache.[Object] drop column [IconForeColor]
 alter table cache.[Object] drop column [IconText]
 
-[cache].[ReSynchronizeAllObjectDetails]
-
+exec [cache].[ReSynchronizeAllObjectDetails]
+go
 
 alter view [cache].[ObjectDetails]
 as
@@ -498,3 +498,348 @@ begin
 			values ( S.[Object], S.ObjectID, S.ObjectType, S.ObjectTypeID );
 end
 go
+
+
+ALTER FUNCTION [utility].[GetFormattedFieldLookupValue]
+(
+	@Type varchar(25),
+	@DisplayFormat nvarchar(250),
+	@LookupObjectType varchar(25),
+	@LookupObjectID int,
+	@Value nvarchar(4000)
+)
+RETURNS nvarchar(4000)
+AS
+BEGIN
+	declare @formattedValue nvarchar(4000)
+
+	if @LookupObjectType is null
+	begin
+		set @formattedValue  = @Value
+
+		if @Type = 'Link' OR @Type = 'UncLink'
+		begin
+			declare @linkName nvarchar(4000),
+					@linkUrl nvarchar(4000)
+
+			if charindex('|', @Value, 1) > 0
+				begin
+					SELECT @linkName = SUBSTRING(@Value, 1, PATINDEX('%|%', @Value)-1)
+					SELECT @linkUrl = SUBSTRING(@Value, PATINDEX('%|%', @Value)+1, LEN(@Value))
+
+					set @formattedValue = '<a href="' + @linkUrl + '" target="_blank">' + @linkName + '</a>'
+				end
+			else
+				begin
+					if @Value <> '' AND @Value IS NOT NULL
+						begin
+							set @formattedValue = '<a href="' + @Value + '" target="_blank">' + @Value + '</a>'
+						end
+					else
+						begin
+							set @formattedValue = ''
+						end
+				end
+		end
+
+	end
+	else
+	begin
+		declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
+		declare @fieldValues table(Field nvarchar(100), Value nvarchar(4000), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250))
+
+		set @formattedValue = @DisplayFormat
+	
+		while patindex('%{%',@formattedValue) > 0
+		 begin
+			declare @txt nvarchar(100) = SUBSTRING(@formattedValue, patindex('%{%',@formattedValue), PATINDEX('%}%', @formattedValue))
+			insert into @tokens Values (@txt, REPLACE(REPLACE(@txt,'{',''),'}',''))
+			set @formattedValue = replace(@formattedValue, @txt, '')
+		end
+
+		insert into @fieldValues
+			select	distinct
+					V.Name,
+					V.Value,
+					V.LookupObjectType,
+					V.LookupObjectID,
+					V.LookupDisplayFormat
+			from	(
+					SELECT	ID,
+							Name,
+							'Artifact' as ObjectType
+					FROM	ArtifactType
+					WHERE	@LookupObjectType = 'Artifact' and ID = @LookupObjectID
+					UNION
+					SELECT	ID,
+							Name,
+							'Domain' as ObjectType
+					FROM	DomainType
+					WHERE	@LookupObjectType = 'Domain' and ID = @LookupObjectID
+					UNION
+					SELECT	ID,
+							Name,
+							'DomainItem' as ObjectType
+					FROM	Domain
+					WHERE	@LookupObjectType = 'DomainItem' and ID = @LookupObjectID
+					UNION
+					SELECT	ID,
+							Name,
+							'Lookup' as ObjectType
+					FROM	[LookupType]
+					WHERE	@LookupObjectType = 'Lookup' and ID = @LookupObjectID
+					UNION
+					SELECT	1 as ID,
+							'User' as Name,
+							'Resource' as ObjectType
+					WHERE	@LookupObjectType = 'Resource'-- and ID = @LookupObjectID
+					UNION
+					SELECT	ID,
+							Name,
+							'Taxonomy' as ObjectType
+					FROM	TaxonomyType
+					WHERE	@LookupObjectType = 'Taxonomy' and ID = @LookupObjectID
+					) L
+					outer apply (
+
+								SELECT	IT.Name,
+										[IF].Value,
+										[IT].LookupObjectType,
+										COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+										[IT].LookupDisplayFormat
+								FROM	Field [IF]
+										inner join FieldType IT ON [IF].FieldTypeID = IT.ID 
+																and [IF].ObjectType = L.ObjectType
+																and [IF].ObjectID = case 
+																						when dbo.IsInteger(@Value) = 1 then @Value
+																						else 0
+																					end
+								
+								UNION
+
+								SELECT	P.FieldName as Name,
+										p.FieldValue as Value,
+										NULL as LookupObjectType,
+										NULL as LookupObjectID,
+										NULL as LookupDisplayFormat
+								FROM	(
+										SELECT	ID,
+												CAST(Name as nvarchar(4000)) as Name,
+												Description,
+												CAST(TextPath as nvarchar(4000)) as TextPath
+										FROM	Artifact A
+										WHERE	A.ID = CAST(@Value as int)
+												and L.ObjectType = 'Artifact'
+										) A
+										unpivot	(
+												FieldValue for FieldName in (Name, Description, TextPath)
+												) p
+
+								UNION
+
+								SELECT	P.FieldName as Name,
+										p.FieldValue as Value,
+										NULL as LookupObjectType,
+										NULL as LookupObjectID,
+										NULL as LookupDisplayFormat
+								FROM	(
+										SELECT	ID,
+												CAST(Name as nvarchar(4000)) as Name,
+												Description,
+												CAST(TextPath as nvarchar(4000)) as TextPath
+										FROM	Taxonomy A
+										WHERE	A.ID = CAST(@Value as int)
+												and L.ObjectType = 'Taxonomy'
+										) A
+										unpivot	(
+												FieldValue for FieldName in (Name, Description, TextPath)
+												) p
+
+								UNION
+
+								SELECT	P.FieldName as Name,
+										p.FieldValue as Value,
+										NULL as LookupObjectType,
+										NULL as LookupObjectID,
+										NULL as LookupDisplayFormat
+								FROM	(
+										SELECT	ID,
+												CAST(Name as nvarchar(4000)) as Name,
+												Description
+										FROM	Domain A
+										WHERE	A.ID = @Value
+												and L.ObjectType = 'Domain'
+										) A
+										unpivot	(
+												FieldValue for FieldName in (Name, Description)
+												) p
+
+								UNION
+
+								SELECT	P.FieldName as Name,
+										p.FieldValue as Value,
+										NULL as LookupObjectType,
+										NULL as LookupObjectID,
+										NULL as LookupDisplayFormat
+								FROM	(
+										SELECT	ID,
+												CAST(Code as nvarchar(4000)) as Code,
+												CAST(Name as nvarchar(4000)) as Name,
+												Description
+										FROM	DomainItem A
+										WHERE	A.ID = @Value
+												and L.ObjectType = 'DomainItem'
+										) A
+										unpivot	(
+												FieldValue for FieldName in (Code, Name, Description)
+												) p
+
+								UNION
+
+								SELECT	P.FieldName as Name,
+										p.FieldValue as Value,
+										NULL as LookupObjectType,
+										NULL as LookupObjectID,
+										NULL as LookupDisplayFormat
+								FROM	(
+										SELECT	ResourceID as ID,
+												CAST(FirstName as nvarchar(4000)) as FirstName,
+												CAST(LastName as nvarchar(4000)) as LastName,
+												CAST(Email as nvarchar(4000)) as Email
+										FROM	reporting.Global_Resource A
+										WHERE	A.ResourceID = @Value
+												and L.ObjectType = 'Resource'
+										) A
+										unpivot	(
+												FieldValue for FieldName in (FirstName, LastName, Email)
+												) p
+								) V
+
+		declare @current int,
+				@max int
+
+		set @current = 1
+		select @max = Max(ID) from @tokens
+
+		set @formattedValue = @DisplayFormat
+
+		while(@current <= @max)
+		begin
+			declare @currentToken nvarchar(100) = null,
+					@currentField nvarchar(100) = null,
+					@currentValue nvarchar(4000) = null,
+					@lkpType nvarchar(250) = null, 
+					@lkpID int = null, 
+					@lkpFormat nvarchar(250) = null
+
+			select	@currentField = Field, 
+					@currentToken = Token 
+			from	@tokens
+			where	ID = @current
+
+			select	@currentValue = Value,
+					@lkpType = LookupObjectType,
+					@lkpID = LookupObjectID,
+					@lkpFormat = LookupDisplayFormat
+			from	@fieldValues 
+			where	Field = @currentField
+
+			if @currentValue is not null
+			begin
+				if @lookupObjectType is not null and @lkpID is not null
+				begin
+					select @currentValue = utility.GetFormattedFieldLookupValue(@Type, @lkpFormat, @lkpType, @lkpID, @currentValue)
+				end
+
+				SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
+			end
+
+			SET @current = @current + 1
+		end
+	end
+
+	return @formattedValue
+END
+go
+
+
+ALTER FUNCTION [utility].[GetFormattedFieldAttributeValue]
+(
+--declare
+	@AttributeID int,-- = 67,
+	@DisplayFormat nvarchar(250)-- = '{Position1}, {Position2}, {Position3}, {Position4}'
+)
+RETURNS nvarchar(4000)
+AS
+BEGIN
+	declare @formattedValue nvarchar(4000)
+	declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
+	declare @fieldValues table(Field nvarchar(100), Value nvarchar(4000))
+
+	set @formattedValue = @DisplayFormat
+	while patindex('%{%',@formattedValue) > 0
+	begin
+		declare @txt nvarchar(100) = SUBSTRING(@formattedValue, patindex('%{%',@formattedValue), PATINDEX('%}%', @formattedValue))
+		insert into @tokens Values (@txt, REPLACE(REPLACE(@txt,'{',''),'}',''))
+		set @formattedValue = replace(@formattedValue, @txt, '')
+	end
+
+	insert into @fieldValues
+		SELECT	Name,
+				FormattedValue
+		FROM	FieldWithRelation 
+		WHERE	ObjectType = 'Attribute' 
+				and ObjectID = @AttributeID
+
+	declare @current int,
+			@max int
+
+	set @current = 1
+	select @max = Max(ID) from @tokens
+	set @formattedValue = @DisplayFormat
+
+	while(@current <= @max)
+	begin
+		declare @currentToken nvarchar(100) = null,
+				@currentField nvarchar(100) = null,
+				@currentValue nvarchar(4000) = null,
+				@lkpType nvarchar(250) = null, 
+				@lkpID int = null, 
+				@lkpFormat nvarchar(250) = null
+
+		select	@currentField = Field, 
+				@currentToken = Token 
+		from	@tokens
+		where	ID = @current
+
+		select	@currentValue = Value
+		from	@fieldValues 
+		where	Field = @currentField
+
+		if @currentValue is not null
+		begin
+			SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
+		end
+		else
+		begin
+			SET @formattedValue = REPLACE(@formattedValue, @currentToken, '')
+		end
+
+		SET @current = @current + 1
+	end
+
+	return @formattedValue
+END
+go
+
+disable trigger [Field_AfterUpsert] on dbo.Field
+go 
+
+UPDATE	TF
+SET		TF.FormattedValue = utility.GetFormattedFieldLookupValue(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value)
+from	Field TF
+		inner join FieldType FT on FT.ID = TF.FieldTypeID
+go
+
+enable trigger [Field_AfterUpsert] on dbo.Field
+go 

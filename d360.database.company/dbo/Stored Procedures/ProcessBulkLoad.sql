@@ -195,7 +195,7 @@ begin
 																		and C.LoadID = O.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name = 'Description'
 							) D
 					) S
-			on		(T.ArtifactTypeID = S.ArtifactTypeID and T.TaxonomyTypeID = S.TaxonomyTypeID and T.ParentID = S.ParentID and T.Name = S.Name)
+			on		(T.ArtifactTypeID = S.ArtifactTypeID and T.TaxonomyTypeID = S.TaxonomyTypeID and ((T.ParentID = S.ParentID and S.ParentID is not null) or (T.ParentID is null and S.ParentID is null)) and T.Name = S.Name)
 			when	matched then
 					update	set T.[Description] = S.[Description],
 								T.[ParentID] = S.[ParentID],

@@ -11,12 +11,14 @@
     [UpdatedOn]         DATETIME        NULL,
     [UpdatedBy]         INT             NULL,
     [TaxonomyTypeID]    INT             CONSTRAINT [DF_Artifact_TaxonomyTypeID] DEFAULT ((0)) NOT NULL,
-    [CreatedOn]			DATETIME		CONSTRAINT [DF_Artifact_CreatedOn] DEFAULT(CURRENT_TIMESTAMP) NOT NULL, 
+    [CreatedOn]         DATETIME        CONSTRAINT [DF_Artifact_CreatedOn] DEFAULT (getdate()) NOT NULL,
     CONSTRAINT [PK_Artifact] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Artifact_ArtifactType] FOREIGN KEY ([ArtifactTypeID]) REFERENCES [dbo].[ArtifactType] ([ID]),
     CONSTRAINT [FK_Artifact_ParentArtifact] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[Artifact] ([ID]),
     CONSTRAINT [FK_Artifact_TaxonomyType] FOREIGN KEY ([TaxonomyTypeID]) REFERENCES [dbo].[TaxonomyType] ([ID])
 );
+
+
 
 
 

@@ -668,6 +668,16 @@ BEGIN
 			set @hasDynamicFields = 1
 		end;
 
+		if @Type = 'TaxonomyType'
+		begin
+			insert into @tbl
+				select	'Name', Name
+				from	TaxonomyType O
+				where	ID = @ID
+
+			set @hasDynamicFields = 1
+		end;
+
 		-- If required, get dynamic fields to add to list.
 		if @hasDynamicFields = 1
 		begin

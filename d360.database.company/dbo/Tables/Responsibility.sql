@@ -18,6 +18,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Responsibility_ObjectType-ObjectID]
     ON [dbo].[Responsibility]([ObjectType] ASC, [ObjectID] ASC);
@@ -29,7 +31,6 @@ CREATE NONCLUSTERED INDEX [IX_Responsibility_ResponsibleObjectType-ResponsibleOb
 
 
 GO
-
 CREATE TRIGGER [dbo].[Responsibility_AfterDelete]
    ON  [dbo].[Responsibility] 
    AFTER DELETE
@@ -37,6 +38,10 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Delete', [queue].WriteIndexXml('Removed', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Responsibility', ID from deleted
+
+	delete	T
+	from	cache.ResponsibilityItem T
+			inner join deleted S on S.ID = T.ResponsibilityID
 
 	declare @tbl table (RowID int identity, [ObjectType] varchar(50), ObjectID int)
 	insert into @tbl 
@@ -91,7 +96,6 @@ AS
 	end
 
 GO
-
 CREATE TRIGGER [dbo].[Responsibility_AfterUpdate]
    ON  [dbo].[Responsibility] 
    AFTER UPDATE
@@ -100,6 +104,10 @@ AS
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Update', [queue].WriteIndexXml('', ObjectType, ObjectID, coalesce(UpdatedBy, 0)), 'Responsibility', ID from inserted
+
+	delete	T
+	from	cache.[ResponsibilityItem] T
+			inner join inserted S on S.ID = T.ResponsibilityID 
 
 	declare @tbl table (RowID int identity, [ObjectType] varchar(50), ObjectID int)
 	insert into @tbl 

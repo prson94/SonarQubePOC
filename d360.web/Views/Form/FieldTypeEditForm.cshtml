@@ -30,7 +30,7 @@
     <div class="row">
         <div class="col s6">
             <div id='FriendlyNameTip' class="FieldNameRequired">@(Resources.FieldInfo.Name_Name)<span class="FieldNameError" data-bind="visible: FriendlyNameInvalid">*</span></div>
-            <input type="text" data-bind="jqxInput: {width: field_width, height: field_height, theme: theme, value: FriendlyName }" />
+            <input type="text" data-bind="nameCharacterCheck, jqxInput: {width: field_width, height: field_height, theme: theme, value: FriendlyName }" />
         </div>
         <div class="col s6">
             <div id='NameTip' class="FieldNameRequired">@(Resources.FieldInfo.ApiName_Name)<span class="FieldNameError" data-bind="visible: ApiNameInvalid">*</span></div>
@@ -283,6 +283,18 @@
 
 <script type="text/javascript">
     //#region Binding Handlers
+    ko.bindingHandlers.nameCharacterCheck = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('keypress', function (e) {
+                var key = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+                if (/[\[\]\.\n\{\}\'\"]+/.test(key)) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
     ko.bindingHandlers.dataTypeFilteredDropdown = {
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             $(element).on('change', function (event) {
@@ -905,7 +917,7 @@
 
                 if (value) {
                     if (value.length > 0) {
-                        self.ApiName(value.replace(' ', ''));
+                        self.ApiName(value.replace(/[^a-zA-Z0-9-_]/g, ''));
                     }
                 }
             });

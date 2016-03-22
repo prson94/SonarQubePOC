@@ -2,8 +2,8 @@
 as
 	select	D.[Object],
 			D.[ObjectID],
-			coalesce(O1.Name, O2.Name, O3.Name, O4.Name, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.Name, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.Name, O18.Name, O19.Name, null) as Name,
-			coalesce(O1.TextPath, O2.TextPath, O3.Name, O4.TextPath, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.TextPath, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.TextPath, O18.Name, O19.Name, '') as TextPath,
+			coalesce(O1.Name, O2.Name, O3.Name, O4.Name, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.Name, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.Name, O18.Name, O19.Name, O21.Name, O22.Name, O23.Name, O24.Name, null) as Name,
+			coalesce(O1.TextPath, O2.TextPath, O3.Name, O4.TextPath, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.TextPath, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.TextPath, O18.Name, O19.Name, O21.Name, O22.Name, O23.Name, O24.Name, '') as TextPath,
 			coalesce(O1.Description, O2.Description, O6.Description, O7.Description, O8.Description, O9.Description, O10.Description, O12.Description, O13.Description, O19.Description,  NULL) as Description,
 			dbo.GenerateObjectUrl(D.[Object], D.[ObjectTypeID], D.ObjectID) as Url,
 			case 
@@ -22,7 +22,7 @@ as
 			coalesce(P1.Name, P2.Name, P3.Name, P4.Name, P7.Name, P10.Name, P13.Name, P17.Name, NULL) as ParentName,
 			D.[ObjectType],
 			D.ObjectTypeID,
-			coalesce(OT1.Name, OT2.Name, OT3.Name, OT4.TextPath, OT5.Name, OT12.Name, OT13.Name, NULL) as ObjectTypeName,
+			coalesce(OT1.Name, OT2.Name, OT3.Name, OT4.TextPath, OT5.Name, OT12.Name, OT13.Name, OT14.Name, OT15.Name, OT20.Name, OT24.Name, NULL) as ObjectTypeName,
 			coalesce(S.IconBackColor, '#000') as IconBackColor,
 			coalesce(S.IconForeColor, '#fff') as IconForeColor,
 			coalesce(S.IconText, 'leaf') as IconText
@@ -75,9 +75,15 @@ as
 			left join PolicyType OT13 with(nolock) on D.[Object] = 'Policy' and OT13.ID = O13.PolicyTypeID
 			left join [Policy] P13 with(nolock) on D.[Object] = 'Policy' and P13.ID = O13.ParentID
 
-			left join reporting.Global_Resource O14 with(nolock) on D.[Object] = 'Resource' and O14.ResourceID = D.ObjectID
+			left join reporting.Global_Resource O14 with(nolock) on D.[Object] = 'Resource' and O14.ResourceID = D.ObjectID and O14.Status = 'Active'
+			left join (select 1 as ID, 'User' as Name) OT14 on D.[Object] = 'Resource' and OT14.ID = D.ObjectTypeID
 
 			left join [Group] O15 with(nolock) on D.[Object] = 'Group' and O15.ID = D.ObjectID
+			left join (
+						select 0 as ID, 'Group' as Name
+						union
+						select 1 as ID, 'Group' as Name
+					  ) OT15 on D.[Object] = 'Group' and OT15.ID = D.ObjectTypeID
 
 			left join PolicyType O16 with(nolock) on D.[Object] = 'PolicyType' and O16.ID = D.ObjectID
 
@@ -95,5 +101,25 @@ as
 						) O18 on D.[Object] = 'RuleType' and O18.ID = D.ObjectID
 
 			left join DomainType O19 with(nolock) on D.[Object] = 'DomainType' and O19.ID = D.ObjectID
+
+			left join [Lookup] O20 with(nolock) on D.[Object] = 'Lookup' and O20.ID = D.ObjectID
+			left join LookupType OT20 with(nolock) on D.[Object] = 'Lookup' and OT20.ID = O20.LookupTypeID
+
+			left join [LookupType] O21 with(nolock) on D.[Object] = 'LookupType' and O21.ID = D.ObjectID
+
+			left join	(
+						select 0 as ID, 'User' as Name
+						union
+						select 1 as ID, 'User' as Name
+						) O22 on D.[Object] = 'ResourceType' and O22.ID = D.ObjectID
+
+			left join	(
+						select 0 as ID, 'Group' as Name
+						union
+						select 1 as ID, 'Group' as Name
+						) O23 on D.[Object] = 'GroupType' and O22.ID = D.ObjectID
+
+			left join [Intersect] O24 with(nolock) on D.[Object] = 'Intersect' and O24.ID = D.ObjectID
+			left join IntersectType OT24 with(nolock) on D.[Object] = 'Intersect' and OT24.ID = O24.IntersectTypeID
 
 			left join ObjectStyle S with(nolock) on S.ObjectType = D.ObjectType and S.ObjectID = D.[ObjectTypeID]

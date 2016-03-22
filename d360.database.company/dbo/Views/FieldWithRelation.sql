@@ -34,3 +34,4 @@ AS
 				LD.[Object] = case when T.LookupObjectType = 'Lookup' then 'LookupType' when T.LookupObjectType = 'DomainItem' then 'Domain' else T.LookupObjectType end
 				and LD.ObjectID = case when T.LookupObjectType = 'Lookup' then T.LookupObjectID when T.LookupObjectType = 'DomainItem' then T.LookupObjectID when T.LookupObjectType = 'Resource' then T.LookupObjectID when T.LookupObjectType is null then NULL else F.Value end
 	where	T.ObjectID = coalesce(D.ObjectTypeID, AD.AttributeTypeID)
+			and coalesce(D.ObjectID, AD.ID) is not null

@@ -330,8 +330,10 @@ namespace d360.web.Controllers
             
             if (p == 0 && type.ParentID.HasValue)
             {
+                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == type.ParentID).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = false }).ToList();
-                list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "ParentID", FieldType = DataType.Lookup.ToString(), Items = parents, Name = string.Format("Parent {0}", type.Parent.Name) });
+                list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "ParentID", FieldType = DataType.Lookup.ToString(), Items = parents, Name = $"Parent {pluralize.Singularize(type.Parent.Name)}" });
+                pluralize = null;
                 row++;
             }
             else 
@@ -398,10 +400,12 @@ namespace d360.web.Controllers
 
             if (a.ParentID.HasValue)
             {
+                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 var currentParent = Company.GetById<Artifact>(a.ParentID.Value);
                 var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == currentParent.ArtifactTypeID).OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-                list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ParentID", Name = string.Format("{0}", currentParent.ArtifactType.Name), FieldType = DataType.Lookup.ToString(), Value = a.ParentID.ToString(), Items = parents });
+                list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(currentParent.ArtifactType.Name)}", FieldType = DataType.Lookup.ToString(), Value = a.ParentID.ToString(), Items = parents });
                 currentParent = null;
+                pluralize = null;
             }
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });

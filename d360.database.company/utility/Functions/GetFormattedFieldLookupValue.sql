@@ -19,51 +19,41 @@ BEGIN
 		begin
 			declare @linkName nvarchar(4000),
 					@linkUrl nvarchar(4000)
-					
-			SELECT @linkName = SUBSTRING(@Value, 1, PATINDEX('%|%', @Value)-1)
-			SELECT @linkUrl = SUBSTRING(@Value, PATINDEX('%|%', @Value)+1, LEN(@Value))
 
-			set @formattedValue = '<a href="' + @linkUrl + '" target="_blank">' + @linkName + '</a>'
+			if charindex('|', @Value, 1) > 0
+				begin
+					SELECT @linkName = SUBSTRING(@Value, 1, PATINDEX('%|%', @Value)-1)
+					SELECT @linkUrl = SUBSTRING(@Value, PATINDEX('%|%', @Value)+1, LEN(@Value))
+
+					set @formattedValue = '<a href="' + @linkUrl + '" target="_blank">' + @linkName + '</a>'
+				end
+			else
+				begin
+					if @Value <> '' AND @Value IS NOT NULL
+						begin
+							set @formattedValue = '<a href="' + @Value + '" target="_blank">' + @Value + '</a>'
+						end
+					else
+						begin
+							set @formattedValue = ''
+						end
+				end
 		end
 
 	end
 	else
 	begin
-
-		declare @tDisplayFormat nvarchar(250)
-		declare @tokens table(ID int identity(1,1), pos int, Token nvarchar(100), Field nvarchar(100))
+		declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
 		declare @fieldValues table(Field nvarchar(100), Value nvarchar(4000), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250))
 
 		set @formattedValue = @DisplayFormat
-		SET @tDisplayFormat = @DisplayFormat
 	
-
-		declare @pos int
-		declare @oldpos int
-		select @oldpos = 0
-		select @pos=patindex('%{%',@DisplayFormat) 
-		while @pos > 0 and @oldpos<>@pos
+		while patindex('%{%',@formattedValue) > 0
 		 begin
-			declare @txt nvarchar(100)
-			SELECT @txt = SUBSTRING(@tDisplayFormat, @pos, PATINDEX('%}%', @tDisplayFormat))
-
-			insert into @tokens Values (@pos, @txt, SUBSTRING(@txt, 2, LEN(@txt)-2))
-			Select @oldpos = @pos
-			select @pos = patindex('%{%',Substring(@DisplayFormat, @pos + 1, len(@DisplayFormat))) + @pos
+			declare @txt nvarchar(100) = SUBSTRING(@formattedValue, patindex('%{%',@formattedValue), PATINDEX('%}%', @formattedValue))
+			insert into @tokens Values (@txt, REPLACE(REPLACE(@txt,'{',''),'}',''))
+			set @formattedValue = replace(@formattedValue, @txt, '')
 		end
-		--WHILE(PATINDEX('%{%', @tDisplayFormat) > 0)
-		--BEGIN
-		--	declare @txt nvarchar(100)
-		--	SELECT @txt = SUBSTRING(@tDisplayFormat, PATINDEX('%{%', @tDisplayFormat), PATINDEX('%}%', @tDisplayFormat))
-		--	IF NOT EXISTS(SELECT 1 FROM @tokens WHERE Token = @txt)
-		--	BEGIN
-		--		INSERT INTO @tokens VALUES (
-		--			@txt,
-		--			(select SUBSTRING(@txt, 2, LEN(@txt)-2))
-		--		)
-		--	END
-		--	SET @tDisplayFormat = stuff(@tDisplayFormat, charindex(@txt, @tDisplayFormat), len(@txt), '') --REPLACE(SUBSTRING(@tDisplayFormat, 1, PATINDEX('%}%', @tDisplayFormat)), @txt, '') + SUBSTRING(@tDisplayFormat, PATINDEX('%}%', @tDisplayFormat), LEN(@tDisplayFormat))
-		--END
 
 		insert into @fieldValues
 			select	distinct
@@ -133,13 +123,34 @@ BEGIN
 								FROM	(
 										SELECT	ID,
 												CAST(Name as nvarchar(4000)) as Name,
-												Description
+												Description,
+												CAST(TextPath as nvarchar(4000)) as TextPath
 										FROM	Artifact A
 										WHERE	A.ID = CAST(@Value as int)
 												and L.ObjectType = 'Artifact'
 										) A
 										unpivot	(
-												FieldValue for FieldName in (Name, Description)
+												FieldValue for FieldName in (Name, Description, TextPath)
+												) p
+
+								UNION
+
+								SELECT	P.FieldName as Name,
+										p.FieldValue as Value,
+										NULL as LookupObjectType,
+										NULL as LookupObjectID,
+										NULL as LookupDisplayFormat
+								FROM	(
+										SELECT	ID,
+												CAST(Name as nvarchar(4000)) as Name,
+												Description,
+												CAST(TextPath as nvarchar(4000)) as TextPath
+										FROM	Taxonomy A
+										WHERE	A.ID = CAST(@Value as int)
+												and L.ObjectType = 'Taxonomy'
+										) A
+										unpivot	(
+												FieldValue for FieldName in (Name, Description, TextPath)
 												) p
 
 								UNION
@@ -207,6 +218,8 @@ BEGIN
 
 		set @current = 1
 		select @max = Max(ID) from @tokens
+
+		set @formattedValue = @DisplayFormat
 
 		while(@current <= @max)
 		begin

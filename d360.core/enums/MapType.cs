@@ -8,21 +8,16 @@ namespace d360.core.enums
 {
     public enum MapType
     {
-        [Name("Lineage"), Description("Allows you to define source paths between objects.")]
+        [Name("Lineage"), Description("Allows you to define source paths between objects."), ReadOnly(false)]
         Lineage = 1,
-        [Name("Source To Target"), Description("The most common mapping that allows you to set sources and targets across types contained in the system.")]
+        [Name("Source To Target"), Description("The most common mapping that allows you to set sources and targets across types contained in the system."), ReadOnly(false)]
         SourceToTarget = 2,
-        [Name("Type Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level.")]
+        [Name("Type Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(false)]
         TypeHierarchy = 3,
-        [Name("Group Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level.")]
+        [Name("Group Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(false)]
         GroupHierarchy = 4,
-        [Name("Parent Child Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level.")]
-        ParentChildHierarchy = 5//,
-
-        //[Name("Simple Hierarchy"), Description("This simple hierarchy allows for creating a tree structure or hierarchy referencing the same underlying artifact type.")]
-        //SimpleHierarchy = 20,
-        //[Name("Sourcing Hierarchy")Description("A set of calculations involving a hierarchy or ordering to which source to choose, depending on context.")]
-        //SourcingHierarchy = 40
+        [Name("Parent Child Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(true)]
+        ParentChildHierarchy = 5
     }
 
     public class MapTypeInfo
@@ -55,12 +50,15 @@ namespace d360.core.enums
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
-                list.Add(new MapTypeInfo
+                if (!((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly)
                 {
-                    Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
-                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
-                    ID = (MapType)Enum.Parse(typeof(MapType), tm.Name)
-                });
+                    list.Add(new MapTypeInfo
+                    {
+                        Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                        Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                        ID = (MapType)Enum.Parse(typeof(MapType), tm.Name)
+                    });
+                }
             }
 
             return list.OrderBy(i => i.Name).ToList();

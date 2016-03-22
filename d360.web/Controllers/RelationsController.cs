@@ -145,7 +145,16 @@ from	(
 				NULL as SubMenu
 		FROM	DomainType
 		union
-		SELECT	3 as SortOrder,
+		SELECT	5 as SortOrder,
+				'FusionAttributeType' as [Type],
+				T.ID,
+				REPLACE(T.TextPath, FT.Name+'.','') as Name,
+				'Fusion' as Menu,
+				FT.Name as SubMenu
+		FROM	FusionAttributeType T
+                inner join FusionType FT on FT.ID = T.FusionTypeID
+		union	
+        SELECT	3 as SortOrder,
 				'PolicyType' as [Type],
 				ID,
 				Name as Name,

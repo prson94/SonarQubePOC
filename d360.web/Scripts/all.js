@@ -55931,7 +55931,7 @@ function home(app, pageViewModel, templatePath, contextList, currentResourceID) 
 
         function showAdvancedSearch() {            
             $("#SearchString").val($("#home-search-text").val());
-            location.href = '#/search';
+            location.href = '#/search/mode/advanced';
         }
 
         function searchTextKeyPress(e) {
@@ -56029,6 +56029,7 @@ function search(app, pageViewModel, templatePath, contextList) {
         context.app.swap('');
 
         var searchCtrl;
+        var initialmode = context.params['mode'] != undefined ? context.params['mode'].toUpperCase() : '';
                                 
         //#region Event Handlers
 
@@ -56076,6 +56077,13 @@ function search(app, pageViewModel, templatePath, contextList) {
         }
         
         //#endregion
+
+        function setInitialSearchMode() {
+            if (initialmode == 'ADVANCED')
+            {
+                toggleAdvancedSearch();
+            }            
+        }
                         
         context.title(pageViewModel.Title);
 
@@ -56091,11 +56099,11 @@ function search(app, pageViewModel, templatePath, contextList) {
 
                 $('#SideIcons').PageTools({ type: '', id: 0 });
                 $('#SideIcons').PageTools("clear");
-                
+
                 $("#advancedSearch").hide();
-
-                searchCtrl = new SearchResultsGrid(contextList,10,context.params['phrase']);
-
+                                
+                searchCtrl = new SearchResultsGrid(contextList, 10, context.params['phrase']);
+                                
                 $("#SearchString").on('keypress', profileSearchKeyPress);
 
                 if ($("#SearchString").val().length != 0) {
@@ -56114,11 +56122,14 @@ function search(app, pageViewModel, templatePath, contextList) {
 
                 $("#do-adv-search-btn").click(advancedSearch);
 
+                setInitialSearchMode();
+
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
             });
     }
     app.get('#/search/:phrase', searchRoute);
     app.get('#/search', searchRoute);
+    app.get('#/search/mode/:mode', searchRoute);
 }
 function community_home(app, pageViewModel, templatePath, contextList, currentResourceID) {
     app.get('#/community', function (context) {
@@ -57364,13 +57375,12 @@ function artifacts_list(app, pageViewModel, templatePath, contextList) {
                             autoheight: true,
                             sortable: true,
                             altrows: true,
-                            filterable: false,
-                            autoshowfiltericon: false,
+                            filterable: false,                         
                             showfilterrow: false,
                             virtualmode: true,
                             rendergridrows: function () {
                                 return ArtifactListAdapter.records;
-                            },
+                            },                            
                             pageable: true,
                             columnsresize: true,
                             source: ArtifactListAdapter,

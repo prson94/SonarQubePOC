@@ -197,30 +197,33 @@ namespace d360.web.Models
 
             foreach (var ft in fieldTypes)
             {
-                string value = "";
-
-                switch (ft.Type)
+                if (ft.Type != DataType.RelationLookup.ToString())
                 {
-                    case "Html":
-                        value = Server.HtmlDecode(form[ft.Name]);
-                        break;
-                    case "Link":
-                        var rawLinkName = form[ft.Name + ".Name"];
-                        var rawLinkUrl = form[ft.Name + ".Url"];
-                        value = string.Format("{0}|{1}", rawLinkName, rawLinkUrl);
-                        break;
-                    case "UncLink":
-                        var rawUncLinkName = form[ft.Name + "_Name"];
-                        var rawUncLinkUrl = form[ft.Name + "_Url"];
-                        value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
-                        break;
-                    default:
-                        value = form[ft.Name];
-                        break;
-                }
+                    string value = "";
 
-                if (!string.IsNullOrEmpty(value))
-                    fields.Add(new Field { FieldTypeID = ft.ID, Value = value });
+                    switch (ft.Type)
+                    {
+                        case "Html":
+                            value = Server.HtmlDecode(form[ft.Name]);
+                            break;
+                        case "Link":
+                            var rawLinkName = form[ft.Name + ".Name"];
+                            var rawLinkUrl = form[ft.Name + ".Url"];
+                            value = string.Format("{0}|{1}", rawLinkName, rawLinkUrl);
+                            break;
+                        case "UncLink":
+                            var rawUncLinkName = form[ft.Name + "_Name"];
+                            var rawUncLinkUrl = form[ft.Name + "_Url"];
+                            value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
+                            break;
+                        default:
+                            value = form[ft.Name];
+                            break;
+                    }
+
+                    if (!string.IsNullOrEmpty(value))
+                        fields.Add(new Field { FieldTypeID = ft.ID, Value = value });
+                }
             }
             return fields;
         }
@@ -231,34 +234,37 @@ namespace d360.web.Models
 
             foreach (var ft in fieldTypes)
             {
-                string value = "";
-
-                switch (ft.Type)
+                if (ft.Type != DataType.RelationLookup.ToString())
                 {
-                    case "Boolean":
-                        value = form[ft.Name];
-                        value = (value == "on").ToString();
-                        break;
-                    case "Html":
-                        value = Server.HtmlDecode(form[ft.Name]);
-                        break;
-                    case "Link":
-                        var rawLinkName = form[ft.Name + "_Name"];
-                        var rawLinkUrl = form[ft.Name + "_Url"];
-                        value = string.Format("{0}|{1}", rawLinkName, rawLinkUrl);
-                        break;
-                    case "UncLink":
-                        var rawUncLinkName = form[ft.Name + "_Name"];
-                        var rawUncLinkUrl = form[ft.Name + "_Url"];
-                        value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
-                        break;
-                    default:
-                        value = Server.HtmlEncode(form[ft.Name]);
-                        break;
-                }
+                    string value = "";
 
-                if (!string.IsNullOrEmpty(value))
-                    fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
+                    switch (ft.Type)
+                    {
+                        case "Boolean":
+                            value = form[ft.Name];
+                            value = (value == "on").ToString();
+                            break;
+                        case "Html":
+                            value = Server.HtmlDecode(form[ft.Name]);
+                            break;
+                        case "Link":
+                            var rawLinkName = form[ft.Name + "_Name"];
+                            var rawLinkUrl = form[ft.Name + "_Url"];
+                            value = string.Format("{0}|{1}", rawLinkName, rawLinkUrl);
+                            break;
+                        case "UncLink":
+                            var rawUncLinkName = form[ft.Name + "_Name"];
+                            var rawUncLinkUrl = form[ft.Name + "_Url"];
+                            value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
+                            break;
+                        default:
+                            value = Server.HtmlEncode(form[ft.Name]);
+                            break;
+                    }
+
+                    if (!string.IsNullOrEmpty(value))
+                        fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
+                }
             }
             return fields;
         }

@@ -1,4 +1,4 @@
-﻿CREATE FUNCTION utility.GetVerticalResponsibilityList
+﻿CREATE FUNCTION [utility].[GetVerticalResponsibilityList]
 (
 	@Object varchar(50),
 	@ObjectID int,
@@ -55,25 +55,23 @@ BEGIN
 						R.ResponsibilityTypeID,
 						'TaxonomyType' as AssigningItemType,
 						T.ID as AssigningItemID,
-						'Taxonomy' as ObjectType,
+						'Artifact' as ObjectType,
 						A.ID as ObjectID,
 						utility.GetResponsibilityContextHash(R.ID),
 						@Priority+1 as [Priority]
 				from	TaxonomyType T 
 						inner join Responsibility R on R.ObjectType = 'TaxonomyType' and R.ObjectID = T.ID
-						inner join Taxonomy A on A.TaxonomyTypeID = T.ID
-						inner join Artifact AR on AR.TaxonomyTypeID = T.ID
+						inner join Artifact A on A.TaxonomyTypeID = T.ID
 												  and	(
 															(
 																(
-																(@Object = 'ArtifactType' and AR.ArtifactTypeID = @ObjectID) OR 
-																(@Object = 'Artifact' and AR.ID = @ObjectID)
+																(@Object = 'ArtifactType' and A.ArtifactTypeID = @ObjectID) OR 
+																(@Object = 'Artifact' and A.ID = @ObjectID)
 																)
 																and @ObjectID is not null 
 															)
 															OR @ObjectID is null 
-														)
-						inner join cache.Relationship RE on RE.SourceObject = 'Taxonomy' and RE.SourceObjectID = A.ID and RE.TargetObject = 'Artifact' and RE.TargetObjectID = AR.ID;
+														);
 		end
 	if @Object = 'DomainType' OR @Object = 'Domain'
 		begin

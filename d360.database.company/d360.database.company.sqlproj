@@ -235,8 +235,8 @@
     <Build Include="dbo\Views\EventHeader.sql" />
     <Build Include="dbo\Views\FieldLookupValue.sql" />
     <Build Include="dbo\Views\ResponsibilityDetail.sql">
-      <AnsiNulls>Off</AnsiNulls>
-      <QuotedIdentifier>Off</QuotedIdentifier>
+      <AnsiNulls>On</AnsiNulls>
+      <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
     <Build Include="utility\Views\RelationshipTypes.sql" />
     <Build Include="dbo\Views\SecurityDetail.sql" />
@@ -465,6 +465,9 @@
     <Build Include="utility\User Defined Types\DiagramRelationshipTable_1.sql" />
     <Build Include="dbo\Tables\IntersectMapGroup_1.sql" />
     <Build Include="dbo\Stored Procedures\GetGroupHierarchy_1.sql" />
+    <Build Include="dbo\Tables\FieldTypeRelationLookupDisplayField.sql" />
+    <Build Include="dbo\Tables\FieldTypeRelationLookupDefinition.sql" />
+    <Build Include="dbo\Stored Procedures\AddSingleIntersect.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

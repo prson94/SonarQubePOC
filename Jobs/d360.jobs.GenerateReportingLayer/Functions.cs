@@ -359,7 +359,7 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
             try
             {
-                var companies = GetActiveCompanyIDs();
+                var companies = GetActiveCompanyIDs();//.Where(i => i == 4).ToList();
 
                 companies.ForEach(companyID =>
                 {
@@ -446,7 +446,7 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
                         #region Fusion
 
                         var fusionAttributeTypes = companyConnection.Query<FusionAttributeType>("select * from FusionAttributeType").ToList();
-                        
+
                         try
                         {
                             fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'FusionAttributeType'").ToList();
@@ -833,6 +833,72 @@ from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner jo
                         });
 
                         rules = null;
+
+                        #endregion
+
+                        #region Policy Type
+
+                        objectType = "Policy";
+                        objectTypeKey = "PolicyTypeID";
+                        prefix = "Policy";
+                        tableName = "Policy";
+
+                        var policyTypes = companyConnection.Query<PolicyType>("select * from PolicyType").ToList();
+
+                        try
+                        {
+                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'PolicyType'").ToList();
+                        }
+                        catch (Exception)
+                        {
+                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'PolicyType'").ToList();
+                        }
+
+                        policyTypes.ForEach(o =>
+                        {
+                            #region Object Views
+
+                            var joins = "";
+                            var columns = "";
+
+                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Policy", out joins, out columns);
+
+                            objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.Name)));
+                            viewNames.Add(objectName);
+
+                            selectSql = string.Format(@"select A.ID, A.Name, A.TextPath, A.Description, {0} dbo.GenerateObjectUrl('{3}', A.PolicyTypeID, A.ID) as Url, dbo.GetObjectStatisticScore('Policy', A.ID) as CurrentScore, AC.AttributeCount, Rels.[Count] as RelationshipCount from Policy A {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.PolicyTypeID = {1}", columns, o.ID, joins, objectType);
+
+                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                            try
+                            {
+                                companyConnection.Execute(viewSql.ToString());
+                            }
+                            catch (Exception ex)
+                            {
+                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                                Console.WriteLine(msg);
+                                Console.WriteLine("Attempted SQL: " + viewSql);
+                            }
+
+                            #endregion
+
+                            // Object Views
+                            GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
+
+                            // Object Missing Views
+                            GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                            GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, false);
+                        });
+
+                        policyTypes = null;
 
                         #endregion
 

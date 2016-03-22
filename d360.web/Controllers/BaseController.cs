@@ -515,82 +515,85 @@ namespace d360.web.Controllers
 
             fieldTypes.ForEach(ft =>
             {
-                var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
-
-                var patternMessage = "";
-
-                if (string.IsNullOrEmpty(ft.ValidationDescription))
+                if (ft.Type != DataType.RelationLookup.ToString())
                 {
-                    switch (ft.Type)
+                    var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
+
+                    var patternMessage = "";
+
+                    if (string.IsNullOrEmpty(ft.ValidationDescription))
                     {
-                        case "Number":
-                            patternMessage = "must be a whole number";
-                            break;
-                        case "Decimal":
-                            patternMessage = "must be a decimal number";
-                            break;
+                        switch (ft.Type)
+                        {
+                            case "Number":
+                                patternMessage = "must be a whole number";
+                                break;
+                            case "Decimal":
+                                patternMessage = "must be a decimal number";
+                                break;
+                        }
                     }
-                }
-                else
-                {
-                    patternMessage = ft.ValidationDescription;
-                }
-
-                var fld = new EditableField
-                {
-                    Row = row,
-                    Column = 1,
-                    FieldName = ft.Name,
-                    Name = ft.FriendlyName,
-                    FieldType = ft.Type.ToString(),
-                    FieldDescription = ft.FormDescription,
-                    Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage)
-                };
-
-                if (ft.Type == DataType.FusionLookup.ToString())
-                {
-                    var IDs = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == ft.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
-
-                    if (!ft.IsRequired)
-                        fld.Items.Add(new SelectListItem { Text = "", Value = "" });
-
-                    fld.Items.AddRange(
-                        Company.Filter<FusionAttribute>(x => IDs.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
-                            .Select(i => new { i.ID, i.TextPath, Type = i.FusionAttributeType.Name })
-                            .ToList()
-                            .Select(i =>
-                                new SelectListItem
-                                {
-                                    Group = new SelectListGroup { Name = i.Type },
-                                    Text = i.TextPath,
-                                    Value = i.ID.ToString()
-                                })
-                            .OrderBy(x => x.Text)
-                    );
-                }
-
-                if (!string.IsNullOrEmpty(ft.LookupObjectType))
-                {
-                    fld.FieldType = DataType.Lookup.ToString();
-                    try
+                    else
                     {
-                        fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
-                            .OrderBy(o => o.Text)
-                            .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                            .ToList();
-                        if (!ft.IsRequired) fld.Items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+                        patternMessage = ft.ValidationDescription;
                     }
-                    catch
-                    {
-                        fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
-                    }
-                }
-                fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
-                /* Boolean, Date, DateTime, Decimal, Integer, String */
-                if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
-                list.Add(fld);
 
-                row++;
+                    var fld = new EditableField
+                    {
+                        Row = row,
+                        Column = 1,
+                        FieldName = ft.Name,
+                        Name = ft.FriendlyName,
+                        FieldType = ft.Type.ToString(),
+                        FieldDescription = ft.FormDescription,
+                        Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage)
+                    };
+
+                    if (ft.Type == DataType.FusionLookup.ToString())
+                    {
+                        var IDs = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == ft.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
+
+                        if (!ft.IsRequired)
+                            fld.Items.Add(new SelectListItem { Text = "", Value = "" });
+
+                        fld.Items.AddRange(
+                            Company.Filter<FusionAttribute>(x => IDs.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
+                                .Select(i => new { i.ID, i.TextPath, Type = i.FusionAttributeType.Name })
+                                .ToList()
+                                .Select(i =>
+                                    new SelectListItem
+                                    {
+                                        Group = new SelectListGroup { Name = i.Type },
+                                        Text = i.TextPath,
+                                        Value = i.ID.ToString()
+                                    })
+                                .OrderBy(x => x.Text)
+                        );
+                    }
+
+                    if (!string.IsNullOrEmpty(ft.LookupObjectType))
+                    {
+                        fld.FieldType = DataType.Lookup.ToString();
+                        try
+                        {
+                            fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
+                                .OrderBy(o => o.Text)
+                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                .ToList();
+                            if (!ft.IsRequired) fld.Items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+                        }
+                        catch
+                        {
+                            fld.Items.Add(new SelectListItem { Text = "No valid lookup found", Value = "" });
+                        }
+                    }
+                    fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
+                    /* Boolean, Date, DateTime, Decimal, Integer, String */
+                    if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
+                    list.Add(fld);
+
+                    row++;
+                }
             });
 
             return list;

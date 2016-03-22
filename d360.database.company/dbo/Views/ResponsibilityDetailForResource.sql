@@ -1,7 +1,9 @@
-﻿CREATE view [dbo].[ResponsibilityDetailForResource]
+﻿
+CREATE view [dbo].[ResponsibilityDetailForResource]
 as
 	select	RD.Visible,
 			RD.ResponsibilityID,
+			RD.ResponsibilityTypeID,
 			RD.ObjectType,
 			RD.ObjectTypeID,
 			RD.ObjectID,
@@ -18,8 +20,8 @@ as
 				else cast(0 as bit)
 			end as FromGroup,
 			RD.Role,
-			RD.CurrentScore,
-			RD.RedFlagged
+			RD.ContextItems,
+			RD.CurrentScore
 	from	ResponsibilityDetail RD
 			left join [Group] G on RD.ResponsibleObjectType = 'Group' and G.ID = RD.ResponsibleObjectID
 			left join ResourceGroup RG on RG.GroupID = G.ID

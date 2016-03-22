@@ -306,17 +306,17 @@ from	#rules R
 											@testArtifactTaxonomyTypeID int = null
 
 									select	@testArtifactName = Name,
-											@testArtifactDescription = coalesce(Description, ''),
+											@testArtifactDescription = Description,
 											@testArtifactParentID = ParentID,
 											@testArtifactTaxonomyTypeID = TaxonomyTypeID
 									from	Artifact
 									where	ID = @PromotedID
-									
+
 									if (@testArtifactName <> @name) 
 										OR (@testArtifactDescription <> @description) 
 										OR (@testArtifactParentID <> @PromotionParentObjectID) 
 										OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
-									begin																				
+									begin
 										update	Artifact
 										set		Name = @name,
 												Description = @description,

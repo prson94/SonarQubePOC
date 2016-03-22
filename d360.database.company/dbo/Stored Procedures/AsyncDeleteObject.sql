@@ -1,5 +1,4 @@
-﻿
-CREATE procedure [dbo].[AsyncDeleteObject]
+﻿CREATE procedure [dbo].[AsyncDeleteObject]
 	@Object varchar(50),
 	@ObjectID int,
 	@ParentObject varchar(50),
@@ -15,9 +14,14 @@ begin
 			@date datetime = getutcdate()
 
 	begin try
-		begin transaction @trans
-
 		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Removed', @Object, @ObjectID
+	end try
+	begin catch
+
+	end catch
+
+	begin try
+		begin transaction @trans
 
 		--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority])
 		--values ('ObjectIndex', 'D', @Object, @ObjectID, 4)
@@ -28,7 +32,7 @@ begin
 		delete Follow							where ObjectType = @Object and ObjectID = @ObjectID
 		delete Responsibility					where ObjectType = @Object and ObjectID = @ObjectID
 		delete SurveyObjectCache				where ObjectType = @Object and ObjectID = @ObjectID
-		delete cache.[Object]					where [Object] = @Object and ObjectID = @ObjectID--delete cache.ObjectDetails				where [Object] = @Object and ObjectID = @ObjectID
+		delete cache.[Object]					where [Object] = @Object and ObjectID = @ObjectID
 
 		if charindex('Type', @Object) > 0
 		begin
@@ -107,6 +111,8 @@ begin
 			if @Object = 'FieldType'
 			begin
 				delete Field where FieldTypeID = @ObjectID
+				delete FieldTypeFusionLookupDisplayField where FieldTypeID = @ObjectID
+				delete FieldTypeRelationLookupDisplayField where FieldTypeID = @ObjectID
 				delete FieldType where ID = @ObjectID
 			end
 
