@@ -843,6 +843,20 @@ namespace d360.web.Controllers
                 sortOrder = sortDefaultDirection;
             }
 
+            sortOrder = (sortOrder ?? string.Empty).ToLower();
+
+            //validate inputs            
+            if ((!string.IsNullOrEmpty(sortOrder)) && sortOrder != "asc" && sortOrder != "desc")
+            {
+                throw new Exception("Invalid sort order specified");
+            }
+
+            var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
+            if (!nameRegex.IsMatch(sortDataField))
+            {
+                return sql;
+            }
+
             sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
 
             return sql;
