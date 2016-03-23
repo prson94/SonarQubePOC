@@ -1404,6 +1404,306 @@ function CompanySettingsViewModel(data) {
     return self;
 }
 
+function SourceToTargetMappingModel(data) {
+    var self = this;
+    self.Object = ko.observable(data.Object);
+    self.ObjectID = ko.observable(data.ObjectID);
+    self.Source = ko.observable(data.Source);
+    self.SourceID = ko.observable(data.SourceID);
+    self.SourceName = ko.observable(data.SourceName);
+    self.SourceTypeName = ko.observable(data.SourceTypeName);
+    self.Target = ko.observable(data.Target);
+    self.TargetID = ko.observable(data.TargetID);
+    self.TargetName = ko.observable(data.TargetName);
+    self.TargetTypeName = ko.observable(data.TargetTypeName);
+    self.SourceRules = ko.observableArray([]);
+    
+    self.LoadRules = function () {
+        $.ajax({
+            url: 'form/sourcetarget/load/' + self.Object() + '/' + self.ObjectID() + '/' + self.Source() + '/' + self.SourceID() + '/' + self.Target() + '/' + self.TargetID()
+        }).done(function (data) {
+            //console.log(data);
+            if (data == null || data.length < 1)
+                self.SourceRules.push(new SourceToTargetMappingItem(data, self));
+            else
+                for (var i = 0; i < data.length; i++) {
+                    data[i].Object = data[i].FocalObject;
+                    data[i].ObjectID = data[i].FocalObjectID;
+                    data[i].Source = data[i].SourceObject;
+                    data[i].SourceID = data[i].SourceObjectID;
+                    data[i].Target = data[i].TargetObject;
+                    data[i].TargetID = data[i].TargetObjectID;
+                    self.SourceRules.push(new SourceToTargetMappingItem(data[i], self));
+                }
+        });
+    }
+
+    self.LoadRules();
+
+    //self.SourceRules.push(new SourceToTargetMappingItem(data, self));
+
+    self.AddSourceRule = function () {
+        self.SourceRules.push(new SourceToTargetMappingItem(data, self));
+    }
+
+    self.SaveRules = function () {
+        var data = {};
+
+        var rules = [];
+        for (var i = 0; i < self.SourceRules().length; i++) {
+            var rule = self.SourceRules()[i];
+            var sources = [];
+            var targets = [];
+            for (var j = 0; j < rule.Sources().length; j++) {
+                var source = rule.Sources()[j];
+                sources.push({
+                    ID: rule.SourceItems()[source.SelectedIndex()].id,
+                    FusionID: source.FusionItems()[source.SelectedFusionIndex()].id
+                });
+            }
+            for (var j = 0; j < rule.Targets().length; j++) {
+                var target = rule.Targets()[j];
+                targets.push({
+                    ID: rule.TargetItems()[target.SelectedIndex()].id,
+                    FusionID: target.FusionItems()[target.SelectedFusionIndex()].id
+                });
+            }
+            rules.push({
+                ID: rule.ID(),
+                sources: sources,
+                targets: targets,
+                transformation: rule.Transformation()
+            });
+        }
+
+        data = {
+            focalID: self.ObjectID(),
+            focal: self.Object(),
+            sourceID: self.SourceID(),
+            source: self.Source(),
+            targetID: self.TargetID(),
+            target: self.Target(),
+            rules: rules
+        }
+
+        //console.log(data);
+        $.ajax({
+            url: '/form/SaveSourceRules',
+            method: 'POST',
+            data: data
+        }).done(function (data) {
+           // console.log('saved');
+        });
+    }
+
+    return self;
+}
+
+function SourceToTargetMappingItem(data, parent) {
+    var self = this;
+    self.ID = ko.observable(data.ID || 0);
+    self.Object = ko.observable(data.Object);
+    self.ObjectID = ko.observable(data.ObjectID);
+    self.Source = ko.observable(data.Source);
+    self.SourceID = ko.observable(data.SourceID);
+    self.Target = ko.observable(data.Target);
+    self.TargetID = ko.observable(data.TargetID);
+    self.Sources = ko.observableArray([]);
+    self.Targets = ko.observableArray([]);
+    self.Transformation = ko.observable(data.Transformation || '');
+    self.SourceItems = ko.observableArray([]);
+    self.TargetItems = ko.observableArray([]);
+    self.Keywords = ko.observableArray([]);
+
+
+    self.IsLoading = ko.observable(false);
+
+    self.LoadItems = function () {
+        var sem = 2;
+        self.IsLoading(true);
+        $.ajax({
+            url: 'form/sourcetarget/related/' + self.Source() + '/' + self.SourceID(),
+            async: true
+        }).done(function (data) {
+            self.SourceItems([]);
+            $.each(data, function (i, val) {
+                self.SourceItems.push(val);
+            })
+        }).always(function () {
+            if (--sem == 0) {
+                self.IsLoading(false);
+                self.LoadData();
+            }
+                
+        });
+
+        $.ajax({
+            url: 'form/sourcetarget/related/' + self.Target() + '/' + self.TargetID(),
+            async: true
+        }).done(function (data) {
+            self.TargetItems([]);
+            $.each(data, function (i, val) {
+                self.TargetItems.push(val);
+            })
+        }).always(function () {
+            if (--sem == 0) {
+                self.IsLoading(false);
+                self.LoadData();
+            }
+                
+        });
+    }
+
+    self.LoadItems();
+
+    self.LoadData = function () {
+        if (data != null && data != {}) {
+            //console.log(data);
+            if (data.Sources != null)
+                for (var i = 0; i < data.Sources.length; i++) {
+                    self.Sources.push(new SourceToTargetMappingSourceItem(data.Sources[i], self, true));
+                }
+            else
+                self.Sources.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1 }, self, true));
+            if (data.Targets != null)
+                for (var i = 0; i < data.Targets.length; i++) {
+                    self.Targets.push(new SourceToTargetMappingSourceItem(data.Targets[i], self, false));
+                }
+            else
+                self.Targets.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1 }, self, false));
+        }
+    }
+    
+    //self.Sources.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1}, self, true));
+    //self.Targets.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1}, self, false));
+
+    self.AddSource = function () {
+        self.Sources.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1}, self, true));
+    }
+
+    self.AddTarget = function () {
+        self.Targets.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1}, self, false));
+    }
+
+    self.RemoveRule = function () {
+        parent.SourceRules.remove(self);
+    }
+
+    return self;
+}
+
+function SourceToTargetMappingSourceItem(data, parent, isSource) {
+    console.log(data);
+    var self = this;
+    self.Name = ko.observable(data.Name || '');
+    self.ID = ko.observable(data.ID || -1);
+    self.SelectedIndex = ko.observable(-1);
+    self.FusionItems = ko.observableArray([]);
+    self.SelectedFusionIndex = ko.observable(-1);
+    self.SelectedFusionName = ko.observable('');
+
+    self.IsLoading = ko.observable(false);
+
+    self.RemoveItem = function () {
+        if (isSource) {
+            if (parent.Sources().length == 1)
+                return;
+            parent.Sources.remove(self);
+        }
+        else {
+            if (parent.Targets().length == 1)
+                return;
+            parent.Targets.remove(self);
+        }
+    }
+
+    self.LoadFusionItems = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: 'form/sourcetarget/fusion/' + parent.Object() + '/' + parent.ObjectID() + '/' + self.ID().split('|')[0] + '/' + self.ID().split('|')[1],
+            async: true
+        }).done(function (data) {
+            self.FusionItems([]);
+            $.each(data, function (i, val) {
+                self.FusionItems.push(val);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+            self.LoadFusionData();
+        });
+    };
+
+    self.SelectedIndex.subscribe(function () {
+        //console.log(self.SelectedIndex());
+        //console.log(self.SelectedFusionIndex());
+        if (self.SelectedIndex() == -1)
+            return;
+        if (self.SelectedFusionIndex() != -1) {
+            parent.Keywords.remove(self.SelectedFusionName());
+            self.SelectedFusionName('');
+            self.SelectedFusionIndex(-1);
+        }
+
+        if (isSource)
+            self.ID(parent.SourceItems()[self.SelectedIndex()].id);
+        else
+            self.ID(parent.TargetItems()[self.SelectedIndex()].id);
+        //console.log(self.ID());
+        self.LoadFusionItems();
+        if (self.FusionItems().length == 1)
+            self.SelectedFusionIndex(0);
+    });
+
+    self.SelectedFusionIndex.subscribe(function () {
+        if (self.SelectedFusionIndex() == -1)
+            return;
+        self.SelectedFusionName(self.FusionItems()[self.SelectedFusionIndex()].name);
+        parent.Keywords.remove(self.SelectedFusionName());
+        parent.Keywords.push(self.SelectedFusionName());
+    })
+
+
+    if (data != null && data != {}) {
+        if (data.ID != null) {
+            var items = null;
+            if (isSource)
+                items = parent.SourceItems()
+            else
+                items = parent.TargetItems()
+            
+            //console.log(items);
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].id == data.ID) {
+                    self.SelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    self.LoadFusionData = function () {
+        if (data != null && data != {}) {
+            if (data.FusionID != null) {
+                var items = self.FusionItems();
+                //console.log(items);
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].id == data.FusionID) {
+                        self.SelectedFusionIndex(i);
+                        break;
+                    }
+                }
+                data = null;
+            }
+        }
+    }
+    //self.ID = ko.observable(data.ID || -1);
+    //self.SelectedIndex(data.ID || -1); //= ko.observable(data.ID || -1);
+    //self.FusionItems = ko.observableArray([]);
+    //self.SelectedFusionIndex(data.FusionID || -1); // = ko.observable(data.FusionID || -1);
+
+    return self;
+}
+
 function HierarchyRuleContextModel(data) {
     var self = this;
     data = data || {};

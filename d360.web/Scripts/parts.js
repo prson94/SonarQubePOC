@@ -5409,8 +5409,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_info = controlID + '_info';
     var controlID_info_body = controlID + '_info_body';
 
-    //var controlID_sourcerules = controlID + '_sourcerules';
-    //var controlID_sourcerules_table = controlID + '_sourcerules_table';
+    var controlID_sourcerules = controlID + '_sourcerules';
+    var controlID_sourcerules_table = controlID + '_sourcerules_table';
 
     var controlID_add_search_text = controlID + '_add_search_text';
     var controlID_add_search = controlID + '_add_search';
@@ -5450,11 +5450,14 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_ribbon_redo = controlID + '_ribbon_redo';
     var controlID_ribbon_remove = controlID + '_ribbon_remove';
     var controlID_ribbon_sourcerule_add = controlID + '_ribbon_sourcerule_add';
+    var controlID_ribbon_sourcemapping_add = controlID + '_ribbon_sourcemapping_add';
 
     var controlID_popover_add = controlID + '_popover_add';
 
     var controlID_popover_sourcerule_editor = controlID + '_popover_sourcerule_editor';
     var controlID_popover_sourcerule_editor_body = controlID_popover_sourcerule_editor + '_body';
+    var controlID_popover_sourcemapping_editor = controlID + '_popover_sourcemapping_editor';
+    var controlID_popover_sourcemapping_editor_body = controlID_popover_sourcemapping_editor + '_body';
 
     //#endregion
 
@@ -5473,8 +5476,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $("#" + controlID_ribbon_zoom_in).jqxRepeatButton({ delay: 3, theme: theme });
 
     $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
-
-    //$("#" + controlID_sourcerules).jqxExpander({ theme: theme }).jqxExpander('collapse');
+    $("#" + controlID_ribbon_sourcemapping_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_sourcerules).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_responsibilities).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_fusion).jqxExpander({ theme: theme }).jqxExpander('collapse');
@@ -5512,6 +5515,38 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         ko.cleanNode($('#' + controlID_popover_sourcerule_editor_body)[0]);
         ko.applyBindings(model, $('#' + controlID_popover_sourcerule_editor_body)[0]);
         //model.ApplyJqxBindings();
+    });
+    
+    $("#" + controlID_ribbon_sourcemapping_add).on('click', function () {
+        $('#' + controlID_popover_sourcemapping_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
+        var selected = myDiagram.selection;
+        if (selected == null)
+            return;
+        var selected = selected.first().data;
+        if (selected == null)
+            return;
+        
+        var from = myDiagram.model.findNodeDataForKey(selected.from);
+        var to = myDiagram.model.findNodeDataForKey(selected.to);
+
+        //console.log(from);
+        //console.log(to);
+
+        var data = {
+            Source: from.type,
+            SourceID: from.id,
+            SourceName: from.name,
+            SourceTypeName: from.typeName,
+            Target: to.type,
+            TargetID: to.id,
+            TargetName: to.name,
+            TargetTypeName: to.typeName,
+            Object: type,
+            ObjectID: id,
+        };
+        var model = new SourceToTargetMappingModel(data);
+        ko.cleanNode($('#' + controlID_popover_sourcemapping_editor_body)[0]);
+        ko.applyBindings(model, $('#' + controlID_popover_sourcemapping_editor_body)[0]);
     });
 
     $('#' + controlID_ribbon).jqxRibbon({
@@ -6040,6 +6075,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
         if (selection.count < 1) {
             $("#" + controlID_ribbon_sourcerule_add).hide(200);
+            $("#" + controlID_ribbon_sourcemapping_add).hide(200);
             $("#" + controlID_ribbon_remove).hide(200);
             $('#' + controlID_fusion).jqxExpander('collapse');
             $('#' + controlID_responsibilities).jqxExpander('collapse');
@@ -6048,7 +6084,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
         } else {
             if (!readonly) {
                 $("#" + controlID_ribbon_remove).show(200);
-                //$("#" + controlID_ribbon_sourcerule_add).show(200);
+                $("#" + controlID_ribbon_sourcerule_add).show(200);
             }
         }
 
@@ -6088,20 +6124,20 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                     }
                     $("#" + controlID_fusion).jqxExpander('expand');
 
-                    //if (sourceNodes.length > 0) { //(data.sourceRuleCount > 0) {
-                    //    //$('#' + controlID_sourcerules).show();
-                    //    $("#" + controlID_sourcerules).jqxExpander('expand');
+                    if (sourceNodes.length > 0) { //(data.sourceRuleCount > 0) {
+                        //$('#' + controlID_sourcerules).show();
+                        $("#" + controlID_sourcerules).jqxExpander('expand');
 
-                    //    $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function(rules) {
-                    //        var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
-                    //        $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
-                    //    });
-                    //}
-                    //else {
-                    //    $("#" + controlID_sourcerules_table).html('');
-                    //    $("#" + controlID_sourcerules).jqxExpander('collapse');
-                    //    //$('#' + controlID_sourcerules).hide();
-                    //}
+                        $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function(rules) {
+                            var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
+                            $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
+                        });
+                    }
+                    else {
+                        $("#" + controlID_sourcerules_table).html('');
+                        $("#" + controlID_sourcerules).jqxExpander('collapse');
+                        //$('#' + controlID_sourcerules).hide();
+                    }
 
                     $("#" + controlID_responsibilities).show();
                     try {
@@ -6120,7 +6156,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
 
                 $('#' + controlID_info_body).html('');
                 $("#" + controlID_info).jqxExpander('collapse');
-
+                $("#" + controlID_ribbon_sourcemapping_add).show(200);
                 //$("#" + controlID_sourcerules).jqxExpander('collapse');
 
                 lineageResponsibilitySource.url = null;

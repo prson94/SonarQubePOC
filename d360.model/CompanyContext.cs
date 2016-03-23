@@ -187,6 +187,8 @@ namespace d360.model
 
         public DbSet<IntersectMapSourceRule> IntersectMapSourceRules { get; set; }
 
+        public DbSet<IntersectMapSourceTargetRule> IntersectMapSourceTargetRules { get; set; }
+
         public DbSet<IntersectMapSourceRuleContext> IntersectMapSourceRuleContexts { get; set; }
 
         public DbSet<Intersect> Intersects { get; set; }
@@ -290,6 +292,8 @@ namespace d360.model
         public DbSet<SourceRule> SourceRules { get; set; }
 
         public DbSet<SourceRuleContext> SourceRuleContexts { get; set; }
+
+        public DbSet<SourceTargetRule> SourceTargetRules { get; set; }
 
         public DbSet<Statistic> Statistics { get; set; }
 
