@@ -607,13 +607,7 @@ namespace d360.web.Controllers
                 result.Add(item.Key, item.Value);
             return result;
         }
-
-        //protected override void OnException(ExceptionContext filterContext)
-        //{
-        //    RedirectToAction("Index", "Error", new { error = filterContext.Exception });
-        //    base.OnException(filterContext);
-        //}
-
+        
         internal void SendException(Exception ex, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
         {
             if (properties == null) properties = new Dictionary<string, string>();
@@ -671,30 +665,45 @@ namespace d360.web.Controllers
             fields = null;
         }
 
-        internal string getFilteringCondition(string field, string condition)
+        internal string getFilteringConditionBind(string field, string condition, int filterNumber, Dapper.DynamicParameters dbParams, string value, string prefix)
         {
+            var bind = $"{prefix}{filterNumber}val";
+
+            if (!isValidFieldName(field)) return string.Empty; // sql injection check on field name
+
             switch (condition)
             {
                 case "CONTAINS":
-                    return field + " LIKE N'%{1}%'";
+                    dbParams.Add(bind, $"%{value}%");
+                    return $"{field} LIKE @{bind}";
                 case "DOES_NOT_CONTAIN":
-                    return field + " NOT LIKE N'%{1}%'";
+                    dbParams.Add(bind, $"%{value}%");
+                    return $"{field} NOT LIKE @{bind}";                    
                 case "EQUAL":
-                    return field + " = N'{1}'";
+                    dbParams.Add(bind, $"{value}");
+                    return $"{field} = @{bind}";                    
                 case "NOT_EQUAL":
-                    return field + " <> N'{1}'";
+                    dbParams.Add(bind, $"{value}");
+                    return $"{field} <> @{bind}";                    
                 case "STARTS_WITH":
-                    return field + " LIKE N'{1}%'";
+                    dbParams.Add(bind, $"{value}%");
+                    return $"{field} LIKE @{bind}";                    
                 case "ENDS_WITH":
-                    return field + " LIKE N'%{1}'";
-                case "GREATER_THAN":
-                    return $"CAST({field} as numeric) > CAST('{{1}}' as numeric)";
+                    dbParams.Add(bind, $"%{value}");
+                    return $"{field} LIKE @{bind}";     
+                //greater / less than cause issues with dates when casting...               
+                /*case "GREATER_THAN":
+                    dbParams.Add(bind, $"{value}");                    
+                    return $"CAST({field} as numeric) > CAST(@{bind} as numeric)";
                 case "GREATER_THAN_OR_EQUAL":
-                    return $"CAST({field} as numeric) >= CAST('{{1}}' as numeric)";
+                    dbParams.Add(bind, $"{value}");
+                    return $"CAST({field} as numeric) >= CAST(@{bind} as numeric)";                    
                 case "LESS_THAN":
-                    return $"CAST({field} as numeric) < CAST('{{1}}' as numeric)";
+                    dbParams.Add(bind, $"{value}");
+                    return $"CAST({field} as numeric) < CAST(@{bind} as numeric)";                    
                 case "LESS_THAN_OR_EQUAL":
-                    return $"CAST({field} as numeric) <= CAST('{{1}}' as numeric)";
+                    dbParams.Add(bind, $"{value}");
+                    return $"CAST({field} as numeric) <= CAST(@{bind} as numeric)";                    */
                 case "NULL":
                     return field + " is null";
                 case "NOT_NULL":
@@ -704,16 +713,18 @@ namespace d360.web.Controllers
                 case "NOT_EMPTY":
                     return field + " <> ''";
                 default:
-                    return field + " = N'{1}'";
+                    dbParams.Add(bind, $"{value}");
+                    return $"{field} = @{bind}";
             }
         }
-
-        internal string sqlInjectionFixValues(string val)
+        
+        internal bool isValidFieldName(string field)
         {
-            return val.Replace("--", "").Replace("'", "''");
+            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z][a-zA-Z0-9._-]+$");
+            return nameRegex.IsMatch(field);
         }
 
-        internal string applyRelationFilteringExists(string sql, System.Web.HttpRequestBase Request)
+        internal string applyRelationFilteringExists(string sql, System.Web.HttpRequestBase Request, Dapper.DynamicParameters dbParams)
         {
             var query = Request.Params;
             int filterscount = 0;            
@@ -727,6 +738,10 @@ namespace d360.web.Controllers
                     var fCondition = query["relfiltercondition" + i];
                     var fValue = query["relfiltervalue" + i];
 
+                    var filtersql = getFilteringConditionBind("relField.FormattedValue", fCondition, i, dbParams,fValue,"relflt");
+
+                    if (string.IsNullOrEmpty(filtersql)) continue;
+
                     var existsql = @" and exists (select  B.sourceobjectid
                                 from(
                                         select  IntersectID as ID,
@@ -735,9 +750,9 @@ namespace d360.web.Controllers
                                         where SourceObjectType = 'Artifact'
                                                 and SourceObjectID = A.id
                                         ) B left join FieldWithRelation relField on (relField.ObjectType = 'Intersect' and relField.ObjectID = B.ID and relField.FieldTypeID = {0})
-                                        where " + getFilteringCondition("relField.FormattedValue", fCondition) + ")";
+                                        where " + filtersql + ")";
 
-                    existsql = string.Format(existsql, fFieldId, sqlInjectionFixValues(fValue));
+                    existsql = string.Format(existsql, fFieldId);
                                         
                     sb.Append(existsql);
                 }
@@ -746,36 +761,25 @@ namespace d360.web.Controllers
             }
             return sql;            
         }
-
-        internal string applyFilteringSuffix(string sql, System.Web.HttpRequestBase Request)
+                
+        internal string applyFilteringSuffixBind(string sql, System.Web.HttpRequestBase Request, Dapper.DynamicParameters dbParams)
         {
-            var query = Request.Params; 
+            var query = Request.Params;
 
             int filterscount = 0;
             var filters = "";
 
             if (int.TryParse(query["filterscount"], out filterscount))
             {
-                var filteredFields = new List<string>();    //Keeps track of the filters we have set so far.
-                for (int i = 0; i < filterscount; i++)
-                {
-                    var fField = query["filterdatafield" + i];
-                    filteredFields.Add(fField);
-                }
-
                 for (int i = 0; i < filterscount; i++)
                 {
                     var filter = "";
                     var fField = query["filterdatafield" + i];
                     var fCondition = query["filtercondition" + i];
                     var fValue = query["filtervalue" + i];
-                    var fFormat = "";
-
-                    fFormat = getFilteringCondition("[{0}]", fCondition);
-
-
-                    filter = string.Format(fFormat, fField.Replace("]","").Replace("[",""), sqlInjectionFixValues(fValue));   //SQL Injection check prevent field names from being blocked out
-
+                    
+                    filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue,"flt");
+                    
                     if (!string.IsNullOrEmpty(filter))
                     {
                         filters += (string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ";
@@ -834,7 +838,7 @@ namespace d360.web.Controllers
 
             return sql;
         }
-
+                
         internal string applySortSuffix(string sql, string sortDataField, string sortOrder, string sortDefaultField = "Name", string sortDefaultDirection = "asc")
         {
             if (string.IsNullOrEmpty(sortDataField))
@@ -850,9 +854,9 @@ namespace d360.web.Controllers
             {
                 throw new Exception("Invalid sort order specified");
             }
-
-            var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
-            if (!nameRegex.IsMatch(sortDataField))
+                        
+            // make sure its a valid field name
+            if (!isValidFieldName(sortDataField))
             {
                 return sql;
             }

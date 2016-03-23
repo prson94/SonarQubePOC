@@ -49,14 +49,17 @@ inner join [Rule] T on T.ID = A.RuleID and A.RuleID = @id";
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
             var sql = string.Format(@"select * from ({0}) A", querySql); ;
 
-            countSql = applyFilteringSuffix(countSql, Request);
-            int total = Company.Query<int>(countSql, new { id = ruleID }).First();
+            var dbArgs = new Dapper.DynamicParameters();
+            dbArgs.Add("id", ruleID);
 
-            sql = applyFilteringSuffix(sql, Request);
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            int total = Company.Query<int>(countSql, dbArgs).First();
+
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
             sql = applySortSuffix(sql, sortDataField, sortOrder);
             sql = applyPagingSuffix(sql, pagenum, pagesize);
 
-            var query = Company.Query<dynamic>(sql, new { id = ruleID });
+            var query = Company.Query<dynamic>(sql, dbArgs);
 
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -94,14 +97,17 @@ inner join [Rule] T on T.ID = G.RuleID and A.EventGroupID = @id {1}", columns, j
 
                 var sql = string.Format(@"select * from ({0}) A", querySql);
 
-                countSql = applyFilteringSuffix(countSql, Request);
-                int total = Company.Query<int>(countSql, new { id = groupID }).First();
+                var dbArgs = new Dapper.DynamicParameters();
+                dbArgs.Add("id", groupID);
 
-                sql = applyFilteringSuffix(sql, Request);
+                countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+                int total = Company.Query<int>(countSql, dbArgs).First();
+
+                sql = applyFilteringSuffixBind(sql, Request, dbArgs);
                 sql = applySortSuffix(sql, sortDataField, sortOrder);
                 sql = applyPagingSuffix(sql, pagenum, pagesize);
 
-                var query = Company.Query<dynamic>(sql, new { id = groupID });
+                var query = Company.Query<dynamic>(sql, dbArgs);
 
                 return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
             }

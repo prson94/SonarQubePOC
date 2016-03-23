@@ -614,14 +614,20 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t {4} and A.Deleted = 0", c
                     var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
                     sql = string.Format(@"select * from ({0}) A", querySql);
 
-                    countSql = applyFilteringSuffix(countSql, Request);
-                    total = Company.Query<int>(countSql, new { f = fusionID, t = parentFusionAttributeTypeID, p = parentID }).First();
+                    var dbArgs = new Dapper.DynamicParameters();
 
-                    sql = applyFilteringSuffix(sql, Request);
+                    dbArgs.Add("f", fusionID);
+                    dbArgs.Add("t", parentFusionAttributeTypeID);
+                    dbArgs.Add("p", parentID);
+
+                    countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+                    total = Company.Query<int>(countSql, dbArgs).First();
+
+                    sql = applyFilteringSuffixBind(sql, Request, dbArgs);
                     sql = applySortSuffix(sql, sortDataField, sortOrder);
                     sql = applyPagingSuffix(sql, pagenum, pagesize);
 
-                    query = Company.Query<dynamic>(sql, new { f = fusionID, t = parentFusionAttributeTypeID, p = parentID });
+                    query = Company.Query<dynamic>(sql, dbArgs);
                     
                     #endregion
                     break;

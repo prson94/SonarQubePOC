@@ -117,14 +117,19 @@ from	Artifact A
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
-            countSql = applyFilteringSuffix(countSql, Request);
-            int total = Company.Query<int>(countSql, new { id = childArtifactTypeID, p = parentID }).First();
+            var dbArgs = new Dapper.DynamicParameters();
 
-            sql = applyFilteringSuffix(sql, Request);
+            dbArgs.Add("id", childArtifactTypeID);
+            dbArgs.Add("p", parentID);
+
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            int total = Company.Query<int>(countSql, dbArgs).First();
+
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
             sql = applySortSuffix(sql, sortDataField, sortOrder);
             sql = applyPagingSuffix(sql, pagenum, pagesize);
 
-            var query = Company.Query<dynamic>(sql, new { id = childArtifactTypeID, p = parentID });
+            var query = Company.Query<dynamic>(sql, dbArgs);
 
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };        
         }
@@ -133,6 +138,10 @@ from	Artifact A
         public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
             Trace.TraceInformation("Calling ArtifactsController.ByType : {0}", id);
+
+            var dbArgs = new Dapper.DynamicParameters();
+
+            dbArgs.Add("id", id);
 
             var joins = "";
             var columns = "";            
@@ -156,54 +165,21 @@ from	Artifact A
 where    A.ArtifactTypeID = @id", columns, joins);
 
             
-            querySql = applyRelationFilteringExists(querySql, Request);
+            querySql = applyRelationFilteringExists(querySql, Request,dbArgs);
 
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
-            //var relationFilterSql = "";
-
-            //var RelationshipIncludeType = Request["RelationshipIncludeType"];
-            //var RelationshipObjectType = Request["RelationshipObjectType"];
-            //var RelationshipObjectIDs = Server.UrlDecode(Request["RelationshipObjectIDs"]);
-
-            //if (!string.IsNullOrEmpty(RelationshipObjectIDs))
-            //{
-            //    var IDs = RelationshipObjectIDs.Split(',').ToList();
-            //    if (RelationshipIncludeType == "All")
-            //    {
-            //        IDs.ForEach(ID =>
-            //        {
+            
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
                         
-            //            relationFilterSql = (string.IsNullOrEmpty(relationFilterSql) ? "" : " AND ") + 
-            //                "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = '" + RelationshipObjectType + "' and TargetObjectID = " + ID + ")";
-            //        });
-            //    }
-            //    else
-            //    {
-            //        var idList = "";
-            //        IDs.ForEach(ID =>
-            //        {
-            //            idList += (string.IsNullOrEmpty(idList) ? "" : ", ") + ID;
-            //        });
-            //        relationFilterSql = "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = '" + RelationshipObjectType + "' and TargetObjectID in (" + idList + "))";
-            //    }
-            //}
-
-            countSql = applyFilteringSuffix(countSql, Request);
-            sql = applyFilteringSuffix(sql, Request);
-
-            //if (!string.IsNullOrEmpty(relationFilterSql))
-            //{
-            //    countSql += ((countSql.ToLower().Contains("where")) ? " AND " : " WHERE ") + relationFilterSql;
-            //    sql += ((sql.ToLower().Contains("where")) ? " AND " : " WHERE ") + relationFilterSql;
-            //}
 
             sql = applySortSuffix(sql, sortDataField, sortOrder);
             sql = applyPagingSuffix(sql, pagenum, pagesize);
 
-            int total = Company.Query<int>(countSql, new { id = id }).First();
-            var query = Company.Query<dynamic>(sql, new { id = id });
+            int total = Company.Query<int>(countSql, dbArgs).First();
+            var query = Company.Query<dynamic>(sql, dbArgs);
 
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
         }

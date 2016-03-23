@@ -95,19 +95,22 @@ namespace d360.web.Controllers
 
             var querySql = string.Format(@"select A.*, R.FirstName + ' ' + R.LastName as ResourceName
 from	[reporting].[Global_Audit] A 
-inner join [reporting].[Global_Resource] R on R.ResourceID = A.ResourceID and A.[Object] = '{0}' and A.ObjectID = {1}", type.ToString(), id);
+inner join [reporting].[Global_Resource] R on R.ResourceID = A.ResourceID and A.[Object] = @objType and A.ObjectID = {0}", id);
 
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
-            countSql = applyFilteringSuffix(countSql, Request);
-            int total = Company.Query<int>(countSql).First();
+            var dbArgs = new Dapper.DynamicParameters();
+            dbArgs.Add("objType", type.ToString());
 
-            sql = applyFilteringSuffix(sql, Request);
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            int total = Company.Query<int>(countSql, dbArgs).First();
+
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
             sql = applySortSuffix(sql, sortDataField, sortOrder, "Date", "desc");
             sql = applyPagingSuffix(sql, pagenum, pagesize);
 
-            var query = Company.Query<dynamic>(sql);
+            var query = Company.Query<dynamic>(sql, dbArgs);
 
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
         }
