@@ -796,10 +796,15 @@ namespace d360.web.Controllers
             {
                 var IDs = RelationshipObjectIDs.Split(',').ToList();
                 if (RelationshipIncludeType == "All")
-                {
+                {                    
                     IDs.ForEach(ID =>
                     {
-                        filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = '" + RelationshipObjectType + "' and TargetObjectID = " + ID + ")";
+                        dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
+
+                        int idInt = 0;
+
+                        if(int.TryParse(ID,out idInt)) //convert to integer to avoid sql injection
+                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID = " + idInt + ")";
                     });
                 }
                 else
@@ -807,9 +812,15 @@ namespace d360.web.Controllers
                     var idList = "";
                     IDs.ForEach(ID =>
                     {
-                        idList += (string.IsNullOrEmpty(idList) ? "" : ", ") + ID;
+                        int idInt = 0;
+
+                        if (int.TryParse(ID, out idInt)) //convert to integer to avoid sql injection
+                            idList += (string.IsNullOrEmpty(idList) ? "" : ", ") + idInt;
                     });
-                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = '" + RelationshipObjectType + "' and TargetObjectID in (" + idList + "))";
+
+                    dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
+
+                    filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + "A.ID in (select SourceObjectID from cache.Relationships where SourceObject = 'Artifact' and TargetObject = @relTypeAdvFlt and TargetObjectID in (" + idList + "))";
                 }
             }
 
@@ -822,14 +833,16 @@ namespace d360.web.Controllers
                 int attributeTypeID;
                 if (int.TryParse(AttributeType, out attributeTypeID))
                 {
+                    dbParams.Add("attrTypeAdvFlt", "%" + AttributeSearchValue + "%"); // use bind variable to avoid sql injection
+
                     filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + @"A.ID in (
                     select ObjectID
                     from AttributeDetail
-                    where ObjectType = 'Artifact' and AttributeTypeID = " + attributeTypeID + @" and FormattedValue like '%" + AttributeSearchValue.Replace("'", "''").Replace("--", "") + @"%'
+                    where ObjectType = 'Artifact' and AttributeTypeID = " + attributeTypeID + @" and FormattedValue like @attrTypeAdvFlt
                     union
                     select  R.SourceObjectID
                     from    cache.Relationships R
-                            inner join AttributeDetail A on A.ObjectType = 'Intersect' and A.ObjectID = R.IntersectID and R.SourceType = 'ArtifactType' and R.SourceTypeID = @id and A.FormattedValue like '%" + AttributeSearchValue.Replace("'", "''").Replace("--", "") + @"%'
+                            inner join AttributeDetail A on A.ObjectType = 'Intersect' and A.ObjectID = R.IntersectID and R.SourceType = 'ArtifactType' and R.SourceTypeID = @id and A.FormattedValue like @attrTypeAdvFlt
 					)";
                 }
             }
