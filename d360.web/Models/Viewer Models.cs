@@ -345,6 +345,10 @@ namespace d360.web.Models
     [DataContract]
     public class GridFilterColumn : GridColumn
     {
+        public GridFilterColumn()
+        {
+
+        }
         public GridFilterColumn(GridColumn val)
         {
             relatedfield = false;
@@ -359,7 +363,10 @@ namespace d360.web.Models
             filteritems = val.filteritems;
         }
         [DataMember]
-        public bool relatedfield { get; set; }        
+        public bool relatedfield { get; set; }
+
+        [DataMember]
+        public bool hiddenfield { get; set; }
 
         [DataMember]
         public string id { get; set; }

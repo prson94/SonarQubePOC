@@ -209,6 +209,9 @@ namespace d360.web.Controllers
                             filterItems = Company.Filter<Artifact>(o => o.ArtifactTypeID == item.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
                             break;
                         case "Domain":
+                            filterItems = Company.Filter<Domain>(o => o.DomainTypeID == item.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
+                            break;
+                        case "DomainItem":
                             filterItems = Company.Filter<DomainItem>(o => o.DomainID == item.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
                             break;
                         case "Lookup":
@@ -283,14 +286,15 @@ namespace d360.web.Controllers
             });        
         }
 
-        void parseDynamicRelationFields(List<FieldTypeWithRelation> items, List<GridFilterColumn> columns, decimal dynamicFieldWidth)
+        void parseDynamicFilterFields(List<FieldTypeWithRelation> items, List<GridFilterColumn> columns, decimal dynamicFieldWidth, bool relatedField, bool hiddenField)
         {
             items.ForEach(i =>
             {
                 GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
 
                 col.id = i.ID.ToString();
-                col.relatedfield = true;
+                col.relatedfield = relatedField;
+                col.hiddenfield = hiddenField;
 
                 columns.Add(col);
                 
@@ -358,15 +362,17 @@ namespace d360.web.Controllers
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", width = calculateStaticColumnWidth(20, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-
+                    
                     if (hasParentType)
-                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, width = calculateStaticColumnWidth(10, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID).OrderBy(i => i.TextPath).Select(i => i.TextPath).ToList() });
+                    {
+                        columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, width = calculateStaticColumnWidth(10, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID).OrderBy(i => i.TextPath).Select(i => i.TextPath).ToList() });                        
+                    }
 
                     parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
 
-                    columns.Add(new GridColumn { text = settings["ArtifactType_TaxonomyTypeID"], datafield = "TaxonomyType", width = calculateStaticColumnWidth(14, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = taxonomyTypes });
+                    columns.Add(new GridColumn { text = settings["ArtifactType_TaxonomyTypeID"], datafield = "TaxonomyType", width = calculateStaticColumnWidth(14, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = taxonomyTypes });                    
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", width = calculateStaticColumnWidth(9, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string>() { "Draft", "Under Review", "Certified" } });
-
+                    
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
                     if (hasParentType)
@@ -384,6 +390,9 @@ namespace d360.web.Controllers
 
                     filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
 
+                    var hiddenItems = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    parseDynamicFilterFields(hiddenItems, filterColumns, dynamicFieldWidth, false, true);
+
                     //Load any fields that are displayed on relationships so we can show them as 
                     // filters in the grid
                     IEnumerable<int> intersectTypeIDs = Company.Query<int>("select  intersecttypeid from utility.relationshiptypes where sourceobjecttype = 'ArtifactType' and sourceobjectid = @objectid", new { objectid = id });
@@ -395,7 +404,7 @@ namespace d360.web.Controllers
 
                         if (relItems.Any())
                         {                            
-                            parseDynamicRelationFields(relItems, filterColumns, dynamicFieldWidth);                         
+                            parseDynamicFilterFields(relItems, filterColumns, dynamicFieldWidth, true, false);                         
                         }
                     }
 

@@ -4122,6 +4122,9 @@ function ArtifactFilterItemViewModel(columns,selectedColumn) {
     self.isRelationFieldFilter = ko.computed(function () {
         return self.selectedColumn() != null ? self.selectedColumn().relatedfield : false;
     });
+    self.isHiddenFieldFilter = ko.computed(function () {
+        return self.selectedColumn() != null ? self.selectedColumn().hiddenfield : false;
+    });    
     self.value = ko.computed(function () {
         switch (self.inputType()) {
             case 'number':
@@ -4144,7 +4147,7 @@ function ArtifactFilterItemViewModel(columns,selectedColumn) {
         return 'EQUAL';
     });
     self.field = ko.computed(function () {
-        if (self.isRelationFieldFilter())
+        if (self.isRelationFieldFilter() || self.isHiddenFieldFilter())
             return self.selectedColumn() != null ? self.selectedColumn().id: '';
         return self.selectedColumn() != null ? self.selectedColumn().datafield : '';
     });
@@ -4166,14 +4169,17 @@ function ArtifactFiltersViewModel(columns) {
         }
     };
 
-    self.filterData = function (relations) {
+    self.filterData = function (type) {
         var filters = [];
         for (var i = 0 ; i < self.Filters().length; i++) {
             var relField = self.Filters()[i].isRelationFieldFilter();
-            if (relations && relField)
+            var hiddenField = self.Filters()[i].isHiddenFieldFilter();
+            if (type == 'relation' && relField)
                 filters.push({ field: self.Filters()[i].field(), condition: self.Filters()[i].condition(), value: self.Filters()[i].value() });
-            if (!relations && !relField)
+            else if (type == 'hidden' && hiddenField)
                 filters.push({ field: self.Filters()[i].field(), condition: self.Filters()[i].condition(), value: self.Filters()[i].value() });
+            else if (type == 'normal' && !relField && !hiddenField)
+                filters.push({ field: self.Filters()[i].field(), condition: self.Filters()[i].condition(), value: self.Filters()[i].value() });            
         }
         return filters;
     };

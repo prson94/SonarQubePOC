@@ -166,8 +166,9 @@
                             formatData: function (data) {
                                 data.filterscount = 0;
                                 data.relfilterscount = 0;
+                                data.hidfilterscount = 0;
                                 //normal filters
-                                $.each(filterVM.filterData(false), function (ix, item) {                                    
+                                $.each(filterVM.filterData('normal'), function (ix, item) {                                    
                                     if (item.value != '' && item.value != null) {                                        
                                         data['filterdatafield' + data.filterscount] = item.field;
                                         data['filtercondition' + data.filterscount] = item.condition;
@@ -176,11 +177,20 @@
                                 });
 
                                 //relation filters
-                                $.each(filterVM.filterData(true), function (ix, item) {
+                                $.each(filterVM.filterData('relation'), function (ix, item) {
                                     if (item.value != '' && item.value != null) {
                                         data['relfilterdatafield' + data.relfilterscount] = item.field;
                                         data['relfiltercondition' + data.relfilterscount] = item.condition;
                                         data['relfiltervalue' + (data.relfilterscount++)] = item.value;
+                                    }
+                                });
+
+                                //hidden field filters
+                                $.each(filterVM.filterData('hidden'), function (ix, item) {
+                                    if (item.value != '' && item.value != null) {
+                                        data['hidfilterdatafield' + data.hidfilterscount] = item.field;
+                                        data['hidfiltercondition' + data.hidfilterscount] = item.condition;
+                                        data['hidfiltervalue' + (data.hidfilterscount++)] = item.value;
                                     }
                                 });
 

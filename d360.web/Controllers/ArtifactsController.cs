@@ -166,13 +166,13 @@ where    A.ArtifactTypeID = @id", columns, joins);
 
             
             querySql = applyRelationFilteringExists(querySql, Request,dbArgs);
-
+            
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
             
-            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs,true);
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs, true);
                         
 
             sql = applySortSuffix(sql, sortDataField, sortOrder);

@@ -665,12 +665,15 @@ namespace d360.web.Controllers
             fields = null;
         }
 
-        internal string getFilteringConditionBind(string field, string condition, int filterNumber, Dapper.DynamicParameters dbParams, string value, string prefix)
+        internal string getFilteringConditionBind(string field, string condition, int filterNumber, Dapper.DynamicParameters dbParams, string value, string prefix, bool skipFieldValidation = false)
         {
             var bind = $"{prefix}{filterNumber}val";
 
-            if (!isValidFieldName(field)) return string.Empty; // sql injection check on field name
-
+            if (!skipFieldValidation)
+            {
+                if (!isValidFieldName(field)) return string.Empty; // sql injection check on field name
+            }
+            
             switch (condition)
             {
                 case "CONTAINS":
@@ -738,7 +741,7 @@ namespace d360.web.Controllers
                     var fCondition = query["relfiltercondition" + i];
                     var fValue = query["relfiltervalue" + i];
 
-                    var filtersql = getFilteringConditionBind("relField.FormattedValue", fCondition, i, dbParams,fValue,"relflt");
+                    var filtersql = getFilteringConditionBind("relField.FormattedValue", fCondition, i, dbParams,fValue,"relflt",true);
 
                     if (string.IsNullOrEmpty(filtersql)) continue;
 
@@ -761,13 +764,52 @@ namespace d360.web.Controllers
             }
             return sql;            
         }
-                
-        internal string applyFilteringSuffixBind(string sql, System.Web.HttpRequestBase Request, Dapper.DynamicParameters dbParams)
+        
+        internal string applyHiddenFilteringSuffix(System.Web.HttpRequestBase Request, Dapper.DynamicParameters dbParams)
         {
             var query = Request.Params;
 
             int filterscount = 0;
             var filters = "";
+
+            if (int.TryParse(query["hidfilterscount"], out filterscount))
+            {
+                for (int i = 0; i < filterscount; i++)
+                {
+                    var filter = "";
+                    var fieldID = 0;
+                    var fField = query["hidfilterdatafield" + i];
+                    var fCondition = query["hidfiltercondition" + i];
+                    var fValue = query["hidfiltervalue" + i];
+
+                    if (!int.TryParse(fField, out fieldID)) continue;
+
+
+                    if (string.IsNullOrEmpty(filters))
+                        filter = $" inner join field hidft on (A.ID = hidft.objectID and hidft.ObjectType = 'Artifact') where ";
+                    else
+                        filter = " and ";
+
+                    filter += getFilteringConditionBind("hidft.FormattedValue", fCondition, i, dbParams, fValue, "hidflt",true);
+
+                    filter += $" and hidft.fieldtypeid={fieldID}";
+
+                    if (!string.IsNullOrEmpty(filter))
+                    {                        
+                        filters += filter;
+                    }
+                }
+            }
+
+            return filters;
+        }
+
+        internal string applyFilteringSuffixBind(string sql, System.Web.HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false)
+        {
+            var query = Request.Params;
+
+            int filterscount = 0;
+            var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams) : string.Empty;
 
             if (int.TryParse(query["filterscount"], out filterscount))
             {
