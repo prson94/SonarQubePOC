@@ -203,21 +203,7 @@ namespace d360.web.Controllers
             {
                 case "":
                 case "Lookup":
-                    switch (item.LookupObjectType)
-                    {
-                        case "Artifact":
-                            filterItems = Company.Filter<Artifact>(o => o.ArtifactTypeID == item.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
-                            break;
-                        case "Domain":
-                            filterItems = Company.Filter<Domain>(o => o.DomainTypeID == item.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
-                            break;
-                        case "DomainItem":
-                            filterItems = Company.Filter<DomainItem>(o => o.DomainID == item.LookupObjectID).OrderBy(o => o.Name).Select(o => o.Name).ToList();
-                            break;
-                        case "Lookup":
-                            filterItems = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && o.LookupObjectType == "Lookup" && o.LookupObjectID == item.LookupObjectID).OrderBy(o => o.Text).Select(o => o.Text).ToList();
-                            break;
-                    }
+                    filterItems = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && o.LookupObjectType == item.LookupObjectType && o.LookupObjectID == item.LookupObjectID).OrderBy(o => o.Text).Select(o => o.Text).ToList();                    
                     columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
                     filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
                     break;
