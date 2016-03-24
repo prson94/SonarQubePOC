@@ -222,6 +222,10 @@
                 if (col == 'name' || col == 'code') return 'required';
                 return ''
             }
+            if (self.Action() == 'P' && objectType.toLowerCase() == 'domaintype') {
+                if (col == 'name' || col == 'domain group') return 'required';
+                return ''
+            }
             return 'required';
         }
 

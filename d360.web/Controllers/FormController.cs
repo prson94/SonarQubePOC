@@ -6855,7 +6855,7 @@ order by  D.TextPath
                 case "DomainType":
                     fieldTypeNames.Insert(0, "Name");
                     fieldTypeNames.Insert(1, "Description");
-                    fieldTypeNames.Insert(2, "Reference Group");
+                    fieldTypeNames.Insert(2, "Domain Group");
                     break;
                 case "IntersectType":
                     var intersectType = Company.Query<dynamic>(@"select	SD.Name as S, TD.Name as T
@@ -6943,6 +6943,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (type == "ArtifactType" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "subject area" && columns[i].ToLower() != "parent application"))
                     style.Font.Bold = false;
                 else if(type == "Domain" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "code"))
+                    style.Font.Bold = false;
+                else if (type == "DomainType" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "domain group"))
                     style.Font.Bold = false;
 
                 document.SetCellStyle(1, i + 1, style);
