@@ -118,18 +118,18 @@ namespace d360.web.Controllers
             {
                 iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
             }
-            else
+            else 
             {
                 iconText = objectName[0].ToString().ToUpper() + objectName[1].ToString().ToLower();
             }
 
             if (add)
             {
-                style = new ObjectStyle
-                {
-                    ObjectType = type.ToString(),
+                style = new ObjectStyle 
+                { 
+                    ObjectType = type.ToString(), 
                     ObjectID = id,
-                    IconBackColor = form["IconBackColor"],
+                    IconBackColor = form["IconBackColor"], 
                     IconForeColor = form["IconForeColor"],
                     IconText = iconText
                 };
@@ -195,7 +195,7 @@ namespace d360.web.Controllers
                     Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID),
                     Selected = string.IsNullOrEmpty(selectedValue) ? false : selectedValue.Equals(string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID))
                 })
-                .ToList();
+                .ToList();        
         }
 
         List<SelectListItem> convertToEditableFieldItems(List<FieldNameByObjectType> items, string selectedValue = "")
@@ -253,7 +253,7 @@ namespace d360.web.Controllers
                 var booleanRawValue = form[fieldName];
 
                 switch (booleanRawValue)
-                {
+                { 
                     case "value":
                     case "on":
                     case "1":
@@ -327,7 +327,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
 
             var row = 1;
-
+            
             if (p == 0 && type.ParentID.HasValue)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
@@ -336,9 +336,9 @@ namespace d360.web.Controllers
                 pluralize = null;
                 row++;
             }
-            else
+            else 
             {
-                list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
+                list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });            
             }
 
             list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
@@ -364,7 +364,7 @@ namespace d360.web.Controllers
             if (!workflowEnabled)
             {
                 row++;
-                list = loadStatusField(list, SystemObjects.Artifact, null, row, 1);
+                list = loadStatusField(list, SystemObjects.Artifact, null, row, 1);            
             }
 
             row++;
@@ -573,7 +573,7 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(model);
-
+                
                 return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
             }
             catch (BaseException ex)
@@ -689,14 +689,14 @@ namespace d360.web.Controllers
 
                 var workflow = Company.GetMostRecentCertificationWorkflowByArtifact(id);
 
-                if (workflow != null) {
+                if (workflow != null) { 
                     if (!workflow.DateCompleted.HasValue)
                         throw new ConflictException("Certification Not Allowed", "There is already a certification request in process for this item.");
                 }
 
-                var workflowSettings = Company.Filter<WorkflowTypeRelation>(i => i.Enabled
-                    && i.WorkflowType == WorkflowType.CertifyArtifact
-                    && i.Object == "ArtifactType"
+                var workflowSettings = Company.Filter<WorkflowTypeRelation>(i => i.Enabled 
+                    && i.WorkflowType == WorkflowType.CertifyArtifact 
+                    && i.Object == "ArtifactType" 
                     && i.ObjectID == artifact.ArtifactTypeID).SingleOrDefault();
 
                 if (workflowSettings == null)
@@ -707,10 +707,10 @@ namespace d360.web.Controllers
                 var processor = new Processor();
                 var dictionary = new Dictionary<string, object>();
                 dictionary.Add("CompanyID", Company.CurrentCompanyID);
-                dictionary.Add("requestInfo", new CertifyArtifactRequest
-                {
+                dictionary.Add("requestInfo", new CertifyArtifactRequest 
+                { 
                     ArtifactID = artifact.ID,
-                    DueDate = DateTime.UtcNow.AddDays(daysGivenToComplete),
+                    DueDate = DateTime.UtcNow.AddDays(daysGivenToComplete), 
                     StartDate = DateTime.UtcNow,
                     SendMailFromWorkflow = true
                 });
@@ -737,7 +737,7 @@ namespace d360.web.Controllers
             {
                 Context = "Suggest",
                 FieldUri = string.Format("/form/Artifact_SuggestFields?at={0}&p={1}", typeID, parentID),
-                FormTitle = string.Format("Suggest a new {0}", type.Name),
+                FormTitle = string.Format("Suggest a new {0}", type.Name), 
                 FormDescription = "Your request will be sent to the appropriate people for approval.",
                 FormUri = "/form/SuggestNewArtifact",
                 FormMethod = "POST"
@@ -1209,7 +1209,7 @@ namespace d360.web.Controllers
 
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Attribute, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.AttributeType, model.AttributeTypeID).ToList(), form, Server);
-
+                
                 Company.SaveOrUpdate<core.entities.Attribute>(model, fields);
 
                 dynamic custom = new
@@ -1403,7 +1403,7 @@ namespace d360.web.Controllers
                 AttributeType = a,
                 AttributeTypeCategories = (a.ParentID.HasValue) ? new List<SelectListItem>() : Company.Table<AttributeTypeCategory>().OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = (a.AttributeTypeCategoryID == i.ID) }).ToList()
             };
-            if (!a.ParentID.HasValue)
+            if (!a.ParentID.HasValue) 
             {
                 model.AttributeTypeCategories.Insert(0, new SelectListItem { Text = "Enterprise-wide", Value = "0", Selected = !a.AttributeTypeCategoryID.HasValue });
             }
@@ -1436,7 +1436,7 @@ namespace d360.web.Controllers
                     {
                         model.AttributeTypeCategoryID = parseIntField(form, "AttributeTypeCategoryID");
                         if (model.AttributeTypeCategoryID == 0) model.AttributeTypeCategoryID = null;
-                    }
+                    }               
                 }
 
                 Company.SaveOrUpdate<AttributeType>(model);
@@ -1501,7 +1501,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
-
+ 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -1778,11 +1778,11 @@ namespace d360.web.Controllers
                     var value = form["ObjectTypeInfo"].Split('|');
 
 
-                    Company.Add<AttributeTypeRelation>(new AttributeTypeRelation {
+                    Company.Add<AttributeTypeRelation>(new AttributeTypeRelation { 
                         AttributeType = type,
                         AllowMultipleEntries = parseBooleanField(form, "AllowMultipleEntries"),
                         ObjectType = value[0],
-                        ObjectID = int.Parse(value[1])
+                        ObjectID = int.Parse(value[1]) 
                     });
 
                     return jsonSuccess(type.Name + " successfully allocated.", typeID.ToString(), form["_context"], "add", HttpStatusCode.Created);
@@ -3531,10 +3531,10 @@ order by  D.TextPath
                     list.Add("Name", "Name");
                     list.Add("Description", "Description");
                     break;
-                    //default:
-                    //    list.Add("Name", "Name");
-                    //    list.Add("TextPath", "TextPath");
-                    //    break;
+                //default:
+                //    list.Add("Name", "Name");
+                //    list.Add("TextPath", "TextPath");
+                //    break;
             }
 
             return new JsonNetResult
@@ -3696,7 +3696,7 @@ order by  D.TextPath
             };
             return PartialView("FieldTypeEditForm", model);
         }
-
+                
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFieldType(FieldTypeEditorModel model)
@@ -3709,7 +3709,7 @@ order by  D.TextPath
 
                 //dont let fields with reserved names in
                 CheckIsFieldTypeNameReserved(model.FieldType.Name);
-
+                
                 model.FieldType.SortOrder = maxSort + 1;
 
                 var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
@@ -3743,7 +3743,7 @@ order by  D.TextPath
                             throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
                         }
                         break;
-                    #endregion
+                        #endregion
                     case "FusionLookup":
                         #region
                         foreach (var fi in model.FusionItems)
@@ -3779,7 +3779,7 @@ order by  D.TextPath
                             model.FieldType.FieldTypeFusionLookupDefinitions = new List<FieldTypeFusionLookupDefinition>() { def };
                         }
                         break;
-                    #endregion
+                        #endregion
                     case "RelationLookup":
                         #region
                         if (model.RelationItem != null)
@@ -3936,7 +3936,7 @@ order by  D.TextPath
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
-
+                
                 ft.IsListable = (model.FieldType.Type != DataType.FusionLookup.ToString()) ? model.FieldType.IsListable : false;
                 ft.IsRequired = model.FieldType.IsRequired;
 
@@ -4048,7 +4048,7 @@ order by  D.TextPath
                                 Company.Update<FieldTypeFusionLookupDefinition>(efi);
                         }
                         break;
-                    #endregion
+                        #endregion
                     case "Lookup":
                         #region
                         ft.LookupObjectType = model.FieldType.LookupObjectType;
@@ -4059,7 +4059,7 @@ order by  D.TextPath
                             throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
                         }
                         break;
-                    #endregion
+                        #endregion
                     case "RelationLookup":
                         #region
                         var eri = Company.Filter<FieldTypeRelationLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeRelationLookupDisplayFields).FirstOrDefault();
@@ -4180,7 +4180,7 @@ order by  D.TextPath
 
             list.Add(new EditableField { FieldName = "FusionTypeID", FieldType = DataType.Hidden.ToString(), Value = ft.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = fusion.GetName(i => i.Name), FieldDescription = fusion.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
+            
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Manual", Name = fusion.GetName(i => i.Manual), FieldDescription = fusion.GetDescription(i => i.Manual), FieldType = DataType.Boolean.ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Enabled", Name = fusion.GetName(i => i.Enabled), FieldDescription = fusion.GetDescription(i => i.Enabled), FieldType = DataType.Boolean.ToString() });
             list.Add(new EditableField { Row = 2, Column = 3, FieldName = "LockPromotedItems", Name = fusion.GetName(i => i.LockPromotedItems), FieldDescription = fusion.GetDescription(i => i.LockPromotedItems), FieldType = DataType.Boolean.ToString() });
@@ -4389,7 +4389,7 @@ order by  D.TextPath
 
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, model.FusionTypeID).ToList(), form, Server);
-
+                
                 Company.SaveOrUpdate<Fusion>(model, fields);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), form["_context"], "edit", HttpStatusCode.OK);
@@ -4659,7 +4659,7 @@ order by  D.TextPath
                     ObjectID = parseIntField(form, "FusionAttributeTypeID"),
                 };
                 Company.Add<FusionAttributeOwnerRule>(item);
-
+                
                 return jsonSuccess("Items assigned to owner", "0", ContextList.FusionOwnerRule, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -5040,7 +5040,7 @@ order by  D.TextPath
                         break;
                 }
             }
-
+            
             var model = new FusionPromotionRuleEditorModel
             {
                 FusionID = a.FusionID,
@@ -5134,7 +5134,7 @@ order by  D.TextPath
                 FusionID = rule.FusionID,
                 TargetFusionAttributeTypeID = rule.ObjectID,
                 Item = new FusionAttributePromotionRuleItem { FusionAttributePromotionRuleID = id }
-            };
+        };
             return PartialView("FusionAttributePromotionRuleItemEditForm", editorModel);
         }
 
@@ -5165,7 +5165,7 @@ order by  D.TextPath
                             new FusionAttributePromotionRuleItem { FusionAttributePromotionRuleID = ruleID, FusionAttributeID = fusionAttributeID }
                             );
                     });
-                }
+                }                
                 Company.SaveChanges();
 
                 return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionPromotionRuleItem, "add", HttpStatusCode.Created);
@@ -5289,14 +5289,14 @@ order by  D.TextPath
             }
 
             if (selectedID != null)
-            {
+            {                
                 sourceFields.ForEach(i =>
                 {
                     if (!string.IsNullOrEmpty(i.Value))
                     {
                         string[] parts = i.Value.Split('|');
                         i.Selected = parts.Length > 1 && parts[0] == selectedID || parts[1] == selectedID;
-                    }
+                    }                        
                 });
             }
 
@@ -5398,7 +5398,7 @@ order by  D.TextPath
                 FormName = "Add Promotion Field Mapping",
                 Item = new FusionAttributePromotionRuleMapping { FusionAttributePromotionRuleID = id },
                 SourceFields = loadSourceItemOptions(rule),
-                TargetFields = loadTargetItemOptions(rule)
+                TargetFields = loadTargetItemOptions(rule)                
             };
             return PartialView("FusionAttributePromotionRuleMappingEditForm", editorModel);
         }
@@ -5557,7 +5557,7 @@ order by  D.TextPath
                 {
                     model.IsConstantValue = true;
                     model.SourceFieldTypeID = 0;
-                    model.ConstantValue = constantValue;
+                    model.ConstantValue = constantValue;                    
                 }
                 else
                 {
@@ -5626,7 +5626,7 @@ order by  D.TextPath
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var style = Company.GetObjectStyle(SystemObjects.FusionType, id);
-
+            
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = a.GetName(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
@@ -5647,7 +5647,7 @@ order by  D.TextPath
                 FieldUri = "/form/FusionType_AddFields",
                 FormTitle = "Add Type",
                 FormUri = "/form/AddFusionType",
-                FormMethod = "POST",
+                FormMethod = "POST", 
                 FormSize = EditableForm.FormSize_Small
             };
 
@@ -6202,7 +6202,7 @@ order by  D.TextPath
                     }
                 }
 
-                return jsonSuccess("Predicate allocations successfully saved.", model.IntersectTypeID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
+              return jsonSuccess("Predicate allocations successfully saved.", model.IntersectTypeID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
 
             }
 
@@ -6252,7 +6252,7 @@ order by  D.TextPath
 
                 Company.ValidateIntersectType(0, nodes);
 
-                var model = new IntersectType {
+                var model = new IntersectType { 
                     Nodes = nodes
                 };
                 Company.Add<IntersectType>(model);
@@ -6337,7 +6337,7 @@ order by  D.TextPath
                 // Permisisons validation.
                 if (!Company.HasPermission(SystemObjects.IntersectType, formModel.ID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
+                
                 var model = Company.GetById<IntersectType>(formModel.ID, i => i.Nodes);
                 if (model == null) throw new NotFoundException("relationship type");
 
@@ -6504,7 +6504,7 @@ order by  D.TextPath
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, Name = d360.core.resources.Fields.GroupPrimaryOwner_Name, FieldName = "PrimaryOwnerResourceID", FieldDescription = d360.core.resources.Fields.GroupPrimaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList, Value = (a.PrimaryOwnerResourceID.HasValue ? a.PrimaryOwnerResourceID.Value.ToString() : "") });
             resList.Insert(0, new SelectListItem { Text = "None", Value = "", Group = new SelectListGroup { Name = "" } });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, Name = d360.core.resources.Fields.GroupSecondaryOwner_Name, FieldName = "SecondaryOwnerResourceID", FieldDescription = d360.core.resources.Fields.GroupSecondaryOwner_Description, FieldType = DataType.Lookup.ToString(), Items = resList, Value = (a.SecondaryOwnerResourceID.HasValue ? a.SecondaryOwnerResourceID.Value.ToString() : "") });
-
+            
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -6520,7 +6520,7 @@ order by  D.TextPath
         {
             var model = new EditableForm
             {
-                Context = "groupform",
+                Context = "groupform", 
                 FormSize = "small",
                 FieldUri = "/form/Group_AddFields",
                 FormTitle = "Add Group",
@@ -6818,7 +6818,7 @@ order by  D.TextPath
         List<string> getFieldNamesByType(string type, int id)
         {
             List<string> fieldTypeNames;
-
+            
             switch (type)
             {
                 case "ArtifactType":
@@ -6877,9 +6877,9 @@ order by  D.TextPath
                         fieldTypeNames.Insert(i, "Level" + (i + 1));
                     }
 
-                    // fieldTypeNames.Add("Name");
+                   // fieldTypeNames.Add("Name");
                     fieldTypeNames.Add("Description");
-                    // fieldTypeNames.Add("Parent");
+                   // fieldTypeNames.Add("Parent");
                     break;
             }
 
@@ -6906,7 +6906,7 @@ union
 select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' + T.Name  + ' - ' + D.Name as title from Domain D inner join DomainType T on T.ID = D.DomainTypeID
 ) O order by title";
                     break;
-                #endregion
+                    #endregion
                 case "R": // Relation
                 case "U": // Unrelation
                     #region
@@ -6937,7 +6937,17 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
             for (int i = 0; i < columns.Count; i++)
             {
-                document.SetCellValue(1, i + 1, columns[i]);
+                SLStyle style = document.CreateStyle();
+                style.Font.Bold = true;
+
+                if (type == "ArtifactType" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "subject area" && columns[i].ToLower() != "parent application"))
+                    style.Font.Bold = false;
+                else if(type == "Domain" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "code"))
+                    style.Font.Bold = false;
+
+                document.SetCellStyle(1, i + 1, style);
+
+                document.SetCellValue(1, i+1, columns[i]);
             }
 
             #endregion
@@ -7000,6 +7010,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                         var fieldTypeNames = getFieldNamesByType(load.Object, load.ObjectID);
 
+                        fieldTypeNames = fieldTypeNames.Select(i => i.ToLower().Trim()).ToList();
+
                         var stats = xls.GetWorksheetStatistics();
                         int columnCount = 0;
 
@@ -7016,6 +7028,42 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                             }
                         }
 
+                        if(load.Action == "P")
+                        {
+                            //spreadsheet should not have more columns than the type has
+                            // it can have less
+                            // spreadsheet should only contain columns that the type has
+                            if (columnCount <= fieldTypeNames.Count)
+                            {
+                                var hasError = false;
+                                load.LoadColumns = new List<LoadColumn>();
+                                //loop through spreadsheet columns and make sure type has that column
+                                for (var i = stats.StartColumnIndex; i <= stats.EndColumnIndex; i++)
+                                {
+                                    var columnName = (xls.GetCellValueAsString(1, i) ?? string.Empty).ToLower().Trim();
+
+                                    if (string.IsNullOrEmpty(columnName)) continue;
+
+                                    if (!fieldTypeNames.Any(x => x == columnName))
+                                    {
+                                        hasError = true;
+                                        errorMessage += string.Format("Unexpected column found [{0}]", columnName);
+                                    }
+                                    else
+                                    {
+                                        load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = columnName });
+                                    }
+                                }
+                                                                
+                                success = !hasError;
+                            }
+                            else
+                            {
+                                errorMessage = "The number of columns in the spreadsheet exceeds the number of defined fields for this load type.";
+                            }
+                        }
+                        else
+                        {
                         if (columnCount == fieldTypeNames.Count)
                         {
                             var hasError = false;
@@ -7041,6 +7089,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                         {
                             errorMessage = "The number of columns in the spreadsheet does not match the number of defined fields for this load type.";
                         }
+                    }
+                        
                     }
                     else
                     {
@@ -7070,147 +7120,6 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        //[ValidateHttpAntiForgeryToken]
-        //[HttpPost]
-        //public JsonResult AddLoad(LoadFilePostModel model)
-        //{
-        //    try
-        //    {
-        //        // Perform checks to make sure fields are populated.
-        //        if (string.IsNullOrEmpty(model.Type)) throw new NoFormDataException("Type");
-        //        if (string.IsNullOrEmpty(model.Action)) throw new NoFormDataException("Action");
-
-        //        JsonResult json;
-        //        Load load = null;
-
-        //        var typeInfo = model.Type.Split('|');
-
-        //        load = new Load
-        //        {
-        //            Action = model.Action,
-        //            Notes = model.Notes,
-        //            Object = typeInfo[0],
-        //            ObjectID = int.Parse(typeInfo[1]),
-        //            DateStarted = DateTime.UtcNow
-        //        };
-
-        //        Company.Add<Load>(load);
-        //        json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
-
-        //        return json;
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        //[ValidateHttpAntiForgeryToken]
-        //[HttpPost]
-        //public JsonResult AddLoadFile(int id)
-        //{
-        //    try
-        //    {
-        //        var file = Request.Files[0];
-        //        var extension = Path.GetExtension(file.FileName);
-        //        var stream = new MemoryStream();
-        //        file.InputStream.CopyTo(stream);
-
-        //        Load load = null;
-        //        JsonResult json;
-        //        var success = false;
-        //        var errorMessage = "";
-        //        SLDocument xls;
-
-        //        if (extension == ".xlsx")
-        //        {
-        //            load = Company.GetById<Load>(id);
-        //            load.File = stream.ToArray();
-        //            load.Extension = extension;
-
-        //            xls = new SLDocument(stream);
-
-        //            var fieldTypeNames = getFieldNamesByType(load.Object, load.ObjectID);
-
-        //            var stats = xls.GetWorksheetStatistics();
-        //            int columnCount = 0;
-
-        //            for (int i = 1; i <= stats.NumberOfColumns; i++)
-        //            {
-        //                var testValue = xls.GetCellValueAsString(1, i);
-        //                if (string.IsNullOrEmpty(testValue))
-        //                {
-        //                    break;
-        //                }
-        //                else
-        //                {
-        //                    columnCount++;
-        //                }
-        //            }
-
-        //            if (columnCount == fieldTypeNames.Count)
-        //            {
-        //                var hasError = false;
-        //                load.LoadColumns = new List<LoadColumn>();
-        //                for (var i = 1; i <= fieldTypeNames.Count; i++)
-        //                {
-        //                    var actualValue = xls.GetCellValueAsString(1, i);
-        //                    var expectedValue = fieldTypeNames[i - 1];
-        //                    if (actualValue.Equals(expectedValue))
-        //                    {
-        //                        load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = actualValue });
-        //                    }
-        //                    else
-        //                    {
-        //                        hasError = true;
-        //                        errorMessage += string.Format("{0} did not match the expected value of {1}. ", actualValue, expectedValue);
-        //                    }
-        //                }
-
-        //                success = !hasError;
-        //            }
-        //            else
-        //            {
-        //                errorMessage = "The number of columns in the spreadsheet does not match the number of defined fields for this load type.";
-        //            }
-        //        }
-        //        else
-        //        {
-        //            errorMessage = "Incorrect file type";
-        //        }
-
-        //        if (success)
-        //        {
-        //            Company.Update<Load>(load);
-        //            json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
-        //        }
-        //        else
-        //        {
-        //            load = null;
-        //            Company.Delete<Load>(i => i.ID == id);
-        //            json = jsonException(errorMessage, HttpStatusCode.BadRequest);
-        //        }
-
-        //        return json;
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        Company.Delete<Load>(i => i.ID == id);
-        //        return jsonException(ex.StatusDescription, ex.StatusCode);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Company.Delete<Load>(i => i.ID == id);
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
 
         #endregion
 
@@ -7504,11 +7413,11 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                         Object = SystemObjects.LookupType.ToString(),
                         IsListable = true,
                         IsRequired = true,
-                        FriendlyName = "Name",
-                        Name = "Name",
-                        MaximumLength = 250,
+                        FriendlyName = "Name", 
+                        Name = "Name", 
+                        MaximumLength = 250, 
                         MinimumLength = 1,
-                        SortOrder = 1,
+                        SortOrder = 1, 
                         Type = DataType.Text.ToString()
                     });
                 }
@@ -7828,7 +7737,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
-
+                
                 Company.Update<Policy>(model);
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
@@ -7918,7 +7827,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         #endregion
 
         #region Form Get/Post
-
+        
         public ActionResult AddPolicyType()
         {
             var model = new EditableForm
@@ -9371,7 +9280,7 @@ select      cast(ID as varchar(15)) as Value,
             Name as Text
 from        ReportLayout
 order by    Name
-").ToList();
+").ToList();        
         }
 
         public ActionResult AddReport()
@@ -9555,7 +9464,7 @@ order by    Name
 
             if (!Company.HasPermission(SystemObjects.Report, a.ReportID, Claim.Update))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
+            
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -9570,7 +9479,7 @@ order by    Name
             var list = new List<SelectListItem>();
 
             switch (objectType)
-            {
+            { 
                 case "Artifact":
                     list = Company.Filter<Artifact>(i => i.ArtifactTypeID == objectID)
                         .OrderBy(i => i.Name)
@@ -9634,7 +9543,7 @@ order by    Name
             {
                 if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
 
-                var model = new ReportTile
+                var model = new ReportTile 
                 {
                     Name = parseTextField(form, "Name", null, true),
                     CommandText = parseTextField(form, "SqlStatement"),
@@ -9661,7 +9570,7 @@ order by    Name
                 model.Settings = sXml.ToString();
 
                 var valid = Company.IsValidReportingQuery(model.CommandText);
-                if (valid)
+                if (valid) 
                 {
                     Company.Add<ReportTile>(model);
                 }
@@ -9796,7 +9705,7 @@ order by    Name
                 {
                     Company.Update<ReportTile>(model);
                 }
-                else
+                else 
                 {
                     throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
                 }
@@ -9895,7 +9804,7 @@ order by	D.Name, I.Name";
                 .ToList();
         }
 
-        List<SelectListItem> getResponsibilityTypeSelectList(SystemObjects type, int id, ResponsibilityTypeGroup group, int selectedID = 0)
+        List<SelectListItem> getResponsibilityTypeSelectList(SystemObjects type, int id, ResponsibilityTypeGroup group, int selectedID = 0) 
         {
             return Company.GetAllowedResponsibilityTypesByObject(type, id)
                 .Where(i => i.ResponsibilityTypeGroup == group)
@@ -9918,7 +9827,7 @@ order by	D.Name, I.Name";
                 })
                 .OrderBy(i => i.Text)
                 .ToList();
-
+            
             list.AddRange(
                 Company.Table<Group>()
                 .Select(i => new { i.ID, i.Name })
@@ -9952,7 +9861,7 @@ order by	D.Name, I.Name";
 
             return PartialView("ResponsibilityEditForm", model);
         }
-
+        
         [ValidateHttpAntiForgeryToken]
         [HttpPost]
         public JsonResult AddResponsibility(FormCollection form)
@@ -10014,7 +9923,7 @@ order by	D.Name, I.Name";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
+       
 
         public ActionResult DeleteResponsibility(int id)
         {
@@ -10067,7 +9976,7 @@ order by	D.Name, I.Name";
             {
                 FormName = "Edit Responsibility",
                 FormUri = "/form/EditResponsibility",
-                FormMethod = "PUT",
+                FormMethod = "PUT", 
                 Contexts = getContextSelectList(r.ResponsibilityContextItems.Select(i => i.ObjectID).ToList()),
                 FormDescription = "",
                 Resources = getResponsibilityResources(string.Format("{0}|{1}", r.ResponsibleObjectType, r.ResponsibleObjectID)),
@@ -10190,14 +10099,14 @@ order by	D.Name, I.Name";
             var selectedAllocations = Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id).ToList();
             var allocations = Company
                 .GetAvailableAllocationPossibilities()
-                .Select(i => new SelectListItem {
-                    Text = i.Name,
+                .Select(i => new SelectListItem { 
+                    Text = i.Name, 
                     Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
                     Selected = selectedAllocations.Any(c => c.ObjectType == i.ObjectType && c.ObjectID == i.ObjectTypeID)
                 }).ToList();
             list.Add(new EditableField { Row = row, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = allocations });
             row++;
-
+            
             list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -10296,7 +10205,7 @@ order by	D.Name, I.Name";
 
                 Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id);
                 Company.Delete<ResponsibilityType>(model);
-
+                
                 return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -10619,23 +10528,23 @@ order by	D.Name, I.Name";
             var stringValue = form[boxName];
             value = (stringValue == "on" || stringValue == "true");
             if (value)
-                list.Add(new ResponsibilityTypeObjectClaim
+                list.Add(new ResponsibilityTypeObjectClaim 
                 {
-                    Claim = c,
-                    ClaimObject = co,
-                    ObjectType = form["ObjectType"],
-                    ObjectID = parseIntField(form, "ObjectID"),
+                    Claim = c, 
+                    ClaimObject = co, 
+                    ObjectType = form["ObjectType"], 
+                    ObjectID = parseIntField(form, "ObjectID"), 
                     ResponsibilityTypeID = parseIntField(form, "ResponsibilityTypeID")
                 });
         }
 
         public ActionResult AddResponsibilityTypeClaims(SystemObjects type, int id)
         {
-            var model = new ClaimsMatrixEditorModel
-            {
-                Items = new List<ClaimsMatrixEditorItemModel>(),
-                ObjectID = id,
-                ObjectType = type.ToString()
+            var model = new ClaimsMatrixEditorModel 
+            { 
+                Items = new List<ClaimsMatrixEditorItemModel>(), 
+                ObjectID = id, 
+                ObjectType = type.ToString() 
             };
             return PartialView(model);
         }
@@ -10688,12 +10597,12 @@ order by	D.Name, I.Name";
         public ActionResult EditResponsibilityTypeClaims(SystemObjects type, int id, int responsibilityTypeID)
         {
             var sType = type.ToString();
-            var model = new ClaimsMatrixEditorModel
-            {
+            var model = new ClaimsMatrixEditorModel 
+            { 
                 Items = Company.Filter<ResponsibilityTypeObjectClaim>(i => i.ObjectID == id && i.ObjectType == sType && i.ResponsibilityTypeID == responsibilityTypeID)
                 .Select(i => new ClaimsMatrixEditorItemModel { Claim = i.Claim, ClaimObject = i.ClaimObject, ID = i.ID })
-                .ToList(),
-                ObjectID = id,
+                .ToList(), 
+                ObjectID = id, 
                 ObjectType = type.ToString(),
                 ResponsibilityTypeID = responsibilityTypeID
             };
@@ -10727,7 +10636,7 @@ order by	D.Name, I.Name";
                 loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Create);
                 loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Update);
                 loadValueFromCheckbox(form, list, ClaimObject.Relationship, Claim.Delete);
-
+                
                 var ObjectType = form["ObjectType"];
                 var ObjectID = parseIntField(form, "ObjectID");
                 var ResponsibilityTypeID = parseIntField(form, "ResponsibilityTypeID");
@@ -11195,7 +11104,7 @@ order by	D.Name, I.Name";
         {
             var list = new List<EditableField>();
             var a = Community.GetById<Resource>(id, i => i.CompanyResources);
-
+ 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FirstName", Name = "First Name", FieldType = DataType.Text.ToString(), Value = a.FirstName, Validations = checkAndAddValidation("Text", "First Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Value = a.LastName, Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
@@ -11301,7 +11210,7 @@ order by	D.Name, I.Name";
                     };
 
                     Community.Add<Resource>(a);
-
+                    
                     var id = a.ID;
 
                     var isAdmin = parseBooleanField(form, "IsAdministrator");
@@ -11318,10 +11227,10 @@ order by	D.Name, I.Name";
 
                     Company.Add<GlobalReportingResource>(gr);
 
-                    /*    Company.Execute(@"insert into [reporting].[Global_Resource] ([ResourceID], [FirstName], [LastName], [Email], [Status], [IsAdministrator]) 
-                                            values (@resourceId, @first, @last, @email, @stat, @admin);",
-                               new { resourceId = id, first = a.FirstName, last = a.LastName, email = a.Email, stat = a.Status, admin = (isAdmin ? 1 : 0) }
-                               );*/
+                /*    Company.Execute(@"insert into [reporting].[Global_Resource] ([ResourceID], [FirstName], [LastName], [Email], [Status], [IsAdministrator]) 
+		                                values (@resourceId, @first, @last, @email, @stat, @admin);",
+                           new { resourceId = id, first = a.FirstName, last = a.LastName, email = a.Email, stat = a.Status, admin = (isAdmin ? 1 : 0) }
+                           );*/
 
                     Community.ChangePassword(a.ID, "", form["Password"]);
                 }
@@ -11452,7 +11361,7 @@ order by	D.Name, I.Name";
                 if (cr != null)
                 {
                     cr.IsAdministrator = parseBooleanField(form, "IsAdministrator");
-                    Community.Update<CompanyResource>(cr);
+                    Community.Update<CompanyResource>(cr);                
                 }
 
                 GlobalReportingResource gr = Company.GlobalReportingResources.Find(id);
@@ -12840,18 +12749,18 @@ order by	D.Name, I.Name";
 
             return null;
         }
-//        public JsonNetResult SourceToTarget_Step1()
-//        {
-//            //var models = (
-//            //            from a in Company.Table<Artifact>()
-//            //            join rt in Company.Filter<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == 0) on a.ArtifactTypeID equals rt.ObjectID
-//            //            join t in Company.Table<ArtifactType>() on rt.ObjectID equals t.ID
-//            //            orderby t.Name
-//            //            orderby a.Name
-//            //            select new { @group = t.Name, title = a.Name, value = a.ID.ToString() }//{ group = t.Name, title = a.Name }//{ group = t.Name, text = a.Name, value = a.ID.ToString()}
-//            //            );
-//            var models = Company.Query<dynamic>(
-//@"select    AT.Name as [group],
+        //        public JsonNetResult SourceToTarget_Step1()
+        //        {
+        //            //var models = (
+        //            //            from a in Company.Table<Artifact>()
+        //            //            join rt in Company.Filter<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == 0) on a.ArtifactTypeID equals rt.ObjectID
+        //            //            join t in Company.Table<ArtifactType>() on rt.ObjectID equals t.ID
+        //            //            orderby t.Name
+        //            //            orderby a.Name
+        //            //            select new { @group = t.Name, title = a.Name, value = a.ID.ToString() }//{ group = t.Name, title = a.Name }//{ group = t.Name, text = a.Name, value = a.ID.ToString()}
+        //            //            );
+        //            var models = Company.Query<dynamic>(
+        //@"select    AT.Name as [group],
 //        			A.Name as title,
 //        			A.ID as value
 //        from		Artifact A
@@ -12859,17 +12768,17 @@ order by	D.Name, I.Name";
 //        			inner join ArtifactType AT on AT.ID = A.ArtifactTypeID
 //        order by	AT.Name,
 //        			A.Name");
-//            return new JsonNetResult
-//            {
-//                Formatting = Newtonsoft.Json.Formatting.None,
-//                Data = models
-//            };
-//        }
+        //            return new JsonNetResult
+        //            {
+        //                Formatting = Newtonsoft.Json.Formatting.None,
+        //                Data = models
+        //            };
+        //        }
 
-//        public JsonNetResult SourceToTarget_SourcingObjectOptions(SystemObjects type, int id)
-//        {
-//            var models = Company.Query<dynamic>(
-//@"select		cast(TTN.IntersectTypeID as varchar(15)) + '|' + D.[Object] + '|' + cast(D.ObjectID as varchar(15)) as value,
+        //        public JsonNetResult SourceToTarget_SourcingObjectOptions(SystemObjects type, int id)
+        //        {
+        //            var models = Company.Query<dynamic>(
+        //@"select		cast(TTN.IntersectTypeID as varchar(15)) + '|' + D.[Object] + '|' + cast(D.ObjectID as varchar(15)) as value,
 //        			D.Name as title,
 //        			D.ObjectTypeName as [group],
 //        			case 
@@ -12887,17 +12796,17 @@ order by	D.Name, I.Name";
 //        						) CR on CR.value = cast(TTN.IntersectTypeID as varchar(15)) + '|' + D.[Object] + '|' + cast(D.ObjectID as varchar(15))
 //        order by	D.ObjectTypeName,
 //        			D.Name", new { type = type.ToString(), id });
-//            return new JsonNetResult
-//            {
-//                Formatting = Newtonsoft.Json.Formatting.None,
-//                Data = models
-//            };
-//        }
+        //            return new JsonNetResult
+        //            {
+        //                Formatting = Newtonsoft.Json.Formatting.None,
+        //                Data = models
+        //            };
+        //        }
 
-//        public JsonNetResult SourceToTarget_SourcingAttributeOptions(SystemObjects type, int id)
-//        {
-//            var models = Company.Query<dynamic>(
-//@"with fa as	(
+        //        public JsonNetResult SourceToTarget_SourcingAttributeOptions(SystemObjects type, int id)
+        //        {
+        //            var models = Company.Query<dynamic>(
+        //@"with fa as	(
 //        			select	A.ID,
 //        					A.ParentID,
 //        					A.FusionAttributeTypeID
@@ -12931,79 +12840,79 @@ order by	D.Name, I.Name";
 //        									)
 //        order by	C.TextPath,
 //        			B.TextPath", new { type = type.ToString(), id });
-//            return new JsonNetResult
-//            {
-//                Formatting = Newtonsoft.Json.Formatting.None,
-//                Data = models
-//            };
-//        }
+        //            return new JsonNetResult
+        //            {
+        //                Formatting = Newtonsoft.Json.Formatting.None,
+        //                Data = models
+        //            };
+        //        }
 
-//        public ActionResult AddSourceToTarget(SystemObjects type, int id)
-//        {
-//            var detail = Company.GetObjectDetail(type.ToString(), id);
+        //        public ActionResult AddSourceToTarget(SystemObjects type, int id)
+        //        {
+        //            var detail = Company.GetObjectDetail(type.ToString(), id);
 
-//            var o = new SourceToTargetEditForm
-//            {
-//                FormUri = "/Form/AddSourceToTarget",
-//                FormMethod = "POST",
-//                FormTitle = Resources.FormInfo.Add_SourceTargetMapping_Title,
-//                Context = ContextList.SourceToTarget,
-//                FormDescription = Resources.FormInfo.Add_SourceTargetMapping_Directions,
-//                Object = type.ToString(),
-//                ObjectID = id,
-//                ObjectName = detail.Name
-//            };
+        //            var o = new SourceToTargetEditForm
+        //            {
+        //                FormUri = "/Form/AddSourceToTarget",
+        //                FormMethod = "POST",
+        //                FormTitle = Resources.FormInfo.Add_SourceTargetMapping_Title,
+        //                Context = ContextList.SourceToTarget,
+        //                FormDescription = Resources.FormInfo.Add_SourceTargetMapping_Directions,
+        //                Object = type.ToString(),
+        //                ObjectID = id,
+        //                ObjectName = detail.Name
+        //            };
 
-//            return PartialView("SourceToTargetEditForm", o);
-//        }
+        //            return PartialView("SourceToTargetEditForm", o);
+        //        }
 
-//        [HttpPost, ValidateInput(false)]
-//        public JsonResult AddSourceToTarget(SourceToTargetEditModel model)
-//        {
-//            try
-//            {
-//                model.Groups.ForEach(g =>
-//                {
-//                    var mapping = new IntersectFlowMapping { Definition = g.Definition, Formula = g.Formula };
-//                    Company.Add<IntersectFlowMapping>(mapping);
+        //        [HttpPost, ValidateInput(false)]
+        //        public JsonResult AddSourceToTarget(SourceToTargetEditModel model)
+        //        {
+        //            try
+        //            {
+        //                model.Groups.ForEach(g =>
+        //                {
+        //                    var mapping = new IntersectFlowMapping { Definition = g.Definition, Formula = g.Formula };
+        //                    Company.Add<IntersectFlowMapping>(mapping);
 
-//                    g.Items.ForEach(i =>
-//                    {
-//                        var sourceSystem = "Artifact";
-//                        var sourceSystemID = int.Parse(i.SourceSystem);
-//                        var sourceObjectRaw = i.SourceObject.Split('|');
-//                        var sourceObjectIntersectTypeID = int.Parse(sourceObjectRaw[0]);
-//                        var sourceObject = sourceObjectRaw[1];
-//                        var sourceObjectID = int.Parse(sourceObjectRaw[2]);
-//                        var sourceFusionAttributeID = i.SourceFusionAttribute;
+        //                    g.Items.ForEach(i => 
+        //                    {
+        //                        var sourceSystem = "Artifact";
+        //                        var sourceSystemID = int.Parse(i.SourceSystem);
+        //                        var sourceObjectRaw = i.SourceObject.Split('|');
+        //                        var sourceObjectIntersectTypeID = int.Parse(sourceObjectRaw[0]);
+        //                        var sourceObject = sourceObjectRaw[1];
+        //                        var sourceObjectID = int.Parse(sourceObjectRaw[2]);
+        //                        var sourceFusionAttributeID = i.SourceFusionAttribute;
 
-//                        var targetSystem = "Artifact";
-//                        var targetSystemID = int.Parse(i.TargetSystem);
-//                        var targetObjectRaw = i.TargetObject.Split('|');
-//                        var targetObjectIntersectTypeID = int.Parse(targetObjectRaw[0]);
-//                        var targetObject = targetObjectRaw[1];
-//                        var targetObjectID = int.Parse(targetObjectRaw[2]);
-//                        var targetFusionAttributeID = i.TargetFusionAttribute;
+        //                        var targetSystem = "Artifact";
+        //                        var targetSystemID = int.Parse(i.TargetSystem);
+        //                        var targetObjectRaw = i.TargetObject.Split('|');
+        //                        var targetObjectIntersectTypeID = int.Parse(targetObjectRaw[0]);
+        //                        var targetObject = targetObjectRaw[1];
+        //                        var targetObjectID = int.Parse(targetObjectRaw[2]);
+        //                        var targetFusionAttributeID = i.TargetFusionAttribute;
 
-//                        Company.AddMappingDependency(mapping.ID,
-//                            sourceSystem, sourceSystemID, sourceObject, sourceObjectID, sourceFusionAttributeID,
-//                            targetSystem, targetSystemID, targetObject, targetObjectID, targetFusionAttributeID
-//                        );
-//                    });
+        //                        Company.AddMappingDependency(mapping.ID,
+        //                            sourceSystem, sourceSystemID, sourceObject, sourceObjectID, sourceFusionAttributeID,
+        //                            targetSystem, targetSystemID, targetObject, targetObjectID, targetFusionAttributeID
+        //                        );
+        //                    });
 
-//                });
-//                return jsonSuccess("", "0", ContextList.SourceToTarget, "add", HttpStatusCode.Created);
-//            }
-//            catch (BaseException ex)
-//            {
-//                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-//            }
-//            catch (Exception ex)
-//            {
-//                SendException(ex);
-//                return jsonException(ex, HttpStatusCode.InternalServerError);
-//            }
-//        }
+        //                });
+        //                return jsonSuccess("", "0", ContextList.SourceToTarget, "add", HttpStatusCode.Created);
+        //            }
+        //            catch (BaseException ex)
+        //            {
+        //                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                SendException(ex);
+        //                return jsonException(ex, HttpStatusCode.InternalServerError);
+        //            }
+        //        }
 
         #endregion
 

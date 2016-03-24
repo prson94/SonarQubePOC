@@ -41,17 +41,18 @@
             <textarea data-bind="value: Notes"></textarea>
         </div>
         <div class="col s12" data-bind="visible: ActionAndTypeSelected">
-            <div class="FieldName">Expected columns based on the type you selected</div>
+            <div class="FieldName">Expected columns based on the type you selected (Bold columns are required)</div>
             <table>
                 <tr data-bind="foreach: Columns">
-                    <td data-bind="text: $data"></td>
+                    <td data-bind="text: $data,css :$root.isRequiredField($data)"></td>
                 </tr>
             </table>
             <br /><br />
-            Or <a data-bind="attr: { href: TemplateDownloadUrl }">download spreadsheet</a>.
+            <a data-bind="attr: { href: TemplateDownloadUrl }">Download spreadsheet</a>. (Bold columns are required.  If you do not want to populate an optional column remove the column from the spreadsheet.)
         </div>
         <div class="col s12" data-bind="visible: ActionAndTypeSelected">
-            <div class="FieldName">File</div>
+            <div class="row">&nbsp;</div>
+            <div class="FieldName">File</div>            
             @*<div id="BulkLoadFile"></div>*@
             @*<div data-bind="fileDrag: File">*@
             <div>
@@ -97,6 +98,7 @@
             base64String: ko.observable(),  // Just the base64 string, without mime type or anything else.
         });
 
+        
         self.InProgress = ko.observable(false);
 
         //#endregion
@@ -194,24 +196,34 @@
                 dataType: 'json',
                 method: 'post'
             }).done(function (data, status, xhr) {
-
-                //$('#BulkLoadFile').jqxFileUpload('uploadUrl', '/form/AddLoadFile?id=' + data.id);
-                //$('#BulkLoadFile').one('uploadEnd', function (event) {
-                //    var args = event.args;
-                //    var fileName = args.file;
-                //    var serverResponse = args.response;
-
+                
                 amplify.publish("SaveAction", { context: data.context, action: 'add', id: data.id, custom: data.custom });
                 amplify.publish("ShowMessage", data);
                 self.InProgress(false);
-                //});
-
-                //$('#BulkLoadFile').jqxFileUpload('uploadFile', 1);
+                
             }).fail(function (xhr, status, error) {
                 amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
                 self.InProgress(false);
             });
         };
+
+        
+        self.isRequiredField = function (column,type) {
+            var objectType = self.Type().split('|');            
+            if (objectType == null) return 'required';
+            objectType = objectType[0];
+            console.log(objectType)
+            var col = column != null ? column.toLowerCase() : '';
+            if (self.Action() == 'P' && objectType.toLowerCase() == 'artifacttype') {
+                if (col == 'name' || col == 'subject area' || col == 'parent application') return 'required';
+                return ''
+            }
+            if (self.Action() == 'P' && objectType.toLowerCase() == 'domain') {
+                if (col == 'name' || col == 'code') return 'required';
+                return ''
+            }
+            return 'required';
+        }
 
         //#endregion
 
