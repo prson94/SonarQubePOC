@@ -5459,6 +5459,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     var controlID_popover_sourcemapping_editor = controlID + '_popover_sourcemapping_editor';
     var controlID_popover_sourcemapping_editor_body = controlID_popover_sourcemapping_editor + '_body';
 
+    //var controlID_window_sourcemapping_editor = controlID + '_window_sourcemapping_editor';
     //#endregion
 
     //#region Control instantiation
@@ -5482,6 +5483,8 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     $("#" + controlID_responsibilities).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_fusion).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
+
+    //$("#" + controlID_window_sourcemapping_editor).jqxWindow
 
     //#endregion
 
@@ -5518,7 +5521,7 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
     });
     
     $("#" + controlID_ribbon_sourcemapping_add).on('click', function () {
-        $('#' + controlID_popover_sourcemapping_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
+        $('#' + controlID_popover_sourcemapping_editor).toggle(200).css('left', $(this).position().left - 500).css('top', $(this).position().top + 150);
         var selected = myDiagram.selection;
         if (selected == null)
             return;
@@ -5934,10 +5937,11 @@ function LineageDiagram(controlID, type, id, permissions, readonly) {
                 {
                     row: 0,
                     margin: 3,
-                    alignment: go.Spot.LeftCenter,
+                    alignment: go.Spot.Center,
                     editable: false,
                     stroke: '#ffffff',
-                    font: "bold " + fontSize + "pt sans-serif"
+                    font: fontSize + "pt FontAwesome",
+                    text: "\uf126"
                 }//,
                 //new go.Binding("text", "sourceRuleCount").makeTwoWay()
             ),

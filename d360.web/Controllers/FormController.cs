@@ -12647,23 +12647,41 @@ order by	D.Name, I.Name";
         [HttpGet, Route("sourcetarget/fusion/{type}/{id:int}/{obj}/{objid:int}")]
         public JsonNetResult GetRelatedFusionItems(string type, int id, string obj, int objid)
         {
+            #region old sql
             //var sql = @"select TargetName as name, TargetObjectID as id from relationship 
             //            where SourceObjectType = @type and SourceObjectID = @id and TargetObjectType = 'FusionAttribute'";
 
-           var sql = @"with i as
+            //var sql = @"with i as
+            //             (
+            //              select * from intersecttypenode where ObjectType = 'IntersectType' and ObjectID in
+            //              (
+            //               select intersecttypeid from cache.objectdetails c 
+            //               join intersecttypenode n on n.ObjectType = c.ObjectType and n.ObjectID = c.ObjectTypeID and n.[Order] = 1
+            //               where c.object = @type and c.objectid = @id
+            //              ) and [Order] = 1
+            //             )
+            //             select d.Name as name, d.[Object] + '|' + cast(d.ObjectID as varchar(50)) as id from cache.objectdetails d
+            //             join relationship r on r.targetobjectid = d.objectid and r.targetobjecttype = d.object
+            //             join i on i.intersecttypeid = r.intersecttypeid
+            //             join intersectnode n on n.intersectid = r.SourceObjectID and n.ObjectType = @obj and n.ObjectID = @objid
+            //             where sourceobjecttype = 'Intersect'";
+
+            #endregion
+
+            var sql = @"with i as
                         (
-	                        select * from intersecttypenode where ObjectType = 'IntersectType' and ObjectID in
+	                        select distinct objectid from intersecttypenode where ObjectType = 'IntersectType' and ObjectID in
 	                        (
 		                        select intersecttypeid from cache.objectdetails c 
 		                        join intersecttypenode n on n.ObjectType = c.ObjectType and n.ObjectID = c.ObjectTypeID and n.[Order] = 1
 		                        where c.object = @type and c.objectid = @id
 	                        ) and [Order] = 1
                         )
-                        select d.Name as name, d.[Object] + '|' + cast(d.ObjectID as varchar(50)) as id from cache.objectdetails d
-                        join relationship r on r.targetobjectid = d.objectid and r.targetobjecttype = d.object
-                        join i on i.intersecttypeid = r.intersecttypeid
-                        join intersectnode n on n.intersectid = r.SourceObjectID and n.ObjectType = @obj and n.ObjectID = @objid
-                        where sourceobjecttype = 'Intersect'";
+                        select r2.TargetName as name, r2.TargetObjectType + '|' + cast(r2.TargetObjectID as varchar(50)) as id from relationship r 
+                        join relationship r2 on r2.sourceobjecttype = 'Intersect' and  r2.sourceobjectid = r.intersectid
+                        join i on i.objectid = r.intersecttypeid
+                        where r.sourceobjectid = @id and r.sourceobjecttype = @type and r.targetobjectid = @objid and r.targetobjecttype = @obj";
+
             var items = Company.Query<dynamic>(sql, new { type = type, id = id, obj = obj, objid = objid });
             return new JsonNetResult
             {
@@ -12675,21 +12693,28 @@ order by	D.Name, I.Name";
         [HttpPost, ValidateHttpAntiForgeryToken]
         public JsonNetResult SaveSourceRules(SourceToTargetSaveModel model)
         {
+            if (model.Rules == null)
+                model.Rules = new List<SourceTargetRule>();
+
+            var error = false;
+            var message = "";
+
             foreach(SourceTargetRule rule in model.Rules)
             {
-                if (rule.ID == 0)
+                rule.FocalObject = model.Focal;
+                rule.FocalObjectID = model.FocalID;
+                rule.SourceObject = model.Source;
+                rule.SourceObjectID = model.SourceID;
+                rule.TargetObject = model.Target;
+                rule.TargetObjectID = model.TargetID;
+                try
                 {
-                    rule.FocalObject = model.Focal;
-                    rule.FocalObjectID = model.FocalID;
-                    rule.SourceObject = model.Source;
-                    rule.SourceObjectID = model.SourceID;
-                    rule.TargetObject = model.Target;
-                    rule.TargetObjectID = model.TargetID;
-                    Company.Add(rule);
-                }
-                else
+                    Company.SaveOrUpdate(rule);
+                } catch (Exception ex)
                 {
-                    Company.Update(rule);
+                    error = true;
+                    message += $"[{DateTime.Now}] An error occurred while attempting to save the source rule: {ex.Message}\n{ex.StackTrace}\n\n";
+                    continue;
                 }
 
                 List<int> sourceIntersects = new List<int>();
@@ -12698,6 +12723,25 @@ order by	D.Name, I.Name";
                                 join relationship r on r.SourceObjectType = @object and r.SourceObjectID = @objectid and r.TargetObjectType = @target and r.TargetObjectID = @targetid
                                 join relationship r2 on r2.SourceObjectType = 'Intersect' and r2.SourceObjectID = r.IntersectID and r2.TargetObjectType = @attribute and r2.TargetObjectID = @attributeid and n.IntersectID = r2.IntersectID
                                 where n.ObjectType = 'Intersect'";
+
+                if (rule.Sources == null)
+                    rule.Sources = new List<SourceTargetItem>();
+                if (rule.Targets == null)
+                    rule.Targets = new List<SourceTargetItem>();
+
+                if (rule.Sources.Count == 0)
+                {
+                    error = true;
+                    message += $"[{DateTime.Now}] The source rule requires at least 1 source item.\n";
+                    continue;
+                }
+                if (rule.Targets.Count == 0)
+                {
+                    error = true;
+                    message += $"[{DateTime.Now}] The source rule requires at least 1 target item.\n";
+                    continue;
+                }
+
                 foreach (SourceTargetItem item in rule.Sources)
                 {
                     var intersectNodeID = Company.Query<int>(sql, new { @object = rule.SourceObject, objectid = rule.SourceObjectID, target = item.Object, targetID = item.ObjectID, attribute = item.AttributeType, attributeID = item.AttributeID }).FirstOrDefault();
@@ -12724,32 +12768,139 @@ order by	D.Name, I.Name";
                             intersectMap.ObjectIntersectNodeID = target;
                             intersectMap.PredicateID = 1;
                         }
+
+                        try
+                        {
+                            Company.SaveOrUpdate(intersectMap);
+                        }
+                        catch (Exception ex)
+                        {
+                            error = true;
+                            message += $"[{DateTime.Now}] An error occurred while saving a source to target relationship: {ex.Message}\n{ex.StackTrace}\n\n";
+                        }
                         intersectMaps.Add(intersectMap);
                     }
                 }
 
                 foreach(IntersectMap map in intersectMaps)
                 {
-                    if (map.ID == 0)
-                    {
-                        Company.Add(map);
-                    }
-
                     var mapRule = Company.IntersectMapSourceTargetRules.Where(r => r.IntersectMapID == map.ID && r.RuleID == rule.ID).FirstOrDefault();
                     if (mapRule == null || mapRule.ID == 0)
                     {
                         mapRule = new IntersectMapSourceTargetRule();
                         mapRule.IntersectMapID = map.ID;
                         mapRule.RuleID = rule.ID;
-                        Company.Add(mapRule);
+                        //Company.Add(mapRule);
                     }
+                    try
+                    {
+                        Company.SaveOrUpdate(mapRule);
+                    } catch (Exception ex)
+                    {
+                        error = true;
+                        message += $"[{DateTime.Now}] An error occurred while saving the source rule map: {ex.Message}\n{ex.StackTrace}\n\n";
+                    }
+                }
 
+                foreach(IntersectMapSourceTargetRule mapRule in Company.IntersectMapSourceTargetRules.Where(r => r.RuleID == rule.ID).ToList())
+                {
+                    if (intersectMaps.Count(m => m.ID == mapRule.IntersectMapID) != 0)
+                        continue;
+                    try
+                    {
+                        Company.Delete(mapRule);
+                    } catch (Exception ex)
+                    {
+                        error = true;
+                        message += $"[{DateTime.Now}] An error occurred while removing a source rule map: {ex.Message}\n{ex.StackTrace}\n\n";
+                        continue;
+                    }
+                    
+                    var intersectMap = Company.GetById<IntersectMap>(mapRule.IntersectMapID);
+                    try
+                    {
+                        Company.Delete(intersectMap);
+                    } catch (Exception ex)
+                    {
+                        error = true;
+                        message += $"[{DateTime.Now}] An error occurred while removing an intersect map: {ex.Message}\n{ex.StackTrace}\n\n";
+                    }
+                    
+                }
+                try
+                {
+                    Company.SaveChanges();
+
+                }
+                catch (Exception ex)
+                {
+                    error = true;
+                    message += $"[{DateTime.Now}] An error occurred while saving rule changes: {ex.Message}\n{ex.StackTrace}\n\n";
+                    continue;
                 }
 
             }
 
+            var rules = Company.SourceTargetRules.Where(r => r.FocalObject == model.Focal && r.FocalObjectID == model.FocalID
+            && r.SourceObject == model.Source && r.SourceObjectID == model.SourceID
+            && r.TargetObject == model.Target && r.TargetObjectID == model.TargetID).ToList();
 
-            return null;
+            foreach(SourceTargetRule rule in rules)
+            {
+                if (model.Rules.Count(r => r.ID == rule.ID) > 0)
+                    continue;
+
+                var intersectMapSourceTargetRules = Company.IntersectMapSourceTargetRules.Where(r => r.RuleID == rule.ID).ToList();
+                var intersectMaps = new List<IntersectMap>();
+                intersectMapSourceTargetRules.ForEach(r =>
+                {
+                    try
+                    {
+                        Company.Delete(r);
+                        Company.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        error = true;
+                        message += $"[{DateTime.Now}] An error occurred while removing a source rule map: {ex.Message}\n{ex.StackTrace}\n\n";
+                        return;
+                    }
+                    var intersectMap = Company.GetById<IntersectMap>(r.IntersectMapID);
+                    try
+                    {
+                        Company.Delete(intersectMap);
+                        Company.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        error = true;
+                        message += $"[{DateTime.Now}] An error occurred while removing an intersect map: {ex.Message}\n{ex.StackTrace}\n\n";
+                    }
+                });
+                try
+                {
+                    Company.Delete(rule);
+                }
+                catch (Exception ex)
+                {
+                    error = true;
+                    message += $"[{DateTime.Now}] An error occurred while removing a source rule: {ex.Message}\n{ex.StackTrace}\n\n";
+                }
+            }
+            try
+            {
+                Company.SaveChanges();
+            } catch (Exception ex)
+            {
+                error = true;
+                message += $"[{DateTime.Now}] An error occurred while saving the source rules: {ex.Message}\n{ex.StackTrace}\n\n";
+            }
+            
+            return new JsonNetResult
+            {
+                Data = new { error, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
         //        public JsonNetResult SourceToTarget_Step1()
         //        {

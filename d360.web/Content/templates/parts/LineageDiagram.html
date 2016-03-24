@@ -35,7 +35,7 @@
     </div>
     <div id="{{control}}_popover_add" style="display:none;position:absolute;background-color:white;z-index:10001;width:350px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px;">
         <div>
-            <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;" onclick="$('#{{control}}_popover_add').hide(200); return false;"><i class="fa fa-remove"></i></a></div>
+            <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_add').hide(200); return false;"><i class="fa fa-remove"></i></a></div>
             <div style="padding:10px">
                 Type: <select data-bind="value: NodeType" class="select-dropdown browser-default" id="{{control}}_add_artifact_type" style="height:100%"></select><br />
                 Search: <input id="{{control}}_add_search_text" type="text" />
@@ -47,12 +47,16 @@
             </div>
         </div>
     </div>
+    <!--<div id="{{control}}_window_sourcemapping_editor">
+        <div>Source To Target Mapping Rules</div>
+        <div id="{{control}}_popover_sourcemapping_editor_body" data-bind="template: {name: 'sourceMappingEditTmpl' }"></div>
+    </div>-->
     <div id="{{control}}_popover_sourcerule_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:500px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px;">
-        <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;" onclick="$('#{{control}}_popover_sourcerule_editor').hide(200);"><i class="fa fa-remove"></i></a></div>
+        <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcerule_editor').hide(200);"><i class="fa fa-remove"></i></a></div>
         <div id="{{control}}_popover_sourcerule_editor_body" data-bind="template: {name: 'hierarchyRuleEditTmpl' }"></div>
     </div>
     <div id="{{control}}_popover_sourcemapping_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:1000px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px;">
-        <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;" onclick="$('#{{control}}_popover_sourcemapping_editor').hide(200); return false;"><i class="fa fa-remove"></i></a></div>
+        <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcemapping_editor').hide(200); return false;"><i class="fa fa-remove"></i></a></div>
         <div id="{{control}}_popover_sourcemapping_editor_body" data-bind="template: {name: 'sourceMappingEditTmpl' }"></div>
     </div>
     <div id="{{control}}_ribbon_expander" style="width:100%;">

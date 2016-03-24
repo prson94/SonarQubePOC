@@ -487,6 +487,8 @@
     <None Include="dbo\Stored Procedures\GetHierarchyByMapType.sql" />
     <None Include="dbo\Tables\IntersectMapGroup.sql" />
     <None Include="dbo\Stored Procedures\GetGroupHierarchy.sql" />
+    <None Include="dbo\Tables\IntersectMapSourceTargetRule.sql" />
+    <None Include="dbo\Tables\SourceTargetRule.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

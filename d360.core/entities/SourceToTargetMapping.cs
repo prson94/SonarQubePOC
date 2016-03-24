@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.entities.Contracts;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -74,7 +75,7 @@ namespace d360.core.entities
         public List<SourceTargetRule> Rules { get; set; }
     }
 
-    public class SourceTargetRule : BaseIntObject
+    public class SourceTargetRule : BaseIntObject, IIntObject
     {
         [DataMember]
         public  int FocalObjectID { get; set; }
@@ -98,7 +99,7 @@ namespace d360.core.entities
         public string Transformation { get; set; }
     }
 
-    public class IntersectMapSourceTargetRule : BaseIntObject
+    public class IntersectMapSourceTargetRule : BaseIntObject, IIntObject
     {
         [DataMember]
         public int RuleID { get; set; }
