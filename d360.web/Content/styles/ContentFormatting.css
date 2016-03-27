@@ -601,8 +601,8 @@ ul.hierarchy :last-child {
   position: absolute;
   bottom: 2px;
   right: 2px;
-  font-size: 55px;
-  line-height: 60px;
+  font-size: 35px;
+  line-height: 35px;
   opacity: 0.1;
 }
 .kpi-grid-item .value {

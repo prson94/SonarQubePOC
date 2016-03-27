@@ -245,6 +245,10 @@ namespace d360.model
 
         //public DbSet<RelationshipWithContextAggregate> RelationshipWithContextAggregates { get; set; }      /* VIEW */
 
+        public DbSet<Relation> Relations { get; set; }
+
+        public DbSet<RelationType> RelationTypes { get; set; }
+
         public DbSet<ReportLayout> ReportLayouts { get; set; }
 
         public DbSet<Report> Reports { get; set; }
@@ -1526,6 +1530,100 @@ where	R.SourceObject = 'FusionAttribute'
             sql += " ORDER BY I.Name";
 
             return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
+        }
+
+        public List<IntersectTypeOption> GetRelationTypeOptions(SystemObjects? sub = null, int? subID = null, SystemObjects? obj = null, int? objID = null)
+        {
+            var sql = @"
+	SELECT		I.ID,
+				I.Name,
+				I.Type
+	FROM		(
+				SELECT	ID,
+						'Artifacts :: ' + Name AS Name,
+						'ArtifactType' AS Type
+				FROM	ArtifactType
+				UNION
+				SELECT	ID,
+						'Reference :: ' + Name AS Name,
+						'DomainType' AS Type
+				FROM	DomainType
+				UNION
+				SELECT	A.ID,
+						'Fusion Attributes :: ' + A.TextPath AS Name,
+						'FusionAttributeType' AS Type
+				FROM	FusionAttributeType A
+						INNER JOIN FusionType T ON A.FusionTypeID = T.ID
+				UNION
+				SELECT	1 as ID,
+						'Group' as Name,
+						'GroupType' as Type
+				UNION
+				SELECT	ID,
+						'Models :: ' + Name AS Name,
+						'TaxonomyType' AS Type
+				FROM	TaxonomyType
+				UNION
+				SELECT	ID,
+						'Policies :: ' + Name AS Name,
+						'PolicyType' AS Type
+				FROM	PolicyType
+				UNION
+				SELECT	CAST(ID as int) ID,
+						'Relationships :: ' + Name AS Name,
+						'IntersectType' AS Type
+				FROM	IntersectType
+				UNION
+				SELECT	1 as ID,
+						'Resource' as Name,
+						'ResourceType' as Type
+				UNION
+				SELECT	1 as ID,
+						'Rules :: Informational' as Name,
+						'RuleType' as Type
+				UNION
+				SELECT	2 as ID,
+						'Rules :: Quality Check' as Name,
+						'RuleType' as Type
+				UNION
+				SELECT	3 as ID,
+						'Rules :: Metric' as Name,
+						'RuleType' as Type
+				UNION
+				SELECT	4 as ID,
+						'Rules :: Profile' as Name,
+						'RuleType' as Type
+) I";
+
+            if (sub.HasValue && subID.HasValue)
+            {
+                sql += @"
+ left join [RelationType] T on	(T.[Subject] = @sub and T.SubjectID = @subID and T.[Object] = I.[Type] and T.ObjectID = I.ID) 
+                                or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = I.[Type] and T.SubjectID = I.ID)
+ left join Predicate P on P.ID = T.PredicateID and P.Type not in (5)";
+
+                if (obj.HasValue && objID.HasValue)
+                {
+                    sql += @" where P.ID is null OR (
+(T.[Subject] = @sub and T.SubjectID = @subID and T.[Object] = @obj and T.ObjectID = @objID) 
+or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = @obj and T.SubjectID = @objID)
+)";
+                }
+                else
+                {
+                    sql += " where P.ID is null";
+                }
+            }
+            sql += " GROUP BY I.ID, I.Name, I.Type ORDER BY I.Name";
+
+            if (obj.HasValue && objID.HasValue)
+            {
+                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = sub.ToString(), subID, obj = obj.ToString(), objID }).ToList();
+            }
+            else
+            {
+                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = sub.ToString(), subID }).ToList();
+            }
         }
 
 

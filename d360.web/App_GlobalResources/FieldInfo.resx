@@ -129,11 +129,14 @@
   <data name="DisplayDescription_Name" xml:space="preserve">
     <value>Display Description</value>
   </data>
+  <data name="FieldTypeCategory_Name" xml:space="preserve">
+    <value>Category</value>
+  </data>
   <data name="FilterEnabled_Description" xml:space="preserve">
     <value>Should this field be displayed in the relevant grid or list within the application?</value>
   </data>
   <data name="FilterEnabled_Name" xml:space="preserve">
-    <value>Filter Enabled?</value>
+    <value>Listable?</value>
   </data>
   <data name="FormDescription_Description" xml:space="preserve">
     <value>Provide any description that will be displayed by default any time someone adds or edits information in this field.</value>
@@ -204,11 +207,20 @@
   <data name="Pattern_Name" xml:space="preserve">
     <value>Validation Pattern</value>
   </data>
+  <data name="RelationshipObject_Name" xml:space="preserve">
+    <value>Object</value>
+  </data>
+  <data name="RelationshipPredicate_Name" xml:space="preserve">
+    <value>Predicate</value>
+  </data>
   <data name="RelationshipSide1_Name" xml:space="preserve">
     <value>Relationship Side 1</value>
   </data>
   <data name="RelationshipSide2_Name" xml:space="preserve">
     <value>Relationship Side 2</value>
+  </data>
+  <data name="RelationshipSubject_Name" xml:space="preserve">
+    <value>Subject</value>
   </data>
   <data name="Required_Description" xml:space="preserve">
     <value>Is a user required to choose or provide a value for this field?</value>

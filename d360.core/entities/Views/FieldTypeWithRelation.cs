@@ -14,6 +14,9 @@ namespace d360.core.entities
         public string Name { get; set; }
 
         [DataMember]
+        public string Category { get; set; }
+
+        [DataMember]
         public string FriendlyName { get; set; }
 
         [DataMember]

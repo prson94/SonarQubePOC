@@ -51,10 +51,6 @@
       <HintPath>..\packages\Autofac.Mvc5.3.3.4\lib\net45\Autofac.Integration.Mvc.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Autofac.Integration.SignalR, Version=3.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Autofac.SignalR2.3.1.0\lib\net45\Autofac.Integration.SignalR.dll</HintPath>
-    </Reference>
     <Reference Include="Autofac.Integration.WebApi, Version=3.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Autofac.WebApi2.3.4.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
@@ -125,17 +121,6 @@
     <Reference Include="Microsoft.ApplicationInsights, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.2.0.0\lib\net45\Microsoft.ApplicationInsights.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Redis">
-      <HintPath>..\packages\Microsoft.AspNet.SignalR.Redis.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Redis.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.SystemWeb, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.2.0\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.AppService.ApiApps.Service, Version=0.9.64.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.AppService.ApiApps.Service.0.9.64\lib\net45\Microsoft.Azure.AppService.ApiApps.Service.dll</HintPath>
@@ -464,9 +449,6 @@
     <Compile Include="Models\ContextList.cs" />
     <Compile Include="Models\Formatters\DictionaryXmlMediaTypeFormatter.cs" />
     <Compile Include="Models\Formatters\ExpandoJsonConverter.cs" />
-    <Compile Include="Models\Hubs\Social.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Models\ModelMetadataExtensions.cs" />
     <Compile Include="Models\Action Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -850,7 +832,11 @@
     </Content>
     <Content Include="Scripts\angular-mocks.js" />
     <Content Include="Scripts\angular-route.js" />
+    <Content Include="Scripts\angular-route.min.js" />
     <Content Include="Scripts\angular.js" />
+    <Content Include="Scripts\angular.min.js" />
+    <Content Include="Scripts\angular.min.js.map" />
+    <Content Include="Scripts\angular-route.min.js.map" />
     <None Include="Scripts\colorpicker-color.js" />
     <None Include="Scripts\colorpicker.js" />
     <None Include="Scripts\Common.js" />
@@ -872,7 +858,6 @@
     <Content Include="Scripts\handlebars.runtime.amd.js" />
     <Content Include="Scripts\handlebars.runtime.js" />
     <Content Include="Scripts\jquery-2.2.1.js" />
-    <Content Include="Scripts\jquery.signalR-2.2.0.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
     <Content Include="Scripts\jquery-2.2.1.min.map" />
     <None Include="Scripts\jqx\3.7.1\jqx-all.js" />
@@ -937,6 +922,50 @@
     <Content Include="Scripts\moment.js" />
     <Content Include="Scripts\moment.min.js" />
     <Content Include="Scripts\packery.pkgd.js" />
+    <Content Include="Scripts\parts\AttributesTile.js" />
+    <Content Include="Scripts\parts\AttributeTypeAllocationGrid.js" />
+    <Content Include="Scripts\parts\CertificationNotificationTile.js" />
+    <Content Include="Scripts\parts\CollapsibleAttributesTile.js" />
+    <Content Include="Scripts\parts\CollapsibleSynonymsTile.js" />
+    <Content Include="Scripts\parts\CollapsibleTypeHierarchyTile.js" />
+    <Content Include="Scripts\parts\CriticalRelationshipsTile.js" />
+    <Content Include="Scripts\parts\DomainAllocationsTile.js" />
+    <Content Include="Scripts\parts\DomainItemsTile.js" />
+    <Content Include="Scripts\parts\EventAgeBreakdownChart.js" />
+    <Content Include="Scripts\parts\EventCriticalityBreakdownChart.js" />
+    <Content Include="Scripts\parts\EventHeadersGrid.js" />
+    <Content Include="Scripts\parts\EventsGrid.js" />
+    <Content Include="Scripts\parts\EventStatusBreakdownChart.js" />
+    <Content Include="Scripts\parts\FieldsGrid.js" />
+    <Content Include="Scripts\parts\FusionAttributeDetailTile.js" />
+    <Content Include="Scripts\parts\FusionAttributePromotionRulesGrid.js" />
+    <Content Include="Scripts\parts\FusionConfigurationsGrid.js" />
+    <Content Include="Scripts\parts\FusionItemsGrid.js" />
+    <Content Include="Scripts\parts\FusionRelationshipChartTile.js" />
+    <Content Include="Scripts\parts\FusionTypesGrid.js" />
+    <Content Include="Scripts\parts\GroupMembersGrid.js" />
+    <Content Include="Scripts\parts\HierarchyTile.js" />
+    <Content Include="Scripts\parts\IntersectTypeRolesGrid.js" />
+    <Content Include="Scripts\parts\LineageDiagram.js" />
+    <Content Include="Scripts\parts\LookupTypeItemsGrid.js" />
+    <Content Include="Scripts\parts\ObjectDetail.js" />
+    <Content Include="Scripts\parts\ObjectStatisticsTile.js" />
+    <Content Include="Scripts\parts\PeopleResponsibilityTile.js" />
+    <Content Include="Scripts\parts\PolicyStatusKpi.js" />
+    <Content Include="Scripts\parts\PolicyTypeLevelsGrid.js" />
+    <Content Include="Scripts\parts\RelatedArtifactsGrid.js" />
+    <Content Include="Scripts\parts\RelationshipAggregatesTile.js" />
+    <Content Include="Scripts\parts\RelationshipTypeTreeTile.js" />
+    <Content Include="Scripts\parts\Relationship_SimpleHierarchyTile.js" />
+    <Content Include="Scripts\parts\ResourceStatisticsTile.js" />
+    <Content Include="Scripts\parts\SearchResultsGrid.js" />
+    <Content Include="Scripts\parts\StatisticTypeAllocationGrid.js" />
+    <Content Include="Scripts\parts\TaxonomyTypeLevelsGrid.js" />
+    <Content Include="Scripts\parts\WorkflowTypeRelationsGrid.js" />
+    <Content Include="Scripts\parts\YourFollowedItemsTile.js" />
+    <Content Include="Scripts\parts\YourOwnedItemsTile.js" />
+    <Content Include="Scripts\parts\YourWorkflowTasks.js" />
+    <Content Include="Scripts\parts\_Utils.js" />
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\templates\artifacts.root.js" />
@@ -1055,6 +1084,7 @@
     <Content Include="Views\Home\SocialActivityOverlay.cshtml" />
     <Content Include="Views\Home\AssignmentActivityOverlay.cshtml" />
     <Content Include="Views\Apps\SearchRedirect.cshtml" />
+    <Content Include="Views\Form\RelationTypeEditForm.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

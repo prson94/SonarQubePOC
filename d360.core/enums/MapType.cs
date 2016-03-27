@@ -12,12 +12,16 @@ namespace d360.core.enums
         Lineage = 1,
         [Name("Source To Target"), Description("The most common mapping that allows you to set sources and targets across types contained in the system."), ReadOnly(false)]
         SourceToTarget = 2,
-        [Name("Type Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(false)]
+        [Name("Type Hierarchy"), Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(false)]
         TypeHierarchy = 3,
-        [Name("Group Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(false)]
+        [Name("Group Hierarchy"), Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(false)]
         GroupHierarchy = 4,
-        [Name("Parent Child Hierarchy")Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(true)]
-        ParentChildHierarchy = 5
+        [Name("Parent Child Hierarchy"), Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(true)]
+        ParentChildHierarchy = 5,
+        [Name("Synonym"), Description("Allows you to establish synonyms between two objects."), ReadOnly(false)]
+        Synonym = 6,
+        [Name("Simple"), Description(""), ReadOnly(false)]
+        Simple = 7
     }
 
     public class MapTypeInfo

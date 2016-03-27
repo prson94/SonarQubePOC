@@ -10,6 +10,8 @@ namespace d360.core.entities
         public int FieldTypeID { get; set; }
         public string Name { get; set; }
         public string FriendlyName { get; set; }
+        public string Category { get; set; }
+
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "DisplayDescription_Name", Description = "DisplayDescription_Description")]
         public string DisplayDescription { get; set; }
 

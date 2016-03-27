@@ -3932,6 +3932,7 @@ order by  D.TextPath
 
                 // Static fields
                 ft.Name = model.FieldType.Name;
+                ft.Category = model.FieldType.Category;
                 ft.FriendlyName = model.FieldType.FriendlyName;
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
@@ -8450,15 +8451,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
-
-            var heirarchyTypes = new List<SelectListItem>();
-
-            heirarchyTypes.Add(new SelectListItem() { Text = "Source To Target", Value = ((int)MapType.Lineage).ToString() });
-            heirarchyTypes.Add(new SelectListItem() { Text = "Type Hierarchy", Value = ((int)MapType.TypeHierarchy).ToString() });
-            heirarchyTypes.Add(new SelectListItem() { Text = "Group Hierarchy", Value = ((int)MapType.GroupHierarchy).ToString() });
-            heirarchyTypes.Add(new SelectListItem() { Text = "Parent Child Hierarchy", Value = ((int)MapType.ParentChildHierarchy).ToString() });
-
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Predicate Type", FieldType = DataType.Lookup.ToString(), Items = heirarchyTypes });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Predicate Type", FieldType = DataType.Lookup.ToString(), Items = MapType.Lineage.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -8481,13 +8474,17 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         {
             var list = new List<EditableField>();
             var a = Company.GetById<Predicate>(id);
-
+            var any = Company.IntersectMaps.Any(i => i.PredicateID == id);
             if (!Company.HasPermission(SystemObjects.Predicate, id, Claim.Update))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Value = a.Inverse, Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
+            if (!any)
+            {
+                list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Predicate Type", FieldType = DataType.Lookup.ToString(), Value = ((int)a.Type).ToString(), Items = MapType.Lineage.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList() });
+            }
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
@@ -9203,6 +9200,234 @@ order by D.TextPath";
             }
         }
 
+
+        #endregion
+
+        #endregion
+
+        #region RelationType
+
+        #region Field Generation
+
+        /// <param name="id">RelationTypeID</param>
+        public JsonResult RelationType_DeleteFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            if (Company.Filter<Relation>(i => i.RelationTypeID == id).Count() > 0)
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
+
+            var list = new List<EditableField>();
+            var a = Company.GetById<RelationType>(id);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public JsonNetResult RelationType_FormData(int id)
+        {
+            var type = Company.GetById<RelationType>(id);
+            if (type == null) return new JsonNetResult { Data = null };
+
+            var anyCurrentRelations = Company.Filter<Relation>(i => i.RelationTypeID == id).Any();
+
+            var model = new RelationTypeEditorModel
+            {
+                ID = id,
+                LimitedChangesOnly = anyCurrentRelations,
+                Subject = $"{type.Subject}|{type.SubjectID}",
+                Object = $"{type.Object}|{type.ObjectID}",
+                PredicateID = type.PredicateID
+            };
+
+            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult RelationType_SubjectOptions()
+        {
+            var models = Company.GetRelationTypeOptions()
+                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
+
+            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult RelationType_ObjectOptions(SystemObjects Subject, int SubjectID, SystemObjects? Object, int? ObjectID)
+        {
+            var models = Company.GetRelationTypeOptions(Subject, SubjectID, Object, ObjectID)
+                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
+
+            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult RelationType_PredicateOptions(SystemObjects Subject, int SubjectID, SystemObjects Object, int ObjectID, int? PredicateID)
+        {
+            var allowedPredicateTypes = MapType.Lineage.GetAsList().Select(i => i.ID).ToList();
+            var models = Company.Query<Predicate>(@"
+select	* 
+from	Predicate
+where	ID not in	(
+					select	PredicateID 
+					from	RelationType
+					where	(
+                            (Subject = @s and SubjectID = @SubjectID and Object = @o and ObjectID = @ObjectID)
+							or (Object = @s and ObjectID = @SubjectID and Subject = @o and SubjectID = @ObjectID)
+                            )
+                            and (
+                                (@p is not null and PredicateID <> @p) or
+                                (@p is null)
+                                )
+					)", new { s = Subject.ToString(), SubjectID, o = Object.ToString(), ObjectID, p = PredicateID })
+                    .Where(i => allowedPredicateTypes.Contains(i.Type))
+                    .Select(i => new { title = i.Name, value = i.ID.ToString() })
+                    .OrderBy(i => i.title);
+
+            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public ActionResult AddRelationType()
+        {
+            ViewBag.ID = 0;
+            return PartialView("RelationTypeEditForm");
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddRelationType(RelationTypeEditorModel formModel)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (formModel == null) throw new NoFormDataException("relation type");
+
+                var subInfo = formModel.Subject.Split('|');
+                var objInfo = formModel.Object.Split('|');
+
+                var model = new RelationType
+                {
+                    Subject = subInfo[0],
+                    SubjectID = int.Parse(subInfo[1]),
+                    Object = objInfo[0],
+                    ObjectID = int.Parse(objInfo[1]),
+                    PredicateID = formModel.PredicateID
+                };
+
+                Company.Add<RelationType>(model);
+                formModel.ID = model.ID;
+
+                return jsonSuccess("Relation type successfully created.", model.ID.ToString(), ContextList.RelationType, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeleteRelationType(int id)
+        {
+            var type = Company.GetById<RelationType>(id);
+            if (type == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.RelationType,
+                FieldUri = string.Format("/form/RelationType_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "relation type"),
+                FormUri = "/form/DeleteRelationType",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteRelationType(FormCollection form)
+        {
+            try
+            {
+                var id = parseIntField(form, "ID");
+                if (!form.HasKeys()) throw new NoFormDataException("relation type");
+
+                if (!Company.HasPermission(SystemObjects.RelationType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                if (Company.Filter<Relation>(i => i.RelationTypeID == id).Count() > 0)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
+
+                var model = Company.GetById<RelationType>(id);
+                if (model == null) throw new NotFoundException("relation type");
+
+                Company.Delete<RelationType>(model);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult EditRelationType(int id)
+        {
+            ViewBag.ID = id;
+            return PartialView("RelationTypeEditForm");
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditRelationType(RelationTypeEditorModel formModel)
+        {
+            try
+            {
+                if (formModel == null) throw new NoFormDataException("relation type");
+
+                // Permisisons validation.
+                if (!Company.HasPermission(SystemObjects.RelationType, formModel.ID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                var model = Company.GetById<RelationType>(formModel.ID);
+                if (model == null) throw new NotFoundException("relation type");
+
+                var subInfo = formModel.Subject.Split('|');
+                var objInfo = formModel.Object.Split('|');
+
+                model.Subject = subInfo[0];
+                model.SubjectID = int.Parse(subInfo[1]);
+                model.Object = objInfo[0];
+                model.ObjectID = int.Parse(objInfo[1]);
+                model.PredicateID = formModel.PredicateID;
+
+                Company.Update<RelationType>(model);
+
+                return jsonSuccess("Relation type successfully updated.", model.ID.ToString(), ContextList.RelationType, "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
 
         #endregion
 

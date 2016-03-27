@@ -1163,7 +1163,6 @@ function IntersectTypeViewModel(data) {
         }
     });
 
-
     //#region Methods
 
     self.cancel = function () {
@@ -1175,30 +1174,32 @@ function IntersectTypeViewModel(data) {
         $.getJSON('/form/IntersectType_Side1Options', function (relData) {
             self.Side1Options(relData);
         }).then(function () {
-            // Step 2
-            $.getJSON(
-                '/form/IntersectType_FormData',
-                { id: self.ID() },
-                function (relData) {
+            if (self.ID() > 0) {
+                // Step 2
+                $.getJSON(
+                    '/form/IntersectType_FormData',
+                    { id: self.ID() },
+                    function (relData) {
 
-                    //Side2 needs to be first, here.
-                    self.Side2(relData.Side2);
-                    self.Side2DisplayText(relData.Side2DisplayText);
-                    self.Side1(relData.Side1);
-                    self.Side1DisplayText(relData.Side1DisplayText);
+                        //Side2 needs to be first, here.
+                        self.Side2(relData.Side2);
+                        self.Side2DisplayText(relData.Side2DisplayText);
+                        self.Side1(relData.Side1);
+                        self.Side1DisplayText(relData.Side1DisplayText);
 
-                    self.LimitedChangesOnly(relData.LimitedChangesOnly);
+                        self.LimitedChangesOnly(relData.LimitedChangesOnly);
 
-                    var indexToSelect = -1;
+                        var indexToSelect = -1;
 
-                    $.each(self.Side1Options(), function (ix, item) {
-                        if (item.value == relData.Side1) {
-                            indexToSelect = ix;
-                        }
-                    });
-                    self.Side1Index(indexToSelect);
-                }
-            );
+                        $.each(self.Side1Options(), function (ix, item) {
+                            if (item.value == relData.Side1) {
+                                indexToSelect = ix;
+                            }
+                        });
+                        self.Side1Index(indexToSelect);
+                    }
+                );
+            }
         });
     };
 

@@ -3,6 +3,7 @@
     "outputFileName": "scripts/all.js",
     "inputFiles": [
       "Scripts/jquery-2.2.1.js",
+      //"Scripts/angular.js",
       "Scripts/handlebars.js",
       "Scripts/sammy-0.7.5.js",
       "Scripts/sammy.title.js",
@@ -30,7 +31,7 @@
       "Scripts/d3s.PageTools.js",
       "Scripts/d3s.SurveyReport.js",
       "Scripts/d3s.RandomSurveyQuestion.js",
-      "Scripts/parts.js",
+      "Scripts/parts/*.js",
       "Scripts/templates/home.js",
       "Scripts/templates/search.js",
       "Scripts/templates/community.home.js",

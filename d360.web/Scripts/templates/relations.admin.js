@@ -13,6 +13,8 @@
 
         var permissions = new PermissionsModel();
 
+        var RelationTypeSource;
+        var RelationTypeAdapter;
         var IntersectTypeSource;
         var IntersectTypeAdapter;
         var PredicateSource;
@@ -43,14 +45,20 @@
                         $('#List').jqxGrid('updatebounddata');
                         break;
                     case contextList.Predicate:
-                        console.log('pred updated');
                         $('#Predicates').jqxGrid('updatebounddata');
+                        break;
+                    case contextList.RelationType:
+                        if (CompanySettings.UseNewRelationships) {
+                            $('#NewRelationTypes').jqxGrid('updatebounddata');
+                        }
                         break;
                 }
             } catch (e) { }
         }
 
         function unsubscribe(data) {
+            RelationTypeAdapter = null;
+            RelationTypeSource = null;
             IntersectTypeAdapter = null;
             IntersectTypeSource = null;
             PredicateAdapter = null;
@@ -203,6 +211,82 @@
                     });
 
                     //#endregion
+
+                    if (CompanySettings.UseNewRelationships) {
+
+                        $('#NewRelationTypesWrapper').show();
+
+                        //#region Grid
+
+                        var newRelationTypesTools = [];
+                        if (permissions.HasPermission("Root", "Create")) {
+                            newRelationTypesTools.push({ icon: 'plus', uri: '/form/AddRelationType', context: contextList.IntersectType, title: 'Add relation type' });
+                        }
+                        TileTools('#NewRelationTypesTools', newRelationTypesTools);
+
+                        RelationTypeSource = {
+                            datatype: 'json',
+                            url: '/services/relationships/types',
+                            datafields:
+                            [
+                                { name: 'ID' },
+                                { name: 'Subject' },
+                                { name: 'SubjectID' },
+                                { name: 'SubjectName' },
+                                { name: 'Object' },
+                                { name: 'ObjectID' },
+                                { name: 'ObjectName' },
+                                { name: 'PredicateID' },
+                                { name: 'Predicate' },
+                                { name: 'Inverse' }
+                            ]
+                        };
+
+                        var RelationTypeAdapter = new $.jqx.dataAdapter(RelationTypeSource);
+
+                        $("#NewRelationTypes").jqxGrid({
+                            altrows: true,
+                            width: grid_width,
+                            pagesizeoptions: ['10', '20', '50'],
+                            pagesize: 20,
+                            autoheight: true,
+                            sortable: true,
+                            filterable: true,
+                            showfilterrow: true,
+                            pageable: true,
+                            source: RelationTypeAdapter,
+                            theme: theme,
+                            columnsresize: true,
+                            columns: [
+                                { datafield: "Subject", text: "Type", filtertype: 'checkedlist', width: '125px' },
+                                { datafield: "SubjectName", text: "Name", filtertype: 'checkedlist' },
+                                { datafield: "Predicate", text: "Predicate", filtertype: 'checkedlist', width: '125px' },
+                                { datafield: "Object", text: "Type", filtertype: 'checkedlist', width: '125px' },
+                                { datafield: "ObjectName", text: "Name", filtertype: 'checkedlist' },
+                                {
+                                    text: '',
+                                    dataField: 'ID',
+                                    width: 80,
+                                    filterable: false,
+                                    cellsrenderer: function (row, column, value) {
+
+                                        var tools = [];
+                                        if (permissions.HasPermission('Root', 'Update')) {
+                                            tools = [
+                                                { icon: 'pencil', urlprefix: '/form/EditRelationType?id={0}' },
+                                                { icon: 'trash-o', urlprefix: '/form/DeleteRelationType?id={0}' }
+                                            ];
+                                        }
+
+                                        return renderToolsHtml(value, tools, contextList.IntersectType);
+                                    }
+                                }
+                            ]
+                        });
+
+                        //#endregion
+
+                    }
 
                     //#region Event Subscriptions
 

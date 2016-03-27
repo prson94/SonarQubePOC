@@ -66,6 +66,7 @@
     <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
     <script type="text/javascript" src="/Scripts/GoJS/GoJS-1-5-18.js"></script>
     <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
+    @*<script type="text/javascript" src="/scripts/angular.js"></script>*@
 </head>
 <body>
     <div style="position: fixed; left: 0px; top: 0px; width: 50px; height: 100%; z-index: 0" class="grey darken-2"></div>
@@ -115,7 +116,7 @@
             self.Group = "@(ContextList.Group)";
             self.Intersect = "@(ContextList.Intersect)";
             self.IntersectType = "@(ContextList.IntersectType)";
-            self.IntersectTypeRole = "@(ContextList.IntersectTypeRole)";
+
             self.Load = "@(ContextList.Load)";
             self.LoadType = "@(ContextList.LoadType)";
             self.LoadTypeField = "@(ContextList.LoadTypeField)";
@@ -123,15 +124,18 @@
             self.LoadTypeRuleItem = "@(ContextList.LoadTypeRuleItem)";
             self.Lookup = "@(ContextList.Lookup)";
             self.LookupType = "@(ContextList.LookupType)";
-            self.Ownership = "@(ContextList.Ownership)";
-            self.OwnershipType = "@(ContextList.OwnershipType)";
+
             self.Policy = "@(ContextList.Policy)";
             self.PolicyType = "@(ContextList.PolicyType)";
             self.PolicyTypeClass = "@(ContextList.PolicyTypeClass)";
             self.PolicyTypeLevel = "@(ContextList.PolicyTypeLevel)";
             self.Predicate = "@(ContextList.Predicate)";
-            //self.PredicatePhrase = "@(ContextList.PredicatePhrase)";
+
             self.QuestionType = "@(ContextList.QuestionType)";
+
+            self.Relation = "@(ContextList.Relation)";
+            self.RelationType = "@(ContextList.RelationType)";
+
             self.Report = "@(ContextList.Report)";
             self.ReportTile = "@(ContextList.ReportTile)";
             self.Resource = "@(ContextList.Resource)";
@@ -139,10 +143,7 @@
             self.ResourceType = "@(ContextList.ResourceType)";
             self.ResponseType = "@(ContextList.ResponseType)";
             self.ResponseTypeOption = "@(ContextList.ResponseTypeOption)";
-            self.Responsibility_Embedded = "@(ContextList.Responsibility_Embedded)";
             self.PeopleResponsibility = "@(ContextList.PeopleResponsibility)";
-            self.SourcingResponsibility = "@(ContextList.SourcingResponsibility)";
-            self.IntersectSourcingResponsibility = "@(ContextList.IntersectSourcingResponsibility)";
             self.Responsibility = "@(ContextList.Responsibility)";
             self.ResponsibilityTransformation = "@(ContextList.ResponsibilityTransformation)";
             self.ResponsibilityType = "@(ContextList.ResponsibilityType)";
@@ -152,7 +153,6 @@
             self.ResponsibilityTypeHierarchy = "@(ContextList.ResponsibilityTypeHierarchy)";
             self.Role = "@(ContextList.Role)";
             self.Rule = "@(ContextList.Rule)";
-            self.SourceToTarget = "@(ContextList.SourceToTarget)";
             self.StatisticType = "@(ContextList.StatisticType)";
             self.StatisticTypeRelation = "@(ContextList.StatisticTypeRelation)";
             self.SurveyType = "@(ContextList.SurveyType)";

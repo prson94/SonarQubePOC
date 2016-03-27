@@ -632,6 +632,23 @@ namespace d360.web.Models
         public bool LimitedChangesOnly { get; set; }
     }
 
+    public class RelationTypeEditorModel
+    {
+        public int ID { get; set; }
+
+        public string Subject { get; set; }
+
+        public string Object { get; set; }
+
+        public int PredicateID { get; set; }
+
+        /// <summary>
+        /// Should certain fields be made read-only based on whether any 
+        /// relationships exist for this type.
+        /// </summary>
+        public bool LimitedChangesOnly { get; set; }
+    }
+
     public class LoginModel
     {
         [Required]

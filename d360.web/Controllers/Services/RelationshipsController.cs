@@ -14,6 +14,7 @@ using System.Web.Http.OData;
 using System.Dynamic;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.Services
 {
@@ -206,5 +207,32 @@ from	FusionAttribute FA
 		                                    r.objectid = @ObjectID and r.[object] = @ObjectType",
                                         new { ObjectType = type.ToString(), ObjectID = id }).AsQueryable();
         }
+
+        #region New Relationship Logic
+
+        [Route("types"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
+        public IEnumerable<dynamic> GetRelationTypes()
+        {
+            return Company.Query<dynamic>(
+@"select    R.ID,
+			R.Subject,
+			R.SubjectID,
+			SD.TextPath as SubjectName,
+			R.Object,
+			R.ObjectID,
+			TD.TextPath as ObjectName,
+            R.PredicateID,
+            P.Name as Predicate,
+            P.Inverse as Inverse
+from		RelationType R
+			left join cache.ObjectDetails SD on SD.[Object] = R.Subject and SD.ObjectID = R.SubjectID
+			left join cache.ObjectDetails TD on TD.[Object] = R.Object and TD.ObjectID = R.ObjectID
+            left join [Predicate] P on P.ID = R.PredicateID
+--where       R.IsSystem = 0
+order by	SD.Name,
+			TD.Name");
+        }
+
+        #endregion
     }
 }

@@ -35,6 +35,8 @@ namespace d360.web.Models
         public string obj { get; set; }
         public int objid { get; set; }
         public string type { get; set; }
+        public string objecttype { get; set; }
+        public int objecttypeid { get; set; }
         public string name { get; set; }
         public string back { get; set; }
         public string fore { get; set; }

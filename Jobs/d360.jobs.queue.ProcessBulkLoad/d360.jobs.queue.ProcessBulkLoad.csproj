@@ -138,10 +138,6 @@
       <Project>{46267409-f388-4058-a12e-49ec7e855c9d}</Project>
       <Name>d360.jobs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\d360.model\d360.model.csproj">
-      <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
-      <Name>d360.model</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.1">

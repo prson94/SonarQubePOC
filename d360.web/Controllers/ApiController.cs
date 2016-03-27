@@ -21,7 +21,6 @@ using System.Web.Http.Description;
 using d360.workflow.entities;
 using d360.workflow;
 using System.Runtime.Serialization;
-using d360.web.Models.Attributes;
 using System.Dynamic;
 using System.Web;
 
@@ -118,7 +117,8 @@ namespace d360.web.Controllers
                             list.Add(new DetailReadOnlyRowModel
                             {
                                 columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField> { ro }
+                                FirstColumnFields = new List<ReadOnlyField> { ro },
+                                Category = ft.Category
                             });
                         }
                     }
@@ -233,7 +233,12 @@ namespace d360.web.Controllers
                     break;
             }
 
-            return new GridColumn { text = item.FriendlyName, datafield = item.Name, width = string.Format("{0}%", dynamicFieldWidth), columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = item.Name, width = string.Format("{0}%", dynamicFieldWidth), columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat };
+            if (!string.IsNullOrEmpty(item.Category))
+            {
+                gc.columngroup = item.Category.Replace(" ", "");
+            }
+            return gc;
         }
 
         GridField getGridFieldForColumn(FieldTypeWithRelation item)
@@ -262,10 +267,14 @@ namespace d360.web.Controllers
             return new GridField { name = item.Name, type = fieldType };
         }
 
-        void parseDynamicColumnsAndFields(List<FieldTypeWithRelation> items, List<GridColumn> columns, List<GridField> fields, decimal dynamicFieldWidth, bool serverPaged = false)
+        void parseDynamicColumnsAndFields(List<FieldTypeWithRelation> items, List<GridColumn> columns, List<GridField> fields, List<GridColumnGroup> groups, decimal dynamicFieldWidth, bool serverPaged = false)
         {
             items.ForEach(i =>
             {
+                if (!string.IsNullOrEmpty(i.Category))
+                {
+                    groups.Add(new GridColumnGroup { align = "center", name = i.Category.Replace(" ", ""), text = i.Category });
+                }
                 columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged));
 
                 fields.Add(getGridFieldForColumn(i));
@@ -321,6 +330,7 @@ namespace d360.web.Controllers
             var columns = new List<GridColumn>();
             var fields = new List<GridField>();
             var filterColumns = new List<GridFilterColumn>();
+            var groups = new List<GridColumnGroup>();
             decimal dynamicFieldWidth = 0;
             int remainingWidth = 0;
             //int columnWidth = 0;
@@ -354,7 +364,7 @@ namespace d360.web.Controllers
                         columns.Add(new GridColumn { text = d360.core.resources.Fields.Parent_Name, datafield = "Parent", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, width = calculateStaticColumnWidth(10, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, filteritems = Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactType.ParentID).OrderBy(i => i.TextPath).Select(i => i.TextPath).ToList() });                        
                     }
 
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     columns.Add(new GridColumn { text = settings["ArtifactType_TaxonomyTypeID"], datafield = "TaxonomyType", width = calculateStaticColumnWidth(14, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = taxonomyTypes });                    
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", width = calculateStaticColumnWidth(9, dynamicFieldWidth, remainingWidth, staticFieldCount), filterable = true, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string>() { "Draft", "Under Review", "Certified" } });
@@ -405,7 +415,7 @@ namespace d360.web.Controllers
                     remainingWidth = 50;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "IntersectID", type = "number" });
                     fields.Add(new GridField { name = "Description", type = "string" });
@@ -427,7 +437,7 @@ namespace d360.web.Controllers
                     remainingWidth = 90;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "LookupTypeID", type = "number" });
@@ -444,7 +454,7 @@ namespace d360.web.Controllers
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", width = calculateStaticColumnWidth(55, dynamicFieldWidth, remainingWidth, staticFieldCount) });
 
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "ParentID", type = "number" });
@@ -461,7 +471,7 @@ namespace d360.web.Controllers
 
                     columns.Add(new GridColumn { text = "Date", datafield = "Date", columntype = GridColumn.COLUMN_TYPE_DATE, filtertype = GridColumn.FILTER_TYPE_RANGE, width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount), cellsformat = "MM/dd/yyyy HH:mm:ss" });
 
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     columns.Add(new GridColumn { text = "Criticality", datafield = "Criticality", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, width = calculateStaticColumnWidth(10, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.SourceID_Name, datafield = "SourceID", width = calculateStaticColumnWidth(10, dynamicFieldWidth, remainingWidth, staticFieldCount) });
@@ -494,7 +504,7 @@ namespace d360.web.Controllers
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
 
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
 
                     relations.ForEach(i =>
                     {
@@ -513,7 +523,7 @@ namespace d360.web.Controllers
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", width = calculateStaticColumnWidth(23, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Enabled_Name, columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, datafield = "Enabled", width = calculateStaticColumnWidth(8, dynamicFieldWidth, remainingWidth, staticFieldCount) });
 
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
@@ -529,7 +539,7 @@ namespace d360.web.Controllers
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName", width = calculateStaticColumnWidth(13, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName", width = calculateStaticColumnWidth(13, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
-                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.DateLastLoggedIn_Name, datafield = "DateLastLoggedIn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, filteritems = new List<string>() { "Active", "Disabled" }, width = calculateStaticColumnWidth(4, dynamicFieldWidth, remainingWidth, staticFieldCount) });
 
@@ -552,7 +562,8 @@ namespace d360.web.Controllers
                 FieldsCount = totalItems.Count,
                 Fields = fields,
                 Columns = columns,
-                FilterColumns = filterColumns
+                FilterColumns = filterColumns,
+                ColumnGroups = groups
             });
         }
 
@@ -2409,20 +2420,20 @@ from	    ResponsibilityTypeHierarchy H
                 case 2: //Parent Reference
                 case 3: //Child Reference
                 case 4: //Relationship Reference
-                    list.Add(new DetailReadOnlyRowModel
-                        {
+                    list.Add(new DetailReadOnlyRowModel {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField> {
-                            new ReadOnlyField {
-                                Column = 1,
-                                Name = k.FriendlyName,
-                                FieldDescription = k.DisplayDescription,
-                                FieldName = k.Name,
-                                HideHeader = def.HideHeader,
-                                HideFooter = def.HideFooter,
-                                LookupGridUrl = $"/api/FusionLookupField/{fusionAttributeID}/{def.ID}/values"
-                            }
-                        }
+                                new ReadOnlyField {
+                                    Column = 1,
+                                    Name = k.FriendlyName,
+                                    FieldDescription = k.DisplayDescription,
+                                    FieldName = k.Name,
+                                    HideHeader = def.HideHeader,
+                                    HideFooter = def.HideFooter,
+                                    LookupGridUrl = $"/api/FusionLookupField/{fusionAttributeID}/{def.ID}/values"
+                                }
+                            },
+                            Category = k.Category
                     });
                     break;
             }
@@ -2608,7 +2619,8 @@ from    IntersectNode S
                                         HideFooter = def.HideFooter,
                                         LookupGridUrl = $"/api/RelationLookupField/{type}/{id}/{def.ID}/values"
                                     }
-                                }
+                                },
+                                Category = ft.Category
                             });
                             break;
                     }
@@ -2625,135 +2637,142 @@ from    IntersectNode S
             var columns = new List<GridColumn>();
             var values = new List<dynamic>();
 
-            var def = Company.GetById<FieldTypeRelationLookupDefinition>(definitionID, i => i.FieldTypeRelationLookupDisplayFields);
-            if (def == null) throw new Exception("Invalid fusion lookup field is specified");
-
-            var displayFields = def.FieldTypeRelationLookupDisplayFields.ToList();
-            var fieldTypeIDs = displayFields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
-            var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
-
-            #region Load Columns/Fields
-
-            if (displayFields.Any(i => i.FieldTypeName == "Name"))
+            try
             {
-                gridFields.Add(new GridField { name = "Name", type = "string" });
-                columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "auto" });
-            }
-            if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
-            {
-                gridFields.Add(new GridField { name = "TextPath", type = "string" });
-                columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
-            }
-            if (fieldTypeIDs != null)
-            {
-                var fieldTypeInfo = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
-                foreach (var fieldType in fieldTypeInfo)
-                {
-                    gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
-                    columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
-                }
-            }
-            gridFields.Add(new GridField { name = "Object", type = "string" });
-            gridFields.Add(new GridField { name = "Url", type = "string" });
-            gridFields.Add(new GridField { name = "ID", type = "number" });
+                var def = Company.GetById<FieldTypeRelationLookupDefinition>(definitionID, i => i.FieldTypeRelationLookupDisplayFields);
+                if (def == null) throw new Exception("Invalid fusion lookup field is specified");
 
-            #endregion
+                var displayFields = def.FieldTypeRelationLookupDisplayFields.ToList();
+                var fieldTypeIDs = displayFields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
+                var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
 
-            #region Calculate SQL statement
-
-            string sql = string.Empty;
-            string fieldSql = string.Empty;
-
-            switch (def.ReferenceType)
-            {
-                case 1: //Self Reference
-                    sql = $@"
-select  R.IntersectID,
-        D.[Object],
-		D.ObjectID,
-        D.ObjectID as ID,
-		D.Name,
-		D.[TextPath],
-		D.Url
-from    cache.Relationship R
-		inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
-		inner join [cache].[ObjectDetails] D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID";
-
-                    fieldSql = $@"
-select  F.*
-from    cache.Relationship R
-		inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
-		inner join Field F on (F.ObjectType = R.TargetObject and F.ObjectID = R.TargetObjectID) or (F.ObjectType = 'Intersect' and F.ObjectID = R.IntersectID)";
-
-                    break;
-                default: //Child Reference
-                    sql = $@"
-select  R2.IntersectID,
-        D2.[Object],
-		D2.ObjectID,
-        D2.ObjectID as ID,
-		D2.Name,
-		D2.[TextPath],
-		D2.Url
-from    cache.Relationship R1
-		inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
-		inner join [cache].[ObjectDetails] D1 on D1.[Object] = R1.TargetObject and D1.ObjectID = R1.TargetObjectID
-		inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
-		inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
-		inner join [cache].[ObjectDetails] D2 on D2.[Object] = R2.TargetObject and D2.ObjectID = R2.TargetObjectID";
-
-                    fieldSql = $@"
-select  F.*
-from    cache.Relationship R1
-		inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
-		inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
-		inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
-        inner join Field F on (F.ObjectType = R2.TargetObject and F.ObjectID = R2.TargetObjectID) or (F.ObjectType = 'Intersect' and F.ObjectID = R2.IntersectID)";
-
-                    break;
-            }
-
-            #endregion
-
-            var results = Company.Query<dynamic>(sql);
-
-            IEnumerable<int> relationIDs = results.Select(x => x.ID).Cast<int>();
-
-            var fields = Company.Query<Field>(fieldSql).ToList();
-
-            foreach (var row in results)
-            {
-                dynamic r = new ExpandoObject();
+                #region Load Columns/Fields
 
                 if (displayFields.Any(i => i.FieldTypeName == "Name"))
                 {
-                    r.Name = row.Name;
+                    gridFields.Add(new GridField { name = "Name", type = "string" });
+                    columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "auto" });
                 }
                 if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
                 {
-                    r.TextPath = row.TextPath;
+                    gridFields.Add(new GridField { name = "TextPath", type = "string" });
+                    columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
                 }
-                r.Object = row.Object;
-                r.Url = row.Url;
-                r.ID = row.ID;
-
-                if (fieldTypeIDs != null && fields != null)
+                if (fieldTypeIDs != null)
                 {
-                    foreach (var item in fieldTypeIDs)
+                    var fieldTypeInfo = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
+                    foreach (var fieldType in fieldTypeInfo)
                     {
-                        foreach (var f in fields.Where(i => ( (i.ObjectType == row.Object && i.ObjectID == row.ObjectID) || (i.ObjectType == "Intersect" && i.ObjectID == row.IntersectID)) && i.FieldTypeID == item))
+                        gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
+                        columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
+                    }
+                }
+                gridFields.Add(new GridField { name = "Object", type = "string" });
+                gridFields.Add(new GridField { name = "Url", type = "string" });
+                gridFields.Add(new GridField { name = "ID", type = "number" });
+
+                #endregion
+
+                #region Calculate SQL statement
+
+                string sql = string.Empty;
+                string fieldSql = string.Empty;
+
+                switch (def.ReferenceType)
+                {
+                    case 1: //Self Reference
+                        sql = $@"
+    select  R.IntersectID,
+            D.[Object],
+		    D.ObjectID,
+            D.ObjectID as ID,
+		    D.Name,
+		    D.[TextPath],
+		    D.Url
+    from    cache.Relationship R
+		    inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
+		    inner join [cache].[ObjectDetails] D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID";
+
+                        fieldSql = $@"
+    select  F.*
+    from    cache.Relationship R
+		    inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
+		    inner join Field F on (F.ObjectType = R.TargetObject and F.ObjectID = R.TargetObjectID) or (F.ObjectType = 'Intersect' and F.ObjectID = R.IntersectID)";
+
+                        break;
+                    default: //Child Reference
+                        sql = $@"
+    select  R2.IntersectID,
+            D2.[Object],
+		    D2.ObjectID,
+            D2.ObjectID as ID,
+		    D2.Name,
+		    D2.[TextPath],
+		    D2.Url
+    from    cache.Relationship R1
+		    inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
+		    inner join [cache].[ObjectDetails] D1 on D1.[Object] = R1.TargetObject and D1.ObjectID = R1.TargetObjectID
+		    inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
+		    inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
+		    inner join [cache].[ObjectDetails] D2 on D2.[Object] = R2.TargetObject and D2.ObjectID = R2.TargetObjectID";
+
+                        fieldSql = $@"
+    select  F.*
+    from    cache.Relationship R1
+		    inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
+		    inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
+		    inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
+            inner join Field F on (F.ObjectType = R2.TargetObject and F.ObjectID = R2.TargetObjectID) or (F.ObjectType = 'Intersect' and F.ObjectID = R2.IntersectID)";
+
+                        break;
+                }
+
+                #endregion
+
+                var results = Company.Query<dynamic>(sql);
+
+                IEnumerable<int> relationIDs = results.Select(x => x.ID).Cast<int>();
+
+                var fields = Company.Query<Field>(fieldSql).ToList();
+
+                foreach (var row in results)
+                {
+                    dynamic r = new ExpandoObject();
+
+                    if (displayFields.Any(i => i.FieldTypeName == "Name"))
+                    {
+                        r.Name = row.Name;
+                    }
+                    if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
+                    {
+                        r.TextPath = row.TextPath;
+                    }
+                    r.Object = row.Object;
+                    r.Url = row.Url;
+                    r.ID = row.ID;
+
+                    if (fieldTypeIDs != null && fields != null)
+                    {
+                        foreach (var item in fieldTypeIDs)
                         {
-                            var ft = fieldTypes.SingleOrDefault(i => i.ID == item);
-                            if (ft != null)
+                            foreach (var f in fields.Where(i => ( (i.ObjectType == row.Object && i.ObjectID == row.ObjectID) || (i.ObjectType == "Intersect" && i.ObjectID == row.IntersectID)) && i.FieldTypeID == item))
                             {
-                                ((IDictionary<string, object>)r)[ft.Name] = f.FormattedValue;
-                                break;
+                                var ft = fieldTypes.SingleOrDefault(i => i.ID == item);
+                                if (ft != null)
+                                {
+                                    ((IDictionary<string, object>)r)[ft.Name] = f.FormattedValue;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
 
-                values.Add(r);
+                    values.Add(r);
+                }
+            }
+            catch (Exception ex)
+            {
+
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, new

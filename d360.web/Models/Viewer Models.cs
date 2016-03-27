@@ -99,11 +99,14 @@ namespace d360.web.Models
         {
             FirstColumnFields = new List<ReadOnlyField>();
             SecondColumnFields = new List<ReadOnlyField>();
+            Category = null;
         }
 
         public int columns { get; set; }
         public List<ReadOnlyField> FirstColumnFields { get; set; }
         public List<ReadOnlyField> SecondColumnFields { get; set; }
+
+        public string Category { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
@@ -284,8 +287,21 @@ namespace d360.web.Models
         public string Type { get; set; }
         [DataMember]
         public int ID { get; set; }
-    }  
-      
+    }
+
+    [DataContract]
+    public class GridColumnGroup
+    {
+        [DataMember]
+        public string text { get; set; }
+
+        [DataMember]
+        public string align { get; set; }
+        
+        [DataMember]
+        public string name { get; set; }
+    }
+
     [DataContract]
     public class GridColumn
     {
@@ -309,6 +325,7 @@ namespace d360.web.Models
         {
             sortable = true;
             filterable = true;
+            columngroup = null;
             columntype = COLUMN_TYPE_STRING;
             filtertype = FILTER_TYPE_STRING;
             filteritems = new List<string>();
@@ -331,6 +348,9 @@ namespace d360.web.Models
 
         [DataMember]
         public bool filterable { get; set; }
+
+        [DataMember]
+        public string columngroup { get; set; }
 
         [DataMember]
         public string columntype { get; set; }

@@ -33,7 +33,7 @@ public static class ContextList
         public const string Hierarchy = "hierarchyform";
         public const string Intersect = "intersectform";
         public const string IntersectType = "intersecttypeform";
-        public const string IntersectTypeRole = "intersecttyperoleform";
+
         public const string Load = "loadform";
         public const string LoadType = "loadtypeform";
         public const string LoadTypeField = "loadtypefieldform";
@@ -42,8 +42,6 @@ public static class ContextList
 
         public const string Lookup = "lookupform";
         public const string LookupType = "lookuptypeform";
-        public const string Ownership = "ownershipform";
-        public const string OwnershipType = "ownershiptypeform";
         
         public const string Policy = "policyform";
         public const string PolicyType = "policytypeform";
@@ -51,9 +49,11 @@ public static class ContextList
         public const string PolicyTypeLevel = "policytypelevelform";
 
         public const string Predicate = "predicateform";
-        public const string PredicatePhrase = "predicatephraseform";
 
-    public const string QuestionType = "questiontypeform";
+        public const string QuestionType = "questiontypeform";
+
+        public const string Relation = "relationform";
+        public const string RelationType = "relationtypeform";
 
         public const string Report = "reportform";
         public const string ReportTile = "reporttileform";
@@ -65,10 +65,7 @@ public static class ContextList
         public const string ResponseTypeOption = "responsetypeoptionform";
 
         public const string PeopleResponsibility = "peopleresponsibilityform";
-        public const string SourcingResponsibility = "sourcingresponsibilityform";
-        public const string IntersectSourcingResponsibility = "intersectsourcingresponsibilityform";
 
-        public const string Responsibility_Embedded = "embeddedresponsibilityform";
         public const string Responsibility = "responsibilityform";
         public const string ResponsibilityTransformation = "responsibilitytransformationform";
         public const string ResponsibilityType = "responsibilitytypeform";
@@ -84,12 +81,6 @@ public static class ContextList
         public const string StatisticType = "statistictypeform";
         public const string StatisticTypeRelation = "statistictyperelationform";
         public const string SurveyType = "surveytypeform";
-
-        public const string SourceToTarget = "sourcetotargetform";
-
-        public const string Synonym = "synonymform";
-        public const string SynonymType = "synonymtypeform";
-        public const string SynonymTypeRelation = "synonymtyperelationform";
 
         public const string Taxonomy = "taxonomyform";
         public const string TaxonomyType = "taxonomytypeform";

@@ -122,7 +122,11 @@ namespace d360.core
         [Description("Predicate"), AllowSurvey(false)]
         Predicate = 57,
         [Description("Group Type"), AllowSurvey(false)]
-        GroupType = 58
+        GroupType = 58,
+        [Description("Relation")]
+        Relation = 59,
+        [Description("Relation Type")]
+        RelationType = 60
     }
 
     public class SystemObjectInfo

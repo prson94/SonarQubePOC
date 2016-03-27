@@ -108,9 +108,9 @@
                                 break;
                         }
                         break;
-                    case contextList.SourcingResponsibility:
-                        environment_diagram('SourcingTile', permissions, type, ruleID);
-                        break;
+                    //case contextList.SourcingResponsibility:
+                    //    environment_diagram('SourcingTile', permissions, type, ruleID);
+                    //    break;
                 }
             } catch (e) {
                 logError("Children : SaveAction", e);

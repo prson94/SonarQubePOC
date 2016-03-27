@@ -302,7 +302,8 @@
                             columnsresize: true,
                             source: ArtifactListAdapter,
                             theme: list_theme,
-                            columns: gridinfo.Columns
+                            columns: gridinfo.Columns,
+                            columngroups: (gridinfo.ColumnGroups.length > 0) ? gridinfo.ColumnGroups : null
                         });
 
                     });

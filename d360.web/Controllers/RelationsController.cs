@@ -347,6 +347,8 @@ order by D.TextPath";
             public int Level { get; set; }
             public int NodeID { get; set; }
             public string TypeName { get; set; }
+            public string ObjectType { get; set; }
+            public int ObjectTypeID { get; set; }
             public string ObjectName { get; set; }
             public string O { get; set; }
             public int OID { get; set; }
@@ -966,8 +968,8 @@ order by D.TextPath";
             var sql1 = @"
 declare @tbl table	(
 					IntersectID int, ID int, 
-					SubjectNodeID int, SubjectTypeName nvarchar(1000), SubjectObjectName nvarchar(1000), Subject varchar(50), SubjectID int, SubjectBackColor varchar(10), SubjectForeColor varchar(10),  
-					ObjectNodeID int, ObjectTypeName nvarchar(1000), ObjectObjectName nvarchar(1000), Object varchar(50), ObjectID int, ObjectBackColor varchar(10), ObjectForeColor varchar(10),
+					SubjectNodeID int, SubjectTypeName nvarchar(1000), SourceType varchar(50), SourceTypeID int, SubjectObjectName nvarchar(1000), Subject varchar(50), SubjectID int, SubjectBackColor varchar(10), SubjectForeColor varchar(10),  
+					ObjectNodeID int, ObjectTypeName nvarchar(1000), ObjectType varchar(50), ObjectTypeID int, ObjectObjectName nvarchar(1000), Object varchar(50), ObjectID int, ObjectBackColor varchar(10), ObjectForeColor varchar(10),
 					PredicateID int, Predicate nvarchar(250)
 					)
 insert into @tbl
@@ -976,6 +978,8 @@ insert into @tbl
 			M.ID,
 			M.SubjectIntersectNodeID,
 			R.SourceTypeName,
+			R.SourceType,
+			R.SourceTypeID,
 			R.SourceObjectName,
 			R.SourceObject,
 			R.SourceObjectID,
@@ -983,6 +987,8 @@ insert into @tbl
 			SD.[IconForeColor] as SourceIconForeColor,
 			M.ObjectIntersectNodeID,
 			R.TargetTypeName,
+			R.TargetType,
+			R.TargetTypeID,
 			R.TargetObjectName,
 			R.TargetObject,
 			R.TargetObjectID,
@@ -1003,6 +1009,8 @@ insert into @tbl
 			M.ID,
 			M.SubjectIntersectNodeID,
 			R.SourceTypeName,
+			R.SourceType,
+			R.SourceTypeID,
 			R.SourceObjectName,
 			R.SourceObject,
 			R.SourceObjectID,
@@ -1010,6 +1018,8 @@ insert into @tbl
 			SD.[IconForeColor] as SourceIconForeColor,
 			M.ObjectIntersectNodeID,
 			R.TargetTypeName,
+			R.TargetType,
+			R.TargetTypeID,
 			R.TargetObjectName,
 			R.TargetObject,
 			R.TargetObjectID,
@@ -1028,6 +1038,8 @@ insert into @tbl
 			M.ID,
 			M.SubjectIntersectNodeID,
 			R.SourceTypeName,
+			R.SourceType,
+			R.SourceTypeID,
 			R.SourceObjectName,
 			R.SourceObject,
 			R.SourceObjectID,
@@ -1035,6 +1047,8 @@ insert into @tbl
 			SD.[IconForeColor] as SourceIconForeColor,
 			M.ObjectIntersectNodeID,
 			R.TargetTypeName,
+			R.TargetType,
+			R.TargetTypeID,
 			R.TargetObjectName,
 			R.TargetObject,
 			R.TargetObjectID,
@@ -1050,13 +1064,13 @@ insert into @tbl
 
 declare @h table	(
 					ID int, [Type] varchar(1), IsStart bit, IsEnd bit,
-					[Level] int, NodeID int, TypeName nvarchar(1000), ObjectName nvarchar(1000), O varchar(50), OID int, BackColor varchar(10), ForeColor varchar(10),
+					[Level] int, NodeID int, TypeName nvarchar(1000), [ObjectType] varchar(50), ObjectTypeID int, ObjectName nvarchar(1000), O varchar(50), OID int, BackColor varchar(10), ForeColor varchar(10),
 					IntersectID int, PredicateID int, Predicate nvarchar(250),
 					RawSourceRuleCount int
 					)
 
 insert into @h
-	select	ID, 'S', 0, 0, 0, SubjectNodeID, SubjectTypeName, SubjectObjectName, Subject, SubjectID, SubjectBackColor, SubjectForeColor, IntersectID, PredicateID, Predicate, R.[Count] 
+	select	ID, 'S', 0, 0, 0, SubjectNodeID, SubjectTypeName, SourceType, SourceTypeID, SubjectObjectName, Subject, SubjectID, SubjectBackColor, SubjectForeColor, IntersectID, PredicateID, Predicate, R.[Count] 
 	from	@tbl S
 			cross apply (
 						select	count(1) as [Count]
@@ -1064,7 +1078,7 @@ insert into @h
 						where	AppliesToObject = @type and AppliesToObjectID = @id and Object = S.Subject and ObjectID = S.SubjectID
 						) R
 insert into @h
-	select	ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, PredicateID, Predicate, R.[Count] 
+	select	ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectType, ObjectTypeID, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, PredicateID, Predicate, R.[Count] 
 	from	@tbl S
 			cross apply (
 						select	count(1) as [Count]
@@ -1115,14 +1129,14 @@ select * from @h";
                 var s = list.Single(i => i.ID == m && i.Type == "S");
                 var sKey = $"{s.Level}{s.O}{s.OID}";
                 if (!model.nodes.Any(i => i.key == sKey))
-                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
+                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, objecttype = s.ObjectType, objecttypeid = s.ObjectTypeID, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
                 //else
                 //    model.nodes.First(i => i.key == sKey).sourceRuleCount = getTotal(s.O, s.OID, s.Type);
 
                 var o = list.Single(i => i.ID == m && i.Type == "O");
                 var oKey = $"{o.Level}{o.O}{o.OID}";
                 if (!model.nodes.Any(i => i.key == oKey))
-                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotal(o.O, o.OID, o.Type) });
+                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, objecttype = o.ObjectType, objecttypeid = o.ObjectTypeID, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotal(o.O, o.OID, o.Type) });
                 else
                     model.nodes.First(i => i.key == oKey).sourceRuleCount = getTotal(o.O, o.OID, o.Type);
 

@@ -12,6 +12,9 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         public string Name { get; set; }
 
+        [DataMember]
+        public string Category { get; set; }
+
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "DisplayDescription_Name", Description = "DisplayDescription_Description")]
         public string DisplayDescription { get; set; }
 

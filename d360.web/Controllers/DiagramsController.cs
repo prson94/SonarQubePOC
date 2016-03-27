@@ -97,20 +97,22 @@ from	h
 
         #region Lineage Diagram Updating
 
-        public JsonNetResult GetArtifact(int id, string search)
+        public JsonNetResult ObjectsBySearch(SystemObjects type, int id, string search)
         {
             search = '%' + search.Trim('%') + '%';
             var items = Company.Query<dynamic>(@"
 select  top 50
         objectid as id, 
-        c.name, 
+        c.textpath as name, 
         iconbackcolor as backColor, 
         iconforecolor as foreColor, 
         c.objecttypename as typeName, 
         c.url, 
-        c.object as objectType 
+        c.object,
+        c.objecttype,
+        c.objecttypeid 
 from    cache.objectdetails c 
-where c.object = 'Artifact' and c.objecttypeid = @id and lower(c.name) like lower(@search)", new { id, search });
+where c.object = @type and c.objecttypeid = @id and lower(c.name) like lower(@search)", new { type = type.ToString(), id, search });
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 

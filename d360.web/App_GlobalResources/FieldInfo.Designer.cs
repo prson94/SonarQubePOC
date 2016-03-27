@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Category.
+        /// </summary>
+        internal static string FieldTypeCategory_Name {
+            get {
+                return ResourceManager.GetString("FieldTypeCategory_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Should this field be displayed in the relevant grid or list within the application?.
         /// </summary>
         internal static string FilterEnabled_Description {
@@ -106,7 +115,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Filter Enabled?.
+        ///   Looks up a localized string similar to Listable?.
         /// </summary>
         internal static string FilterEnabled_Name {
             get {
@@ -322,6 +331,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Object.
+        /// </summary>
+        internal static string RelationshipObject_Name {
+            get {
+                return ResourceManager.GetString("RelationshipObject_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Predicate.
+        /// </summary>
+        internal static string RelationshipPredicate_Name {
+            get {
+                return ResourceManager.GetString("RelationshipPredicate_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Relationship Side 1.
         /// </summary>
         internal static string RelationshipSide1_Name {
@@ -336,6 +363,15 @@ namespace Resources {
         internal static string RelationshipSide2_Name {
             get {
                 return ResourceManager.GetString("RelationshipSide2_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject.
+        /// </summary>
+        internal static string RelationshipSubject_Name {
+            get {
+                return ResourceManager.GetString("RelationshipSubject_Name", resourceCulture);
             }
         }
         

@@ -362,6 +362,11 @@
               Looks up a localized string similar to Display Description.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.FieldTypeCategory_Name">
+            <summary>
+              Looks up a localized string similar to Category.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.FilterEnabled_Description">
             <summary>
               Looks up a localized string similar to Should this field be displayed in the relevant grid or list within the application?.
@@ -369,7 +374,7 @@
         </member>
         <member name="P:Resources.FieldInfo.FilterEnabled_Name">
             <summary>
-              Looks up a localized string similar to Filter Enabled?.
+              Looks up a localized string similar to Listable?.
             </summary>
         </member>
         <member name="P:Resources.FieldInfo.FormDescription_Description">
@@ -487,6 +492,16 @@
               Looks up a localized string similar to Validation Pattern.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.RelationshipObject_Name">
+            <summary>
+              Looks up a localized string similar to Object.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RelationshipPredicate_Name">
+            <summary>
+              Looks up a localized string similar to Predicate.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.RelationshipSide1_Name">
             <summary>
               Looks up a localized string similar to Relationship Side 1.
@@ -495,6 +510,11 @@
         <member name="P:Resources.FieldInfo.RelationshipSide2_Name">
             <summary>
               Looks up a localized string similar to Relationship Side 2.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RelationshipSubject_Name">
+            <summary>
+              Looks up a localized string similar to Subject.
             </summary>
         </member>
         <member name="P:Resources.FieldInfo.Required_Description">
@@ -2742,6 +2762,9 @@
         <member name="M:d360.web.Controllers.FormController.Relationship_EditFields(System.Int32)">
             <param name="id">RelationshipID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.RelationType_DeleteFields(System.Int32)">
+            <param name="id">RelationTypeID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Report_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>
         </member>
@@ -2914,6 +2937,12 @@
             </summary>
         </member>
         <member name="P:d360.web.Models.IntersectTypeEditorModel.LimitedChangesOnly">
+            <summary>
+            Should certain fields be made read-only based on whether any 
+            relationships exist for this type.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.RelationTypeEditorModel.LimitedChangesOnly">
             <summary>
             Should certain fields be made read-only based on whether any 
             relationships exist for this type.

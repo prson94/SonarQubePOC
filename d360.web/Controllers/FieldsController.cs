@@ -60,6 +60,7 @@ namespace d360.web.Controllers
                 list.Select(i => new
                 {
                     i.FriendlyName,
+                    i.Category,
                     i.DisplayDescription,
                     i.FormDescription,
                     i.ID,

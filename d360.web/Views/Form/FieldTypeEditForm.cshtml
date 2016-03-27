@@ -5,6 +5,7 @@
         color: red;
         margin-top: 15px;
     }
+
     .FieldNameError {
         color: red;
         margin-left: 10px;
@@ -28,13 +29,17 @@
     <div id="progress" data-bind="visible: InProgress"><i class="fa fa-spinner fa-spin fa-4x"></i></div>
 
     <div class="row">
-        <div class="col s6">
+        <div class="col s5">
             <div id='FriendlyNameTip' class="FieldNameRequired">@(Resources.FieldInfo.Name_Name)<span class="FieldNameError" data-bind="visible: FriendlyNameInvalid">*</span></div>
             <input type="text" data-bind="nameCharacterCheck, jqxInput: {width: field_width, height: field_height, theme: theme, value: FriendlyName }" />
         </div>
-        <div class="col s6">
+        <div class="col s5">
             <div id='NameTip' class="FieldNameRequired">@(Resources.FieldInfo.ApiName_Name)<span class="FieldNameError" data-bind="visible: ApiNameInvalid">*</span></div>
             <input type="text" data-bind="jqxInput: {width: field_width, height: field_height, theme: theme, value: ApiName}" />
+        </div>
+        <div class="col s2">
+            <div id='CategoryTip' class="FieldNameRequired">@(Resources.FieldInfo.FieldTypeCategory_Name)</div>
+            <input type="text" data-bind="nameCharacterCheck, jqxInput: {width: field_width, height: field_height, theme: theme, value: Category}" />
         </div>
     </div>
 
@@ -287,7 +292,7 @@
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             $(element).on('keypress', function (e) {
                 var key = String.fromCharCode(!e.charCode ? e.which : e.charCode);
-                if (/[\[\]\.\n\{\}\'\"]+/.test(key)) {
+                if (/[\[\]\.\n\{\}\'\"\<\>]+/.test(key)) {
                     e.preventDefault();
                     return false;
                 }
@@ -786,6 +791,7 @@
         self.Object = ko.observable(data.Object);
         self.ObjectID = ko.observable(data.ObjectID);
 
+        self.Category = ko.observable(data.Category);
         self.FriendlyName = ko.observable(data.FriendlyName || "");
         self.ApiName = ko.observable(data.ApiName || "");
         self.IsListable = ko.observable(data.IsListable || false);
@@ -980,6 +986,7 @@
                     if (self.ID() > 0) {
                         $.getJSON('/form/FieldType_FormData', { id: self.ID() }, function (ftData) {
                             if (ftData.FieldType) {
+                                self.Category(ftData.FieldType.Category);
                                 self.ApiName(ftData.FieldType.Name);
                                 self.FriendlyName(ftData.FieldType.FriendlyName);
                                 self.IsListable(ftData.FieldType.IsListable);
@@ -1053,6 +1060,7 @@
                     FieldType: {
                         ID: self.ID(),
                         Name: self.ApiName(),
+                        Category: self.Category(),
                         DisplayDescription: self.DisplayDescription(),
                         FormDescription: self.FormDescription(),
                         ValidationDescription: self.ValidationDescription(),

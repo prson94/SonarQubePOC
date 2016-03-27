@@ -78,6 +78,8 @@
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
     <Compile Include="entities\AlertFlag.cs" />
+    <Compile Include="entities\Relation.cs" />
+    <Compile Include="entities\RelationType.cs" />
     <Compile Include="entities\Environment.cs" />
     <Compile Include="entities\FieldTypeRelationLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDefinition.cs" />

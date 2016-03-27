@@ -1,0 +1,329 @@
+﻿@{
+    var id = (int)ViewBag.ID;
+    var title = (id == 0) ? "Add Relationship Type" : "Edit Relationship Type";
+    var description = (id == 0) ? Resources.FormInfo.Add_RelationshipType_Directions : Resources.FormInfo.Edit_RelationshipType_Directions;
+}
+<script id="relationTypeTmpl" type="text/html">
+    <div class="left form-header-info">
+        <h4>@(title)</h4>
+    </div>
+    <div class="right">
+        <button type="button" id="EditableFormCancelButton" data-bind="click: cancel" class="btn waves-effect waves-light brown lighten-4">Cancel</button>
+        <button type="button" id="EditableFormSaveButton" data-bind="click: save, css: { disabled: TypesNotPresent }" class="btn waves-effect waves-light brown lighten-1 saveButton">Save</button>
+    </div>
+    <div class="clear"></div>
+    <div class="form-instructions">@Html.Raw(description)</div>
+    <div id="progress" data-bind="visible: InProgress"><i class="fa fa-spinner fa-spin fa-4x"></i></div>
+
+    <div class="row">
+        <div class="col s4">
+            <div class="FieldNameRequired">@(Resources.FieldInfo.RelationshipSubject_Name)</div>
+            <div data-bind="relationTypeSubjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: SubjectIndex,
+                 source: SubjectOptions,
+                 disabled: LimitedChangesOnly,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+            <span data-bind="visible: SubjectOptionsLoading">Loading, please wait...</span>
+        </div>
+        <div class="col s4">
+            <div class="FieldNameRequired">@(Resources.FieldInfo.RelationshipPredicate_Name)</div>
+            <div data-bind="relationTypePredicateFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: PredicateIndex,
+                 source: PredicateOptions,
+                 disabled: LimitedChangesOnly,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+            <span data-bind="visible: PredicateOptionsLoading">Loading, please wait...</span>
+        </div>
+        <div class="col s4">
+            <div class="FieldNameRequired">@(Resources.FieldInfo.RelationshipObject_Name)</div>
+            <div data-bind="relationTypeObjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: ObjectIndex,
+                 source: ObjectOptions,
+                 disabled: LimitedChangesOnly,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+            <span data-bind="visible: ObjectOptionsLoading">Loading, please wait...</span>
+        </div>
+    </div>
+
+</script>
+
+<div class="small-overlay">
+    <div class="ui segment">
+        <div id="RelationTypeFormWrapper" data-bind="template: {name: 'relationTypeTmpl' }"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    //#region Bindings
+    ko.bindingHandlers.relationTypeSubjectFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.Subject(event.args.item.value);
+                viewModel.loadObjects();
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.relationTypeObjectFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.Object(event.args.item.value);
+                viewModel.loadPredicates();
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.relationTypePredicateFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.Predicate(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    //#endregion
+
+    function RelationTypeViewModel(data) {
+        var self = this;
+        data = data || {};
+
+        //#region Simple Properties
+
+        self.ID = ko.observable(data.ID);
+        self.Context = ko.observable(data.Context);
+
+        self.SubjectIndex = ko.observable(data.SubjectIndex || -1);
+        self.Subject = ko.observable(data.Subject);
+
+        self.ObjectIndex = ko.observable(data.ObjectIndex || -1);
+        self.Object = ko.observable(data.Object);
+
+        self.PredicateIndex = ko.observable(data.PredicateIndex || -1);
+        self.Predicate = ko.observable(data.Predicate);
+
+        self.LimitedChangesOnly = ko.observable(data.LimitedChangesOnly || false);
+        self.InProgress = ko.observable(false);
+
+        //#endregion
+
+        //#region Computed Properties
+
+        self.TypesNotPresent = ko.pureComputed(function () {
+            return (self.SubjectOptionsLoading().length <= 0 ||
+                    self.ObjectOptionsLoading().length <= 0);
+        }, self);
+
+        self.SubjectOptionsLoading = ko.pureComputed(function () {
+            return self.SubjectOptions().length == 0;
+        }, self);
+
+        self.PredicateOptionsLoading = ko.pureComputed(function () {
+            return (self.PredicateOptions().length == 0) && (self.ID() > 0);
+        }, self);
+
+        self.ObjectOptionsLoading = ko.pureComputed(function () {
+            return (self.ObjectOptions().length == 0) && (self.ID() > 0);
+        }, self);
+
+        //#endregion
+
+        //#region List Properties
+
+        self.SubjectOptions = ko.observableArray();
+        self.PredicateOptions = ko.observableArray();
+        self.ObjectOptions = ko.observableArray();
+
+        //#endregion
+
+        //#region Methods
+
+        self.loadSubjects = function() {
+            $.getJSON('/form/RelationType_SubjectOptions', function (relData) {
+                self.SubjectOptions(relData);
+            }).then(function(){
+                var indexToSelect = -1;
+
+                if (self.Subject()) {
+                    $.each(self.SubjectOptions(), function (ix, item) {
+                        if (item.value == self.Subject()) {
+                            indexToSelect = ix;
+                        }
+                    });
+                }
+                self.SubjectIndex(indexToSelect);            
+            });
+        }
+
+        self.loadObjects = function() {
+            self.ObjectOptions.removeAll();
+
+            var dataToServer;
+
+            var SubjectValues;
+            if (self.Subject()) {
+                SubjectValues = self.Subject().split('|');
+            }
+
+            var ObjectValues;
+            if (self.Object()) {
+                ObjectValues = self.Object().split('|');
+            }
+
+            if (ObjectValues) {
+                dataToServer = { Subject: SubjectValues[0], SubjectID: SubjectValues[1], Object: ObjectValues[0], ObjectID: ObjectValues[1] };
+            }
+            else {
+                dataToServer = { Subject: SubjectValues[0], SubjectID: SubjectValues[1] };
+            }
+
+            $.getJSON(
+                '/form/RelationType_ObjectOptions',
+                dataToServer,
+                function (relData) {
+                    self.ObjectOptions(relData);
+                }).then(function(){
+                    var indexToSelect = -1;
+                    if (self.Object()) {
+                        $.each(self.ObjectOptions(), function (ix, item) {
+                            if (item.value == self.Object()) {
+                                indexToSelect = ix;
+                            }
+                        });                    
+                    }
+                    self.ObjectIndex(indexToSelect);                
+                });
+        }
+
+        self.loadPredicates = function() {
+            self.PredicateOptions.removeAll();
+
+            var dataToServer;
+            var SubjectValues;
+            var ObjectValues;
+
+            if (self.Subject()) {
+                SubjectValues = self.Subject().split('|');
+            }
+            if (self.Object()) {
+                ObjectValues = self.Object().split('|');
+            }
+            if (SubjectValues && ObjectValues) {
+                dataToServer = { Subject: SubjectValues[0], SubjectID: SubjectValues[1], Object: ObjectValues[0], ObjectID: ObjectValues[1] };
+            }
+
+            if (dataToServer){
+
+                if (self.Predicate()) {
+                    dataToServer["PredicateID"] = self.Predicate();
+                }
+
+                $.getJSON('/form/RelationType_PredicateOptions', 
+                    dataToServer,
+                    function (relData) {
+                        self.PredicateOptions(relData);
+                    }).then(function(){
+                        var indexToSelect = -1;
+
+                        if (self.Predicate()){
+                            $.each(self.PredicateOptions(), function (ix, item) {
+                                if (item.value == self.Predicate()) {
+                                    indexToSelect = ix;
+                                }
+                            });
+                        }
+
+                        self.PredicateIndex(indexToSelect);                        
+                    });                
+            }
+        }
+
+        self.cancel = function () {
+            amplify.publish("CancelAction", { context: self.Context() });
+        };
+
+        self.loadCurrentRelationType = function () {
+            if (self.ID() > 0) {
+                $.getJSON(
+                    '/form/RelationType_FormData',
+                    { id: self.ID() },
+                    function (relData) {
+
+                        self.Subject(relData.Subject);
+                        self.Object(relData.Object);
+                        self.Predicate(relData.PredicateID);
+                        self.LimitedChangesOnly(relData.LimitedChangesOnly);
+
+                        self.loadSubjects();
+                    }
+                );            
+            }
+            else {
+                self.loadSubjects();
+            }
+        };
+
+        self.save = function () {
+            self.InProgress(true);
+
+            var postModel = {
+                ID: self.ID(),
+                Subject: self.Subject(),
+                Object: self.Object(),
+                PredicateID: self.Predicate()
+            }
+
+            var uri = '';
+            var method = '';
+            if (postModel.ID == 0) {
+                uri = '/form/AddRelationType';
+                method = 'POST';
+            }
+            else {
+                uri = '/form/EditRelationType';
+                method = 'PUT';
+            }
+
+            $.ajax(uri, {
+                data: postModel,
+                dataType: 'json',
+                method: method
+            }).done(function (data, status, xhr) {
+                amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
+                amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Mappings successfully created.' });
+            }).fail(function (xhr, status, error) {
+                amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
+            }).always(function (data, status, error) {
+                self.InProgress(false);
+            });
+        };
+
+        //#endregion
+
+        return self;
+    }
+    $(function () {
+        var model = new RelationTypeViewModel({
+            ID: @(ViewBag.ID),
+            Context: "@(ContextList.RelationType)"
+        });
+        ko.applyBindings(model, document.getElementById('RelationTypeFormWrapper'));
+        model.loadCurrentRelationType();
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>
