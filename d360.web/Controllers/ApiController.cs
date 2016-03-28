@@ -386,6 +386,8 @@ namespace d360.web.Controllers
 
                     filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
 
+                    filterColumns.Add(new GridFilterColumn { text = d360.core.resources.Fields.Description_Name, datafield = "Description", width = "0"});
+
                     var hiddenItems = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
                     parseDynamicFilterFields(hiddenItems, filterColumns, dynamicFieldWidth, false, true);
 
@@ -403,6 +405,8 @@ namespace d360.web.Controllers
                             parseDynamicFilterFields(relItems, filterColumns, dynamicFieldWidth, true, false);                         
                         }
                     }
+
+                    filterColumns = filterColumns.OrderByDescending(x => x.datafield == "Name").ThenByDescending(x => x.datafield == "Description").ThenByDescending(x => x.datafield == "Status").ThenBy(x => x.text).ToList();
 
                     break;
                 #endregion
