@@ -215,7 +215,7 @@
             console.log(objectType)
             var col = column != null ? column.toLowerCase() : '';
             if (self.Action() == 'P' && objectType.toLowerCase() == 'artifacttype') {
-                if (col == 'name' || col == 'subject area' || col == 'parent application') return 'required';
+                if (col == 'name' || col == 'subject area' || col.startsWith('parent ')) return 'required';
                 return ''
             }
             if (self.Action() == 'P' && objectType.toLowerCase() == 'domain') {

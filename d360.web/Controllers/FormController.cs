@@ -6930,9 +6930,25 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         {
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
-
+            var defaultSheet = "Items";
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);                        
+            document.AddWorksheet("Lookups");
+            document.SelectWorksheet(defaultSheet);
+            
             var columns = getFieldNamesByType(type, id);
+            var lookupColumns = 1;
+            var parentColumnName = string.Empty;
+            var artifactParentID = -1;
+
+            if (type == "ArtifactType")
+            {
+                var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
+                if (artifactType.ParentID.HasValue)
+                {
+                    artifactParentID = artifactType.ParentID.Value;
+                    parentColumnName = string.Format("Parent {0}", artifactType.Parent.Name).ToLower();
+                }
+            }
 
             #region Header
 
@@ -6941,7 +6957,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 SLStyle style = document.CreateStyle();
                 style.Font.Bold = true;
 
-                if (type == "ArtifactType" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "subject area" && columns[i].ToLower() != "parent application"))
+                if (type == "ArtifactType" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "subject area" && columns[i].ToLower() != parentColumnName))
                     style.Font.Bold = false;
                 else if(type == "Domain" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "code"))
                     style.Font.Bold = false;
@@ -6950,7 +6966,28 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 document.SetCellStyle(1, i + 1, style);
 
-                document.SetCellValue(1, i+1, columns[i]);
+                document.SetCellValue(1, i + 1, columns[i]);
+
+                if(type == "ArtifactType" &&  columns[i].ToLower() == "subject area")
+                {
+                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+                                        
+                    CreateExcelList(lookupColumns++, document,"Lookups",dv, Company.TaxonomyTypes.OrderBy(x=>x.Name).Select(x => x.Name));
+
+                    document.AddDataValidation(dv);
+                }
+                else if(type == "ArtifactType" && columns[i].ToLower() == parentColumnName)
+                {                    
+                    if (artifactParentID < 0) continue;
+
+                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                    CreateExcelList(lookupColumns++, document, "Lookups", dv, Company.Filter<Artifact>(x => x.ArtifactTypeID == artifactParentID).OrderBy(x => x.Name).Select(x => x.Name));
+
+                    document.AddDataValidation(dv);
+                }
+
+                document.AutoFitColumn(1, i + 1);
             }
 
             #endregion
@@ -6958,12 +6995,31 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", "Load.xls");
+            return File(stream.ToArray(), "application/vnd.ms-excel", "Load.xlsx");
         }
 
+        private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, IEnumerable<string> values)
+        {            
+            if (!values.Any()) return;
+
+            var currentSheet = document.GetCurrentWorksheetName();
+            document.SelectWorksheet(lookupWorksheetName);
+            int rowNum = 0;
+            foreach (var item in values)
+            {                
+                document.SetCellValue(++rowNum, numLookupColumns, WebUtility.HtmlDecode(item));
+            }
+
+            document.SelectWorksheet(currentSheet);
+
+            //add a column to the given lookup worksheet with the specified values
+            string range = SLConvert.ToCellRange(lookupWorksheetName, 1, numLookupColumns, rowNum, numLookupColumns, true);            
+            dataValidation.AllowList($"={range}", true, true);  
+        }
 
         public ActionResult AddLoad()
         {
+            
             return PartialView();
         }
 
