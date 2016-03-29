@@ -107,7 +107,7 @@ BEGIN
 				inner join WorkflowResource WR on WR.WorkflowID = W.ID
 				inner join reporting.Global_Resource R on R.ResourceID = WR.ResourceID
 
-		if @dateCertifiedOn is null
+		if @dateCertifiedOn is null and @status != 'Certified'
 			begin
 				set @showIcon = 0
 
@@ -132,11 +132,22 @@ BEGIN
 						set @certIconColor = '#FFE183'
 					end
 				select	@icon = '<div style="background-color: transparent; color: ' + @certIconColor + '"><i class="fa fa-2x fa-certificate"></i></div>'
-
-				set @html = @html + '<div>Last Certified On: {CertifiedOn}</div>'
+				set @html = @html + '<div>Last Certified On: ';
+				if @dateCertifiedOn is null
+					begin
+						set @html = @html + 'Manually Certified';
+					end
+				else
+					begin
+						set @html = @html + '{CertifiedOn}';
+					end
+				set @html = @html + '</div>';
 				if @status = 'Certified'
 					begin
-						set @html = @html + '<div>Certified By: {Certifiers}</div>'
+						if @Certifiers is not null
+						begin
+							set @html = @html + '<div>Certified By: {Certifiers}</div>'
+						end
 					end
 				else 
 					begin

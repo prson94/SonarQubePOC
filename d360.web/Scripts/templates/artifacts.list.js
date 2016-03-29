@@ -274,7 +274,15 @@
                                         foreColor = '#ebebeb';
                                         break;
                                 }
-                                var title = (data.DateLastCertified) ? 'Last certified on ' + moment(data.DateLastCertified).format('MMM Do YYYY') : 'Not yet certified';
+                                var title = '';
+                                if (data.DateLastCertified)
+                                    title = 'Last certified on ' + moment(data.DateLastCertified).format('MMM Do YYYY');
+                                else if(data.Status == 'Certified')
+                                    title = 'Manually certified';
+                                else
+                                    title = 'Not yet certified';
+
+                                
 
                                 tools.push({ isitemlink: true, urlprefix: '#' + detailUri, type: 'Artifact', context: 'Certificate', iconBackColor: 'transparent', iconForeColor: foreColor, iconText: 'certificate', title: title });
                                 tools.push({ isitemlink: true, urlprefix: '#' + detailUri, type: 'Artifact', context: 'Preview' });
