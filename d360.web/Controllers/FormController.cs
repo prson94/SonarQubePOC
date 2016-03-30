@@ -6882,6 +6882,21 @@ order by  D.TextPath
                     fieldTypeNames.Add("Description");
                    // fieldTypeNames.Add("Parent");
                     break;
+                case "Lineage":
+                    fieldTypeNames.Add("Focal point object type");
+                    fieldTypeNames.Add("Focal point object type name");
+                    fieldTypeNames.Add("Focal point subject area");
+                    fieldTypeNames.Add("Focal point");
+                    fieldTypeNames.Add("Source object type");
+                    fieldTypeNames.Add("Source object type name");
+                    fieldTypeNames.Add("Source object subject area");
+                    fieldTypeNames.Add("Source object");
+                    fieldTypeNames.Add("Target object type");
+                    fieldTypeNames.Add("Target object type name");
+                    fieldTypeNames.Add("Target object subject area");
+                    fieldTypeNames.Add("Target object");
+                    fieldTypeNames.Add("Predicate");
+                    break;
             }
 
             return fieldTypeNames;
@@ -6889,7 +6904,8 @@ order by  D.TextPath
 
         public JsonNetResult Load_TypeOptions(string act)
         {
-            IEnumerable<OptionModel> models;
+            IEnumerable<OptionModel> models = null;
+
             var sql = "";
             switch (act) {
                 case "P": // Promotion
@@ -6913,9 +6929,14 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     #region
                     sql = @"select 'IntersectType|' + cast(ID as varchar(10)) as value, Name as title from IntersectType order by Name";
                     break;
-                    #endregion
+                #endregion
+                case "L":
+                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
+                    break;
             }
-            models = Company.Query<OptionModel>(sql).OrderBy(i => i.title);
+
+            if(!string.IsNullOrEmpty(sql))
+                models = Company.Query<OptionModel>(sql).OrderBy(i => i.title);
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -6955,20 +6976,16 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             for (int i = 0; i < columns.Count; i++)
             {
                 SLStyle style = document.CreateStyle();
-                style.Font.Bold = true;
 
-                if (type == "ArtifactType" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "subject area" && columns[i].ToLower() != parentColumnName))
-                    style.Font.Bold = false;
-                else if(type == "Domain" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "code"))
-                    style.Font.Bold = false;
-                else if (type == "DomainType" && (columns[i].ToLower() != "name" && columns[i].ToLower() != "domain group"))
-                    style.Font.Bold = false;
-
+                style.Font.Bold = isRequiredColumn(type, columns[i], parentColumnName);
+                
                 document.SetCellStyle(1, i + 1, style);
 
                 document.SetCellValue(1, i + 1, columns[i]);
 
-                if(type == "ArtifactType" &&  columns[i].ToLower() == "subject area")
+                var lowerColName = columns[i].ToLower();
+
+                if(type == "ArtifactType" && lowerColName == "subject area")
                 {
                     var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
                                         
@@ -6976,13 +6993,30 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                     document.AddDataValidation(dv);
                 }
-                else if(type == "ArtifactType" && columns[i].ToLower() == parentColumnName)
+                else if(type == "ArtifactType" && lowerColName == parentColumnName)
                 {                    
                     if (artifactParentID < 0) continue;
 
                     var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
 
                     CreateExcelList(lookupColumns++, document, "Lookups", dv, Company.Filter<Artifact>(x => x.ArtifactTypeID == artifactParentID).OrderBy(x => x.Name).Select(x => x.Name));
+
+                    document.AddDataValidation(dv);
+                }
+                else if (type == "Lineage" && lowerColName == "predicate")
+                {
+                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                    CreateExcelList(lookupColumns++, document, "Lookups", dv, Company.Predicates.Where(x=>x.Type == MapType.Lineage).OrderBy(x => x.Name).Select(x => x.Name));
+
+                    document.AddDataValidation(dv);
+                }
+                else if (type == "Lineage" && (lowerColName == "focal point object type" || lowerColName == "source object type" || lowerColName == "target object type"))
+                {
+                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+                    var typesList = new List<string> { "Artifact", "ArtifactType", "Domain", "DomainListItem", "Group", "Intersect", "Policy","Resource", "Rule","Taxonomy","FusionAttribute" };
+
+                    CreateExcelList(lookupColumns++, document, "Lookups", dv, typesList.OrderBy(x=>x));
 
                     document.AddDataValidation(dv);
                 }
@@ -6996,6 +7030,20 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             var stream = new MemoryStream();
             document.SaveAs(stream);
             return File(stream.ToArray(), "application/vnd.ms-excel", "Load.xlsx");
+        }
+
+        private bool isRequiredColumn(string type, string columnName, string parentColumnName)
+        {
+            columnName = columnName.ToLower();
+
+            if (type == "ArtifactType" && (columnName != "name" && columnName != "subject area" && columnName != parentColumnName))
+                return false;
+            else if (type == "Domain" && (columnName != "name" && columnName != "code"))
+                return false;
+            else if (type == "DomainType" && (columnName != "name" && columnName != "domain group"))
+                return false;
+
+            return true;
         }
 
         private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, IEnumerable<string> values)
@@ -7129,9 +7177,10 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                             load.LoadColumns = new List<LoadColumn>();
                             for (var i = 1; i <= fieldTypeNames.Count; i++)
                             {
-                                var actualValue = xls.GetCellValueAsString(1, i);
+                                var actualValue = (xls.GetCellValueAsString(1, i) ?? string.Empty).Trim();
                                 var expectedValue = fieldTypeNames[i - 1];
-                                if (actualValue.Equals(expectedValue))
+                                
+                                if(string.Compare(actualValue, expectedValue,true) == 0)
                                 {
                                     load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = actualValue });
                                 }

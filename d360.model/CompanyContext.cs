@@ -768,6 +768,7 @@ from	DomainType
 			when 'P' then 'Promotion'
 			when 'R' then 'Relation'
 			when 'U' then 'Unrelation'
+            when 'L' then 'Lineage'
 		end as [Action],
         S.C as Success,
         E.C as Error,
@@ -775,7 +776,7 @@ from	DomainType
 		T.C as Total,
         R.FirstName + ' ' + R.LastName as Requestor
 from	[Load] L
-		inner join cache.ObjectDetails D on D.[Object] = L.[Object] and D.ObjectID = L.ObjectID
+		left join cache.ObjectDetails D on D.[Object] = L.[Object] and D.ObjectID = L.ObjectID
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
         cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
