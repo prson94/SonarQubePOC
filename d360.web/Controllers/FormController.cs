@@ -7014,7 +7014,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 else if (type == "Lineage" && (lowerColName == "focal point object type" || lowerColName == "source object type" || lowerColName == "target object type"))
                 {
                     var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-                    var typesList = new List<string> { "Artifact", "ArtifactType", "Domain", "DomainListItem", "Group", "Intersect", "Policy","Resource", "Rule","Taxonomy","FusionAttribute" };
+                    var typesList = new List<string> { "Artifact", "Domain", "DomainListItem", "Policy","Rule"};
 
                     CreateExcelList(lookupColumns++, document, "Lookups", dv, typesList.OrderBy(x=>x));
 

@@ -197,7 +197,7 @@ begin
 					) S
 			on		(T.ArtifactTypeID = S.ArtifactTypeID and T.TaxonomyTypeID = S.TaxonomyTypeID and ((T.ParentID = S.ParentID and S.ParentID is not null) or (T.ParentID is null and S.ParentID is null)) and T.Name = S.Name)
 			when	matched then
-					update	set T.[Description] = S.[Description],
+					update	set T.[Description] = IsNull(S.[Description], T.[Description]),
 								T.[ParentID] = S.[ParentID],
 								T.[Status] = 'Draft',
 								T.TaxonomyTypeID = S.TaxonomyTypeID,
@@ -256,7 +256,7 @@ begin
 			on		(T.DomainID = S.DomainID and T.Code = S.Code)
 			when	matched then
 					update	set T.[Name] = S.[Name],
-								T.[Description] = S.[Description],
+								T.[Description] = IsNull(S.[Description],T.[Description]),
 								T.[DomainID] = S.[DomainID],
 								T.UpdatedBy = @UpdatedBy,
 								T.UpdatedOn = getutcdate()
@@ -289,7 +289,7 @@ begin
 					) S
 			on		(T.DomainTypeID = S.DomainTypeID and T.Name = S.Name)
 			when	matched then
-					update	set T.[Description] = S.[Description],
+					update	set T.[Description] = IsNull(S.[Description],T.[Description]),
 								T.[DomainGroupID] = S.[DomainGroupID],
 								T.UpdatedOn = getutcdate(),
 								T.UpdatedBy = @UpdatedBy
