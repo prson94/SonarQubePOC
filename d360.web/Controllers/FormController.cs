@@ -7010,11 +7010,11 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     CreateExcelList(lookupColumns++, document, "Lookups", dv, Company.Predicates.Where(x=>x.Type == MapType.Lineage).OrderBy(x => x.Name).Select(x => x.Name));
 
                     document.AddDataValidation(dv);
-                }
+                }                
                 else if (type == "Lineage" && (lowerColName == "focal point object type" || lowerColName == "source object type" || lowerColName == "target object type"))
                 {
                     var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-                    var typesList = new List<string> { "Artifact", "Domain", "DomainListItem", "Policy","Rule"};
+                    var typesList = new List<string> { "Artifact", "Domain", "Policy","Rule","Taxonomy"};
 
                     CreateExcelList(lookupColumns++, document, "Lookups", dv, typesList.OrderBy(x=>x));
 
