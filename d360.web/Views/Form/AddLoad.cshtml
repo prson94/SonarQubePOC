@@ -147,8 +147,8 @@
                     function (relData) {
                         self.TypeOptions(relData);
 
-                        var indexToSelect = -1;
-
+                        var indexToSelect = (value == 'L' ? 0 : -1);
+                        
                         $.each(self.TypeOptions(), function (ix, item) {
                             if (item.value == self.Type()) {
                                 indexToSelect = ix;
@@ -213,7 +213,7 @@
             var objectType = self.Type().split('|');            
             if (objectType == null) return 'required';
             objectType = objectType[0];
-            console.log(objectType)
+            
             var col = column != null ? column.toLowerCase() : '';
             if (self.Action() == 'P' && objectType.toLowerCase() == 'artifacttype') {
                 if (col == 'name' || col == 'subject area' || col.startsWith('parent ')) return 'required';
