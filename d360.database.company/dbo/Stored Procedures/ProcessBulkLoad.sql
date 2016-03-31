@@ -736,7 +736,7 @@ begin
 					begin
 						update	LoadItem
 						set		[Status] = 0,
-								StatusMessage = 'Failed to add item to lineage'
+								StatusMessage = 'Failed to add item to lineage. [focal id:' + convert(varchar(10), @focalObjectID) + ' type:' + @focalObject + '] [source id:' + convert(varchar(10),@sourceObjectID) + ' type:' + @sourceObject +'] [target id:' + convert(varchar(10), @targetObjectID) + ' type:' + @targetObject + ']'
 						where	LoadID = @LoadID
 								and RowIndex = @current
 					end -- else not valid

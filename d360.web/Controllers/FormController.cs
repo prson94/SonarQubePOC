@@ -7020,6 +7020,14 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                     document.AddDataValidation(dv);
                 }
+                else if (type == "Lineage" && (lowerColName == "focal point subject area" || lowerColName == "source object subject area" || lowerColName == "target object subject area") )
+                {
+                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                    CreateExcelList(lookupColumns++, document, "Lookups", dv, Company.TaxonomyTypes.OrderBy(x => x.Name).Select(x => x.Name));
+
+                    document.AddDataValidation(dv);
+                }
 
                 document.AutoFitColumn(1, i + 1);
             }
