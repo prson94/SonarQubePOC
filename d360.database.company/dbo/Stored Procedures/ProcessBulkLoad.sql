@@ -485,7 +485,7 @@ begin
 		update	LoadItem
 		set		[Status] = 0,
 				[StatusMessage] = 'Item could not be added nor updated.'
-		where	[ObjectID] is null
+		where	[ObjectID] is null and [LoadID] = @LoadID
 		
 		-- Load custom fields for the inserted/updated object above.
 		merge	Field T

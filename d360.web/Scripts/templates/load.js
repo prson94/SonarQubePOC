@@ -45,9 +45,20 @@
                 columnData.push({ datafield: 'RowIndex', text: 'Row' });
                 columnData.push({ datafield: 'Status', text: 'Status' });
                 columnData.push({ datafield: 'StatusMessage', text: 'Message' });
-                $("#LoadItemsTile").jqxGrid({ columns: columnData });
+                console.log(columnData);
+                $("#LoadItemsTile").jqxGrid(
+                    {                        
+                        columnsresize: true,                        
+                        columns: columnData                        
+                    }
+                );
+                $("#LoadItemsTile").on('bindingcomplete', function () {
+                    $("#LoadItemsTile").jqxGrid('autoresizecolumn', 'Row');
+                    $("#LoadItemsTile").jqxGrid('autoresizecolumn', 'Status');
+                    $("#LoadItemsTile").jqxGrid('autoresizecolumn','StatusMessage');
+                });
                 sourceLoadItems.url = '/api/loads/' + data.ID + '/items';
-                $("#LoadItemsTile").jqxGrid('updatebounddata');
+                $("#LoadItemsTile").jqxGrid('updatebounddata');                
             });
         }
 
