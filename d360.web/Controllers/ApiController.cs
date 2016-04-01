@@ -5621,9 +5621,14 @@ from	A
         [Route("CountItems/Activity/{artifactTypeId}/{days}")]
         public IQueryable GetAreaActivityItems(int artifactTypeId, int days)
         {
-            DateTime startDate = DateTime.Now.AddDays(days * -1);
+            if(days != 0)
+            {
+                DateTime startDate = DateTime.Now.AddDays(days * -1);
 
-            return Company.Filter<Artifact>(i => i.CreatedOn > startDate && i.ArtifactTypeID == artifactTypeId).AsQueryable();
+                return Company.Filter<Artifact>(i => i.CreatedOn > startDate && i.ArtifactTypeID == artifactTypeId).AsQueryable();
+            }                
+            
+            return Company.Filter<Artifact>(i => i.ArtifactTypeID == artifactTypeId).AsQueryable();
         }
 
         [Route("Count/{area}/{days}")]
@@ -5646,12 +5651,15 @@ from	A
 
         private IEnumerable<CountModel> LoadArtifactActivityCount(int days)
         {
-            days = days * -1;
-            var sql = @"select
+            var sql = string.Empty;
+            if (days != 0)
+            {
+                days = days * -1;
+
+                sql = @"select
                             at.name as Name,
 	                        count(1) as New,
-                            '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri,
-							'/Home/ArtifactActivityOverlay?mode=all&artifactTypeID=' + cast(at.id as varchar) as TotalUri
+                            '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri							
                         from
                             artifact a
 
@@ -5659,6 +5667,18 @@ from	A
                         join artifacttype at on a.artifacttypeid = at.id
                         where
                             a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP)
+                        group by at.name,at.id order by at.name";
+
+                return Company.Query<CountModel>(sql, new { d = days });
+            }
+
+            sql = @"select
+                            at.name as Name,
+	                        count(1) as New,
+                            '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri							
+                        from
+                            artifact a
+                            inner join artifacttype at on a.artifacttypeid = at.id                        
                         group by at.name,at.id order by at.name";
 
             return Company.Query<CountModel>(sql, new { d = days });
@@ -5670,10 +5690,7 @@ from	A
             var socialUri = "/Home/SocialActivityOverlay";
 
             var counts = Company.GetCommentCountByFollower(Company.CurrentResourceID, days).ToList().OrderBy(i => i.CommentTypeName);
-
-            //var sql = @"select commenttypeid as TypeID, count(1) as Count from comment where datecreated > DATEADD(day, @d,CURRENT_TIMESTAMP) group by commenttypeid";
-
-            //var counts = Company.Query<CountTempModel>(sql, new { d = days });
+            
             List<CountModel> items = new List<CountModel>();
 
             //need to add a record for social, Issue, Task, DataEvent, Question

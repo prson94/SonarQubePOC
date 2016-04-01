@@ -1,6 +1,13 @@
 ﻿<div class="medium-overlay">
     <div class="ui segment">
-        <h4 id="title">@(ViewBag.CategoryName)(s) for past @(ViewBag.LookBackDays) day(s)</h4>
+        @if (ViewBag.LookBackDays != 0)
+        {
+            <h4 id="title">@(ViewBag.CategoryName)(s) for past @(ViewBag.LookBackDays) day(s)</h4>
+        }
+        else
+        {
+            <h4 id="title">@(ViewBag.CategoryName)(s)</h4>
+        }
         <div class="form-instructions"></div>
         <div id="HomeBoard" data-bind="template: {name: 'boardTmpl' }"></div>
     </div>

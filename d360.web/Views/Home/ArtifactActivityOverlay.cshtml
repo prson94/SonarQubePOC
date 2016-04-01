@@ -1,6 +1,13 @@
 ﻿<div class="medium-overlay">
     <div class="ui segment">
-        <h4 id="title">Activity for past @(ViewBag.LookBackDays) day(s) for @(ViewBag.ArtifactType.Name)</h4>
+        @if (ViewBag.LookBackDays != 0)
+        {
+            <h4 id="title">Activity for past @(ViewBag.LookBackDays) day(s) for @(ViewBag.ArtifactType.Name)</h4>
+        }
+        else
+        {
+            <h4 id="title">Activity for @(ViewBag.ArtifactType.Name)</h4>
+        }
         <div class="form-instructions"></div>
         <div id="ArtifactActivityGrid"></div>
     </div>
@@ -20,7 +27,7 @@
                 { name: "ID", type: "number", hidden: true },
                 { name: "ArtifactTypeID", type: "number", hidden: true },
                 { name: "Name", type: "string" },
-                { name: "Status", type: "string"},
+                { name: "Status", type: "string" },
             ]
         };
 
@@ -71,12 +78,13 @@
                         return renderToolsHtml(value, tools, contextList.Artifact, data);
                     }
                 },
-                { text: 'Name', datafield: 'Name', //width: '70%',
-                        cellsRenderer : function (index, datafield, value, defaultvalue, column, data) {
+                {
+                    text: 'Name', datafield: 'Name', //width: '70%',
+                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
                         return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a href='/#/artifacts/" + data.ArtifactTypeID + "/" + data.ID + "'>" + value + "</a></div>";
                     }
                 },
-                { text: 'Status', datafield: 'Status', width: '20%' }                
+                { text: 'Status', datafield: 'Status', width: '20%' }
             ]
         });
 
