@@ -97,9 +97,9 @@ namespace d360.web.Controllers
                 case core.enums.CommentType.DataEvent:
                     typeName = Resources.Core.CommentType_DataEvent;
                     break;
-                case core.enums.CommentType.Question:
-                    typeName = Resources.Core.CommentType_Question;
-                    break;             
+                //case core.enums.CommentType.Question:
+                //    typeName = Resources.Core.CommentType_Question;
+                //    break;             
             }
 
             ViewData.Add("CategoryName", typeName);

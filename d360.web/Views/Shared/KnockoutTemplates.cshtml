@@ -65,7 +65,7 @@
                             </ul>
                         </td>
                     </tr>
-                    <tr data-bind="style: {'backgroundColor': ($index()%2 == 0 ? '#fff' : '#eee')}">
+                    <tr data-bind="style: {'backgroundColor': ($index()%2 == 0 ? '#fff' : '#eee')}, visible: CanDelete">
                         <td colspan="3" style="text-align:right">
                             <span data-bind="jqxButton: { theme: theme, width: 100}, click: RemoveRule" style="cursor:pointer;"><i class="fa fa-remove" style="color:maroon"></i> Remove Rule</span><div>&nbsp;</div>
                         </td>
@@ -73,12 +73,15 @@
                 </tbody>
             </table>
         </div>
-        <div data-bind="visible: SourceRules().length == 0" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
+        <div data-bind="visible: (SourceRules().length == 0 && !NoFusionAvailable())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
             No source to target mapping rules defined
+        </div>
+        <div data-bind="visible: NoFusionAvailable" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
+            There are no fusion attributes defined for the source or target selected.
         </div>
         <table>
             <tbody>
-                <tr>
+                <tr data-bind="visible: (CanAdd() && !NoFusionAvailable())">
                     <td colspan="3" style="text-align:center; padding-top:5px;">
                         <div data-bind="jqxButton: {theme: theme, width: '50%' }, click: AddSourceRule" style="text-align:center;cursor:pointer;display:inline-block;"><i class="fa fa-plus"></i> Add Source Mapping Rule</div>
                     </td>
@@ -88,7 +91,7 @@
                         <!--<span data-bind="jqxButton: { theme: theme, width: 100 }">Cancel</span>-->
                         <span data-bind="html: SaveMessage"></span>
                         <span data-bind="visible: IsLoading"><i class="fa fa-spinner fa-spin"></i></span>
-                        <div data-bind="jqxButton: { theme: theme, width: 100, disabled: IsLoading }, click: SaveRules" style="cursor:pointer;display:inline-block;"><i class="fa fa-floppy-o"></i> Save</div>
+                        <div data-bind="jqxButton: { theme: theme, width: 100, disabled: (IsLoading && !(CanAdd() || CanUpdate()))}, click: SaveRules" style="cursor:pointer;display:inline-block;"><i class="fa fa-floppy-o"></i> Save</div>
                     </td>
                 </tr>
                 <tr></tr>
@@ -104,34 +107,34 @@
         <table>
             <tbody>
                 <tr>
-                    <th>
-                        Source Item
-                    </th>
-                    <th>
+                    <th colspan="2">
                         Fusion Attribute
                     </th>
                 </tr>
                 <!-- ko foreach: Sources -->
                 <tr>
-                    <td style="vertical-align:top;">
-                        <div data-bind="jqxDropDownList: { width: 175, theme: theme, source: $parent.SourceItems, selectedIndex: SelectedIndex, displayMember: 'name', valueMember: 'id' }"></div>
-                    </td>
-                    <td style="vertical-align:top;">
-                        <div data-bind="jqxDropDownList: { width: 175, theme: theme, source: FusionItems, selectedIndex: SelectedFusionIndex, displayMember: 'name', valueMember: 'id', disabled: (FusionItems().length < 1) }"></div>
-                    </td>
                     <td>
+                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 125px; margin-bottom:3px; line-height:1.6"/><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin"></i></span>
+                    </td>
+                    <td data-bind="visible: $parent.CanUpdate">
+                        <div data-bind="jqxDropDownList: { source: FusionItems, displayMember: 'name', valueMember: 'id', width: 220, theme: theme, disabled: IsLoading, selectedIndex: SelectedFusionIndex }" style="display:inline-block"></div>
+                    </td>
+                    <td data-bind="visible: !$parent.CanUpdate()">
+                        <div data-bind="text: SelectedFusionName"></div>
+                    </td>
+                    <td data-bind="visible: $parent.CanUpdate">
                         <div data-bind="jqxButton: {theme: theme, width: 20, disabled: ($parent.Sources().length == 1) }, click: RemoveItem" style="color:maroon;cursor:pointer;"><i class="fa fa-remove"></i></div>
                     </td>
                 </tr>
                 <tr data-bind="fadeVisible: ErrorMessages().length > 0">
-                    <td colspan="3" style="color:maroon;font-size:1em;">
+                    <td colspan="3" style="color:maroon; font-size:1em;">
                         <ul data-bind="foreach: ErrorMessages" style="padding:0;margin:0;">
                             <li><i class="fa fa-exclamation-circle"></i> <span data-bind="text: $data"></span></li>
                         </ul>
                     </td>
                 </tr>
                 <!-- /ko -->
-                <tr>
+                <tr data-bind="visible: CanUpdate">
                     <td colspan="2" style="text-align:center; padding-top:5px">
                         <div data-bind="jqxButton: { theme: theme, width: '80%' }, click: AddSource" style="cursor:pointer;display:inline-block;"><i class="fa fa-plus"></i> Add Source</div>
                     </td>
@@ -149,23 +152,23 @@
         <table>
             <tbody>
                 <tr>
-                    <th>
-                        Target Item
-                    </th>
-                    <th>
+                    <th colspan="2">
                         Fusion Attribute
                     </th>
                 </tr>
                 <!-- ko foreach: Targets -->
                 <tr>
-                    <td style="vertical-align:top;">
-                        <div data-bind="jqxDropDownList: { width: 175, theme: theme, source: $parent.TargetItems, selectedIndex: SelectedIndex, displayMember: 'name', valueMember: 'id' }"></div>
-                    </td>
-                    <td style="vertical-align:top;">
-                        <div data-bind="jqxDropDownList: { width: 175, theme: theme, source: FusionItems, selectedIndex: SelectedFusionIndex, displayMember: 'name', valueMember: 'id', disabled: (FusionItems().length < 1) }"></div>
-                    </td>
                     <td>
-                        <div data-bind="jqxButton: { theme: theme, width: 20, disabled: ($parent.Targets().length == 1)}, click: RemoveItem" style="color:maroon;cursor:pointer;"><i class="fa fa-remove"></i></div>
+                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 125px; margin-bottom:3px; line-height:1.6" /><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin"></i></span>
+                    </td>
+                    <td data-bind="visible: $parent.CanUpdate">
+                        <div data-bind="jqxDropDownList: { source: FusionItems, displayMember: 'name', valueMember: 'id', width: 225, theme: theme, disabled: IsLoading, selectedIndex: SelectedFusionIndex }" style="display:inline-block"></div>
+                    </td>
+                    <td data-bind="visible: !$parent.CanUpdate()">
+                        <div data-bind="text: SelectedFusionName"></div>
+                    </td>
+                    <td data-bind="visible: $parent.CanUpdate">
+                        <div data-bind="jqxButton: {theme: theme, width: 20, disabled: ($parent.Targets().length == 1) }, click: RemoveItem" style="color:maroon;cursor:pointer;"><i class="fa fa-remove"></i></div>
                     </td>
                 </tr>
                 <tr data-bind="fadeVisible: ErrorMessages().length > 0">
@@ -176,7 +179,7 @@
                     </td>
                 </tr>
                 <!-- /ko -->
-                <tr>
+                <tr data-bind="visible: CanUpdate">
                     <td colspan="2" style="text-align:center; padding-top:5px">
                         <div data-bind="jqxButton: { theme: theme, width: '80%' }, click: AddTarget" style="cursor:pointer;display:inline-block;"><i class="fa fa-plus"></i> Add Target</div>
                     </td>
@@ -192,8 +195,7 @@
     </td>
     <td data-bind="visible: !IsLoading()" style="width:20%; vertical-align:top;">
         <div>&nbsp;</div>
-        <textarea data-bind="value: Transformation" placeholder="Enter transformation rule..." style="background-color:white"></textarea>
-        <!--<textarea data-bind="jqxTextArea: {source: Keywords, value: Transformation, theme: theme }"></textarea>-->
+        <textarea data-bind="value: Transformation, disabled: !CanUpdate()" placeholder="Enter transformation rule..." style="background-color:white"></textarea>
     </td>
 </script>
 <script id="hierarchyRuleItemEditTmpl" type="text/html">
@@ -212,24 +214,26 @@
     <div class="row">
         <div class="col s3 FieldName">Description</div>
         <div class="col s9">
-            <input type="text" data-bind="jqxInput: { width: field_width98, height: 300, theme: theme }, value: Description" />
+            <input type="text" data-bind="jqxInput: { width: field_width98, height: 300, theme: theme, disabled: (SelectedItemIndex() > -1) }, value: Description" />
         </div>
     </div>
 </script>
 <script id="hierarchyRuleEditTmpl" type="text/html">
-    <div style="margin:5px">
+    <div data-bind="visible: !HasSourcesOrRules()" style="text-align: center; padding: 15px;">
+        There are no available sources for this item.
+    </div>
+    <div data-bind="visible: HasSourcesOrRules" style="margin:5px">
         <div data-bind="visible: InProgress" style="width:100%;height:100%;position:absolute;left:0;top:0;z-index:100000; background-color:#fff; display: flex">
             <div style="vertical-align:middle;text-align:center;display:block;margin: auto">
                 <i class="fa fa-3x fa-spinner fa-spin"></i>
             </div>
         </div>
-        <div id="hierarchyRuleAddRadioButton" data-bind="jqxRadioButton: { theme: theme, groupName: 'ruletype', checked: true, disabled: Sources().length < 1 }"> Add Hierarchy Rules</div>
-        <div id="hierarchyRuleEditRadioButton" data-bind="jqxRadioButton: { theme: theme, groupName: 'ruletype', disabled: (SourceRules().length < 1) }"> Edit Hierarchy Rules</div>
-        <div id="hierarchyRuleTemplateRadioButton" data-bind="jqxRadioButton: { theme: theme, groupName: 'ruletype' }" style="display:none;"> Apply a Hierarchy Rule Template</div>
+        <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioAddChecked, disabled: (Sources().length < 1 || !CanAdd()) }"> Add Hierarchy Rules</div>
+        <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioEditChecked, disabled: (SourceRules().length < 1) }"> Edit Hierarchy Rules</div>
         <div data-bind="fadeVisible: Mode() != 'template'">
             <div style="padding-left: 20px" data-bind="fadeVisible: Mode() == 'edit'">
                 <div class="FieldName">Choose a Rule</div>
-                <div id="hierarchyRuleList" data-bind="jqxDropDownList: {source: SourceRules }"></div>
+                <div data-bind="jqxDropDownList: { theme: theme, source: SourceRules, displayMember: 'Name', valueMember: 'ID', selectedIndex: SelectedRuleIndex }"></div>
             </div>
             <div>
                 <table>
@@ -238,28 +242,28 @@
                             <td rowspan="9" width="20"></td>
                             <td colspan="3">
                                 <div class="FieldName" style="padding-top:9px">Rule Name</div>
-                                <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme }, value: SelectedRule().Name" />
+                                <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme, disabled: !CanUpdate() }, value: SelectedRule().Name" />
                             </td>
                             <td></td>
                         </tr>
                         <tr>
                             <td>
                                 <div class="FieldName" style="padding-top:9px">Available Sources</div>
-                                <div id="hierarchyRuleSourceList" data-bind="jqxListBox: { source: Sources }"></div>
+                                <div data-bind="jqxListBox: {source: Sources, displayMember: 'Name', valueMember: 'Value', theme: theme, selectedIndex: SelectedSourceIndex }"></div>
                             </td>
                             <td style="padding-right:9px">
-                                <button id="hierarchyRuleAddButton"><i class="fa fa-chevron-right"></i></button>
+                                <div data-bind="jqxButton: { theme: theme, disabled: !CanUpdate() },  click: AddRuleItem "><i class="fa fa-chevron-right"></i></div>
                                 <div style="height:9px"></div>
-                                <button id="hierarchyRuleRemoveButton"><i class="fa fa-chevron-left"></i></button>
+                                <div data-bind="jqxButton: { theme: theme, disabled: !CanUpdate() },  click: RemoveRuleItem "><i class="fa fa-chevron-left"></i></div>
                             </td>
                             <td style="padding-right:9px">
                                 <div class="FieldName">Rule Sources</div>
-                                <div id="hierarchyRuleItemList" data-bind="jqxListBox: { source: SelectedRule().Items }"></div>
+                                <div data-bind="jqxListBox: { source: SelectedRule().Items, theme: theme, selectedIndex: SelectedItemIndex, displayMember: 'RuleName', valueMember: 'Value' }"></div>
                             </td>
                             <td>
-                                <button id="hierarchyRuleUpButton"><i class="fa fa-chevron-up"></i></button>
+                                <div data-bind="jqxButton: { theme: theme, disabled: !CanUpdate() }, click: MoveRuleItemUp"><i class="fa fa-chevron-up"></i></div>
                                 <div style="height:9px"></div>
-                                <button id="hierarchyRuleDownButton"><i class="fa fa-chevron-down"></i></button>
+                                <div data-bind="jqxButton: { theme: theme, disabled: !CanUpdate() }, click: MoveRuleItemDown"><i class="fa fa-chevron-down"></i></div>
                             </td>
                         </tr>
                     </tbody>
@@ -271,7 +275,7 @@
                                 <td rowspan="9" width="20"></td>
                                 <td style="vertical-align: top">
                                     <div class="FieldName" style="padding-top:9px">Description</div>
-                                    <textarea data-bind="value: SelectedRule().SelectedItem().Description, enable: IsItemSelected" rows="3"></textarea>
+                                    <textarea data-bind="value: SelectedRule().SelectedItem().Description, enable: (SelectedItemIndex() != -1 && CanUpdate())" rows="3"></textarea>
                                 </td>
                                 <td style="vertical-align: top">
                                     <div class="FieldName" style="padding-top:9px">Order</div>
@@ -281,21 +285,31 @@
                             <tr>
                                 <td colspan="2">
                                     <div class="FieldName" style="padding-top:9px">Contexts</div>
-                                    <div style="font-size:.9em" data-bind="text: SelectedRule().SelectedItem().ContextCount, fadeVisible: IsItemSelected"></div>
-                                    <div id="hierarchyRuleContextGrid" data-bind="jqxGrid: { source: Contexts }"></div>
+                                    <div style="font-size:.9em" data-bind="text: SelectedRule().SelectedItem().ContextCount, fadeVisible: (SelectedItemIndex() != -1)"></div>
+                                    <div data-bind="jqxGrid: { source: Contexts, theme: theme, width: '100%', height: 150,
+                                                     showfilterrow: true, filterable: true, editable: CanUpdate(), disabled: (IsLoadingContexts() || SelectedItemIndex() == -1),
+                                                     columns: [
+                                                      { text: '', dataField: 'Checked', columntype: 'checkbox', width: 25, editable: true, filtertype: 'bool', filterable: true },
+                                                      { text: 'Category', dataField: 'Category', width: 100, filtertype: 'checkedlist', editable: false },
+                                                      { text: 'Type', dataField: 'Type', width: 100, filtertype: 'checkedlist', editable: false },
+                                                      { text: 'Name', dataField: 'Name', editable: false }
+                                                ]}" id="hierarchyRuleContextGrid"></div>
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="3">
-                                    <div id="hierarchyRuleIsTemplate" data-bind="jqxCheckBox: { checked: SelectedRule().IsTemplate }" style="display:none;"> Save as template</div>
-                                </td>
+                                <td colspan="3"></td>
                             </tr>
                         </tbody>
                     </table>
                     <div>
                         <div style="padding-top:9px"></div>
-                        <div class="red-text" style="white-space: pre-wrap" data-bind="text: SelectedRule().ErrorMessage, fadeVisible: SelectedRule().ErrorMessage().length > 0"></div>
-                        <button style="float:right" id="hierarchyRuleSaveButton" data-bind="jqxButton: {disabled: SelectedRule().IsSaving }">Save</button><span data-bind="visible: SelectedRule().IsSaving" style="float:right;"> <i class="fa fa-spinner fa-spin"></i> </span>
+                        <ul data-bind="foreach: SelectedRule().ErrorMessages" style="color:maroon;font-size:1em;padding:0;margin:0;">
+                            <li><i class="fa fa-exclamation-circle"></i> <span data-bind="text: $data"></span></li>
+                        </ul>
+
+                        @*<div class="red-text" style="white-space: pre-wrap" data-bind="text: SelectedRule().ErrorMessage, fadeVisible: SelectedRule().ErrorMessage().length > 0"></div>*@
+                        <span data-bind="html: SelectedRule().SaveMessage"></span>
+                        <span data-bind="jqxButton: {disabled: SelectedRule().IsSaving, theme: theme, width: 80 }, click: SelectedRule().SaveRule" style="display:inline-block;float:right">Save <span data-bind="visible: SelectedRule().IsSaving" style="float:right;"><i class="fa fa-spinner fa-spin"></i></span></span>
                     </div>
                 </div>
             </div>
@@ -414,7 +428,7 @@
                 </div>
                 <div data-bind="jqxCheckBox: {checked: DisableCommunityPosting, theme: theme, width: '120px'}">Disable Discussion Posts</div>
                 <div data-bind="jqxCheckBox: {checked: DisableIssuePosting, theme: theme, width: '120px'}">Disable Issue Posts</div>
-                <div data-bind="jqxCheckBox: {checked: DisableQuestionPosting, theme: theme, width: '120px'}">Disable Question Posts</div>
+                @*<div data-bind="jqxCheckBox: {checked: DisableQuestionPosting, theme: theme, width: '120px'}">Disable Question Posts</div>*@
             </div>
             <div class="tile tile-detail">
                 <header>Global Fields</header>

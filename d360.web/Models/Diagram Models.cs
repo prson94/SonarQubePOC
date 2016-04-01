@@ -47,6 +47,7 @@ namespace d360.web.Models
 
         public int sourceRuleCount { get; set; }
 
+        public int mappingRuleCount { get; set; }
         public override string ToString()
         {
             return level.ToString();
@@ -61,6 +62,7 @@ namespace d360.web.Models
         public string to { get; set; }
         public string text { get; set; }
         public int predicateId { get; set; }
+        public int mappingRuleCount { get; set; }
     }
 
     public class DiagramModel

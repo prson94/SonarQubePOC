@@ -1904,7 +1904,7 @@ namespace d360.web.Controllers
             var model = new CompanySettingsEditorModel();
             model.DisableCommunityPosting = (settings.Any(i => i.SettingID == 1) ? bool.Parse(settings.Single(i => i.SettingID == 1).Value) : false);
             model.DisableIssuePosting = (settings.Any(i => i.SettingID == 5) ? bool.Parse(settings.Single(i => i.SettingID == 5).Value) : false);
-            model.DisableQuestionPosting = (settings.Any(i => i.SettingID == 6) ? bool.Parse(settings.Single(i => i.SettingID == 6).Value) : false);
+            //model.DisableQuestionPosting = (settings.Any(i => i.SettingID == 6) ? bool.Parse(settings.Single(i => i.SettingID == 6).Value) : false);
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
             if (settings.Any(i => i.SettingID == 4))
@@ -2053,17 +2053,17 @@ namespace d360.web.Controllers
                     Community.SaveChanges();
                 }
 
-                socialSetting = settings.FirstOrDefault(i => i.SettingID == 6);
-                if (socialSetting == null)
-                {
-                    socialSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 6, Value = formModel.DisableQuestionPosting.ToString().ToLower() };
-                    Community.Add<CompanySetting>(socialSetting);
-                }
-                else
-                {
-                    socialSetting.Value = formModel.DisableQuestionPosting.ToString().ToLower();
-                    Community.SaveChanges();
-                }
+                //socialSetting = settings.FirstOrDefault(i => i.SettingID == 6);
+                //if (socialSetting == null)
+                //{
+                //    socialSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 6, Value = formModel.DisableQuestionPosting.ToString().ToLower() };
+                //    Community.Add<CompanySetting>(socialSetting);
+                //}
+                //else
+                //{
+                //    socialSetting.Value = formModel.DisableQuestionPosting.ToString().ToLower();
+                //    Community.SaveChanges();
+                //}
 
                 #endregion
 
@@ -12769,28 +12769,135 @@ order by	D.Name, I.Name";
         [HttpGet, Route("SourceRules/sources/{target}/{targetId:int}/{type}/{id:int}")]
         public JsonNetResult GetAvailableSources(string target, int targetId, string type, int id)
         {
-            string sql = @"	
-                            select *, row_number() over (order by [Object]) as SortOrder
-                            from
-                            (
-                            select	distinct
-			                M.ID as IntersectMapID,
-			                R.SourceTypeName as TypeName,
-			                R.SourceObjectName as Name,
-                            null as Description,
-			                R.SourceObject as [Object],
-			                R.SourceObjectID as ObjectID,
-			                SD.[IconBackColor],
-			                SD.[IconForeColor]
-	                from	IntersectMap M
-			                inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
-			                inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-			                inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-			                inner join Predicate P on P.ID = M.PredicateID
-			                inner join [cache].[Relationship] SR on SR.SourceObject = @target and SR.SourceObjectID = @targetId and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
-			                inner join [cache].[Relationship] TR on TR.SourceObject = @target and TR.SourceObjectID = @targetId and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
-	                where r.targetObject = @type and r.targetObjectID = @id) z
-                    where z.intersectmapid not in (select intersectmapid from intersectmapsourcerule r join sourcerule s on s.id = r.sourceruleid where s.object= @target and s.objectid = @targetId)";
+            #region Old Sql
+            //string sql = @"	
+            //                select *, row_number() over (order by [Object]) as SortOrder
+            //                from
+            //                (
+            //                select	distinct
+            //       M.ID as IntersectMapID,
+            //       R.SourceTypeName as TypeName,
+            //       R.SourceObjectName as Name,
+            //                null as Description,
+            //       R.SourceObject as [Object],
+            //       R.SourceObjectID as ObjectID,
+            //       SD.[IconBackColor],
+            //       SD.[IconForeColor]
+            //     from	IntersectMap M
+            //       inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
+            //       inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+            //       inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+            //       inner join Predicate P on P.ID = M.PredicateID
+            //       inner join [cache].[Relationship] SR on SR.SourceObject = @target and SR.SourceObjectID = @targetId and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
+            //       inner join [cache].[Relationship] TR on TR.SourceObject = @target and TR.SourceObjectID = @targetId and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
+            //     where r.targetObject = @type and r.targetObjectID = @id) z
+            //        where z.intersectmapid not in (select intersectmapid from intersectmapsourcerule r join sourcerule s on s.id = r.sourceruleid where s.object= @target and s.objectid = @targetId)";
+
+            #endregion
+
+            #region Sql
+            string sql = @"select 
+	row_number() over (order by SourceObject) as SortOrder,
+	ID as IntersectMapID,
+	SourceTypeName as TypeName,
+	SourceObjectName as Name,
+	null as [Description],
+	SourceObject as [Object],
+	SourceObjectID as ObjectID,
+	SourceIconBackColor as IconBackColor,
+	SourceIconForeColor as IconForeColor
+ from (
+	select	distinct
+			R.IntersectID,
+			M.ID,
+			M.SubjectIntersectNodeID,
+			R.SourceTypeName,
+			R.SourceType,
+			R.SourceTypeID,
+			R.SourceObjectName,
+			R.SourceObject,
+			R.SourceObjectID,
+			SD.[IconBackColor] as SourceIconBackColor,
+			SD.[IconForeColor] as SourceIconForeColor,
+			M.ObjectIntersectNodeID,
+			R.TargetTypeName,
+			R.TargetType,
+			R.TargetTypeID,
+			R.TargetObjectName,
+			R.TargetObject,
+			R.TargetObjectID,
+			TD.[IconBackColor] as TargetIconBackColor,
+			TD.[IconForeColor] as TargetIconForeColor,
+			M.PredicateID,
+			P.Name as Predicate
+	from	IntersectMap M
+			inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
+			inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+			inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+			inner join Predicate P on P.ID = M.PredicateID
+			inner join [cache].[Relationship] SR on SR.SourceObject = @type and SR.SourceObjectID = @id and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
+			inner join [cache].[Relationship] TR on TR.SourceObject = @type and TR.SourceObjectID = @id and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
+	union
+	select	distinct
+			R.IntersectID,
+			M.ID,
+			M.SubjectIntersectNodeID,
+			R.SourceTypeName,
+			R.SourceType,
+			R.SourceTypeID,
+			R.SourceObjectName,
+			R.SourceObject,
+			R.SourceObjectID,
+			SD.[IconBackColor] as SourceIconBackColor,
+			SD.[IconForeColor] as SourceIconForeColor,
+			M.ObjectIntersectNodeID,
+			R.TargetTypeName,
+			R.TargetType,
+			R.TargetTypeID,
+			R.TargetObjectName,
+			R.TargetObject,
+			R.TargetObjectID,
+			TD.[IconBackColor] as TargetIconBackColor,
+			TD.[IconForeColor] as TargetIconForeColor,
+			M.PredicateID,
+			P.Name as Predicate
+	from	IntersectMap M
+			inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.SourceObject = @type and R.SourceObjectID = @id and M.[Type] = 1
+			inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+			inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+			inner join Predicate P on P.ID = M.PredicateID
+	union
+	select	distinct
+			R.IntersectID,
+			M.ID,
+			M.SubjectIntersectNodeID,
+			R.SourceTypeName,
+			R.SourceType,
+			R.SourceTypeID,
+			R.SourceObjectName,
+			R.SourceObject,
+			R.SourceObjectID,
+			SD.[IconBackColor] as SourceIconBackColor,
+			SD.[IconForeColor] as SourceIconForeColor,
+			M.ObjectIntersectNodeID,
+			R.TargetTypeName,
+			R.TargetType,
+			R.TargetTypeID,
+			R.TargetObjectName,
+			R.TargetObject,
+			R.TargetObjectID,
+			TD.[IconBackColor] as TargetIconBackColor,
+			TD.[IconForeColor] as TargetIconForeColor,
+			M.PredicateID,
+			P.Name as Predicate
+	from	IntersectMap M
+			inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.TargetObject = @type and R.TargetObjectID = @id and M.[Type] = 1
+			inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
+			inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
+			inner join Predicate P on P.ID = M.PredicateID
+			) z
+			where z.targetobject = @target and z.targetobjectid = @targetId";
+            #endregion
 
             var results = Company.Query<dynamic>(sql, new { target = target, targetId = targetId, type = type, id = id }).ToList();
 
@@ -12804,11 +12911,17 @@ order by	D.Name, I.Name";
         [HttpGet, Route("SourceRules/contexts")]
         public JsonNetResult GetContexts()
         {
-            var countAll = Company.Query<int>(@"select count(*) from cache.ObjectDetails where objecttype in ('ArtifactType','TaxonomyType')").SingleOrDefault();
+            var countAll = Company.Query<int>(@"select (select count(*) from artifact) + (select count(*) from taxonomy)").SingleOrDefault();
 
-            var items = Company.Query<dynamic>(@"select [object] + cast(objectid as varchar(10)) as ID, [Object], ObjectID, cast(0 as bit) as Checked, case when objecttype = 'ArtifactType' then 'Glossary' else 'Model' end as Category, ObjectTypeName as Type, Name from cache.ObjectDetails
-                                            where objecttype in ('ArtifactType', 'TaxonomyType') and ObjectTypeName != ''
-                                            order by name").ToList();
+            var items = Company.Query<dynamic>(@"select * from
+                                                (
+                                                select a.Name, 'Artifact|' + cast(a.id as varchar(10)) as ID, 'Glossary' as Category, t.name as Type, cast(0 as bit) as Checked from artifact a
+                                                join artifacttype t on t.id = a.artifacttypeid
+                                                union all
+                                                select x.Name, 'Taxonomy|' + cast(x.id as varchar(10)) as ID, 'Model' as Category, t.name as Type, cast(0 as bit) as Checked from taxonomy x
+                                                join taxonomytype t on t.id = x.taxonomytypeid
+                                                ) z
+                                                order by name").ToList();
             return new JsonNetResult
             {
                 Data = new { count = countAll, items = items },
@@ -12821,9 +12934,16 @@ order by	D.Name, I.Name";
         {
             //var countAll = Company.Query<int>(@"select count(*) from cache.ObjectDetails where objecttype in ('ArtifactType','TaxonomyType')").SingleOrDefault();
             phrase = '%' + phrase.Trim('%') + '%';
-            var items = Company.Query<dynamic>(@"select [object] + cast(objectid as varchar(10)) as ID, [Object], ObjectID, cast(0 as bit) as Checked, case when objecttype = 'ArtifactType' then 'Glossary' else 'Model' end as Category, ObjectTypeName as Type, Name from cache.ObjectDetails
-                                            where objecttype in ('ArtifactType', 'TaxonomyType') and ObjectTypeName != '' and Name like @phrase
-                                            order by name", new { phrase = phrase }).ToList();
+            var items = Company.Query<dynamic>(@"select * from
+                                                (
+                                                select a.Name, 'Artifact|' + cast(a.id as varchar(10)) as ID, 'Glossary' as Category, t.name as Type, cast(0 as bit) as Checked from artifact a
+                                                join artifacttype t on t.id = a.artifacttypeid
+                                                union all
+                                                select x.Name, 'Taxonomy|' + cast(x.id as varchar(10)) as ID, 'Model' as Category, t.name as Type, cast(0 as bit) as Checked from taxonomy x
+                                                join taxonomytype t on t.id = x.taxonomytypeid
+                                                ) z
+                                                where name like @phrase
+                                                order by name", new { phrase = phrase }).ToList();
             return new JsonNetResult
             {
                 Data = items,
@@ -12836,16 +12956,13 @@ order by	D.Name, I.Name";
         public JsonNetResult SaveRule(SourceRule rule)
         {
 
-            //TODO: error handling, validation, and return value
             var message = "";
+            var error = false;
 
             var items = rule.Items.ToList();
             rule.Items = null;
             if (rule.ID < 0)
                 rule.ID = 0;
-
-            //Company.SaveOrUpdate(rule);
-            //return null;
 
             foreach (var i in items)
             {
@@ -12866,7 +12983,8 @@ order by	D.Name, I.Name";
                 }
                 catch (Exception ex)
                 {
-                    message += ex.Message;
+                    error = true;
+                    message += $"[{DateTime.Now}] An error occurred while attempting to save the intersect map source rule: {ex.Message}\n{ex.StackTrace}\n\n";
                     continue;
                 }
 
@@ -12890,7 +13008,8 @@ order by	D.Name, I.Name";
                 }
                 catch (Exception ex)
                 {
-                    message += ex.Message;
+                    error = true;
+                    message += $"[{DateTime.Now}] An error occurred while attempting to add or remove source rule contexts: {ex.Message}\n{ex.StackTrace}\n\n";
                 }
 
             }
@@ -12901,18 +13020,25 @@ order by	D.Name, I.Name";
             }
             catch (Exception ex)
             {
-                message += ex.Message;
+                error = true;
+                message += $"[{DateTime.Now}] An error occurred while attempting to save changes to the source rule: {ex.Message}\n{ex.StackTrace}\n\n";
             }
             //delete rule items which no longer exist
             var ids = Company.Query<int>("select id from intersectmapsourcerule where sourceruleid = @id", new { id = rule.ID });
             foreach (var i in ids.Where(j => !rule.Items.Select(k => k.ID).Contains(j)))
             {
+                //delete contexts first
+
+                Company.IntersectMapSourceRuleContexts.Where(r => r.IntersectMapSourceRuleID == i).ToList().ForEach(j =>
+                {
+                    Company.IntersectMapSourceRuleContexts.Remove(j);
+                });
                 Company.Delete(Company.GetById<IntersectMapSourceRule>(i));
             }
 
             return new JsonNetResult
             {
-                Data = message,
+                Data = new { error, message },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -12923,29 +13049,52 @@ order by	D.Name, I.Name";
         [HttpGet, Route("sourcetarget/load/{focal}/{focalid}/{source}/{sourceid}/{target}/{targetid}")]
         public JsonNetResult LoadSourceTargetRules(string focal, int focalid, string source, int sourceid, string target, int targetid)
         {
+            
             var items = new List<SourceTargetRule>();
 
             items = Company.SourceTargetRules.Where(r => r.FocalObject == focal && r.FocalObjectID == focalid
             && r.SourceObject == source && r.SourceObjectID == sourceid
             && r.TargetObject == target && r.TargetObjectID == targetid).ToList();
 
-            var sql = @"select distinct r.id as RuleID, n4.ObjectType + '|' + cast(n4.ObjectID as varchar(50)) as ID, n2.ObjectType + '|' + cast(n2.ObjectID as varchar(50)) as FusionID, 'source' as type from sourcetargetrule r
+
+            #region Old Sql
+
+
+            //var sql = @"select distinct r.id as RuleID, n4.ObjectType + '|' + cast(n4.ObjectID as varchar(50)) as ID, n2.ObjectType + '|' + cast(n2.ObjectID as varchar(50)) as FusionID, 'source' as type from sourcetargetrule r
+            //            join intersectmapsourcetargetrule st on st.ruleid = r.id
+            //            join intersectmap m on m.type = 2 and m.id = st.intersectmapid
+            //            join intersectnode n on n.id = m.subjectintersectnodeid
+            //            join intersectnode n2 on n2.intersectid = n.intersectid and n2.objecttype != 'Intersect'
+            //            join intersectnode n3 on n3.intersectid = n.intersectid and n3.objecttype = 'Intersect'
+            //            join intersectnode n4 on n4.intersectid = n3.objectid and (n4.objecttype + '|' + cast(n4.objectid as varchar(50))) !=  @source + '|' + cast(@sourceid as varchar(50))
+            //            where  r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid
+            //            union all
+            //            select distinct r.id as RuleID, n4.ObjectType + '|' + cast(n4.ObjectID as varchar(50)) as ID, n2.ObjectType + '|' + cast(n2.ObjectID as varchar(50)) as FusionID, 'target' as type from sourcetargetrule r
+            //            join intersectmapsourcetargetrule st on st.ruleid = r.id
+            //            join intersectmap m on m.type = 2 and m.id = st.intersectmapid
+            //            join intersectnode n on n.id = m.objectintersectnodeid
+            //            join intersectnode n2 on n2.intersectid = n.intersectid and n2.objecttype != 'Intersect'
+            //            join intersectnode n3 on n3.intersectid = n.intersectid and n3.objecttype = 'Intersect'
+            //            join intersectnode n4 on n4.intersectid = n3.objectid and (n4.objecttype + '|' + cast(n4.objectid as varchar(50))) !=  @target + '|' + cast(@targetid as varchar(50))
+            //            where  r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid";
+
+
+            #endregion
+
+            var sql = @"select distinct r.id as RuleID, n.objectid as FusionID, a.name, 'source' as [type] from sourcetargetrule r
                         join intersectmapsourcetargetrule st on st.ruleid = r.id
                         join intersectmap m on m.type = 2 and m.id = st.intersectmapid
                         join intersectnode n on n.id = m.subjectintersectnodeid
-                        join intersectnode n2 on n2.intersectid = n.intersectid and n2.objecttype != 'Intersect'
-                        join intersectnode n3 on n3.intersectid = n.intersectid and n3.objecttype = 'Intersect'
-                        join intersectnode n4 on n4.intersectid = n3.objectid and (n4.objecttype + '|' + cast(n4.objectid as varchar(50))) !=  @source + '|' + cast(@sourceid as varchar(50))
-                        where  r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid
+                        join fusionattribute a on a.id = n.objectid
+                        where r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid
                         union all
-                        select distinct r.id as RuleID, n4.ObjectType + '|' + cast(n4.ObjectID as varchar(50)) as ID, n2.ObjectType + '|' + cast(n2.ObjectID as varchar(50)) as FusionID, 'target' as type from sourcetargetrule r
+                        select distinct r.id as RuleID, n.objectid as FusionID, a.name, 'target' as [type] from sourcetargetrule r
                         join intersectmapsourcetargetrule st on st.ruleid = r.id
                         join intersectmap m on m.type = 2 and m.id = st.intersectmapid
                         join intersectnode n on n.id = m.objectintersectnodeid
-                        join intersectnode n2 on n2.intersectid = n.intersectid and n2.objecttype != 'Intersect'
-                        join intersectnode n3 on n3.intersectid = n.intersectid and n3.objecttype = 'Intersect'
-                        join intersectnode n4 on n4.intersectid = n3.objectid and (n4.objecttype + '|' + cast(n4.objectid as varchar(50))) !=  @target + '|' + cast(@targetid as varchar(50))
-                        where  r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid";
+                        join fusionattribute a on a.id = n.objectid
+                        where r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid";
+
 
             var ruleItems = Company.Query<dynamic>(sql, new { focal = focal, focalid = focalid, source = source, sourceid = sourceid, target = target, targetid = targetid }).ToList();
 
@@ -12960,100 +13109,60 @@ order by	D.Name, I.Name";
                 foreach (dynamic s in sources)
                 {
                     var sourceItem = new SourceTargetItem();
-                    sourceItem.ID = s.ID;
                     sourceItem.FusionID = s.FusionID;
+                    sourceItem.Name = s.name;
                     rule.Sources.Add(sourceItem);
                 }
                 foreach (dynamic t in targets)
                 {
                     var targetItem = new SourceTargetItem();
-                    targetItem.ID = t.ID;
                     targetItem.FusionID = t.FusionID;
+                    targetItem.Name = t.name;
                     rule.Targets.Add(targetItem);
                 }
             }
 
+            int sourceCount = 0;
+            int targetCount = 0;
+
+            if (items.Count == 0)
+            {
+                var sql2 = @"select count(*) from 
+                        fusion.attributeowner f
+                        join fusionattributetype t on t.id = f.objectid
+                        join fusionattribute a on a.fusionattributetypeid = f.objectid
+                        where 
+                        f.relationshipownerobjectid = @id and f.relationshipownerobjecttype = @type";
+
+                sourceCount = Company.Query<int>(sql2, new { id = sourceid, type = source }).SingleOrDefault();
+                if (sourceCount > 0)
+                    targetCount = Company.Query<int>(sql2, new { id = targetid, type = target }).SingleOrDefault();
+            }
+
             return new JsonNetResult
             {
-                Data = items.ToList(),
+                Data = new { items = items.ToList(), sourceCount, targetCount },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
 
-        [HttpGet, Route("sourcetarget/related/{type}/{id:int}")]
-        public JsonNetResult GetRelatedSourceItems(string type, int id)
+        [HttpGet, Route("sourcetarget/fusion/{type}/{id:int}/{phrase}")]
+        public JsonNetResult GetRelatedFusionItems(string type, int id, string phrase)
         {
-            //      var sql = @"select	 distinct   c.TargetTypeName + ' :: ' + c.TargetObjectName as name, c.TargetObject + '|' + cast(c.TargetObjectID as varchar(50)) as id
-            //                  from	cache.Relationships c
-            //inner join relationship r on r.SourceObjectType = c.TargetObject and r.SourceObjectID = c.TargetObjectID and r.TargetObjectType = 'FusionAttribute'
-            //                  where	c.SourceObject = @type and c.SourceObjectID = @id";
+            if (phrase == null)
+                phrase = "";
+            else
+                phrase = '%' + phrase.Trim() + '%';
+            var sql = @"select top 100 a.name, a.id from 
+                        fusion.attributeowner f
+                        join fusionattributetype t on t.id = f.objectid
+                        join fusionattribute a on a.fusionattributetypeid = f.objectid
+                        where 
+                        f.relationshipownerobjectid = @id and f.relationshipownerobjecttype = @type
+                        and a.name like @phrase";
 
-            var sql = @"with i as
-                        (
-	                        select * from intersecttypenode where ObjectType = 'IntersectType' and ObjectID in
-	                        (
-		                        select intersecttypeid from cache.objectdetails c 
-		                        join intersecttypenode n on n.ObjectType = c.ObjectType and n.ObjectID = c.ObjectTypeID and n.[Order] = 1
-		                        where c.object = @type and c.objectid = @id
-	                        ) and [Order] = 1
-                        )
-                        select d.ObjectTypeName + '::' + d.Name as name, d.[Object] + '|' + cast(d.ObjectID as varchar(50)) as id from cache.objectdetails d
-                        join intersectnode n on n.objecttype = d.[object] and n.objectid = d.objectid
-                        join intersecttypenode t on t.id = n.intersecttypenodeid and t.[order] = 2
-                        where n.intersectid in (
-	                        select sourceobjectid from relationship r
-	                        join i on i.intersecttypeid = r.intersecttypeid
-	                        join intersectnode n on n.intersectid = r.SourceObjectID and n.ObjectType = @type and n.ObjectID = @id
-	                        where sourceobjecttype = 'Intersect'
-                        )";
+            var items = Company.Query<dynamic>(sql, new { type = type, id = id, phrase = phrase });
 
-            var items = Company.Query<dynamic>(sql, new { type = type, id = id });
-            return new JsonNetResult
-            {
-                Data = items,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpGet, Route("sourcetarget/fusion/{type}/{id:int}/{obj}/{objid:int}")]
-        public JsonNetResult GetRelatedFusionItems(string type, int id, string obj, int objid)
-        {
-            #region old sql
-            //var sql = @"select TargetName as name, TargetObjectID as id from relationship 
-            //            where SourceObjectType = @type and SourceObjectID = @id and TargetObjectType = 'FusionAttribute'";
-
-            //var sql = @"with i as
-            //             (
-            //              select * from intersecttypenode where ObjectType = 'IntersectType' and ObjectID in
-            //              (
-            //               select intersecttypeid from cache.objectdetails c 
-            //               join intersecttypenode n on n.ObjectType = c.ObjectType and n.ObjectID = c.ObjectTypeID and n.[Order] = 1
-            //               where c.object = @type and c.objectid = @id
-            //              ) and [Order] = 1
-            //             )
-            //             select d.Name as name, d.[Object] + '|' + cast(d.ObjectID as varchar(50)) as id from cache.objectdetails d
-            //             join relationship r on r.targetobjectid = d.objectid and r.targetobjecttype = d.object
-            //             join i on i.intersecttypeid = r.intersecttypeid
-            //             join intersectnode n on n.intersectid = r.SourceObjectID and n.ObjectType = @obj and n.ObjectID = @objid
-            //             where sourceobjecttype = 'Intersect'";
-
-            #endregion
-
-            var sql = @"with i as
-                        (
-	                        select distinct objectid from intersecttypenode where ObjectType = 'IntersectType' and ObjectID in
-	                        (
-		                        select intersecttypeid from cache.objectdetails c 
-		                        join intersecttypenode n on n.ObjectType = c.ObjectType and n.ObjectID = c.ObjectTypeID and n.[Order] = 1
-		                        where c.object = @type and c.objectid = @id
-	                        ) and [Order] = 1
-                        )
-                        select r2.TargetName as name, r2.TargetObjectType + '|' + cast(r2.TargetObjectID as varchar(50)) as id from relationship r 
-                        join relationship r2 on r2.sourceobjecttype = 'Intersect' and  r2.sourceobjectid = r.intersectid
-                        join i on i.objectid = r.intersecttypeid
-                        where r.sourceobjectid = @id and r.sourceobjecttype = @type and r.targetobjectid = @objid and r.targetobjecttype = @obj";
-
-            var items = Company.Query<dynamic>(sql, new { type = type, id = id, obj = obj, objid = objid });
             return new JsonNetResult
             {
                 Data = items,
@@ -13088,13 +13197,6 @@ order by	D.Name, I.Name";
                     continue;
                 }
 
-                List<int> sourceIntersects = new List<int>();
-                List<int> targetIntersects = new List<int>();
-                var sql = @"select id from intersectnode n
-                                join relationship r on r.SourceObjectType = @object and r.SourceObjectID = @objectid and r.TargetObjectType = @target and r.TargetObjectID = @targetid
-                                join relationship r2 on r2.SourceObjectType = 'Intersect' and r2.SourceObjectID = r.IntersectID and r2.TargetObjectType = @attribute and r2.TargetObjectID = @attributeid and n.IntersectID = r2.IntersectID
-                                where n.ObjectType = 'Intersect'";
-
                 if (rule.Sources == null)
                     rule.Sources = new List<SourceTargetItem>();
                 if (rule.Targets == null)
@@ -13113,45 +13215,54 @@ order by	D.Name, I.Name";
                     continue;
                 }
 
-                foreach (SourceTargetItem item in rule.Sources)
-                {
-                    var intersectNodeID = Company.Query<int>(sql, new { @object = rule.SourceObject, objectid = rule.SourceObjectID, target = item.Object, targetID = item.ObjectID, attribute = item.AttributeType, attributeID = item.AttributeID }).FirstOrDefault();
-                    sourceIntersects.Add(intersectNodeID);
-                }
-                foreach (SourceTargetItem item in rule.Targets)
-                {
-                    var intersectNodeID = Company.Query<int>(sql, new { @object = rule.TargetObject, objectid = rule.TargetObjectID, target = item.Object, targetID = item.ObjectID, attribute = item.AttributeType, attributeID = item.AttributeID }).FirstOrDefault();
-                    targetIntersects.Add(intersectNodeID);
-                }
+                var intersectSql = @"select distinct n.intersectid from intersectnode n
+                            join intersectnode n2 on n2.intersectid = n.intersectid
+                            where n.objecttype = 'FusionAttribute' and n2.objecttype = 'FusionAttribute'
+                            and(n.objectid = @sourceId and n2.objectid = @targetId) or(n2.objectid = @sourceId and n.objectid = @targetId)";
 
                 List<IntersectMap> intersectMaps = new List<IntersectMap>();
 
-                foreach(int source in sourceIntersects)
+                foreach (SourceTargetItem source in rule.Sources)
                 {
-                    foreach(int target in targetIntersects)
+                    foreach(SourceTargetItem target in rule.Targets)
                     {
-                        var intersectMap = Company.IntersectMaps.Where(m => m.SubjectIntersectNodeID == source && m.ObjectIntersectNodeID == target && m.Type == MapType.SourceToTarget).FirstOrDefault();
-                        if (intersectMap == null || intersectMap.ID == 0)
+
+                        //Company.GetIn
+                        var intersectId = Company.Query<int>(intersectSql, new { sourceId = source.FusionID, targetId = target.FusionID }).FirstOrDefault();
+
+                        if (intersectId < 1)
                         {
-                            intersectMap = new IntersectMap();
-                            intersectMap.Type = MapType.SourceToTarget;
-                            intersectMap.SubjectIntersectNodeID = source;
-                            intersectMap.ObjectIntersectNodeID = target;
-                            intersectMap.PredicateID = 1;
+                            Company.AddRelationship(SystemObjects.FusionAttribute, source.FusionID, SystemObjects.FusionAttribute, target.FusionID, IntersectClassification.Normal, null, null);
+                            intersectId = Company.Query<int>(intersectSql, new { sourceId = source.FusionID, targetId = target.FusionID }).FirstOrDefault();
                         }
 
+                        var intersectNodeSub = Company.IntersectNodes.Where(i => i.IntersectID == intersectId && i.ObjectID == source.FusionID).FirstOrDefault();
+                        var intersectNodeObj = Company.IntersectNodes.Where(i => i.IntersectID == intersectId && i.ObjectID == target.FusionID).FirstOrDefault();
+                        var intersectMap = Company.IntersectMaps.Where(m => m.SubjectIntersectNodeID == intersectNodeSub.ID && m.ObjectIntersectNodeID == intersectNodeObj.ID && m.Type == MapType.SourceToTarget).FirstOrDefault();
+
+                        if (intersectMap == null || intersectMap.ID < 1)
+                        {
+                            var newMap = new IntersectMap();
+                            newMap.SubjectIntersectNodeID = intersectNodeSub.ID;
+                            newMap.ObjectIntersectNodeID = intersectNodeObj.ID;
+                            newMap.Type = MapType.SourceToTarget;
+                            newMap.PredicateID = 1;
+                            Company.IntersectMaps.Add(newMap);
+                            intersectMap = newMap;
+                        }
                         try
                         {
-                            Company.SaveOrUpdate(intersectMap);
+                            Company.SaveChanges();
                         }
                         catch (Exception ex)
                         {
                             error = true;
-                            message += $"[{DateTime.Now}] An error occurred while saving a source to target relationship: {ex.Message}\n{ex.StackTrace}\n\n";
+                            message += $"[{DateTime.Now}] An error occurred while saving the intersect map record: {ex.Message}\n{ex.StackTrace}\n\n";
                         }
+                       
                         intersectMaps.Add(intersectMap);
                     }
-                }
+                }    
 
                 foreach(IntersectMap map in intersectMaps)
                 {
@@ -13251,6 +13362,7 @@ order by	D.Name, I.Name";
                 try
                 {
                     Company.Delete(rule);
+                    Company.SaveChanges();
                 }
                 catch (Exception ex)
                 {
@@ -13273,170 +13385,6 @@ order by	D.Name, I.Name";
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-        //        public JsonNetResult SourceToTarget_Step1()
-        //        {
-        //            //var models = (
-        //            //            from a in Company.Table<Artifact>()
-        //            //            join rt in Company.Filter<ResponsibilityTypeSourceType>(i => i.ResponsibilityTypeID == 0) on a.ArtifactTypeID equals rt.ObjectID
-        //            //            join t in Company.Table<ArtifactType>() on rt.ObjectID equals t.ID
-        //            //            orderby t.Name
-        //            //            orderby a.Name
-        //            //            select new { @group = t.Name, title = a.Name, value = a.ID.ToString() }//{ group = t.Name, title = a.Name }//{ group = t.Name, text = a.Name, value = a.ID.ToString()}
-        //            //            );
-        //            var models = Company.Query<dynamic>(
-        //@"select    AT.Name as [group],
-//        			A.Name as title,
-//        			A.ID as value
-//        from		Artifact A
-//        			inner join ResponsibilityTypeSourceType RT on RT.ResponsibilityTypeID = 0 and RT.ObjectID = A.ArtifactTypeID
-//        			inner join ArtifactType AT on AT.ID = A.ArtifactTypeID
-//        order by	AT.Name,
-//        			A.Name");
-        //            return new JsonNetResult
-        //            {
-        //                Formatting = Newtonsoft.Json.Formatting.None,
-        //                Data = models
-        //            };
-        //        }
-
-        //        public JsonNetResult SourceToTarget_SourcingObjectOptions(SystemObjects type, int id)
-        //        {
-        //            var models = Company.Query<dynamic>(
-        //@"select		cast(TTN.IntersectTypeID as varchar(15)) + '|' + D.[Object] + '|' + cast(D.ObjectID as varchar(15)) as value,
-//        			D.Name as title,
-//        			D.ObjectTypeName as [group],
-//        			case 
-//        				when CR.value is null then 0
-//        				else 1
-//        			end as related
-//        from		cache.ObjectDetails SD 
-//        			inner join IntersectTypeNode STN on SD.[Object] = @type and SD.ObjectID = @id and STN.ObjectType = SD.ObjectType and STN.ObjectID = SD.ObjectTypeID
-//        			inner join IntersectTypeNode TTN on TTN.IntersectTypeID = STN.IntersectTypeID and TTN.ID <> STN.ID and TTN.[Order] = 2 and TTN.[Order] = 1
-//        			inner join cache.ObjectDetails D on D.ObjectType = TTN.ObjectType and D.ObjectTypeID = TTN.ObjectID
-//        			left join	(
-//        						select	cast(R.IntersectTypeID as varchar(15)) + '|' + R.TargetObject + '|' + cast(R.TargetObjectID as varchar(15)) as value
-//        						from	[cache].[Relationships] R
-//        								inner join IntersectTypeNode TN on TN.ID = R.TargetIntersectTypeNodeID and TN.[Order] = 2 and TN.[Order] = 1 and R.SourceObject = @type and R.SourceObjectID = @id
-//        						) CR on CR.value = cast(TTN.IntersectTypeID as varchar(15)) + '|' + D.[Object] + '|' + cast(D.ObjectID as varchar(15))
-//        order by	D.ObjectTypeName,
-//        			D.Name", new { type = type.ToString(), id });
-        //            return new JsonNetResult
-        //            {
-        //                Formatting = Newtonsoft.Json.Formatting.None,
-        //                Data = models
-        //            };
-        //        }
-
-        //        public JsonNetResult SourceToTarget_SourcingAttributeOptions(SystemObjects type, int id)
-        //        {
-        //            var models = Company.Query<dynamic>(
-        //@"with fa as	(
-//        			select	A.ID,
-//        					A.ParentID,
-//        					A.FusionAttributeTypeID
-//        			from	FusionAttributeOwnerRule R
-//        					inner join FusionAttributeOwnerRuleItem RI on RI.FusionAttributeOwnerRuleID = R.ID and R.RelationshipOwnerObjectType = @type and R.RelationshipOwnerObjectID = @id
-//        					inner join FusionAttribute A on (
-//        													(RI.FusionAttributeID is not null and A.ID = RI.FusionAttributeID) OR 
-//        													(RI.FusionAttributeID is null and A.FusionAttributeTypeID = R.ObjectID)
-//        													)
-//        			union all
-//        			select	C.ID,
-//        					C.ParentID,
-//        					C.FusionAttributeTypeID
-//        			from	FusionAttribute C
-//        					inner join fa P on C.ParentID = P.ID --and P.ID <> C.ID
-//        			)
-
-//        SELECT	B.ID as value,
-//        		B.TextPath as title,
-//        		C.TextPath as [group]
-//        FROM	fa 
-//        		inner join FusionAttribute B on B.ID = fa.ID
-//        		INNER JOIN FusionAttributeType C ON	C.ID = B.FusionAttributeTypeID
-//        where	fa.FusionAttributeTypeID in (
-//        									select		TI.ObjectID
-//        									from		cache.ObjectDetails D 
-//        												inner join IntersectTypeNode S on D.[Object] = @type and D.ObjectID = @id and S.ObjectType = D.ObjectType and S.ObjectID = D.ObjectTypeID
-//        												inner join IntersectTypeNode T on T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and T.[Order] = 2 and S.[Order] = 1
-//        												inner join IntersectTypeNode SI on SI.ObjectType = 'IntersectType' and SI.ObjectID = T.IntersectTypeID  
-//        												inner join IntersectTypeNode TI on TI.IntersectTypeID = SI.IntersectTypeID and TI.ID <> SI.ID and T.[Order] = 2 and TI.ObjectType = 'FusionAttributeType'
-//        									)
-//        order by	C.TextPath,
-//        			B.TextPath", new { type = type.ToString(), id });
-        //            return new JsonNetResult
-        //            {
-        //                Formatting = Newtonsoft.Json.Formatting.None,
-        //                Data = models
-        //            };
-        //        }
-
-        //        public ActionResult AddSourceToTarget(SystemObjects type, int id)
-        //        {
-        //            var detail = Company.GetObjectDetail(type.ToString(), id);
-
-        //            var o = new SourceToTargetEditForm
-        //            {
-        //                FormUri = "/Form/AddSourceToTarget",
-        //                FormMethod = "POST",
-        //                FormTitle = Resources.FormInfo.Add_SourceTargetMapping_Title,
-        //                Context = ContextList.SourceToTarget,
-        //                FormDescription = Resources.FormInfo.Add_SourceTargetMapping_Directions,
-        //                Object = type.ToString(),
-        //                ObjectID = id,
-        //                ObjectName = detail.Name
-        //            };
-
-        //            return PartialView("SourceToTargetEditForm", o);
-        //        }
-
-        //        [HttpPost, ValidateInput(false)]
-        //        public JsonResult AddSourceToTarget(SourceToTargetEditModel model)
-        //        {
-        //            try
-        //            {
-        //                model.Groups.ForEach(g =>
-        //                {
-        //                    var mapping = new IntersectFlowMapping { Definition = g.Definition, Formula = g.Formula };
-        //                    Company.Add<IntersectFlowMapping>(mapping);
-
-        //                    g.Items.ForEach(i => 
-        //                    {
-        //                        var sourceSystem = "Artifact";
-        //                        var sourceSystemID = int.Parse(i.SourceSystem);
-        //                        var sourceObjectRaw = i.SourceObject.Split('|');
-        //                        var sourceObjectIntersectTypeID = int.Parse(sourceObjectRaw[0]);
-        //                        var sourceObject = sourceObjectRaw[1];
-        //                        var sourceObjectID = int.Parse(sourceObjectRaw[2]);
-        //                        var sourceFusionAttributeID = i.SourceFusionAttribute;
-
-        //                        var targetSystem = "Artifact";
-        //                        var targetSystemID = int.Parse(i.TargetSystem);
-        //                        var targetObjectRaw = i.TargetObject.Split('|');
-        //                        var targetObjectIntersectTypeID = int.Parse(targetObjectRaw[0]);
-        //                        var targetObject = targetObjectRaw[1];
-        //                        var targetObjectID = int.Parse(targetObjectRaw[2]);
-        //                        var targetFusionAttributeID = i.TargetFusionAttribute;
-
-        //                        Company.AddMappingDependency(mapping.ID,
-        //                            sourceSystem, sourceSystemID, sourceObject, sourceObjectID, sourceFusionAttributeID,
-        //                            targetSystem, targetSystemID, targetObject, targetObjectID, targetFusionAttributeID
-        //                        );
-        //                    });
-
-        //                });
-        //                return jsonSuccess("", "0", ContextList.SourceToTarget, "add", HttpStatusCode.Created);
-        //            }
-        //            catch (BaseException ex)
-        //            {
-        //                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                SendException(ex);
-        //                return jsonException(ex, HttpStatusCode.InternalServerError);
-        //            }
-        //        }
 
         #endregion
 

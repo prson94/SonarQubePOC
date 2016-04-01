@@ -13,55 +13,10 @@ namespace d360.core.entities
     public class SourceTargetItem
     {
         [DataMember]
-        public string ID { get; set; }
+        public int FusionID { get; set; }
+
         [DataMember]
-        public string FusionID { get; set; }
-
-        [IgnoreDataMember]
-        public int ObjectID { get
-            {
-                var i = 0;
-                try
-                {
-                    i = int.Parse(this.ID.Split('|')[1]);
-                }
-                catch { }
-                return i;
-            }
-        }
-
-        [IgnoreDataMember]
-        public string Object
-        {
-            get
-            {
-                return this.ID.Split('|')[0];
-            }
-        }
-
-        [IgnoreDataMember]
-        public int AttributeID
-        {
-            get
-            {
-                var i = 0;
-                try
-                {
-                    i = int.Parse(this.FusionID.Split('|')[1]);
-                }
-                catch { }
-                return i;
-            }
-        }
-
-        [IgnoreDataMember]
-        public string AttributeType
-        {
-            get
-            {
-                return this.FusionID.Split('|')[0];
-            }
-        }
+        public string Name { get; set; }
     }
 
     public class SourceToTargetSaveModel

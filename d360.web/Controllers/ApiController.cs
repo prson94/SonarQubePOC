@@ -5686,7 +5686,7 @@ from	A
 
             items.Add(new CountModel { Name = Resources.Core.CommentType_DataEvent, Total = getCommentCategoryCount(counts, CommentType.DataEvent), TotalUri = $"{socialUri}?type={(int)CommentType.DataEvent}" });
 
-            items.Add(new CountModel { Name = Resources.Core.CommentType_Question, Total = getCommentCategoryCount(counts, CommentType.Question), TotalUri = $"{socialUri}?type={(int)CommentType.Question}" });
+            //items.Add(new CountModel { Name = Resources.Core.CommentType_Question, Total = getCommentCategoryCount(counts, CommentType.Question), TotalUri = $"{socialUri}?type={(int)CommentType.Question}" });
 
             return items.OrderBy(x => x.Name);
         }

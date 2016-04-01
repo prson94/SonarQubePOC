@@ -1262,7 +1262,7 @@ function CompanySettingsViewModel(data) {
     //Simple Properties
     self.DisableCommunityPosting = ko.observable(data.DisableCommunityPosting);
     self.DisableIssuePosting = ko.observable(data.DisableIssuePosting);
-    self.DisableQuestionPosting = ko.observable(data.DisableQuestionPosting);
+    //self.DisableQuestionPosting = ko.observable(data.DisableQuestionPosting);
     self.ArtifactType_TaxonomyTypeID = ko.observable(data.ArtifactType_TaxonomyTypeID);
     self.ArtifactType_TaxonomyTypeIDNodes = ko.observable(data.ArtifactType_TaxonomyTypeIDNodes);
     self.SetIconToDefault = ko.observable(data.SetLogoToDefault);
@@ -1318,8 +1318,8 @@ function CompanySettingsViewModel(data) {
     self.DisableIssuePosting.subscribe(function (value) {
     });
 
-    self.DisableQuestionPosting.subscribe(function (value) {
-    });
+    //self.DisableQuestionPosting.subscribe(function (value) {
+    //});
 
 
     //#region Methods
@@ -1338,7 +1338,7 @@ function CompanySettingsViewModel(data) {
             self.CurrentCompanyLogoPath(relData.CurrentCompanyLogoPath);
             self.DisableCommunityPosting(relData.DisableCommunityPosting);
             self.DisableIssuePosting(relData.DisableIssuePosting);
-            self.DisableQuestionPosting(relData.DisableQuestionPosting);
+            //self.DisableQuestionPosting(relData.DisableQuestionPosting);
 
             self.ArtifactType_TaxonomyTypeID(relData.ArtifactType_TaxonomyTypeID);
             self.ArtifactType_TaxonomyTypeIDNodes(relData.ArtifactType_TaxonomyTypeIDNodes);
@@ -1362,7 +1362,7 @@ function CompanySettingsViewModel(data) {
         var postModel = {
             DisableCommunityPosting: self.DisableCommunityPosting(),
             DisableIssuePosting: self.DisableIssuePosting(),
-            DisableQuestionPosting: self.DisableQuestionPosting(),
+            //DisableQuestionPosting: self.DisableQuestionPosting(),
             SetLogoToDefault: self.SetLogoToDefault(),
             CompanyLogo: self.CompanyLogo().dataURL(),
             SetIconToDefault: self.SetIconToDefault(),
@@ -1405,7 +1405,7 @@ function CompanySettingsViewModel(data) {
     return self;
 }
 
-function SourceToTargetMappingModel(data) {
+function SourceToTargetMappingModel(data, permissions) {
     var self = this;
     self.Object = ko.observable(data.Object);
     self.ObjectID = ko.observable(data.ObjectID);
@@ -1422,21 +1422,49 @@ function SourceToTargetMappingModel(data) {
     self.IsLoading = ko.observable(false);
     self.SaveMessage = ko.observable('');
 
+    self.NoFusionAvailable = ko.observable(false);
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+
     self.LoadRules = function () {
         self.IsLoading(true);
         $.ajax({
             url: 'form/sourcetarget/load/' + self.Object() + '/' + self.ObjectID() + '/' + self.Source() + '/' + self.SourceID() + '/' + self.Target() + '/' + self.TargetID()
         }).done(function (data) {
-            if (data == null || data.length < 1) {
+            //console.log(data);
+            if (data == null) {
+                data = {
+                    items: [],
+                    sourceCount: 0,
+                    targetCount: 0
+                };
+            }
+            if (data.items.length == 0) {
                 data.Object = self.ObjectID();
                 data.ObjectID = self.ObjectID();
                 data.Source = self.Source();
                 data.SourceID = self.SourceID();
                 data.Target = self.Target();
                 data.TargetID = self.TargetID();
-                //self.SourceRules.push(new SourceToTargetMappingItem(data, self));
-            }
-            else
+
+                if (data.sourceCount == 0 || data.targetCount == 0) {
+                    self.NoFusionAvailable(true);
+                }
+            } else {
+                data = data.items;
+
                 for (var i = 0; i < data.length; i++) {
                     data[i].Object = data[i].FocalObject;
                     data[i].ObjectID = data[i].FocalObjectID;
@@ -1444,8 +1472,9 @@ function SourceToTargetMappingModel(data) {
                     data[i].SourceID = data[i].SourceObjectID;
                     data[i].Target = data[i].TargetObject;
                     data[i].TargetID = data[i].TargetObjectID;
-                    self.SourceRules.push(new SourceToTargetMappingItem(data[i], self));
+                    self.SourceRules.push(new SourceToTargetMappingItem(data[i], self, permissions));
                 }
+            }
         }).always(function () {
             self.IsLoading(false);
         });
@@ -1454,7 +1483,7 @@ function SourceToTargetMappingModel(data) {
     self.LoadRules();
 
     self.AddSourceRule = function () {
-        self.SourceRules.push(new SourceToTargetMappingItem(data, self));
+        self.SourceRules.push(new SourceToTargetMappingItem(data, self, permissions));
     }
 
     self.SaveRules = function () {
@@ -1482,8 +1511,6 @@ function SourceToTargetMappingModel(data) {
                 rule.ErrorMessages.push('Please enter a transformation rule.');
                 error = true;
             }
-            //if (error)
-            //    continue;
 
             var sources = [];
             var targets = [];
@@ -1491,10 +1518,6 @@ function SourceToTargetMappingModel(data) {
                 var source = rule.Sources()[j];
 
                 source.ErrorMessages([]);
-                if (source.SelectedIndex() == -1) {
-                    source.ErrorMessages.push('Please select a source.');
-                    error = true;
-                }
                 if (source.SelectedFusionIndex() == -1) {
                     source.ErrorMessages.push('Please select an attribute.');
                     error = true;
@@ -1503,7 +1526,6 @@ function SourceToTargetMappingModel(data) {
                     continue;
 
                 sources.push({
-                    ID: rule.SourceItems()[source.SelectedIndex()].id,
                     FusionID: source.FusionItems()[source.SelectedFusionIndex()].id
                 });
             }
@@ -1511,10 +1533,6 @@ function SourceToTargetMappingModel(data) {
                 var target = rule.Targets()[j];
 
                 target.ErrorMessages([]);
-                if (target.SelectedIndex() == -1) {
-                    target.ErrorMessages.push('Please choose a target.');
-                    error = true;
-                }
                 if (target.SelectedFusionIndex() == -1) {
                     target.ErrorMessages.push('Please select an attribute.');
                     error = true;
@@ -1523,7 +1541,6 @@ function SourceToTargetMappingModel(data) {
                     continue;
 
                 targets.push({
-                    ID: rule.TargetItems()[target.SelectedIndex()].id,
                     FusionID: target.FusionItems()[target.SelectedFusionIndex()].id
                 });
             }
@@ -1556,11 +1573,12 @@ function SourceToTargetMappingModel(data) {
                 if (data == null || data.error == null || data.error == true) {
                     console.log(data.message);
                     self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the source rules.</span>');
+                    self.LoadRules();
                 } else {
                     self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
                 }
 
-                //TODO: success/fail message
+                
             }).always(function () {
                 self.IsLoading(false);
             });
@@ -1571,7 +1589,7 @@ function SourceToTargetMappingModel(data) {
     return self;
 }
 
-function SourceToTargetMappingItem(data, parent) {
+function SourceToTargetMappingItem(data, parent, permissions) {
     var self = this;
     self.ID = ko.observable(data.ID || 0);
     self.Object = ko.observable(data.Object);
@@ -1583,45 +1601,34 @@ function SourceToTargetMappingItem(data, parent) {
     self.Sources = ko.observableArray([]);
     self.Targets = ko.observableArray([]);
     self.Transformation = ko.observable(data.Transformation || '');
-    self.SourceItems = ko.observableArray([]);
-    self.TargetItems = ko.observableArray([]);
+    //self.SourceItems = ko.observableArray([]);
+    //self.TargetItems = ko.observableArray([]);
     self.Keywords = ko.observableArray([]);
     self.ErrorMessages = ko.observableArray([]);
 
     self.IsLoading = ko.observable(false);
 
+
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+
+
     self.LoadItems = function () {
-
-        var promises = [];
         self.IsLoading(true);
-        if (self.Source() != null && self.SourceID() != null) {
-            promises.push($.ajax({
-                url: 'form/sourcetarget/related/' + self.Source() + '/' + self.SourceID(),
-                async: true
-            }).done(function (data) {
-                self.SourceItems([]);
-                $.each(data, function (i, val) {
-                    self.SourceItems.push(val);
-                })
-            }));
-        }
-
-        if (self.Target() != null && self.TargetID() != null) {
-            promises.push($.ajax({
-                url: 'form/sourcetarget/related/' + self.Target() + '/' + self.TargetID(),
-                async: true
-            }).done(function (data) {
-                self.TargetItems([]);
-                $.each(data, function (i, val) {
-                    self.TargetItems.push(val);
-                })
-            }));
-        }
-
-        $.when.apply($, promises).then(function () {
-            self.IsLoading(false);
-            self.LoadData();
-        });
+        self.LoadData();
+        self.IsLoading(false);
     }
 
     self.LoadData = function () {
@@ -1631,24 +1638,24 @@ function SourceToTargetMappingItem(data, parent) {
                     self.Sources.push(new SourceToTargetMappingSourceItem(data.Sources[i], self, true));
                 }
             else
-                self.Sources.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1 }, self, true));
+                self.Sources.push(new SourceToTargetMappingSourceItem({}, self, true));
             if (data.Targets != null)
                 for (var i = 0; i < data.Targets.length; i++) {
                     self.Targets.push(new SourceToTargetMappingSourceItem(data.Targets[i], self, false));
                 }
             else
-                self.Targets.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1 }, self, false));
+                self.Targets.push(new SourceToTargetMappingSourceItem({}, self, false));
         }
     }
 
     self.LoadItems();
     
     self.AddSource = function () {
-        self.Sources.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1}, self, true));
+        self.Sources.push(new SourceToTargetMappingSourceItem({}, self, true));
     }
 
     self.AddTarget = function () {
-        self.Targets.push(new SourceToTargetMappingSourceItem({ SelectedIndex: -1}, self, false));
+        self.Targets.push(new SourceToTargetMappingSourceItem({}, self, false));
     }
 
     self.RemoveRule = function () {
@@ -1659,11 +1666,9 @@ function SourceToTargetMappingItem(data, parent) {
 }
 
 function SourceToTargetMappingSourceItem(data, parent, isSource) {
-    //console.log(data);
     var self = this;
     self.Name = ko.observable(data.Name || '');
     self.ID = ko.observable(data.ID || -1);
-    self.SelectedIndex = ko.observable(-1);
     self.FusionItems = ko.observableArray([]);
     self.SelectedFusionIndex = ko.observable(-1);
     self.SelectedFusionName = ko.observable('');
@@ -1684,16 +1689,30 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
         }
     }
 
+    self.SearchPhrase = ko.observable('');
+    self.AppliedSearch = ko.computed(self.SearchPhrase).extend({ throttle: 500 });
+
+    self.SearchResults = ko.observableArray([]);
+    self.AppliedSearch.subscribe(function () {
+        if (self.AppliedSearch() == '')
+            return;
+        self.LoadFusionItems();
+
+    });
+  
+    self.FusionSearch = function (searchString) {
+        self.SearchPhrase(searchString);
+    }
+
     self.LoadFusionItems = function () {
         self.IsLoading(true);
         var obj = (isSource ? parent.Source() : parent.Target());
         var objid = (isSource ? parent.SourceID() : parent.TargetID());
         $.ajax({
-            url: 'form/sourcetarget/fusion/' + obj + '/' + objid + '/' + self.ID().split('|')[0] + '/' + self.ID().split('|')[1],
+            url: 'form/sourcetarget/fusion/' + obj + '/' + objid + '/' + self.AppliedSearch(),
             async: true
         }).done(function (data) {
             self.FusionItems([]);
-            //console.log(data);
             $.each(data, function (i, val) {
                 self.FusionItems.push(val);
             })
@@ -1703,28 +1722,12 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
         });
     };
 
-    self.SelectedIndex.subscribe(function () {
-        //console.log(self.SelectedIndex());
-        if (self.SelectedIndex() == -1)
-            return;
-        if (self.SelectedFusionIndex() != -1) {
-            parent.Keywords.remove(self.SelectedFusionName());
-            self.SelectedFusionName('');
-            self.SelectedFusionIndex(-1);
-        }
 
-        if (isSource)
-            self.ID(parent.SourceItems()[self.SelectedIndex()].id);
-        else
-            self.ID(parent.TargetItems()[self.SelectedIndex()].id);
-        self.LoadFusionItems();
-        if (self.FusionItems().length == 1)
-            self.SelectedFusionIndex(0);
-    });
 
     self.SelectedFusionIndex.subscribe(function () {
         if (self.SelectedFusionIndex() == -1)
             return;
+        self.SearchPhrase('');
         self.SelectedFusionName(self.FusionItems()[self.SelectedFusionIndex()].name);
         parent.Keywords.remove(self.SelectedFusionName());
         parent.Keywords.push(self.SelectedFusionName());
@@ -1732,19 +1735,9 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
 
 
     if (data != null && data != {}) {
-        if (data.ID != null) {
-            var items = null;
-            if (isSource)
-                items = parent.SourceItems()
-            else
-                items = parent.TargetItems()
-            
-            for (var i = 0; i < items.length; i++) {
-                if (items[i].id == data.ID) {
-                    self.SelectedIndex(i);
-                    break;
-                }
-            }
+        if (data.FusionID != null) {
+            self.FusionItems.push({ id: data.FusionID, name: data.Name });
+            self.SelectedFusionIndex(0);
         }
     }
 
@@ -1766,18 +1759,40 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
     return self;
 }
 
-function HierarchyRuleContextModel(data) {
+function HierarchyRuleContextModel(data, parent) {
     var self = this;
     data = data || {};
+
+
 
     self.Object = ko.observable(data.Object || "");
     self.ObjectID = ko.observable(data.ObjectID || 0);
 
+    if (data.ID != null && data.ID.indexOf('|') > -1) {
+        var obj = data.ID.split('|')[0];
+        var objid = data.ID.split('|')[1];
+        self.Object(obj);
+        self.ObjectID(objid);
+
+    }
+
     self.ID = ko.computed(function () {
-        return self.Object() + self.ObjectID().toString();
+        return self.Object() + '|' + self.ObjectID().toString();
     });
 
     self.Checked = ko.observable(data.Checked || false);
+
+    //self.Checked.subscribe(function () {
+    //    console.log('checked sub');
+    //    console.log(ko.toJS(parent));
+    //    console.log(self.Checked());
+    //    if (parent != null && parent.IsItemSelected() == true) {
+    //        if (self.Checked() == true)
+    //            parent.SelectedRule().SelectedItem().Contexts.push(this);
+    //        else
+    //            parent.SelectedRule().SelectedItem().Contexts.remove(this);
+    //    }
+    //});
 
     self.Category = ko.observable(data.Category || '');
     self.Type = ko.observable(data.Type || '');
@@ -1812,6 +1827,11 @@ function HierarchyRuleItemModel(data) {
         return (self.Contexts().length == 1) ? self.Contexts().length.toString() + ' context selected' : self.Contexts().length.toString() + ' contexts selected';
     });
 
+    self.Value = ko.computed(function () {
+        return self.Object() + '|' + self.ObjectID().toString();
+    });
+
+
     //#endregion
 
     //load Contexts
@@ -1819,7 +1839,7 @@ function HierarchyRuleItemModel(data) {
         $.each(data.Contexts, function (cxIx, cxItem) {
             cxItem.Checked = true;
             self.Contexts.push(
-                    new HierarchyRuleContextModel(cxItem)
+                    new HierarchyRuleContextModel(cxItem, self)
                 );
         });
     }
@@ -1827,7 +1847,7 @@ function HierarchyRuleItemModel(data) {
     return self;
 }
 
-function HierarchySourceRuleModel(data) {
+function HierarchySourceRuleModel(data, permissions) {
     var self = this;
 
     if (data == null) {
@@ -1844,12 +1864,18 @@ function HierarchySourceRuleModel(data) {
     self.ObjectID = ko.observable(data.ObjectID || 0);
     self.Description = ko.observable(data.Description || '');
     self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
-    self.ErrorMessage = ko.observable('');
+    self.ErrorMessages = ko.observableArray([]);
+    self.SaveMessage = ko.observable('');
+
     self.SourceRuleID = ko.observable(data.SourceRuleID || -1);
     self.IsTemplate = ko.observable(data.IsTemplate || false);
     self.IsSaving = ko.observable(false);
 
     self.Items = ko.observableArray();
+
+    self.Value = ko.computed(function () {
+        return self.Object() + '|' + self.ObjectID().toString();
+    });
 
     //#endregion
     
@@ -1863,27 +1889,27 @@ function HierarchySourceRuleModel(data) {
     //#region Functions
 
     self.SaveRule = function () {
+        if (!permissions.HasPermission("Relationship", "Create") && self.ID() == 0)
+            return;
+        if (!permissions.HasPermission("Relationship", "Update") && self.ID() != 0)
+            return;
         self.IsSaving(true);
-        self.ErrorMessage('');
-        var msg = "";
+        self.ErrorMessages([]);
         if (self.Items().length < 1)
-            msg += 'Source rule must have at least 1 source item.\n';
+            self.ErrorMessages.push('Source rule must have at least 1 source item.');
         if (self.Name().length < 1)
-            msg += 'Source rule requires a name.\n';
+            self.ErrorMessages.push('Source rule requires a name.');
 
         for (var i = 0; i < self.Items().length; i++) {
             if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
-                msg += 'The source "' + self.Items()[i].Name() + '" is missing a context and/or description.\n';
+                self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
             }
         }
 
-        self.ErrorMessage(msg);
-
-        if (self.ErrorMessage() != '') {
+        if (self.ErrorMessages().length > 0) {
             self.IsSaving(false);
             return;
         }
-            
 
         var SourceRule = {
             ID: self.ID(),
@@ -1900,8 +1926,14 @@ function HierarchySourceRuleModel(data) {
             url: '/form/SourceRules/save',
             data: SourceRule,
             method: 'POST'
-        }).always(function () {
+        }).always(function (data) {
             self.IsSaving(false);
+            if (!data.error) {
+                self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
+            } else {
+                self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
+                console.log(data.message);
+            }        
         });
     }
 
@@ -1910,18 +1942,18 @@ function HierarchySourceRuleModel(data) {
     return self;
 }
 
-function HierarchyPanelViewModel(data) {
+function HierarchyPanelViewModel(data, permissions) {
     var self = this;
     self.jqxLoaded = false;
     //#region Observables
-
+    //console.log(permissions);
     self.ID = ko.observable(data.ID || 0);
     self.Name = ko.observable('');
     self.Target = ko.observable(data.target || '');
     self.TargetID = ko.observable(data.targetID || 0);
     self.Object = ko.observable(data.object || '');
     self.ObjectID = ko.observable(data.objectID || 0);
-    self.NewRule = ko.observable(new HierarchySourceRuleModel(null));
+    self.NewRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
     self.NewRule().Name('New Rule');
     self.NewRule().Object(self.Object());
     self.NewRule().ObjectID(self.ObjectID());
@@ -1929,7 +1961,7 @@ function HierarchyPanelViewModel(data) {
     self.NewRule().TargetID(self.TargetID());
     self.InProgress = ko.observable(false);
     self.IsGridLoading = ko.observable(false);
-    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null));
+    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
     self.Mode = ko.observable('add'); 
 
     self.Contexts = ko.observableArray([]);
@@ -1937,18 +1969,63 @@ function HierarchyPanelViewModel(data) {
     self.Sources = ko.observableArray();
     self.SourceRules = ko.observableArray();
 
-    self.IsItemSelected = ko.computed(function () {
-        var val = true;
-        if (self.SelectedRule() == null)
-            val = false;
-        if (self.SelectedRule().SelectedItem() == null)
-            val = false;
-        if (self.SelectedRule().SelectedItem().ID() == 0)
-            val = false;
-        if (self.jqxLoaded) {
-           $('#hierarchyRuleContextGrid').jqxGrid({ disabled: !val });
+    self.SelectedItemIndex = ko.observable(-1);
+    self.SelectedSourceIndex = ko.observable(-1);
+    self.SelectedRuleIndex = ko.observable(-1);
+    self.RadioAddChecked = ko.observable(true);
+    self.RadioEditChecked = ko.observable(false);
+    self.IsLoadingContexts = ko.observable(false);
+    self.HasSourcesOrRules = ko.observable(true);
+
+    self.CanAdd = ko.observable(false);
+    self.CanUpdate = ko.observable(false);
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+
+    }
+
+    self.RadioAddChecked.subscribe(function () {
+        if (self.RadioAddChecked() == true) {
+            self.Mode('add');
+            self.SelectedRule(self.NewRule());
+        } else {
+            self.Mode('edit');
+            if (self.SelectedRuleIndex() < 0)
+                self.SelectedRuleIndex(0);
+            //force data to reload when switching back to edit mode
+            self.SelectedRuleIndex.valueHasMutated();
+            self.SelectedItemIndex.valueHasMutated();
         }
-        return val;
+    });
+
+    self.SelectedItemIndex.subscribe(function () {
+        if (self.SelectedItemIndex() == -1) {
+            self.IsLoadingContexts(true);
+            return;
+        }
+        self.IsLoadingContexts(false);
+        self.SelectedRule().SelectedItem(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        if (self.IsItemSelected())
+            self.CheckUsedContextItems();
+    });
+
+    self.SelectedRuleIndex.subscribe(function () {
+        var rule = self.SourceRules()[self.SelectedRuleIndex()];
+        self.SelectedRule(rule);
+        self.SelectedItemIndex(-1);
+        self.CheckUsedContextItems();
+    });
+
+    self.IsItemSelected = ko.computed(function () {
+        if (self.SelectedRule() == null)
+            return false;
+        if (self.SelectedRule().SelectedItem() == null)
+            return false;
+        return true;
     });
 
     //#endregion
@@ -1966,7 +2043,7 @@ function HierarchyPanelViewModel(data) {
             self.SourceRules([]);
             for (var i = 0; i < data.length; i++) {
                 data[i].SourceRuleID = self.ID();
-                var rule = new HierarchySourceRuleModel(data[i]);
+                var rule = new HierarchySourceRuleModel(data[i], permissions);
                 self.SourceRules.push(rule);
                 for (var j = 0; j < data[i].Items.length; j++) {
                     for (var k = 0; k < self.Sources().length; k++) {
@@ -1982,6 +2059,7 @@ function HierarchyPanelViewModel(data) {
             self.InProgress(false);
             if (!self.jqxLoaded)
                 self.ApplyJqxBindings();
+            self.AfterLoad();
         });
     }
 
@@ -1989,13 +2067,13 @@ function HierarchyPanelViewModel(data) {
         self.InProgress(true);
 
         $.ajax({
-            url: '/form/SourceRules/sources/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
+            url: '/form/SourceRules/sources/' + self.Object() + '/' + self.ObjectID() + '/' + self.Target() + '/' + self.TargetID(),
             method: 'GET'
         }).done(function (data) {
             if (data.Contexts)
                 $.each(data.Contexts, function (cxIx, cxItem) {
                     self.Contexts.push(
-                            new HierarchyRuleContextModel(cxItem)
+                            new HierarchyRuleContextModel(cxItem, self)
                         );
                 });
             $.each(data, function (roIx, roItem) {
@@ -2029,259 +2107,80 @@ function HierarchyPanelViewModel(data) {
         });
     };
 
+    self.AddRuleItem = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedSourceIndex() == -1)
+            return;
+        self.SelectedRule().Items.push(self.Sources()[self.SelectedSourceIndex()]);
+        self.Sources.remove(self.Sources()[self.SelectedSourceIndex()]);
+        self.SelectedSourceIndex(-1);
+        self.ReorderItems(self.SelectedRule().Items());
+    };
+
+    self.RemoveRuleItem = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedItemIndex() == -1)
+            return;
+        console.log(ko.toJS(self.SelectedRule().Items()[self.SelectedItemIndex()]));
+        self.Sources.push(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        self.SelectedRule().Items.remove(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        self.SelectedItemIndex(-1);
+        self.ReorderItems(self.SelectedRule().Items());
+    }
+
+    self.MoveRuleItemUp = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedItemIndex() < 1)
+            return;
+        var itemAbove = self.SelectedRule().Items()[self.SelectedItemIndex() - 1];
+        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
+
+        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemAbove;
+        self.SelectedRule().Items()[self.SelectedItemIndex() - 1] = itemSelected;
+
+        self.ReorderItems(self.SelectedRule().Items());
+        self.SelectedItemIndex(self.SelectedItemIndex() - 1);
+
+    }
+
+    self.MoveRuleItemDown = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedItemIndex() == -1 || self.SelectedItemIndex() == self.SelectedRule().Items().length - 1)
+            return;
+        var itemBelow = self.SelectedRule().Items()[self.SelectedItemIndex() + 1];
+        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
+
+        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemBelow;
+        self.SelectedRule().Items()[self.SelectedItemIndex() + 1] = itemSelected;
+
+        self.ReorderItems(self.SelectedRule().Items());
+        self.SelectedItemIndex(self.SelectedItemIndex() + 1);
+    }
+
+    self.OnCellValueChange = function () {
+        if (self.IsLoadingContexts() == true)
+            return;
+        if (self.IsItemSelected()) {
+            var checkedCtx = [];
+            self.SelectedRule().SelectedItem().Contexts([]);
+            for (var i = 0; i < self.Contexts().length; i++) {
+                if (self.Contexts()[i].Checked == true) {
+                    var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
+                    self.SelectedRule().SelectedItem().Contexts.push(obj);
+                }
+            }
+        }
+    }
+
     self.ApplyJqxBindings = function () {
-
-        $('#hierarchyRuleList').jqxDropDownList({
-            theme: theme,
-            displayMember: 'Name',
-            valueMember: 'ID'
-        })
-        .on('select', function (event) {
-            var args = event.args;
-            if (args == null)
-                return;
-
-            var value = args.item.value;
-
-            for (var i = 0; i < self.SourceRules().length; i++) {
-                if (self.SourceRules()[i].ID() == value) {
-                    self.SelectRule(self.SourceRules()[i]);
-                    break;
-                }
-            }
-
+        $('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
+            self.OnCellValueChange();
         });
-
-        $('#hierarchyRuleSourceList').jqxListBox({
-            theme: 'metro',
-            displayMember: 'Name',
-            valueMember: 'Order',
-            allowDrag: false,
-            allowDrop: false,
-            renderer: function (index, label, value) {
-                var data = $('#hierarchyRuleSourceList').jqxListBox('getItem', index);
-                data = data.originalItem;
-                if (data == null)
-                    return "";
-                return "<div style='padding:3px;border-radius:3px;font-size:.9em;background-color:" + (data.IconBackColor || "#000") + ";color:" + (data.IconForeColor || "#fff") + "'>" + data.Name + "</div>"
-            }
-        })
-
-        $("#hierarchyRuleItemList").jqxListBox({
-            theme: 'metro',
-            displayMember: 'RuleName',
-            valueMember: 'Order',
-            allowDrag: false,
-            allowDrop: false,
-            renderer: function (index, label, value) {
-                var data = $('#hierarchyRuleItemList').jqxListBox('getItem', index);
-                data = data.originalItem;
-                if (data == null)
-                    return "";
-                return "<div style='padding:3px;border-radius:3px;font-size:.9em;background-color:" + (data.IconBackColor || "#000") + ";color:" + (data.IconForeColor || "#fff") + "'>" + data.RuleName + "</div>"
-            }
-        })
-        .on('select', function (event) {
-            var args = event.args;
-            if (args == null)
-                return;
-            var index = args.index;
-            if (index == null)
-                return;
-            self.SelectItem(self.SelectedRule().Items()[index]);
-        });
-
-        $("#hierarchyRuleAddButton").jqxButton({
-            theme: theme,
-            width: '100%'
-        })
-            .on('click', function () {
-                var items = $('#hierarchyRuleSourceList').jqxListBox('getSelectedItems');
-
-                if (items == null || items == [])
-                    return;
-
-                for (var i = 0; i < items.length; i++) {
-                    if (items[i] == null)
-                        continue;
-                    var item = items[i].originalItem;
-                    if (item == null)
-                        continue;
-
-                    var obj = self.FindItemByOrder(item.SortOrder, self.Sources());
-
-                    if (obj == null)
-                        continue;
-                    self.Sources.remove(obj);
-                    self.SelectedRule().Items.push(obj);
-                    self.ReorderItems(self.SelectedRule().Items());
-                    self.ReorderItems(self.Sources());
-                }
-                $('#hierarchyRuleSourceList').jqxListBox('clearSelection');
-            });
-
-        $("#hierarchyRuleRemoveButton").jqxButton({
-            theme: theme,
-            width: '100%'
-        })
-            .on('click', function () {
-                var items = $('#hierarchyRuleItemList').jqxListBox('getSelectedItems');
-
-                if (items == null || items == [])
-                    return;
-
-                for (var i = 0; i < items.length; i++) {
-                    if (items[i] == null)
-                        continue;
-                    var item = items[i].originalItem;
-                    if (item == null)
-                        continue;
-
-                    console.log(item);
-                    var obj = self.FindItemByOrder(item.SortOrder, self.SelectedRule().Items());
-                    console.log(obj);
-                    if (obj == null)
-                        continue;
-                    $('#hierarchyRuleItemList').jqxListBox('clearSelection');
-                    self.SelectedRule().Items.remove(obj);
-                    if (self.SelectedRule().Items().length > 0)
-                        self.SelectItem(self.SelectedRule().Items()[0]);
-
-
-                    self.Sources.push(obj);
-                    self.ReorderItems(self.SelectedRule().Items());
-                    self.ReorderItems(self.Sources());
-                }
-
-            });
-
-        $('#hierarchyRuleUpButton').jqxButton({
-            theme: theme,
-            width: '100%'
-        })
-            .on('click', function () {
-                var item = $('#hierarchyRuleItemList').jqxListBox('getSelectedItem');
-                if (item == null || item == [] || item.index == 0)
-                    return;
-                var index = item.index;
-                if (item.originalItem == null)
-                    return;
-                item = item.originalItem;
-
-                var itemAbove = self.SelectedRule().Items()[index - 1];
-                var itemCurrent = self.FindItemByOrder(item.SortOrder, self.SelectedRule().Items());
-                self.SelectedRule().Items()[index - 1] = itemCurrent;
-                self.SelectedRule().Items()[index] = itemAbove;
-                self.ReorderItems(self.SelectedRule().Items());
-                $('#hierarchyRuleItemList').jqxListBox('selectIndex', index - 1);
-
-            });
-
-        $('#hierarchyRuleDownButton').jqxButton({
-            theme: theme,
-            width: '100%'
-        })
-            .on('click', function () {
-                var item = $('#hierarchyRuleItemList').jqxListBox('getSelectedItem');
-                if (item == null || item == [] || item.index == self.SelectedRule().Items().length - 1)
-                    return;
-                var index = item.index;
-                if (item.originalItem == null)
-                    return;
-                item = item.originalItem;
-
-                var itemBelow = self.SelectedRule().Items()[index + 1];
-                var itemCurrent = self.FindItemByOrder(item.SortOrder, self.SelectedRule().Items());
-                self.SelectedRule().Items()[index + 1] = itemCurrent;
-                self.SelectedRule().Items()[index] = itemBelow;
-                self.ReorderItems(self.SelectedRule().Items());
-                $('#hierarchyRuleItemList').jqxListBox('selectIndex', index + 1);
-            });
-
-        $('#hierarchyRuleSaveButton').jqxButton({
-            theme: theme,
-            width: 60
-        })
-        .on('click', function () {
-            self.SelectedRule().SaveRule();
-            //self.LoadSources();
-        });
-
-        $('#hierarchyRuleIsTemplate').jqxCheckBox({
-            theme: theme,
-            disabled: true
-        });
-
-        $('#hierarchyRuleAddRadioButton').jqxRadioButton({})
-            .on('checked', function () {
-                self.Mode('add');
-                self.SelectRule(self.NewRule());
-            });
-
-        $('#hierarchyRuleEditRadioButton').jqxRadioButton({})
-            .on('checked', function () {
-                self.Mode('edit');
-                if (self.SourceRules().length > 0) {
-                    self.SelectRule(self.SourceRules()[0]);
-                }
-                $('#hierarchyRuleList').jqxDropDownList({ selectedIndex: 0 });
-            });
-
-        $('#hierarchyRuleTemplateRadioButton').jqxRadioButton({ disabled: true })
-            .on('checked', function () {
-                self.Mode('template');
-            });
-
-
-        $('#hierarchyRuleContextGrid').jqxGrid({
-            theme: theme,
-            width: '100%',
-            height: 150,
-            disabled: true,
-            showfilterrow: true,
-            filterable: true,
-            editable: true,
-            columns: [
-                  { text: '', dataField: 'Checked', columntype: 'checkbox', width: 25, editable: true, filtertype: 'bool', filterable: true },
-                  { text: 'Category', dataField: 'Category', width: 100, filtertype: 'checkedlist', editable: false },
-                  { text: 'Type', dataField: 'Type', width: 100, filtertype: 'checkedlist', editable: false },
-                  { text: 'Name', dataField: 'Name', editable: false }
-            ]
-        })
-        .on('cellendedit', function (event) {
-            var args = event.args;
-            var dataField = event.args.datafield;
-
-            if (dataField != 'Checked')
-                return;
-
-            setTimeout(function () { self.IsGridLoading(true); }, 1);
-
-            var value = args.value;
-            console.log(args);
-
-            var rowData = self.Contexts()[args.rowindex];
-            rowData.Checked = value;
-            if (value === true)
-                self.SelectedRule().SelectedItem().Contexts.push(new HierarchyRuleContextModel(rowData));
-            else {
-                for (var i = 0; i < self.SelectedRule().SelectedItem().Contexts().length; i++) {
-                    var c = self.SelectedRule().SelectedItem().Contexts()[i];
-                    if (c.Object() == rowData.Object && c.ObjectID() == rowData.ObjectID) {
-                        self.SelectedRule().SelectedItem().Contexts.remove(c);
-                        break;
-                    }
-                }
-            };
-
-            self.CheckUsedContextItems();
-            setTimeout(function () { self.IsGridLoading(false); }, 1);
-
-
-        });
-
-        self.jqxLoaded = true;
-        
+        self.jqxLoaded = true;       
     }
 
     self.FindItemByOrder = function (order, array) {
@@ -2298,18 +2197,25 @@ function HierarchyPanelViewModel(data) {
     }
 
     self.CheckUsedContextItems = function () {
+        var isItemSelected = self.IsItemSelected();
+
         self.IsGridLoading(true);
+        self.IsLoadingContexts(true);
+
         for (var i = 0; i < self.Contexts().length; i++) {
             var c = self.Contexts()[i];
             c.Checked = false;
+            if (!isItemSelected)
+                continue;
             for (var j = 0; j < self.SelectedRule().SelectedItem().Contexts().length; j++) {
                 var rc = self.SelectedRule().SelectedItem().Contexts()[j];
-                if (rc.Object() == c.Object && rc.ObjectID() == c.ObjectID) {
+                if (rc.ID() == c.ID) {
                     c.Checked = true;
                 }
             }
         }
         self.Contexts.valueHasMutated();
+        self.IsLoadingContexts(false);
         self.IsGridLoading(false);
     }
 
@@ -2321,6 +2227,21 @@ function HierarchyPanelViewModel(data) {
     self.SelectItem = function (selectedItem) {
         self.SelectedRule().SelectedItem(selectedItem);
         self.CheckUsedContextItems();
+    }
+
+    self.AfterLoad = function () {
+        if (self.SourceRules().length > 1) {
+            self.RadioEditChecked(true);
+            self.SelectRule(self.SourceRules()[0]);
+            self.HasSourcesOrRules(true);
+        } else {
+            self.SelectRule(self.NewRule());
+            self.RadioAddChecked(true);
+            self.HasSourcesOrRules(true);
+        }
+        if (self.Sources().length < 1 && self.SourceRules().length < 1) {
+            self.HasSourcesOrRules(false);
+        }
     }
 
     //#endregion
@@ -3784,7 +3705,7 @@ var BoardViewModel = function (initialDaysToLookBack) {
     
     var discussion = { Text: 'Discussion', Value: 2 };
     var issue = { Text: 'Issue', Value: 5 };
-    var question = { Text: 'Question', Value: 9 };
+    //var question = { Text: 'Question', Value: 9 };
 
     if (CompanySettings.DisableCommunityPosting == 'false') {
         typeOps.push(discussion);
@@ -3792,9 +3713,9 @@ var BoardViewModel = function (initialDaysToLookBack) {
     if (CompanySettings.DisableIssuePosting == 'false') {
         typeOps.push(issue);
     }
-    if (CompanySettings.DisableQuestionPosting == 'false') {
-        typeOps.push(question);
-    }
+    //if (CompanySettings.DisableQuestionPosting == 'false') {
+    //    typeOps.push(question);
+    //}
 
     self.typeEntryOptions = ko.observableArray(typeOps);
 
@@ -3820,10 +3741,10 @@ var BoardViewModel = function (initialDaysToLookBack) {
         //{ Text: 'Governance', Value: 3 },
         { Text: 'Issues', Value: 5 },
         //{ Text: 'System Notifications', Value: 1 },
-        { Text: 'Red Flag Alerts', Value: 7 },
+        { Text: 'Red Flag Alerts', Value: 7 }
         //{ Text: 'Relationships', Value: 4 },
         //{ Text: 'Tasks', Value: 6 },
-        { Text: 'Questions', Value: 9 }
+        //{ Text: 'Questions', Value: 9 }
     ]);
 
     self.selectedDateFilterOption = ko.observable(initialDaysToLookBack === undefined ? -7 : initialDaysToLookBack);

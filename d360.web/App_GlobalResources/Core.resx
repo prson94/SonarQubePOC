@@ -123,9 +123,6 @@
   <data name="CommentType_Issue" xml:space="preserve">
     <value>Issue</value>
   </data>
-  <data name="CommentType_Question" xml:space="preserve">
-    <value>Question</value>
-  </data>
   <data name="CommentType_Social" xml:space="preserve">
     <value>Comment</value>
   </data>

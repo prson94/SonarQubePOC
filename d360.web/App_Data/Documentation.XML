@@ -296,11 +296,6 @@
               Looks up a localized string similar to Issue.
             </summary>
         </member>
-        <member name="P:Resources.Core.CommentType_Question">
-            <summary>
-              Looks up a localized string similar to Question.
-            </summary>
-        </member>
         <member name="P:Resources.Core.CommentType_Social">
             <summary>
               Looks up a localized string similar to Comment.

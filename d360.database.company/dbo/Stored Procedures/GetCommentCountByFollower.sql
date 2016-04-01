@@ -16,8 +16,7 @@ BEGIN
 					sum(case when c.commenttypeid = 5 then 1 else 0 end) as Issues,
 					sum(case when c.commenttypeid = 6 then 1 else 0 end) as Tasks,
 					sum(case when c.commenttypeid = 7 then 1 else 0 end) as [Red Flags],
-					sum(case when c.commenttypeid = 8 then 1 else 0 end) as [Data Events],
-					sum(case when c.commenttypeid = 9 then 1 else 0 end) as  Questions
+					sum(case when c.commenttypeid = 8 then 1 else 0 end) as [Data Events]
 			from	Comment c
 			where	c.ID in	(
 					select	CommentID as ID
@@ -62,7 +61,7 @@ BEGIN
 		) t
 		UNPIVOT
 			(	[Count]
-				for [CommentTypeName] in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events], Questions)
+				for [CommentTypeName] in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events])
 			) u
 			inner join
 			(
@@ -73,12 +72,11 @@ BEGIN
 							5 as Issues,
 							6 as Tasks,
 							7 as [Red Flags],
-							8 as [Data Events],
-							9 as Questions
+							8 as [Data Events]
 					)	t2
 						unpivot
 						(
-						CommentType for CommentTypeName in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events], Questions)
+						CommentType for CommentTypeName in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events])
 						) u2
 			) i on i.CommentTypeName = u.CommentTypeName
 END

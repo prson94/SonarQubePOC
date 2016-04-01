@@ -126,7 +126,7 @@
             controlID: controlID
         };
 
-        var model = new HierarchyPanelViewModel(data);
+        var model = new HierarchyPanelViewModel(data, permissions);
         ko.cleanNode($('#' + controlID_popover_sourcerule_editor_body)[0]);
         ko.applyBindings(model, $('#' + controlID_popover_sourcerule_editor_body)[0]);
         //model.ApplyJqxBindings();
@@ -141,11 +141,23 @@
         if (selected == null)
             return;
 
-        var from = myDiagram.model.findNodeDataForKey(selected.from);
-        var to = myDiagram.model.findNodeDataForKey(selected.to);
+        
+        var from = {};
+        var to = {};
 
-        //console.log(from);
-        //console.log(to);
+        if (selected.diagramObjectType == 'Node') {
+            from = {
+                id: selected.id,
+                type: selected.type,
+                name: selected.name,
+                typeName: selected.typeName
+            };
+            to = from;
+        } else {
+            from = myDiagram.model.findNodeDataForKey(selected.from);
+            to = myDiagram.model.findNodeDataForKey(selected.to);
+        }
+
 
         var data = {
             Source: from.type,
@@ -159,7 +171,7 @@
             Object: type,
             ObjectID: id,
         };
-        var model = new SourceToTargetMappingModel(data);
+        var model = new SourceToTargetMappingModel(data, permissions);
         ko.cleanNode($('#' + controlID_popover_sourcemapping_editor_body)[0]);
         ko.applyBindings(model, $('#' + controlID_popover_sourcemapping_editor_body)[0]);
     });
@@ -605,7 +617,9 @@
             predicateId: null,
             isDeletable: true,
             exclude: 'false',
-            diagramObjectType: "Link"
+            diagramObjectType: "Link",
+            sourceMappingCount: 0,
+            hasMappingRules: false
         };
     };
 
@@ -630,7 +644,9 @@
             intersectMapId: null,
             intersectId: null,
             sourceRuleCount: 0,
-            isVisible: false
+            sourceMappingCount: 0,
+            hasMappingRules: false,
+            hasSourceRules: false
         };
     };
 
@@ -797,6 +813,10 @@
                     data[i].objecttypeid = data[i].objecttypeid;
                     data[i].key = data[i].type + data[i].id.toString();
                     data[i].isDeletable = true;
+                    data[i].hasMappingRules = false;
+                    data[i].hasSourceRules = false;
+                    data[i].sourceRuleCount = 0;
+                    data[i].mappingRuleCount = 0;
                     myPalette.model.addNodeData(data[i]);
                 }
                 if (data.length < 1) {
@@ -929,29 +949,85 @@
         new go.Binding("fill", "backColor").makeTwoWay()
        ),
         g(go.Panel,
-            "Auto",
+            go.Panel.Horizontal,
             {
-                alignment: go.Spot.LeftCenter
+                alignment: go.Spot.BottomLeft,
+                margin: 5
             },
-            g(go.Shape, "Circle",
+            g(go.Panel,
+                "Auto",
                 {
-                    fill: '#DD1148',
+                    alignment: go.Spot.Center,
+                    margin: 2
+                },
+                            g(go.Shape, "Circle",
+                {
+                    stroke: null,
                     toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: 'Source rule defined' })))
-                }
+                },
+                new go.Binding("fill", "foreColor")
             ),
             g(go.TextBlock,
                 {
                     row: 0,
-                    margin: 3,
+                    margin: 0,
                     alignment: go.Spot.Center,
                     editable: false,
-                    stroke: '#ffffff',
-                    font: fontSize + "pt FontAwesome",
+                    font: (fontSize) + "pt FontAwesome",
                     text: "\uf126"
-                }//,
-                //new go.Binding("text", "sourceRuleCount").makeTwoWay()
+                },
+                new go.Binding("stroke", "backColor")
             ),
-            new go.Binding("visible", "isVisible")
+            //g(go.TextBlock,
+            //    {
+            //        row: 0,
+            //        margin: 0,
+            //        alignment: go.Spot.Right,
+            //        editable: false,
+            //        font: "5pt sans-serif",
+            //    },
+            //    new go.Binding("text", "sourceRuleCount"),
+            //    new go.Binding("stroke", "backColor")
+            //),
+            new go.Binding("visible", "hasSourceRules")
+             ),
+             g(go.Panel,
+                "Auto",
+                {
+                    alignment: go.Spot.Center,
+                    margin: 2
+                },
+                            g(go.Shape, "Circle",
+                {
+                    stroke: null,
+                    toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: 'Mapping rule defined' })))
+                },
+                new go.Binding("fill", "foreColor")
+            ),
+            g(go.TextBlock,
+                {
+                    row: 0,
+                    margin: 0,
+                    alignment: go.Spot.Center,
+                    editable: false,
+                    font: (fontSize) + "pt FontAwesome",
+                    text: "\uf0ec"
+                },
+                new go.Binding("stroke", "backColor")
+            ),
+            //g(go.TextBlock,
+            //    {
+            //        row: 0,
+            //        margin: 0,
+            //        alignment: go.Spot.Right,
+            //        editable: false,
+            //        font: "5pt sans-serif",
+            //    },
+            //    new go.Binding("text", "mappingRuleCount"),
+            //    new go.Binding("stroke", "backColor")
+            //),
+            new go.Binding("visible", "hasMappingRules")
+          )
         ),
         g(go.Panel, "Table",
             g(go.TextBlock, {
@@ -1120,6 +1196,9 @@
     function onSelectionChange(e) {
         selection = e.diagram.selection;
 
+        $("#" + controlID_ribbon_sourcerule_add).hide(200);
+        $("#" + controlID_ribbon_sourcemapping_add).hide(200);
+
         if (selection.count < 1) {
             $("#" + controlID_ribbon_sourcerule_add).hide(200);
             $("#" + controlID_ribbon_sourcemapping_add).hide(200);
@@ -1131,14 +1210,24 @@
         } else {
             if (!readonly) {
                 $("#" + controlID_ribbon_remove).show(200);
-                $("#" + controlID_ribbon_sourcerule_add).show(200);
+                $("#" + controlID_ribbon_sourcemapping_add).show(200);
             }
         }
+
 
         //get a deep copy of the selection as an array
         var sel = $.extend(true, [], selection.toArray()); //JSON.parse(JSON.stringify(selection.toArray()));
         var firstNodePopulated = false;
         var sourceNodes = [];
+
+
+        //add show logic for node/link types
+        if (sel[0].data.diagramObjectType == 'Node') {
+            $("#" + controlID_ribbon_sourcerule_add).show(200);
+        } else {
+
+        }
+
 
         for (var i = 0; i < sel.length; i++) {
             var data = sel[i].data;
@@ -1381,7 +1470,9 @@
             model.intersectMapId = d.intersectMapId;
             model.intersectId = d.intersectId;
             model.sourceRuleCount = d.sourceRuleCount;
-            model.isVisible = (d.sourceRuleCount > 0);
+            model.mappingRuleCount = d.mappingRuleCount;
+            model.hasSourceRules = (d.sourceRuleCount > 0);
+            model.hasMappingRules = (d.mappingRuleCount > 0);
             modelList.push(model);
         }
 
@@ -1395,6 +1486,8 @@
             link.text = d.text;
             link.predicateId = d.predicateId;
             link.diagramObjectType = "Link";
+            link.sourceMappingCount = d.mappingRuleCount;
+            link.hasMappingRules = (d.mappingRuleCount > 0);
             linkList.push(link);
         }
 
@@ -1662,7 +1755,9 @@
 
     myDiagram.linkTemplate = g(
         go.Link, { routing: go.Link.AvoidsNodes, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel
-        g(go.Shape, { stroke: "gray", strokeWidth: 2 }), // the link shape
+        g(go.Shape, { stroke: "gray", strokeWidth: 2 },
+            new go.Binding("strokeWidth", "hasMappingRules", function (h) { return h ? 3 : 2;}),
+            new go.Binding("stroke", "hasMappingRules", function (h) { return h ? "black" : "gray" })), // the link shape
         g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
         g(go.Panel, "Auto",
             g(go.Shape, { visible: false, fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }), stroke: null },

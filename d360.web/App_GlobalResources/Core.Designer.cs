@@ -79,15 +79,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Question.
-        /// </summary>
-        internal static string CommentType_Question {
-            get {
-                return ResourceManager.GetString("CommentType_Question", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Comment.
         /// </summary>
         internal static string CommentType_Social {
