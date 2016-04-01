@@ -61,7 +61,7 @@
             });
         }
 
-        function loadSocial() {
+        function loadSocial() {            
             socialTile.LookBackDays = daysToLookBack;
             $.getJSON("/api/Count/Social/" + daysToLookBack, function (data) {
                 socialTile.Rows(data);
@@ -118,8 +118,6 @@
                 });
                 $("#jqxTree").jqxTree({ width: 200 });
                
-                loadTileData();
-
                 searchCtrl = new SearchResultsGrid(contextList, 5);
 
                 $("#home-search-btn").click(simpleSearch);
