@@ -9,7 +9,7 @@
         var socialTile;
         var activityTile;
         var daysToLookBack = 7;
-        var searchCtrl;
+        var searchCtrl = null;
 
         //#region Event Handlers
 
@@ -35,7 +35,7 @@
             }
         }
 
-        function simpleSearch() {
+        function simpleSearch() {            
             searchCtrl.doSearch($("#home-search-text").val())
             $("#SearchArea").show();
         }
@@ -117,7 +117,7 @@
                     $("#dropDownButton").jqxDropDownButton('setContent', dropDownContent);
                 });
                 $("#jqxTree").jqxTree({ width: 200 });
-               
+
                 searchCtrl = new SearchResultsGrid(contextList, 5);
 
                 $("#home-search-btn").click(simpleSearch);

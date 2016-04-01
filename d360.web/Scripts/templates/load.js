@@ -45,7 +45,7 @@
                 columnData.push({ datafield: 'RowIndex', text: 'Row' });
                 columnData.push({ datafield: 'Status', text: 'Status' });
                 columnData.push({ datafield: 'StatusMessage', text: 'Message' });
-                console.log(columnData);
+                
                 $("#LoadItemsTile").jqxGrid(
                     {                        
                         columnsresize: true,                        

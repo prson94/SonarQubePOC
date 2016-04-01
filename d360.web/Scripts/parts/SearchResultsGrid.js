@@ -1,6 +1,5 @@
 ﻿function SearchResultsGrid(contextList, defaultItemsPerPage, initialPhrase) {
-    var phrase;
-    var searchSource;
+    var phrase;    
     var loadCategories;
     var searchVm;
     var self = this;
@@ -31,16 +30,36 @@
 
     //#endregion
 
-    loadCategories = true;
+    self.loadCategories = true;
 
     if ($("#SearchString").val().length == 0 && phrase !== undefined && phrase.length > 0)
         $("#SearchString").val(phrase);
 
     phrase = $("#SearchString").val();
 
-    var source = getSource(phrase, '', '');
+    if (phrase.length > 0)
+    {
+        var searchSource = getSource(phrase, '', '');
 
-    var dataAdapter = getDataAdapter(source);
+        var dataAdapter = getDataAdapter(searchSource);
+
+        $(resultsctrl).jqxDataTable(
+        {
+            pageable: true,
+            pagerButtonsCount: 10,
+            serverProcessing: true,
+            pagerMode: 'default',
+            source: dataAdapter,
+            theme: 'transparent',
+            width: '98%',
+            enableHover: false,
+            showHeader: false,
+            columns: [
+                { text: ' ', dataField: 'Merged', width: '99%' }
+            ]
+        });
+    }
+        
 
     //region Event Handlers
 
@@ -50,29 +69,14 @@
     }
 
     //#endregion
-
-    $(resultsctrl).jqxDataTable(
-    {
-        pageable: true,
-        pagerButtonsCount: 10,
-        serverProcessing: true,
-        pagerMode: 'default',
-        source: dataAdapter,
-        theme: 'transparent',
-        width: '98%',
-        enableHover: false,
-        showHeader: false,
-        columns: [
-            { text: ' ', dataField: 'Merged', width: '99%' }
-        ]
-    });
+        
 
     self.doSearch = function (val) {
         phrase = val;
         advSearchText = '';
 
         $(resultsctrl).show();
-        loadCategories = true;
+        self.loadCategories = true;
 
         var searchSource = getSource(phrase, '', '');
 
@@ -80,7 +84,21 @@
 
         $(resultsctrl).jqxDataTable('goToPage', 0);
 
-        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+        $(resultsctrl).jqxDataTable(
+        {
+            pageable: true,
+            pagerButtonsCount: 10,
+            serverProcessing: true,
+            pagerMode: 'default',
+            source: dataAdapter,
+            theme: 'transparent',
+            width: '98%',
+            enableHover: false,
+            showHeader: false,
+            columns: [
+                { text: ' ', dataField: 'Merged', width: '99%' }
+            ]
+        });
     }
 
     self.doAdvancedSearch = function () {
@@ -88,7 +106,7 @@
         phrase = '';
 
         $(resultsctrl).show();
-        loadCategories = true;
+        self.loadCategories = true;
 
         var searchSource = getSource(phrase, '', '', advSearchText);
 
@@ -96,7 +114,21 @@
 
         $(resultsctrl).jqxDataTable('goToPage', 0);
 
-        $(resultsctrl).jqxDataTable({ source: dataAdapter });
+        $(resultsctrl).jqxDataTable(
+        {
+            pageable: true,
+            pagerButtonsCount: 10,
+            serverProcessing: true,
+            pagerMode: 'default',
+            source: dataAdapter,
+            theme: 'transparent',
+            width: '98%',
+            enableHover: false,
+            showHeader: false,
+            columns: [
+                { text: ' ', dataField: 'Merged', width: '99%' }
+            ]
+        });
     }
 
     self.showAdvanced = function (text) {
@@ -173,8 +205,8 @@
                                 searchVm.elapsedTime("No search results found for the specified search term.");
                             }
                         }
-
-                        if (loadCategories) {
+                        
+                        if (self.loadCategories) {
                             msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
                             searchVm.elapsedTime(msg);
 
@@ -197,7 +229,7 @@
                                 if ($(this).data("category-type") == "All") $(this).addClass('selected');
                             });
 
-                            loadCategories = false;
+                            self.loadCategories = false;
                         }
                     },
                     loadError: function (xhr, status, error) {
