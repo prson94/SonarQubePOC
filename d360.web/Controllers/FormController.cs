@@ -6987,29 +6987,44 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 if(type == "ArtifactType" && lowerColName == "subject area")
                 {
-                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-                                        
-                    CreateExcelList(lookupColumns++, document,"Lookups",dv, Company.TaxonomyTypes.OrderBy(x=>x.Name).Select(x => x.Name));
+                    var items = Company.TaxonomyTypes.OrderBy(x => x.Name).Select(x => x.Name);
 
-                    document.AddDataValidation(dv);
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
                 }
                 else if(type == "ArtifactType" && lowerColName == parentColumnName)
                 {                    
                     if (artifactParentID < 0) continue;
 
-                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+                    var items = Company.Filter<Artifact>(x => x.ArtifactTypeID == artifactParentID).OrderBy(x => x.Name).Select(x => x.Name);
 
-                    CreateExcelList(lookupColumns++, document, "Lookups", dv, Company.Filter<Artifact>(x => x.ArtifactTypeID == artifactParentID).OrderBy(x => x.Name).Select(x => x.Name));
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
 
-                    document.AddDataValidation(dv);
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
                 }
                 else if (type == "Lineage" && lowerColName == "predicate")
                 {
-                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+                    var items = Company.Predicates.Where(x => x.Type == MapType.Lineage).OrderBy(x => x.Name).Select(x => x.Name);
 
-                    CreateExcelList(lookupColumns++, document, "Lookups", dv, Company.Predicates.Where(x=>x.Type == MapType.Lineage).OrderBy(x => x.Name).Select(x => x.Name));
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
 
-                    document.AddDataValidation(dv);
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
                 }                
                 else if (type == "Lineage" && (lowerColName == "focal point object type" || lowerColName == "source object type" || lowerColName == "target object type"))
                 {
@@ -7022,19 +7037,29 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 }
                 else if (type == "Lineage" && (lowerColName == "focal point subject area" || lowerColName == "source object subject area" || lowerColName == "target object subject area") )
                 {
-                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+                    var items = Company.TaxonomyTypes.OrderBy(x => x.Name).Select(x => x.Name);
 
-                    CreateExcelList(lookupColumns++, document, "Lookups", dv, Company.TaxonomyTypes.OrderBy(x => x.Name).Select(x => x.Name));
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
 
-                    document.AddDataValidation(dv);
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
                 }
                 else if (type == "DomainType" && lowerColName == "domain group")
                 {
-                    var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+                    var items = Company.DomainGroups.Where(x => x.DomainTypeID == id).OrderBy(x => x.Name).Select(x => x.Name);
 
-                    CreateExcelList(lookupColumns++, document, "Lookups", dv, Company.DomainTypes.OrderBy(x => x.Name).Select(x => x.Name));
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
 
-                    document.AddDataValidation(dv);
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
                 }
 
                 document.AutoFitColumn(1, i + 1);
