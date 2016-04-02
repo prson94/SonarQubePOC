@@ -1,8 +1,10 @@
-﻿CREATE VIEW [dbo].[FieldTypeWithRelation]
+﻿
+CREATE VIEW [dbo].[FieldTypeWithRelation]
 AS
 	SELECT	T.ID,
 			T.Name,
 			T.FriendlyName,
+			T.Category,
 			T.Description,
 			T.DisplayDescription,
 			T.FormDescription,

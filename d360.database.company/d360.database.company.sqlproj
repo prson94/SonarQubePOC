@@ -177,7 +177,6 @@
     <Build Include="dbo\Tables\FusionAttributeOwnerRule.sql" />
     <Build Include="dbo\Tables\StatisticType.sql" />
     <Build Include="dbo\Tables\ArtifactType.sql" />
-    <Build Include="dbo\Tables\StatisticTypeRelation.sql" />
     <Build Include="dbo\Tables\Workflow.sql" />
     <Build Include="dbo\Tables\Statistic.sql" />
     <Build Include="dbo\Tables\WorkflowStatus.sql" />
@@ -244,7 +243,6 @@
     <Build Include="fusion\Views\LeafAttributes.sql" />
     <Build Include="fusion\Views\AttributePromotion.sql" />
     <Build Include="fusion\Views\AttributeOwner.sql" />
-    <Build Include="dbo\Views\StatisticTypeRelationDetail.sql" />
     <Build Include="dbo\Views\ResponsibilityTypeObjectClaimDetail.sql" />
     <Build Include="dbo\Views\RelationshipAggregate.sql">
       <AnsiNulls>Off</AnsiNulls>
@@ -274,8 +272,8 @@
     <Build Include="dbo\Functions\GenerateObjectUrl.sql" />
     <Build Include="utility\Functions\DeriveIntersectTypeName.sql" />
     <Build Include="dbo\Functions\GetObjectStatisticScore.sql">
-      <AnsiNulls>Off</AnsiNulls>
-      <QuotedIdentifier>Off</QuotedIdentifier>
+      <AnsiNulls>On</AnsiNulls>
+      <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
     <Build Include="utility\Functions\GetFormattedFieldAttributeValue.sql" />
     <Build Include="utility\Functions\GetResponsibilityContextHash.sql" />
@@ -303,12 +301,12 @@
     <Build Include="dbo\Functions\GetRelatedObjectsByEventType.sql" />
     <Build Include="utility\Functions\GetObjectHierarchy.sql" />
     <Build Include="dbo\Stored Procedures\GetScoreHistoryByObject.sql">
-      <AnsiNulls>Off</AnsiNulls>
-      <QuotedIdentifier>Off</QuotedIdentifier>
+      <AnsiNulls>On</AnsiNulls>
+      <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
     <Build Include="dbo\Stored Procedures\GetAverageScoreByObjectType.sql">
-      <AnsiNulls>Off</AnsiNulls>
-      <QuotedIdentifier>Off</QuotedIdentifier>
+      <AnsiNulls>On</AnsiNulls>
+      <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
     <Build Include="utility\Stored Procedures\AddOrUpdateFieldType.sql" />
     <Build Include="cache\Stored Procedures\SynchronizeRelationships.sql" />
@@ -468,6 +466,8 @@
     <Build Include="dbo\Tables\FieldTypeRelationLookupDisplayField.sql" />
     <Build Include="dbo\Tables\FieldTypeRelationLookupDefinition.sql" />
     <Build Include="dbo\Stored Procedures\AddSingleIntersect.sql" />
+    <Build Include="dbo\Tables\SourceTargetRule_1.sql" />
+    <Build Include="dbo\Tables\IntersectMapSourceTargetRule_1.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

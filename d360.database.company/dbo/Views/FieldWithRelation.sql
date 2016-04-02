@@ -3,6 +3,7 @@ AS
 	SELECT	F.FieldTypeID,
 			T.Name,
 			T.FriendlyName,
+			T.Category,
 			T.Description,
 			T.DisplayDescription,
 			T.FormDescription,

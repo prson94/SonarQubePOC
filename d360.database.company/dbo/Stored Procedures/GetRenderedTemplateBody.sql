@@ -730,10 +730,6 @@ BEGIN
 				select	T.Name,
 						coalesce(S.SCore, 0) as Score
 				from	StatisticType T
-						inner join StatisticTypeRelation R	on R.StatisticTypeID = T.ID
-															and R.ObjectType = @Type + 'Type' 
-															and R.ObjectID = @typeID
-															and T.PartOfScore = 1
 						outer apply (
 									select	top 1
 											*
@@ -743,6 +739,9 @@ BEGIN
 											and ObjectID = @ID
 									order by DateStart desc
 									) S
+				where	T.[Object] = @Type + 'Type' 
+						and T.ObjectID = @typeID
+						and T.PartOfScore = 1
 
 			set @statsHtml = '<table class="hoverable bordered striped" style="width:100%">'
 

@@ -19,8 +19,11 @@
     [IsRequired]            BIT             CONSTRAINT [CK_FieldType_IsRequired] DEFAULT ((0)) NOT NULL,
     [IsListable]            BIT             CONSTRAINT [CK_FieldType_IsListable] DEFAULT ((0)) NOT NULL,
     [ValidationDescription] NVARCHAR (500)  NULL,
+    [Category]              NVARCHAR (250)  NULL,
     CONSTRAINT [PK_FieldType] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 
 

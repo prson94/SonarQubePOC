@@ -1,5 +1,4 @@
-﻿
-CREATE FUNCTION [utility].[DeriveIntersectTypeName] 
+﻿CREATE FUNCTION [utility].[DeriveIntersectTypeName] 
 (
 --declare
 	@id int
@@ -15,7 +14,7 @@ BEGIN
 									A.Name,
 									T.Name,
 									D.Name, 
-									FA.Name,
+									FA.TextPath,
 									II.Name,
 									G.Name,
 									R.Name,

@@ -40,7 +40,7 @@ begin
 			delete FieldType						where [Object] = @Object AND ObjectID = @ObjectID
 			delete ResponsibilityTypeRelation		where ObjectType = @Object and ObjectID = @ObjectID
 			delete ResponsibilityTypeObjectClaim	where ObjectType = @Object and ObjectID = @ObjectID
-			delete StatisticTypeRelation			where ObjectType = @Object and ObjectID = @ObjectID
+			delete StatisticType					where [Object] = @Object and ObjectID = @ObjectID
 			delete WorkflowTypeRelation				where [Object] = @Object and ObjectID = @ObjectID
 
 			if @Object in ('AttributeTypeRelation', 'AttributeTypeRelation', 'ResponsibilityTypeRelation', 'ResponsibilityType')
@@ -226,12 +226,6 @@ begin
 			begin
 				delete Responsibility where ResponsibilityTypeID = @ObjectID
 				delete ResponsibilityType where ID = @ObjectID
-			end
-
-			if @Object = 'StatisticType'
-			begin
-				delete [Statistic] where StatisticTypeID = @ObjectID
-				delete [StatisticTypeRelation] where StatisticTypeID = @ObjectID
 			end
 
 			if @Object = 'SurveyType'

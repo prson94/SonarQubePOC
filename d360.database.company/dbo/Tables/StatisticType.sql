@@ -7,8 +7,13 @@
     [Configuration] XML             NULL,
     [UpdatedOn]     DATETIME        NULL,
     [UpdatedBy]     INT             NULL,
+    [Object]        VARCHAR (50)    NULL,
+    [ObjectID]      INT             NULL,
+    [Score]         INT             NULL,
     CONSTRAINT [PK_StatisticType] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 
 

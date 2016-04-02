@@ -18,14 +18,16 @@ begin
 	
 	select @Increment = DATEDIFF(hh, @DateStart, @DateEnd) / @Points
 	insert into @dates values (@DateEnd, dbo.GetObjectStatisticScore(@type, @id)*100)
+
 	select	@oType = Type,
 			@oTypeID = TypeID
 	from	utility.ObjectDetail(@type, @id)
+
 	select	@MaxPoints = SUM(Score)
-	from	StatisticTypeRelation R
-			inner join StatisticType T on R.StatisticTypeID = T.ID and T.PartOfScore = 1
-	where	R.ObjectType = @oType
-			and R.ObjectID = @oTypeID
+	from	StatisticType
+	where	[Object] = @oType
+			and ObjectID = @oTypeID
+			and PartOfScore = 1
 
 	set @current = 1
 	while @current <= @Points
@@ -33,7 +35,7 @@ begin
 		set @DateCurrent = DATEADD(hh, -(@current * @Increment), @DateEnd)
 
 
-		select	@CurrentPoints = SUM(Score)
+		select	@CurrentPoints = SUM(S.Score)
 		from	Statistic S
 				inner join StatisticType T on S.StatisticTypeID = T.ID and T.PartOfScore = 1
 				inner join	(

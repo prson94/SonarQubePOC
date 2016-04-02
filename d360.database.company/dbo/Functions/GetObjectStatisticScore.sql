@@ -1,5 +1,4 @@
-﻿
-CREATE FUNCTION [dbo].[GetObjectStatisticScore]
+﻿CREATE FUNCTION [dbo].[GetObjectStatisticScore]
 (
 --declare
 	@type varchar(25) = 'Resource',
@@ -16,13 +15,12 @@ BEGIN
 
 	select	@oType = ObjectType,
 			@oTypeID = ObjectTypeID
-	from	cache.ObjectDetails 
+	from	cache.[Object]
 	where	[Object] = @type and ObjectID = @id
 
 	select	@current = SUM(S.Score)
 	from	Statistic S
-			inner join StatisticType T on S.StatisticTypeID = T.ID and T.PartOfScore = 1
-			inner join StatisticTypeRelation TR on TR.StatisticTypeID = T.ID and TR.ObjectType = @oType and TR.ObjectID = @oTypeID
+			inner join StatisticType T on S.StatisticTypeID = T.ID and T.PartOfScore = 1 and T.[Object] = @oType and T.ObjectID = @oTypeID
 			inner join	(
 						select		StatisticTypeID,
 									Max(DateStart) D
@@ -36,10 +34,10 @@ BEGIN
 			and S.ObjectID = @id
 
 	select	@max = SUM(Score)
-	from	StatisticTypeRelation R
-			inner join StatisticType T on R.StatisticTypeID = T.ID and T.PartOfScore = 1
-	where	R.ObjectType = @oType
-			and R.ObjectID = @oTypeID
+	from	StatisticType
+	where	[Object] = @oType
+			and ObjectID = @oTypeID
+			and PartOfScore = 1
 
 	select	@score = round(cast(cast(@current as float) / cast(@max as float) as float), 2)
 
