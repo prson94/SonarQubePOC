@@ -10396,21 +10396,11 @@ order by	D.Name, I.Name";
         {
             var list = new List<EditableField>();
             var o = new ResponsibilityType();
-            var row = 1;
 
             list.Add(new EditableField { FieldName = "ResponsibilityTypeGroup", FieldType = DataType.Hidden.ToString(), Value = ((int)Group).ToString() });
-            list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
-            row++;
-
-            list.Add(new EditableField { Row = row, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = Company.GetAvailableAllocationPossibilities().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
-            row++;
-
-            if (Group == ResponsibilityTypeGroup.Sourcing)
-            {
-                list.Add(new EditableField { Row = row, Column = 1, FieldName = "SourceType", Name = Resources.FieldInfo.ResponsibilitySourcedFrom_Name, FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = Company.Table<ArtifactType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
-                row++;
-            }
-            list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = Resources.FieldInfo.Name_Name, FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = Company.GetAvailableAllocationPossibilities().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID) }).ToList() });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -10431,12 +10421,9 @@ order by	D.Name, I.Name";
         {
             var list = new List<EditableField>();
             var a = Company.GetById<ResponsibilityType>(id);
-            var row = 1;
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name });
-            row++;
-
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name });
             var selectedAllocations = Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id).ToList();
             var allocations = Company
                 .GetAvailableAllocationPossibilities()
@@ -10445,10 +10432,8 @@ order by	D.Name, I.Name";
                     Value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
                     Selected = selectedAllocations.Any(c => c.ObjectType == i.ObjectType && c.ObjectID == i.ObjectTypeID)
                 }).ToList();
-            list.Add(new EditableField { Row = row, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = allocations });
-            row++;
-            
-            list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "AllocationType", Name = Resources.FieldInfo.ResponsibilityAllocatedTo_Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = true, Items = allocations });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -10479,6 +10464,11 @@ order by	D.Name, I.Name";
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("ownership type");
+
+                if (string.IsNullOrEmpty(form["AllocationType"]))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
+                }
 
                 var a = new ResponsibilityType
                 {
@@ -10588,6 +10578,11 @@ order by	D.Name, I.Name";
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<ResponsibilityType>(id);
                 if (model == null) throw new NotFoundException("ownership type");
+
+                if (string.IsNullOrEmpty(form["AllocationType"]))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
+                }
 
                 model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
@@ -13411,7 +13406,7 @@ order by	D.Name, I.Name";
                     break;
                 case StatisticCheckType.PropertyValueCheck:
                     model.Add("PropertyName", xml.Element("PropertyName").Value);
-                    model.Add("PropertyValue", xml.Element("Value").Value);
+                    model.Add("PropertyValue", (xml.Element("PropertyValue") != null) ? xml.Element("PropertyValue").Value : "");
                     break;
                 case StatisticCheckType.EventMetric:
                     model.Add("ValidField", xml.Element("ValidField").Value);
@@ -13589,7 +13584,7 @@ where	RT.SourceObjectType = @type
                     break;
                 case StatisticCheckType.PropertyValueCheck:
                     fields.Add(new XElement("PropertyName", form["PropertyName"]));
-                    fields.Add(new XElement("Value", form["PropertyValue"]));
+                    fields.Add(new XElement("PropertyValue", form["PropertyValue"]));
                     break;
                 case StatisticCheckType.Relationship:
                     var rawCheckObjects = form["CheckObjects[]"];

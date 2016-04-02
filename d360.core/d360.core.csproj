@@ -279,6 +279,7 @@
     <Compile Include="enums\TemplateAction.cs" />
     <Compile Include="exceptions\BaseException.cs" />
     <Compile Include="exceptions\ConflictException.cs" />
+    <Compile Include="exceptions\GenericException.cs" />
     <Compile Include="exceptions\InvalidFieldException.cs" />
     <Compile Include="exceptions\NoFormDataException.cs" />
     <Compile Include="exceptions\DuplicateNameException.cs" />

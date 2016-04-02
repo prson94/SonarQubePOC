@@ -4847,7 +4847,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
+                                        new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
                                     }
                                 });
                                 dtl = null;
@@ -4862,7 +4862,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
+                                        new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
                                     }
                                 });
                                 dtl = null;
@@ -4875,19 +4875,11 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 2,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Property Name", Value = fields.Element("PropertyName").Value }
+                                        new ReadOnlyField { FieldName = "Display_PropertyName", Name = "Property Name", Value = fields.Element("PropertyName").Value }
                                     },
                                     SecondColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Property Value", Value = fields.Element("PropertyValue").Value }
-                                    }
-                                });
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField>
-                                    {
-                                        new ReadOnlyField { Name = "Value", Value = fields.Element("Value").Value }
+                                        new ReadOnlyField { FieldName = "Display_PropertyValue", Name = "Property Value", Value = (fields.Element("PropertyValue") != null) ? fields.Element("PropertyValue").Value : "Not set" }
                                     }
                                 });
                                 break;
@@ -4899,7 +4891,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Property Name", Value = fields.Element("PropertyName").Value }
+                                        new ReadOnlyField { FieldName = "Display_PropertyName", Name = "Property Name", Value = fields.Element("PropertyName").Value }
                                     }
                                 });
                                 break;
@@ -4948,7 +4940,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Target(s)", Value = html }
+                                        new ReadOnlyField { FieldName = "Display_Targets", Name = "Target(s)", Value = html }
                                     }
                                 });
                                 dtl = null;
@@ -4965,7 +4957,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
+                                        new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
                                     }
                                 });
                                 dtl = null;
@@ -4978,7 +4970,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
+                                        new ReadOnlyField { FieldName = "Display_Target", Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
                                     }
                                 });
                                 dtl = null;
@@ -4991,11 +4983,11 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 2,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Valid Field", Value = fields.Element("ValidField").Value }
+                                        new ReadOnlyField { FieldName = "Display_ValidField", Name = "Valid Field", Value = fields.Element("ValidField").Value }
                                     },
                                     SecondColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Invalid Field", Value = fields.Element("InvalidField").Value }
+                                        new ReadOnlyField { FieldName = "Display_InvalidField", Name = "Invalid Field", Value = fields.Element("InvalidField").Value }
                                     }
                                 });
                                 model.rows.Add(new DetailReadOnlyRowModel
@@ -5003,7 +4995,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Threshold", Value = fields.Element("Threshold").Value }
+                                        new ReadOnlyField { FieldName = "Display_Threshold", Name = "Threshold", Value = fields.Element("Threshold").Value }
                                     }
                                 });
                                 break;
@@ -5017,7 +5009,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Predicate", Value = (p != null) ? p.Name : "Not found" }
+                                        new ReadOnlyField { FieldName = "Display_Predicate", Name = "Predicate", Value = (p != null) ? p.Name : "Not found" }
                                     }
                                 });
                                 p = null;

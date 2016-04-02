@@ -3,6 +3,7 @@
         context.app.swap('');
 
         var type = 'StatisticType';
+        var id = null;
 
         context.title(pageViewModel.Title);
 
@@ -19,9 +20,16 @@
         //#region Event Handlers
 
         function listBindingComplete(event) {
-            var rowCount = $('#List').jqxGrid('getdisplayrows').length;
-            if (rowCount > 0) {
-                $('#List').jqxGrid('selectrow', 0);
+            if (id && id > 0) {
+                var ix = $('#List').jqxGrid('getrowboundindexbyid', id);
+                $('#List').jqxGrid('ensurerowvisible', ix);
+                $('#List').jqxGrid('selectrow', ix);
+            }
+            else {
+                var rowCount = $('#List').jqxGrid('getdisplayrows').length;
+                if (rowCount > 0) {
+                    $('#List').jqxGrid('selectrow', 0);
+                }
             }
         }
 
@@ -40,8 +48,7 @@
                         tools.push({ icon: 'plus', uri: '/form/AddStatisticType', context: contextList.StatisticType, title: 'Add analytic' });
                     }
                     TileTools('#ListTools', tools);
-
-                    $('#DetailTile').load('/parts/' + type + '/' + data.ID + '/detail');
+                    ObjectDetail('DetailTile', type, data.ID);
                 }
 
                 permissions.GetPermissionsForObject(type, data.ID).then(loadPermissionsDependentTiles);
@@ -55,7 +62,9 @@
             try {
                 switch (data.context) {
                     case contextList.StatisticType:
+                        id = data.id;
                         $('#List').jqxGrid('updatebounddata');
+                        ObjectDetail('DetailTile', type, id);
                         break;
                 }
             }
@@ -92,6 +101,15 @@
                     }
                     TileTools('#ListTools', tools);
 
+                    //#region Event Subscriptions
+
+                    $("#List").on("rowselect", listRowSelect);
+                    $("#List").one("bindingcomplete", listBindingComplete);
+                    amplify.subscribe("SaveAction", saveAction);
+                    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+                    //#endregion
+
                     //#region Grid
 
                     StatisticTypeSource = {
@@ -103,7 +121,8 @@
                             { name: 'Name' },
                             { name: 'Score' },
                             { name: 'ObjectName' }
-                        ]
+                        ],
+                        id: 'ID'
                     };
 
                     StatisticTypeAdapter = new $.jqx.dataAdapter(StatisticTypeSource);
@@ -140,15 +159,6 @@
                             }
                         ]
                     });
-
-                    //#endregion
-
-                    //#region Event Subscriptions
-
-                    $("#List").on("rowselect", listRowSelect);
-                    $("#List").one("bindingcomplete", listBindingComplete);
-                    amplify.subscribe("SaveAction", saveAction);
-                    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //#endregion
                 }
