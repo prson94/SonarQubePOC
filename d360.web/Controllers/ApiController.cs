@@ -4828,7 +4828,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                         {
-                            new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), FieldName = "StatisticTypeCheckType", FieldDescription = statisticType.GetDescription(i => i.CheckType), Value = statisticType.CheckType.ToString() }
+                            new ReadOnlyField { Name = statisticType.GetName(i => i.CheckType), FieldName = "StatisticTypeCheckType", FieldDescription = statisticType.GetDescription(i => i.CheckType), Value = statisticType.CheckType.GetDisplayName() }
                         }
                         });
 
@@ -4839,6 +4839,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                         switch (statisticType.CheckType)
                         {
                             case StatisticCheckType.Existence:              //1
+                                #region
                                 oID = int.Parse(fields.Element("ObjectID").Value);
                                 dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
                                 model.rows.Add(new DetailReadOnlyRowModel
@@ -4851,7 +4852,9 @@ where    A.PolicyTypeID = @id", columns, joins);
                                 });
                                 dtl = null;
                                 break;
+                                #endregion
                             case StatisticCheckType.Count:                  //2
+                                #region
                                 oID = int.Parse(fields.Element("ObjectID").Value);
                                 dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
                                 model.rows.Add(new DetailReadOnlyRowModel
@@ -4864,7 +4867,9 @@ where    A.PolicyTypeID = @id", columns, joins);
                                 });
                                 dtl = null;
                                 break;
+                                #endregion
                             case StatisticCheckType.PropertyValueCheck:     //3
+                                #region
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 2,
@@ -4886,7 +4891,9 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     }
                                 });
                                 break;
+                                #endregion
                             case StatisticCheckType.PropertyPopulated:  //4
+                                #region
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 1,
@@ -4896,22 +4903,61 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     }
                                 });
                                 break;
+                                #endregion
                             case StatisticCheckType.Relationship:       //5
-                                oID = int.Parse(fields.Element("ObjectID").Value);
-                                dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
+                                #region
+                                var items = new List<string>();
+                                var html = string.Empty;
+
+                                try
+                                {
+                                    if (fields.Element("CheckObjects") != null)
+                                    {
+                                        var checkObjects = fields.Element("CheckObjects").Elements("Object").Select(co => new { Type = (SystemObjects)Enum.Parse(typeof(SystemObjects), co.Element("Type").Value), ID = int.Parse(co.Element("ID").Value) }).ToList();
+                                        checkObjects.ForEach(co =>
+                                        {
+                                            var cod = Company.GetObjectDetail(co.Type, co.ID);
+                                            if (cod != null)
+                                            {
+                                                items.Add(cod.TextPath);
+                                            }
+                                        });
+                                    }
+                                    else
+                                    {
+                                        var cod = Company.GetObjectDetail((SystemObjects)Enum.Parse(typeof(SystemObjects), fields.Element("ObjectType").Value), int.Parse(fields.Element("ObjectID").Value));
+                                        if (cod != null)
+                                        {
+                                            items.Add(cod.TextPath);
+                                        }
+                                    }
+
+                                    foreach (var t in items.OrderBy(i => i))
+                                    {
+                                        html += (string.IsNullOrEmpty(html) ? t : " or " + t);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+
+                                if (string.IsNullOrEmpty(html)) html = "Not found";
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField>
                                     {
-                                        new ReadOnlyField { Name = "Target", Value = (dtl != null) ? dtl.Name : "Not found" }
+                                        new ReadOnlyField { Name = "Target(s)", Value = html }
                                     }
                                 });
                                 dtl = null;
                                 break;
+                                #endregion
                             case StatisticCheckType.FusionOwnership:    //6
                                 break;
                             case StatisticCheckType.ScoreRollupViaRelationship:    //7
+                                #region
                                 oID = int.Parse(fields.Element("ObjectID").Value);
                                 dtl = Company.GetObjectDetail(fields.Element("ObjectType").Value, oID);
                                 model.rows.Add(new DetailReadOnlyRowModel
@@ -4937,7 +4983,9 @@ where    A.PolicyTypeID = @id", columns, joins);
                                 });
                                 dtl = null;
                                 break;
+                                #endregion
                             case StatisticCheckType.EventMetric:        //9
+                                #region
                                 model.rows.Add(new DetailReadOnlyRowModel
                                 {
                                     columns = 2,
@@ -4959,6 +5007,22 @@ where    A.PolicyTypeID = @id", columns, joins);
                                     }
                                 });
                                 break;
+                            #endregion
+                            case StatisticCheckType.PredicateMetric:    //10
+                                #region
+                                oID = int.Parse(fields.Element("Predicate").Value);
+                                var p = Company.GetById<Predicate>(oID);
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
+                                    {
+                                        new ReadOnlyField { Name = "Predicate", Value = (p != null) ? p.Name : "Not found" }
+                                    }
+                                });
+                                p = null;
+                                break;
+                                #endregion
                         }
                     }
                     statisticType = null;
@@ -5525,9 +5589,14 @@ from	A
         #region Statistics
 
         [Route("statistics")]
-        public IQueryable<StatisticType> GetStatisticTypes()
+        public IEnumerable<dynamic> GetStatisticTypes()
         {
-            return Company.Table<StatisticType>();
+            return Company.Query<dynamic>(@"
+select	S.*,
+		D.Name as ObjectName
+from	StatisticType S
+		inner join cache.ObjectDetails D on D.Object = S.Object and D.ObjectID = S.ObjectID 
+order by D.Name, S.Name");
         }
 
         #endregion
@@ -5588,12 +5657,6 @@ from	A
         public IQueryable<AttributeTypeRelationDetail> GetAllocationsByAttributeType(int id)
         {
             return Company.Filter<AttributeTypeRelationDetail>(i => i.AttributeTypeID == id);
-        }
-
-        [Route("StatisticType/{id}/allocations")]
-        public IQueryable<StatisticTypeRelationDetail> GetAllocationsByStatisticType(int id)
-        { 
-            return Company.Filter<StatisticTypeRelationDetail>(i => i.StatisticTypeID == id);
         }
 
         #endregion

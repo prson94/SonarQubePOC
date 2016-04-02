@@ -1,17 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.Diagnostics;
 using Microsoft.WindowsAzure.ServiceRuntime;
-using d360.core.entities;
-using System.IO;
 using d360.fusion;
 using Microsoft.ApplicationInsights.Extensibility;
+using d360.core.entities;
 
 namespace d360.workers.FusionWorkerRole
 {

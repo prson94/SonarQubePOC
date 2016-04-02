@@ -15,39 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0. Solution Items", "0. Sol
 	ProjectSection(SolutionItems) = preProject
 		D360.vsmdi = D360.vsmdi
 		Local.testsettings = Local.testsettings
-		Release Notes.txt = Release Notes.txt
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D627328F-6E6B-497D-B588-8450B61DBD33}"
-	ProjectSection(SolutionItems) = preProject
-		WE-settings.xml = WE-settings.xml
-		WE2013-settings.xml = WE2013-settings.xml
-		WebEssentials-Settings.json = WebEssentials-Settings.json
-		WebEssentials2015-Settings.json = WebEssentials2015-Settings.json
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL Files", "SQL Files", "{9D591AF6-A59C-4D03-8EC7-8E32617183FD}"
-	ProjectSection(SolutionItems) = preProject
-		d360.sql\Alter dbo.GetIntersectContextMap.sql = d360.sql\Alter dbo.GetIntersectContextMap.sql
-		d360.sql\Archived - StatisticTypeCheck Tables.sql = d360.sql\Archived - StatisticTypeCheck Tables.sql
-		d360.sql\Finding and Removing Duplicates from Ownership.sql = d360.sql\Finding and Removing Duplicates from Ownership.sql
-		d360.sql\Fusion Synch Procedure.sql = d360.sql\Fusion Synch Procedure.sql
-		d360.sql\Oracle schema queries.sql = d360.sql\Oracle schema queries.sql
-		d360.sql\Report Table and Dummy Data.sql = d360.sql\Report Table and Dummy Data.sql
-		d360.sql\SQL Queries of System Tables.sql = d360.sql\SQL Queries of System Tables.sql
-		d360.sql\Working With Federations.sql = d360.sql\Working With Federations.sql
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{5FBAB63F-B782-4409-854A-9DB4576E078C}"
-	ProjectSection(SolutionItems) = preProject
-		PublishScripts\AzureWebsitePublishModule.psm1 = PublishScripts\AzureWebsitePublishModule.psm1
-		PublishScripts\Publish-WebApplicationWebsite.ps1 = PublishScripts\Publish-WebApplicationWebsite.ps1
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configurations", "{6F154DB8-4899-4157-AD41-C266D2A27E84}"
-	ProjectSection(SolutionItems) = preProject
-		PublishScripts\Configurations\d360adminui-WAWS-dev.json = PublishScripts\Configurations\d360adminui-WAWS-dev.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.core", "d360.core\d360.core.csproj", "{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}"
@@ -518,8 +486,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{9D591AF6-A59C-4D03-8EC7-8E32617183FD} = {9E0D6764-2E58-4258-8D9B-B73D8D483C9A}
-		{6F154DB8-4899-4157-AD41-C266D2A27E84} = {5FBAB63F-B782-4409-854A-9DB4576E078C}
 		{9341CCA8-D3F2-467A-AE9C-0581054B8DE2} = {82A3B52F-C19D-4FA8-8AC5-AF524FF8C173}
 		{B12A1078-5835-43B8-AFB2-C3D24C4AA098} = {82A3B52F-C19D-4FA8-8AC5-AF524FF8C173}
 		{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483} = {DF896E70-6A4C-4E11-B0AF-0780094E0BEF}

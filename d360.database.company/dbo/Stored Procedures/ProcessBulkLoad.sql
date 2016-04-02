@@ -1,7 +1,7 @@
 ﻿CREATE procedure [dbo].[ProcessBulkLoad]
 --declare
 	@LoadID int
---set @LoadID = 4
+--set @LoadID = 29
 as
 begin
 	set nocount on;
@@ -18,42 +18,40 @@ begin
 	from	[Load]
 	where	ID = @LoadID
 
-	if @Action = 'P'	--PROMOTION
-	begin
-		-- PARSE any dynamic fields that are specifically lookups.
-		update	T
-		set		T.LookupObject = S.LookupObject,
-				T.LookupObjectID = S.LookupObjectID
-		from	LoadItemColumn T
-				inner join	(
-							select	IC.LoadID,
-									IC.RowIndex,
-									IC.ColumnIndex,
-									case 
-										when L_A.ID is not null then 'Artifact'
-										when L_D.ID is not null then 'Domain'
-										when L_DI.ID is not null then 'DomainItem'
-										when L_F.ID is not null then 'FusionAttribute'
-										when L_I.ID is not null then 'Intersect'
-										when L_L.Value is not null then 'Lookup'
-										when L_T.ID is not null then 'Taxonomy'
-										else NULL
-									end as LookupObject,
-									coalesce(L_A.ID, L_D.ID, L_DI.ID, L_F.ID, L_I.ID, L_L.Value, L_T.ID) as LookupObjectID
-							from	FieldType F
-									inner join [Load] L on L.ID = @LoadID and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+	-- PARSE any dynamic fields that are specifically lookups.
+	update	T
+	set		T.LookupObject = S.LookupObject,
+			T.LookupObjectID = S.LookupObjectID
+	from	LoadItemColumn T
+			inner join	(
+						select	IC.LoadID,
+								IC.RowIndex,
+								IC.ColumnIndex,
+								case 
+									when L_A.ID is not null then 'Artifact'
+									when L_D.ID is not null then 'Domain'
+									when L_DI.ID is not null then 'DomainItem'
+									when L_F.ID is not null then 'FusionAttribute'
+									when L_I.ID is not null then 'Intersect'
+									when L_L.Value is not null then 'Lookup'
+									when L_T.ID is not null then 'Taxonomy'
+									else NULL
+								end as LookupObject,
+								coalesce(L_A.ID, L_D.ID, L_DI.ID, L_F.ID, L_I.ID, L_L.Value, L_T.ID) as LookupObjectID
+						from	FieldType F
+								inner join [Load] L on L.ID = @LoadID and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
+								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
 								
-									left join Artifact L_A on F.LookupObjectType in ('Artifact', 'ArtifactType') and L_A.ArtifactTypeID = F.LookupObjectID and (L_A.[Name] = IC.Value OR L_A.TextPath = IC.Value)
-									left join Domain L_D on F.LookupObjectType in ('Domain', 'DomainType') and L_D.DomainTypeID = F.LookupObjectID and L_D.[Name] = IC.Value
-									left join DomainItem L_DI on F.LookupObjectType = 'DomainItem' and L_DI.DomainID = F.LookupObjectID and L_DI.[Name] = IC.Value
-									left join FusionAttribute L_F on F.LookupObjectType = 'FusionAttributeType' and L_F.FusionAttributeTypeID = F.LookupObjectID and (L_F.[Name] = IC.Value OR L_F.TextPath = IC.Value)
-									left join [Intersect] L_I on F.LookupObjectType = 'IntersectType' and L_I.IntersectTypeID = F.LookupObjectID and L_I.[Name] = IC.Value
-									left join [FieldLookupValue] L_L on F.ID = L_L.FieldTypeID and F.LookupObjectType = 'Lookup' and L_L.LookupObjectID = F.LookupObjectID and L_L.[Text] = IC.Value
-									left join Taxonomy L_T on F.LookupObjectType in ('Taxonomy', 'TaxonomyType') and L_T.TaxonomyTypeID = F.LookupObjectID and (L_T.[Name] = IC.Value OR L_T.TextPath = IC.Value)
-							where	F.[Type] = 'Lookup'
-							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+								left join Artifact L_A on F.LookupObjectType in ('Artifact', 'ArtifactType') and L_A.ArtifactTypeID = F.LookupObjectID and (L_A.[Name] = IC.Value OR L_A.TextPath = IC.Value)
+								left join Domain L_D on F.LookupObjectType in ('Domain', 'DomainType') and L_D.DomainTypeID = F.LookupObjectID and L_D.[Name] = IC.Value
+								left join DomainItem L_DI on F.LookupObjectType = 'DomainItem' and L_DI.DomainID = F.LookupObjectID and L_DI.[Name] = IC.Value
+								left join FusionAttribute L_F on F.LookupObjectType = 'FusionAttributeType' and L_F.FusionAttributeTypeID = F.LookupObjectID and (L_F.[Name] = IC.Value OR L_F.TextPath = IC.Value)
+								left join [Intersect] L_I on F.LookupObjectType = 'IntersectType' and L_I.IntersectTypeID = F.LookupObjectID and L_I.[Name] = IC.Value
+								left join [FieldLookupValue] L_L on F.ID = L_L.FieldTypeID and F.LookupObjectType = 'Lookup' and L_L.LookupObjectID = F.LookupObjectID and L_L.[Text] = IC.Value
+								left join Taxonomy L_T on F.LookupObjectType in ('Taxonomy', 'TaxonomyType') and L_T.TaxonomyTypeID = F.LookupObjectID and (L_T.[Name] = IC.Value OR L_T.TextPath = IC.Value)
+						where	F.[Type] = 'Lookup'
+						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
 
 		-- PARSE any Subject AREA fields.  This is only in the case of artifacts.
 		update	T
@@ -108,6 +106,9 @@ begin
 									inner join Artifact P on P.ArtifactTypeID = PT.ID and P.[Name] = IC.Value
 							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
 
+
+	if @Action = 'P'	--PROMOTION
+	begin
 		if @Object = 'AttributeType'
 		begin
 			-- Clean Owner Type field.
@@ -485,58 +486,9 @@ begin
 		update	LoadItem
 		set		[Status] = 0,
 				[StatusMessage] = 'Item could not be added nor updated.'
-		where	[ObjectID] is null and [LoadID] = @LoadID
-		
-		-- Load custom fields for the inserted/updated object above.
-		merge	Field T
-		using	(
-				select	distinct
-						FT.ID as FieldTypeID,
-						L.[Object],
-						L.ObjectID,
-						IC.LookupObjectID--max(IC.LookupObjectID) as LookupObjectID
-				from	LoadItem L
-						inner join LoadColumn C on C.LoadID = L.LoadID
-						inner join LoadItemColumn IC on IC.LoadID = C.LoadID and L.RowIndex = IC.RowIndex and IC.ColumnIndex = C.ColumnIndex and IC.LookupObjectID is not null
-						inner join FieldType FT on FT.[Object] = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
-				where	L.ObjectID is not null
-						and L.LoadID = @LoadID
-				--group by	FT.ID,
-				--			L.[Object],
-				--			L.ObjectID
-				) S
-		on		(T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.[Object] and T.ObjectID = S.ObjectID)
-		when	matched then
-				update	set Value = S.LookupObjectID
-		when	not matched then
-				insert (ObjectType, ObjectID, FieldTypeID, Value)
-				values (S.[Object], S.ObjectID, S.FieldTypeID, S.LookupObjectID);
-
-		merge	Field T
-		using	(
-				select	distinct
-						FT.ID as FieldTypeID,
-						L.[Object],
-						L.ObjectID,
-						case 
-							when FT.[Type] = 'Boolean' and LOWER(IC.Value) in ('y', 'yes', 'true', 't', '1') then 'true'
-							when FT.[Type] = 'Boolean' and LOWER(IC.Value) not in ('y', 'yes', 'true', 't', '1') then 'false'
-							else IC.Value
-						end as Value
-				from	LoadItem L
-						inner join LoadColumn C on C.LoadID = L.LoadID
-						inner join LoadItemColumn IC on IC.LoadID = C.LoadID and L.RowIndex = IC.RowIndex and IC.ColumnIndex = C.ColumnIndex and IC.LookupObjectID is null
-						inner join FieldType FT on FT.[Object] = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.[Type] <> 'Lookup'
-				where	L.ObjectID is not null
-						and L.LoadID = @LoadID
-				) S
-		on		(T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.[Object] and T.ObjectID = S.ObjectID)
-		when	matched then
-				update	set Value = S.Value
-		when	not matched then
-				insert (ObjectType, ObjectID, FieldTypeID, Value)
-				values (S.[Object], S.ObjectID, S.FieldTypeID, S.Value);
-	end	
+		where	LoadID = @LoadID
+				and [ObjectID] is null
+	end
 	else
 	begin
 		-- This is for actions: R, U, L
@@ -552,7 +504,6 @@ begin
 				@date datetime = getutcdate()
 
 		declare @Intersects IDTable
-
 
 		if @Action = 'L' -- LINEAGE (create lineage from input spreadsheet)
 		begin
@@ -763,7 +714,7 @@ begin
 										inner join [LoadColumn] C on C.LoadID = L.ID and L.ID = @LoadID
 										inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
 										inner join IntersectTypeNode IT on IT.IntersectTypeID = @ObjectID and IT.[Order] = IC.[ColumnIndex]
-										inner join cache.ObjectDetails T on T.[TextPath] = IC.Value and T.[ObjectType] = IT.[ObjectType] and T.ObjectTypeID = IT.ObjectID
+										inner join cache.ObjectDetails T on (T.[TextPath] = IC.Value or T.Name = IC.Value) and T.[ObjectType] = IT.[ObjectType] and T.ObjectTypeID = IT.ObjectID
 								) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
 			update	T
 			set		T.[Status] = 0,
@@ -929,8 +880,63 @@ begin
 
 	end --end IF statement to check if action = P or NOT
 
+	if @Action = 'P' or @Action = 'R'
+	begin
+		-- Load custom fields for the inserted/updated object above.
+		merge	Field T
+		using	(
+				select	distinct
+						FT.ID as FieldTypeID,
+						L.[Object],
+						L.ObjectID,
+						IC.LookupObjectID--max(IC.LookupObjectID) as LookupObjectID
+				from	LoadItem L
+						inner join LoadColumn C on C.LoadID = L.LoadID
+						inner join LoadItemColumn IC on IC.LoadID = C.LoadID and L.RowIndex = IC.RowIndex and IC.ColumnIndex = C.ColumnIndex and IC.LookupObjectID is not null
+						inner join FieldType FT on FT.[Object] = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
+				where	L.ObjectID is not null
+						and L.LoadID = @LoadID
+				--group by	FT.ID,
+				--			L.[Object],
+				--			L.ObjectID
+				) S
+		on		(T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.[Object] and T.ObjectID = S.ObjectID)
+		when	matched then
+				update	set Value = S.LookupObjectID
+		when	not matched then
+				insert (ObjectType, ObjectID, FieldTypeID, Value)
+				values (S.[Object], S.ObjectID, S.FieldTypeID, S.LookupObjectID);
+
+		merge	Field T
+		using	(
+				select	distinct
+						FT.ID as FieldTypeID,
+						L.[Object],
+						L.ObjectID,
+						case 
+							when FT.[Type] = 'Boolean' and LOWER(IC.Value) in ('y', 'yes', 'true', 't', '1') then 'true'
+							when FT.[Type] = 'Boolean' and LOWER(IC.Value) not in ('y', 'yes', 'true', 't', '1') then 'false'
+							else IC.Value
+						end as Value
+				from	LoadItem L
+						inner join LoadColumn C on C.LoadID = L.LoadID
+						inner join LoadItemColumn IC on IC.LoadID = C.LoadID and L.RowIndex = IC.RowIndex and IC.ColumnIndex = C.ColumnIndex and IC.LookupObjectID is null
+						inner join FieldType FT on FT.[Object] = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.[Type] <> 'Lookup'
+				where	L.ObjectID is not null
+						and L.LoadID = @LoadID
+				) S
+		on		(T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.[Object] and T.ObjectID = S.ObjectID)
+		when	matched then
+				update	set Value = S.Value
+		when	not matched then
+				insert (ObjectType, ObjectID, FieldTypeID, Value)
+				values (S.[Object], S.ObjectID, S.FieldTypeID, S.Value);
+	end
+
 	update	[Load] 
 	set		DateCompleted = getutcdate()
 	where	ID = @LoadID
 end
-GO
+go
+
+

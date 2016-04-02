@@ -1165,7 +1165,7 @@
                     method: method
                 }).done(function (data, status, xhr) {
                     amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
-                    amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Mappings successfully created.' });
+                    amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Field type successfully created.' });
                 }).fail(function (xhr, status, error) {
                     amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
                 }).always(function (data, status, error) {

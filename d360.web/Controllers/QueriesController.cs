@@ -272,10 +272,9 @@ order by	ObjectTypeName, ObjectName", new { id = resourceID, r = responsibilityT
         [Route("{type}/{id:int}/PointBreakdownByObject")]
         public JsonNetResult GetPointBreakdownByObject(SystemObjects type, int id)
         {
-            var query = Company.Query<dynamic>(@"select T.Name, R.Score as MaxScore, coalesce(S.Score, 0) as Score
+            var query = Company.Query<dynamic>(@"select T.Name, T.Score as MaxScore, coalesce(S.Score, 0) as Score
 from	StatisticType T
-inner join cache.ObjectDetails D on D.[Object] = @type and D.ObjectID = @id
-inner join StatisticTypeRelation R	on R.StatisticTypeID = T.ID and R.ObjectType = D.[ObjectType]  and R.ObjectID = D.ObjectTypeID and T.PartOfScore = 1
+inner join cache.Object D on D.[Object] = @type and D.ObjectID = @id and D.ObjectType = T.[Object]  and T.ObjectID = D.ObjectTypeID and T.PartOfScore = 1
 outer apply (
 			select	top 1
 					*

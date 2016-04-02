@@ -1,0 +1,1 @@
+﻿///<binding AfterBuild='scripts/all.js, scripts/apps.js, Scripts/all.js, Content/styles/all.css, content/styles/all.css' Clean='All files' />

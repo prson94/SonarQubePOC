@@ -3,14 +3,13 @@
     "outputFileName": "scripts/all.js",
     "inputFiles": [
       "Scripts/jquery-2.2.1.js",
-      //"Scripts/angular.js",
       "Scripts/handlebars.js",
       "Scripts/sammy-0.7.5.js",
       "Scripts/sammy.title.js",
       "Scripts/sammy.handlebars.js",
       "Scripts/amplify.js",
       "Scripts/moment.js",
-      "scripts/knockout-3.4.0.debug.js",
+      "scripts/knockout-3.4.0.debug.js", 
       "scripts/metafizzy/isotope.pkgd.js",
       "Scripts/colorpicker-color.js",
       "Scripts/colorpicker.js",
@@ -31,49 +30,10 @@
       "Scripts/d3s.PageTools.js",
       "Scripts/d3s.SurveyReport.js",
       "Scripts/d3s.RandomSurveyQuestion.js",
-      "Scripts/parts/*.js",
-      "Scripts/templates/home.js",
-      "Scripts/templates/search.js",
-      "Scripts/templates/community.home.js",
-      "Scripts/templates/analytics.admin.js",
-      "Scripts/templates/artifacts.admin.js",
-      "Scripts/templates/artifacts.root.js",
-      "Scripts/templates/artifacts.item.js",
-      "Scripts/templates/artifacts.list.js",
-      "Scripts/templates/attributes.admin.js",
-      "Scripts/templates/domains.admin.js",
-      "Scripts/templates/domains.list.js",
-      "Scripts/templates/fusion.admin.js",
-      "Scripts/templates/fusion.item.js",
-      "Scripts/templates/fusion.list.js",
-      "Scripts/templates/governance.admin.js",
-      "Scripts/templates/groups.admin.js",
-      "Scripts/templates/groups.item.js",
-      "Scripts/templates/groups.list.js",
-      "Scripts/templates/load.js",
-      "Scripts/templates/lookups.admin.js",
-      "Scripts/templates/monitor.list.js",
-      "Scripts/templates/policies.admin.js",
-      "Scripts/templates/policies.list.js",
-      "Scripts/templates/relations.admin.js",
-      "Scripts/templates/reporting.admin.js",
-      "Scripts/templates/resources.admin.js",
-      "Scripts/templates/resources.item.js",
-      "Scripts/templates/rules.list.js",
-      "Scripts/templates/settings.admin.js",
-      "Scripts/templates/surveys.admin.js",
-      "Scripts/templates/surveyresponsetypes.admin.js",
-      "Scripts/templates/taxonomies.admin.js",
-      "Scripts/templates/taxonomies.root.js",
-      "Scripts/templates/taxonomies.list.js",
-      "Scripts/templates/templates.admin.js",
-      "Scripts/templates/workflow.item.js",
-      "Scripts/templates/workflow.admin.js",
-      "Scripts/templates/workflow.item.status.js"
-    ],
-    "minify": {
-      "enabled": true
-    }
+      "Scripts/parts/*.js", 
+      //"Scripts/parts/_Utils.js",
+      "Scripts/templates/*.js"
+    ]
   },
   {
     "outputFileName": "scripts/apps.js",
@@ -90,18 +50,6 @@
       "Content/styles/Root.css",
       "Content/styles/ContentFormatting.css",
       "Content/styles/navigation.css"
-    ]
-  },
-  {
-    "outputFileName": "Scripts/all.js",
-    "inputFiles": [
-      "Scripts/all.js"
-    ]
-  },
-  {
-    "outputFileName": "Content/styles/all.css",
-    "inputFiles": [
-      "Content/styles/all.css"
     ]
   }
 ]

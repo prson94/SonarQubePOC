@@ -305,10 +305,6 @@ namespace d360.model
 
         public DbSet<StatisticTypeCheckOption> StatisticTypeCheckOptions { get; set; }
         
-        public DbSet<StatisticTypeRelation> StatisticTypeRelations { get; set; }
-
-        public DbSet<StatisticTypeRelationDetail> StatisticTypeRelationDetails { get; set; }                /*VIEW*/
-
         public DbSet<Survey> Surveys { get; set; }
 
         public DbSet<SurveyObjectCache> SurveyObjectCaches { get; set; }
@@ -513,6 +509,31 @@ begin
   delete RelatedArtifact where GroupID = @tG
  end
 end", new { ss = source, tt = target });
+        }
+
+        public List<AllocationPossibility> GetTypes()
+        {
+            var list = Database.Connection.Query<AllocationPossibility>(@"
+			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
+			union
+			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Reference :: ' + Name as Name from DomainType
+			union
+			select	'TaxonomyType' as ObjectType, T.ID as ObjectTypeID, 'Models :: ' + C.Name  +' :: ' + T.Name as Name from TaxonomyType T inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
+			union
+			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
+			union
+			select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name 
+			union
+			select	'GroupType' as ObjectType, 1 as ObjectTypeID, 'Group' as Name").ToList();
+            RuleType ruleType = RuleType.Informational;
+            foreach (var rt in ruleType.GetRuleTypeEnumList())
+            {
+                list.Add(new AllocationPossibility { ObjectType = "RuleType", Name = string.Format("Rules :: {0}", rt.Name), ObjectTypeID = (int)rt.ID });
+            }
+
+            list = list.OrderBy(i => i.Name).ToList();
+
+            return list;
         }
 
         public List<AllocationPossibility> GetAllocationOptions()
@@ -990,33 +1011,14 @@ order by	ColumnIndex", new { id });
         public List<StatisticDetail> GetStatisticDetailsByType(SystemObjects type, int id)
         {
             return Query<StatisticDetail>(string.Format("GetStatisticDetails '{0}', {1}", type.ToString(), id)).ToList();
-        } 
-
-        public IEnumerable<dynamic> GetStatisticTypeExistenceCheckOptions()
-        {
-            string sql = @"SELECT 'AttributeType|'+ cast(ID as varchar(15)) as ID, 'Attribute :' + Name as Name from AttributeType Where ParentID is null
-            union SELECT 'ResponsibilityType|'+ cast(ID as varchar(15)) as ID, 'Responsibility :' + Name as Name from ResponsibilityType";
-            return Query<dynamic>(sql);
         }
 
-        public IEnumerable<dynamic> GetStatisticTypeCountCheckOptions()
-        {
-            string sql = @"SELECT 'AttributeType|'+ cast(ID as varchar(15)) as ID, 'Attribute :' + Name as Name from AttributeType Where ParentID is null
-            union SELECT 'ResponsibilityType|'+ cast(ID as varchar(15)) as ID, 'Responsibility :' + Name as Name from ResponsibilityType";
-            return Query<dynamic>(sql);
-        }
-
-        public IEnumerable<dynamic> GetStatisticTypeRelationshipCheckOptions()
-        {
-            var sql = @"select * from (
-			select	'ArtifactType|' + cast(ID as varchar(15)) as ID, 'Artifacts :: ' + Name as Name from ArtifactType union
-			select	'DomainType|' + cast(ID as varchar(15)) as ID,  'Domains :: ' + Name as Name from DomainType union
-			select	'TaxonomyType|' + cast(ID as varchar(15)) as ID,  'Information Models :: ' + Name as Name from TaxonomyType union
-			select	'IntersectType|' + cast(ID as varchar(15)) as ID, 'Relationships :: ' + Name as Name from IntersectType union
-			select	'FusionAttributeType|' + cast(ID as varchar(15)) as ID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
-			) O order by Name";
-            return Query<dynamic>(sql).ToList();
-        }
+        //public IEnumerable<dynamic> GetStatisticTypeCountCheckOptions()
+        //{
+        //    string sql = @"SELECT 'AttributeType|'+ cast(ID as varchar(15)) as ID, 'Attribute :' + Name as Name from AttributeType Where ParentID is null
+        //    union SELECT 'ResponsibilityType|'+ cast(ID as varchar(15)) as ID, 'Responsibility :' + Name as Name from ResponsibilityType";
+        //    return Query<dynamic>(sql);
+        //}
 
         public IEnumerable<dynamic> GetStatisticTypeRollupCheckOptions()
         {

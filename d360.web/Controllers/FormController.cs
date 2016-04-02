@@ -6825,6 +6825,7 @@ order by  D.TextPath
                 case "ArtifactType":
                 case "AttributeType":
                 case "DomainType":
+                case "IntersectType":
                 case "TaxonomyType":
                     fieldTypeNames = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == id && i.Type != "FusionLookup" && i.Type != "RelationLookup").OrderBy(i => i.SortOrder).Select(i => i.Name).ToList();
                     break;
@@ -6867,8 +6868,8 @@ order by  D.TextPath
                     where   S.IntersectTypeID = @id", new { id }).SingleOrDefault();
                     if (intersectType != null)
                     {
-                        fieldTypeNames.Add(intersectType.S);
-                        fieldTypeNames.Add(intersectType.T);
+                        fieldTypeNames.Insert(0, intersectType.S);
+                        fieldTypeNames.Insert(1, intersectType.T);
                     }
                     break;
                 case "TaxonomyType":
@@ -6929,14 +6930,14 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     #region
                     sql = @"select 'IntersectType|' + cast(ID as varchar(10)) as value, Name as title from IntersectType order by Name";
                     break;
-                #endregion
+                    #endregion
                 case "L":
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
                     break;
             }
 
             if(!string.IsNullOrEmpty(sql))
-                models = Company.Query<OptionModel>(sql).OrderBy(i => i.title);
+            models = Company.Query<OptionModel>(sql).OrderBy(i => i.title);
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -6978,7 +6979,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 SLStyle style = document.CreateStyle();
 
                 style.Font.Bold = isRequiredColumn(type, columns[i], parentColumnName);
-                
+
                 document.SetCellStyle(1, i + 1, style);
 
                 document.SetCellValue(1, i + 1, columns[i]);
@@ -7158,7 +7159,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                         var fieldTypeNames = getFieldNamesByType(load.Object, load.ObjectID);
 
-                        fieldTypeNames = fieldTypeNames.Select(i => i.ToLower().Trim()).ToList();
+                        fieldTypeNames = fieldTypeNames.Select(i => i.Trim()).ToList();
 
                         var stats = xls.GetWorksheetStatistics();
                         int columnCount = 0;
@@ -7176,59 +7177,28 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                             }
                         }
 
-                        if(load.Action == "P")
-                        {
-                            //spreadsheet should not have more columns than the type has
-                            // it can have less
-                            // spreadsheet should only contain columns that the type has
-                            if (columnCount <= fieldTypeNames.Count)
-                            {
-                                var hasError = false;
-                                load.LoadColumns = new List<LoadColumn>();
-                                //loop through spreadsheet columns and make sure type has that column
-                                for (var i = stats.StartColumnIndex; i <= stats.EndColumnIndex; i++)
-                                {
-                                    var columnName = (xls.GetCellValueAsString(1, i) ?? string.Empty).ToLower().Trim();
-
-                                    if (string.IsNullOrEmpty(columnName)) continue;
-
-                                    if (!fieldTypeNames.Any(x => x == columnName))
-                                    {
-                                        hasError = true;
-                                        errorMessage += string.Format("Unexpected column found [{0}]", columnName);
-                                    }
-                                    else
-                                    {
-                                        load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = columnName });
-                                    }
-                                }
-                                                                
-                                success = !hasError;
-                            }
-                            else
-                            {
-                                errorMessage = "The number of columns in the spreadsheet exceeds the number of defined fields for this load type.";
-                            }
-                        }
-                        else
-                        {
-                        if (columnCount == fieldTypeNames.Count)
+                        //spreadsheet should not have more columns than the type has
+                        // it can have less
+                        // spreadsheet should only contain columns that the type has
+                        if (columnCount <= fieldTypeNames.Count)
                         {
                             var hasError = false;
                             load.LoadColumns = new List<LoadColumn>();
-                            for (var i = 1; i <= fieldTypeNames.Count; i++)
+                            //loop through spreadsheet columns and make sure type has that column
+                            for (var i = stats.StartColumnIndex; i <= stats.EndColumnIndex; i++)
                             {
-                                var actualValue = (xls.GetCellValueAsString(1, i) ?? string.Empty).Trim();
-                                var expectedValue = fieldTypeNames[i - 1];
-                                
-                                if(string.Compare(actualValue, expectedValue,true) == 0)
+                                var columnName = (xls.GetCellValueAsString(1, i) ?? string.Empty).Trim();
+
+                                if (string.IsNullOrEmpty(columnName)) continue;
+
+                                if (!fieldTypeNames.Any(x => x == columnName))
                                 {
-                                    load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = actualValue });
+                                    hasError = true;
+                                    errorMessage += string.Format("Unexpected column found [{0}]", columnName);
                                 }
                                 else
                                 {
-                                    hasError = true;
-                                    errorMessage += string.Format("{0} did not match the expected value of {1}. ", actualValue, expectedValue);
+                                    load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = columnName });
                                 }
                             }
 
@@ -7236,10 +7206,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                         }
                         else
                         {
-                            errorMessage = "The number of columns in the spreadsheet does not match the number of defined fields for this load type.";
+                            errorMessage = "The number of columns in the spreadsheet exceeds the number of defined fields for this load type.";
                         }
-                    }
-                        
                     }
                     else
                     {
@@ -11568,6 +11536,8 @@ order by	D.Name, I.Name";
 
                 var a = Community.Filter<Resource>(i => i.Email == email).FirstOrDefault();
 
+                var id = 0;
+
                 // Only add resource account if it does not already exist.
                 if (a == null)
                 {
@@ -11584,10 +11554,29 @@ order by	D.Name, I.Name";
 
                     Community.Add<Resource>(a);
                     
-                    var id = a.ID;
+                    id = a.ID;
+                    Community.ChangePassword(a.ID, "", form["Password"]);
+                }
+                else
+                {
+                    id = a.ID;
+                }
 
                     var isAdmin = parseBooleanField(form, "IsAdministrator");
+                var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == id).FirstOrDefault();
 
+                if (companyResource == null)
+                {
+                    Community.Add<CompanyResource>(new CompanyResource
+                    {
+                        CompanyID = Company.CurrentCompanyID,
+                        IsAdministrator = isAdmin,
+                        ResourceID = id
+                    });
+                }
+
+                if (!GetCompanyResources().Any(i => i.ResourceID == a.ID))
+                {
                     GlobalReportingResource gr = new GlobalReportingResource
                     {
                         IsAdministrator = isAdmin,
@@ -11599,24 +11588,6 @@ order by	D.Name, I.Name";
                     };
 
                     Company.Add<GlobalReportingResource>(gr);
-
-                /*    Company.Execute(@"insert into [reporting].[Global_Resource] ([ResourceID], [FirstName], [LastName], [Email], [Status], [IsAdministrator]) 
-		                                values (@resourceId, @first, @last, @email, @stat, @admin);",
-                           new { resourceId = id, first = a.FirstName, last = a.LastName, email = a.Email, stat = a.Status, admin = (isAdmin ? 1 : 0) }
-                           );*/
-
-                    Community.ChangePassword(a.ID, "", form["Password"]);
-                }
-
-                if (!GetCompanyResources().Any(i => i.ResourceID == a.ID))
-                {
-                    var isAdmin = parseBooleanField(form, "IsAdministrator");
-                    Community.Add<CompanyResource>(new CompanyResource
-                    {
-                        CompanyID = Company.CurrentCompanyID,
-                        IsAdministrator = isAdmin,
-                        ResourceID = a.ID
-                    });
                 }
 
                 if (Request.ContentLength > 0)
@@ -13410,42 +13381,246 @@ order by	D.Name, I.Name";
 
         #region Form Get/Post
 
+        public JsonNetResult StatisticType_FormData(int id)
+        {
+            var type = Company.GetById<StatisticType>(id);
+            if (type == null) return new JsonNetResult { Data = null };
+
+            var model = new Dictionary<string, object>();
+            model.Add("ID", type.ID);
+            model.Add("Name", type.Name);
+            model.Add("CheckType", type.CheckType);
+            model.Add("Description", type.Description);
+            model.Add("Object", type.Object);
+            model.Add("ObjectID", type.ObjectID);
+            model.Add("PartOfScore", type.PartOfScore);
+            model.Add("Score", type.Score);
+
+            var xml = XElement.Parse(type.Configuration);
+            switch (type.CheckType)
+            {   
+                case StatisticCheckType.Count:
+                case StatisticCheckType.Existence:
+                case StatisticCheckType.ScoreRollupViaRelationship:
+                case StatisticCheckType.ScoreRollupViaOwnership:
+                    model.Add("CheckObject", xml.Element("ObjectType").Value);
+                    model.Add("CheckObjectID", xml.Element("ObjectID").Value);
+                    break;
+                case StatisticCheckType.PropertyPopulated:
+                    model.Add("PropertyName", xml.Element("PropertyName").Value);
+                    break;
+                case StatisticCheckType.PropertyValueCheck:
+                    model.Add("PropertyName", xml.Element("PropertyName").Value);
+                    model.Add("PropertyValue", xml.Element("Value").Value);
+                    break;
+                case StatisticCheckType.EventMetric:
+                    model.Add("ValidField", xml.Element("ValidField").Value);
+                    model.Add("InvalidField", xml.Element("InvalidField").Value);
+                    model.Add("Threshold", xml.Element("Threshold").Value);
+                    break;
+                case StatisticCheckType.PredicateMetric:
+                    model.Add("Predicate", xml.Element("Predicate").Value);
+                    break;
+                case StatisticCheckType.Relationship:
+                    try
+                    {
+                        if (xml.Element("CheckObjects") != null)
+                        {
+                            model.Add("CheckObjects",
+                                xml.Element("CheckObjects")
+                                    .Elements("Object")
+                                    .Select(co => $"{co.Element("Type").Value}|{co.Element("ID").Value}").ToList()
+                                );
+                        }
+                        else
+                        {
+                            model.Add("CheckObjects", new List<string> { $"{xml.Element("ObjectType").Value}|{xml.Element("ObjectID").Value}" });
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    break;
+            }
+
+            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult StatisticType_CheckTypeOptions()
+        {
+            var models = StatisticCheckType.Count.GetEnumList().Select(i => new KnockoutListItem(i.Name, ((int)i.ID).ToString()));
+            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult StatisticType_ObjectOptions()
+        {
+            var models = Company.GetTypes().Select(i => new KnockoutListItem(i.Name, $"{i.ObjectType}|{i.ObjectTypeID}"));
+            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult StatisticType_CheckObjectOptions(SystemObjects type, int id, StatisticCheckType check)
+        {
+            var models = new List<KnockoutListItem>();
+
+            switch (check)
+            {
+                case StatisticCheckType.Existence:
+                    models.AddRange(Company.Query<KnockoutListItem>(@"
+SELECT	'AttributeType|'+ cast(T.ID as varchar) as value, 
+		'Attribute :' + T.Name as title
+from	AttributeType T
+		inner join AttributeTypeRelation R on R.AttributeTypeID = T.ID and T.ParentID is null and R.ObjectType = @type and R.ObjectID = @id
+union 
+SELECT	'ResponsibilityType|'+ cast(ID as varchar) as value, 
+		'Responsibility :' + Name as title 
+from	ResponsibilityType T
+		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and R.ObjectType = @type and R.ObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
+                    break;
+                case StatisticCheckType.Count:
+                    models.AddRange(Company.Query<KnockoutListItem>(@"
+SELECT	'AttributeType|'+ cast(T.ID as varchar) as value, 
+		'Attribute :' + T.Name as title
+from	AttributeType T
+		inner join AttributeTypeRelation R on R.AttributeTypeID = T.ID and T.ParentID is null and R.ObjectType = @type and R.ObjectID = @id
+union 
+SELECT	'ResponsibilityType|'+ cast(ID as varchar) as value, 
+		'Responsibility :' + Name as title 
+from	ResponsibilityType T
+		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and R.ObjectType = @type and R.ObjectID = @id
+union
+select	distinct
+		D.Object + '|' + cast(D.ObjectID as varchar) as value,
+		'Relationship :' + D.TextPath as title
+from	utility.RelationshipTypes RT
+		inner join cache.ObjectDetails D on D.Object = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
+where	RT.SourceObjectType = @type
+		and RT.SourceObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
+                    break;
+                case StatisticCheckType.PropertyValueCheck:
+                case StatisticCheckType.PropertyPopulated:
+                    switch (type)
+                    {
+                        case SystemObjects.ArtifactType:
+                            models.Add(new KnockoutListItem("Name", "Name"));
+                            models.Add(new KnockoutListItem("Description", "Description"));
+                            models.Add(new KnockoutListItem("Status", "Status"));
+                            break;
+                        case SystemObjects.DomainType:
+                            models.Add(new KnockoutListItem("Name", "Name"));
+                            models.Add(new KnockoutListItem("Description", "Description"));
+                            models.Add(new KnockoutListItem("Code", "Code"));
+                            break;
+                        case SystemObjects.TaxonomyType:
+                        case SystemObjects.PolicyType:
+                        case SystemObjects.RuleType:
+                            models.Add(new KnockoutListItem("Name", "Name"));
+                            models.Add(new KnockoutListItem("Description", "Description"));
+                            break;
+                    }
+                    models.AddRange(Company.GetFieldTypeRelationsByObject(type, id).Select(i => new KnockoutListItem { title = i.FriendlyName, value = i.Name }));
+                    break;
+                case StatisticCheckType.Relationship:
+                    models.AddRange(Company.Query<KnockoutListItem>(@"
+select	distinct
+		D.Object + '|' + cast(D.ObjectID as varchar) as value,
+		D.TextPath as title
+from	utility.RelationshipTypes RT
+		inner join cache.ObjectDetails D on D.Object = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
+where	RT.SourceObjectType = @type
+		and RT.SourceObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
+                    break;
+                case StatisticCheckType.FusionOwnership:
+                    //models.AddRange(Company.GetStatisticTypeCountCheckOptions().Select(i => new { title = i.Name, value = i.ID.ToString() }));
+                    break;
+                case StatisticCheckType.ScoreRollupViaRelationship:
+                    models.AddRange(Company.Query<KnockoutListItem>(@"
+select	distinct
+		D.Object + '|' + cast(D.ObjectID as varchar) as value,
+		D.TextPath as title
+from	utility.RelationshipTypes RT
+		inner join cache.ObjectDetails D on D.Object = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
+where	RT.SourceObjectType = @type
+		and RT.SourceObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
+                    break;
+                case StatisticCheckType.ScoreRollupViaOwnership:
+                    models.AddRange(Company.GetStatisticTypeRollupCheckOptions().Select(i => new KnockoutListItem { title = i.Name, value = i.ID.ToString() }));
+                    break;
+                //case StatisticCheckType.EventMetric:
+                //    models.AddRange(Company.GetStatisticTypeCountCheckOptions().Select(i => new KnockoutListItem { title = i.Name, value = i.ID.ToString() }));
+                //    break;
+                case StatisticCheckType.PredicateMetric:
+                    models.AddRange(Company.Table<Predicate>().Select(i => new KnockoutListItem { title = i.Name, value = i.ID.ToString() }));
+                    break;
+            }
+
+            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
         public ActionResult AddStatisticType()
         {
-            var model = new StatisticTypeEditorModel
+            var model = new EditableForm
             {   
                 FormDescription = Resources.FormInfo.Add_AnalyticType_Directions,
                 FormMethod = "POST",
-                FormName = Resources.FormInfo.Add_AnalyticType_Title,
-                FormUri = "/Form/AddStatisticType",
-                StatisticType = new StatisticType { CheckType = StatisticCheckType.Existence }
+                FormTitle = Resources.FormInfo.Add_AnalyticType_Title,
+                FormUri = "/Form/AddStatisticType"
             };
 
-            #region Lookup Lists
-
-            model.ExistenceCheckItems = Company.GetStatisticTypeExistenceCheckOptions()
-                .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .OrderBy(i => i.Text).ToList();
-
-            model.CountCheckItems = Company.GetStatisticTypeCountCheckOptions()
-                .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .OrderBy(i => i.Text).ToList();
-
-            model.PropertyExistenceCheckItems.Add(new SelectListItem { Text = "Description", Value = "Description" });
-
-            model.PropertyValueCheckItems.Add(new SelectListItem { Text = "Status", Value = "Status" });
-
-            model.RelationshipCheckItems = Company.GetStatisticTypeRelationshipCheckOptions()
-                .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .OrderBy(i => i.Text).ToList();
-
-            model.RollupCheckItems = Company.GetStatisticTypeRollupCheckOptions()
-                .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .OrderBy(i => i.Text).ToList();
-
-            #endregion
+            ViewBag.ID = 0;
 
             return PartialView("StatisticTypeEditForm", model);
+        }
+
+        string getXmlConfigurationFromFormFields(FormCollection form, StatisticCheckType checkType)
+        {
+            var fields = new XElement("fields");
+
+            switch (checkType)
+            {
+                case StatisticCheckType.Count:
+                case StatisticCheckType.Existence:
+                case StatisticCheckType.ScoreRollupViaRelationship:
+                case StatisticCheckType.ScoreRollupViaOwnership:
+                    fields.Add(new XElement("ObjectType", form["CheckObject"]));
+                    fields.Add(new XElement("ObjectID", form["CheckObjectID"]));
+                    break;
+                case StatisticCheckType.PropertyPopulated:
+                    fields.Add(new XElement("PropertyName", form["PropertyName"]));
+                    break;
+                case StatisticCheckType.PropertyValueCheck:
+                    fields.Add(new XElement("PropertyName", form["PropertyName"]));
+                    fields.Add(new XElement("Value", form["PropertyValue"]));
+                    break;
+                case StatisticCheckType.Relationship:
+                    var rawCheckObjects = form["CheckObjects[]"];
+                    if (!string.IsNullOrEmpty(rawCheckObjects))
+                    {
+                        var checkObjectStrings = rawCheckObjects.Split(',').ToList();
+                        var checksElement = new XElement("CheckObjects");
+                        checkObjectStrings.ForEach(i =>
+                        {
+                            var values = i.Split('|');
+                            var checkElement = new XElement("Object");
+                            checkElement.Add(
+                                new XElement("Type", values[0]),
+                                new XElement("ID", values[1])
+                            );
+                            checksElement.Add(checkElement);
+                        });
+                        fields.Add(checksElement);
+                    }
+                    break;
+                case StatisticCheckType.EventMetric:
+                    fields.Add(new XElement("ValidField", form["ValidField"]));
+                    fields.Add(new XElement("InvalidField", form["InvalidField"]));
+                    fields.Add(new XElement("Threshold", decimal.Parse(form["Threshold"])));
+                    break;
+                case StatisticCheckType.PredicateMetric:
+                    fields.Add(new XElement("Predicate", form["Predicate"]));
+                    break;
+            }
+
+            return fields.ToString();
         }
 
         [ValidateHttpAntiForgeryToken]
@@ -13464,40 +13639,15 @@ order by	D.Name, I.Name";
                     Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     CheckType = (StatisticCheckType)Enum.Parse(typeof(StatisticCheckType), form["CheckType"]),
-                    PartOfScore = parseBooleanField(form, "PartOfScore")
+                    PartOfScore = parseBooleanField(form, "PartOfScore"),
+                    Score = parseIntField(form, "Score"),
+                    Object = parseTextField(form, "Object"),
+                    ObjectID = parseIntField(form, "ObjectID")
                 };
-
-                var fields = new XElement("fields");
-                
-                switch (a.CheckType)
-                {
-                    case StatisticCheckType.Count:
-                    case StatisticCheckType.Existence:
-                    case StatisticCheckType.Relationship:
-                    case StatisticCheckType.ScoreRollupViaRelationship:
-                    case StatisticCheckType.ScoreRollupViaOwnership:
-                        string[] value = form["ObjectTypeInfo"].Split('|');
-                        fields.Add(new XElement("ObjectType", value[0]));
-                        fields.Add(new XElement("ObjectID", value[1]));
-                        break;
-                    case StatisticCheckType.PropertyPopulated:
-                        fields.Add(new XElement("PropertyName", form["ObjectTypeInfo"]));
-                        break;
-                    case StatisticCheckType.PropertyValueCheck:
-                        fields.Add(new XElement("PropertyName", form["ObjectTypeInfo"]));
-                        fields.Add(new XElement("Value", form["Value"]));
-                        break;
-                    case StatisticCheckType.EventMetric:
-                        fields.Add(new XElement("ValidField", form["ValidFieldName"]));
-                        fields.Add(new XElement("InvalidField", form["InvalidFieldName"]));
-                        fields.Add(new XElement("Threshold", decimal.Parse(form["Threshold"])));
-                        break;
-                }
-
-                a.Configuration = fields.ToString();
+                a.Configuration = getXmlConfigurationFromFormFields(form, a.CheckType);
                 Company.Add<StatisticType>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), ContextList.StatisticType, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -13542,7 +13692,7 @@ order by	D.Name, I.Name";
 
                 Company.Delete<StatisticType>(model);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Item successfully removed.", id.ToString(), ContextList.StatisticType, "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -13560,70 +13710,14 @@ order by	D.Name, I.Name";
             var a = Company.GetById<StatisticType>(id);
             if (a == null) return HttpNotFound();
 
-            var model = new StatisticTypeEditorModel {
+            var model = new EditableForm {
                 FormDescription = Resources.FormInfo.Add_AnalyticType_Directions,
                 FormMethod = "PUT",
-                FormName = string.Format(Resources.FormInfo.Edit_Generic_Title, a.Name),
-                FormUri = "/Form/EditStatisticType",
-                StatisticType = a
+                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, a.Name),
+                FormUri = "/Form/EditStatisticType"
             };
 
-            #region Lookup Lists
-
-            model.ExistenceCheckItems = Company.GetStatisticTypeExistenceCheckOptions()
-                .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .ToList();
-
-            model.CountCheckItems = Company.GetStatisticTypeCountCheckOptions()
-                .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .ToList();
-
-            model.PropertyExistenceCheckItems.Add(new SelectListItem { Text = "Description", Value = "Description" });
-            
-            model.PropertyValueCheckItems.Add(new SelectListItem { Text = "Status", Value = "Status" });
-
-            model.RelationshipCheckItems = Company.GetStatisticTypeRelationshipCheckOptions()
-                .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .ToList();
-
-            model.RollupCheckItems = Company.GetStatisticTypeRollupCheckOptions()
-                .Select(i => new SelectListItem { Text = i.Name, Value = i.ID })
-                .ToList();
-
-            #endregion
-
-            var fields = XElement.Parse(a.Configuration);
-
-            var objectTypeInfo = "";
-            if (fields.Element("ObjectType") != null && fields.Element("ObjectID") != null)
-            {
-                objectTypeInfo = string.Format("{0}|{1}", fields.Element("ObjectType").Value, fields.Element("ObjectID").Value);
-            }
-            model.ObjectTypeInfo = objectTypeInfo;
-
-            switch (a.CheckType)
-            {
-                case StatisticCheckType.Existence:
-                    break;
-                case StatisticCheckType.Count:
-                    break;
-                case StatisticCheckType.PropertyValueCheck:
-                    model.ObjectTypeInfo = fields.Element("PropertyName").Value;
-                    model.Value = fields.Element("Value").Value;
-                    break;
-                case StatisticCheckType.PropertyPopulated:
-                    model.ObjectTypeInfo = fields.Element("PropertyName").Value;
-                    break;
-                case StatisticCheckType.Relationship:
-                    break;
-                case StatisticCheckType.FusionOwnership:
-                    break;
-                case StatisticCheckType.EventMetric:
-                    model.ValidFieldName = fields.Element("ValidField").Value;
-                    model.InvalidFieldName = fields.Element("InvalidField").Value;
-                    model.Threshold = fields.Element("Threshold").Value;
-                    break;
-            }
+            ViewBag.ID = id;
 
             return PartialView("StatisticTypeEditForm", model);
         }
@@ -13645,273 +13739,14 @@ order by	D.Name, I.Name";
                 model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.PartOfScore = parseBooleanField(form, "PartOfScore");
+                model.Score = parseIntField(form, "Score");
                 model.CheckType = (StatisticCheckType)Enum.Parse(typeof(StatisticCheckType), form["CheckType"]);
-
-                var fields = new XElement("fields");
-
-                switch (model.CheckType)
-                {
-                    case StatisticCheckType.Count:
-                    case StatisticCheckType.Existence:
-                    case StatisticCheckType.Relationship:
-                    case StatisticCheckType.ScoreRollupViaRelationship:
-                    case StatisticCheckType.ScoreRollupViaOwnership:
-                        string[] value = form["ObjectTypeInfo"].Split('|');
-                        fields.Add(new XElement("ObjectType", value[0]));
-                        fields.Add(new XElement("ObjectID", value[1]));
-                        break;
-                    case StatisticCheckType.PropertyPopulated:
-                        fields.Add(new XElement("PropertyName", form["ObjectTypeInfo"]));
-                        break;
-                    case StatisticCheckType.PropertyValueCheck:
-                        fields.Add(new XElement("PropertyName", form["ObjectTypeInfo"]));
-                        fields.Add(new XElement("Value", form["Value"]));
-                        break;
-                    case StatisticCheckType.EventMetric:
-                        fields.Add(new XElement("ValidField", form["ValidFieldName"]));
-                        fields.Add(new XElement("InvalidField", form["InvalidFieldName"]));
-                        fields.Add(new XElement("Threshold", decimal.Parse(form["Threshold"])));
-                        break;
-                }
-
-                model.Configuration = fields.ToString();
+                
+                model.Configuration = getXmlConfigurationFromFormFields(form, model.CheckType);
 
                 Company.Update<StatisticType>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region StatisticTypeRelation
-
-        #region Field Generation
-
-        /// <param name="st">StatisticTypeID</param>
-        public JsonResult StatisticTypeRelation_AddFields(int st)
-        {
-            var list = new List<EditableField>();
-            var type = Company.GetById<StatisticType>(st);
-
-            var relation = new StatisticTypeRelation();
-
-            var comparer = new AllocationPossibilityComparer();
-            var objectTypeInfos = 
-                Company.Database
-                .SqlQuery<AllocationPossibility>("EXEC GetAllocationOptions")
-                .ToList()
-                .Except(Company.Filter<StatisticTypeRelationDetail>(i => i.StatisticTypeID == st).Select(i => new AllocationPossibility { ObjectType = i.ObjectType, ObjectTypeID = i.ObjectID }).ToList(), comparer)
-                .Select(i => new SelectListItem
-                    {
-                        Value = i.ObjectType + "|" + i.ObjectTypeID,
-                        Text = i.Name
-                    })
-                .ToList();
-            objectTypeInfos.Add(new SelectListItem { Text = "Groups", Value = "Group|0" });
-            objectTypeInfos.Add(new SelectListItem { Text = "Resources", Value = "ResourceType|1" });
-
-            list.Add(new EditableField { FieldName = "StatisticTypeID", FieldType = DataType.Hidden.ToString(), Value = st.ToString() });
-            list.Add(new EditableField
-            {
-                Row = 1,
-                Column = 1,
-                FieldName = "ObjectTypeInfo",
-                Name = "Type",
-                FieldType = DataType.Lookup.ToString(),
-                Items = objectTypeInfos
-            });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Score", Name = relation.GetName(i => i.Score), FieldDescription = relation.GetDescription(i => i.Score), FieldType = DataType.Number.ToString(), Validations = checkAndAddValidation("Text", "Score", true, "", null, null) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="at">StatisticTypeID</param>
-        /// <param name="ot">ObjectType</param>
-        /// <param name="oid">ObjectID</param>
-        public JsonResult StatisticTypeRelation_DeleteFields(int st, string ot, int oid)
-        {
-            var list = new List<EditableField>();
-            var sType = ot.ToString();
-            var a = Company.Filter<StatisticTypeRelationDetail>(i => i.StatisticTypeID == st && i.ObjectType == sType && i.ObjectID == oid).SingleOrDefault();
-
-            list.Add(new EditableField { FieldName = "StatisticTypeID", FieldType = DataType.Hidden.ToString(), Value = a.StatisticTypeID.ToString() });
-            list.Add(new EditableField { FieldName = "ObjectType", FieldType = DataType.Hidden.ToString(), Value = a.ObjectType });
-            list.Add(new EditableField { FieldName = "ObjectID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        public JsonResult StatisticTypeRelation_EditFields(int st, SystemObjects ot, int oid)
-        {
-            var list = new List<EditableField>();
-            var sType = ot.ToString();
-            var a = Company.Filter<StatisticTypeRelationDetail>(i => i.StatisticTypeID == st && i.ObjectType == sType && i.ObjectID == oid).SingleOrDefault();
-
-            var relation = new StatisticTypeRelation();
-
-            list.Add(new EditableField { FieldName = "StatisticTypeID", FieldType = DataType.Hidden.ToString(), Value = a.StatisticTypeID.ToString() });
-            list.Add(new EditableField { FieldName = "ObjectTypeInfo", FieldType = DataType.Hidden.ToString(), Value = string.Format("{0}|{1}", a.ObjectType, a.ObjectID) });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Score", Name = relation.GetName(i => i.Score), FieldDescription = relation.GetDescription(i => i.Score), FieldType = DataType.Number.ToString(), Value = a.Score.ToString(), Validations = checkAndAddValidation("Text", "Score", true, "", null, null) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddStatisticTypeRelation(int id)
-        {
-            var type = Company.GetById<StatisticType>(id);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.StatisticTypeRelation,
-                FieldUri = string.Format("/form/StatisticTypeRelation_AddFields?st={0}", id),
-                FormTitle = "Allocating " + type.Name,
-                FormUri = "/form/AddStatisticTypeRelation",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddStatisticTypeRelation(FormCollection form)
-        {
-            try
-            {
-                if (form.HasKeys())
-                {
-                    var a = new StatisticTypeRelation();
-
-                    int typeID = parseIntField(form, "StatisticTypeID");
-                    var type = Company.GetById<StatisticType>(typeID);
-                    if (type == null)
-                    {
-                        return jsonException("Invalid statistic type.", HttpStatusCode.BadRequest);
-                    }
-
-                    var value = form["ObjectTypeInfo"].Split('|');
-
-                    // Static fields
-                    a.StatisticType = type;
-                    a.Score = parseIntField(form, "Score");
-                    a.ObjectType = value[0];
-                    a.ObjectID = int.Parse(value[1]);
-
-                    // Save the allocation
-                    Company.Add<StatisticTypeRelation>(a);
-
-                    return jsonSuccess(type.Name + " successfully allocated.", a.StatisticTypeID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-                }
-                else
-                {
-                    throw new NoFormDataException("allocation");
-                }
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult DeleteStatisticTypeRelation(int id, SystemObjects objectType, int objectTypeID)
-        {
-            var sType = objectType.ToString();
-            var a = Company.Filter<StatisticTypeRelationDetail>(i => i.StatisticTypeID == id && i.ObjectType == sType && i.ObjectID == objectTypeID).SingleOrDefault();
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.StatisticTypeRelation,
-                FieldUri = string.Format("/form/StatisticTypeRelation_DeleteFields?st={0}&ot={1}&oid={2}", a.StatisticTypeID, a.ObjectType, a.ObjectID),
-                FormTitle = "Are you sure you want to de-allocate " + a.ObjectName + "?",
-                FormUri = "/form/DeleteStatisticTypeRelation",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteStatisticTypeRelation(FormCollection form)
-        {
-            try
-            {
-                var st = parseIntField(form, "StatisticTypeID");
-                var ot = form["ObjectType"];
-                var oid = parseIntField(form, "ObjectID");
-
-                Company.Delete<StatisticTypeRelation>(i => i.ObjectID == oid && i.ObjectType == ot && i.StatisticTypeID == st);
-
-                return jsonSuccess("Allocation successfully removed.", ot.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult EditStatisticTypeRelation(int id, SystemObjects objectType, int objectTypeID)
-        {
-            var sType = objectType.ToString();
-            var a = Company.Filter<StatisticTypeRelationDetail>(i => i.StatisticTypeID == id && i.ObjectType == sType && i.ObjectID == objectTypeID).SingleOrDefault();
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.StatisticTypeRelation,
-                FieldUri = string.Format("/form/StatisticTypeRelation_EditFields?st={0}&ot={1}&oid={2}", a.StatisticTypeID, a.ObjectType, a.ObjectID),
-                FormTitle = "Edit Allocation",
-                FormUri = "/form/EditStatisticTypeRelation",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut]
-        public JsonResult EditStatisticTypeRelation(FormCollection form)
-        {
-            try
-            {
-                var at = parseIntField(form, "StatisticTypeID");
-                var value = form["ObjectTypeInfo"].Split('|');
-                var ot = value[0];
-                var oid = int.Parse(value[1]);
-                var model = Company.Filter<StatisticTypeRelation>(i => i.StatisticTypeID == at && i.ObjectType == ot && i.ObjectID == oid).SingleOrDefault();
-                if (model == null)
-                {
-                    return jsonException("Allocation does not exist.", HttpStatusCode.NotFound);
-                }
-
-                model.Score = parseIntField(form, "Score");
-
-                Company.Update<StatisticTypeRelation>(model);
-
-                return jsonSuccess("Allocation successfully updated.", value[0], form["_context"], "update", HttpStatusCode.OK, new { StatisticTypeID = at });
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), ContextList.StatisticType, "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

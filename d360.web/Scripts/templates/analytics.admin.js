@@ -42,7 +42,6 @@
                     TileTools('#ListTools', tools);
 
                     $('#DetailTile').load('/parts/' + type + '/' + data.ID + '/detail');
-                    StatisticTypeAllocationGrid('AllocationsTile', contextList, permissions, data.ID);
                 }
 
                 permissions.GetPermissionsForObject(type, data.ID).then(loadPermissionsDependentTiles);
@@ -57,9 +56,6 @@
                 switch (data.context) {
                     case contextList.StatisticType:
                         $('#List').jqxGrid('updatebounddata');
-                        break;
-                    case contextList.StatisticTypeRelation:
-                        $('#AllocationsTile').load('/parts/' + type + '/' + data.custom.StatisticTypeID + '/allocations');
                         break;
                 }
             }
@@ -104,7 +100,9 @@
                         datafields:
                         [
                             { name: 'ID' },
-                            { name: 'Name' }
+                            { name: 'Name' },
+                            { name: 'Score' },
+                            { name: 'ObjectName' }
                         ]
                     };
 
@@ -123,7 +121,9 @@
                         source: StatisticTypeAdapter,
                         theme: theme,
                         columns: [
+                            { datafield: "ObjectName", text: "Object", width: '30%', filtertype: 'checkedlist' },
                             { datafield: "Name", text: "Name" },
+                            { datafield: "Score", text: "Score", width: '15%', filtertype: 'checkedlist' },
                             {
                                 text: '',
                                 dataField: 'ID',

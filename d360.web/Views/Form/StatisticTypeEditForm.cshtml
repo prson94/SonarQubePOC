@@ -1,299 +1,641 @@
-﻿@model d360.web.Models.StatisticTypeEditorModel
+﻿@model d360.web.Models.EditableForm
+<script id="statisticTypeTmpl" type="text/html">
+    <div class="left form-header-info">
+        <h4></h4>
+    </div>
+    <div class="right">
+        <button type="button" id="EditableFormCancelButton" data-bind="click: cancel" class="btn waves-effect waves-light brown lighten-4">Cancel</button>
+        <button type="button" id="EditableFormSaveButton" data-bind="click: save, css: { disabled: FormNotComplete }" class="btn waves-effect waves-light brown lighten-1 saveButton">Save</button>
+    </div>
+    <div class="clear"></div>
+    <div class="form-instructions">@Html.Raw(Model.FormDescription)</div>
+    <div id="progress" data-bind="visible: InProgress"><i class="fa fa-spinner fa-spin fa-4x"></i></div>
+
+    <div class="row">
+        <div class="col l6 m12 s12">
+            <div class="FieldNameRequired">Type to Assign Analytic To</div>
+            <div data-bind="objectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 selectedIndex: ObjectIndex,
+                 source: ObjectOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+        <div class="col l2 m12 s12">
+            <div class="FieldName">@(d360.core.resources.Fields.PartOfScore_Name)</div>
+            <div data-bind="jqxCheckBox: {checked: PartOfScore, theme: theme, theme, disabled: PartOfScoreDisabled }"></div>
+        </div>
+        <div class="col l4 m12 s12">
+            <div class="FieldName">@(d360.core.resources.Fields.Score_Name)</div>
+            <input data-bind="scoreCheck, jqxInput: { width: field_width, height: field_height, theme: theme, value: Score, disabled: ScoreDisabled }" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col l6 m12 s12">
+            <div class="FieldNameRequired">@(Resources.FieldInfo.Name_Name)</div>
+            <input type="text" data-bind="jqxInput: { width: field_width, height: field_height, theme: theme, value: Name }" />
+        </div>
+        <div class="col l6 m12 s12">
+            <div class="FieldNameRequired">@(d360.core.resources.Fields.CheckType_Name)</div>
+            <div data-bind="checkTypeFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: CheckTypeIndex,
+                 source: CheckTypeOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: ExistenceMetricSelected">
+        <div class="col s12">
+            <div class="FieldName">Item To Check For</div>
+            <div data-bind="checkObjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 selectedIndex: CheckObjectIndex,
+                 source: CheckObjectOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: CountMetricSelected">
+        <div class="col s12">
+            <div class="FieldName">Item To Check For</div>
+            <div data-bind="checkObjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 selectedIndex: CheckObjectIndex,
+                 source: CheckObjectOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: PropertyValueMetricSelected">
+        <div class="col l6 m12 s12">
+            <div class="FieldName">Field To Check</div>
+            <div data-bind="checkObjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 selectedIndex: CheckObjectIndex,
+                 source: CheckObjectOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+        <div class="col l6 m12 s12">
+            <div class="FieldName">@(d360.core.resources.Fields.CheckType_Value_Name)</div>
+            <input data-bind="jqxInput: { width: field_width, height: field_height, theme: theme, value: PropertyValue }" />
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: PropertyExistenceMetricSelected">
+        <div class="col s12">
+            <div class="FieldName">Field To Check</div>
+            <div data-bind="checkObjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 selectedIndex: CheckObjectIndex,
+                 source: CheckObjectOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: RelationshipMetricSelected">
+        <div class="col s12">
+            <div class="FieldName">Related Type To Check For</div>
+            <div data-bind="multiSelectCheckObjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 checkboxes:true,
+                 filterable: false,
+                 selectedIndex: CheckObjectIndex,
+                 source: CheckObjectOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: FusionOwnershipMetricSelected">
+
+    </div>
+
+    <div class="row" data-bind="visible: RelationshipScoreRollupMetricSelected">
+        <div class="col s12">
+            <div class="FieldName">Related Type To Check For</div>
+            <div data-bind="checkObjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 selectedIndex: CheckObjectIndex,
+                 source: CheckObjectOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: OwnershipScoreRollupMetricSelected">
+        <div class="col s12">
+            <div class="FieldName">Owned Type To Check For</div>
+            <div data-bind="checkObjectFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 selectedIndex: CheckObjectIndex,
+                 source: CheckObjectOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: EventMetricSelected">
+        <div class="col l4 m12 s12">
+            <div class="FieldName">Valid Field Count Name</div>
+            <input data-bind="jqxInput: { width: field_width, height: field_height, theme: theme, value: ValidField }" />
+        </div>
+        <div class="col l4 m12 s12">
+            <div class="FieldName">Invalid Field Count Name</div>
+            <input data-bind="jqxInput: { width: field_width, height: field_height, theme: theme, value: InvalidField }" />
+        </div>
+        <div class="col l4 m12 s12">
+            <div class="FieldName">Threshold (0.00)</div>
+            <input data-bind="jqxInput: { width: field_width, height: field_height, theme: theme, value: Threshold }" />
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: PredicateMetricSelected">
+        <div class="col s12">
+            <div class="FieldName">Predicate To Check For</div>
+            <div data-bind="checkObjectFilteredDropdown, jqxDropDownList: {
+                width: field_width,
+                theme: theme,
+                filterable: false,
+                selectedIndex: CheckObjectIndex,
+                source: CheckObjectOptions,
+                displayMember: 'title',
+                valueMember: 'value',
+                searchMode: 'containsignorecase' }"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">@(d360.core.resources.Fields.Description_Name)</div>
+            <textarea data-bind="value: Description, htmlarea: Description"></textarea>
+        </div>
+    </div>
+</script>
+
 <div class="small-overlay">
     <div class="ui segment">
-        @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.StatisticType, Description = Model.FormDescription, Name = Model.FormName })
-
-        @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Model.FormUri, OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
-        {
-            <input type="hidden" id="_context" name="_context" value="@(ContextList.StatisticType)" />
-            <input type="hidden" id="ID" name="ID" value="@(Model.StatisticType.ID)" />
-
-            <div class="row">
-                <div class="col s4">
-                    <div class="FieldNameRequired">Name</div>
-                    <input type="text" id="Name" name="Name" value="@(Model.StatisticType.Name)" />
-                </div>
-                <div class="col s5">
-                    <div class="FieldNameRequired">@(d360.core.resources.Fields.CheckType_Name)</div>
-                    <select id="CheckType" name="CheckType" class="browser-default">
-                        <option value="1" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.Existence) ? "selected='selected'" : "")>Existence</option>
-                        <option value="2" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.Count) ? "selected='selected'" : "")>Count</option>
-                        <option value="3" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.PropertyValueCheck) ? "selected='selected'" : "")>Property Value Check</option>
-                        <option value="4" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.PropertyPopulated) ? "selected='selected'" : "")>Property Existence Check</option>
-                        <option value="5" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.Relationship) ? "selected='selected'" : "")>Relationship</option>
-                        <option value="6" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.FusionOwnership) ? "selected='selected'" : "")>Fusion Ownership Check</option>
-                        <option value="7" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.ScoreRollupViaRelationship) ? "selected='selected'" : "")>Relationship Score Rollup</option>
-                        <option value="8" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.ScoreRollupViaOwnership) ? "selected='selected'" : "")>Ownership Score Rollup</option>
-                        <option value="9" @((Model.StatisticType.CheckType == d360.core.enums.StatisticCheckType.EventMetric) ? "selected='selected'" : "")>Event Metric</option>
-                    </select>
-                </div>
-                <div class="col s3 input-field">
-                    <input type="checkbox" id="PartOfScore" name="PartOfScore" @(Model.StatisticType.PartOfScore ? "checked='checked'" : "") />
-                    <label id="PartOfScoreTip" for="PartOfScore">@(d360.core.resources.Fields.PartOfScore_Name)</label>
-                </div>
-            </div>
-            <div class="row" id="Statistic9Settings">
-                <div class="col s4">
-                    <div class="FieldName">Valid Field Count Name</div>
-                    @Html.TextBox("ValidFieldName", Model.ValidFieldName)
-                </div>
-                <div class="col s4">
-                    <div class="FieldName">Invalid Field Count Name</div>
-                    @Html.TextBox("InvalidFieldName", Model.InvalidFieldName)
-                </div>
-                <div class="col s4">
-                    <div class="FieldName">Threshold (0.00)</div>
-                    <div id="Threshold" name="Threshold"></div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s6">
-                    <div class="FieldName">Item To Check For</div>
-                    <select id="ObjectTypeInfo" name="ObjectTypeInfo" class="browser-default">
-                        <option disabled>Select one...</option>
-                    </select>
-                </div>
-                <div class="col s6">
-                    <div class="FieldName">@(d360.core.resources.Fields.CheckType_Value_Name)</div>
-                    <input id="Value" name="Value" type="text" value="@(Model.Value)" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <div class="FieldName">@(d360.core.resources.Fields.Description_Name)</div>
-                    <textarea id="Description" name="Description" class="htmlArea">@(Model.StatisticType.Description)</textarea>
-                </div>
-            </div>
-        }
+        <div id="StatisticTypeFormWrapper" data-bind="template: {name: 'statisticTypeTmpl' }"></div>
     </div>
 </div>
 
 <script type="text/javascript">
-    var checkType = "@((int)Model.StatisticType.CheckType)";
-    var objectType = "@(Model.ObjectTypeInfo)";
-
-    var ExistenceCheckItems = [
-    @for (int i = 0; i < Model.ExistenceCheckItems.Count; i++)
-    {
-        <text>{ Text: '@(Model.ExistenceCheckItems[i].Text)', Value: '@(Model.ExistenceCheckItems[i].Value)' }@((i < Model.ExistenceCheckItems.Count - 1) ? "," : "")</text>
-    }
-    ];
-
-    var CountCheckItems = [
-        @for (int i = 0; i < Model.CountCheckItems.Count; i++)
-    {
-        <text>{ Text: '@(Model.CountCheckItems[i].Text)', Value: '@(Model.CountCheckItems[i].Value)' }@((i < Model.CountCheckItems.Count - 1) ? "," : "")</text>
-    }
-    ];
-
-    var PropertyExistenceCheckItems = [
-        @for (int i = 0; i < Model.PropertyExistenceCheckItems.Count; i++)
-    {
-        <text>{ Text: '@(Model.PropertyExistenceCheckItems[i].Text)', Value: '@(Model.PropertyExistenceCheckItems[i].Value)' }@((i < Model.PropertyExistenceCheckItems.Count - 1) ? "," : "")</text>
-    }
-    ];
-
-    var PropertyValueCheckItems = [
-        @for (int i = 0; i < Model.PropertyValueCheckItems.Count; i++)
-    {
-        <text>{ Text: '@(Model.PropertyValueCheckItems[i].Text)', Value: '@(Model.PropertyValueCheckItems[i].Value)' }@((i < Model.PropertyValueCheckItems.Count - 1) ? "," : "")</text>
-    }
-    ];
-
-    var RelationshipCheckItems = [
-    @for (int i = 0; i < Model.RelationshipCheckItems.Count; i++)
-    {
-        <text>{ Text: '@(Model.RelationshipCheckItems[i].Text)', Value: '@(Model.RelationshipCheckItems[i].Value)' }@((i < Model.RelationshipCheckItems.Count - 1) ? "," : "")</text>
-    }
-    ];
-
-    var RollupCheckItems = [
-    @for (int i = 0; i < Model.RollupCheckItems.Count; i++)
-    {
-        <text>{ Text: '@(Model.RollupCheckItems[i].Text)', Value: '@(Model.RollupCheckItems[i].Value)' }@((i < Model.RollupCheckItems.Count - 1) ? "," : "")</text>
-    }
-    ];
-
-    var changeStatisticTypeFormLayout = function (value) {
-        $('#Statistic9Settings').hide();
-
-        var otSource = null;
-        switch (value) {
-            case "1":
-                otSource = ExistenceCheckItems;
-                $('#Value').val('');
-                $('#Value').jqxInput('disabled', true);
-                $('#PartOfScore').prop('disabled', false);
-                break;
-            case "2":
-                otSource = CountCheckItems;
-                $('#Value').val('');
-                $('#Value').jqxInput('disabled', true);
-                $('#PartOfScore').prop('checked', false);
-                $('#PartOfScore').prop('disabled', true);
-                break;
-            case "3":
-                otSource = PropertyValueCheckItems;
-                $('#Value').jqxInput('disabled', false);
-                $('#PartOfScore').prop('disabled', false);
-                break;
-            case "4":
-                otSource = PropertyExistenceCheckItems;
-                $('#Value').val('');
-                $('#Value').jqxInput('disabled', true);
-                $('#PartOfScore').prop('disabled', false);
-                break;
-            case "5":
-                otSource = RelationshipCheckItems;
-                $('#Value').val('');
-                $('#Value').jqxInput('disabled', true);
-                $('#PartOfScore').prop('disabled', false);
-                break;
-            case "6":
-                $('#Value').val('');
-                $('#Value').jqxInput('disabled', true);
-                $('#PartOfScore').prop('disabled', false);
-                break;
-            case "7":
-                otSource = RollupCheckItems;
-                $('#Value').val('');
-                $('#Value').jqxInput('disabled', true);
-                $('#PartOfScore').prop('disabled', false);
-                break;
-            case "8":
-                otSource = RollupCheckItems;
-                $('#Value').val('');
-                $('#Value').jqxInput('disabled', true);
-                $('#PartOfScore').prop('disabled', false);
-                break;
-            case "9":
-                $('#Value').val('');
-                $('#Value').jqxInput('disabled', true);
-                $('#PartOfScore').prop('disabled', false);
-                $('#Statistic9Settings').show();
-                break;
-        }
-
-        if (otSource) {
-            var otDdl = $('#ObjectTypeInfo');
-            //otDdl.jqxDropDownList('clear');
-            //$.each(otSource, function () {
-            //    var selectedAttributeText = (objectType == this.Value);// ? "selected='selected'" : "";
-            //    if (selectedAttributeText) console.log(selectedAttributeText);
-            //    otDdl.jqxDropDownList('addItem', { label: this.Text, value: this.Value, checked: selectedAttributeText });
-            //    //otDdl.append('<option value="' + this.Value + '" ' + selectedAttributeText + '>' + this.Text + '</option>');
-            //});
-            //otDdl.jqxDropDownList({ disabled: false }); //otDdl.removeAttr('disabled');
-            var existingItems = otDdl.jqxDropDownList('getItems');
-            if (existingItems) {
-                if (existingItems.length > 0) {
-                    otDdl.jqxDropDownList('clearSelection');
-                    otDdl.jqxDropDownList('clearFilter');
-                    try {
-                        otDdl.jqxDropDownList('clear');
-                    } catch (e) { }
-                    existingItems = null;
-                }
-            }
-            $("#ObjectTypeInfo_jqxDropDownList").html('');
-            $("#ObjectTypeInfo_jqxDropDownList").append("<option value=''>Select one...</option>");
-            $.each(otSource, function () {
-                var selectedAttributeText = (objectType == this.Value);// ? "selected='selected'" : ""
-                $("#ObjectTypeInfo_jqxDropDownList").append('<option value="' + this.Value + '" ' + selectedAttributeText + '>' + this.Text + '</option>');
-                //ddl.jqxDropDownList('addItem', { label: this.Text, value: this.Value });
+    var context = "@(ContextList.StatisticType)";
+    //#region Bindings
+    ko.bindingHandlers.checkTypeFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.CheckType(event.args.item.value);
+                //viewModel.CheckObject('');
+                viewModel.CheckObjectIndex(-1);
+                viewModel.loadCheckObjects();
             });
-            otDdl.jqxDropDownList('loadFromSelect', 'ObjectTypeInfo_jqxDropDownList');
-            otDdl.jqxDropDownList({ disabled: false });//, source: pData, displayMember: 'Text', valueMember: 'Value' });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.checkObjectFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                if (event.args.item) {
+                    if (viewModel.PredicateMetricSelected()) {
+                        viewModel.Predicate(event.args.item.value);
+                    }
+                    else {
+                        var arr = event.args.item.value.split('|');
+                        viewModel.CheckObject(arr[0]);
+                        viewModel.CheckObjectID(arr[1]);
+                        //viewModel.loadCheckObjects();
+                    }
+                }
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.multiSelectCheckObjectFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+
+            $(element).on('checkChange', function (event) {
+                var checkedItems = $(element).jqxDropDownList('getCheckedItems');
+                if (checkedItems) {
+                    viewModel.CheckObjects.removeAll();
+
+                    if (checkedItems.length > 0) {
+                        $.each(checkedItems, function(cix, ci) {
+                            viewModel.CheckObjects.push(ci.value);
+                        });
+                    }
+                }
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            //var value = ko.utils.unwrapObservable(valueAccessor()) || '';
+            //console.log(value);
+            //if (value) {
+            //    alert(value);
+            //    //var item = $(element).jqxDropDownList('getItemByValue', "Bon app");
+            //    //if (item) {
+            //    //    $(element).jqxDropDownList('checkItem', item);
+            //    //}
+            //}
         }
-        else {
-            otDdl.jqxDropDownList({ disabled: true }); //$('#ObjectTypeInfo').attr('disabled', '');
+    };
+    ko.bindingHandlers.objectFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                var arr = event.args.item.value.split('|');
+                viewModel.Object(arr[0]);
+                viewModel.ObjectID(arr[1]);
+                //viewModel.loadCheckObjects();
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    //ko.bindingHandlers.relationshipFilteredDropdown = {
+    //    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+    //        $(element).on('change', function (event) {
+    //            viewModel.Object(event.args.item.value);
+    //            //viewModel.loadCheckObjects();
+    //        });
+    //    },
+    //    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    //};
+    ko.bindingHandlers.scoreCheck = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('keypress', function (e) {
+                var key = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+                if (!/[1-9]+/.test(key)) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    //#endregion
+
+    function StatisticTypeViewModel(id) {
+        var self = this;
+
+        //#region Simple Properties
+
+        self.ID = ko.observable(id);
+
+        self.Name = ko.observable('');
+        self.Description = ko.observable('');
+
+        self.CheckTypeIndex = ko.observable(-1);
+        self.CheckType = ko.observable('');
+
+        self.PartOfScore = ko.observable(true);
+        self.Score = ko.observable(1);
+
+        self.CheckObjectIndex = ko.observable(-1);
+        self.CheckObject = ko.observable('');
+        self.CheckObjectID = ko.observable(-1);
+
+        self.ObjectIndex = ko.observable(-1);
+        self.Object = ko.observable('');
+        self.ObjectID = ko.observable(-1);
+
+        self.InProgress = ko.observable(false);
+
+        self.PropertyName = ko.observable('');
+        self.PropertyValue = ko.observable('');
+        self.ValidField = ko.observable('');
+        self.InvalidField = ko.observable('');
+        self.Threshold = ko.observable('');
+        self.Predicate = ko.observable('');
+
+
+        //#endregion
+
+        //#region Computed Properties
+
+        self.FormNotComplete = ko.pureComputed(function () {
+            return false;//(self.CheckType() == 1);
+        }, self);
+
+        self.ExistenceMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 1);
+        }, self);
+
+        self.CountMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 2);
+        }, self);
+
+        self.PropertyValueMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 3);
+        }, self);
+
+        self.PropertyExistenceMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 4);
+        }, self);
+
+        self.RelationshipMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 5);
+        }, self);
+
+        self.FusionOwnershipMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 6);
+        }, self);
+
+        self.RelationshipScoreRollupMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 7);
+        }, self);
+
+        self.OwnershipScoreRollupMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 8);
+        }, self);
+
+        self.EventMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 9);
+        }, self);
+
+        self.PredicateMetricSelected = ko.pureComputed(function () {
+            return (self.CheckType() == 10);
+        }, self);
+
+        self.PartOfScoreDisabled = ko.pureComputed(function () {
+            return (self.CheckType() == 2);
+        }, self);
+
+        self.ScoreDisabled = ko.pureComputed(function () {
+            return (self.CheckType() == 2 || !self.PartOfScore());
+        }, self);
+
+        //#endregion
+
+        //#region List Properties
+
+        self.CheckTypeOptions = ko.observableArray();
+        self.CheckObjects = ko.observableArray();       //Only used when allowed to selected multiple objects to validate against.  Like relationship existsence check.
+        self.CheckObjectOptions = ko.observableArray();
+        self.ObjectOptions = ko.observableArray();
+
+        //#endregion
+
+        //#region Methods
+
+        self.loadCheckTypes = function() {
+            self.CheckTypeOptions.removeAll();
+
+            $.getJSON('/form/StatisticType_CheckTypeOptions', function (relData) {
+                self.CheckTypeOptions(relData);
+            }).then(function(){
+                var indexToSelect = -1;
+
+                if (self.CheckType()) {
+                    $.each(self.CheckTypeOptions(), function (ix, item) {
+                        if (item.value == self.CheckType()) {
+                            indexToSelect = ix;
+                        }
+                    });
+                }
+                self.CheckTypeIndex(indexToSelect);
+            });
         }
+
+        self.loadCheckObjects = function() {
+            self.CheckObjectOptions.removeAll();
+
+            if (self.Object() && self.ObjectID() && self.CheckType() > -1) {
+                $.getJSON(
+                    '/form/StatisticType_CheckObjectOptions',
+                    { type: self.Object(), id: self.ObjectID(), check: self.CheckType() },
+                    function (relData) {
+                        if (self.CheckObjects().length > 0) {
+                            var values = self.CheckObjects()
+                            if (values.length > 0) {
+                                $.each(values, function(vix, vi) {
+                                    $.each(relData, function(){
+                                        if (this.value == vi) {
+                                            this.checked = true;
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                        self.CheckObjectOptions(relData);
+                    }).then(function(){
+                        if (self.PredicateMetricSelected()) {
+                            if (self.Predicate() > 0) {
+                                var indexToSelect = -1;
+                                var ot = self.Predicate();
+                                $.each(self.CheckObjectOptions(), function (ix, item) {
+                                    if (item.value == ot) {
+                                        indexToSelect = ix;
+                                    }
+                                });
+                                self.CheckObjectIndex(indexToSelect);
+                            } 
+                        }
+                        else {
+                            if (self.CheckObject() != '' && self.CheckObjectID() > 0) {
+                                var indexToSelect = -1;
+                                var ot = self.CheckObject() + '|' + self.CheckObjectID();
+                                $.each(self.CheckObjectOptions(), function (ix, item) {
+                                    if (item.value == ot) {
+                                        indexToSelect = ix;
+                                    }
+                                });
+                                self.CheckObjectIndex(indexToSelect);
+                            }                       
+                        }
+
+                    });
+            }
+        }
+
+        self.loadObjects = function() {
+            self.ObjectOptions.removeAll();
+
+            $.getJSON(
+                '/form/StatisticType_ObjectOptions',
+                { },
+                function (relData) {
+                    self.ObjectOptions(relData);
+                }).then(function(){
+                    var indexToSelect = -1;
+                    if (self.Object()) {
+                        $.each(self.ObjectOptions(), function (ix, item) {
+                            var ot = self.Object() + '|' + self.ObjectID();
+                            if (item.value == ot) {
+                                indexToSelect = ix;
+                            }
+                        });
+                    }
+                    self.ObjectIndex(indexToSelect);
+                });
+        }
+
+        self.cancel = function () {
+            amplify.publish("CancelAction", { context: context });
+        };
+
+        self.loadCurrent = function () {
+            if (self.ID() > 0) {
+                $.getJSON(
+                    '/form/StatisticType_FormData',
+                    { id: self.ID() },
+                    function (relData) {
+                        self.Object(relData.Object);
+                        self.ObjectID(relData.ObjectID);
+                        self.Name(relData.Name);
+                        self.Description(relData.Description);
+                        self.CheckType(relData.CheckType);
+                        self.PartOfScore(relData.PartOfScore);
+                        self.Score(relData.Score || 0);
+
+                        //dynamic values, based on check type.
+                        self.CheckObject(relData.CheckObject || '');
+                        self.CheckObjects(relData.CheckObjects || []);
+                        self.CheckObjectID(relData.CheckObjectID || -1);
+                        self.PropertyName(relData.PropertyName || '');
+                        self.PropertyValue(relData.PropertyValue || '');
+                        self.ValidField(relData.ValidField || '');
+                        self.InvalidField(relData.InvalidField || '');
+                        self.Threshold(relData.Threshold || 0);
+                        self.Predicate(relData.Predicate || '');
+                    }
+                ).then(function(){
+                    self.loadObjects();
+                    self.loadCheckTypes();
+                    self.loadCheckObjects();
+                    self.setSubscriptions();;
+                });
+            }
+            else {
+                self.loadObjects();
+                self.loadCheckTypes();
+            }
+        };
+
+        self.save = function () {
+            self.InProgress(true);
+
+            var postModel = {
+                ID: self.ID(),
+                Name: self.Name(),
+                Description: self.Description(),
+                CheckType: self.CheckType(),
+                Object: self.Object(),
+                ObjectID: self.ObjectID(),
+                PartOfScore: self.PartOfScore(),
+                Score: self.Score(),
+                CheckObjects: self.CheckObjects(),
+                CheckObject: self.CheckObject(),
+                CheckObjectID: self.CheckObjectID(),
+                PropertyName: self.PropertyName(),
+                PropertyValue: self.PropertyValue(),
+                ValidField: self.ValidField(),
+                InvalidField: self.InvalidField(),
+                Threshold: self.Threshold(),
+                Predicate: self.Predicate()
+            }
+
+            var uri = '';
+            var method = '';
+            if (postModel.ID == 0) {
+                uri = '/form/AddStatisticType';
+                method = 'POST';
+            }
+            else {
+                uri = '/form/EditStatisticType';
+                method = 'PUT';
+            }
+
+            $.ajax(uri, {
+                data: postModel,
+                dataType: 'json',
+                method: method
+            }).done(function (data, status, xhr) {
+                if (data.type == "confirm") {
+                    amplify.publish("SaveAction", { context: data.context, action: 'add', id: 0, custom: {} });
+                }
+                amplify.publish("ShowMessage", { type: data.type, title: data.title, message: data.message });
+            //}).fail(function (xhr, status, error) {
+            //    amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
+            }).always(function (data, status, error) {
+                self.InProgress(false);
+            });
+        };
+
+        self.setSubscriptions = function() {
+
+            self.CheckType.subscribe(function (value) {
+                if (value) {
+                    if (value == 2) {
+                        self.PartOfScore(false);
+                        self.Score(0);
+                    }
+                }
+            });
+
+            self.PartOfScore.subscribe(function (value) {
+                if (value) {
+                    self.Score(0);
+                }
+            });
+
+            //self.FriendlyName.subscribe(function (value) {
+
+            //    if (value) {
+            //        if (value.length > 0) {
+            //            self.ApiName(value.replace(/[^a-zA-Z0-9-_]/g, ''));
+            //        }
+            //    }
+            //});
+
+            //self.LookupObject.subscribe(function (value) {
+            //    if (value) {
+            //        var values = value.split('|');
+            //        loadTokens(values[0], values[1]);
+            //        self.LookupDisplayFormat('');
+            //    }
+            //});
+
+        }
+
+        //#endregion
+
+        return self;
     }
-
     $(function () {
-        $("#CheckType").jqxDropDownList({ width: field_width, theme: theme });
-        $("#Name").jqxInput({ width: field_width, theme: theme, height: 25 });
-
-        $("#ValidFieldName").jqxInput({ width: field_width, theme: theme, height: 25 });
-        $("#InvalidFieldName").jqxInput({ width: field_width, theme: theme, height: 25 });
-        $("#Threshold").jqxNumberInput({ width: field_width, height: 25, min: 0, max: 1, decimalDigits: 2, inputMode: 'simple', spinButtons: true });
-        $('#Threshold').jqxNumberInput('val', @(Model.Threshold)0);
-
-        $("#ObjectTypeInfo").jqxDropDownList({ width: field_width, theme: theme });
-        $("#Value").jqxInput({ width: field_width, theme: theme, height: 25 });
-
-        $('#PartOfScoreTip').qtip({
-            content: {
-                text: "@(d360.core.resources.Fields.PartOfScore_Description)",
-                position: {
-                    my: 'top right',  // Position my top left...
-                    at: 'bottom left', // at the bottom right of...
-                    target: $('#PartOfScore') // my target
-                }
-            },
-            style: {
-                classes: 'qtip-blue qtip-shadow'
-            }
-        });
-
-        $('#form0').jqxValidator({
-            hintType: 'label',
-            rules: [
-                {
-                    input: "#Name",
-                    rule: 'required',
-                    action: 'blur',
-                    message: 'Name is required.'
-                }
-            ]
-        });
-
-        //#region Events
-
-        $("#CheckType").on('change', function () {
-            try {
-                //var optionSelected = $("option:selected", this);
-                var value = $("#CheckType").val();//this.value;
-                changeStatisticTypeFormLayout(value);
-            } catch (e) {
-                logError("StatisticTypeEditorModel : change", e);
-            }
-        });
-
-        $('#form0').on('validationSuccess', function (event) {
-            // You can submit the form.
-            $('#form0').submit();
-        });
-        $('#EditableFormSaveButton').on('click', function () {
-            $('#form0').jqxValidator('validate');
-        });
-
-        $('#EditableFormCancelButton').on('click', function () {
-            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
-        });
-        amplify.subscribe("ErrorOccurredAction", function (data) {
-            $('#EditableFormSaveButton').hide();
-        });
-        amplify.subscribe("StartingAjax", function () {
-            $('#EditableFormSaveButton').attr('disabled', 'disabled');
-            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
-        });
-        amplify.subscribe("EndingAjax", function () {
-            $('#EditableFormSaveButton').removeAttr('disabled');
-            $('#progress').html('');
-        });
-
-        //#endregion
-
-        //#region Set Pre-defined values
-
-        changeStatisticTypeFormLayout(checkType);
-        var objectTypeInfoItem = $("#ObjectTypeInfo").jqxDropDownList('getItemByValue', objectType);
-        if (objectTypeInfoItem) {
-            $("#ObjectTypeInfo").jqxDropDownList('selectItem', objectTypeInfoItem);
-        }
-
-        //#endregion
+        var model = new StatisticTypeViewModel(@(ViewBag.ID));
+        ko.applyBindings(model, document.getElementById('StatisticTypeFormWrapper'));
+        model.loadCurrent();
 
         $("html, body").animate({ scrollTop: 0 }, "slow");
     });

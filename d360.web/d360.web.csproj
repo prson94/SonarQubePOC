@@ -628,7 +628,13 @@
     <Content Include="fonts\material-design-icons\Material-Design-Icons.eot" />
     <Content Include="apiapp.json" />
     <None Include="bundleconfig.json" />
+    <Content Include="bundleconfig.json.bindings">
+      <DependentUpon>bundleconfig.json</DependentUpon>
+    </Content>
     <None Include="compilerconfig.json" />
+    <Content Include="compilerconfig.json.bindings">
+      <DependentUpon>compilerconfig.json</DependentUpon>
+    </Content>
     <None Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
     </None>
@@ -832,11 +838,7 @@
     </Content>
     <Content Include="Scripts\angular-mocks.js" />
     <Content Include="Scripts\angular-route.js" />
-    <Content Include="Scripts\angular-route.min.js" />
     <Content Include="Scripts\angular.js" />
-    <Content Include="Scripts\angular.min.js" />
-    <Content Include="Scripts\angular.min.js.map" />
-    <Content Include="Scripts\angular-route.min.js.map" />
     <None Include="Scripts\colorpicker-color.js" />
     <None Include="Scripts\colorpicker.js" />
     <None Include="Scripts\Common.js" />
@@ -861,7 +863,6 @@
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
     <Content Include="Scripts\jquery-2.2.1.min.map" />
     <None Include="Scripts\jqx\3.7.1\jqx-all.js" />
-    <None Include="Scripts\parts.js" />
     <None Include="Scripts\redactor.js" />
     <None Include="Scripts\sammy-0.7.5.js" />
     <None Include="Scripts\sammy.handlebars.js" />
@@ -884,9 +885,6 @@
     <None Include="Scripts\templates\workflow.admin.js" />
     <None Include="Scripts\templates\workflow.item.status.js" />
     <None Include="Scripts\templates\workflow.item.js" />
-    <None Include="Scripts\templates\community.alert.js" />
-    <None Include="Scripts\templates\community.group.js" />
-    <None Include="Scripts\templates\community.vendor.js" />
     <None Include="Scripts\templates\community.home.js" />
     <None Include="Scripts\templates\load.js" />
     <None Include="Scripts\templates\monitor.list.js" />
@@ -898,7 +896,6 @@
     <None Include="Scripts\templates\fusion.list.js" />
     <None Include="Scripts\templates\domains.list.js" />
     <None Include="Scripts\templates\domains.admin.js" />
-    <None Include="Scripts\templates\fields.admin.js" />
     <None Include="Scripts\templates\fusion.item.js" />
     <None Include="Scripts\templates\fusion.admin.js" />
     <None Include="Scripts\templates\governance.admin.js" />
@@ -918,9 +915,7 @@
     <None Include="Scripts\templates\surveys.admin.js" />
     <Content Include="Scripts\metafizzy\isotope.pkgd.js" />
     <Content Include="Scripts\moment-with-locales.js" />
-    <Content Include="Scripts\moment-with-locales.min.js" />
     <Content Include="Scripts\moment.js" />
-    <Content Include="Scripts\moment.min.js" />
     <Content Include="Scripts\packery.pkgd.js" />
     <Content Include="Scripts\parts\AttributesTile.js" />
     <Content Include="Scripts\parts\AttributeTypeAllocationGrid.js" />
@@ -1234,6 +1229,8 @@
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://demo.dev.data3sixty.local</IISUrl>
+          <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
+          <IISAppRootUrl>http://nm-d3s.dev.data3sixty.local/</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -1251,13 +1248,13 @@
   <PropertyGroup>
     <PreBuildEvent>pushd "$(ProjectDir)\obj\$(ConfigurationName)" &amp;&amp; (rd /s /q "$(ProjectDir)\obj\$(ConfigurationName)" 2&gt;nul &amp; popd)</PreBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\BuildBundlerMinifier.1.8.147\build\BuildBundlerMinifier.targets" Condition="Exists('..\packages\BuildBundlerMinifier.1.8.147\build\BuildBundlerMinifier.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\BuildBundlerMinifier.1.8.147\build\BuildBundlerMinifier.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildBundlerMinifier.1.8.147\build\BuildBundlerMinifier.targets'))" />
     <Error Condition="!Exists('..\packages\BuildWebCompiler.1.10.306\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildWebCompiler.1.10.306\build\BuildWebCompiler.targets'))" />
+    <Error Condition="!Exists('..\packages\BuildBundlerMinifier.1.8.148\build\BuildBundlerMinifier.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildBundlerMinifier.1.8.148\build\BuildBundlerMinifier.targets'))" />
   </Target>
   <Import Project="..\packages\BuildWebCompiler.1.10.306\build\BuildWebCompiler.targets" Condition="Exists('..\packages\BuildWebCompiler.1.10.306\build\BuildWebCompiler.targets')" />
+  <Import Project="..\packages\BuildBundlerMinifier.1.8.148\build\BuildBundlerMinifier.targets" Condition="Exists('..\packages\BuildBundlerMinifier.1.8.148\build\BuildBundlerMinifier.targets')" />
 </Project>

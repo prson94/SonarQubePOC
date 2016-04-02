@@ -38,7 +38,7 @@
             try {
                 switch (data.context) {
                     case contextList.ResponsibilityType:
-                        DetailTile('DetailTile', contextList, permissions, type, data.id);
+                        ObjectDetail('DetailTile', type, data.id);
                         $('#AdminResponsibilityTypeGrid').jqxGrid('updatebounddata');
                         break;
                 }
@@ -65,16 +65,15 @@
 
                 $('#SideIcons').PageTools({ type: type, id: 0 });
 
-                GovernanceSource =
-                            {
-                                datatype: 'json',
-                                url: '/api/ownership/types',
-                                datafields:
-                                [
-                                    { name: 'ID' },
-                                    { name: 'Name' }
-                                ]
-                            };
+                GovernanceSource = {
+                    datatype: 'json',
+                    url: '/api/ownership/types',
+                    datafields:
+                    [
+                        { name: 'ID' },
+                        { name: 'Name' }
+                    ]
+                };
 
                 GovernanceAdapter = new $.jqx.dataAdapter(GovernanceSource);
 

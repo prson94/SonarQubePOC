@@ -70,7 +70,7 @@
                             break;
                         case "RequestCertification":
                         case "Workflow":
-                            DetailTile('DetailTile', contextList, permissions, type, id);
+                            ObjectDetail('DetailTile', type, id);
                             break;
                         case contextList.SourceToTarget:
                             LineageDiagram('SourcingTile', type, id, permissions, false);

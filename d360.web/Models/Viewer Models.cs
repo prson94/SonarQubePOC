@@ -273,10 +273,10 @@ namespace d360.web.Models
         }
     }
 
-    public class Fields : List<DynamicField>
-    {
+    //public class Fields : List<DynamicField>
+    //{
 
-    }
+    //}
 
     [DataContract(Namespace = constants.NAMESPACE)]
     public class FilterObjectItem
@@ -472,6 +472,21 @@ namespace d360.web.Models
         public string Target { get; set; }
         public int TargetID { get; set; }
         public string TargetName { get; set; }
+    }
+
+    public class KnockoutListItem
+    {
+        public KnockoutListItem()
+        {
+
+        }
+        public KnockoutListItem(string t, string v)
+        {
+            title = t;
+            value = v;
+        }
+        public string title { get; set; }
+        public string value { get; set; }
     }
 
     public class OptionsToRelateDbModel

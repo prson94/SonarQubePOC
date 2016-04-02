@@ -35,6 +35,15 @@ namespace d360.core.entities
         [DataMember]
         public string Configuration { get; set; }
 
+        [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
+        public int ObjectID { get; set; }
+
+        [DataMember]
+        public int Score { get; set; }
+
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 
@@ -45,10 +54,6 @@ namespace d360.core.entities
         [XmlIgnore()]
         [ForeignKey("StatisticTypeID")]
         public virtual ICollection<Statistic> Statistics { get; set; }
-
-        [XmlIgnore()]
-        [ForeignKey("StatisticTypeID")]
-        public virtual ICollection<StatisticTypeRelation> Relations { get; set; }
 
         #endregion
 

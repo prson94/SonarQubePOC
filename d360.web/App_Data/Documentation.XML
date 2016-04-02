@@ -2830,14 +2830,6 @@
         <member name="M:d360.web.Controllers.FormController.StatisticType_DeleteFields(System.Int32)">
             <param name="id">StatisticTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.StatisticTypeRelation_AddFields(System.Int32)">
-            <param name="st">StatisticTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.StatisticTypeRelation_DeleteFields(System.Int32,System.String,System.Int32)">
-            <param name="at">StatisticTypeID</param>
-            <param name="ot">ObjectType</param>
-            <param name="oid">ObjectID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.SurveyType_DeleteFields(System.Int32)">
             <param name="id">SurveyTypeID</param>
         </member>
