@@ -1,0 +1,42 @@
+﻿<div class="rule-list">
+    <div>
+        <table style="border-spacing:2px;border-collapse:collapse; border:1px solid #999;">
+            <thead style="background-color:#54a4da;">
+                <tr>
+                    <th style="color:white;padding:3px;">
+                        Sources
+                    </th>
+                    <th style="color:white;padding:3px;">
+                        Targets
+                    </th>
+                    <th style="color:white;padding:3px;">
+                        Transformation
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each items}}
+                <tr>
+                    <td style="border:1px solid #999;padding:2px;">
+                        <ul style="list-style-type: circle">
+                            {{#each Sources}}
+                            <li>{{Name}} </li>
+                            {{/each}}
+                        </ul>
+                    </td>
+                    <td style="border:1px solid #999;padding:2px;">
+                        <ul style="list-style-type: circle">
+                            {{#each Targets}}
+                            <li>{{Name}} </li>
+                            {{/each}}
+                        </ul>
+                    </td>
+                    <td style="border:1px solid #999;padding:2px;">
+                        {{Transformation}}
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>

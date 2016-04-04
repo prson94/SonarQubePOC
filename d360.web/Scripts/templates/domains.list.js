@@ -94,7 +94,7 @@
                         $('#AggregatesTile').fadeIn(fadoutTime);
                         RelationshipAggregatesTile('AggregatesTile', selectedType, id, permissions);
 
-                        LineageDiagram('SourcingTile', selectedType, id, null, true);
+                        LineageDiagram('SourcingTile', selectedType, id, true);
 
                         $('#AttributesTile').fadeIn(fadoutTime);
                         CollapsibleAttributesTile('AttributesTile', contextList, permissions, selectedType, id);

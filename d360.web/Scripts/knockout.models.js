@@ -1573,8 +1573,6 @@ function HierarchyRuleContextModel(data, parent) {
     var self = this;
     data = data || {};
 
-
-
     self.Object = ko.observable(data.Object || "");
     self.ObjectID = ko.observable(data.ObjectID || 0);
 
@@ -1779,11 +1777,12 @@ function HierarchyPanelViewModel(data, permissions) {
     self.Sources = ko.observableArray();
     self.SourceRules = ko.observableArray();
 
+
     self.SelectedItemIndex = ko.observable(-1);
     self.SelectedSourceIndex = ko.observable(-1);
     self.SelectedRuleIndex = ko.observable(-1);
-    self.RadioAddChecked = ko.observable(true);
-    self.RadioEditChecked = ko.observable(false);
+   // self.RadioAddChecked = ko.observable(true);
+    //self.RadioEditChecked = ko.observable(false);
     self.IsLoadingContexts = ko.observable(false);
     self.HasSourcesOrRules = ko.observable(true);
 
@@ -1798,19 +1797,37 @@ function HierarchyPanelViewModel(data, permissions) {
 
     }
 
-    self.RadioAddChecked.subscribe(function () {
-        if (self.RadioAddChecked() == true) {
-            self.Mode('add');
-            self.SelectedRule(self.NewRule());
-        } else {
-            self.Mode('edit');
-            if (self.SelectedRuleIndex() < 0)
-                self.SelectedRuleIndex(0);
-            //force data to reload when switching back to edit mode
-            self.SelectedRuleIndex.valueHasMutated();
-            self.SelectedItemIndex.valueHasMutated();
+    //self.RadioAddChecked.subscribe(function () {
+    //    if (self.RadioAddChecked() == true) {
+    //        self.Mode('add');
+    //        self.SelectedRule(self.NewRule());
+    //    } else {
+    //        self.Mode('edit');
+    //        if (self.SelectedRuleIndex() < 0)
+    //            self.SelectedRuleIndex(0);
+    //        //force data to reload when switching back to edit mode
+    //        self.SelectedRuleIndex.valueHasMutated();
+    //        self.SelectedItemIndex.valueHasMutated();
+    //    }
+    //});
+
+    self.AddSourceRule = function () {
+        var data = {
+            Name: 'New Rule',
+            Object: self.Object(),
+            ObjectID: self.ObjectID(),
+            AppliesToObject: self.Target(),
+            AppliesToObjectID: self.TargetID()
         }
-    });
+
+        var newRule = new HierarchySourceRuleModel(data, permissions);
+
+        self.SelectedRule(newRule);
+        self.SourceRules.push(newRule);
+        self.SelectedRuleIndex(self.SourceRules().length - 1);
+        //self.Mode('add');
+    }
+
 
     self.SelectedItemIndex.subscribe(function () {
         if (self.SelectedItemIndex() == -1) {
@@ -1865,7 +1882,7 @@ function HierarchyPanelViewModel(data, permissions) {
                 }
             }
         }).always(function () {
-            self.SelectRule(self.NewRule());
+            //self.SelectRule(self.NewRule());
             self.InProgress(false);
             if (!self.jqxLoaded)
                 self.ApplyJqxBindings();
@@ -2040,13 +2057,14 @@ function HierarchyPanelViewModel(data, permissions) {
     }
 
     self.AfterLoad = function () {
-        if (self.SourceRules().length > 1) {
-            self.RadioEditChecked(true);
+        if (self.SourceRules().length >= 1) {
+            //self.RadioEditChecked(true);
             self.SelectRule(self.SourceRules()[0]);
+            self.SelectedRuleIndex(0);
             self.HasSourcesOrRules(true);
         } else {
-            self.SelectRule(self.NewRule());
-            self.RadioAddChecked(true);
+            //self.SelectRule(self.NewRule());
+            //self.RadioAddChecked(true);
             self.HasSourcesOrRules(true);
         }
         if (self.Sources().length < 1 && self.SourceRules().length < 1) {

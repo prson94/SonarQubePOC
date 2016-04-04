@@ -54,7 +54,7 @@
                     statisticsTileVm.GetStatistics();
 
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, ruleID, '');
-                    LineageDiagram('SourcingTile', type, ruleID, permissions, true);
+                    LineageDiagram('SourcingTile', type, ruleID, true);
                     RelationshipAggregatesTile('AggregatesTileContainer', type, ruleID, permissions);
 
                     EventStatusBreakdownChart('EventStatusChart', contextList, type, ruleID, timescale);

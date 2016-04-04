@@ -67,8 +67,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Open XML SDK\V2.0\lib\DocumentFormat.OpenXml.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="dotNetRDF, Version=1.0.9.3683, Culture=neutral, PublicKeyToken=6055ffe4c97cc780, processorArchitecture=MSIL">
       <HintPath>..\packages\dotNetRDF.1.0.9.3683\lib\net40\dotNetRDF.dll</HintPath>
@@ -477,6 +477,7 @@
     <Content Include="Content\templates\artifacts.root.html" />
     <Content Include="Content\templates\parts\DetailTile.html" />
     <Content Include="Content\templates\parts\LineageDiagram.html" />
+    <Content Include="Content\templates\parts\LineageDiagramMappingRules.html" />
     <Content Include="Content\templates\parts\LineageDiagramSourceRules.html" />
     <Content Include="Content\templates\rules.list.html" />
     <Content Include="Content\templates\policies.list.html" />

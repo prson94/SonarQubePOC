@@ -73,7 +73,7 @@
                             ObjectDetail('DetailTile', type, id);
                             break;
                         case contextList.SourceToTarget:
-                            LineageDiagram('SourcingTile', type, id, permissions, false);
+                            LineageDiagram('SourcingTile', type, id, false);
                             break;
                         case contextList.Responsibility:                        
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
@@ -118,7 +118,7 @@
                         ObjectStatisticsTile('MicroWidget1', type, id);
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
-                        LineageDiagram('SourcingTile', type, id, permissions, false);
+                        LineageDiagram('SourcingTile', type, id, false);
                         CertificationNotificationTile('CertificationNotification', id);
 
                         if (json.AllowRelatedArtifacts) {

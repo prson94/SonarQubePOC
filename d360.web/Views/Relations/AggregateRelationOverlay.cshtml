@@ -141,7 +141,7 @@
         $('#main-rel').hide();
         $('#lineage').show();
         $('#lineage_heading').text('Lineage for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.TargetName);
-        LineageDiagram('DiagramTile', aggregateRelationsModel.TargetObjectType, aggregateRelationsModel.TargetObjectID, null, true);
+        LineageDiagram('DiagramTile', aggregateRelationsModel.TargetObjectType, aggregateRelationsModel.TargetObjectID, true);
     }
 
     function fusionShow(event) {

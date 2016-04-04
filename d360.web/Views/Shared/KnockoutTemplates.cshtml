@@ -114,7 +114,7 @@
                 <!-- ko foreach: Sources -->
                 <tr>
                     <td data-bind="visible: $parent.CanUpdate">
-                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 125px; margin-bottom:3px; line-height:1.6"/><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin"></i></span>
+                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 125px; margin-bottom:3px; line-height:1.6" /><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin"></i></span>
                     </td>
                     <td data-bind="visible: $parent.CanUpdate">
                         <div data-bind="jqxDropDownList: { source: FusionItems, displayMember: 'name', valueMember: 'id', width: 220, theme: theme, disabled: IsLoading, selectedIndex: SelectedFusionIndex }" style="display:inline-block"></div>
@@ -222,18 +222,26 @@
     <div data-bind="visible: !HasSourcesOrRules()" style="text-align: center; padding: 15px;">
         There are no available sources for this item.
     </div>
-    <div data-bind="visible: HasSourcesOrRules" style="margin:5px">
+    <div data-bind="fadeVisible: (Sources().length > 0 && !InProgress())">
+        <div data-bind="jqxButton: { theme: theme }, click: AddSourceRule" style="margin:8px 25px 8px 25px;"><i class="fa fa-plus"></i> Add Hierarchy Rule</div>
+    </div>
+    <div data-bind="visible: (Sources().length > 0 && SourceRules().length < 1 && !InProgress())" style="text-align: center; padding: 15px;">
+        There are no rules defined for this item
+    </div>
+    <div data-bind="visible: (InProgress() || (HasSourcesOrRules && SourceRules().length > 0))" style="margin:5px">
         <div data-bind="visible: InProgress" style="width:100%;height:100%;position:absolute;left:0;top:0;z-index:100000; background-color:#fff; display: flex">
             <div style="vertical-align:middle;text-align:center;display:block;margin: auto">
                 <i class="fa fa-3x fa-spinner fa-spin"></i>
             </div>
         </div>
-        <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioAddChecked, disabled: (Sources().length < 1 || !CanAdd()) }"> Add Hierarchy Rules</div>
-        <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioEditChecked, disabled: (SourceRules().length < 1) }"> Edit Hierarchy Rules</div>
+        @*<div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioAddChecked, disabled: (Sources().length < 1 || !CanAdd()) }"> Add Hierarchy Rules</div>
+        <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioEditChecked, disabled: (SourceRules().length < 1) }"> Edit Hierarchy Rules</div>*@
         <div data-bind="fadeVisible: Mode() != 'template'">
-            <div style="padding-left: 20px" data-bind="fadeVisible: Mode() == 'edit'">
-                <div class="FieldName">Choose a Rule</div>
-                <div data-bind="jqxDropDownList: { theme: theme, source: SourceRules, displayMember: 'Name', valueMember: 'ID', selectedIndex: SelectedRuleIndex }"></div>
+            <div style="padding-left: 20px" data-bind="fadeVisible: (SourceRules().length > 1)">
+                <div class="FieldName">Hierarchy Rules</div>
+                <div>
+                    <div data-bind="jqxDropDownList: { theme: theme, source: SourceRules, displayMember: 'Name', valueMember: 'ID', selectedIndex: SelectedRuleIndex, width: 250 }"></div>
+                </div>
             </div>
             <div>
                 <table>
@@ -242,23 +250,26 @@
                             <td rowspan="9" width="20"></td>
                             <td colspan="3">
                                 <div class="FieldName" style="padding-top:9px">Rule Name</div>
-                                <input type="text" data-bind="jqxInput: { width: field_width98, height: field_height, theme: theme, disabled: !CanUpdate() }, value: SelectedRule().Name" />
+                                <div>
+                                    <input type="text" data-bind="jqxInput: { width: 250, height: field_height, theme: theme, disabled: !CanUpdate() }, value: SelectedRule().Name" />
+                                </div>
                             </td>
                             <td></td>
                         </tr>
                         <tr>
                             <td>
                                 <div class="FieldName" style="padding-top:9px">Available Sources</div>
-                                <div data-bind="jqxListBox: {source: Sources, displayMember: 'Name', valueMember: 'Value', theme: theme, selectedIndex: SelectedSourceIndex }"></div>
+                                <div data-bind="jqxListBox: {source: Sources, displayMember: 'Name', valueMember: 'Value', theme: theme, selectedIndex: SelectedSourceIndex, height: 125 }"></div>
                             </td>
                             <td style="padding-right:9px">
+
                                 <div data-bind="jqxButton: { theme: theme, disabled: !CanUpdate() },  click: AddRuleItem "><i class="fa fa-chevron-right"></i></div>
                                 <div style="height:9px"></div>
                                 <div data-bind="jqxButton: { theme: theme, disabled: !CanUpdate() },  click: RemoveRuleItem "><i class="fa fa-chevron-left"></i></div>
                             </td>
-                            <td style="padding-right:9px">
+                            <td style="padding-right:9px" colspan="3">
                                 <div class="FieldName">Rule Sources</div>
-                                <div data-bind="jqxListBox: { source: SelectedRule().Items, theme: theme, selectedIndex: SelectedItemIndex, displayMember: 'RuleName', valueMember: 'Value' }"></div>
+                                <div data-bind="jqxListBox: { source: SelectedRule().Items, theme: theme, selectedIndex: SelectedItemIndex, displayMember: 'RuleName', valueMember: 'Value', height: 125 }"></div>
                             </td>
                             <td>
                                 <div data-bind="jqxButton: { theme: theme, disabled: !CanUpdate() }, click: MoveRuleItemUp"><i class="fa fa-chevron-up"></i></div>
@@ -269,24 +280,29 @@
                     </tbody>
                 </table>
                 <div class="row">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td rowspan="9" width="20"></td>
-                                <td style="vertical-align: top">
-                                    <div class="FieldName" style="padding-top:9px">Description</div>
-                                    <textarea data-bind="value: SelectedRule().SelectedItem().Description, enable: (SelectedItemIndex() != -1 && CanUpdate())" rows="3"></textarea>
-                                </td>
-                                <td style="vertical-align: top">
-                                    <div class="FieldName" style="padding-top:9px">Order</div>
-                                    <div style="padding-left:5px" data-bind="text: SelectedRule().SelectedItem().SortOrder"></div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">
-                                    <div class="FieldName" style="padding-top:9px">Contexts</div>
-                                    <div style="font-size:.9em" data-bind="text: SelectedRule().SelectedItem().ContextCount, fadeVisible: (SelectedItemIndex() != -1)"></div>
-                                    <div data-bind="jqxGrid: { source: Contexts, theme: theme, width: '100%', height: 150,
+                    <div data-bind="fadeVisible: (SelectedItemIndex() == -1)" style="text-align:center;padding:8px;" class="form-instructions">
+                        Select a Rule Source to edit the description and contexts
+                    </div>
+                    <div>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td rowspan="9" width="20"></td>
+                                    <td style="vertical-align: top">
+                                        <div class="FieldName" style="padding-top:9px">Description</div>
+                                        <textarea data-bind="value: SelectedRule().SelectedItem().Description, enable: (SelectedItemIndex() != -1 && CanUpdate())" rows="3"></textarea>
+                                    </td>
+                                    <td style="vertical-align: top">
+                                        <div class="FieldName" style="padding-top:9px">Order</div>
+                                        <div style="padding-left:5px" data-bind="text: SelectedRule().SelectedItem().SortOrder"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    @*<td rowspan="9" width="20"></td>*@
+                                    <td colspan="2">
+                                        <div class="FieldName" style="padding-top:9px">Contexts</div>
+                                        <div style="font-size:.9em" data-bind="text: SelectedRule().SelectedItem().ContextCount, fadeVisible: (SelectedItemIndex() != -1)"></div>
+                                        <div data-bind="jqxGrid: { source: Contexts, theme: theme, width: '100%', height: 150,
                                                      showfilterrow: true, filterable: true, editable: CanUpdate(), disabled: (IsLoadingContexts() || SelectedItemIndex() == -1),
                                                      columns: [
                                                       { text: '', dataField: 'Checked', columntype: 'checkbox', width: 25, editable: true, filtertype: 'bool', filterable: true },
@@ -294,13 +310,14 @@
                                                       { text: 'Type', dataField: 'Type', width: 100, filtertype: 'checkedlist', editable: false },
                                                       { text: 'Name', dataField: 'Name', editable: false }
                                                 ]}" id="hierarchyRuleContextGrid"></div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="3"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <div>
                         <div style="padding-top:9px"></div>
                         <ul data-bind="foreach: SelectedRule().ErrorMessages" style="color:maroon;font-size:1em;padding:0;margin:0;">
@@ -739,22 +756,22 @@
             <div class="left tile-stat-name">Governance</div>
             <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
             <div class="right tile-stat-value tile-stat-value-green">84%</div>
-            </div>
-            <div class="clear">
+        </div>
+        <div class="clear">
             <div class="left tile-stat-name">Steward</div>
             <div class="right tile-stat-value tile-stat-value-red"><i class="fa fa-arrow-down"></i></div>
             <div class="right tile-stat-value tile-stat-value-yellow">72%</div>
-            </div>
-            <div class="clear">
+        </div>
+        <div class="clear">
             <div class="left tile-stat-name">Owner</div>
             <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
             <div class="right tile-stat-value tile-stat-value-yellow">77%</div>
-            </div>
-            <div class="clear">
+        </div>
+        <div class="clear">
             <div class="left tile-stat-name">Consumers</div>
             <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
             <div class="right tile-stat-value tile-stat-value-red">49%</div>
-            </div>*@
+        </div>*@
     </div>
 </script>
 <script id="scoreMicroTileItemTmpl" type="text/html">
@@ -1107,7 +1124,7 @@
                         <div>
                             <a data-bind="attr: { 'data-type': 'Resource', 'data-context': 'Preview', 'data-id': CreatingResourceID, href: getResourceUrl() }, text: ResourceName"></a>
                         </div>
-                        @*<a data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind="    text: ObjectName"></span></a>*@
+                        @*<a data-bind="attr: { href: ObjectUrl, 'data-type': ObjectType, 'data-context': 'Preview', 'data-id': ObjectID }"><span data-bind=" text ObjectName"></span></a>*@
                     </div>
                 </td>
                 <td class="author">

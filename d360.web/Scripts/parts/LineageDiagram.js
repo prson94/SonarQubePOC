@@ -1,7 +1,9 @@
-﻿function LineageDiagram(controlID, type, id, permissions, readonly) {
+﻿function LineageDiagram(controlID, type, id, readonly) {
     var originalObject = type;
     var originalObjectID = id;
     var fullscreen = false;
+    var permissions = new PermissionsModel();
+    permissions.GetPermissionsForObject(type, id);
 
     var tmpl = Handlebars.getTemplate('LineageDiagram');
     $('#' + controlID).html(tmpl({ control: controlID }));
@@ -45,6 +47,9 @@
 
     var controlID_fusion = controlID + '_fusion';
     var controlID_fusion_body = controlID + '_fusion_body';
+
+    var controlID_mappingrules = controlID + '_mappingrules';
+    var controlID_mappingrules_table = controlID + '_mappingrules_table';
 
     var controlID_ribbon_spacer = controlID + '_ribbon_spacer';
     var controlID_ribbon_content = controlID + '_ribbon_content';
@@ -97,7 +102,7 @@
     $("#" + controlID_responsibilities).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_fusion).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
-
+    $("#" + controlID_mappingrules).jqxExpander({ theme: theme }).jqxExpander('collapse');
     //#endregion
 
     //#region Event Handlers
@@ -1225,7 +1230,20 @@
         if (sel[0].data.diagramObjectType == 'Node') {
             $("#" + controlID_ribbon_sourcerule_add).show(200);
         } else {
+            if (sel[0].data.hasSourceRules) {
 
+                var fromNode = myDiagram.model.findNodeDataForKey(sel[0].data.from);
+                var toNode = myDiagram.model.findNodeDataForKey(sel[0].data.to);
+
+
+                $("#" + controlID_mappingrules).jqxExpander('expand');
+
+                $.getJSON('/form/sourcetarget/load/' + type + '/' + id + '/' + fromNode.type + '/' + fromNode.id + '/' + toNode.type + '/' + toNode.id, function (rules) {
+                    //console.log(rules);
+                    var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
+                    $('#' + controlID_mappingrules_table).html(sourceTemplate(rules));
+                });
+            }
         }
 
 
@@ -1261,16 +1279,32 @@
 
                     if (sourceNodes.length > 0) { //(data.sourceRuleCount > 0) {
                         //$('#' + controlID_sourcerules).show();
-                        $("#" + controlID_sourcerules).jqxExpander('expand');
 
-                        $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function (rules) {
-                            var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
-                            $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
-                        });
+                        if (data.hasMappingRules) {
+                            $("#" + controlID_sourcerules).jqxExpander('expand');
+
+                            $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function (rules) {
+                                var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
+                                $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
+                            });
+                        }
+
+                        if (data.hasSourceRules) {
+                            $("#" + controlID_mappingrules).jqxExpander('expand');
+
+                            $.getJSON('/form/sourcetarget/load/' + type + '/' + id + '/' + data.type + '/' + data.id + '/' + data.type + '/' + data.id, function (rules) {
+                                //console.log(rules);
+                                var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
+                                $('#' + controlID_mappingrules_table).html(sourceTemplate(rules));
+                            });
+                        }
+
                     }
                     else {
                         $("#" + controlID_sourcerules_table).html('');
                         $("#" + controlID_sourcerules).jqxExpander('collapse');
+                        $("#" + controlID_mappingrules_table).html('');
+                        $("#" + controlID_mappingrules).jqxExpander('collapse');
                         //$('#' + controlID_sourcerules).hide();
                     }
 

@@ -12706,6 +12706,8 @@ order by	D.Name, I.Name";
                                                                 join cache.objectdetails d on d.object = n.objecttype and d.objectid = n.objectid
                                                                 where r.sourceruleid = @id"
                                                                 , new { id = myID }).ToList();
+                i.Contexts = new List<SourceRuleContext>();
+
                 foreach (IntersectMapSourceRule r in i.Items)
                 {
                     var newItem = newItems.Where(j => j.ID == r.ID).FirstOrDefault();
@@ -12720,6 +12722,8 @@ order by	D.Name, I.Name";
                     r.IconForeColor = newItem.IconForeColor;
                     r.Contexts.Clear();
                     r.Contexts = contexts;
+                    if (r.Contexts == null)
+                        r.Contexts = new List<IntersectMapSourceRuleContext>();
                     // if (r.Contexts.Count > 0)
                     //     r.Contexts.ToList();
                 }
