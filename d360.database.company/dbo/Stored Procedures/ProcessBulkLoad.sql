@@ -521,7 +521,8 @@ begin
 					@rundate datetime = CURRENT_TIMESTAMP,
 					@focalSubject nvarchar(500),
 					@sourceSubject nvarchar(500),
-					@targetSubject nvarchar(500)
+					@targetSubject nvarchar(500),
+					@lineageErrorDetailMessage varchar(200)
 			
 			select	@current = min(I.RowIndex),
 					@max = max(I.RowIndex)
@@ -685,9 +686,26 @@ begin
 					end -- if valid
 				else
 					begin
+						set @lineageErrorDetailMessage = '';
+
+						if @focalObjectID = 0
+						begin
+							set @lineageErrorDetailMessage = '  Focal point is invalid.';
+						end
+
+						if @sourceObjectID = 0
+						begin
+							set @lineageErrorDetailMessage = @lineageErrorDetailMessage + '  Source object is invalid.';
+						end
+
+						if @targetObjectID = 0
+						begin
+							set @lineageErrorDetailMessage = @lineageErrorDetailMessage + '  Target object is invalid.';
+						end
+
 						update	LoadItem
 						set		[Status] = 0,
-								StatusMessage = 'Failed to add item to lineage. [focal id:' + convert(varchar(10), @focalObjectID) + ' type:' + @focalObject + '] [source id:' + convert(varchar(10),@sourceObjectID) + ' type:' + @sourceObject +'] [target id:' + convert(varchar(10), @targetObjectID) + ' type:' + @targetObject + ']'
+								StatusMessage = 'Failed to add item to lineage.' + @lineageErrorDetailMessage + ' [focal id:' + convert(varchar(10), @focalObjectID) + ' type:' + @focalObject + '] [source id:' + convert(varchar(10),@sourceObjectID) + ' type:' + @sourceObject +'] [target id:' + convert(varchar(10), @targetObjectID) + ' type:' + @targetObject + ']'
 						where	LoadID = @LoadID
 								and RowIndex = @current
 					end -- else not valid
@@ -938,5 +956,3 @@ begin
 	where	ID = @LoadID
 end
 go
-
-
