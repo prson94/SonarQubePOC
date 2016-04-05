@@ -12694,7 +12694,7 @@ order by	D.Name, I.Name";
         [HttpGet, Route("SourceRules/{target}/{targetId:int}/{type}/{id:int}")]
         public JsonNetResult GetSourceRules(string target, int targetId, string type, int id)
         {
-            var items = Company.Filter<SourceRule>(s => s.Object == type && s.ObjectID == id && s.AppliesToObject == target && s.AppliesToObjectID == targetId).ToList();
+            var items = Company.Filter<SourceRule>(s => s.Object == type && s.ObjectID == id && s.AppliesToObject.ToString() == target && s.AppliesToObjectID == targetId).ToList();
 
             items.ForEach(i =>
             {
@@ -12934,76 +12934,106 @@ order by	D.Name, I.Name";
             if (rule.ID < 0)
                 rule.ID = 0;
 
-            foreach (var i in items)
-            {
-                if (i.ID < 0)
-                    i.ID = 0;
-                if (i.Contexts == null)
-                    i.Contexts = new List<IntersectMapSourceRuleContext>();
-                if (i.Description == null)
-                    i.Description = "";
-                var ctx = i.Contexts.ToList();
-                i.Contexts = null;
-                i.SourceRuleID = rule.ID;
-                i.SourceRule = rule;
-
-                try
-                {
-                    Company.SaveOrUpdate(i);
-                }
-                catch (Exception ex)
-                {
-                    error = true;
-                    message += $"[{DateTime.Now}] An error occurred while attempting to save the intersect map source rule: {ex.Message}\n{ex.StackTrace}\n\n";
-                    continue;
-                }
-
-                var contexts = Company.IntersectMapSourceRuleContexts.Where(c => c.IntersectMapSourceRuleID == i.ID).ToList();
-                foreach (var c in ctx)
-                {
-                    c.IntersectMapSourceRuleID = i.ID;
-                    c.IntersectMapSourceRule = i;
-                    if (contexts.Count(r => r.Object == c.Object && r.ObjectID == c.ObjectID) < 1)
-                        Company.IntersectMapSourceRuleContexts.Add(c);
-                }
-
-                foreach (var c in contexts)
-                {
-                    if (ctx.Count(r => r.Object == c.Object && r.ObjectID == c.ObjectID) < 1)
-                        Company.IntersectMapSourceRuleContexts.Remove(c);
-                }
-                try
-                {
-                    Company.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    error = true;
-                    message += $"[{DateTime.Now}] An error occurred while attempting to add or remove source rule contexts: {ex.Message}\n{ex.StackTrace}\n\n";
-                }
-
-            }
+            SystemObjects obj = SystemObjects.Artifact;
 
             try
             {
-                Company.SaveOrUpdate(rule);
+                obj = (SystemObjects)Enum.Parse(typeof(SystemObjects), rule.AppliesToObject);
             }
-            catch (Exception ex)
+            catch
             {
                 error = true;
-                message += $"[{DateTime.Now}] An error occurred while attempting to save changes to the source rule: {ex.Message}\n{ex.StackTrace}\n\n";
-            }
-            //delete rule items which no longer exist
-            var ids = Company.Query<int>("select id from intersectmapsourcerule where sourceruleid = @id", new { id = rule.ID });
-            foreach (var i in ids.Where(j => !rule.Items.Select(k => k.ID).Contains(j)))
-            {
-                //delete contexts first
-
-                Company.IntersectMapSourceRuleContexts.Where(r => r.IntersectMapSourceRuleID == i).ToList().ForEach(j =>
+                message += $"[{DateTime.Now}] An error occurred while trying to determine the focal object type.\n";
+                return new JsonNetResult
                 {
-                    Company.IntersectMapSourceRuleContexts.Remove(j);
-                });
-                Company.Delete(Company.GetById<IntersectMapSourceRule>(i));
+                    Data = new { error, message },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
+
+            bool canCreate = Company.HasPermission(obj, rule.AppliesToObjectID, Claim.Create);
+            bool canUpdate = Company.HasPermission(obj, rule.AppliesToObjectID, Claim.Update);
+
+            if (rule.ID == 0 && !canCreate)
+            {
+                error = true;
+                message += $"[{DateTime.Now}] You do not have permission to create a source rule on this item.\n";
+            }
+
+            if (!error && (canUpdate || canCreate))
+                foreach (var i in items)
+                {
+                    if (i.ID < 0)
+                        i.ID = 0;
+                    if (i.Contexts == null)
+                        i.Contexts = new List<IntersectMapSourceRuleContext>();
+                    if (i.Description == null)
+                        i.Description = "";
+                    var ctx = i.Contexts.ToList();
+                    i.Contexts = null;
+                    i.SourceRuleID = rule.ID;
+                    i.SourceRule = rule;
+
+                    try
+                    {
+                        Company.SaveOrUpdate(i);
+                    }
+                    catch (Exception ex)
+                    {
+                        error = true;
+                        message += $"[{DateTime.Now}] An error occurred while attempting to save the intersect map source rule: {ex.Message}\n{ex.StackTrace}\n\n";
+                        continue;
+                    }
+
+                    var contexts = Company.IntersectMapSourceRuleContexts.Where(c => c.IntersectMapSourceRuleID == i.ID).ToList();
+                    foreach (var c in ctx)
+                    {
+                        c.IntersectMapSourceRuleID = i.ID;
+                        c.IntersectMapSourceRule = i;
+                        if (contexts.Count(r => r.Object == c.Object && r.ObjectID == c.ObjectID) < 1)
+                            Company.IntersectMapSourceRuleContexts.Add(c);
+                    }
+
+                    foreach (var c in contexts)
+                    {
+                        if (ctx.Count(r => r.Object == c.Object && r.ObjectID == c.ObjectID) < 1)
+                            Company.IntersectMapSourceRuleContexts.Remove(c);
+                    }
+                    try
+                    {
+                        Company.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        error = true;
+                        message += $"[{DateTime.Now}] An error occurred while attempting to add or remove source rule contexts: {ex.Message}\n{ex.StackTrace}\n\n";
+                    }
+
+                }
+
+            if (!error)
+            {
+                try
+                {
+                    Company.SaveOrUpdate(rule);
+                }
+                catch (Exception ex)
+                {
+                    error = true;
+                    message += $"[{DateTime.Now}] An error occurred while attempting to save changes to the source rule: {ex.Message}\n{ex.StackTrace}\n\n";
+                }
+                //delete rule items which no longer exist
+                var ids = Company.Query<int>("select id from intersectmapsourcerule where sourceruleid = @id", new { id = rule.ID });
+                foreach (var i in ids.Where(j => !rule.Items.Select(k => k.ID).Contains(j)))
+                {
+                    //delete contexts first
+
+                    Company.IntersectMapSourceRuleContexts.Where(r => r.IntersectMapSourceRuleID == i).ToList().ForEach(j =>
+                    {
+                        Company.IntersectMapSourceRuleContexts.Remove(j);
+                    });
+                    Company.Delete(Company.GetById<IntersectMapSourceRule>(i));
+                }
             }
 
             return new JsonNetResult
@@ -13012,6 +13042,7 @@ order by	D.Name, I.Name";
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+
         #endregion
 
         #region SourceToTarget
@@ -13021,6 +13052,9 @@ order by	D.Name, I.Name";
         {
             
             var items = new List<SourceTargetRule>();
+
+            var sourceObj = Company.GetObjectDetail(source, sourceid);
+            var targetObj = Company.GetObjectDetail(target, targetid);
 
             items = Company.SourceTargetRules.Where(r => r.FocalObject == focal && r.FocalObjectID == focalid
             && r.SourceObject == source && r.SourceObjectID == sourceid
@@ -13111,7 +13145,7 @@ order by	D.Name, I.Name";
 
             return new JsonNetResult
             {
-                Data = new { items = items.ToList(), sourceCount, targetCount },
+                Data = new { items = items.ToList(), sourceCount, targetCount, sourceObj, targetObj },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -13140,8 +13174,9 @@ order by	D.Name, I.Name";
             };
         }
 
-        [HttpPost, ValidateHttpAntiForgeryToken]
-        public JsonNetResult SaveSourceRules(SourceToTargetSaveModel model)
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, Route("sourcetarget/save")]
+        public JsonNetResult Save(SourceToTargetSaveModel model)
         {
             if (model.Rules == null)
                 model.Rules = new List<SourceTargetRule>();
@@ -13149,7 +13184,28 @@ order by	D.Name, I.Name";
             var error = false;
             var message = "";
 
-            foreach(SourceTargetRule rule in model.Rules)
+            SystemObjects obj = SystemObjects.Artifact;
+            try
+            {
+                obj = (SystemObjects)Enum.Parse(typeof(SystemObjects), model.Focal);
+            }
+            catch
+            {
+                error = true;
+                message += $"[{DateTime.Now}] An error occurred while trying to determine the focal object type.\n";
+                return new JsonNetResult
+                {
+                    Data = new { error, message },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
+
+
+            bool canCreate = Company.HasPermission(obj, model.FocalID, Claim.Create);
+            bool canUpdate = Company.HasPermission(obj, model.FocalID, Claim.Update);
+            bool canDelete = Company.HasPermission(obj, model.FocalID, Claim.Delete);
+
+            foreach (SourceTargetRule rule in model.Rules)
             {
                 rule.FocalObject = model.Focal;
                 rule.FocalObjectID = model.FocalID;
@@ -13157,10 +13213,23 @@ order by	D.Name, I.Name";
                 rule.SourceObjectID = model.SourceID;
                 rule.TargetObject = model.Target;
                 rule.TargetObjectID = model.TargetID;
+
+                if (rule.ID == 0 && !canCreate)
+                {
+                    message += $"[{DateTime.Now}] You do not have permission to create mapping rules on this item.\n";
+                    continue;
+                }
+                else if (rule.ID != 0 && !canUpdate)
+                {
+                    message += $"[{DateTime.Now}] You do not have permission to update mapping rules on this item.\n";
+                    continue;
+                }
+
                 try
                 {
                     Company.SaveOrUpdate(rule);
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     error = true;
                     message += $"[{DateTime.Now}] An error occurred while attempting to save the source rule: {ex.Message}\n{ex.StackTrace}\n\n";
@@ -13194,10 +13263,9 @@ order by	D.Name, I.Name";
 
                 foreach (SourceTargetItem source in rule.Sources)
                 {
-                    foreach(SourceTargetItem target in rule.Targets)
+                    foreach (SourceTargetItem target in rule.Targets)
                     {
 
-                        //Company.GetIn
                         var intersectId = Company.Query<int>(intersectSql, new { sourceId = source.FusionID, targetId = target.FusionID }).FirstOrDefault();
 
                         if (intersectId < 1)
@@ -13229,12 +13297,12 @@ order by	D.Name, I.Name";
                             error = true;
                             message += $"[{DateTime.Now}] An error occurred while saving the intersect map record: {ex.Message}\n{ex.StackTrace}\n\n";
                         }
-                       
+
                         intersectMaps.Add(intersectMap);
                     }
-                }    
+                }
 
-                foreach(IntersectMap map in intersectMaps)
+                foreach (IntersectMap map in intersectMaps)
                 {
                     var mapRule = Company.IntersectMapSourceTargetRules.Where(r => r.IntersectMapID == map.ID && r.RuleID == rule.ID).FirstOrDefault();
                     if (mapRule == null || mapRule.ID == 0)
@@ -13247,37 +13315,40 @@ order by	D.Name, I.Name";
                     try
                     {
                         Company.SaveOrUpdate(mapRule);
-                    } catch (Exception ex)
+                    }
+                    catch (Exception ex)
                     {
                         error = true;
                         message += $"[{DateTime.Now}] An error occurred while saving the source rule map: {ex.Message}\n{ex.StackTrace}\n\n";
                     }
                 }
 
-                foreach(IntersectMapSourceTargetRule mapRule in Company.IntersectMapSourceTargetRules.Where(r => r.RuleID == rule.ID).ToList())
+                foreach (IntersectMapSourceTargetRule mapRule in Company.IntersectMapSourceTargetRules.Where(r => r.RuleID == rule.ID).ToList())
                 {
                     if (intersectMaps.Count(m => m.ID == mapRule.IntersectMapID) != 0)
                         continue;
                     try
                     {
                         Company.Delete(mapRule);
-                    } catch (Exception ex)
+                    }
+                    catch (Exception ex)
                     {
                         error = true;
                         message += $"[{DateTime.Now}] An error occurred while removing a source rule map: {ex.Message}\n{ex.StackTrace}\n\n";
                         continue;
                     }
-                    
+
                     var intersectMap = Company.GetById<IntersectMap>(mapRule.IntersectMapID);
                     try
                     {
                         Company.Delete(intersectMap);
-                    } catch (Exception ex)
+                    }
+                    catch (Exception ex)
                     {
                         error = true;
                         message += $"[{DateTime.Now}] An error occurred while removing an intersect map: {ex.Message}\n{ex.StackTrace}\n\n";
                     }
-                    
+
                 }
                 try
                 {
@@ -13297,15 +13368,18 @@ order by	D.Name, I.Name";
             && r.SourceObject == model.Source && r.SourceObjectID == model.SourceID
             && r.TargetObject == model.Target && r.TargetObjectID == model.TargetID).ToList();
 
-            foreach(SourceTargetRule rule in rules)
+            foreach (SourceTargetRule rule in rules)
             {
                 if (model.Rules.Count(r => r.ID == rule.ID) > 0)
                     continue;
 
                 var intersectMapSourceTargetRules = Company.IntersectMapSourceTargetRules.Where(r => r.RuleID == rule.ID).ToList();
                 var intersectMaps = new List<IntersectMap>();
-                intersectMapSourceTargetRules.ForEach(r =>
+                if (canDelete)
+                    intersectMapSourceTargetRules.ForEach(r =>
                 {
+
+
                     try
                     {
                         Company.Delete(r);
@@ -13329,6 +13403,13 @@ order by	D.Name, I.Name";
                         message += $"[{DateTime.Now}] An error occurred while removing an intersect map: {ex.Message}\n{ex.StackTrace}\n\n";
                     }
                 });
+
+                if (!canDelete)
+                {
+                    message += $"[{DateTime.Now}] You do not have permission to delete mapping rules on this item.\n";
+                    continue;
+                }
+
                 try
                 {
                     Company.Delete(rule);
@@ -13340,15 +13421,19 @@ order by	D.Name, I.Name";
                     message += $"[{DateTime.Now}] An error occurred while removing a source rule: {ex.Message}\n{ex.StackTrace}\n\n";
                 }
             }
+
+
             try
             {
                 Company.SaveChanges();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 error = true;
                 message += $"[{DateTime.Now}] An error occurred while saving the source rules: {ex.Message}\n{ex.StackTrace}\n\n";
             }
-            
+
+
             return new JsonNetResult
             {
                 Data = new { error, message },

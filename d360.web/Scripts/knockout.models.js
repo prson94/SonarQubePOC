@@ -1376,7 +1376,7 @@ function SourceToTargetMappingModel(data, permissions) {
             self.IsLoading(false);
         } else {
             $.ajax({
-                url: '/form/SaveSourceRules',
+                url: '/form/sourcetarget/save',
                 method: 'POST',
                 data: data
             }).done(function (data) {
@@ -2006,6 +2006,9 @@ function HierarchyPanelViewModel(data, permissions) {
     self.ApplyJqxBindings = function () {
         $('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
             self.OnCellValueChange();
+        }).on('bindingcomplete', function () {
+            //jqx grid is not editable after bind without this
+            $(this).jqxGrid('refresh');
         });
         self.jqxLoaded = true;       
     }
@@ -2024,6 +2027,7 @@ function HierarchyPanelViewModel(data, permissions) {
     }
 
     self.CheckUsedContextItems = function () {
+
         var isItemSelected = self.IsItemSelected();
 
         self.IsGridLoading(true);
@@ -2041,9 +2045,9 @@ function HierarchyPanelViewModel(data, permissions) {
                 }
             }
         }
-        self.Contexts.valueHasMutated();
         self.IsLoadingContexts(false);
         self.IsGridLoading(false);
+
     }
 
     self.SelectRule = function (selectedRule) {

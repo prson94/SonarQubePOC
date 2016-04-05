@@ -1198,147 +1198,189 @@
         }
     }
 
+    function toggleExpanders(data) {
+        //console.log(data);
+        if (data == null) {
+            $("#" + controlID_sourcerules).jqxExpander('collapse');
+            $("#" + controlID_info).jqxExpander('collapse');
+            $("#" + controlID_responsibilities).jqxExpander('collapse');
+            $("#" + controlID_fusion).jqxExpander('collapse');
+            $("#" + controlID_mappingrules).jqxExpander('collapse');
+            $("#" + controlID_info_body).html('');
+            $("#" + controlID_sourcerules_table).html('');
+            $("#" + controlID_mappingrules_table).html('');
+
+            try {
+                technicalRelationsSource.url = null;
+                $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+            } catch (e) { }
+            try {
+                lineageResponsibilitySource.url = null;
+                $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+            } catch (e) { }
+
+        } else {
+            if (data.diagramObjectType == 'Node') {
+
+                try {
+                    lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
+                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    $("#" + controlID_responsibilities).jqxExpander('expand');
+                } catch (e) { $("#" + controlID_responsibilities).jqxExpander('collapse'); }
+
+                try {
+                    technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
+                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+                    $("#" + controlID_fusion).jqxExpander('expand');
+                } catch (e) { $("#" + controlID_fusion).jqxExpander('collapse'); }
+
+
+                $.ajax({
+                    url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
+                    async: true
+                }).done(function (data) {
+                    $('#' + controlID_info_body).html(data);
+                    $("#" + controlID_info).jqxExpander('expand');
+                }).fail(function () {
+                    $('#' + controlID_info_body).html('');
+                    $("#" + controlID_info).jqxExpander('collapse');
+                });
+
+                
+                if (data.hasSourceRules) {
+                    $.ajax({
+                        url: '/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules',
+                        async: true
+                    }).done(function (data) {
+                        var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
+                        $('#' + controlID_sourcerules_table).html(sourceTemplate(data));
+                        $("#" + controlID_sourcerules).jqxExpander('expand');
+                    }).fail(function () {
+                        $('#' + controlID_sourcerules_table).html('');
+                        $("#" + controlID_sourcerules).jqxExpander('collapse');
+                    });
+                } else {
+                    $('#' + controlID_sourcerules_table).html('');
+                    $("#" + controlID_sourcerules).jqxExpander('collapse');
+                }
+
+
+                if (data.hasMappingRules) {
+                    $.ajax({
+                        url: '/form/sourcetarget/load/' + type + '/' + id + '/' + data.type + '/' + data.id + '/' + data.type + '/' + data.id
+                    }).done(function (data) {
+                        for (var i = 0; i < data.items.length; i++) {
+                            data.items[i].index = i + 1;
+                        }
+                        var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
+                        $('#' + controlID_mappingrules_table).html(sourceTemplate(data));
+                        $("#" + controlID_mappingrules).jqxExpander('expand');
+                    }).fail(function () {
+                        $('#' + controlID_mappingrules_table).html('');
+                        $("#" + controlID_mappingrules).jqxExpander('collapse');
+                    });
+                } else {
+                    $('#' + controlID_mappingrules_table).html('');
+                    $("#" + controlID_mappingrules).jqxExpander('collapse');
+                }
+
+                
+            } else {
+                var from = myDiagram.model.findNodeDataForKey(data.from);
+                var to = myDiagram.model.findNodeDataForKey(data.to);
+
+                $("#" + controlID_sourcerules).jqxExpander('collapse');
+                $("#" + controlID_info).jqxExpander('collapse');
+                $("#" + controlID_responsibilities).jqxExpander('collapse');
+                $("#" + controlID_fusion).jqxExpander('collapse');
+                $("#" + controlID_info_body).html('');
+                $("#" + controlID_sourcerules_table).html('');
+               
+                try {
+                    technicalRelationsSource.url = null;
+                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+                } catch (e) { }
+                try {
+                    lineageResponsibilitySource.url = null;
+                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                } catch (e) { }
+
+                if (data.hasMappingRules) {
+                    $.ajax({
+                        url: '/form/sourcetarget/load/' + type + '/' + id + '/' + from.type + '/' + from.id + '/' + to.type + '/' + to.id
+                    }).done(function (data) {
+                        for (var i = 0; i < data.items.length; i++) {
+                            data.items[i].index = i + 1;
+                        }
+                        var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
+                        $('#' + controlID_mappingrules_table).html(sourceTemplate(data));
+                        $("#" + controlID_mappingrules).jqxExpander('expand');
+                    }).fail(function () {
+                        $('#' + controlID_mappingrules_table).html('');
+                        $("#" + controlID_mappingrules).jqxExpander('collapse');
+                    });
+                } else {
+                    $('#' + controlID_mappingrules_table).html('');
+                    $("#" + controlID_mappingrules).jqxExpander('collapse');
+                }
+            }
+        }  
+    }
+
+    function toggleButtons(data) {
+        //console.log(data);
+        var delay = 200;
+
+        if (!readonly) {
+            $("#" + controlID_ribbon_add).show(delay);
+        } else {
+            $("#" + controlID_ribbon_add).hide(delay);
+        }
+        if (data == null) {
+            $("#" + controlID_ribbon_sourcerule_add).hide(delay);
+            $("#" + controlID_ribbon_sourcemapping_add).hide(delay);
+            $("#" + controlID_ribbon_remove).hide(delay);
+        } else {
+            if (data.diagramObjectType == 'Node') {
+                if (!readonly) {
+                    $("#" + controlID_ribbon_sourcemapping_add).show(delay);
+                    $("#" + controlID_ribbon_sourcerule_add).show(delay);
+                    $("#" + controlID_ribbon_remove).show(delay);
+                } else {
+                    $("#" + controlID_ribbon_sourcemapping_add).hide(delay);
+                    $("#" + controlID_ribbon_sourcerule_add).hide(delay);
+                    $("#" + controlID_ribbon_remove).hide(delay);
+                }
+            } else {
+                $("#" + controlID_ribbon_sourcerule_add).hide(delay);
+
+                if (!readonly) {
+                    $("#" + controlID_ribbon_sourcemapping_add).show(delay);
+                    $("#" + controlID_ribbon_remove).show(delay);
+                } else {
+                    $("#" + controlID_ribbon_sourcemapping_add).hide(delay);
+                    $("#" + controlID_ribbon_remove).hide(delay);
+                }
+            }
+        }
+    }
+
     function onSelectionChange(e) {
         selection = e.diagram.selection;
 
-        $("#" + controlID_ribbon_sourcerule_add).hide(200);
-        $("#" + controlID_ribbon_sourcemapping_add).hide(200);
-
-        if (selection.count < 1) {
-            $("#" + controlID_ribbon_sourcerule_add).hide(200);
-            $("#" + controlID_ribbon_sourcemapping_add).hide(200);
-            $("#" + controlID_ribbon_remove).hide(200);
-            $('#' + controlID_fusion).jqxExpander('collapse');
-            $('#' + controlID_responsibilities).jqxExpander('collapse');
-            $('#' + controlID_info).jqxExpander('collapse');
-            return;
-        } else {
-            if (!readonly) {
-                $("#" + controlID_ribbon_remove).show(200);
-                $("#" + controlID_ribbon_sourcemapping_add).show(200);
-            }
-        }
-
-
         //get a deep copy of the selection as an array
         var sel = $.extend(true, [], selection.toArray()); //JSON.parse(JSON.stringify(selection.toArray()));
-        var firstNodePopulated = false;
-        var sourceNodes = [];
 
-
-        //add show logic for node/link types
-        if (sel[0].data.diagramObjectType == 'Node') {
-            $("#" + controlID_ribbon_sourcerule_add).show(200);
-        } else {
-            if (sel[0].data.hasSourceRules) {
-
-                var fromNode = myDiagram.model.findNodeDataForKey(sel[0].data.from);
-                var toNode = myDiagram.model.findNodeDataForKey(sel[0].data.to);
-
-
-                $("#" + controlID_mappingrules).jqxExpander('expand');
-
-                $.getJSON('/form/sourcetarget/load/' + type + '/' + id + '/' + fromNode.type + '/' + fromNode.id + '/' + toNode.type + '/' + toNode.id, function (rules) {
-                    //console.log(rules);
-                    var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
-                    $('#' + controlID_mappingrules_table).html(sourceTemplate(rules));
-                });
-            }
+        var selectionData = null;
+        if (sel != null && sel.length != 0) {
+            selectionData = sel[0].data;
         }
+        
+        toggleExpanders(selectionData);
+        toggleButtons(selectionData);
 
-
-        for (var i = 0; i < sel.length; i++) {
-            var data = sel[i].data;
-
-            if (data.diagramObjectType == 'Node') {
-
-                for (var it = sel[i].findNodesInto() ; it.next() ;) {
-                    var n = it.value;  // n is now a Node.
-                    var d = n.data;
-                    sourceNodes.push(d);
-                }
-
-                //#region Info
-                if (!firstNodePopulated) {
-                    $.ajax({
-                        url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
-                        data: null,
-                        success: function (data) {
-                            $('#' + controlID_info_body).html(data);
-                            $("#" + controlID_info).jqxExpander('expand');
-                        },
-                        async: true
-                    });
-
-                    try {
-                        technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
-                        $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
-                    } catch (e) {
-                    }
-                    $("#" + controlID_fusion).jqxExpander('expand');
-
-                    if (sourceNodes.length > 0) { //(data.sourceRuleCount > 0) {
-                        //$('#' + controlID_sourcerules).show();
-
-                        if (data.hasMappingRules) {
-                            $("#" + controlID_sourcerules).jqxExpander('expand');
-
-                            $.getJSON('/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules', function (rules) {
-                                var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
-                                $('#' + controlID_sourcerules_table).html(sourceTemplate(rules));
-                            });
-                        }
-
-                        if (data.hasSourceRules) {
-                            $("#" + controlID_mappingrules).jqxExpander('expand');
-
-                            $.getJSON('/form/sourcetarget/load/' + type + '/' + id + '/' + data.type + '/' + data.id + '/' + data.type + '/' + data.id, function (rules) {
-                                //console.log(rules);
-                                var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
-                                $('#' + controlID_mappingrules_table).html(sourceTemplate(rules));
-                            });
-                        }
-
-                    }
-                    else {
-                        $("#" + controlID_sourcerules_table).html('');
-                        $("#" + controlID_sourcerules).jqxExpander('collapse');
-                        $("#" + controlID_mappingrules_table).html('');
-                        $("#" + controlID_mappingrules).jqxExpander('collapse');
-                        //$('#' + controlID_sourcerules).hide();
-                    }
-
-                    $("#" + controlID_responsibilities).show();
-                    try {
-                        lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
-                        $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
-                    } catch (e) {
-
-                    }
-                    $("#" + controlID_responsibilities).jqxExpander('expand');
-                }
-                //#endregion
-
-                firstNodePopulated = true;
-
-            } else if (data.diagramObjectType == "Link") { //link selected
-
-                $('#' + controlID_info_body).html('');
-                $("#" + controlID_info).jqxExpander('collapse');
-                $("#" + controlID_ribbon_sourcemapping_add).show(200);
-                //$("#" + controlID_sourcerules).jqxExpander('collapse');
-
-                lineageResponsibilitySource.url = null;
-                $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
-                $("#" + controlID_responsibilities).jqxExpander('collapse');
-
-                if (data.intersectId != null) {
-                    technicalRelationsSource.url = '/api/Intersect/' + data.intersectId + '/relations';
-                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
-                    $("#" + controlID_fusion).jqxExpander('expand');
-                }
-            }
-        }
+        if (sel == null || sel.length == 0)
+            return;
     }
 
     function onViewportBoundsChanged() {
@@ -1536,6 +1578,9 @@
         initialNodes = $.extend(true, [], modelList);//JSON.parse(JSON.stringify(modelList));
         initialLinks = $.extend(true, [], linkList); //JSON.parse(JSON.stringify(linkList));
 
+        //set buttons/expanders to defaults
+        toggleExpanders(null);
+        toggleButtons(null);
 
         myDiagram.commitTransaction("load_all_data");
         reOrderLayout();

@@ -114,7 +114,7 @@
                 <!-- ko foreach: Sources -->
                 <tr>
                     <td data-bind="visible: $parent.CanUpdate">
-                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 125px; margin-bottom:3px; line-height:1.6" /><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin"></i></span>
+                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 125px; margin-bottom:3px; line-height:1.6" /><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin fa-overlay-five"></i></span>
                     </td>
                     <td data-bind="visible: $parent.CanUpdate">
                         <div data-bind="jqxDropDownList: { source: FusionItems, displayMember: 'name', valueMember: 'id', width: 220, theme: theme, disabled: IsLoading, selectedIndex: SelectedFusionIndex }" style="display:inline-block"></div>
@@ -159,7 +159,7 @@
                 <!-- ko foreach: Targets -->
                 <tr>
                     <td data-bind="visible: $parent.CanUpdate">
-                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 125px; margin-bottom:3px; line-height:1.6" /><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin"></i></span>
+                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 125px; margin-bottom:3px; line-height:1.6" /><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin fa-overlay-five"></i></span>
                     </td>
                     <td data-bind="visible: $parent.CanUpdate">
                         <div data-bind="jqxDropDownList: { source: FusionItems, displayMember: 'name', valueMember: 'id', width: 225, theme: theme, disabled: IsLoading, selectedIndex: SelectedFusionIndex }" style="display:inline-block"></div>

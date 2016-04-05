@@ -1,5 +1,4 @@
-﻿/* Main Primary color */
-/* Main Secondary color (1) */
+﻿/* Main Secondary color (1) */
 /* Main Secondary color (2) */
 /* Main Complement color */
 .zoomBar {
@@ -45,4 +44,63 @@
   padding: 5px;
   text-transform: none;
   line-height: 1.4;
+}
+.rule-list .rule-name {
+  color: #51a6dc;
+  font-weight: 600;
+  font-size: 1.2em;
+  border-bottom: 1px solid #888;
+}
+.rule-list table {
+  border-spacing: 2px;
+  border-collapse: separate;
+}
+.rule-list table thead tr {
+  color: #5c5e60;
+}
+.rule-list table tbody tr .rule-item {
+  padding-top: 15px;
+  vertical-align: top;
+  padding-bottom: 2px;
+}
+.rule-list table tbody tr .rule-item-name {
+  font-weight: 500;
+  color: #9affff;
+}
+.mapping-list .mapping-table {
+  border-spacing: 2px;
+  border-collapse: separate;
+  padding-top: 8px;
+}
+.mapping-list .mapping-table tbody tr .mapping-title {
+  color: #51a6dc;
+  font-weight: 600;
+  font-size: 1.2em;
+  padding: 0;
+  border-bottom: 1px solid #888;
+}
+.mapping-list .mapping-table tbody tr .mapping-subtitle {
+  font-weight: 600;
+  color: #5c5e60;
+}
+.mapping-list .mapping-table tbody tr td {
+  padding: 5px;
+}
+.mapping-list .mapping-table tbody tr td ul {
+  margin-top: 2px;
+}
+.mapping-list .mapping-table tbody tr td ul li {
+  list-style: square inside none;
+}
+.mapping-table-row {
+  background-color: #fff;
+}
+.fa-overlay-five {
+  width: 0;
+  height: 0;
+  -webkit-transform-origin: 5px 5px;
+  -moz-transform-origin: 5px 5px;
+  -ms-transform-origin: 5px 5px;
+  -o-transform-origin: 5px 5px;
+  transform-origin: 5px 5px;
 }

@@ -52,14 +52,16 @@
 .rule-list {
     .rule-name {
         color: @d3s-blue-2;
-        font-weight: 500;
+        font-weight: 600;
         font-size: 1.2em;
+        border-bottom: 1px solid #888;
     }
     table {
+        border-spacing:2px;
+        border-collapse:separate;
         thead {
             tr {
-                color: @d3s-gray-2;
-                font-style: oblique;
+                color: @d3s-gray-1;
             }
         }
         tbody {
@@ -67,6 +69,7 @@
                 .rule-item {
                     padding-top:15px;
                     vertical-align: top;
+                    padding-bottom:2px;
                 }
                 .rule-item-name {
                     font-weight: 500;
@@ -75,4 +78,50 @@
             }
         }
     }
+}
+
+.mapping-list {
+    .mapping-table {
+        border-spacing: 2px;
+        border-collapse: separate;
+        padding-top: 8px;
+        tbody {
+            tr {
+                .mapping-title {
+                    color: @d3s-blue-2;
+                    font-weight: 600;
+                    font-size: 1.2em;
+                    padding: 0;
+                    border-bottom: 1px solid #888;
+                }
+                .mapping-subtitle {
+                    font-weight: 600;
+                    color: @d3s-gray-1;
+                }
+                td {
+                    padding: 5px;
+                    ul {
+                        margin-top: 2px;
+                        li {
+                            list-style: square inside none;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.mapping-table-row {
+        background-color:#fff;
+}  
+
+.fa-overlay-five {
+    width: 0;
+    height: 0;
+    -webkit-transform-origin: 5px 5px;
+    -moz-transform-origin: 5px 5px;
+    -ms-transform-origin: 5px 5px;
+    -o-transform-origin: 5px 5px;
+    transform-origin: 5px 5px;
 }

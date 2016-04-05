@@ -1,38 +1,54 @@
-﻿<div class="rule-list">
+﻿<div class="mapping-list">
     <div>
-        <table style="border-spacing:2px;border-collapse:collapse; border:1px solid #999;">
-            <thead style="background-color:#54a4da;">
-                <tr>
-                    <th style="color:white;padding:3px;">
-                        Sources
-                    </th>
-                    <th style="color:white;padding:3px;">
-                        Targets
-                    </th>
-                    <th style="color:white;padding:3px;">
-                        Transformation
-                    </th>
-                </tr>
-            </thead>
+        <div style="text-align:center;">
+            <span style="background-color:{{sourceObj.IconBackColor}};color:{{sourceObj.IconForeColor}};padding:2px;border-radius:2px;">{{sourceObj.Name}}</span>
+            <i class="fa fa-exchange"></i>
+            <span style="background-color:{{targetObj.IconBackColor}};color:{{targetObj.IconForeColor}};padding:2px;border-radius:2px;">{{targetObj.Name}}</span>
+        </div>
+        <table class="mapping-table">
             <tbody>
                 {{#each items}}
-                <tr>
-                    <td style="border:1px solid #999;padding:2px;">
-                        <ul style="list-style-type: circle">
-                            {{#each Sources}}
-                            <li>{{Name}} </li>
-                            {{/each}}
-                        </ul>
-                    </td>
-                    <td style="border:1px solid #999;padding:2px;">
-                        <ul style="list-style-type: circle">
-                            {{#each Targets}}
-                            <li>{{Name}} </li>
-                            {{/each}}
-                        </ul>
-                    </td>
-                    <td style="border:1px solid #999;padding:2px;">
-                        {{Transformation}}
+                <tr class="mapping-table-row">
+                    <td>
+                        <div class="row">
+                            <div class="col s12 mapping-title">
+                                Mapping Rule {{index}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="mapping-subtitle">Source Attributes</div>
+                                <div>
+                                    <ul>
+                                        {{#each Sources}}
+                                        <li>
+                                            {{Name}}
+                                        </li>
+                                        {{/each}}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="mapping-subtitle">Target Attributes</div>
+                                <div>
+                                    <ul>
+                                        {{#each Targets}}
+                                        <li>
+                                            {{Name}}
+                                        </li>
+                                        {{/each}}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="mapping-subtitle">Transformation</div>
+                                <div>{{Transformation}}</div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {{/each}}

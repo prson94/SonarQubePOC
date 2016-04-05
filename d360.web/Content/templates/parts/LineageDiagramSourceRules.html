@@ -1,11 +1,7 @@
 ﻿<div class="rule-list">
     {{#each Rules}}
-
     <div class="rule-name" style="float: left; width: 92%">{{Name}}</div>
-
-    <!--<div><strong>Context:</strong><br />{{{RuleContexts}}}</div>-->
-
-    <table style="border-spacing:2px;border-collapse:separate">
+    <table>
         <thead>
             <tr>
                 <th style="padding-right:5px">Order</th>
@@ -15,7 +11,7 @@
         <tbody>
             {{#each Items}}
             <tr class="rule-item-name">
-                <td class="rule-item" rowspan="3">{{SortOrder}}</td>
+                <td class="rule-item" rowspan="3" style="text-align:center">{{SortOrder}}</td>
                 <td class="rule-item">{{SourceTypeName}} : {{SourceObjectName}}</td>
             </tr>
             <tr>
