@@ -207,6 +207,9 @@
                     datafields: [
                         { name: 'WorkflowID' },
                         { name: 'Issue', type: 'string' },
+                        { name: 'Url', type: 'string' },
+                        { name: 'Name', type: 'string' },
+                        { name: 'ArtifactID', type: 'number' },
                         { name: 'ResourceID', type: 'number' },
                         { name: 'ResourceName', type: 'string' },
                         { name: 'ResourceUrl', type: 'string' },
@@ -323,7 +326,13 @@
                 break;
             case 4:
                 cols = [
-                    { datafield: "Issue", text: "Issue" },
+                    {
+                        datafield: "Name", text: "Name", filtertype: 'checkedlist',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewLinkRenderer('Artifact', data.ArtifactID, data.Url, data.Name);
+                        }
+                    },
+                    { datafield: "Issue", text: "Reason" },
                     {
                         filtertype: 'checkedlist', datafield: "ResourceName", text: "Reporting User",
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {

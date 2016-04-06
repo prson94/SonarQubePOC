@@ -921,6 +921,7 @@
     <Content Include="Scripts\parts\AttributesTile.js" />
     <Content Include="Scripts\parts\AttributeTypeAllocationGrid.js" />
     <Content Include="Scripts\parts\CertificationNotificationTile.js" />
+    <Content Include="Scripts\parts\ChallengeNotificationTile.js" />
     <Content Include="Scripts\parts\CollapsibleAttributesTile.js" />
     <Content Include="Scripts\parts\CollapsibleSynonymsTile.js" />
     <Content Include="Scripts\parts\CollapsibleTypeHierarchyTile.js" />
@@ -1081,6 +1082,8 @@
     <Content Include="Views\Home\AssignmentActivityOverlay.cshtml" />
     <Content Include="Views\Apps\SearchRedirect.cshtml" />
     <Content Include="Views\Form\RelationTypeEditForm.cshtml" />
+    <Content Include="Views\Workflow\WorkflowActionOverlay_4.cshtml" />
+    <Content Include="Views\Apps\Artifacts.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
