@@ -32,7 +32,7 @@
                     $(controlID).append('<div class="row"><div class="col s12 FieldName">Your Response</div></div><div class="row" id="challenge-actions" style="padding:10px"><div id="ActionArea" class="row"><div class="col s6" id="Action1Wrapper"><input type="radio" id="Action1" name="Action" value="accept" checked="checked" /><label for="Action1">Accept</label></div><div class="col s6" id="Action3Wrapper"><input type="radio" id="Action3" name="Action" value="close" /><label for="Action3">Close</label></div></div><div id="CommentArea"><div class="FieldName">Comment</div><textarea id="Comment"></textarea></div><div></div><button type="button" id="SaveButton" class="btn waves-effect waves-light brown lighten-1 saveButton right">Save</button></div>');
 
                     $('#SaveButton').on('click', function () {
-                        
+                        $(this).val('Please wait ...').attr('disabled', 'disabled');
                         $.ajax('/services/workflow/tasks/' + data.WorkflowID, {
                             dataType: 'json',
                             contentType: "application/json; charset=utf-8",
