@@ -651,7 +651,7 @@ namespace d360.web.Controllers
             {
                 var name = f.Name.Replace("'", "''").Replace("--", "");
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                columns += $"{0}_T.FormattedValue as [{name}], ";
+                columns += $"{name}_T.FormattedValue as [{name}], ";
                 joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
             }
 

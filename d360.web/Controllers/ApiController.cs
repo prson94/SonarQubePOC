@@ -2511,7 +2511,10 @@ from	    ResponsibilityTypeHierarchy H
         {
             var gridFields = new List<GridField>();
             var columns = new List<GridColumn>();
-            var values = new List<dynamic>();
+            IEnumerable<dynamic> results = null;
+
+            var sqlColumns = new List<string>();
+            var sqlJoins = new List<string>();
 
             var def = Company.GetById<FieldTypeFusionLookupDefinition>(fieldTypeFusionLookupDefinitionID, i => i.FieldTypeFusionLookupDisplayFields);
             if (def == null) throw new Exception("Invalid fusion lookup field id specified");
@@ -2538,6 +2541,8 @@ from	    ResponsibilityTypeHierarchy H
                 {
                     gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
                     columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
+                    sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
+                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'FusionAttribute' and F{fieldType.ID}.ObjectID = A.ID");
                 }
             }
             gridFields.Add(new GridField { name = "Object", type = "string" });
@@ -2549,104 +2554,81 @@ from	    ResponsibilityTypeHierarchy H
             #region Calculate SQL statement
 
             string sql = string.Empty;
+            string sqlColumnString = string.Join(",", sqlColumns);
+            if (!string.IsNullOrEmpty(sqlColumnString)) sqlColumnString = "," + sqlColumnString;
+            string sqlJoinString = string.Join(" ", sqlJoins);
 
             switch (def.ReferenceType)
             {
                 case 1: //Self Reference
                     sql = $@"
-select  ID,
-	    ParentID,
-	    Name,
-	    TextPath,
-	    SourceID,
-        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
-from    FusionAttribute
-where   ID = {sourceFusionAttributeID}";
+select  A.ID,
+	    A.ParentID,
+	    A.Name,
+	    A.TextPath,
+	    A.SourceID,
+        'FusionAttribute' as Object,
+        [dbo].GenerateObjectUrl('FusionAttribute', A.FusionAttributeTypeID, A.ID) as Url
+        {sqlColumnString}
+from    FusionAttribute A
+        {sqlJoinString}
+where   A.ID = {sourceFusionAttributeID}";
                     break;
                 case 2: //Parent Reference
                     sql = $@"
-select  p.ID,
-	    p.ParentID,
-	    p.Name,
-	    p.TextPath,
-	    p.SourceID,
-        [dbo].GenerateObjectUrl('FusionAttribute', p.FusionAttributeTypeID, p.ID) as Url
+select  A.ID,
+	    A.ParentID,
+	    A.Name,
+	    A.TextPath,
+	    A.SourceID,
+        'FusionAttribute' as Object,
+        [dbo].GenerateObjectUrl('FusionAttribute', A.FusionAttributeTypeID, A.ID) as Url
+        {sqlColumnString}
 from    FusionAttribute c
-        inner join FusionAttribute p on c.ID = {sourceFusionAttributeID} and p.ID = c.ParentID and p.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+        inner join FusionAttribute A on c.ID = {sourceFusionAttributeID} and A.ID = c.ParentID and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}
+        {sqlJoinString}";
                     break;
                 case 3: //Child Reference
                     sql = $@"
-select  ID,
-        ParentID,
-        Name,
-        TextPath,
-        SourceID,
-        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
-from    FusionAttribute
-where   ParentID = {sourceFusionAttributeID}
-        and FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+select  A.ID,
+        A.ParentID,
+        A.Name,
+        A.TextPath,
+        A.SourceID,
+        'FusionAttribute' as Object,
+        [dbo].GenerateObjectUrl('FusionAttribute', A.FusionAttributeTypeID, A.ID) as Url
+        {sqlColumnString}
+from    FusionAttribute A
+        {sqlJoinString}
+where   A.ParentID = {sourceFusionAttributeID}
+        and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
 
                     break;
                 default: //Relationship Reference
                     sql = $@"
-select  fa.ID,
-        fa.ParentID,
-        fa.name,
-        fa.TextPath,
-        fa.SourceID,
-        [dbo].GenerateObjectUrl('FusionAttribute', fa.FusionAttributeTypeID, fa.ID) as Url
+select  A.ID,
+        A.ParentID,
+        A.name,
+        A.TextPath,
+        A.SourceID,
+        'FusionAttribute' as Object,
+        [dbo].GenerateObjectUrl('FusionAttribute', A.FusionAttributeTypeID, A.ID) as Url
+        {sqlColumnString}
 from    IntersectNode S
         inner join IntersectNode T on S.IntersectID = T.IntersectID and T.ID <> S.ID and S.ObjectType = 'FusionAttribute' and S.ObjectID = {sourceFusionAttributeID} and T.ObjectType = 'FusionAttribute'
-        inner join [fusionattribute] fa on fa.ID = T.ObjectID and fa.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+        inner join [fusionattribute] A on A.ID = T.ObjectID and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}
+        {sqlJoinString}";
 
                     break;
             }
 
             #endregion
 
-            var results = Company.Query<dynamic>(sql);
-
-            IEnumerable<int> fusionAttributeIDs = results.Select(x => x.ID).Cast<int>();
-
-            var fields = Company.Filter<Field>(i => i.ObjectType == "FusionAttribute" && fusionAttributeIDs.Contains(i.ObjectID) && fieldTypeIDs.Contains(i.FieldTypeID), 
-                i => i.FieldType).ToList();
-
-            foreach (var row in results)
-            {
-                dynamic r = new ExpandoObject();
-
-                if (displayFields.Any(i => i.FieldTypeName == "Name"))
-                {
-                    r.Name = row.Name;
-                }
-                if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
-                {
-                    r.TextPath = row.TextPath;
-                }
-                r.Object = "FusionAttribute";
-                r.Url = row.Url;
-                r.ID = row.ID;
-
-                if (fieldTypeIDs != null && fields != null)
-                {
-                    foreach (var item in fieldTypeIDs)
-                    {
-                        int fusionAttributeID = row.ID;
-
-                        foreach (var f in fields.Where(i => i.ObjectID == fusionAttributeID))
-                        {
-                            ((IDictionary<string, object>)r)[f.FieldType.Name] = f.FormattedValue;
-                            break;
-                        }
-                    }
-                }
-
-                values.Add(r);
-            }
+            results = Company.Query<dynamic>(sql);
 
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
-                Values = values,
+                Values = results,
                 Columns = columns,
                 Fields = gridFields
             });
@@ -2700,7 +2682,7 @@ from    IntersectNode S
         {
             var gridFields = new List<GridField>();
             var columns = new List<GridColumn>();
-            var values = new List<dynamic>();
+            IEnumerable<dynamic> results = null;
 
             try
             {
@@ -2710,6 +2692,9 @@ from    IntersectNode S
                 var displayFields = def.FieldTypeRelationLookupDisplayFields.ToList();
                 var fieldTypeIDs = displayFields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
+
+                var sqlColumns = new List<string>();
+                var sqlJoins = new List<string>();
 
                 #region Load Columns/Fields
 
@@ -2730,6 +2715,8 @@ from    IntersectNode S
                     {
                         gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
                         columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
+                        sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
+                        sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and (F{fieldType.ID}.ObjectType = R.TargetObject and F{fieldType.ID}.ObjectID = R.TargetObjectID) or (F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = R.IntersectID)");
                     }
                 }
                 gridFields.Add(new GridField { name = "Object", type = "string" });
@@ -2741,7 +2728,9 @@ from    IntersectNode S
                 #region Calculate SQL statement
 
                 string sql = string.Empty;
-                string fieldSql = string.Empty;
+                string sqlColumnString = string.Join(",", sqlColumns);
+                if (!string.IsNullOrEmpty(sqlColumnString)) sqlColumnString = "," + sqlColumnString;
+                string sqlJoinString = string.Join(" ", sqlJoins);
 
                 switch (def.ReferenceType)
                 {
@@ -2753,17 +2742,12 @@ from    IntersectNode S
             D.ObjectID as ID,
 		    D.Name,
 		    D.[TextPath],
-		    D.Url
+		    D.Url 
+            {sqlColumnString}
     from    cache.Relationship R
 		    inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
-		    inner join [cache].[ObjectDetails] D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID";
-
-                        fieldSql = $@"
-    select  F.*
-    from    cache.Relationship R
-		    inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
-		    inner join Field F on (F.ObjectType = R.TargetObject and F.ObjectID = R.TargetObjectID) or (F.ObjectType = 'Intersect' and F.ObjectID = R.IntersectID)";
-
+		    inner join [cache].[ObjectDetails] D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID
+            {sqlJoinString}";
                         break;
                     default: //Child Reference
                         sql = $@"
@@ -2774,66 +2758,20 @@ from    IntersectNode S
 		    D2.Name,
 		    D2.[TextPath],
 		    D2.Url
+            {sqlColumnString}
     from    cache.Relationship R1
 		    inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
 		    inner join [cache].[ObjectDetails] D1 on D1.[Object] = R1.TargetObject and D1.ObjectID = R1.TargetObjectID
 		    inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
 		    inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
-		    inner join [cache].[ObjectDetails] D2 on D2.[Object] = R2.TargetObject and D2.ObjectID = R2.TargetObjectID";
-
-                        fieldSql = $@"
-    select  F.*
-    from    cache.Relationship R1
-		    inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
-		    inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
-		    inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
-            inner join Field F on (F.ObjectType = R2.TargetObject and F.ObjectID = R2.TargetObjectID) or (F.ObjectType = 'Intersect' and F.ObjectID = R2.IntersectID)";
-
+		    inner join [cache].[ObjectDetails] D2 on D2.[Object] = R2.TargetObject and D2.ObjectID = R2.TargetObjectID
+            {sqlJoinString}";
                         break;
                 }
 
                 #endregion
 
-                var results = Company.Query<dynamic>(sql);
-
-                IEnumerable<int> relationIDs = results.Select(x => x.ID).Cast<int>();
-
-                var fields = Company.Query<Field>(fieldSql).ToList();
-
-                foreach (var row in results)
-                {
-                    dynamic r = new ExpandoObject();
-
-                    if (displayFields.Any(i => i.FieldTypeName == "Name"))
-                    {
-                        r.Name = row.Name;
-                    }
-                    if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
-                    {
-                        r.TextPath = row.TextPath;
-                    }
-                    r.Object = row.Object;
-                    r.Url = row.Url;
-                    r.ID = row.ID;
-
-                    if (fieldTypeIDs != null && fields != null)
-                    {
-                        foreach (var item in fieldTypeIDs)
-                        {
-                            foreach (var f in fields.Where(i => ( (i.ObjectType == row.Object && i.ObjectID == row.ObjectID) || (i.ObjectType == "Intersect" && i.ObjectID == row.IntersectID)) && i.FieldTypeID == item))
-                            {
-                                var ft = fieldTypes.SingleOrDefault(i => i.ID == item);
-                                if (ft != null)
-                                {
-                                    ((IDictionary<string, object>)r)[ft.Name] = f.FormattedValue;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    values.Add(r);
-                }
+                results = Company.Query<dynamic>(sql);
             }
             catch (Exception ex)
             {
@@ -2842,7 +2780,7 @@ from    IntersectNode S
 
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
-                Values = values,
+                Values = results,//values,
                 Columns = columns,
                 Fields = gridFields
             });
