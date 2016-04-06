@@ -329,7 +329,7 @@
                     {
                         datafield: "Name", text: "Name",
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return previewLinkRenderer('Artifact', data.ArtifactID, data.Url, data.Name);
+                            return (data.ArtifactID > 0 ? previewLinkRenderer('Artifact', data.ArtifactID, data.Url, data.Name) : textrenderer("Deleted Item"));
                         }
                     },
                     { datafield: "Issue", text: "Reason" },

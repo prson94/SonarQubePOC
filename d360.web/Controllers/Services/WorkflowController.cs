@@ -382,7 +382,7 @@ order by    W.DateStarted";
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/RequestingResourceID)[1]', 'int')
-            inner join cache.ObjectDetails A on A.[Object] = 'Artifact' and A.ObjectID = W.Data.value('(fields/ArtifactID)[1]', 'int')
+            left outer join cache.ObjectDetails A on A.[Object] = 'Artifact' and A.ObjectID = W.Data.value('(fields/ArtifactID)[1]', 'int')
 			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
 											    and W.DateCompleted is null
 											    and WR.ResourceID = @r
