@@ -77,7 +77,7 @@
 
                 $('#IssueValue').html(data.Issue);
                 $('#RequestorValue').html('<a data-context="Preview" data-type="Resource" data-id="' + data.ResourceID + '" href="' + data.ResourceUrl + '">' + data.ResourceName + '</a>');
-                $('#DateValue').html(moment(data.DateStarted).format('dddd, MMMM Do YYYY, h:mm:ss a'));
+                $('#DateValue').html(moment.utc(data.DateStarted).local().format('dddd, MMMM Do YYYY, h:mm:ss a'));
 
                 if (data.Activity == 3) {
                     $('#Action2Wrapper').hide();

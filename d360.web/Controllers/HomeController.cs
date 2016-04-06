@@ -69,7 +69,11 @@ namespace d360.web.Controllers
                 case workflow.WorkflowType.WorkIssue:
                     ViewData.Add("WorkflowName", Resources.Core.WorkflowType_WorkIssue);
                     break;
+                case workflow.WorkflowType.ChallengeArtifact:
+                    ViewData.Add("WorkflowName", Resources.Core.WorkflowType_ChallengeArtifact);
+                    break;
                 default:
+                    ViewData.Add("WorkflowName", "Unknown");
                     break;
             }
                         
@@ -97,9 +101,12 @@ namespace d360.web.Controllers
                 case core.enums.CommentType.DataEvent:
                     typeName = Resources.Core.CommentType_DataEvent;
                     break;
-                //case core.enums.CommentType.Question:
-                //    typeName = Resources.Core.CommentType_Question;
-                //    break;             
+                case core.enums.CommentType.Challenge:
+                    typeName = Resources.Core.CommentType_Challenge;
+                    break;
+                    //case core.enums.CommentType.Question:
+                    //    typeName = Resources.Core.CommentType_Question;
+                    //    break;             
             }
 
             ViewData.Add("CategoryName", typeName);

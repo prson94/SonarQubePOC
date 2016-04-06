@@ -115,6 +115,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Challenge.
+        /// </summary>
+        internal static string WorkflowType_ChallengeArtifact {
+            get {
+                return ResourceManager.GetString("WorkflowType_ChallengeArtifact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Propose New Artifact.
         /// </summary>
         internal static string WorkflowType_SuggestNewArtifact {

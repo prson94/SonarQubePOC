@@ -135,6 +135,9 @@
   <data name="WorkflowType_CertifyArtifact" xml:space="preserve">
     <value>Certify Artifact</value>
   </data>
+  <data name="WorkflowType_ChallengeArtifact" xml:space="preserve">
+    <value>Challenge</value>
+  </data>
   <data name="WorkflowType_SuggestNewArtifact" xml:space="preserve">
     <value>Propose New Artifact</value>
   </data>

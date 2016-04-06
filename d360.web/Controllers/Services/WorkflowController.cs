@@ -602,6 +602,15 @@ order by    W.DateStarted";
                         i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list3);
+                case WorkflowType.ChallengeArtifact:
+                    var list4 = Company.Query<WorkflowTask4Model>(string.Format(CurrentUserWorkflow4TaskSql, ""), new { r = Company.CurrentResourceID }).ToList();
+                    list4.ForEach(i => {
+                        i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
+                        i.ActivityName = i.Activity.GetActivityTypeDisplayName();
+                        i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
+                        i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
+                    });
+                    return Request.CreateResponse(HttpStatusCode.OK, list4);
             }
 
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, "The Workflow Type you provided is not valid.  No workflows can be found of this type.");

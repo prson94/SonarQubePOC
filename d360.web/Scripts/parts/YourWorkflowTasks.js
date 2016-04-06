@@ -199,6 +199,27 @@
                     ]
                 };
                 break;
+            case 4:
+                // WorkIssue
+                gridSource = {
+                    datatype: 'json',
+                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    datafields: [
+                        { name: 'WorkflowID' },
+                        { name: 'Issue', type: 'string' },
+                        { name: 'ResourceID', type: 'number' },
+                        { name: 'ResourceName', type: 'string' },
+                        { name: 'ResourceUrl', type: 'string' },
+                        { name: 'DateStarted', type: 'date' },
+                        { name: 'Activity', type: 'string' },
+                        { name: 'ActivityDescription', type: 'string' },
+                        { name: 'ActivityName', type: 'string' }
+                    ]
+                };
+                break;
+            default:
+                console.log("unknown workflow type");
+                break;
         }
         return gridSource;
     }
@@ -273,6 +294,34 @@
                 //#endregion
                 break;
             case 3:
+                cols = [
+                    { datafield: "Issue", text: "Issue" },
+                    {
+                        filtertype: 'checkedlist', datafield: "ResourceName", text: "Reporting User",
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            return previewLinkRenderer('Resource', data.ResourceID, data.ResourceUrl, data.ResourceName);
+                        }
+                    },
+                    { datafield: "DateStarted", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
+                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
+                    {
+                        datafield: "WorkflowID",
+                        text: "",
+                        sortable: false,
+                        filterable: false,
+                        width: '40px',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            var tools = [];
+
+                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
+
+                            return renderToolsHtml(value, tools, contextList.Workflow, data);
+                        }
+                    }
+                ];
+                //#endregion
+                break;
+            case 4:
                 cols = [
                     { datafield: "Issue", text: "Issue" },
                     {

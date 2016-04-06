@@ -5769,7 +5769,9 @@ order by D.Name, S.Name");
                         union
                         select '/Home/AssignmentActivityOverlay?mode=total&type=2' as TotalUri, '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
                         union
-                        select '/Home/AssignmentActivityOverlay?mode=total&type=3' as TotalUri, '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3)
+                        select '/Home/AssignmentActivityOverlay?mode=total&type=3' as TotalUri, '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3
+                        union
+                        select '/Home/AssignmentActivityOverlay?mode=total&type=4' as TotalUri, '" + Resources.Core.WorkflowType_ChallengeArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 4)
                         order by Name";
 
             return Company.Query<CountModel>(sql, new { r = Company.CurrentResourceID });
