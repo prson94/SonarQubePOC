@@ -57,6 +57,22 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col s6">
+            <div class="FieldNameRequired">Assigned Predicates</div>
+            <div data-bind="predicatesFilteredDropdown, jqxDropDownList: {
+                width: field_width,
+                theme: theme,
+                filterable: true,
+                checkboxes:true,
+                source: PredicateOptions,
+                displayMember: 'title',
+                valueMember: 'value',
+                searchMode: 'containsignorecase' }"></div>
+        </div>
+        <div class="col s6"></div>
+    </div>
+
 </script>
 
 <div class="small-overlay">
@@ -87,6 +103,23 @@
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             $(element).on('change', function (event) {
                 viewModel.RoleID(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.predicatesFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('checkChange', function (event) {
+                var checkedItems = $(element).jqxDropDownList('getCheckedItems');
+                if (checkedItems) {
+                    viewModel.Predicates.removeAll();
+
+                    if (checkedItems.length > 0) {
+                        $.each(checkedItems, function(cix, ci) {
+                            viewModel.Predicates.push(ci.value);
+                        });
+                    }
+                }
             });
         },
         update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
@@ -134,6 +167,8 @@
 
         //#region List Properties
 
+        self.Predicates = ko.observableArray();
+        self.PredicateOptions = ko.observableArray();
         self.Side1Options = ko.observableArray();
         self.Side2Options = ko.observableArray();
 
@@ -199,6 +234,8 @@
                             self.Side1(relData.Side1);
                             self.Side1DisplayText(relData.Side1DisplayText);
 
+                            self.Predicates(relData.Predicates || []);
+
                             self.LimitedChangesOnly(relData.LimitedChangesOnly);
 
                             var indexToSelect = -1;
@@ -210,10 +247,38 @@
                             });
                             self.Side1Index(indexToSelect);
                         }
-                    );
+                    ).then(function(){
+                        self.loadPredicates();
+                    });
+                }
+                else {
+                    self.loadPredicates();
                 }
             });
         };
+
+        self.loadPredicates = function() {
+            self.PredicateOptions.removeAll();
+
+            $.getJSON(
+                '/form/IntersectType_PredicateOptions',
+                { },
+                function (relData) {
+
+                    var values = self.Predicates();
+                    if (values.length > 0) {
+                        $.each(values, function(vix, vi) {
+                            $.each(relData, function(){
+                                if (this.value == vi) {
+                                    this.checked = true;
+                                }
+                            });
+                        });
+                    }
+
+                    self.PredicateOptions(relData);
+                });
+        }
 
         self.save = function () {
             self.InProgress(true);
@@ -223,7 +288,8 @@
                 Side1: self.Side1(),
                 Side1DisplayText: self.Side1DisplayText(),
                 Side2: self.Side2(),
-                Side2DisplayText: self.Side2DisplayText()
+                Side2DisplayText: self.Side2DisplayText(),
+                Predicates: self.Predicates(),
             }
 
             var uri = '';

@@ -100,6 +100,16 @@
               Looks up a localized string similar to comments.
             </summary>
         </member>
+        <member name="P:Resources.Actions.Challenge">
+            <summary>
+              Looks up a localized string similar to Challenge.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Challenge_Icon">
+            <summary>
+              Looks up a localized string similar to question.
+            </summary>
+        </member>
         <member name="P:Resources.Actions.ChildArtifactType_Text">
             <summary>
               Looks up a localized string similar to Child Artifact Type.
@@ -286,6 +296,11 @@
               resource lookups using this strongly typed resource class.
             </summary>
         </member>
+        <member name="P:Resources.Core.CommentType_Challenge">
+            <summary>
+              Looks up a localized string similar to Challenge.
+            </summary>
+        </member>
         <member name="P:Resources.Core.CommentType_DataEvent">
             <summary>
               Looks up a localized string similar to Data Event.
@@ -309,6 +324,11 @@
         <member name="P:Resources.Core.WorkflowType_CertifyArtifact">
             <summary>
               Looks up a localized string similar to Certify Artifact.
+            </summary>
+        </member>
+        <member name="P:Resources.Core.WorkflowType_ChallengeArtifact">
+            <summary>
+              Looks up a localized string similar to Challenge.
             </summary>
         </member>
         <member name="P:Resources.Core.WorkflowType_SuggestNewArtifact">
@@ -2555,6 +2575,9 @@
         <member name="M:d360.web.Controllers.FormController.Artifact_RequestCertification(System.Int32)">
             <param name="id">ID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.Artifact_Challenge(System.Int32)">
+            <param name="id">ID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_SuggestFields(System.Int32,System.Int32)">
             <param name="at">ArtifactTypeID</param>
             <param name="p">ParentID</param>
@@ -2870,21 +2893,12 @@
         <member name="M:d360.web.Controllers.FormController.TooltipTemplate_EditFields(System.Int32)">
             <param name="id">TooltipTemplateID</param>
         </member>
-        <member name="M:d360.web.Controllers.FusionController._AttributeTypesByParentType(System.Int32,System.Nullable{System.Int32})">
-            <summary>
-            Gets fusion attribute types based on the given fusion type and possible parent attribute type
-            </summary>
-            <param name="t">The fusion type ID</param>
-            <param name="p">The parent fusion attribute type (optional)</param>
-            <returns>A list of fusion attributes types.</returns>
-        </member>
         <member name="M:d360.web.Controllers.FusionController.GetFusionRuleStatistics(System.Int32)">
             <summary>
-            Gets fusion attribute types based on the given fusion type and possible parent attribute type
+            Gets ownership and promotion rule counts by a specific fusion configuration.
             </summary>
-            <param name="t">The fusion ID</param>
-            <param name="p">The parent fusion attribute type (optional)</param>
-            <returns>A list of fusion attributes types.</returns>
+            <param name="id">The Configuration ID</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Models.Attributes.FileDownloadAttribute.CheckAndHandleFileResult(System.Web.Mvc.ActionExecutedContext)">
             <summary>

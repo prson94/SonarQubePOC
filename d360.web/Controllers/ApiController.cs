@@ -192,7 +192,7 @@ namespace d360.web.Controllers
             return string.Format("{0}%", thisColumnWidth + ((dynamicFieldWidth == 0) ? remainingWidth / staticFieldCount : 0));
         }
 
-        GridColumn getGridColumnForColumn(FieldTypeWithRelation item, decimal dynamicFieldWidth, bool serverPaged)
+        GridColumn getGridColumnForColumn(FieldTypeWithRelation item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true)
         {
             string cellsFormat = "";            
             string columnType = GridColumn.COLUMN_TYPE_STRING;
@@ -203,7 +203,8 @@ namespace d360.web.Controllers
             {
                 case "":
                 case "Lookup":
-                    filterItems = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && o.LookupObjectType == item.LookupObjectType && o.LookupObjectID == item.LookupObjectID).OrderBy(o => o.Text).Select(o => o.Text).ToList();                    
+                    if (loadLookupList)
+                        filterItems = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && o.LookupObjectType == item.LookupObjectType && o.LookupObjectID == item.LookupObjectID).OrderBy(o => o.Text).Select(o => o.Text).ToList();                    
                     columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
                     filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
                     break;
@@ -497,6 +498,58 @@ namespace d360.web.Controllers
 
                     detail = Company.GetObjectDetail(type, id);
 
+
+                    #region Parents
+
+                    var parentSql = @"
+with h as	(
+			select	ID,
+					ParentID,
+                    Name,
+					0 as [Level]
+			from	FusionAttributeType
+			where	ID = @t
+			union all
+			select	P.ID,
+					P.ParentID,
+                    P.Name,
+					C.[Level] + 1 as [Level]
+			from	FusionAttributeType P
+					inner join h as C on C.ParentID = P.ID
+			)
+
+select  T.* 
+from    h
+        inner join FusionAttributeType T on T.ID = h.ID 
+where   h.ID <> @t order by h.[Level] desc;
+";
+                    var parents = Company.Query<FusionAttributeType>(parentSql, new { t = id }).ToList();
+
+                    int fusionID = 0;
+                    bool fusionIDPresent = false;
+                    if (!string.IsNullOrEmpty(Request.GetQueryString("fusionID")))
+                    {
+                        fusionIDPresent = int.TryParse(Request.GetQueryString("fusionID"), out fusionID);
+                    }
+
+                    //Parent columns have be listed in DESC order by Level.
+                    parents.ForEach(i =>
+                    {
+                        if (fusionIDPresent)
+                        {
+                            var parentFilterValues = Company.Query<string>(@"select Name from FusionAttribute where FusionID = @f and FusionAttributeTypeID = @t group by Name order by Name", new { f = fusionID, t = i.ID }).ToList();
+                            filterColumns.Add(new GridFilterColumn { text = i.Name, datafield = $"Parent{i.ID}", width = "", filtertype = GridColumn.COLUMN_TYPE_DROPDOWN, columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filteritems = parentFilterValues });
+                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", width = "100px", filteritems = new List<string>() });
+                        }
+                        else
+                        {
+                            columns.Add(new GridColumn { text = i.Name, datafield = $"Parent{i.ID}", width = "100px", filteritems = new List<string>() });
+                        }
+                        fields.Add(new GridField { name = $"Parent{i.ID}", type = "string" });
+                    });
+
+                    #endregion
+
                     var relations = Company.Query<dynamic>(@"SELECT distinct 'IntersectType' + cast(S.IntersectTypeID as varchar(10)) as Name, TD.Name as FriendlyName
 				FROM		IntersectTypeNode S
 							inner join IntersectTypeNode T ON T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and S.ObjectType = 'FusionAttributeType' and S.ObjectID = @id
@@ -504,16 +557,30 @@ namespace d360.web.Controllers
 
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count() + relations.Count);
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", width = calculateStaticColumnWidth(25, dynamicFieldWidth, remainingWidth, staticFieldCount), filteritems = new List<string>() });
+                    filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+                    filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+                    columns.Add(new GridColumn { text = detail.Name, datafield = "Name", width = calculateStaticColumnWidth(25, dynamicFieldWidth, remainingWidth, staticFieldCount), filteritems = new List<string>() });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
 
+                    items.ForEach(i =>
+                    {
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
+
+                        col.id = i.ID.ToString();
+                        col.relatedfield = false;
+                        col.hiddenfield = false;
+
+                        filterColumns.Add(col);
+                    });
+
                     relations.ForEach(i =>
                     {
                         columns.Add(new GridColumn { text = i.FriendlyName, datafield = i.Name, width = string.Format("{0}%", dynamicFieldWidth), filtertype = GridColumn.FILTER_TYPE_NUMBER, cellsformat = "n" });
                         fields.Add(new GridField { name = i.Name, type = "number" });
+                        filterColumns.Add(new GridFilterColumn { text = i.FriendlyName, datafield = i.Name, width = "", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
                     });
 
                     break;
@@ -1093,7 +1160,7 @@ namespace d360.web.Controllers
                     #region Actions
                     if (id > 0)
                     {
-                        list.Add(new PageActionItem { Context = "Allocation", Icon = Resources.Actions.Allocation_Icon, Title = "Allocate Predicates", Uri = string.Format("/form/IntersectTypePredicateEditForm?id={0}", id) });
+                        //list.Add(new PageActionItem { Context = "Allocation", Icon = Resources.Actions.Allocation_Icon, Title = "Allocate Predicates", Uri = string.Format("/form/IntersectTypePredicateEditForm?id={0}", id) });
                         list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     }
                     break;

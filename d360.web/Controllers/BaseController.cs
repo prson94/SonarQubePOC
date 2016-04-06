@@ -390,13 +390,6 @@ namespace d360.web.Controllers
             var hideData3SixtyUsers = HideData3SixtyUsers();
             var query = Company.Table<GlobalReportingResource>();
             return ((HideData3SixtyUsers()) ? query.Where(i => !i.Email.Contains("data3sixty.com")) : query);
-
-            //return (
-            //       from cr in Community.CompanyResources
-            //       join r in Community.Resources on cr.ResourceID equals r.ID
-            //       where cr.CompanyID == Company.CurrentCompanyID
-            //       select r
-            //    );
         }
 
         internal bool HideData3SixtyUsers()
@@ -619,22 +612,22 @@ namespace d360.web.Controllers
 
         #region Private Methods
 
-        internal void getDynamicRelationshipFieldJoinStatements(int typeID, string type, out string joins)
-        {
-            joins = "";
+        //internal void getDynamicRelationshipFieldJoinStatements(int typeID, string type, out string joins)
+        //{
+        //    joins = "";
 
-            var intersectTypes = Company.Query<int>("select intersecttypeid from utility.relationshiptypes where sourceobjecttype = 'ArtifactType' and sourceobjectid = @objectid", new { objectid = typeID });
+        //    var intersectTypes = Company.Query<int>("select intersecttypeid from utility.relationshiptypes where sourceobjecttype = 'ArtifactType' and sourceobjectid = @objectid", new { objectid = typeID });
 
-            var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && intersectTypes.Contains(i.ObjectID) && i.IsListable).ToList();
+        //    var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && intersectTypes.Contains(i.ObjectID) && i.IsListable).OrderBy(i => i.SortOrder).ToList();
 
-            foreach (var f in fields)
-            {
-                var name = f.Name.Replace("'", "''").Replace("--", "");                
-                joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = '{2}' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID, type);
-            }
+        //    foreach (var f in fields)
+        //    {
+        //        var name = f.Name.Replace("'", "''").Replace("--", "");                
+        //        joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
+        //    }
 
-            fields = null;
-        }
+        //    fields = null;
+        //}
 
         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true)
         {
@@ -652,17 +645,60 @@ namespace d360.web.Controllers
                     break;
             }
 
-            var fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).ToList();
+            var fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
 
             foreach (var f in fields)
             {
                 var name = f.Name.Replace("'", "''").Replace("--", "");
-                if (includeIdColumn) columns += string.Format("{0}_T.Value as [{0}ID], ", name);
-                columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
-                joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = '{2}' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID, type);
+                if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                columns += $"{0}_T.FormattedValue as [{name}], ";
+                joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
             }
 
             fields = null;
+        }
+
+        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true)
+        {
+            columns = "";
+            joins = "";
+
+            filtercolumns = "";
+            filterjoins = "";
+
+            var fieldTypeRelationType = type;
+            switch (type)
+            {
+                case "Rule":
+                    type = "Event";
+                    break;
+                default:
+                    fieldTypeRelationType += "Type";
+                    break;
+            }
+
+            var fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+
+            foreach (var f in fields)
+            {
+                var name = f.Name.Replace("'", "''").Replace("--", "");
+
+                if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+
+                var thisColumn = $", {name}_T.FormattedValue as [{name}]";
+                var thisJoin = $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
+
+                columns += thisColumn;
+                joins += thisJoin;
+
+                if (filterFields.Contains(name))
+                {
+                    filtercolumns += thisColumn;
+                    filterjoins += thisJoin;
+                }
+            }
+            return fields;
+            //fields = null;
         }
 
         internal string getFilteringConditionBind(string field, string condition, int filterNumber, Dapper.DynamicParameters dbParams, string value, string prefix, bool skipFieldValidation = false)
@@ -819,7 +855,9 @@ namespace d360.web.Controllers
                     var fField = query["filterdatafield" + i];
                     var fCondition = query["filtercondition" + i];
                     var fValue = query["filtervalue" + i];
-                    
+
+                    if (fValue.EndsWith(".000")) fValue = fValue.Replace(".000", "");
+
                     filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue,"flt");
                     
                     if (!string.IsNullOrEmpty(filter))

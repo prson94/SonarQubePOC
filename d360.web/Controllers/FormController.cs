@@ -70,6 +70,7 @@ namespace d360.web.Controllers
         }
     }
 
+    [ValidateHttpAntiForgeryToken]
     [RoutePrefix("form"), Authorize]
     public class FormController : BaseController
     {
@@ -6213,24 +6214,31 @@ order by  D.TextPath
 
         public JsonNetResult IntersectType_FormData(int id)
         {
-            var type = Company.GetById<IntersectType>(id, i => i.Nodes);
+            var type = Company.GetById<IntersectType>(id, i => i.Nodes, i => i.IntersectTypePredicates);
             if (type == null) return new JsonNetResult { Data = null };
 
             var currentIntersects = Company.Filter<Intersect>(i => i.IntersectTypeID == id).Any();
             var first = type.Nodes.OrderBy(i => i.Order).First();
             var last = type.Nodes.OrderBy(i => i.Order).Last();
 
-            var model = new IntersectTypeEditorModel
-            {
-                ID = id,
-                LimitedChangesOnly = currentIntersects,
-                Side1 = string.Format("{0}|{1}", first.ObjectType, first.ObjectID),
-                Side1DisplayText = first.MenuDisplayText,
-                Side2 = string.Format("{0}|{1}", last.ObjectType, last.ObjectID),
-                Side2DisplayText = last.MenuDisplayText
+            var model = new Dictionary<string, object> {
+                { "ID", id },
+                { "LimitedChangesOnly", currentIntersects },
+                { "Side1", $"{first.ObjectType}|{first.ObjectID}" },
+                { "Side1DisplayText", first.MenuDisplayText },
+                { "Side2", $"{last.ObjectType}|{last.ObjectID}" },
+                { "Side2DisplayText", last.MenuDisplayText }
             };
 
+            model.Add("Predicates", type.IntersectTypePredicates.Select(i => i.PredicateID).ToArray());
+
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        public JsonNetResult IntersectType_PredicateOptions()
+        {
+            var models = Company.Table<Predicate>().Select(i => new { title = i.Name, value = i.ID });
+            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         public JsonNetResult IntersectType_Side1Options()
@@ -6249,69 +6257,69 @@ order by  D.TextPath
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public ActionResult IntersectTypePredicateEditForm(int id)
-        {
-            var model = new IntersectTypePredicateEditorModel
-            {
-                FormName = "Allocate Intersect Type Predicates",
-                FormDescription = "Allocate predicates to this intersect type by dragging them between the two lists.",
-                FormUri = "/form/SavePredicateAllocations",
-                FormMethod = "POST",
-                AllocatedPredicates = new List<Predicate>(),
-                AvailablePredicates = new List<Predicate>(),
-                IntersectTypeID = id
-            };
+        //public ActionResult IntersectTypePredicateEditForm(int id)
+        //{
+        //    var model = new IntersectTypePredicateEditorModel
+        //    {
+        //        FormName = "Allocate Intersect Type Predicates",
+        //        FormDescription = "Allocate predicates to this intersect type by dragging them between the two lists.",
+        //        FormUri = "/form/SavePredicateAllocations",
+        //        FormMethod = "POST",
+        //        AllocatedPredicates = new List<Predicate>(),
+        //        AvailablePredicates = new List<Predicate>(),
+        //        IntersectTypeID = id
+        //    };
 
-            return PartialView(model);
-        }
+        //    return PartialView(model);
+        //}
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult SavePredicateAllocations(IntersectTypePredicateEditorModel model)
-        {
-            if (model == null || model.IntersectTypeID == 0)
-            {
-                throw new NotFoundException("save predicate allocations");
-            }
+        //[ValidateHttpAntiForgeryToken]
+        //[HttpPost, ValidateInput(false)]
+        //public JsonResult SavePredicateAllocations(IntersectTypePredicateEditorModel model)
+        //{
+        //    if (model == null || model.IntersectTypeID == 0)
+        //    {
+        //        throw new NotFoundException("save predicate allocations");
+        //    }
 
-            var intersectTypePredicates = Company.IntersectTypePredicates.Where(p => p.IntersectTypeID == model.IntersectTypeID).ToList();
+        //    var intersectTypePredicates = Company.IntersectTypePredicates.Where(p => p.IntersectTypeID == model.IntersectTypeID).ToList();
 
-            try
-            {
-                foreach (IntersectTypePredicate p in intersectTypePredicates)
-                {
-                    var allocated = model.AllocatedPredicates.Where(a => a.ID == p.PredicateID).FirstOrDefault();
-                    if (allocated == null)
-                    {
-                        Company.Delete(p);
-                    }
-                }
+        //    try
+        //    {
+        //        foreach (IntersectTypePredicate p in intersectTypePredicates)
+        //        {
+        //            var allocated = model.AllocatedPredicates.Where(a => a.ID == p.PredicateID).FirstOrDefault();
+        //            if (allocated == null)
+        //            {
+        //                Company.Delete(p);
+        //            }
+        //        }
 
-                foreach (Predicate p in model.AllocatedPredicates.ToList())
-                {
-                    var existing = Company.IntersectTypePredicates.Where(e => e.IntersectTypeID == model.IntersectTypeID && e.PredicateID == p.ID).FirstOrDefault();
+        //        foreach (Predicate p in model.AllocatedPredicates.ToList())
+        //        {
+        //            var existing = Company.IntersectTypePredicates.Where(e => e.IntersectTypeID == model.IntersectTypeID && e.PredicateID == p.ID).FirstOrDefault();
 
-                    if (existing == null)
-                    {
+        //            if (existing == null)
+        //            {
 
-                        Company.Add(new IntersectTypePredicate() { IntersectTypeID = model.IntersectTypeID, PredicateID = p.ID });
-                    }
-                }
+        //                Company.Add(new IntersectTypePredicate() { IntersectTypeID = model.IntersectTypeID, PredicateID = p.ID });
+        //            }
+        //        }
 
-              return jsonSuccess("Predicate allocations successfully saved.", model.IntersectTypeID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
+        //      return jsonSuccess("Predicate allocations successfully saved.", model.IntersectTypeID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
 
-            }
+        //    }
 
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        //    catch (BaseException ex)
+        //    {
+        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
         public ActionResult AddIntersectType()
         {
@@ -6321,29 +6329,29 @@ order by  D.TextPath
 
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
-        public JsonResult AddIntersectType(IntersectTypeEditorModel formModel)
+        public JsonResult AddIntersectType(FormCollection form)
         {
             try
             {
-                if (formModel == null) throw new NoFormDataException("relationship type");
+                if (form == null) throw new NoFormDataException("relationship type");
 
                 var nodes = new List<IntersectTypeNode>();
 
-                var side1 = formModel.Side1;
+                var side1 = form["Side1"];
                 short side1Order = 1;
                 var side1Info = side1.Split('|');
                 var node1 = new IntersectTypeNode { ObjectID = int.Parse(side1Info[1]), ObjectType = side1Info[0], Order = side1Order };
-                if (!string.IsNullOrEmpty(formModel.Side1DisplayText))
-                    node1.MenuDisplayText = formModel.Side1DisplayText;
+                if (!string.IsNullOrEmpty(form["Side1DisplayText"]))
+                    node1.MenuDisplayText = form["Side1DisplayText"];
 
                 nodes.Add(node1);
 
-                var side2 = formModel.Side2;
+                var side2 = form["Side2"];
                 short side2Order = 2;
                 var side2Info = side2.Split('|');
                 var node2 = new IntersectTypeNode { ObjectID = int.Parse(side2Info[1]), ObjectType = side2Info[0], Order = side2Order };
-                if (!string.IsNullOrEmpty(formModel.Side2DisplayText))
-                    node2.MenuDisplayText = formModel.Side2DisplayText;
+                if (!string.IsNullOrEmpty(form["Side2DisplayText"]))
+                    node2.MenuDisplayText = form["Side2DisplayText"];
                 nodes.Add(node2);
 
                 Company.ValidateIntersectType(0, nodes);
@@ -6352,9 +6360,19 @@ order by  D.TextPath
                     Nodes = nodes
                 };
                 Company.Add<IntersectType>(model);
-                formModel.ID = model.ID;
+                var id = model.ID;
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), ContextList.IntersectType, "add", HttpStatusCode.Created);
+                if (!string.IsNullOrEmpty(form["Predicates[]"]))
+                {
+                    var predicates = form["Predicates[]"].Split(',').Select(i => int.Parse(i)).ToList();
+
+                    predicates.ForEach(p => {
+                        Company.IntersectTypePredicates.Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateID = p });
+                    });
+                    Company.SaveChanges();
+                }
+
+                return jsonSuccess(model.Name + " successfully created.", id.ToString(), ContextList.IntersectType, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -6424,42 +6442,43 @@ order by  D.TextPath
         }
 
         [HttpPut, ValidateInput(false)]
-        public JsonResult EditIntersectType(IntersectTypeEditorModel formModel)
+        public JsonResult EditIntersectType(FormCollection form)
         {
             try
             {
-                if (formModel == null) throw new NoFormDataException("relationship type");
+                if (form == null) throw new NoFormDataException("relationship type");
+
+                var id = int.Parse(form["ID"]);
 
                 // Permisisons validation.
-                if (!Company.HasPermission(SystemObjects.IntersectType, formModel.ID, Claim.Update))
+                if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
                 
-                var model = Company.GetById<IntersectType>(formModel.ID, i => i.Nodes);
+                var model = Company.GetById<IntersectType>(id, i => i.Nodes, i => i.IntersectTypePredicates);
                 if (model == null) throw new NotFoundException("relationship type");
 
                 var nodes = new List<IntersectTypeNode>();
 
-                var side1 = formModel.Side1;
+                var side1 = form["Side1"];
                 short side1Order = 1;
                 var side1Info = side1.Split('|');
 
-                var side2 = formModel.Side2;
+                var side2 = form["Side2"];
                 short side2Order = 2;
                 var side2Info = side2.Split('|');
 
                 var side1Node = new IntersectTypeNode { ObjectID = int.Parse(side1Info[1]), ObjectType = side1Info[0], Order = side1Order };
-                if (!string.IsNullOrEmpty(formModel.Side1DisplayText))
-                    side1Node.MenuDisplayText = formModel.Side1DisplayText;
+                if (!string.IsNullOrEmpty(form["Side1DisplayText"]))
+                    side1Node.MenuDisplayText = form["Side1DisplayText"];
                 nodes.Add(side1Node);
 
                 var side2Node = new IntersectTypeNode { ObjectID = int.Parse(side2Info[1]), ObjectType = side2Info[0], Order = side2Order };
-                if (!string.IsNullOrEmpty(formModel.Side2DisplayText))
-                    side2Node.MenuDisplayText = formModel.Side2DisplayText;
+                if (!string.IsNullOrEmpty(form["Side2DisplayText"]))
+                    side2Node.MenuDisplayText = form["Side2DisplayText"];
                 nodes.Add(side2Node);
 
-
                 // Validation
-                Company.ValidateIntersectType(formModel.ID, nodes);
+                Company.ValidateIntersectType(id, nodes);
 
 
                 // Now set the properties we need to overwrite.
@@ -6477,6 +6496,29 @@ order by  D.TextPath
                 Company.Update<IntersectType>(model);
                 Company.Update<IntersectTypeNode>(existingSide1Node);
                 Company.Update<IntersectTypeNode>(existingSide2Node);
+
+                List<int> predicates = null;
+                if (!string.IsNullOrEmpty(form["Predicates[]"]))
+                {
+                    predicates = form["Predicates[]"].Split(',').Select(i => int.Parse(i)).ToList();
+                }
+
+                var invalidPredicates = model.IntersectTypePredicates.Select(i => i.PredicateID).Except(predicates).ToList();
+                invalidPredicates.ForEach(p => {
+                    var ip = model.IntersectTypePredicates.FirstOrDefault(i => i.PredicateID == p);
+                    if (ip != null)
+                    {
+                        Company.IntersectTypePredicates.Remove(ip);
+                    }
+                });
+                if (invalidPredicates.Count > 0)
+                {
+                    Company.SaveChanges();
+                }
+                predicates.ForEach(p => {
+                    Company.IntersectTypePredicates.Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateID = p });
+                });
+                Company.SaveChanges();
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
             }

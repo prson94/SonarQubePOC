@@ -1,12 +1,28 @@
 ﻿<div class="row">
-    <div class="col l8 m9 s9">
-        <div id="ItemsTile" class="tile tile-detail"></div>
-        <div id="FusionAttributeDetailsTile" class="tile tile-detail"></div>
-        <div id="ItemAttributesTile" class="tile tile-detail"></div>        
+    <div class="col l2 m12 s12">
+        <div class="tile tile-detail">
+            <header>Structure</header>
+            <div class="directions">
+                Select a type below to see all attributes of that type.
+            </div>
+            <div id="FusionAttributeTypes"></div>
+        </div>
     </div>
-    <div class="col l4 m3 s3">
-        <!--<div id="RulesTile" class="tile tile-detail" data-bind="template: { name: 'fusionCommandMicroTileTmpl' }"></div>-->
-        <div id="AggregatesTile" class="tile tile-detail"></div>
+    <div class="col l7 m12 s12">
+        <div class="tile tile-detail">
+            <header><div class="TileTools"><a id="Export" class="btn btn-floating waves-effect waves-light brown lighten-1"><i class="fa fa-cloud-download" title="Export"></i></a></div></header>
+            <div id="Filters" data-bind="template: {name: 'artifactFiltersTmpl' }"></div>
+            <div>
+                <a id="RunFilter" class="waves-effect waves-light btn btn-flat"><i class="fa fa-sm fa-filter blue-text lighten-4"></i> Filter</a>
+                <a id="ClearFilter" class="waves-effect waves-light btn btn-flat"><i class="fa fa-ban red-text lighten-4"></i> Clear</a>
+            </div>
+            <div id="ItemsTile"></div>
+        </div>
+        <div id="ItemAttributesTile" class="tile tile-detail"></div>
         <div id="GovernanceTile" class="tile tile-detail"></div>
+    </div>
+    <div class="col l3 m12 s12">
+        <div id="FusionAttributeDetailsTile" class="tile tile-detail"></div>
+        <div id="AggregatesTile" class="tile tile-detail"></div>
     </div>
 </div>

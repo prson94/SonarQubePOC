@@ -1238,14 +1238,14 @@ function SourceToTargetMappingModel(data, permissions) {
     self.CanDelete = ko.observable(false);
     self.CanAdd = ko.observable(false);
 
-    if (permissions != null) {
-        if (permissions.HasPermission("Relationship", "Create"))
+    //if (permissions != null) {
+        //if (permissions.HasPermission("Relationship", "Create"))
             self.CanAdd(true);
-        if (permissions.HasPermission("Relationship", "Update"))
+        //if (permissions.HasPermission("Relationship", "Update"))
             self.CanUpdate(true);
-        if (permissions.HasPermission("Relationship", "Delete"))
+        //if (permissions.HasPermission("Relationship", "Delete"))
             self.CanDelete(true);
-    }
+    //}
 
 
     self.LoadRules = function () {
@@ -3890,7 +3890,7 @@ var StatisticsBarViewModel = function () {
     return self;
 }
 
-function ArtifactFilterItemViewModel(columns,selectedColumn) {
+function GridFilterItemViewModel(columns, selectedColumn, selectedColumnValue) {
     var self = this;
     self.SelectedColumnIndex = ko.observable(selectedColumn !== undefined ? selectedColumn : -1);
     self.Columns = ko.observableArray(columns);
@@ -3900,8 +3900,8 @@ function ArtifactFilterItemViewModel(columns,selectedColumn) {
     self.NumberValue = ko.observable(0);
     self.SelectedListIndex = ko.observable();
     self.ListBoxIsFilterable = ko.observable(false);
-    self.inputType = ko.computed(function () {        
-        var inputType = (self.SelectedColumnIndex() >= 0 ? self.Columns()[self.SelectedColumnIndex()].columntype : "string");        
+    self.inputType = ko.computed(function () {
+        var inputType = (self.SelectedColumnIndex() >= 0 && self.Columns().length > 0) ? self.Columns()[self.SelectedColumnIndex()].columntype : "string";
         var filterType = 'string';
         switch (inputType) {
             case 'number':
@@ -3919,7 +3919,6 @@ function ArtifactFilterItemViewModel(columns,selectedColumn) {
                 filterType = 'date';
                 break;
         }
-        
         return filterType;
     });
     self.selectedColumn = ko.computed(function () {
@@ -3966,6 +3965,15 @@ function ArtifactFilterItemViewModel(columns,selectedColumn) {
             return self.selectedColumn() != null ? self.selectedColumn().id: '';
         return self.selectedColumn() != null ? self.selectedColumn().datafield : '';
     });
+
+    if (selectedColumnValue) {
+        switch (self.inputType()) {
+            case 'number':
+                return self.NumberValue(selectedColumnValue);
+            default:
+                return self.TextValue(selectedColumnValue);
+        }
+    }
 }
 
 function ArtifactFiltersViewModel(columns) {
@@ -3975,7 +3983,7 @@ function ArtifactFiltersViewModel(columns) {
     self.FilterCallback = null;
 
     self.addFilter = function () {
-        self.Filters.push(new ArtifactFilterItemViewModel(columns));
+        self.Filters.push(new GridFilterItemViewModel(self.Columns()));
     };
 
     self.removeFilter = function (index) {
@@ -4001,7 +4009,32 @@ function ArtifactFiltersViewModel(columns) {
 
     self.clearFilters = function () {
         self.Filters([]);
-        self.Filters.push(new ArtifactFilterItemViewModel(self.Columns(), 0));
+        if (self.Columns().length > 0) {
+            self.Filters.push(new GridFilterItemViewModel(self.Columns()));
+        }
+    };
+
+    self.setColumns = function (columns, selectedColumnName, selectedColumnValue) {
+        self.Columns(columns);
+        self.Filters([]);
+        if (selectedColumnName) {
+            var ix = -1;
+            $.each(self.Columns(), function (cix, ci) {
+                console.log('datafield = ' + ci.datafield + ', selected column = ' + selectedColumnName);
+                if (ci.datafield == selectedColumnName) {
+                    ix = cix;
+                }
+            });
+            if (ix >= 0) {
+                self.Filters.push(new GridFilterItemViewModel(columns, ix, selectedColumnValue));
+            }
+            else {
+                self.Filters.push(new GridFilterItemViewModel(columns));
+            }
+        }
+        else {
+            self.Filters.push(new GridFilterItemViewModel(columns));
+        }
     };
 
     self.onEnter = function (d, e) {
@@ -4012,7 +4045,9 @@ function ArtifactFiltersViewModel(columns) {
         return true;
     };
 
-    self.Filters.push(new ArtifactFilterItemViewModel(columns,0));
+    if (self.Columns().length > 0) {
+        self.Filters.push(new GridFilterItemViewModel(columns));
+    }
     
     return self;
 }

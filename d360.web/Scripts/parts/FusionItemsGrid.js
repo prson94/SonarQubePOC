@@ -262,3 +262,173 @@ function FusionItemsGrid(controlID, contextList, permissions, fusionTypeID, fusi
     else
         _FusionItemsGrid(_innercontrolID, fusionTypeID, fusionID, typeDefinition, typeDefinition, '/fusion/ItemsByParent?fusionTypeID=' + fusionTypeID + '&fusionID=' + fusionID + '&parentType=FusionAttributeType');
 }
+
+function NewFusionItemsGrid(controlID, fusionID, fusionAttributeTypeID) {
+    var gridControlID = controlID + "_grid";
+    controlID = '#' + controlID;
+    $(controlID).html('<div id="' + gridControlID + '"></div>');
+    gridControlID = '#' + gridControlID;
+
+    try {
+        ko.cleanNode($(gridControlID)[0]);
+    } catch (e) {
+
+    }
+
+    var filterVM
+
+    //#region Event Handlers
+
+    var gridRowSelect = function (event) {
+        var args = event.args;              // event arguments.
+        var rowBoundIndex = args.rowindex;  // row's bound index.
+        var rowData = args.row;             // row's data.
+        if (rowData.Type === 'FusionAttribute') {
+            amplify.publish('FusionAttributeRowSelected', {
+                ID: rowData.ID,
+                Name: rowData.Name
+            });
+        }
+    }
+
+    var pageResized = function () {
+        $(gridControlID).jqxGrid('refresh');
+    }
+
+    var unsubscribe = function (data) {
+        source = null;
+        adapter = null;
+
+        $(gridControlID).off('rowselect', gridRowSelect);
+        amplify.unsubscribe("PageResized", pageResized);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        ko.cleanNode($(gridControlID)[0]);
+    }
+
+    function clearFilter() {
+        filterVM.clearFilters();
+        $(gridControlID).jqxGrid('updatebounddata');
+    }
+
+    function runFilter() {
+        $(gridControlID).jqxGrid('gotopage', 0); //if user is paging around send them back to begining in case search results change number of pages.
+        $(gridControlID).jqxGrid('updatebounddata');
+    }
+
+    //#endregion
+
+    var definition;
+
+    $.ajax({
+        type: "GET",
+        url: "/api/FusionAttributeType/" + fusionAttributeTypeID + "/grid/definition?fusionID=" + fusionID,
+        async: false,
+        contentType: 'application/json',
+        dataType: 'json',
+        success: function (data) {
+            definition = data;
+            definition.Fields.push({ name: 'FusionAttributeTypeID', type: 'number' });
+        }
+    }).then(function () {
+
+        //#region Build Filters
+
+        filterVM = new ArtifactFiltersViewModel(definition.FilterColumns);
+        filterVM.FilterCallback = runFilter;
+        try {
+            ko.applyBindings(filterVM, document.getElementById('Filters'));
+        }
+        catch (e) {
+            console.log(e);
+        }
+
+        //#endregion
+
+        
+        definition.Columns.forEach(function (item) {
+
+            try {
+                if (item.filteritems) {
+                    if (item.filteritems.length == 0)
+                        delete item.filteritems;
+                }
+            } catch (e) {
+
+            }
+
+            //modify type column
+            if (item.datafield && item.datafield.toUpperCase() === 'TYPE') item.datafield = '_type';
+        });
+
+        definition.Fields.forEach(function (item) {
+            if (item.name && item.name.toUpperCase() === 'TYPE') item.name = '_type';
+        });
+        //add internal type
+        definition.Fields.push({ name: 'Type', type: 'string' });
+
+        var source = {
+            datatype: 'json',
+            type: 'get',
+            url: '/fusion/ItemsByAttributeType?fusionID=' + fusionID + '&fusionAttributeTypeID=' + fusionAttributeTypeID,
+            datafields: definition.Fields,
+            beforeprocessing: function (data) {
+                source.totalrecords = data.total;
+            },
+            filter: function () {
+                $(gridControlID).jqxGrid('updatebounddata');
+            },
+            sort: function () {
+                $(gridControlID).jqxGrid('updatebounddata');
+            }
+        };
+
+        var adapter = new $.jqx.dataAdapter(source);
+
+        try {
+            $(gridControlID).jqxGrid({
+                altrows: true,
+                width: grid_width,
+                autoheight: true,
+                sortable: true,
+                filterable: true,
+                showfilterrow: true,
+                //showfiltermenuitems: false,
+                showsortmenuitems: false,
+                pagesizeoptions: ['10', '20', '50'],
+                pagesize: 20,
+                pageable: true,
+                virtualmode: true,
+                rendergridrows: function () {
+                    return adapter.records;
+                },
+                columnsresize: true,
+                source: adapter,
+                ready: function () {
+                    if (definition.Columns.length > 7) {
+                        $.each(definition.Columns, function () {
+                            if (this.datafield.indexOf('Parent') > -1) {
+                                $(gridControlID).jqxGrid('pincolumn', this.datafield);
+                            }
+                        });
+                        $(gridControlID).jqxGrid('pincolumn', 'Name');
+                        //$(gridControlID).jqxGrid('autoresizecolumns');
+                    }
+                },
+                theme: theme,
+                columns: definition.Columns
+            });
+
+            //#region Event Subscriptions
+
+            $(gridControlID).one('rowdoubleclick', doubleClick);
+            $(gridControlID).on('rowselect', gridRowSelect);
+            amplify.subscribe("PageResized", pageResized);
+            amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+            amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+            //#endregion
+        } catch (e) {
+        }
+    });
+}

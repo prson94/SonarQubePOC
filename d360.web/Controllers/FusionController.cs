@@ -162,7 +162,7 @@ namespace d360.web.Controllers
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", string.Format("Load Template for {0}.xls", fusion.FusionType.Name));
+            return File(stream.ToArray(), "application/vnd.ms-excel", string.Format("Load Template for {0}.xlsx", fusion.FusionType.Name));
         }
 
         internal class GenericFusionAttribute
@@ -500,245 +500,94 @@ FROM	    (
                 JsonRequestBehavior.AllowGet);
         }
 
-        public JsonNetResult TreeNodes(int typeID, int fusionID)
-        {
-            var types = Company.Query<dynamic>(@"
-with th as	(
-			select	A.ID,
-					A.ParentID,
-					A.Name
-			from	FusionAttributeType A
-			where	A.FusionTypeID = @id and A.ParentID is null
-			union all
-			select	A.ID,
-					A.ParentID,
-					A.Name
-			from	FusionAttributeType A
-					inner join th P on P.ID = A.ParentID
-			)
-
-select * from th", new { id = typeID });
-
-            var attributes = Company.Query<dynamic>(@"with h as	(
-			select	A.ID,
-					A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-			from	FusionAttribute A
-			where	A.FusionID = @id and A.ParentID is null
-			union all
-			select	A.ID,
-					A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-			from	FusionAttribute A
-					inner join h P on P.ID = A.ParentID
-			where	A.FusionAttributeTypeID in (select ParentID from FusionAttributeType)
-			)
-select	*
-from	h", new { id = fusionID });
-
-            return new JsonNetResult { Data = new { Types = types, Attributes = attributes }, Formatting = Formatting.None };
-        }
-
-        public JsonNetResult ItemsByParent(int fusionTypeID, int fusionID, SystemObjects parentType, int? parentID, int? parentFusionAttributeTypeID, int? parentFusionAttributeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
-        {
-            string sql = "";
-            int total = 0;
-            IEnumerable<dynamic> query = null;
-
-            switch (parentType)
-            {
-                case SystemObjects.FusionAttribute:
-                    #region
-
-                    var joins = "";
-                    var columns = "";
-                    var intersectSql = "";
-                    var intersects = new List<int>();
-
-                    if (parentFusionAttributeTypeID.HasValue)
-                    {
-                        getDynamicFieldJoinStatements(parentFusionAttributeTypeID.Value, "FusionAttribute", out joins, out columns, false);
-
-                        intersectSql = string.Format(@"select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = 'FusionAttributeType' and SourceObjectID = {0}", parentFusionAttributeTypeID.Value);
-                        intersects = Company.Query<int>(intersectSql).Distinct().ToList();
-                    }
-
-                    var intersectQueryColumnText = "";
-                    var intersectQueryPivotText = "";
-
-                    intersects.ForEach(i =>
-                    {
-                        if (!string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText += ", ";
-                        if (!string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText += ", ";
-
-                        intersectQueryColumnText += string.Format("P.[IntersectType{0}]", i);
-                        intersectQueryPivotText += string.Format("[IntersectType{0}]", i);
-                    });
-
-                    if (string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText = "P.[IntersectType0]";
-                    if (string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText = "[IntersectType0]";
-
-                    if (columns.Contains("[type]"))
-                        columns = columns.Replace("[type]", "[_type]");
-
-                    var querySql = string.Format(
-@"select A.ID, A.Name, 
-A.FusionAttributeTypeID,
-'FusionAttribute' as [Type],
-{0} RT.*
-from	FusionAttribute A {1} 
-outer apply (
-			select	{2}
-			from	(
-					select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
-							count(R.IntersectTypeID) as [Count]
-					from	(
-							select	IntersectTypeID 
-							from	utility.RelationshipTypes 
-							where	SourceObjectType = 'FusionAttributeType'
-									and SourceObjectID = A.FusionAttributeTypeID
-							) RT
-							left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
-																and R.SourceObject = 'FusionAttribute'
-																and R.SourceObjectID = A.ID
-					group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
-					) as I
-			pivot	(
-					min([Count]) for [IntersectType] in ({3})
-					) as P
-			) RT
-where A.FusionID = @f and A.FusionAttributeTypeID = @t {4} and A.Deleted = 0", columns, joins, intersectQueryColumnText, intersectQueryPivotText, (parentID.HasValue ? "and A.ParentID = @p" : ""));
-
-                    var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
-                    sql = string.Format(@"select * from ({0}) A", querySql);
-
-                    var dbArgs = new Dapper.DynamicParameters();
-
-                    dbArgs.Add("f", fusionID);
-                    dbArgs.Add("t", parentFusionAttributeTypeID);
-                    dbArgs.Add("p", parentID);
-
-                    countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
-                    total = Company.Query<int>(countSql, dbArgs).First();
-
-                    sql = applyFilteringSuffixBind(sql, Request, dbArgs);
-                    sql = applySortSuffix(sql, sortDataField, sortOrder);
-                    sql = applyPagingSuffix(sql, pagenum, pagesize);
-
-                    query = Company.Query<dynamic>(sql, dbArgs);
-                    
-                    #endregion
-                    break;
-                case SystemObjects.FusionAttributeType:
-                    #region
-                    sql =
-@"select	T.ID,
-			T.Name,
-			C.IsLeaf,
-            'FusionAttributeType' as [Type],
-            @p as ParentFusionAttributeID
-from	    FusionAttributeType T
-			cross apply (
-						SELECT	case 
-									when COUNT(1) > 0 then CAST(0 as bit) 
-									else 1
-								end as IsLeaf 
-						FROM	FusionAttributeType 
-						where	ParentID = T.ID
-						) C
-	where	T.FusionTypeID = @t";
-                    sql += (parentID.HasValue) ? " and T.ParentID = @pt" : " and T.ParentID is null";
-                    sql += " order by T.Name";
-
-                    query = Company.Query<dynamic>(sql, new { t = fusionTypeID, pt = parentID, p = parentFusionAttributeID });
-                    total = query.Count();
-                    #endregion
-                    break;
-            }
-
-            return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        /// <summary>
-        /// Gets fusion attribute types based on the given fusion type and possible parent attribute type
-        /// </summary>
-        /// <param name="t">The fusion type ID</param>
-        /// <param name="p">The parent fusion attribute type (optional)</param>
-        /// <returns>A list of fusion attributes types.</returns>
-        public JsonNetResult _AttributeTypesByParentType(int t, int? p)
-        {
-            Trace.TraceInformation("Calling FusionController._AttributeTypesByParentType : t={0};p={1}", t, p);
-
-            string sql = 
-@"select	T.ID,
-			T.Name,
-			C.IsLeaf
-from	    FusionAttributeType T
-			cross apply (
-						SELECT	case 
-									when COUNT(1) > 0 then CAST(0 as bit) 
-									else 1
-								end as IsLeaf 
-						FROM	FusionAttributeType 
-						where	ParentID = T.ID
-						) C
-	where	T.FusionTypeID = @t";
-            sql += (p.HasValue) ? " and T.ParentID = @p" : " and T.ParentID is null";
-            sql +=  " order by T.Name";
-
-            var query = Company.Query<dynamic>(sql, new { t = t, p = p });
-
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        /// <summary>
-        /// Gets fusion attribute types based on the given fusion type and possible parent attribute type
-        /// </summary>
-        /// <param name="t">The fusion ID</param>
-        /// <param name="p">The parent fusion attribute type (optional)</param>
-        /// <returns>A list of fusion attributes types.</returns>
-        //public JsonNetResult _AttributesByParentType(int f, int at, int? p)
-        //{
-        //    Trace.TraceInformation("Calling FusionController._AttributesByParentType : f={0};at={1};p={2}", f, at, p);
-
-        //    string sql = "select ID, Name from FusionAttribute where FusionID = @f and FusionAttributeTypeID = @at";
-        //    if (p.HasValue) sql += " and ParentID = @p";
-        //    sql +=  " order by Name";
-
-        //    var query = Company.Query<dynamic>(sql, new { f = f, at = at, p = p });
-
-        //    return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        //}
-
-//        public JsonNetResult _ChildItemsByParent(int fusionID, int? p, int t, string sortDataField, string sortOrder, int pagenum, int pagesize)
+//        public JsonNetResult TreeNodes(int typeID, int fusionID)
 //        {
-//            Trace.TraceInformation("Calling FusionController._ChildItemsByParent : p={0},t={1}", p, t);
+//            var types = Company.Query<dynamic>(@"
+//with th as	(
+//			select	A.ID,
+//					A.ParentID,
+//					A.Name
+//			from	FusionAttributeType A
+//			where	A.FusionTypeID = @id and A.ParentID is null
+//			union all
+//			select	A.ID,
+//					A.ParentID,
+//					A.Name
+//			from	FusionAttributeType A
+//					inner join th P on P.ID = A.ParentID
+//			)
 
-//            var joins = "";
-//            var columns = "";
-//            getDynamicFieldJoinStatements(t, "FusionAttribute", out joins, out columns, false);
+//select * from th", new { id = typeID });
 
-//            var intersectSql = string.Format(@"select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = 'FusionAttributeType' and SourceObjectID = {0}", t);
-//            var intersects = Company.Query<int>(intersectSql).ToList();
-//            var intersectQueryColumnText = "";
-//            var intersectQueryPivotText = "";
+//            var attributes = Company.Query<dynamic>(@"with h as	(
+//			select	A.ID,
+//					A.ParentID,
+//					A.FusionAttributeTypeID,
+//					A.Name
+//			from	FusionAttribute A
+//			where	A.FusionID = @id and A.ParentID is null
+//			union all
+//			select	A.ID,
+//					A.ParentID,
+//					A.FusionAttributeTypeID,
+//					A.Name
+//			from	FusionAttribute A
+//					inner join h P on P.ID = A.ParentID
+//			where	A.FusionAttributeTypeID in (select ParentID from FusionAttributeType)
+//			)
+//select	*
+//from	h", new { id = fusionID });
 
-//            intersects.ForEach(i =>
+//            return new JsonNetResult { Data = new { Types = types, Attributes = attributes }, Formatting = Formatting.None };
+//        }
+
+//        public JsonNetResult ItemsByParent(int fusionTypeID, int fusionID, SystemObjects parentType, int? parentID, int? parentFusionAttributeTypeID, int? parentFusionAttributeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
+//        {
+//            string sql = "";
+//            int total = 0;
+//            IEnumerable<dynamic> query = null;
+
+//            switch (parentType)
 //            {
-//                if (!string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText += ", ";
-//                if (!string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText += ", ";
+//                case SystemObjects.FusionAttribute:
+//                    #region
 
-//                intersectQueryColumnText += string.Format("P.[IntersectType{0}]", i);
-//                intersectQueryPivotText += string.Format("[IntersectType{0}]", i);
-//            });
+//                    var joins = "";
+//                    var columns = "";
+//                    var intersectSql = "";
+//                    var intersects = new List<int>();
 
-//            if (string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText = "P.[IntersectType0]";
-//            if (string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText = "[IntersectType0]";
+//                    if (parentFusionAttributeTypeID.HasValue)
+//                    {
+//                        getDynamicFieldJoinStatements(parentFusionAttributeTypeID.Value, "FusionAttribute", out joins, out columns, false);
 
+//                        intersectSql = string.Format(@"select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = 'FusionAttributeType' and SourceObjectID = {0}", parentFusionAttributeTypeID.Value);
+//                        intersects = Company.Query<int>(intersectSql).Distinct().ToList();
+//                    }
 
-//            var querySql = string.Format(@"select A.ID, A.Name, {0} RT.*
+//                    var intersectQueryColumnText = "";
+//                    var intersectQueryPivotText = "";
+
+//                    intersects.ForEach(i =>
+//                    {
+//                        if (!string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText += ", ";
+//                        if (!string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText += ", ";
+
+//                        intersectQueryColumnText += string.Format("P.[IntersectType{0}]", i);
+//                        intersectQueryPivotText += string.Format("[IntersectType{0}]", i);
+//                    });
+
+//                    if (string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText = "P.[IntersectType0]";
+//                    if (string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText = "[IntersectType0]";
+
+//                    if (columns.Contains("[type]"))
+//                        columns = columns.Replace("[type]", "[_type]");
+
+//                    var querySql = string.Format(
+//@"select A.ID, A.Name, 
+//A.FusionAttributeTypeID,
+//'FusionAttribute' as [Type],
+//{0} RT.*
 //from	FusionAttribute A {1} 
 //outer apply (
 //			select	{2}
@@ -760,23 +609,529 @@ from	    FusionAttributeType T
 //					min([Count]) for [IntersectType] in ({3})
 //					) as P
 //			) RT
-//where A.FusionID = @f and A.FusionAttributeTypeID = @t {4} and A.Deleted = 0", columns, joins, intersectQueryColumnText, intersectQueryPivotText, (p.HasValue ? "and A.ParentID = @p" : ""));
+//where A.FusionID = @f and A.FusionAttributeTypeID = @t {4} and A.Deleted = 0", columns, joins, intersectQueryColumnText, intersectQueryPivotText, (parentID.HasValue ? "and A.ParentID = @p" : ""));
 
-//            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
-//            var sql = string.Format(@"select * from ({0}) A", querySql);
+//                    var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+//                    sql = string.Format(@"select * from ({0}) A", querySql);
 
-//            countSql = applyFilteringSuffix(countSql, Request);
-//            int total = Company.Query<int>(countSql, new { f = fusionID, t = t, p = p }).First();
+//                    var dbArgs = new Dapper.DynamicParameters();
 
-//            sql = applyFilteringSuffix(sql, Request);
-//            sql = applySortSuffix(sql, sortDataField, sortOrder);
-//            sql = applyPagingSuffix(sql, pagenum, pagesize);
+//                    dbArgs.Add("f", fusionID);
+//                    dbArgs.Add("t", parentFusionAttributeTypeID);
+//                    dbArgs.Add("p", parentID);
 
-//            var query = Company.Query<dynamic>(sql, new { f = fusionID, t = t, p = p });
+//                    countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+//                    total = Company.Query<int>(countSql, dbArgs).First();
+
+//                    sql = applyFilteringSuffixBind(sql, Request, dbArgs);
+//                    sql = applySortSuffix(sql, sortDataField, sortOrder);
+//                    sql = applyPagingSuffix(sql, pagenum, pagesize);
+
+//                    query = Company.Query<dynamic>(sql, dbArgs);
+                    
+//                    #endregion
+//                    break;
+//                case SystemObjects.FusionAttributeType:
+//                    #region
+//                    sql =
+//@"select	T.ID,
+//			T.Name,
+//			C.IsLeaf,
+//            'FusionAttributeType' as [Type],
+//            @p as ParentFusionAttributeID
+//from	    FusionAttributeType T
+//			cross apply (
+//						SELECT	case 
+//									when COUNT(1) > 0 then CAST(0 as bit) 
+//									else 1
+//								end as IsLeaf 
+//						FROM	FusionAttributeType 
+//						where	ParentID = T.ID
+//						) C
+//	where	T.FusionTypeID = @t";
+//                    sql += (parentID.HasValue) ? " and T.ParentID = @pt" : " and T.ParentID is null";
+//                    sql += " order by T.Name";
+
+//                    query = Company.Query<dynamic>(sql, new { t = fusionTypeID, pt = parentID, p = parentFusionAttributeID });
+//                    total = query.Count();
+//                    #endregion
+//                    break;
+//            }
 
 //            return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
 //        }
 
+        internal class SqlFieldModel
+        {
+            public string FieldColumnName { get; set; }
+            public string FieldName { get; set; }
+            public string FieldFriendlyName { get; set; }
+            public string FieldJoin { get; set; }
+            public int JoinOrder { get; set; }
+        }
+
+        [FileDownload]
+        public FileResult ExportItemsByAttributeType(int fusionID, int fusionAttributeTypeID, string sortDataField, string sortOrder)
+        {
+            var type = "FusionAttributeType";
+
+            var detail = Company.GetObjectDetail(type, fusionAttributeTypeID);
+
+            var sqlFieldModels = new List<SqlFieldModel>();
+
+            #region Parents
+
+            var parentSql = @"
+with h as	(
+			select	ID,
+					ParentID,
+                    Name,
+					0 as [Level]
+			from	FusionAttributeType
+			where	ID = @t
+			union all
+			select	P.ID,
+					P.ParentID,
+                    P.Name,
+					C.[Level] + 1 as [Level]
+			from	FusionAttributeType P
+					inner join h as C on C.ParentID = P.ID
+			)
+
+select * from h where ID <> @t order by h.[Level] desc;
+";
+            var parents = Company.Query<dynamic>(parentSql, new { t = fusionAttributeTypeID }).ToList();
+
+            //Parent columns have be listed in DESC order by Level.
+            parents.ForEach(i =>
+            {
+                var thisJoin = ((int)i.Level == 1) ?
+                    $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = A.ParentID" :
+                    $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = P{i.Level - 1}.ParentID";
+
+                sqlFieldModels.Add(new SqlFieldModel
+                {
+                    FieldColumnName = $"Parent{i.ID}",
+                    FieldName = $"P{i.Level}.Name as Parent{i.ID}",
+                    FieldFriendlyName = i.Name,
+                    FieldJoin = thisJoin,
+                    JoinOrder = (int)i.Level,
+
+                });
+            });
+
+            #endregion
+
+            sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "Name", FieldName = "A.Name", FieldFriendlyName = detail.Name });
+
+            #region Dynamic Fields
+
+            var fields = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == fusionAttributeTypeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+
+            fields.ForEach(f => {
+                var name = f.Name.Replace("'", "''").Replace("--", "");
+                sqlFieldModels.Add(new SqlFieldModel
+                {
+                    FieldColumnName = $"{name}",
+                    FieldName = $"{name}_T.FormattedValue as [{name}]",
+                    FieldFriendlyName = f.FriendlyName,
+                    FieldJoin = $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = 'FusionAttribute' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1",
+                    JoinOrder = 100
+                });
+            });
+
+            #endregion
+
+            #region Intersects
+
+            var intersectSql = $@"
+select  T.ID,
+        T.Name  
+from    utility.RelationshipTypes V 
+        inner join IntersectType T on T.ID = V.IntersectTypeID and V.SourceObjectType = '{type}' and V.SourceObjectID = {fusionAttributeTypeID}
+order by T.Name";
+            var intersects = Company.Query<dynamic>(intersectSql).Distinct().ToList();
+
+            intersects.ForEach(i =>
+            {
+                sqlFieldModels.Add(new SqlFieldModel
+                {
+                    FieldColumnName = $"IntersectType{i.ID}",
+                    FieldName = $"P.IntersectType{i.ID}",
+                    FieldFriendlyName = i.Name,
+                    JoinOrder = 100
+                });
+            });
+
+            #endregion
+
+            var dbArgs = new Dapper.DynamicParameters();
+            dbArgs.Add("f", fusionID);
+            dbArgs.Add("t", fusionAttributeTypeID);
+
+            #region Query
+
+            string columns = string.Join(", ", sqlFieldModels.Where(c => !c.FieldName.Contains("P.IntersectType")).Select(c => c.FieldName));
+            string joins = string.Join(" ", sqlFieldModels.Where(o => !string.IsNullOrEmpty(o.FieldJoin)).OrderBy(o => o.JoinOrder).Select(o => o.FieldJoin));
+            string intersectColumns = string.Join(", ", sqlFieldModels.Where(c => c.FieldName.Contains("P.IntersectType")).Select(c => c.FieldName));
+            string intersectOuterApply = "";
+            if (!string.IsNullOrEmpty(intersectColumns))
+            {
+                columns += ", RT.*";
+                intersectOuterApply = $@"
+        outer apply (
+	                select	{intersectColumns}
+	                from	(
+			                select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
+					                count(R.IntersectTypeID) as [Count]
+			                from	(
+					                select	IntersectTypeID 
+					                from	utility.RelationshipTypes 
+					                where	SourceObjectType = 'FusionAttributeType'
+							                and SourceObjectID = A.FusionAttributeTypeID
+					                ) RT
+					                left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
+														                and R.SourceObject = 'FusionAttribute'
+														                and R.SourceObjectID = A.ID
+			                group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
+			                ) as I
+	                pivot	(
+			                min([Count]) for [IntersectType] in ({intersectColumns.Replace("P.", "")})
+			                ) as P
+	                ) RT";
+            }
+
+            var sql = $@"
+select  {columns} 
+from	FusionAttribute A 
+        {joins}
+        {intersectOuterApply}
+where   A.FusionID = @f 
+        and A.FusionAttributeTypeID = @t 
+        and A.Deleted = 0";
+
+            sql = $@"select * from ({sql}) A";
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
+            sql = applySortSuffix(sql, sortDataField, sortOrder);
+
+            #endregion
+
+            var query = Company.Query<dynamic>(sql, dbArgs).ToList();
+
+            #region Create the list sheet
+
+            var document = new SLDocument();
+            var defaultSheet = detail.PluralizedName;
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);
+            document.SelectWorksheet(defaultSheet);
+
+            var col = 1;
+            var row = 1;
+            var totalColumns = sqlFieldModels.Count;
+
+            #region Header
+            foreach (var prop in sqlFieldModels)
+            {
+                document.SetCellValue(row, col, prop.FieldFriendlyName);
+                col++;
+            }
+            document.FreezePanes(1, col);
+            #endregion
+            
+            foreach (var item in query)
+            {
+                var obj = (item as IDictionary<string, object>);
+                col = 1;
+                row++;
+                foreach (var prop in sqlFieldModels)
+                {
+                    document.SetCellValue(row, col, (obj[prop.FieldColumnName] != null) ? obj[prop.FieldColumnName].ToString() : "");
+                    col++;
+                }
+            }
+
+            document.AutoFitColumn(1, totalColumns);
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{detail.PluralizedName}.xlsx");
+        }
+
+        public JsonNetResult ItemsByAttributeType(int fusionID, int fusionAttributeTypeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
+        {
+            var joins = "";
+            var columns = "";
+
+            var filterjoins = "";
+            var filtercolumns = "";
+
+            var queryParameters = Request.Params;
+            var filterscount = 0;
+            var filterFields = new List<string>();
+            if (int.TryParse(queryParameters["filterscount"], out filterscount))
+            {
+                for (int i = 0; i < filterscount; i++)
+                {
+                    var fField = queryParameters["filterdatafield" + i];
+                    if (!string.IsNullOrEmpty(fField))
+                    {
+                        filterFields.Add(fField);
+                    }
+                }
+            }
+
+            getDynamicFieldJoinStatements(fusionAttributeTypeID, "FusionAttribute", filterFields, out joins, out filterjoins, out columns, out filtercolumns, false);
+
+            #region Parents
+
+            var parentSql = @"
+with h as	(
+			select	ID,
+					ParentID,
+                    Name,
+					0 as [Level]
+			from	FusionAttributeType
+			where	ID = @t
+			union all
+			select	P.ID,
+					P.ParentID,
+                    P.Name,
+					C.[Level] + 1 as [Level]
+			from	FusionAttributeType P
+					inner join h as C on C.ParentID = P.ID
+			)
+
+select * from h where ID <> @t order by h.[Level] desc;
+";
+            var parents = Company.Query<dynamic>(parentSql, new { t = fusionAttributeTypeID }).ToList();
+
+            //Parent columns have be listed in DESC order by Level.
+            var parentFilterColumnText = "";
+            var parentQueryColumnText = "";
+
+            var parentFilterPresent = parents.Count > 1 && filterFields.Any(i => i.StartsWith("Parent"));
+            parents.ForEach(i =>
+            {
+                var thisColumn = $", P{i.Level}.Name as Parent{i.ID}";
+                parentQueryColumnText += thisColumn;
+                if (parentFilterPresent)
+                {
+                    parentFilterColumnText += thisColumn;
+                }
+                else
+                {
+                    if (filterFields.Contains($"Parent{i.ID}"))
+                    {
+                        parentFilterColumnText += thisColumn;
+                    }
+                }
+            });
+
+            //Parent joins have be listed in ASC order by Level.
+            var parentFilterJoinText = "";
+            var parentQueryJoinText = "";
+            parents.OrderBy(i => i.Level).ToList().ForEach(i =>
+            {
+                var thisJoin = ((int)i.Level == 1) ?
+                    $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = A.ParentID" :
+                    $" inner join FusionAttribute P{i.Level} on P{i.Level}.ID = P{i.Level - 1}.ParentID";
+
+                parentQueryJoinText += thisJoin;
+
+                if (parentFilterPresent)
+                {
+                    parentFilterJoinText += thisJoin;
+                }
+                else
+                {
+                    if (filterFields.Contains($"Parent{i.ID}"))
+                    {
+                        parentFilterJoinText += thisJoin;
+                    }
+                }
+            });
+
+            #endregion
+
+            #region Intersects
+
+            var intersectSql = "";
+            var intersects = new List<int>();
+
+            intersectSql = string.Format(@"select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = 'FusionAttributeType' and SourceObjectID = {0}", fusionAttributeTypeID);
+            intersects = Company.Query<int>(intersectSql).Distinct().ToList();
+
+            var filterIntersectTypeIDText = "";
+            var intersectFilterColumnText = "";
+            var intersectFilterPivotText = "";
+
+            var intersectQueryColumnText = "";
+            var intersectQueryPivotText = "";
+
+            intersects.ForEach(i =>
+            {
+                intersectQueryColumnText += ((!string.IsNullOrEmpty(intersectQueryColumnText)) ? ", " : "") + $"P.[IntersectType{i}]";
+                intersectQueryPivotText += ((!string.IsNullOrEmpty(intersectQueryPivotText)) ? ", " : "")   + $"[IntersectType{i}]";
+
+                if (filterFields.Contains($"IntersectType{i}"))
+                {
+                    intersectFilterColumnText += ((!string.IsNullOrEmpty(intersectFilterColumnText)) ? ", " : "")   + $"P.[IntersectType{i}]";
+                    intersectFilterPivotText += ((!string.IsNullOrEmpty(intersectFilterPivotText)) ? ", " : "")     + $"[IntersectType{i}]";
+                    filterIntersectTypeIDText += ((!string.IsNullOrEmpty(filterIntersectTypeIDText)) ? ", " : "")   + $"{i}";
+                }
+            });
+
+            if (string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText = "P.[IntersectType0]";
+            if (string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText = "[IntersectType0]";
+
+            if (!string.IsNullOrEmpty(filterIntersectTypeIDText)) filterIntersectTypeIDText = $"and IntersectTypeID in ({filterIntersectTypeIDText})";
+
+            #endregion
+
+            if (columns.Contains("[type]"))
+                columns = columns.Replace("[type]", "[_type]");
+
+            var dbArgs = new Dapper.DynamicParameters();
+            dbArgs.Add("f", fusionID);
+            dbArgs.Add("t", fusionAttributeTypeID);
+
+            #region Count SQL
+
+            var intersectsColumnReference = "";
+            var intersectsOuterApply = "";
+
+            if (!string.IsNullOrEmpty(intersectFilterColumnText) && !string.IsNullOrEmpty(intersectFilterPivotText) && !string.IsNullOrEmpty(filterIntersectTypeIDText))
+            {
+                intersectsColumnReference = " ,RT.*";
+                intersectsOuterApply = $@"
+outer apply (
+	select	{intersectQueryColumnText}
+	from	(
+			select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
+					count(R.IntersectTypeID) as [Count]
+			from	(
+					select	IntersectTypeID 
+					from	utility.RelationshipTypes 
+					where	SourceObjectType = 'FusionAttributeType'
+							and SourceObjectID = A.FusionAttributeTypeID
+                            {filterIntersectTypeIDText}
+					) RT
+					left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
+														and R.SourceObject = 'FusionAttribute'
+														and R.SourceObjectID = A.ID
+			group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
+			) as I
+	pivot	(
+			min([Count]) for [IntersectType] in ({intersectQueryPivotText})
+			) as P
+	) RT";
+            }
+
+            var countSql = $@"
+select  A.ID, 
+        A.Name, 
+        A.FusionAttributeTypeID,
+        'FusionAttribute' as [Type]
+        {filtercolumns} 
+        {parentFilterColumnText} 
+        {intersectsColumnReference}
+from	FusionAttribute A {parentFilterJoinText} {filterjoins}
+        {intersectsOuterApply}
+where   A.FusionID = @f 
+        and A.FusionAttributeTypeID = @t 
+        and A.Deleted = 0";
+
+            countSql = $@"select count(1) from ({countSql}) A";
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            var total = Company.Query<int>(countSql, dbArgs).First();
+
+            #endregion
+
+            #region Query
+
+            var sql = $@"
+select  A.ID 
+        , A.Name 
+        , A.FusionAttributeTypeID
+        , 'FusionAttribute' as [Type]
+        {columns} 
+        {parentQueryColumnText} 
+        , RT.*
+from	FusionAttribute A {parentQueryJoinText} {joins}
+outer apply (
+	select	{intersectQueryColumnText}
+	from	(
+			select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
+					count(R.IntersectTypeID) as [Count]
+			from	(
+					select	IntersectTypeID 
+					from	utility.RelationshipTypes 
+					where	SourceObjectType = 'FusionAttributeType'
+							and SourceObjectID = A.FusionAttributeTypeID
+					) RT
+					left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
+														and R.SourceObject = 'FusionAttribute'
+														and R.SourceObjectID = A.ID
+			group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
+			) as I
+	pivot	(
+			min([Count]) for [IntersectType] in ({intersectQueryPivotText})
+			) as P
+	) RT
+where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
+
+            sql = $@"select * from ({sql}) A";
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
+            sql = applySortSuffix(sql, sortDataField, sortOrder);
+            sql = applyPagingSuffix(sql, pagenum, pagesize);
+
+            var query = Company.Query<dynamic>(sql, dbArgs);
+
+            #endregion
+
+            return new JsonNetResult { Data = new { total, results = query }, Formatting = Formatting.None };
+        }
+
+
+//        /// <summary>
+//        /// Gets fusion attribute types based on the given fusion type and possible parent attribute type
+//        /// </summary>
+//        /// <param name="t">The fusion type ID</param>
+//        /// <param name="p">The parent fusion attribute type (optional)</param>
+//        /// <returns>A list of fusion attributes types.</returns>
+//        public JsonNetResult _AttributeTypesByParentType(int t, int? p)
+//        {
+//            Trace.TraceInformation("Calling FusionController._AttributeTypesByParentType : t={0};p={1}", t, p);
+
+//            string sql = 
+//@"select	T.ID,
+//			T.Name,
+//			C.IsLeaf
+//from	    FusionAttributeType T
+//			cross apply (
+//						SELECT	case 
+//									when COUNT(1) > 0 then CAST(0 as bit) 
+//									else 1
+//								end as IsLeaf 
+//						FROM	FusionAttributeType 
+//						where	ParentID = T.ID
+//						) C
+//	where	T.FusionTypeID = @t";
+//            sql += (p.HasValue) ? " and T.ParentID = @p" : " and T.ParentID is null";
+//            sql +=  " order by T.Name";
+
+//            var query = Company.Query<dynamic>(sql, new { t = t, p = p });
+
+//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
+
+        /// <summary>
+        /// Gets ownership and promotion rule counts by a specific fusion configuration.
+        /// </summary>
+        /// <param name="id">The Configuration ID</param>
+        /// <returns></returns>
         public JsonResult GetFusionRuleStatistics(int id)
         {
             var model = new

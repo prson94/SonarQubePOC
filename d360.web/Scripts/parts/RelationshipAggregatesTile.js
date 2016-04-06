@@ -13,15 +13,6 @@
         var html = "";
         html += "<header>Relationships<div id='" + toolsControlID + "'></div></header>";
         html += "<div style='margin-left: 5px' id='" + gridControlID + "'></div>";
-        //html += "<table style='width: 100%'>";//"<div class='row'>";
-        //html += "<tr>";
-        //html += "<td style='width: 50%'><div id='AggregateTileChart1' class='col s6' style='margin: auto; width: 100%'></div></td>";
-        //html += "<td style='width: 50%'><div id='AggregateTileChart2' class='col s6' style='margin: auto; width: 100%'></div></td>";
-        //html += "</tr>";
-        //html += "<tr>";
-        //html += "<td colspan='2' style='margin: auto; width: 100%'><div id='AggregateTileChart3' class='col s12' style='width: 60%'></div></td>";
-        //html += "</tr>";
-        //html += "</table>";//"</div>";
 
         parent.html(html);
 
@@ -83,71 +74,6 @@
                 });
                 gridHtml += '</div>';
                 collectionHtml += gridHtml;
-
-
-
-                //    var cht = $('#AggregateTileChart' + this);
-                //    if (nodes.length <= 0) {
-                //        cht.css('height', '40px');
-                //        cht.html('No data to display');
-                //    }
-                //    else {
-                //        var groupName = nodes[0].GroupName;
-                //        var critical = (nodes[0].Group == "2" && nodes[0].Type == "ArtifactType");
-                //        cht.css('height', '300px');
-                //        cht.jqxChart({
-                //            source: nodes,
-                //            title: groupName,
-                //            description: '',
-                //            enableAnimations: false,
-                //            showLegend: true,
-                //            showBorderLine: false,
-                //            legendLayout : { flow: 'horizontal' },
-                //            //padding: { left: 5, top: 5, right: 5, bottom: 5 },
-                //            //titlePadding: { left: 0, top: 0, right: 0, bottom: 10 },
-                //            seriesGroups: [
-                //                {
-                //                    useGradientColors: false,
-                //                    type: 'pie',
-                //                    showLegend: true,
-                //                    enableSeriesToggle: true,
-                //                    series: [
-                //                        {
-                //                            dataField: 'Count',
-                //                            displayText: 'TypeName',
-                //                            showLabels: true,
-                //                            //labelRadius: 125,
-                //                            labelLinesEnabled: true,
-                //                            labelLinesAngles: true,
-                //                            labelsAutoRotate: false
-                //                            //initialAngle: 0,
-                //                            //radius: 100,
-                //                            //minAngle: 0,
-                //                            //maxAngle: 180,
-                //                            //centerOffset: 0,
-                //                            //offsetY: 180,
-                //                            //formatFunction: function (value, itemIndex, serie, group) {
-                //                            //    return value;
-                //                            //}
-                //                        }
-                //                    ],
-                //                    click: function (e) {
-                //                        var clickBaseUri = '/Relations/AggregateRelationOverlay?criticalOnly=' + (critical ? 'true' : 'false') + '&';
-                //                        var data = nodes[e.elementIndex];                                    
-                //                        var url = clickBaseUri + 'type=' + type + '&id=' + id + '&targetType=' + data.Type + '&targetID=' + data.TypeID + '&intersectTypeID=' + data.IntersectTypeID;
-                //                        openTileOverlay(url);
-                //                    }
-                //                }
-                //            ]
-                //        });
-                //        cht.jqxChart('addColorScheme', 'myScheme', colors);
-                //        cht.jqxChart('colorScheme', 'myScheme');
-                //        cht.jqxChart('refresh');
-
-                //        $(document).on('resize', function () {
-                //            cht.jqxChart('refresh');
-                //        });
-                //    }
             });
             $(gridControlID).html(collectionHtml);
             $('.kpi-grid').isotope({

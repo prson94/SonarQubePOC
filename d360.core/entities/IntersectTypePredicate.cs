@@ -16,5 +16,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int PredicateID { get; set; }
+
+        public virtual IntersectType IntersectType { get; set; }
+
+        public virtual Predicate Predicate { get; set; }
     }
 }
