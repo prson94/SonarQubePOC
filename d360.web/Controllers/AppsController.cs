@@ -50,5 +50,14 @@ namespace d360.web.Controllers
             ViewBag.ID = id;
             return View();
         }
+
+        [Route("workflowstatus/{workflowID}/")]
+        public ActionResult Workflow(string workflowID)
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("ResourceID", Company.CurrentResourceID);
+            ViewBag.workflowID = workflowID;            
+            return View();
+        }
     }
 }

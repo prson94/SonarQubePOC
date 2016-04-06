@@ -1,0 +1,11 @@
+﻿
+@{
+    ViewBag.Title = "Workflow";
+    Layout = "~/Views/Shared/Apps.cshtml";
+    var workflow = ViewBag.workflowID;    
+}
+<script type="text/javascript">
+    $(function () {
+        window.location.replace('/#/workflow/@workflow/status');
+    })
+</script>

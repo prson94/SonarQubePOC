@@ -327,7 +327,7 @@
             case 4:
                 cols = [
                     {
-                        datafield: "Name", text: "Name", filtertype: 'checkedlist',
+                        datafield: "Name", text: "Name",
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             return previewLinkRenderer('Artifact', data.ArtifactID, data.Url, data.Name);
                         }
