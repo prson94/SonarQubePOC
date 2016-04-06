@@ -39,5 +39,16 @@ namespace d360.web.Controllers
             ViewBag.Phrase = phrase;
             return View();
         }
+
+
+        [Route("artifacts/{typeID:int}/{id:int}/")]
+        public ActionResult Artifacts(int typeID, int id)
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("ResourceID", Company.CurrentResourceID);
+            ViewBag.typeID = typeID;
+            ViewBag.ID = id;
+            return View();
+        }
     }
 }

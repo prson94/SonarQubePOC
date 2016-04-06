@@ -205,6 +205,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Challenge.
+        /// </summary>
+        internal static string Challenge {
+            get {
+                return ResourceManager.GetString("Challenge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to question.
+        /// </summary>
+        internal static string Challenge_Icon {
+            get {
+                return ResourceManager.GetString("Challenge_Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Child Artifact Type.
         /// </summary>
         internal static string ChildArtifactType_Text {

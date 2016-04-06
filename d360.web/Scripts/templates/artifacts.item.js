@@ -82,12 +82,15 @@
                         case contextList.Artifact:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             ObjectStatisticsTile('MicroWidget1', type, id);
-                            ObjectDetail('DetailTile', type, id);
-                            refreshArtifactTitle();
+                            ObjectDetail('DetailTile', type, id);                                                                               
                             break;
                         case contextList.Synonym:
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;
+                        case 'Challenge':                            
+                            setTimeout(function () { ChallengeNotificationTile('ChallengeNotification', id); }, 2000);
+                            $("#Challenge").hide();
+                            break;                        
                     }
                 } catch (e) {
                     logError("artifact.item : SaveAction", e);
@@ -120,6 +123,7 @@
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
                         LineageDiagram('SourcingTile', type, id, false);
                         CertificationNotificationTile('CertificationNotification', id);
+                        ChallengeNotificationTile('ChallengeNotification', id);
 
                         if (json.AllowRelatedArtifacts) {
                             RelatedArtifactsGrid('RelatedArtifactsTile', permissions, json.TypeName, typeID, id);

@@ -33,7 +33,14 @@ namespace d360.workflow
         Description("The workflow that is triggered when an issue is reported."),
         EnumMember(Value = "3")
         ]
-        WorkIssue = 3
+        WorkIssue = 3,
+
+        [
+        Name("Challenge"),
+        Description("The workflow that is triggered when an item is challenged."),
+        EnumMember(Value = "4")
+        ]
+        ChallengeArtifact = 4
     }
 
     [Flags]
@@ -83,6 +90,23 @@ namespace d360.workflow
         Assigned = 3,
         [Name("Closed"), EnumMember(Value = "4")]
         Closed = 4
+    }
+
+
+    public enum ChallengeArtifactSteps
+    {
+        [Name("Collect Relevant Request Information"), EnumMember(Value = "1")]
+        CollectInfo = 1,
+        [Name("Assign Responsible Resources"), EnumMember(Value = "2")]
+        AssignResponsibleResources = 2,
+        [Name("Awaiting Approvals from Assigned Resources"), EnumMember(Value = "3")]
+        AwaitingApprovals = 3,
+        [Name("Received Approvals from Assigned Resources"), EnumMember(Value = "4")]
+        ReceivedApprovals = 4,        
+        [Name("Notification Issued"), EnumMember(Value = "6")]
+        NotificationIssued = 6,
+        [Name("Workflow Complete"), EnumMember(Value = "7")]
+        WorkflowComplete = 7
     }
 
     public class WorkflowTypeInfo

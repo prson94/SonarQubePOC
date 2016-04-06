@@ -352,6 +352,45 @@ from	    Workflow W
 {0} 
 order by    W.DateStarted";
 
+
+
+        public class WorkflowTask4Model : WorkflowTaskBaseModel
+        {
+            public string Issue { get; set; }
+            public int ResourceID { get; set; }
+            public string ResourceName { get; set; }
+            public string ResourceUrl { get; set; }
+            public DateTime DateStarted { get; set; }
+            public string Name { get; set; }
+            public string TypeName { get; set; }
+            public string Url { get; set; }
+            public int ArtifactID { get; set; }
+        }
+
+        string CurrentUserWorkflow4TaskSql =
+@"select		W.ID as WorkflowID,
+		    C.Body as Issue,
+			R.ResourceID,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
+			W.DateStarted,
+		    WR.Activity,
+            A.Name as Name,
+			A.Url as Url,
+            A.ObjectTypeName as TypeName,
+            A.ObjectID as ArtifactID
+from	    Workflow W
+		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
+			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/RequestingResourceID)[1]', 'int')
+            inner join cache.ObjectDetails A on A.[Object] = 'Artifact' and A.ObjectID = W.Data.value('(fields/ArtifactID)[1]', 'int')
+			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
+											    and W.DateCompleted is null
+											    and WR.ResourceID = @r
+												and W.WorkflowType = 4
+                                                and WR.IsComplete = 0 
+{0} 
+order by    W.DateStarted";
+
         #endregion
 
         void hydrateTasks(List<WorkflowTask> tasks)
@@ -617,6 +656,19 @@ order by    W.DateStarted";
                         model3.ActivityDescription = model3.Activity.GetReportTileTypeDescription();
 
                         return Request.CreateResponse(HttpStatusCode.OK, model3);
+                    }
+                    break;
+                case WorkflowType.ChallengeArtifact:
+                    sql = string.Format(CurrentUserWorkflow4TaskSql, whereSuffix);
+                    var model4 = Company.Query<WorkflowTask4Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
+                    if (model4 != null)
+                    {
+                        model4.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
+                        model4.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
+                        model4.ActivityName = model4.Activity.GetActivityTypeDisplayName();
+                        model4.ActivityDescription = model4.Activity.GetReportTileTypeDescription();
+
+                        return Request.CreateResponse(HttpStatusCode.OK, model4);
                     }
                     break;
             }

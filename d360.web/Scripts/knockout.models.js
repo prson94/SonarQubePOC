@@ -3572,10 +3572,11 @@ var BoardViewModel = function (initialDaysToLookBack) {
         //{ Text: 'Governance', Value: 3 },
         { Text: 'Issues', Value: 5 },
         //{ Text: 'System Notifications', Value: 1 },
-        { Text: 'Red Flag Alerts', Value: 7 }
+        { Text: 'Red Flag Alerts', Value: 7 },
         //{ Text: 'Relationships', Value: 4 },
         //{ Text: 'Tasks', Value: 6 },
         //{ Text: 'Questions', Value: 9 }
+        { Text: 'Challenges', Value: 9 }
     ]);
 
     self.selectedDateFilterOption = ko.observable(initialDaysToLookBack === undefined ? -7 : initialDaysToLookBack);

@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="activities\AddIssueBookmark.cs" />
+    <Compile Include="activities\GetRequestingResourceObjectById.cs" />
     <Compile Include="activities\TagUserOnCommentThread.cs" />
     <Compile Include="activities\BuildIssueRequestXml.cs" />
     <Compile Include="activities\GetResourceByID.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="enums\WorkflowType.cs" />
     <Compile Include="models\ApprovalFormModel.cs" />
     <Compile Include="models\CertifyArtifactRequest.cs" />
+    <Compile Include="models\ChallengeRequest.cs" />
     <Compile Include="models\NewArtifactRequest.cs" />
     <Compile Include="models\CertificationApproval.cs" />
     <Compile Include="models\IssueBookmarkModel.cs" />
@@ -191,6 +193,12 @@
   </ItemGroup>
   <ItemGroup>
     <XamlAppDef Include="workflows\WorkIssue\WorkIssue_v1002.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </XamlAppDef>
+  </ItemGroup>
+  <ItemGroup>
+    <XamlAppDef Include="workflows\Challenge\ChallengeArtifact_v1000.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </XamlAppDef>

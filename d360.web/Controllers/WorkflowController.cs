@@ -50,6 +50,17 @@ namespace d360.web.Controllers
             public int Count { get; set; }
         }
 
+        public class ChallengeNotificationModel
+        {
+            public string Reason { get; set; }
+            public Guid WorkflowID { get; set; }
+            public int  ResourceID{ get; set; }
+            public string ResourceName { get; set; }
+            public string ResourceUrl { get; set; }
+            public int AssignedResourceID { get; set; }
+            public DateTime DateStarted { get; set; }
+        }
+
         #endregion
 
         #region Partials
@@ -75,6 +86,34 @@ namespace d360.web.Controllers
         #endregion
 
         #region Json
+
+        public JsonNetResult ChallengeNotification(int id)
+        {
+            var sql = @"select top 1
+			W.ID as WorkflowID,
+            W.Data.value('(fields/Reason)[1]', 'nvarchar(500)')  as Reason,            
+            R.ResourceID as ResourceID,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
+            RES.ResourceID as AssignedResourceID,
+            W.DateStarted as DateStarted
+from		Workflow W            			                
+            inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/RequestingResourceID)[1]', 'int')            
+            left outer join WorkflowResource RES on RES.WorkflowID = W.ID and RES.ResourceID = @res
+where
+            W.WorkflowType = 4
+		    and W.Data.exist('/fields/ArtifactID[text() = sql:variable(""@id"")]') = 1
+            and W.DateCompleted is null                
+order by	W.DateStarted desc";
+            var workflowInfo = Company.Query<ChallengeNotificationModel>(sql, new { id = id, res = Company.CurrentResourceID }).FirstOrDefault();
+            if (workflowInfo != null)
+            {                
+                return new JsonNetResult { Formatting = Newtonsoft.Json.Formatting.None, Data = workflowInfo };
+            }
+            else {
+                return new JsonNetResult { Formatting = Newtonsoft.Json.Formatting.None, Data = new { } };
+            }
+        }
 
         public JsonNetResult CertificationNotification(int id)
         {

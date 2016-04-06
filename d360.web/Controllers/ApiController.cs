@@ -805,24 +805,7 @@ namespace d360.web.Controllers
                                 
                             }
                         }
-                        //if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
-                        //{
-                        //    var synonymTypes = Company.GetUnusedSynonymTypesByObject(type, id).ToList();
-                        //    if (synonymTypes.Count > 0)
-                        //    {
-                        //        var addSynonymItem = new PageActionItem { Title = "Synonyms" };
-                        //        foreach (var s in synonymTypes)
-                        //        {
-                        //            addSynonymItem.Items.Add(new PageActionItem { Context = ContextList.Synonym, Icon = Resources.Actions.SynonymType_Icon, Title = s.Name, Uri = string.Format("/form/AddSynonym?type={0}&id={1}&synonymTypeID={2}", type.ToString(), id, s.ID) });
-                        //        }
-                        //        addItem.Items.Add(addSynonymItem);
-                        //    }
-                        //}
-
-                        //if (hasPermission(permissions, Claim.Create, ClaimObject.Governance))
-                        //{
-                        //    loadResponsiblityTypeAddMenu(type, id, addItem, false);
-                        //}
+                        
 
                         if (addItem.Items.Count > 0)
                             list.Add(addItem);
@@ -838,8 +821,7 @@ namespace d360.web.Controllers
                             }
                         }
 
-                        //list.Add(new PageActionItem { Context = ContextList.Intersect, Icon = Resources.Actions.ViewRelationships_Icon, Title = Resources.Actions.ViewRelationships, Uri = string.Format("/relations/RelationOverlay?type={0}&id={1}", type.ToString(), id) });
-
+                        
                         if (hasPermission(permissions, Claim.Update, ClaimObject.Root))
                         {
                             list.Add(new PageActionItem { Context = ContextList.Artifact, Icon = Resources.Actions.Edit_Icon, Title = Resources.Actions.Edit, Uri = string.Format("/form/artifacts/{0}/{1}/edit", artifact.ArtifactTypeID, id) });
@@ -850,7 +832,18 @@ namespace d360.web.Controllers
 
                         list.Add(new PageActionItem { Context = followingParent ? "nullform" : ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = followText, Uri = followingParent ? "#" : string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id), Enabled = !followingParent ? true : false });
                         list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
-                        //list.Add(otherActionsItem);
+                        
+                        var challengeExistsSql = @"select count(W.ID)
+                                                        from Workflow W
+                                                        where
+                                                            W.WorkflowType = 4
+                                                            and W.Data.exist('/fields/ArtifactID[text() = sql:variable(""@id"")]') = 1
+                                                            and W.DateCompleted is null";
+
+                        if (Company.Query<int>(challengeExistsSql, new { id = artifact.ID }).FirstOrDefault() <= 0)
+                        {
+                            list.Add(new PageActionItem { Context = "Challenge", Icon = Resources.Actions.Challenge_Icon, Title = Resources.Actions.Challenge, Uri = $"/form/Challenge?id={id}" });
+                        }
                     }
                     break;
                     #endregion
@@ -1533,6 +1526,7 @@ namespace d360.web.Controllers
 
             return list;
         }
+
 
         #endregion
 
@@ -5758,7 +5752,7 @@ order by D.Name, S.Name");
 
             items.Add(new CountModel { Name = Resources.Core.CommentType_DataEvent, Total = getCommentCategoryCount(counts, CommentType.DataEvent), TotalUri = $"{socialUri}?type={(int)CommentType.DataEvent}" });
 
-            //items.Add(new CountModel { Name = Resources.Core.CommentType_Question, Total = getCommentCategoryCount(counts, CommentType.Question), TotalUri = $"{socialUri}?type={(int)CommentType.Question}" });
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Challenge, Total = getCommentCategoryCount(counts, CommentType.Challenge), TotalUri = $"{socialUri}?type={(int)CommentType.Challenge}" });
 
             return items.OrderBy(x => x.Name);
         }

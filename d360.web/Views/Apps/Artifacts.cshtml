@@ -1,0 +1,12 @@
+﻿
+@{
+    ViewBag.Title = "Artifacts";
+    Layout = "~/Views/Shared/Apps.cshtml";
+    var type = ViewBag.typeID;
+    var id = ViewBag.ID;
+}
+<script type="text/javascript">
+    $(function () {
+        window.location.replace('/#/artifacts/@type/@id');
+    })
+</script>

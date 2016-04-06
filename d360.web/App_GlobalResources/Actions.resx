@@ -267,4 +267,10 @@
   <data name="ViewRelationships_Icon" xml:space="preserve">
     <value>retweet</value>
   </data>
+  <data name="Challenge" xml:space="preserve">
+    <value>Challenge</value>
+  </data>
+  <data name="Challenge_Icon" xml:space="preserve">
+    <value>question</value>
+  </data>
 </root>

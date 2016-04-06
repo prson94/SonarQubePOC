@@ -12,6 +12,7 @@ namespace d360.core.enums
         Issue = 5,
         Task = 6,
         RedFlag = 7,
-        DataEvent = 8
+        DataEvent = 8,
+        Challenge = 9
     }
 }

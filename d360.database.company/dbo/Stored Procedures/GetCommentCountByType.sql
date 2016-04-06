@@ -59,7 +59,8 @@ BEGIN
 					SUM(CASE WHEN CommentTypeID = 5 THEN 1 ELSE 0 END) as Issues,
 					SUM(CASE WHEN CommentTypeID = 6 THEN 1 ELSE 0 END) as Tasks,
 					SUM(CASE WHEN CommentTypeID = 7 THEN 1 ELSE 0 END) as [Red Flags],
-					SUM(CASE WHEN CommentTypeID = 8 THEN 1 ELSE 0 END) as [Data Events]
+					SUM(CASE WHEN CommentTypeID = 8 THEN 1 ELSE 0 END) as [Data Events],
+					SUM(CASE WHEN CommentTypeID = 9 THEN 1 ELSE 0 END) as [Challenges]
 
 		from	P
 				left join reporting.Global_Resource R on R.ResourceID = P.CreatingResourceID
@@ -70,7 +71,7 @@ BEGIN
 					UNPIVOT
 				(
 					[Count]
-					for [CommentTypeName] in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events])
+					for [CommentTypeName] in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events],[Challenges])
 				) u
 	join
 	(
@@ -82,12 +83,13 @@ BEGIN
 				5 as Issues,
 				6 as Tasks,
 				7 as [Red Flags],
-				8 as [Data Events]
+				8 as [Data Events],
+				9 as [Challenges]
 				) t2
 			unpivot
 				(
 					CommentType
-					for CommentTypeName in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events])
+					for CommentTypeName in ([All], Discussions, Issues, Tasks, [Red Flags], [Data Events],[Challenges])
 				) u2
 		) i on i.CommentTypeName = u.CommentTypeName
 		

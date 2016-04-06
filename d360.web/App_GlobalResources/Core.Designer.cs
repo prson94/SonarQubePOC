@@ -61,6 +61,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Challenge.
+        /// </summary>
+        internal static string CommentType_Challenge {
+            get {
+                return ResourceManager.GetString("CommentType_Challenge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Data Event.
         /// </summary>
         internal static string CommentType_DataEvent {

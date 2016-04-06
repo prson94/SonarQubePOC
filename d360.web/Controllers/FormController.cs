@@ -436,6 +436,17 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        /// <param name="id">ID</param>
+        public JsonResult Artifact_Challenge(int id)
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Reason", Name = "Reason", FieldType = DataType.Html.ToString() });
+            
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
         public JsonResult Artifact_SuggestFields(int at, int p)
@@ -656,6 +667,90 @@ namespace d360.web.Controllers
             }
         }
 
+
+        public ActionResult Challenge(int id)
+        {
+            var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
+            if (artifact == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = "Challenge",
+                FieldUri = string.Format("/form/Artifact_Challenge?id={0}", id),
+                FormTitle = string.Format("Challenge {0}", artifact.Name),
+                FormDescription = string.Format("This {0} challenge will be sent to the owner for further review.", artifact.ArtifactType.Name.ToLower()),
+                FormUri = "/form/Challenge",
+                FormMethod = "POST"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult Challenge(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("artifact");
+
+                int id = parseIntField(form, "ID");
+                string challengeReason = parseTextField(form, "Reason");
+
+                var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
+
+                if (artifact == null) throw new NotFoundException("artifact");
+
+                var relations = new List<CommentRelation>();
+                var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
+                var comment = new Comment();
+
+                relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
+
+                comment.OwnerObjectType = SystemObjects.Resource.ToString();
+                comment.OwnerObjectID = Company.CurrentResourceID;
+                comment.CommentTypeID = CommentType.Challenge;
+                comment.Body = challengeReason;
+
+                //add relation to current artifact
+                relations.Add(new CommentRelation { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id, Date = DateTime.UtcNow });
+
+                var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
+
+                if (dtl != null)
+                {
+                    var processor = new Processor();
+                    var dictionary = new Dictionary<string, object>();
+                    dictionary.Add("CompanyID", Company.CurrentCompanyID);
+                    dictionary.Add("requestInfo",
+                        new ChallengeRequest
+                        {
+                            ArtifactID = id,
+                            ArtifactTypeID = artifact.ArtifactTypeID,
+                            RequestingResourceID = Company.CurrentResourceID,
+                            ArtifactTypeName = artifact.ArtifactType.Name,
+                            Name = artifact.Name,
+                            Reason = challengeReason,
+                            CommentID = dtl.ID
+                        }
+                   );
+
+                    processor.CreateNewWorkflowInstance(WorkflowVersionMap.ChallengeArtifact_vCurrent, dictionary);
+                }
+
+                return jsonSuccess("Request successfully created.", "", form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         public ActionResult RequestCertification(int id)
         {
             var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
@@ -672,7 +767,7 @@ namespace d360.web.Controllers
 
             return PartialView("EditableForm", model);
         }
-
+        
         [ValidateHttpAntiForgeryToken]
         [HttpPost]
         public JsonResult RequestCertification(FormCollection form)

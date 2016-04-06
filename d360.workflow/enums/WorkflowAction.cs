@@ -10,6 +10,7 @@ namespace d360.workflow
     {
         SuggestNewArtifact = 1,
         CertifyArtifact = 2,
-        WorkIssue = 3
+        WorkIssue = 3,
+        ChallengeArtifact = 4
     }
 }
