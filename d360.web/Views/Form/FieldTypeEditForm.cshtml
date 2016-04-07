@@ -22,8 +22,7 @@
     <div class="clear"></div>
     <div class="form-instructions">
         Modify your field using the form below.  There are many types of fields from Simple Text and HTML to Lookups and Dates.
-        <div class="form-instructions-error" data-bind="visible: FormInvalid">
-            Please check all fields below indicated with a red *.
+        <div class="form-instructions-error" data-bind="visible: FormInvalid, text: FormValidationMessage">
         </div>
     </div>
     <div id="progress" data-bind="visible: InProgress"><i class="fa fa-spinner fa-spin fa-4x"></i></div>
@@ -67,7 +66,7 @@
 
     <div class="row" data-bind="visible: LookupDataTypeSelected">
         <div class="col s6">
-            <div id='LookupObjectTip' class="FieldNameRequired">@(Resources.FieldInfo.ListType_Name)</div>
+            <div id='LookupObjectTip' class="FieldNameRequired">@(Resources.FieldInfo.ListType_Name)<span class="FieldNameError" data-bind="visible: LookupObjectInvalid">*</span></div>
             <div data-bind="lookupObjectFilteredDropdown, jqxDropDownList: {
                  width: field_width,
                  theme: theme,
@@ -79,7 +78,7 @@
                  searchMode: 'containsignorecase' }"></div>
         </div>
         <div class="col s3">
-            <div id='LookupDisplayFormatTip' class="FieldNameRequired">@(Resources.FieldInfo.ListDisplayFormat_Name)</div>
+            <div id='LookupDisplayFormatTip' class="FieldNameRequired">@(Resources.FieldInfo.ListDisplayFormat_Name)<span class="FieldNameError" data-bind="visible: LookupDisplayFormatInvalid">*</span></div>
             <input type="text" data-bind="jqxInput: {width: field_width, height: field_height, theme: theme, value: LookupDisplayFormat}" />
         </div>
         <div class="col s3">
@@ -89,6 +88,7 @@
                  theme: theme,
                  filterable: false,
                  source: TokenOptions,
+                 selectedIndex: TokenOptionIndex,
                  displayMember: 'title',
                  valueMember: 'value'
                  }"></div>
@@ -191,6 +191,7 @@
                                  filterable: false,
                                  disabled: DisplayFieldsDisabled,
                                  source: DisplayFieldOptions,
+                                 selectedIndex: DisplayFieldOptionsIndex,
                                  checkboxes: true,
                                  displayMember: 'title',
                                  valueMember: 'value' }"></div>
@@ -463,11 +464,21 @@
         ]);
         self.TargetFusionAttributeTypeOptions = ko.observableArray();
         self.DisplayFieldOptions = ko.observableArray();
-
+        self.DisplayFieldOptionsIndex = ko.observable(-1);
         //#endregion
 
         //#region Internal Methods
 
+
+        self.isValid = function () {
+            if (self.SourceFusionAttributeTypeIndex() == -1)
+                return false;
+            if (self.ReferenceTypeIndex() == -1)
+                return false;
+            if (self.DisplayFields().length < 1)
+                return false;
+            return true;
+        };
         var loadDisplayFields = function(id, existingItems) {
             return $.getJSON('/form/FieldType_FusionLookup_DisplayFields', { id: id }, function(items) {
                 if (existingItems) {
@@ -642,6 +653,17 @@
 
         //#region Internal Methods
 
+
+        self.isValid = function () {
+            if (self.IntersectTypeIndex() == -1)
+                return false;
+            if (self.ReferenceTypeIndex() == -1)
+                return false;
+            if (self.DisplayFields().length < 1)
+                return false;
+            return true;
+        }
+
         var loadChildIntersects = function(intersectTypeID) {
             return $.getJSON(
                 '/form/FieldType_RelationLookup_ChildIntersectTypes',
@@ -791,7 +813,7 @@
         self.Object = ko.observable(data.Object);
         self.ObjectID = ko.observable(data.ObjectID);
 
-        self.Category = ko.observable(data.Category);
+        self.Category = ko.observable(data.Category || "");
         self.FriendlyName = ko.observable(data.FriendlyName || "");
         self.ApiName = ko.observable(data.ApiName || "");
         self.IsListable = ko.observable(data.IsListable || false);
@@ -805,7 +827,7 @@
 
         self.LookupObjectIndex = ko.observable(data.LookupObjectIndex || -1);
         self.LookupObject = ko.observable(data.LookupObject || '');
-        self.LookupDisplayFormat = ko.observable();
+        self.LookupDisplayFormat = ko.observable("");
 
         self.Pattern = ko.observable(data.Pattern || "");
         self.MinimumLength = ko.observable(data.MinimumLength || 0);
@@ -823,6 +845,7 @@
         //#region Validation Properties
 
         self.FormInvalid = ko.observable(false);
+        self.FormValidationMessage = ko.observable('');    
 
         self.FriendlyNameInvalid = ko.pureComputed(function () {
             return (self.FriendlyName() === "");
@@ -835,6 +858,59 @@
         self.DataTypeInvalid = ko.pureComputed(function () {
             return (self.DataType() === "");
         }, self);
+
+        self.LookupObjectInvalid = ko.pureComputed(function () {
+            return (self.LookupObjectIndex() == -1);
+        }, self);
+
+        self.LookupDisplayFormatInvalid = ko.pureComputed(function () {
+            return (self.LookupDisplayFormat() === "");
+        }, self);
+
+        self.validateForm = function () {
+            self.FormInvalid(false);
+            self.FormValidationMessage('Please check all fields below indicated with a red *.');
+
+            if (self.FriendlyNameInvalid() || self.ApiNameInvalid() || self.DataTypeInvalid()) {
+                self.FormInvalid(true);
+                return;
+            }
+
+            switch(self.DataType())
+            {
+                case "Lookup":
+                    if (self.LookupObjectInvalid() || self.LookupDisplayFormatInvalid() ) {
+                        self.FormInvalid(true);
+                        return;
+                    }
+                    break;
+                case "FusionLookup":
+                    if (self.FusionItems().length < 1) {
+                        self.FormValidationMessage('Please add at least one fusion item.');
+                        self.FormInvalid(true);
+                    } else {
+                        for(var i = 0; i < self.FusionItems().length; i++) {
+                            if (!self.FusionItems()[i].isValid()) {
+                                self.FormInvalid(true);
+                                self.FormValidationMessage('One or more fusion items is invalid. Please make sure all required fields are selected.');
+                            }
+                        }
+                    }
+                    break;
+                case "RelationLookup":
+                    if (self.RelationItems().length < 1) {
+                        self.FormValidationMessage('There is no relation item available for this field.');
+                    } else {
+                        for(var i = 0; i < self.RelationItems().length; i++) {
+                            if (!self.RelationItems()[i].isValid()) {
+                                self.FormInvalid(true);
+                                self.FormValidationMessage('The relation item is invalid. Please make sure all required fields are selected.');
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
 
         //#endregion
 
@@ -891,7 +967,7 @@
         self.IntersectTypeOptions = ko.observableArray();
 
         self.TokenOptions = ko.observableArray();
-
+        self.TokenOptionIndex = ko.observable(-1);
         //#endregion
 
         //#region Methods
@@ -901,7 +977,7 @@
             $.getJSON("/form/FieldType_Lookup_Tokens", { type: type, id: id }, function(tokens) {
                 self.TokenOptions.removeAll();
                 self.TokenOptions(tokens);
-                console.log(tokens[0]);
+                //console.log(tokens[0]);
             });
         }
 
@@ -951,7 +1027,7 @@
         };
 
         self.deleteFusionItem = function () {
-            self.RelationItems.remove(this);
+            self.FusionItems.remove(this);
         };
 
         ////self.deleteRelationItem = function () {
@@ -1034,6 +1110,8 @@
                                 if (ftData.RelationItems) {
                                     var list = $.map(ftData.RelationItems, function (item) { return new FieldTypeRelationItemViewModel(item, self); });
                                     self.RelationItems(list);
+                                } else {
+                                    self.RelationItems.push(new FieldTypeRelationItemViewModel({}, self));
                                 }
                             }
                         }).then(function(){
@@ -1049,10 +1127,9 @@
         };
 
         self.save = function () {
-            if (self.FriendlyNameInvalid() || self.ApiNameInvalid() || self.DataTypeInvalid()) {
-                self.FormInvalid(true);
-            }
-            else {
+            self.validateForm();
+
+            if (!self.FormInvalid()) {
                 self.FormInvalid(false);
                 self.InProgress(true);
 
@@ -1164,8 +1241,15 @@
                     dataType: 'json',
                     method: method
                 }).done(function (data, status, xhr) {
-                    amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
-                    amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Field type successfully created.' });
+                    if (data != null) {
+                        if (data.type == 'error') {
+                            amplify.publish("ShowMessage", { type: "error", title: data.title, message: data.message });
+                        } else {
+                            amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
+                            amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Field type successfully created.' });
+                        }
+                    }
+
                 }).fail(function (xhr, status, error) {
                     amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
                 }).always(function (data, status, error) {

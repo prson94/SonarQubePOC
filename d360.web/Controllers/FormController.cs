@@ -4027,6 +4027,8 @@ order by  D.TextPath
                 }
 
                 // Static fields
+                var oldType = ft.Type;
+                
                 ft.Name = model.FieldType.Name;
                 ft.Category = model.FieldType.Category;
                 ft.FriendlyName = model.FieldType.FriendlyName;
@@ -4048,12 +4050,13 @@ order by  D.TextPath
 
                 bool isNew;
 
+                var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
+                var eri = Company.Filter<FieldTypeRelationLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeRelationLookupDisplayFields).FirstOrDefault();
+
                 switch (ft.Type)
                 {
                     case "FusionLookup":
                         #region
-                        var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
-
                         foreach (var fi in model.FusionItems)
                         {
                             val = fi.Validation();
@@ -4144,6 +4147,10 @@ order by  D.TextPath
                             else
                                 Company.Update<FieldTypeFusionLookupDefinition>(efi);
                         }
+
+                        if (oldType == "RelationLookup" && eri != null)
+                            Company.FieldTypeRelationLookupDefinitions.Remove(eri);
+
                         break;
                         #endregion
                     case "Lookup":
@@ -4159,7 +4166,6 @@ order by  D.TextPath
                         #endregion
                     case "RelationLookup":
                         #region
-                        var eri = Company.Filter<FieldTypeRelationLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeRelationLookupDisplayFields).FirstOrDefault();
                         isNew = false;
                         if (model.RelationItem != null)
                         {
@@ -4181,8 +4187,9 @@ order by  D.TextPath
                                     IntersectTypeID = model.RelationItem.IntersectType,
                                     ReferenceType = model.RelationItem.ReferenceType,
                                     HideHeader = model.RelationItem.HideHeader,
-                                    HideFooter = model.RelationItem.HideFooter
-                                };
+                                    HideFooter = model.RelationItem.HideFooter,
+                                    FieldTypeRelationLookupDisplayFields = new List<FieldTypeRelationLookupDisplayField>()
+                            };
                             }
                             else
                             {
@@ -4197,7 +4204,7 @@ order by  D.TextPath
                             {
                                 // Add those that do not yet exist.
                                 foreach (var df in model.RelationItem.DisplayFields)
-                                {
+                                {    
                                     if (!eri.FieldTypeRelationLookupDisplayFields.Any(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName))
                                     {
                                         eri.FieldTypeRelationLookupDisplayFields.Add(new FieldTypeRelationLookupDisplayField { FieldTypeRelationLookupDefinitionID = eri.ID, FieldTypeID = df.FieldTypeID, FieldTypeName = df.FieldTypeName });
@@ -4240,8 +4247,22 @@ order by  D.TextPath
                                 ft.FieldTypeRelationLookupDefinitions.Remove(eri);
                             }
                         }
+
+                        if (oldType == "FusionLookup" && defs.Count != 0)
+                        {
+                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
+                        }
                         break;
                         #endregion
+                }
+                
+                //clean up if switching from FusionLookup/RelationLookup to a different type
+                if ((oldType == "FusionLookup" || oldType == "RelationLookup") && (ft.Type != "FusionLookup" && ft.Type != "RelationLookup"))
+                {
+                    if (defs.Count != 0)
+                        Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
+                    if (eri != null)
+                        Company.FieldTypeRelationLookupDefinitions.Remove(eri);
                 }
 
                 Company.Update<FieldType>(ft);
