@@ -3996,7 +3996,7 @@ function ArtifactFiltersViewModel(columns) {
     self.clearFilters = function () {
         self.Filters([]);
         if (self.Columns().length > 0) {
-            self.Filters.push(new GridFilterItemViewModel(self.Columns()));
+            self.Filters.push(new GridFilterItemViewModel(self.Columns(),0));
         }
     };
 
@@ -4032,7 +4032,7 @@ function ArtifactFiltersViewModel(columns) {
     };
 
     if (self.Columns().length > 0) {
-        self.Filters.push(new GridFilterItemViewModel(columns));
+        self.Filters.push(new GridFilterItemViewModel(columns,0));
     }
     
     return self;
