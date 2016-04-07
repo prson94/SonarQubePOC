@@ -62,9 +62,9 @@
                 <div class="clearfix"></div>
             </div>
         </div>
-        <div id="ViewLineage" class="tile" style="display:none; margin-top:20px">
+        @*<div id="ViewLineage" class="tile" style="display:none; margin-top:20px">
             <div id="TreeGridLineage"></div>
-        </div>
+        </div>*@
     </div>
 </div>
 <div id="TreeGridRelationshipEditor"></div>
@@ -299,14 +299,14 @@
 
                 var addMenuItem = { html: '<span>Add Relationships</span>', items: data };
                 var items = [
-                    addMenuItem,
+                    addMenuItem
                     //{ html: '<span data-a="Source">Add Source</span>' },
-                    {
-                        html: '<span>Views</span>', items: [
-                            { html: '<span data-a="Relationships">All Relationships</span>' },
-                            { html: '<span data-a="Lineage">Lineage</span>' }
-                        ]
-                    }
+                    //,{
+                    //    html: '<span>Views</span>', items: [
+                    //        { html: '<span data-a="Relationships">All Relationships</span>' }
+                    //        ,{ html: '<span data-a="Lineage">Lineage</span>' }
+                    //    ]
+                    //}
                     //{
                     //    html: '<span>Reports</span>', items: [
                     //        { html: 'Sample Report' }
@@ -353,11 +353,11 @@
                                     $('#ViewNonLineage').show();
                                     $('#ViewLineage').hide();
                                     break;
-                                case 'Lineage':
-                                    $('#ViewLineage').show();
-                                    $('#ViewNonLineage').hide();
-                                    LineageDiagram('TreeGridLineage', type, typeID, false);
-                                    break;
+                                //case 'Lineage':
+                                //    $('#ViewLineage').show();
+                                //    $('#ViewNonLineage').hide();
+                                //    LineageDiagram('TreeGridLineage', type, typeID, false);
+                                //    break;
                             }
                         }
                     }
@@ -426,11 +426,11 @@
                     $('#TechnicalRelationAction').html(html);
                 });
             }
-            else if ($icon.hasClass('lineage')) {
-                $('#Lineage').show();
-                setBreadCrumb('#Lineage', row);
-                LineageDiagram('DiagramTile', 'Intersect', row.IntersectID, null);
-            }
+            //else if ($icon.hasClass('lineage')) {
+            //    $('#Lineage').show();
+            //    setBreadCrumb('#Lineage', row);
+            //    LineageDiagram('DiagramTile', 'Intersect', row.IntersectID, null);
+            //}
         }
     }
 

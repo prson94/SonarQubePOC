@@ -1681,14 +1681,14 @@
         if (readonly) return;
 
         $('#' + controlID_ribbon_save).jqxButton({ disabled: true });
-        // $('#' + controlID_ribbon_save_spinner).show();
 
         var nodeChanges = getNodeChanges();
         var linkChanges = getLinkChanges();
 
         var flagError = false;
         var errors = "";
-        var processCount = 0;
+
+        var promises = [];
 
         for (var i = 0; i < nodeChanges.deleted.length; i++) {
             var node = nodeChanges.deleted[i];
@@ -1697,22 +1697,20 @@
                 targetID: id,
                 id: node.intersectMapId
             };
-            processCount++;
-            $.ajax({
-                async: false,
+
+            promises.push($.ajax({
+                async: true,
                 method: 'DELETE',
                 url: '/relations/' + data.target + '/' + data.targetID + '/sources/' + data.id
             }).done(function (data, status, xhr) {
                 if (!data.success) {
                     flagError = true;
                     errors += data.message;
-                    processCount--;
                 }
             }).fail(function (xhr, status, error) {
                 flagError = true;
                 errors += data.message;
-                processCount--;
-            });
+            }));
 
         }
 
@@ -1732,28 +1730,24 @@
                 predicateID: link.predicateId
             };
 
-            processCount++;
-            $.ajax({
+            promises.push($.ajax({
                 url: '/Relations/sources',
-                async: false,
+                async: true,
                 data: JSON.stringify(source),
                 processData: false,
                 type: 'POST',
                 contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (data) {
-                    if (!data.success) {
-                        flagError = true;
-                        errors += data.message;
-                        processCount--;
-                    }
-                },
-                failure: function (data) {
+                dataType: "json"
+            }).done(function (data) {
+                if (!data.success) {
                     flagError = true;
                     errors += data.message;
-                    processCount--;
                 }
-            });
+            }).fail(function (data) {
+                flagError = true;
+                errors += data.message;
+            }));
+
         }
 
         for (var i = 0; i < linkChanges.modified.length; i++) {
@@ -1764,29 +1758,26 @@
 
             if (data.intersectMapID == null || data.predicateID == null)
                 continue;
-            processCount++;
-            $.ajax({
+
+            promises.push($.ajax({
                 url: '/relations/update/' + data.intersectMapID + '/' + data.predicateID,
-                async: false,
-                success: function (data) {
-                    processCount--;
-                },
-                failure: function (data) {
-                    flagError = true;
-                    processCount--;
-                }
-            });
+                async: true
+            }).fail(function () {
+                flagError = true;
+            }));
+
         }
 
-        if (flagError) {
-            amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: xhr.statusText + xhr.responseText, success: false });
-        } else {
-            amplify.publish("SourceSave");
-            deletedNodes = [];
-            populateDiagram();
-            $('#' + controlID_ribbon_save_spinner).hide();
-        }
-
+        $.when.apply($, promises).done(function () {
+            if (flagError) {
+                amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: xhr.statusText + xhr.responseText, success: false });
+            } else {
+                amplify.publish("SourceSave");
+                deletedNodes = [];
+                populateDiagram();
+                $('#' + controlID_ribbon_save_spinner).hide();
+            }
+        });
     }
 
     //#endregion
@@ -1867,6 +1858,12 @@
             switch (saveActionEventData.context) {
                 case contextList.SourceToTarget:
                     populateDiagram();
+                    break;
+                case 'sourcemapping':
+                    //populateDiagram();
+                    break;
+                case 'sourcerule':
+                    //populateDiagram();
                     break;
             }
         } catch (e) {

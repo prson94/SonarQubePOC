@@ -1362,6 +1362,7 @@ function SourceToTargetMappingModel(data, permissions) {
             });
         }
 
+
         data = {
             focalID: self.ObjectID(),
             focal: self.Object(),
@@ -1370,7 +1371,7 @@ function SourceToTargetMappingModel(data, permissions) {
             targetID: self.TargetID(),
             target: self.Target(),
             rules: rules
-        }
+        };
 
         if (error) {
             self.IsLoading(false);
@@ -1384,6 +1385,7 @@ function SourceToTargetMappingModel(data, permissions) {
                     console.log(data.message);
                     self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the source rules.</span>');
                     self.LoadRules();
+                    amplify.publish("SaveAction", { context: 'sourcemapping' });
                 } else {
                     self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
                 }
@@ -1738,6 +1740,7 @@ function HierarchySourceRuleModel(data, permissions) {
             self.IsSaving(false);
             if (!data.error) {
                 self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
+                amplify.publish("SaveAction", { context: 'sourcerule' });
             } else {
                 self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
                 console.log(data.message);
@@ -1797,20 +1800,6 @@ function HierarchyPanelViewModel(data, permissions) {
 
     }
 
-    //self.RadioAddChecked.subscribe(function () {
-    //    if (self.RadioAddChecked() == true) {
-    //        self.Mode('add');
-    //        self.SelectedRule(self.NewRule());
-    //    } else {
-    //        self.Mode('edit');
-    //        if (self.SelectedRuleIndex() < 0)
-    //            self.SelectedRuleIndex(0);
-    //        //force data to reload when switching back to edit mode
-    //        self.SelectedRuleIndex.valueHasMutated();
-    //        self.SelectedItemIndex.valueHasMutated();
-    //    }
-    //});
-
     self.AddSourceRule = function () {
         var data = {
             Name: 'New Rule',
@@ -1825,7 +1814,6 @@ function HierarchyPanelViewModel(data, permissions) {
         self.SelectedRule(newRule);
         self.SourceRules.push(newRule);
         self.SelectedRuleIndex(self.SourceRules().length - 1);
-        //self.Mode('add');
     }
 
 
@@ -2062,13 +2050,10 @@ function HierarchyPanelViewModel(data, permissions) {
 
     self.AfterLoad = function () {
         if (self.SourceRules().length >= 1) {
-            //self.RadioEditChecked(true);
             self.SelectRule(self.SourceRules()[0]);
             self.SelectedRuleIndex(0);
             self.HasSourcesOrRules(true);
         } else {
-            //self.SelectRule(self.NewRule());
-            //self.RadioAddChecked(true);
             self.HasSourcesOrRules(true);
         }
         if (self.Sources().length < 1 && self.SourceRules().length < 1) {
