@@ -921,6 +921,7 @@
                 <!--<span style="width:100%;display:inline-block;font-size:0;line-height:0;"></span>-->
             </div>
             <!-- /ko-->
+            <!-- ko if: ShowSearch -->
             <div style="white-space: nowrap;">
                 <div style="width:100%;position:relative;display:inline-block;">
                     <input data-bind="value: searchFilter,valueUpdate:'afterkeydown'" type="text" placeholder="Search for keyword" style="display:inline-block;width:100%;line-height:1.5;padding:2px;" />
@@ -929,6 +930,7 @@
                     <!-- <button style="display:inline; float:right;  width:auto; margin: 8px 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: filterComments">Search</button>-->
                 </div>
             </div>
+            <!-- /ko-->
         </div>
         <div class="Board-Spacer"></div>
 

@@ -144,10 +144,12 @@ namespace d360.web.Controllers.Services
         [ValidateHttpAntiForgeryToken]
         [HttpPost, Route("counts")]
         public List<CommentCount> GetCommentCounts(CommentRequestData pageData)
-        {
-          List<CommentCount> counts = new List<CommentCount>();
+        {            
+            List<CommentCount> counts = new List<CommentCount>();
             if (!string.IsNullOrEmpty(pageData.ObjectType) && pageData.ObjectID.HasValue)
             {
+                if (pageData.ObjectType.ToUpper() == "COMMENT") return null;
+
                 counts = Company.GetCommentCountByType((SystemObjects)Enum.Parse(typeof(SystemObjects), pageData.ObjectType), pageData.ObjectID.Value, pageData.DateFilter, pageData.SearchFilter).ToList();
             }
             else
@@ -183,15 +185,22 @@ namespace d360.web.Controllers.Services
             List<CommentDetail> comments = null;
             if (!string.IsNullOrEmpty(pageData.ObjectType) && pageData.ObjectID.HasValue)
             {
-                comments = Company.GetCommentDetailsByType(
-                    (SystemObjects)Enum.Parse(typeof(SystemObjects), pageData.ObjectType),
-                    pageData.ObjectID.Value,
-                    pageData.Skip,
-                    pageData.Take,
-                    pageData.DateFilter,
-                    pageData.TypeFilter,
-                    pageData.SearchFilter
-                    ).ToList();
+                if (pageData.ObjectType.ToUpper() == "COMMENT")
+                {
+                    comments = Company.GetCommentDetailsByID(pageData.ObjectID.Value).ToList();
+                }
+                else
+                {
+                    comments = Company.GetCommentDetailsByType(
+                        (SystemObjects)Enum.Parse(typeof(SystemObjects), pageData.ObjectType),
+                        pageData.ObjectID.Value,
+                        pageData.Skip,
+                        pageData.Take,
+                        pageData.DateFilter,
+                        pageData.TypeFilter,
+                        pageData.SearchFilter
+                        ).ToList();
+                }
             }
             else
             {

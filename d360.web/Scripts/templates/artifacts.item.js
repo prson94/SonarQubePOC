@@ -88,7 +88,7 @@
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;
                         case 'Challenge':                            
-                            setTimeout(function () { ChallengeNotificationTile('ChallengeNotification', id); }, 2000);
+                            setTimeout(function () { ChallengeNotificationTile('ChallengeNotification', contextList, id); }, 2000);
                             $("#Challenge").hide();
                             break;                        
                     }
@@ -123,7 +123,7 @@
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
                         LineageDiagram('SourcingTile', type, id, false);
                         CertificationNotificationTile('CertificationNotification', id);
-                        ChallengeNotificationTile('ChallengeNotification', id);
+                        ChallengeNotificationTile('ChallengeNotification', contextList, id);
 
                         if (json.AllowRelatedArtifacts) {
                             RelatedArtifactsGrid('RelatedArtifactsTile', permissions, json.TypeName, typeID, id);

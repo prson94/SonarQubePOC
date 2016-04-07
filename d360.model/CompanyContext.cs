@@ -2035,6 +2035,26 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             return comments.AsQueryable();
         }
 
+        public IQueryable<CommentDetail> GetCommentDetailsByID(int id)
+        {            
+            var comments =
+                Query<CommentDetail>("GetCommentDetailByID @id",
+                new
+                {                    
+                    id = id                    
+                });
+            foreach (CommentDetail cd in comments)
+            {
+                cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
+                        && !Comments.Any(c => c.ParentID == cd.ID)
+                        && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
+                cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
+
+            }
+
+            return comments.AsQueryable();
+        }
+
         /// <summary>
         /// Get a list of those following the current object.
         /// </summary>

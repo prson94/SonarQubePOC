@@ -1,4 +1,4 @@
-﻿function ChallengeNotificationTile(controlID, id) {
+﻿function ChallengeNotificationTile(controlID, contextList, id) {
     controlID = '#' + controlID;
     var buttonControlID = controlID + "_button";
 
@@ -11,21 +11,23 @@
                 
                 var challengeContent = '<article>';
                 challengeContent += '<header><i class="fa fa-warning error"></i> Outstanding Challenge</header>';
-                challengeContent +='<div class="row">';
-                challengeContent += '<div class="col s12 FieldName">Reason</div>';
-                challengeContent += '<div class="col s12 imageWrapper">' + data.Reason + '</div>';
-                challengeContent += '<div class="col s12">&nbsp;</div>';
-                challengeContent +='<div class="col s3 FieldName">Challenger</div>';
+                challengeContent += '<div class="row" style="padding:2px">';
+                challengeContent += '<div class="col s3 FieldName">Challenger</div>';
                 challengeContent += '<div class="col s9"><a data-context="Preview" data-type="Resource" data-id="' + data.ResourceID + '" href="' + data.ResourceUrl + '">' + data.ResourceName + '</a></div>';
-                challengeContent += '<div class="col s12">&nbsp;</div>';
-                challengeContent += '<div class="col s3 FieldName">Challenged On</div>';                
-                challengeContent += '<div class="col s9">' + (moment.utc(data.DateStarted).local().format('dddd, MMMM Do YYYY, h:mm:ss a')) + '</div>';
-                challengeContent += '<div class="col s12">&nbsp;</div>';
+                challengeContent += '</div><div class="row" style="padding:2px">';
+                challengeContent += '<div class="col s3 FieldName">Issued</div>';
+                challengeContent += '<div class="col s9">' +(moment.utc(data.DateStarted).local().format('dddd, MMMM Do YYYY, h:mm:ss a')) + '</div>';
+                challengeContent += '</div><div class="row" style="padding:2px">';
+                challengeContent += '<div class="col s3 FieldName">Reason</div>';
+                challengeContent += '<div class="col s9 imageWrapper FieldDisplayContent">' + data.Reason + '</div>';                
                 challengeContent += '</div>';
+                challengeContent += '<div class="row"><div class="col s12"><div id="ChallengConvoTile"></div></div></div>'
                 //challengeContent += '<div class="row"><div class="col s12"><div title="Status" class="tile-clickable" data-tile data-uri="/workflow/' + data.WorkflowID + '/status" data-context="overlayContext">Status</div></div>';
                 challengeContent += '</article>';
 
                 $(controlID).append(challengeContent);
+
+                CollapsibleConversationTile('ChallengConvoTile', contextList, data.CommentID);
 
                 //if the current user can approve deny show the buttons 
                 if (data.AssignedResourceID > 0) {

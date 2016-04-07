@@ -3423,6 +3423,7 @@ var BoardViewModel = function (initialDaysToLookBack) {
     self.ProcessingCount = ko.observable(0);
     self.ShowDateFilter = ko.observable(true);
     self.ShowTypeFilter = ko.observable(true);
+    self.ShowSearch = ko.observable(true);
 
     self.IsProcessing = ko.computed(function () {
         return (self.ProcessingCount() != 0);

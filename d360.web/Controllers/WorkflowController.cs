@@ -59,6 +59,7 @@ namespace d360.web.Controllers
             public string ResourceUrl { get; set; }
             public int AssignedResourceID { get; set; }
             public DateTime DateStarted { get; set; }
+            public int CommentID { get; set; }
         }
 
         #endregion
@@ -96,7 +97,8 @@ namespace d360.web.Controllers
 			R.FirstName + ' ' + R.LastName as ResourceName,
 			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
             RES.ResourceID as AssignedResourceID,
-            W.DateStarted as DateStarted
+            W.DateStarted as DateStarted,
+            W.Data.value('(fields/CommentID)[1]', 'int')  as CommentID         
 from		Workflow W            			                
             inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/RequestingResourceID)[1]', 'int')            
             left outer join WorkflowResource RES on RES.WorkflowID = W.ID and RES.ResourceID = @res
