@@ -2716,7 +2716,15 @@ from    IntersectNode S
                         gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
                         columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
                         sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
-                        sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and (F{fieldType.ID}.ObjectType = R.TargetObject and F{fieldType.ID}.ObjectID = R.TargetObjectID) or (F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = R.IntersectID)");
+
+                        if (displayFields.First(i => i.FieldTypeID == fieldType.ID).FieldTypeName.Contains("Relation."))
+                        {
+                            sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = R.IntersectID");
+                        }
+                        else
+                        {
+                            sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = R.TargetObject and F{fieldType.ID}.ObjectID = R.TargetObjectID");
+                        }
                     }
                 }
                 gridFields.Add(new GridField { name = "Object", type = "string" });
@@ -2751,7 +2759,7 @@ from    IntersectNode S
                         break;
                     default: //Child Reference
                         sql = $@"
-    select  R2.IntersectID,
+    select  R.IntersectID,
             D2.[Object],
 		    D2.ObjectID,
             D2.ObjectID as ID,
@@ -2762,9 +2770,9 @@ from    IntersectNode S
     from    cache.Relationship R1
 		    inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
 		    inner join [cache].[ObjectDetails] D1 on D1.[Object] = R1.TargetObject and D1.ObjectID = R1.TargetObjectID
-		    inner join cache.Relationship R2 ON R2.SourceObject = 'Intersect' and R2.SourceObjectID = I1.ID
-		    inner join [Intersect] I2 on I2.ID = R2.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
-		    inner join [cache].[ObjectDetails] D2 on D2.[Object] = R2.TargetObject and D2.ObjectID = R2.TargetObjectID
+		    inner join cache.Relationship R ON R.SourceObject = 'Intersect' and R.SourceObjectID = I1.ID
+		    inner join [Intersect] I2 on I2.ID = R.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
+		    inner join [cache].[ObjectDetails] D2 on D2.[Object] = R.TargetObject and D2.ObjectID = R.TargetObjectID
             {sqlJoinString}";
                         break;
                 }
