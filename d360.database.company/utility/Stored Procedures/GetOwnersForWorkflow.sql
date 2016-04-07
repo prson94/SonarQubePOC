@@ -97,6 +97,15 @@ begin
 								(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
 							) 
 							and R.Email not like '%?subject=%' and R.Status = 'Active'
+
+		if not exists (select 1 from @tbl)
+		begin
+			insert into @tbl
+				select 
+					R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
+				from 
+					reporting.Global_Resource R where isadministrator = 1
+		end
 	end
 
 	if @workflowType = 4
@@ -113,6 +122,15 @@ begin
 								(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
 							) 
 							and R.Email not like '%?subject=%' and R.Status = 'Active'
+
+		if not exists (select 1 from @tbl)
+		begin
+			insert into @tbl
+				select 
+					R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
+				from 
+					reporting.Global_Resource R where isadministrator = 1
+		end
 	end
 
 	select * from @tbl
