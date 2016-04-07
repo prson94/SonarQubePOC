@@ -1238,14 +1238,14 @@ function SourceToTargetMappingModel(data, permissions) {
     self.CanDelete = ko.observable(false);
     self.CanAdd = ko.observable(false);
 
-    //if (permissions != null) {
-        //if (permissions.HasPermission("Relationship", "Create"))
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
             self.CanAdd(true);
-        //if (permissions.HasPermission("Relationship", "Update"))
+        if (permissions.HasPermission("Relationship", "Update"))
             self.CanUpdate(true);
-        //if (permissions.HasPermission("Relationship", "Delete"))
+        if (permissions.HasPermission("Relationship", "Delete"))
             self.CanDelete(true);
-    //}
+    }
 
 
     self.LoadRules = function () {
@@ -1444,7 +1444,7 @@ function SourceToTargetMappingItem(data, parent, permissions) {
     }
 
     self.LoadData = function () {
-        if (data != null && data != {}) {
+        if (data != null && !$.isEmptyObject(data)) {
             if (data.Sources != null)
                 for (var i = 0; i < data.Sources.length; i++) {
                     self.Sources.push(new SourceToTargetMappingSourceItem(data.Sources[i], self, true));
@@ -1521,7 +1521,12 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
         var obj = (isSource ? parent.Source() : parent.Target());
         var objid = (isSource ? parent.SourceID() : parent.TargetID());
         $.ajax({
-            url: 'form/sourcetarget/fusion/' + obj + '/' + objid + '/' + self.AppliedSearch(),
+            url: 'form/sourcetarget/fusion',
+            data : {
+                type: obj,
+                id: objid,
+                phrase: self.AppliedSearch()
+            },
             async: true
         }).done(function (data) {
             self.FusionItems([]);
@@ -1544,17 +1549,38 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
         parent.Keywords.remove(self.SelectedFusionName());
         parent.Keywords.push(self.SelectedFusionName());
     })
+    
 
-
-    if (data != null && data != {}) {
+    if (data != null && !$.isEmptyObject(data)) {
         if (data.FusionID != null) {
             self.FusionItems.push({ id: data.FusionID, name: data.Name });
             self.SelectedFusionIndex(0);
         }
+    } else {
+        self.IsLoading(true);
+        var obj = (isSource ? parent.Source() : parent.Target());
+        var objid = (isSource ? parent.SourceID() : parent.TargetID());
+        $.ajax({
+            url: 'form/sourcetarget/fusion',
+            data: {
+                type: obj,
+                id: objid,
+                phrase: '',
+                getDefault: true
+            },
+            async: true
+        }).done(function (data) {
+            self.FusionItems([]);
+            $.each(data, function (i, val) {
+                self.FusionItems.push(val);
+            });
+        }).always(function () {
+            self.IsLoading(false);
+        });
     }
 
     self.LoadFusionData = function () {
-        if (data != null && data != {}) {
+        if (data != null && !$.isEmptyObject(data)) {
             if (data.FusionID != null) {
                 var items = self.FusionItems();
                 for (var i = 0; i < items.length; i++) {

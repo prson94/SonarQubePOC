@@ -73,10 +73,13 @@
                 </tbody>
             </table>
         </div>
-        <div data-bind="visible: (SourceRules().length == 0 && !NoFusionAvailable())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
+        <div data-bind="visible: IsLoading" style="text-align:center">
+            <i class="fa fa-2x fa-spinner fa-spin"></i>
+        </div>
+        <div data-bind="visible: (SourceRules().length == 0 && !NoFusionAvailable() && !IsLoading())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
             No source to target mapping rules defined
         </div>
-        <div data-bind="visible: NoFusionAvailable" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
+        <div data-bind="visible: (NoFusionAvailable() && !IsLoading())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
             There are no fusion attributes defined for the source or target selected.
         </div>
         <table>

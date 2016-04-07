@@ -13308,20 +13308,36 @@ order by	D.Name, I.Name";
             };
         }
 
-        [HttpGet, Route("sourcetarget/fusion/{type}/{id:int}/{phrase}")]
-        public JsonNetResult GetRelatedFusionItems(string type, int id, string phrase)
+        [HttpGet, Route("sourcetarget/fusion/")]
+        public JsonNetResult GetRelatedFusionItems(string type, int id, string phrase, bool getDefault = false)
         {
+            string sql = "";
             if (phrase == null)
                 phrase = "";
-            else
+
+            if (getDefault)
+            {
+                sql = @"select top 100 r.targetobjectid as id, r.targetname as name 
+                        from	Relationship R
+		                inner join Relationship S on R.SourceObjectType = 'Intersect' 
+										                and S.IntersectID = R.SourceObjectID 
+										                and S.SourceObjectType = @type 
+										                and S.SourceObjectID = @id
+						                where r.targetobjecttype = 'FusionAttribute'";
+            } else
+            {
                 phrase = '%' + phrase.Trim() + '%';
-            var sql = @"select top 100 a.name, a.id from 
+                sql = @"select top 100 a.textpath as name, a.id from 
                         fusion.attributeowner f
                         join fusionattributetype t on t.id = f.objectid
                         join fusionattribute a on a.fusionattributetypeid = f.objectid
                         where 
                         f.relationshipownerobjectid = @id and f.relationshipownerobjecttype = @type
-                        and a.name like @phrase";
+                        and a.textpath like @phrase";
+            }
+
+
+           
 
             var items = Company.Query<dynamic>(sql, new { type = type, id = id, phrase = phrase });
 
@@ -13330,6 +13346,11 @@ order by	D.Name, I.Name";
                 Data = items,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+        }
+
+        public JsonNetResult GetDefaultFusionItems(string type, int id)
+        {
+            return null;
         }
 
         [ValidateHttpAntiForgeryToken]
