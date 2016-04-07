@@ -167,6 +167,20 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                                 ObjectDetail detail = null;
                                 Dictionary<string, string> fields = null;
 
+                                if (string.IsNullOrEmpty(o)) return "";
+
+                                // ignore intersects we dont want to add them to the search index.
+                                if (string.Compare(o, "IntersectType", true) == 0 
+                                        || string.Compare(o, "Event", true) == 0
+                                        || string.Compare(o, "EventType", true) == 0
+                                        || string.Compare(o, "EventGroup", true) == 0
+                                        || string.Compare(o, "ResponsibilityType", true) == 0
+                                        || string.Compare(o, "FusionAttributeType", true) == 0
+                                        || string.Compare(o, "Intersect", true) == 0
+                                        || string.Compare(o, "Lookup", true) == 0
+                                        || string.Compare(o, "LookupType", true) == 0
+                                        ) return "";
+
                                 #region Load Info for Object
 
                                 detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
