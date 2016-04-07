@@ -44108,6 +44108,7 @@ function SourceToTargetMappingModel(data, permissions) {
             });
         }
 
+
         data = {
             focalID: self.ObjectID(),
             focal: self.Object(),
@@ -44116,7 +44117,7 @@ function SourceToTargetMappingModel(data, permissions) {
             targetID: self.TargetID(),
             target: self.Target(),
             rules: rules
-        }
+        };
 
         if (error) {
             self.IsLoading(false);
@@ -44130,6 +44131,7 @@ function SourceToTargetMappingModel(data, permissions) {
                     console.log(data.message);
                     self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the source rules.</span>');
                     self.LoadRules();
+                    amplify.publish("SaveAction", { context: 'sourcemapping' });
                 } else {
                     self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
                 }
@@ -44484,6 +44486,7 @@ function HierarchySourceRuleModel(data, permissions) {
             self.IsSaving(false);
             if (!data.error) {
                 self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
+                amplify.publish("SaveAction", { context: 'sourcerule' });
             } else {
                 self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
                 console.log(data.message);
@@ -44543,20 +44546,6 @@ function HierarchyPanelViewModel(data, permissions) {
 
     }
 
-    //self.RadioAddChecked.subscribe(function () {
-    //    if (self.RadioAddChecked() == true) {
-    //        self.Mode('add');
-    //        self.SelectedRule(self.NewRule());
-    //    } else {
-    //        self.Mode('edit');
-    //        if (self.SelectedRuleIndex() < 0)
-    //            self.SelectedRuleIndex(0);
-    //        //force data to reload when switching back to edit mode
-    //        self.SelectedRuleIndex.valueHasMutated();
-    //        self.SelectedItemIndex.valueHasMutated();
-    //    }
-    //});
-
     self.AddSourceRule = function () {
         var data = {
             Name: 'New Rule',
@@ -44571,7 +44560,6 @@ function HierarchyPanelViewModel(data, permissions) {
         self.SelectedRule(newRule);
         self.SourceRules.push(newRule);
         self.SelectedRuleIndex(self.SourceRules().length - 1);
-        //self.Mode('add');
     }
 
 
@@ -44808,13 +44796,10 @@ function HierarchyPanelViewModel(data, permissions) {
 
     self.AfterLoad = function () {
         if (self.SourceRules().length >= 1) {
-            //self.RadioEditChecked(true);
             self.SelectRule(self.SourceRules()[0]);
             self.SelectedRuleIndex(0);
             self.HasSourcesOrRules(true);
         } else {
-            //self.SelectRule(self.NewRule());
-            //self.RadioAddChecked(true);
             self.HasSourcesOrRules(true);
         }
         if (self.Sources().length < 1 && self.SourceRules().length < 1) {
@@ -49375,7 +49360,7 @@ function ChallengeNotificationTile(controlID, id) {
                 challengeContent += '<header><i class="fa fa-warning error"></i> Outstanding Challenge</header>';
                 challengeContent +='<div class="row">';
                 challengeContent += '<div class="col s12 FieldName">Reason</div>';
-                challengeContent += '<div class="col s12">' + data.Reason + '</div>';
+                challengeContent += '<div class="col s12 imageWrapper">' + data.Reason + '</div>';
                 challengeContent += '<div class="col s12">&nbsp;</div>';
                 challengeContent +='<div class="col s3 FieldName">Challenger</div>';
                 challengeContent += '<div class="col s9"><a data-context="Preview" data-type="Resource" data-id="' + data.ResourceID + '" href="' + data.ResourceUrl + '">' + data.ResourceName + '</a></div>';
@@ -53887,14 +53872,14 @@ function LineageDiagram(controlID, type, id, readonly) {
         if (readonly) return;
 
         $('#' + controlID_ribbon_save).jqxButton({ disabled: true });
-        // $('#' + controlID_ribbon_save_spinner).show();
 
         var nodeChanges = getNodeChanges();
         var linkChanges = getLinkChanges();
 
         var flagError = false;
         var errors = "";
-        var processCount = 0;
+
+        var promises = [];
 
         for (var i = 0; i < nodeChanges.deleted.length; i++) {
             var node = nodeChanges.deleted[i];
@@ -53903,22 +53888,20 @@ function LineageDiagram(controlID, type, id, readonly) {
                 targetID: id,
                 id: node.intersectMapId
             };
-            processCount++;
-            $.ajax({
-                async: false,
+
+            promises.push($.ajax({
+                async: true,
                 method: 'DELETE',
                 url: '/relations/' + data.target + '/' + data.targetID + '/sources/' + data.id
             }).done(function (data, status, xhr) {
                 if (!data.success) {
                     flagError = true;
                     errors += data.message;
-                    processCount--;
                 }
             }).fail(function (xhr, status, error) {
                 flagError = true;
                 errors += data.message;
-                processCount--;
-            });
+            }));
 
         }
 
@@ -53938,28 +53921,24 @@ function LineageDiagram(controlID, type, id, readonly) {
                 predicateID: link.predicateId
             };
 
-            processCount++;
-            $.ajax({
+            promises.push($.ajax({
                 url: '/Relations/sources',
-                async: false,
+                async: true,
                 data: JSON.stringify(source),
                 processData: false,
                 type: 'POST',
                 contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (data) {
-                    if (!data.success) {
-                        flagError = true;
-                        errors += data.message;
-                        processCount--;
-                    }
-                },
-                failure: function (data) {
+                dataType: "json"
+            }).done(function (data) {
+                if (!data.success) {
                     flagError = true;
                     errors += data.message;
-                    processCount--;
                 }
-            });
+            }).fail(function (data) {
+                flagError = true;
+                errors += data.message;
+            }));
+
         }
 
         for (var i = 0; i < linkChanges.modified.length; i++) {
@@ -53970,29 +53949,26 @@ function LineageDiagram(controlID, type, id, readonly) {
 
             if (data.intersectMapID == null || data.predicateID == null)
                 continue;
-            processCount++;
-            $.ajax({
+
+            promises.push($.ajax({
                 url: '/relations/update/' + data.intersectMapID + '/' + data.predicateID,
-                async: false,
-                success: function (data) {
-                    processCount--;
-                },
-                failure: function (data) {
-                    flagError = true;
-                    processCount--;
-                }
-            });
+                async: true
+            }).fail(function () {
+                flagError = true;
+            }));
+
         }
 
-        if (flagError) {
-            amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: xhr.statusText + xhr.responseText, success: false });
-        } else {
-            amplify.publish("SourceSave");
-            deletedNodes = [];
-            populateDiagram();
-            $('#' + controlID_ribbon_save_spinner).hide();
-        }
-
+        $.when.apply($, promises).done(function () {
+            if (flagError) {
+                amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: xhr.statusText + xhr.responseText, success: false });
+            } else {
+                amplify.publish("SourceSave");
+                deletedNodes = [];
+                populateDiagram();
+                $('#' + controlID_ribbon_save_spinner).hide();
+            }
+        });
     }
 
     //#endregion
@@ -54073,6 +54049,12 @@ function LineageDiagram(controlID, type, id, readonly) {
             switch (saveActionEventData.context) {
                 case contextList.SourceToTarget:
                     populateDiagram();
+                    break;
+                case 'sourcemapping':
+                    //populateDiagram();
+                    break;
+                case 'sourcerule':
+                    //populateDiagram();
                     break;
             }
         } catch (e) {
@@ -56306,7 +56288,7 @@ function YourWorkflowTasks(controlID, givenWorkflowType) {
                     {
                         datafield: "Name", text: "Name",
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return previewLinkRenderer('Artifact', data.ArtifactID, data.Url, data.Name);
+                            return (data.ArtifactID > 0 ? previewLinkRenderer('Artifact', data.ArtifactID, data.Url, data.Name) : textrenderer("Deleted Item"));
                         }
                     },
                     { datafield: "Issue", text: "Reason" },

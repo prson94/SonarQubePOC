@@ -305,7 +305,7 @@
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             $(element).on('keypress', function (e) {
                 var key = String.fromCharCode(!e.charCode ? e.which : e.charCode);
-                if (!/[1-9]+/.test(key)) {
+                if (!/[0-9]+/.test(key)) {
                     e.preventDefault();
                     return false;
                 }

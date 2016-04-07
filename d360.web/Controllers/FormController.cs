@@ -13866,6 +13866,12 @@ where	RT.SourceObjectType = @type
                     ObjectID = parseIntField(form, "ObjectID")
                 };
                 a.Configuration = getXmlConfigurationFromFormFields(form, a.CheckType);
+
+                //while (a.Score.ToString().StartsWith("0"))
+                //{
+                //    return jsonException(FormInfo., HttpStatusCode.Conflict);
+                //}
+
                 Company.Add<StatisticType>(a);
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), ContextList.StatisticType, "add", HttpStatusCode.Created);
