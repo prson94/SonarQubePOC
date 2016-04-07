@@ -327,7 +327,7 @@ order by D.TextPath";
                 Icon = "plus",
                 Title = i.TargetName,
                 Type = "local",
-                Uri = "/Relations/AddRelationship?source=Intersect&sourceID=" + i.ParentIntersectID + "&intersectTypeID=" + i.IntersectTypeID + "&target=" + i.TargetType + "&targetID=" + i.TargetTypeID
+                Uri = "/form/AddRelationship?intersectTypeID=" + i.IntersectTypeID + "&type=Intersect&id=" + i.ParentIntersectID
             });
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
