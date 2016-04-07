@@ -95,6 +95,15 @@ when	not matched by target then
                             Console.WriteLine("Error while removing old resources for Company {0}. Error was: {1}", companyID, ex.GetFullExceptionData());
                         }
 
+                        try
+                        {
+                            companyConnection.Execute("delete Responsibility where ResponsibleObjectType = 'Resource' and ResponsibleObjectID not in (select ResourceID from reporting.Global_Resource)");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error while removing responsibilities for non-existent resources for Company {0}. Error was: {1}", companyID, ex.GetFullExceptionData());
+                        }
+
                         #endregion
 
                         companyConnection.Close();
