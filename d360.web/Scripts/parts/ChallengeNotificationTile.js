@@ -13,7 +13,7 @@
                 challengeContent += '<header><i class="fa fa-warning error"></i> Outstanding Challenge</header>';
                 challengeContent +='<div class="row">';
                 challengeContent += '<div class="col s12 FieldName">Reason</div>';
-                challengeContent += '<div class="col s12">' + data.Reason + '</div>';
+                challengeContent += '<div class="col s12 imageWrapper">' + data.Reason + '</div>';
                 challengeContent += '<div class="col s12">&nbsp;</div>';
                 challengeContent +='<div class="col s3 FieldName">Challenger</div>';
                 challengeContent += '<div class="col s9"><a data-context="Preview" data-type="Resource" data-id="' + data.ResourceID + '" href="' + data.ResourceUrl + '">' + data.ResourceName + '</a></div>';
