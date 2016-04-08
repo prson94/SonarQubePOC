@@ -1262,7 +1262,7 @@
             <div data-bind="jqxDropDownList: {placeHolder: 'Choose Field:',source: $parent.FieldNames, selectedIndex: SelectedFieldIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,}"></div>
         </div>
         <div class="col s3">
-            <input type="text" data-bind="jqxInput: { placeHolder:'Enter a value:', width: field_width98, height: field_height, theme: theme, value: Term},visible: ShowText()" />
+            <input type="text" data-bind="jqxInput: { placeHolder:'Enter a value', width: field_width98, height: field_height, theme: theme, value: Term},visible: ShowText()" />
             <div data-bind="jqxDropDownList: {placeHolder: 'Choose Type:', source: TypeNames, selectedIndex: SelectedTypeIndex, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,},visible: !ShowText()"></div>
         </div>
         <div class="col s1" data-bind="visible: ShowConnectors() && ($index() !== ($parent.advancedFilter().length - 1))">
@@ -1291,7 +1291,7 @@
         </div>
         <div class="col s3">
             <!-- ko if: (inputType() == 'string') -->
-            <input type="text" data-bind="jqxInput: { placeHolder:'Enter a value:', width: field_width, height: field_height, theme: theme, value: TextValue},event: {keyup: $parent.onEnter}" />
+            <input type="text" data-bind="jqxInput: { placeHolder:'Enter a value', width: field_width, height: field_height, theme: theme, value: TextValue},event: {keyup: $parent.onEnter}" />
             <!-- /ko -->
             <!-- ko if: (inputType() == 'number') -->
             <div data-bind="jqxNumberInput:{ theme: theme, height: field_height, width: field_width, min: 0, max: 100000, groupSize: 0, inputMode: 'simple', decimalDigits: 0, value: NumberValue },event: {keyup: $parent.onEnter}"></div>
