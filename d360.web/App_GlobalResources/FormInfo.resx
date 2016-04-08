@@ -195,6 +195,9 @@
   <data name="Add_SourceTargetMapping_Title" xml:space="preserve">
     <value>Define a Source to Target Mapping</value>
   </data>
+  <data name="Allocate_Workflow_Challenge_Description" xml:space="preserve">
+    <value>Specify users of which role can respond to a challenge of Artifacts of the selected type.  Artifact Types which do not have roles specified which can respond to a challenge will allow all responsibilities associated with that Artifact to reply to a challenge.  If no owners exist administrator users will be able to respond to the challenge.</value>
+  </data>
   <data name="Allocate_Workflow_Confirmation" xml:space="preserve">
     <value>{0} workflow successfully allocated.</value>
   </data>

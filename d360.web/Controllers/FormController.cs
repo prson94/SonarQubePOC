@@ -15447,9 +15447,13 @@ order by TextPath
 
         public ActionResult AddWorkflowAllocation(WorkflowType workflowType)
         {
+            var desc = Resources.FormInfo.Allocate_Workflow_Description;
+            if (workflowType == WorkflowType.ChallengeArtifact)
+                desc = Resources.FormInfo.Allocate_Workflow_Challenge_Description;
+
             var model = new WorkflowTypeRelationEditorModel
             {
-                FormDescription = Resources.FormInfo.Allocate_Workflow_Description,
+                FormDescription = desc,
                 FormMethod = "POST",
                 FormName = Resources.FormInfo.Allocate_Workflow_Title,
                 FormUri = "/form/AddWorkflowAllocation",
@@ -15574,10 +15578,14 @@ order by TextPath
             
             var parentTypes = Company.GetWorkflowParentTypeOptions((int)relation.WorkflowType, relation.Object, relation.ObjectID, true);
             var responsibilityTypes = Company.GetWorkflowResponsibilityTypeOptions(relation.Object, relation.ObjectID);
-            
+
+            var desc = Resources.FormInfo.Allocate_Workflow_Description;
+            if (relation.WorkflowType == WorkflowType.ChallengeArtifact)
+                desc = Resources.FormInfo.Allocate_Workflow_Challenge_Description;
+
             var model = new WorkflowTypeRelationEditorModel
             {
-                FormDescription = Resources.FormInfo.Allocate_Workflow_Description,
+                FormDescription = desc,
                 FormMethod = "PUT",
                 FormName = Resources.FormInfo.Allocate_Workflow_Title,
                 FormUri = "/form/EditWorkflowAllocation",

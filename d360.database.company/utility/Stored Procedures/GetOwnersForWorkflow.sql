@@ -111,17 +111,35 @@ begin
 	if @workflowType = 4
 	begin
 		insert into @tbl
-			select	distinct
-					R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
-			from	Comment C
-					inner join CommentRelation CR on CR.CommentID = C.ID and C.ID = @fields.value('(fields/CommentID)[1]', 'int') and CR.ObjectType not in ('Resource', 'Group')
-					inner join ResponsibilityDetail RD on RD.ObjectType = CR.ObjectType and RD.ObjectID = CR.ObjectID 
-					inner join reporting.Global_Resource R 
-						on	(
-								(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
-								(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
-							) 
-							and R.Email not like '%?subject=%' and R.Status = 'Active'
+				select	R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
+				from	ResponsibilityDetail RD 
+						inner join Artifact A on RD.ObjectType = 'Artifact' and RD.ObjectID = A.ID and A.ID = @fields.value('(/fields/ArtifactID)[1]', 'int')
+						inner join WorkflowTypeRelation WTR		on WTR.[Object] = 'ArtifactType' and WTR.ObjectID = A.ArtifactTypeID 
+																and WTR.WorkflowType = @workflowType 
+																and WTR.ResponsibilityTypeID = RD.ResponsibilityTypeID
+																and WTR.[Enabled] = 1
+						inner join reporting.Global_Resource R 
+							on	(
+									(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
+									(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
+								)
+							and R.Email not like '%?subject=%' and R.Status = 'Active' 
+
+		if not exists (select 1 from @tbl)
+		begin
+			insert into @tbl
+				select	distinct
+						R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
+				from	Comment C
+						inner join CommentRelation CR on CR.CommentID = C.ID and C.ID = @fields.value('(fields/CommentID)[1]', 'int') and CR.ObjectType not in ('Resource', 'Group')
+						inner join ResponsibilityDetail RD on RD.ObjectType = CR.ObjectType and RD.ObjectID = CR.ObjectID 
+						inner join reporting.Global_Resource R 
+							on	(
+									(RD.ResponsibleObjectType = 'Group' and R.ResourceID = RD.PrimaryOwnerResourceID) or 
+									(RD.ResponsibleObjectType = 'Resource' and R.ResourceID = RD.ResponsibleObjectID)
+								) 
+								and R.Email not like '%?subject=%' and R.Status = 'Active'
+		end
 
 		if not exists (select 1 from @tbl)
 		begin

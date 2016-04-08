@@ -295,6 +295,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specify users of which role can respond to a challenge of Artifacts of the selected type.  Artifact Types which do not have roles specified which can respond to a challenge will allow all responsibilities associated with that Artifact to reply to a challenge.  If no owners exist administrator users will be able to respond to the challenge..
+        /// </summary>
+        internal static string Allocate_Workflow_Challenge_Description {
+            get {
+                return ResourceManager.GetString("Allocate_Workflow_Challenge_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} workflow successfully allocated..
         /// </summary>
         internal static string Allocate_Workflow_Confirmation {
