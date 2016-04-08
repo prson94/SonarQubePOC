@@ -135,8 +135,8 @@
             //if (level == 1 && node.Items.length > 0) {
             //    html += "</div>";
             //}
-
-            html += "<li alt='" + node.Title + "' title='" + node.Title + "' id='" + node.Title + "' ";
+            
+            html += "<li alt='" + node.Title + "' title='" + (node.Title === null ? '' : node.Title) + "' id='" + node.Title + "' ";
             html += "data-uri='" + node.Uri + "' data-context='" + node.Context + "' data-commandname='" + (node.CommandName ? node.CommandName : '') + "'";
             $.each(node.CustomData, function (idx, c) {
                 html += " data-" + c.Name + "='" + c.Value + "'";
