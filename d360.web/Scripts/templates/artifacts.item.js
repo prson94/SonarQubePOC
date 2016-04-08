@@ -89,6 +89,7 @@
                             break;
                         case 'Challenge':                            
                             setTimeout(function () { ChallengeNotificationTile('ChallengeNotification', contextList, id); }, 2000);
+                            ObjectStatisticsTile('MicroWidget1', type, id);
                             $("#Challenge").hide();
                             break;                        
                     }
