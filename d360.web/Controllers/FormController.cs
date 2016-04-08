@@ -6258,7 +6258,7 @@ order by  D.TextPath
 
         public JsonNetResult IntersectType_PredicateOptions()
         {
-            var models = Company.Table<Predicate>().Select(i => new { title = i.Name, value = i.ID });
+            var models = Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -10396,7 +10396,7 @@ order by	D.Name, I.Name";
                             matchingCount++;
                         }
                     });
-                    if (matchingCount == existingContexts.Count)
+                    if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
                     {
                         throw new ArgumentException("A responsibility with these settings already exists for the item.");
                     }
@@ -10518,7 +10518,7 @@ order by	D.Name, I.Name";
                             matchingCount++;
                         }
                     });
-                    if (matchingCount == existingContexts.Count)
+                    if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
                     {
                         throw new ArgumentException("A responsibility with these settings already exists for the item.");
                     }

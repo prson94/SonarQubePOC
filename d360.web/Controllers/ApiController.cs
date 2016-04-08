@@ -234,7 +234,7 @@ namespace d360.web.Controllers
                     break;
             }
 
-            var gc = new GridColumn { text = item.FriendlyName, datafield = item.Name, width = string.Format("{0}%", dynamicFieldWidth), columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = $"Field{item.ID}", width = string.Format("{0}%", dynamicFieldWidth), columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -265,7 +265,7 @@ namespace d360.web.Controllers
                     break;
             }
 
-            return new GridField { name = item.Name, type = fieldType };
+            return new GridField { name = $"Field{item.ID}", type = fieldType };
         }
 
         void parseDynamicColumnsAndFields(List<FieldTypeWithRelation> items, List<GridColumn> columns, List<GridField> fields, List<GridColumnGroup> groups, decimal dynamicFieldWidth, bool serverPaged = false)

@@ -9,7 +9,7 @@
 
 <script type="text/javascript">
     function RelationshipActionSuccess(data, status, xhr) {
-        amplify.publish("RelationshipFormStatus", { title: 'Successfully Added Relationships', message: xhr.statusText + xhr.responseText, success: true });
+        amplify.publish("RelationshipFormStatus", { title: 'Successfully Added Relationships', message: data.message, success: true });
         amplify.publish("RelationshipSave", { action: 'Add' });
     }
 

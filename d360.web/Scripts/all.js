@@ -43984,14 +43984,14 @@ function SourceToTargetMappingModel(data, permissions) {
     self.CanDelete = ko.observable(false);
     self.CanAdd = ko.observable(false);
 
-    //if (permissions != null) {
-        //if (permissions.HasPermission("Relationship", "Create"))
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
             self.CanAdd(true);
-        //if (permissions.HasPermission("Relationship", "Update"))
+        if (permissions.HasPermission("Relationship", "Update"))
             self.CanUpdate(true);
-        //if (permissions.HasPermission("Relationship", "Delete"))
+        if (permissions.HasPermission("Relationship", "Delete"))
             self.CanDelete(true);
-    //}
+    }
 
 
     self.LoadRules = function () {
@@ -44190,7 +44190,7 @@ function SourceToTargetMappingItem(data, parent, permissions) {
     }
 
     self.LoadData = function () {
-        if (data != null && data != {}) {
+        if (data != null && !$.isEmptyObject(data)) {
             if (data.Sources != null)
                 for (var i = 0; i < data.Sources.length; i++) {
                     self.Sources.push(new SourceToTargetMappingSourceItem(data.Sources[i], self, true));
@@ -44267,7 +44267,12 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
         var obj = (isSource ? parent.Source() : parent.Target());
         var objid = (isSource ? parent.SourceID() : parent.TargetID());
         $.ajax({
-            url: 'form/sourcetarget/fusion/' + obj + '/' + objid + '/' + self.AppliedSearch(),
+            url: 'form/sourcetarget/fusion',
+            data : {
+                type: obj,
+                id: objid,
+                phrase: self.AppliedSearch()
+            },
             async: true
         }).done(function (data) {
             self.FusionItems([]);
@@ -44290,17 +44295,38 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
         parent.Keywords.remove(self.SelectedFusionName());
         parent.Keywords.push(self.SelectedFusionName());
     })
+    
 
-
-    if (data != null && data != {}) {
+    if (data != null && !$.isEmptyObject(data)) {
         if (data.FusionID != null) {
             self.FusionItems.push({ id: data.FusionID, name: data.Name });
             self.SelectedFusionIndex(0);
         }
+    } else {
+        self.IsLoading(true);
+        var obj = (isSource ? parent.Source() : parent.Target());
+        var objid = (isSource ? parent.SourceID() : parent.TargetID());
+        $.ajax({
+            url: 'form/sourcetarget/fusion',
+            data: {
+                type: obj,
+                id: objid,
+                phrase: '',
+                getDefault: true
+            },
+            async: true
+        }).done(function (data) {
+            self.FusionItems([]);
+            $.each(data, function (i, val) {
+                self.FusionItems.push(val);
+            });
+        }).always(function () {
+            self.IsLoading(false);
+        });
     }
 
     self.LoadFusionData = function () {
-        if (data != null && data != {}) {
+        if (data != null && !$.isEmptyObject(data)) {
             if (data.FusionID != null) {
                 var items = self.FusionItems();
                 for (var i = 0; i < items.length; i++) {
@@ -46169,6 +46195,7 @@ var BoardViewModel = function (initialDaysToLookBack) {
     self.ProcessingCount = ko.observable(0);
     self.ShowDateFilter = ko.observable(true);
     self.ShowTypeFilter = ko.observable(true);
+    self.ShowSearch = ko.observable(true);
 
     self.IsProcessing = ko.computed(function () {
         return (self.ProcessingCount() != 0);
@@ -46741,7 +46768,8 @@ function ArtifactFiltersViewModel(columns) {
     self.clearFilters = function () {
         self.Filters([]);
         if (self.Columns().length > 0) {
-            self.Filters.push(new GridFilterItemViewModel(self.Columns()));
+            //self.Filters.push(new GridFilterItemViewModel(self.Columns()));
+            self.Filters.push(new GridFilterItemViewModel(self.Columns(),0));
         }
     };
 
@@ -46751,7 +46779,6 @@ function ArtifactFiltersViewModel(columns) {
         if (selectedColumnName) {
             var ix = -1;
             $.each(self.Columns(), function (cix, ci) {
-                console.log('datafield = ' + ci.datafield + ', selected column = ' + selectedColumnName);
                 if (ci.datafield == selectedColumnName) {
                     ix = cix;
                 }
@@ -46777,7 +46804,8 @@ function ArtifactFiltersViewModel(columns) {
     };
 
     if (self.Columns().length > 0) {
-        self.Filters.push(new GridFilterItemViewModel(columns));
+        //self.Filters.push(new GridFilterItemViewModel(columns));
+        self.Filters.push(new GridFilterItemViewModel(columns, 0));
     }
     
     return self;
@@ -48360,8 +48388,8 @@ function ClickGridTool(event) {
             //if (level == 1 && node.Items.length > 0) {
             //    html += "</div>";
             //}
-
-            html += "<li alt='" + node.Title + "' title='" + node.Title + "' id='" + node.Title + "' ";
+            
+            html += "<li alt='" + node.Title + "' title='" + (node.Title === null ? '' : node.Title) + "' id='" + node.Title + "' ";
             html += "data-uri='" + node.Uri + "' data-context='" + node.Context + "' data-commandname='" + (node.CommandName ? node.CommandName : '') + "'";
             $.each(node.CustomData, function (idx, c) {
                 html += " data-" + c.Name + "='" + c.Value + "'";
@@ -49345,7 +49373,7 @@ function CertificationNotificationTile(controlID, id) {
 
 }
 
-function ChallengeNotificationTile(controlID, id) {
+function ChallengeNotificationTile(controlID, contextList, id) {
     controlID = '#' + controlID;
     var buttonControlID = controlID + "_button";
 
@@ -49358,25 +49386,27 @@ function ChallengeNotificationTile(controlID, id) {
                 
                 var challengeContent = '<article>';
                 challengeContent += '<header><i class="fa fa-warning error"></i> Outstanding Challenge</header>';
-                challengeContent +='<div class="row">';
-                challengeContent += '<div class="col s12 FieldName">Reason</div>';
-                challengeContent += '<div class="col s12 imageWrapper">' + data.Reason + '</div>';
-                challengeContent += '<div class="col s12">&nbsp;</div>';
-                challengeContent +='<div class="col s3 FieldName">Challenger</div>';
+                challengeContent += '<div class="row" style="padding:2px">';
+                challengeContent += '<div class="col s3 FieldName">Challenger</div>';
                 challengeContent += '<div class="col s9"><a data-context="Preview" data-type="Resource" data-id="' + data.ResourceID + '" href="' + data.ResourceUrl + '">' + data.ResourceName + '</a></div>';
-                challengeContent += '<div class="col s12">&nbsp;</div>';
-                challengeContent += '<div class="col s3 FieldName">Challenged On</div>';                
-                challengeContent += '<div class="col s9">' + (moment.utc(data.DateStarted).local().format('dddd, MMMM Do YYYY, h:mm:ss a')) + '</div>';
-                challengeContent += '<div class="col s12">&nbsp;</div>';
+                challengeContent += '</div><div class="row" style="padding:2px">';
+                challengeContent += '<div class="col s3 FieldName">Issued</div>';
+                challengeContent += '<div class="col s9">' +(moment.utc(data.DateStarted).local().format('dddd, MMMM Do YYYY, h:mm:ss a')) + '</div>';
+                challengeContent += '</div><div class="row" style="padding:2px">';
+                challengeContent += '<div class="col s3 FieldName">Reason</div>';
+                challengeContent += '<div class="col s9 imageWrapper FieldDisplayContent">' + data.Reason + '</div>';                
                 challengeContent += '</div>';
+                challengeContent += '<div class="row"><div class="col s12"><div id="ChallengConvoTile"></div></div></div>'
                 //challengeContent += '<div class="row"><div class="col s12"><div title="Status" class="tile-clickable" data-tile data-uri="/workflow/' + data.WorkflowID + '/status" data-context="overlayContext">Status</div></div>';
                 challengeContent += '</article>';
 
                 $(controlID).append(challengeContent);
 
+                CollapsibleConversationTile('ChallengConvoTile', contextList, data.CommentID);
+
                 //if the current user can approve deny show the buttons 
                 if (data.AssignedResourceID > 0) {
-                    $(controlID).append('<div class="row"><div class="col s12 FieldName">Your Response</div></div><div class="row" id="challenge-actions" style="padding:10px"><div id="ActionArea" class="row"><div class="col s6" id="Action1Wrapper"><input type="radio" id="Action1" name="Action" value="accept" checked="checked" /><label for="Action1">Accept</label></div><div class="col s6" id="Action3Wrapper"><input type="radio" id="Action3" name="Action" value="close" /><label for="Action3">Close</label></div></div><div id="CommentArea"><div class="FieldName">Comment</div><textarea id="Comment"></textarea></div><div></div><button type="button" id="SaveButton" class="btn waves-effect waves-light brown lighten-1 saveButton right">Save</button></div>');
+                    $(controlID).append('<div class="row"><div class="col s12 FieldName">Your Response</div></div><div class="row" id="challenge-actions" style="padding:10px"><div id="ActionArea" class="row"><div class="col s6" id="Action1Wrapper"><input type="radio" id="Action1" name="Action" value="accept" checked="checked" /><label for="Action1">Confirm</label></div><div class="col s6" id="Action3Wrapper"><input type="radio" id="Action3" name="Action" value="close" /><label for="Action3">Close</label></div></div><div id="CommentArea"><div class="FieldName">Comment</div><textarea id="Comment"></textarea></div><div></div><button type="button" id="SaveButton" class="btn waves-effect waves-light brown lighten-1 saveButton right">Save</button></div>');
 
                     $('#SaveButton').on('click', function () {
                         $(this).val('Please wait ...').attr('disabled', 'disabled');
@@ -49487,6 +49517,66 @@ function CollapsibleAttributesTile(controlID, contextList, permissions, type, id
 
     amplify.subscribe("AttributeCount", attributeCountNotice);
     $('#' + controlID).on('expanded', expanded);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+
+    //#endregion
+}
+function CollapsibleConversationTile(controlID, contextList, commentid) {
+    //var controlID_count = controlID + '_Count';
+    var controlID_sub = controlID + '_Sub';    
+    var CommentsOverlaySocial = null;
+
+    //#region Event Handlers
+        
+    function saveAction(data) {
+       
+    }
+
+    function expanded() {
+        if (CommentsOverlaySocial == null) {
+            CommentsOverlaySocial = new BoardViewModel();
+            CommentsOverlaySocial.ShowDateFilter = false;
+            CommentsOverlaySocial.ShowTypeFilter = false;
+            CommentsOverlaySocial.ShowSearch = false;
+            CommentsOverlaySocial.ShowAddCommentControls = false;
+            ko.applyBindings(CommentsOverlaySocial, document.getElementById(controlID_sub));            
+            CommentsOverlaySocial.changeObject('Comment', commentid);
+        }
+    }
+
+    function unsubscribe(data) {
+        CommentsOverlaySocial = null;
+                
+        amplify.unsubscribe("SaveAction", saveAction);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        $('#' + controlID).off('expanded', expanded);
+    }
+
+    //#endregion
+
+    //#region Clean up previous control logic before re-creating
+        
+
+    var exists = false;
+    try {
+        var exp = $('#' + controlID).jqxExpander('animationType');
+        if (exp) {
+            exists = true;
+        }
+    } catch (e) { }
+
+    //#endregion
+    if (!exists) {            
+        $('#' + controlID).html('<div>Conversation</div><div><div id="' + controlID_sub + '"  data-bind="template: {name: \'boardTmpl\' }"></div></div>');
+        $('#' + controlID).jqxExpander({ theme: theme, expanded: false });
+    }
+        
+    //#region Register Events
+        
+    $('#' + controlID).on('expanded', expanded);
+    amplify.subscribe("SaveAction", saveAction);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
 
@@ -56938,7 +57028,8 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
                             break;
                         case 'Challenge':                            
-                            setTimeout(function () { ChallengeNotificationTile('ChallengeNotification', id); }, 2000);
+                            setTimeout(function () { ChallengeNotificationTile('ChallengeNotification', contextList, id); }, 2000);
+                            ObjectStatisticsTile('MicroWidget1', type, id);
                             $("#Challenge").hide();
                             break;                        
                     }
@@ -56973,7 +57064,7 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
                         LineageDiagram('SourcingTile', type, id, false);
                         CertificationNotificationTile('CertificationNotification', id);
-                        ChallengeNotificationTile('ChallengeNotification', id);
+                        ChallengeNotificationTile('ChallengeNotification', contextList, id);
 
                         if (json.AllowRelatedArtifacts) {
                             RelatedArtifactsGrid('RelatedArtifactsTile', permissions, json.TypeName, typeID, id);
@@ -59456,7 +59547,12 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                         filterVM.setColumns(definition.FilterColumns, "ID", fusionAttributeID);
                     }
                     else {
-                        filterVM.setColumns(definition.FilterColumns);
+                        //try {
+                            filterVM.setColumns(definition.FilterColumns);
+
+                        //} catch (e) {
+
+                        //}
                     }
                     
 

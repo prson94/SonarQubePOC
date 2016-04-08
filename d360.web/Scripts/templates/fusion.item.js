@@ -111,7 +111,12 @@
                         filterVM.setColumns(definition.FilterColumns, "ID", fusionAttributeID);
                     }
                     else {
-                        filterVM.setColumns(definition.FilterColumns);
+                        //try {
+                            filterVM.setColumns(definition.FilterColumns);
+
+                        //} catch (e) {
+
+                        //}
                     }
                     
 

@@ -4022,6 +4022,7 @@ function ArtifactFiltersViewModel(columns) {
     self.clearFilters = function () {
         self.Filters([]);
         if (self.Columns().length > 0) {
+            //self.Filters.push(new GridFilterItemViewModel(self.Columns()));
             self.Filters.push(new GridFilterItemViewModel(self.Columns(),0));
         }
     };
@@ -4032,7 +4033,6 @@ function ArtifactFiltersViewModel(columns) {
         if (selectedColumnName) {
             var ix = -1;
             $.each(self.Columns(), function (cix, ci) {
-                console.log('datafield = ' + ci.datafield + ', selected column = ' + selectedColumnName);
                 if (ci.datafield == selectedColumnName) {
                     ix = cix;
                 }
@@ -4058,7 +4058,8 @@ function ArtifactFiltersViewModel(columns) {
     };
 
     if (self.Columns().length > 0) {
-        self.Filters.push(new GridFilterItemViewModel(columns,0));
+        //self.Filters.push(new GridFilterItemViewModel(columns));
+        self.Filters.push(new GridFilterItemViewModel(columns, 0));
     }
     
     return self;

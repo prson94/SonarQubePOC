@@ -649,7 +649,7 @@ namespace d360.web.Controllers
 
             foreach (var f in fields)
             {
-                var name = f.Name.Replace("'", "''").Replace("--", "");
+                var name = $"Field{f.ID}";//f.Name.Replace("'", "''").Replace("--", "");
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                 columns += $"{name}_T.FormattedValue as [{name}], ";
                 joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
@@ -681,7 +681,7 @@ namespace d360.web.Controllers
 
             foreach (var f in fields)
             {
-                var name = f.Name.Replace("'", "''").Replace("--", "");
+                var name = $"Field{f.ID}"; //f.Name.Replace("'", "''").Replace("--", "");
 
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
 

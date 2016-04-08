@@ -2892,11 +2892,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (StatisticTypes.Any(i => i.Name == o.Name))
+                            if (StatisticTypes.Any(i => i.Name == o.Name && i.Object == o.Object && i.ObjectID == o.ObjectID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (StatisticTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                            if (StatisticTypes.Any(i => i.Name == o.Name && i.Object == o.Object && i.ObjectID == o.ObjectID && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }

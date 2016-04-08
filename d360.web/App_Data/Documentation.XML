@@ -728,6 +728,11 @@
               Looks up a localized string similar to Define a Source to Target Mapping.
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.Allocate_Workflow_Challenge_Description">
+            <summary>
+              Looks up a localized string similar to Specify users of which role can respond to a challenge of Artifacts of the selected type.  Artifact Types which do not have roles specified which can respond to a challenge will allow all responsibilities associated with that Artifact to reply to a challenge.  If no owners exist administrator users will be able to respond to the challenge..
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.Allocate_Workflow_Confirmation">
             <summary>
               Looks up a localized string similar to {0} workflow successfully allocated..
