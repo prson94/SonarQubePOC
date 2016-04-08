@@ -997,8 +997,8 @@
                     <div class="message" data-bind="html: Body, visible: EditHidden" style="-ms-line-break: strict; -webkit-line-break: strict; line-break: strict"></div>
                     <div style="display:inline-block; width:100%">
                         <span>
-                            <span style="cursor:pointer" data-bind="click: CastUpVote"><i class="fa fa-thumbs-o-up"></i></span> <span data-bind="text: UpVoteCount"></span>
-                            <span style="cursor:pointer" data-bind="click: CastDownVote"><i class="fa fa-thumbs-o-down"></i></span> <span data-bind="text: DownVoteCount"></span>
+                            <span style="cursor:pointer" data-bind="click: CastUpVote, attr: {'data-id':ID, 'data-cache':'false', 'data-context':'Up', 'data-type':(UpVoteCount() != 0 ? 'Comment/Votes' : null)}"><i class="fa fa-thumbs-o-up"></i></span> <span data-bind="text: UpVoteCount"></span>
+                            <span style="cursor:pointer" data-bind="click: CastDownVote, attr: {'data-id':ID, 'data-cache':'false', 'data-context':'Down', 'data-type':(DownVoteCount() != 0 ? 'Comment/Votes' : null)}"><i class="fa fa-thumbs-o-down"></i></span> <span data-bind="text: DownVoteCount"></span>
                         </span>
                         <span style="margin-left:10px">
                             <button class="btn btn-small grey lighten-2 black-text btn-flat waves-light waves-effect" style="height:auto;padding:1px 5px;line-height:1.4;text-transform:none;font-size:90%" data-bind="click: function() { showReply(); hideTags(); hideEdit(); DeleteHidden(true);}, visible: (ReplyHidden() && ShowReplyControl())"><i style="font-size:80%;" class="fa fa-reply"></i> Reply</button>

@@ -257,6 +257,34 @@ namespace d360.web.Controllers
             return Content(sb.ToString(), "text/html");
         }
 
+        [Route("Comment/Votes/{commentId:int}/templates/tooltip/{voteAction}")]
+        public ContentResult _RenderCommentVoteTooltip(int commentId, string voteAction)
+        {            
+            var voteDirection = (voteAction ?? string.Empty).ToUpper() == "UP" ? 1 : -1;
+
+            var voters = Company.Query<string>(@"   select 
+	                                                    r.firstname + ' ' + r.lastname
+                                                    from [dbo].[CommentVote] cv
+	                                                    inner join [reporting].[global_resource] r on (r.resourceid = cv.resourceid)
+                                                    where
+	                                                    cv.commentid = @id
+		                                                    and
+	                                                    cv.vote = @vote", new { id = commentId, vote = voteDirection });
+
+            if(!voters.Any())
+                return Content("", "text/html");
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var user in voters)
+            {
+                sb.Append(user);
+                sb.Append("<br>");
+            }
+
+            return Content(sb.ToString(), "text/html");
+        }
+
         [Route("{type}/{id:int}/templates/tooltip/{templateAction}")]
         public ContentResult _RenderTooltip(SystemObjects type, int id, string templateAction)
         {

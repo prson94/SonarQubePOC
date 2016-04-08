@@ -431,7 +431,16 @@
                         // Set the text to an image HTML string with the correct src URL to the loading image you want to use
                         text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
                         ajax: {
-                            url: "/resources/" + $(this).data("type") + "/" + $(this).data("id") + "/templates/tooltip/" + $(this).data("context")
+                            url: "/resources/" + $(this).data("type") + "/" + $(this).data("id") + "/templates/tooltip/" + $(this).data("context"),
+                            once: ($(this).attr('data-cache') ? $(this).data('cache') : true),  // do we want to fetch the tooltip just once or recall each time?                            
+                            success: function(data) {
+                                if (!data || !data.length) {
+                                    this.destroy();
+                                }
+                                else {
+                                    this.set('content.text', data);
+                                }
+                            }
                         }
                     },
                     position: {
@@ -449,11 +458,11 @@
                     hide: {
                         fixed: true,
                         delay: 250,
-                    },
+                    },                    
                     //hide: 'mouseout',
                     style: {
                         classes: 'qtip-blue qtip-rounded'
-                    }
+                    }                    
                     //addTooltip(this);
                 });
             });
