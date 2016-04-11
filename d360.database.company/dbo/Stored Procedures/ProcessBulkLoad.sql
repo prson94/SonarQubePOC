@@ -1,7 +1,7 @@
-﻿CREATE procedure [dbo].[ProcessBulkLoad]
+﻿CREATE procedure [dbo].[ProcessBulkLoad] 
 --declare
 	@LoadID int
---set @LoadID = 29
+--set @LoadID = 201
 as
 begin
 	set nocount on;
@@ -158,6 +158,14 @@ begin
 
 		if @Object = 'ArtifactType'
 		begin
+			declare @RequiresParent bit
+			select	@RequiresParent =		case
+												when ParentID is null then cast(0 as bit)
+												else cast(1 as bit)
+											end
+									  from	ArtifactType 
+									  where	ID = @ObjectID
+
 			merge	Artifact T
 			using	(
 					select	O.LoadID,
@@ -184,6 +192,10 @@ begin
 																						and C.LoadID = LI.LoadID and C.ColumnIndex = I.ColumnIndex and C.Name like 'Parent %'
 												) P
 							where	LI.LoadID = @LoadID
+									and (
+											(@RequiresParent = 1 and P.ParentID is not null) or
+											@RequiresParent = 0
+										)
 							group by LI.LoadID,
 									IC_N.Value,
 									P.ParentID,
@@ -208,6 +220,17 @@ begin
 					insert (ArtifactTypeID, TaxonomyTypeID, ParentID, Name, [Description], [Status], UpdatedOn, UpdatedBy)
 					values (S.ArtifactTypeID, S.TaxonomyTypeID, S.ParentID, S.Name, S.[Description], 'Draft', getutcdate(), @UpdatedBy)
 			output	'Artifact', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
+
+			if @RequiresParent = 1
+			begin
+				-- Update the LoadItem table with the IDs we recieved in the merge statements above.
+				update	T
+				set		T.StatusMessage = 'Parent could not be found.'
+				from	LoadItem T
+						left join @ResolvedObjects S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex
+				where	S.ObjectID is null
+			end
+
 		end
 		else if @Object = 'AttributeType'
 		begin
@@ -485,7 +508,7 @@ begin
 		-- Update the LoadItems that were not successfully added or updated.
 		update	LoadItem
 		set		[Status] = 0,
-				[StatusMessage] = 'Item could not be added nor updated.'
+				[StatusMessage] = coalesce([StatusMessage], '') + ' Item could not be added nor updated.'
 		where	LoadID = @LoadID
 				and [ObjectID] is null
 	end
