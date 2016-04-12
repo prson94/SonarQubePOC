@@ -112,7 +112,7 @@ select  top 50
         c.objecttype,
         c.objecttypeid 
 from    cache.objectdetails c 
-where c.object = @type and c.objecttypeid = @id and lower(c.name) like lower(@search)", new { type = type.ToString(), id, search });
+where c.object = @type and c.objecttypeid = @id and lower(c.name) like lower(@search)", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true } , id, search });
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
