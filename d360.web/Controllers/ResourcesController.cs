@@ -285,25 +285,51 @@ namespace d360.web.Controllers
             return Content(sb.ToString(), "text/html");
         }
 
-        [Route("{type}/{id:int}/templates/tooltip/{templateAction}")]
-        public ContentResult _RenderTooltip(SystemObjects type, int id, string templateAction)
+        [Route("{type}/{itemid}/templates/tooltip/{templateAction}")]
+        public ContentResult _RenderTooltip(SystemObjects type, string itemid, string templateAction)
         {
-            string html = Company.RenderTooltip(templateAction, type, id);
+            string html = "";
 
-            if (type == SystemObjects.Resource)
+            if (type != SystemObjects.WorkflowTypeRelation)
             {
-                // Need to do extra processing here as the tooltip cannot populate from the company database.
-                var resource = Community.Resources.SingleOrDefault(i => i.ID == id);
-                if (resource != null)
+                int id = int.Parse(itemid);
+
+                html = Company.RenderTooltip(templateAction, type, id);
+
+                if (type == SystemObjects.Resource)
                 {
-                    var fields = Company.Filter<FieldWithRelation>(i => i.ObjectType == "Resource" && i.ObjectID == id).ToDictionary(k => k.Name, var => var.FormattedValue);
-                    fields.Add("Name", resource.FormatDisplayName());
-                    fields.Add("FirstName", resource.FirstName);
-                    fields.Add("LastName", resource.LastName);
-                    fields.Add("DateLastLoggedIn", resource.DateLastLoggedIn.HasValue ? resource.DateLastLoggedIn.Value.ToString("MM/dd/yyyy HH:mm:ss") : "Never");
-                    fields.Add("Email", resource.Email);
-                    fields.Add("Status", resource.Status);
-                    html = html.ReplaceTokenWithValues(fields);
+
+                    // Need to do extra processing here as the tooltip cannot populate from the company database.
+                    var resource = Community.Resources.SingleOrDefault(i => i.ID == id);
+                    if (resource != null)
+                    {
+                        var fields = Company.Filter<FieldWithRelation>(i => i.ObjectType == "Resource" && i.ObjectID == id).ToDictionary(k => k.Name, var => var.FormattedValue);
+                        fields.Add("Name", resource.FormatDisplayName());
+                        fields.Add("FirstName", resource.FirstName);
+                        fields.Add("LastName", resource.LastName);
+                        fields.Add("DateLastLoggedIn", resource.DateLastLoggedIn.HasValue ? resource.DateLastLoggedIn.Value.ToString("MM/dd/yyyy HH:mm:ss") : "Never");
+                        fields.Add("Email", resource.Email);
+                        fields.Add("Status", resource.Status);
+                        html = html.ReplaceTokenWithValues(fields);
+                    }
+                }
+            }
+            else
+            {
+                //select resourceid from WorkflowResource  where workflowid = <> and iscomplete = 0
+                var users = Company.Query<string>(@"select 
+	                                                    R.FirstName + ' ' + R.LastName
+                                                    from 
+	                                                    WorkflowResource  wr
+	                                                    inner join reporting.Global_Resource R on R.ResourceID = wr.ResourceID
+                                                    where 
+	                                                    workflowid = @wid 
+		                                                    and 
+	                                                    iscomplete = 0", new { wid = itemid });
+                foreach (var user in users)
+                {
+                    if (!string.IsNullOrEmpty(html)) html += "<br>";
+                    html += user;
                 }
             }
             

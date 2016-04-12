@@ -652,7 +652,7 @@ order by    W.DateStarted";
                         }
                         else
                         {
-                            item.ActivityName = "Waiting on owner(s)...";
+                            item.ActivityName = "Waiting on user(s)...";
                         }
                         item.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
                         item.WorkflowName = workflowType.GetWorkflowTypeDisplayName();

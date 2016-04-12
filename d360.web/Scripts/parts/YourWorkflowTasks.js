@@ -97,11 +97,12 @@
     function unsubscribe(data) {
         gridSource = null;
         gridAdapter = null;
-
+        
         amplify.unsubscribe("PageResized", pageResized);
         amplify.unsubscribe("SaveAction", saveAction);
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
         amplify.unsubscribe('ToolAction', localAction);
         //     amplify.unsubscribe('CancelAction', cancelAction);
     }
@@ -110,6 +111,7 @@
     amplify.subscribe("SaveAction", saveAction);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
     amplify.subscribe('ToolAction', localAction);
     // amplify.subscribe('CancelAction', cancelAction);
 
@@ -312,7 +314,11 @@
                         }
                     },
                     { datafield: "DateStarted", text: "Date Started", columntype: 'datetimeinput', filtertype: 'range', cellsformat: "MMM d yyyy" }, // hh:mm:ss tt },
-                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist' },
+                    { datafield: "ActivityName", text: "Activity", filtertype: 'checkedlist',
+                        cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {                                                        
+                            return '<div style="overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 15px;"' + (data.Activity == 0 ? 'data-type="WorkflowTypeRelation" data-context="list" data-id="' + data.WorkflowID + '"' : '') + '>' + value + '</div>';
+                        }
+                    },
                     {
                         datafield: "WorkflowID",
                         text: "",
