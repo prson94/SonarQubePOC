@@ -541,9 +541,15 @@
             </td>
         </tr>
         <tr>
-            <td colspan="2">
+            <td>
                 <div class="tile-clickable StatisticValue EventStatisticValue" data-tile data-uri="{{EventUrl}}" data-context="TileOverlay">{{EventCount}}</div>
                 <div class="StatisticName EventStatisticName">open events</div>
+            </td>
+            <td>
+                {{#if IssueUrl}}
+                <div class="tile-clickable StatisticValue EventStatisticValue" data-tile data-uri="{{IssueUrl}}" data-context="TileOverlay">{{IssueCount}}</div>
+                <div class="StatisticName EventStatisticName">issues</div>
+                {{/if}}     
             </td>
         </tr>
         <tr>

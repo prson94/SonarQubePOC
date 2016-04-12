@@ -589,7 +589,7 @@ function CommentItem(data, parent) {//, hub) {
     self.CurrentVotes = ko.observableArray(_currentVotes);
 
     self.UpVoteCount = ko.computed(function () {
-        var count = 0;
+        var count = 0;        
         for(var i = 0; i < self.CurrentVotes().length; i++) {
             if (self.CurrentVotes()[i].Vote() > 0)
                 count++;
@@ -598,7 +598,7 @@ function CommentItem(data, parent) {//, hub) {
     }, self);
 
     self.DownVoteCount = ko.computed(function () {
-        var count = 0;
+        var count = 0;        
         for (var i = 0; i < self.CurrentVotes().length; i++) {
             if (self.CurrentVotes()[i].Vote() < 0)
                 count++;
@@ -2661,7 +2661,7 @@ var ObjectStatisticsTileModel = function (type, id) {
     //self.ScoreOverlayUri = ko.computed(function () {
     //    return '/overlays/' + self.ObjectType + '/' + self.ObjectID + '/score';
     //}, self);
-
+    
     self.ChangeObject = function (type, id) {
         self.ObjectType = type;
         self.ObjectID = id;
@@ -3553,9 +3553,9 @@ var BoardViewModel = function (initialDaysToLookBack) {
     if (CompanySettings.DisableCommunityPosting == 'false') {
         typeOps.push(discussion);
     }
-    if (CompanySettings.DisableIssuePosting == 'false') {
-        typeOps.push(issue);
-    }
+    //if (CompanySettings.DisableIssuePosting == 'false') {
+    //    typeOps.push(issue);
+    //}
     //if (CompanySettings.DisableQuestionPosting == 'false') {
     //    typeOps.push(question);
     //}

@@ -1221,8 +1221,12 @@ order by	Date desc",
                         model.Score = i.Value;
                         model.ScoreUrl = i.Url;
                         break;
+                    case "Issues":
+                        model.IssueCount = i.Value;
+                        model.IssueUrl = i.Url;
+                        break;
                     default:
-                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name), Url = i.Url });
+                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name ?? ""), Url = i.Url });
                         break;
                 }
             });

@@ -273,4 +273,10 @@
   <data name="Challenge_Icon" xml:space="preserve">
     <value>question</value>
   </data>
+  <data name="Issue" xml:space="preserve">
+    <value>Raise Issue</value>
+  </data>
+  <data name="Issue_Icon" xml:space="preserve">
+    <value>flag</value>
+  </data>
 </root>

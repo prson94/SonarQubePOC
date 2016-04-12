@@ -207,6 +207,12 @@ namespace d360.core.entities
         public string ScoreUrl { get; set; }
 
         [DataMember]
+        public int IssueCount { get; set; }
+
+        [DataMember]
+        public string IssueUrl { get; set; }
+        
+        [DataMember]
         public List<ObjectStatisticTileItemModel> Items { get; set; }
     }
 

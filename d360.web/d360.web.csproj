@@ -1086,6 +1086,7 @@
     <Content Include="Views\Workflow\WorkflowActionOverlay_4.cshtml" />
     <Content Include="Views\Apps\Artifacts.cshtml" />
     <Content Include="Views\Apps\Workflow.cshtml" />
+    <Content Include="Views\Overlays\Issues.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -911,6 +911,14 @@ where   h.ID <> @t order by h.[Level] desc;
                         {
                             list.Add(new PageActionItem { Context = "Challenge", Icon = Resources.Actions.Challenge_Icon, Title = Resources.Actions.Challenge, Uri = $"/form/Challenge?id={id}" });
                         }
+                        
+                        var companySettings = Community.GetCompanySettings();
+                        var disableIssues = "";
+
+                        companySettings.TryGetValue("DisableIssuePosting", out disableIssues);
+
+                        if(string.Compare(disableIssues, bool.TrueString, true) != 0 )
+                            list.Add(new PageActionItem { Context = "Issue", Icon = Resources.Actions.Issue_Icon, Title = Resources.Actions.Issue, Uri = $"/form/RaiseIssue?id={id}" });
                     }
                     break;
                     #endregion
@@ -1573,7 +1581,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     {
                         addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
 
-                        var workflows = WorkflowType.CertifyArtifact.GetWorkflowTypeEnumList().Where(i => i.ID != WorkflowType.WorkIssue).ToList();
+                        var workflows = WorkflowType.CertifyArtifact.GetWorkflowTypeEnumList();
 
                         foreach (var r in workflows)
                         {

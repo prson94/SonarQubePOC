@@ -7,7 +7,7 @@
         var typeID = context.params['typeid'];
         var id = context.params['id'];
         var permissions = new PermissionsModel();
-
+        
         $.getJSON('/api/artifact/' + id, function (json) {
 
             var getArtifactStatusForeColor = function (status) {
@@ -62,6 +62,8 @@
                     switch (data.context) {
                         case contextList.Comment:
                         case 'commentform':
+                        case 'Issue':
+                        case 'IssueWorkflow':
                             ObjectStatisticsTile('MicroWidget1', type, id);
                             break;
                         case contextList.Intersect:

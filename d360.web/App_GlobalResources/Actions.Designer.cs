@@ -376,6 +376,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Raise Issue.
+        /// </summary>
+        internal static string Issue {
+            get {
+                return ResourceManager.GetString("Issue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to flag.
+        /// </summary>
+        internal static string Issue_Icon {
+            get {
+                return ResourceManager.GetString("Issue_Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Levels.
         /// </summary>
         internal static string Levels {

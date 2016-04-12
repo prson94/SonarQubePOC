@@ -38,7 +38,23 @@ declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25
 			group by	T.Name,
 						T.ID
 			order by	T.Name
+
+
+		insert into @table
+			select	
+				'Issue',
+				count(1),
+				'Issues',
+				'/overlays/Artifact/' + cast(@id as varchar(10)) + '/Issues'
+			from	
+					workflow w
+					inner join Comment C on C.ID = w.data.value('(fields/CommentID)[1]', 'int')
+					inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType = 'Artifact'
+					inner join Artifact A on w.workflowtype = 3 and w.datecompleted is null and A.ID = cr.objectid
+			where 
+				a.id = @id			
 	end
+
 
 	select * from @table
 

@@ -181,6 +181,12 @@ where A.AuditID = {0}", auditID);
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
 
+        [Route("{type}/{id:int}/issues")]
+        public ActionResult Issues(SystemObjects type, int id)
+        {
+            return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
+        }
+
         public ActionResult LookupTypeUsage(int id)
         {
             var detail = Company.GetById<LookupType>(id);

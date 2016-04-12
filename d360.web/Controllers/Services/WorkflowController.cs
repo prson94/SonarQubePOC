@@ -330,7 +330,7 @@ order by    A.ObjectTypeName, A.Name";
             public int ResourceID { get; set; }
             public string ResourceName { get; set; }
             public string ResourceUrl { get; set; }
-            public DateTime DateStarted { get; set; }
+            public DateTime DateStarted { get; set; }            
         }
 
         string CurrentUserWorkflow3TaskSql =
@@ -350,6 +350,25 @@ from	    Workflow W
 												and W.WorkflowType = 3
                                                 and WR.IsComplete = 0 
 {0} 
+order by    W.DateStarted";
+
+
+        string CurrentUserWorkflow3SpecificObjectTaskSql =
+@"select		W.ID as WorkflowID,
+		    C.Body as Issue,
+			R.ResourceID,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
+			W.DateStarted,
+		    WR.Activity            
+from	    Workflow W
+		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
+			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
+            inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
+			left outer join WorkflowResource WR on	WR.WorkflowID = W.ID 											    
+                                                and WR.ResourceID = @r												
+                                                and WR.IsComplete = 0 												                        
+            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3
 order by    W.DateStarted";
 
 
@@ -616,6 +635,34 @@ order by    W.DateStarted";
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, "The Workflow Type you provided is not valid.  No workflows can be found of this type.");
         }
 
+        [Route("tasks/types/{workflowType:int}/{objectid:int}/{objecttype}"), HttpGet]
+        public HttpResponseMessage GetTaskByIDForObjectAndType(WorkflowType workflowType, int objectid, string objecttype) 
+        {
+            switch (workflowType)
+            {
+                case WorkflowType.WorkIssue:                    
+                    var list = Company.Query<WorkflowTask3Model>(CurrentUserWorkflow3SpecificObjectTaskSql, new { r = Company.CurrentResourceID, type = objecttype, id = objectid });
+
+                    foreach (var item in list)
+                    {
+                        if ((int)item.Activity != 0)
+                        {
+                            item.ActivityDescription = item.Activity.GetReportTileTypeDescription();
+                            item.ActivityName = item.Activity.GetActivityTypeDisplayName();
+                        }
+                        else
+                        {
+                            item.ActivityName = "Waiting on owner(s)...";
+                        }
+                        item.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
+                        item.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
+                    }
+                    return Request.CreateResponse(HttpStatusCode.OK, list);             
+            }
+
+            return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow not found");
+        }
+
         /// <summary>
         /// Gets a list of open workflow tasks for the current user.
         /// </summary>
@@ -683,33 +730,6 @@ order by    W.DateStarted";
             }
 
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow not found");
-//            string sql = @"select	W.ID as WorkflowID,
-//		W.WorkflowType as Workflow,
-//		W.Data,
-//		W.DateStarted,
-//		WR.Activity,
-//		R.ResourceID as RequestingResourceID,
-//		R.FirstName + ' ' + R.LastName as RequestingResourceName,
-//		dbo.GenerateObjectUrl('Resource', 1, R.ResourceID) as RequestingResourceUrl,
-//		TT.Name as TaxonomyTypeName,
-//		AT.Name as ArtifactTypeName
-//from	Workflow W
-//		inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-//											and W.DateCompleted is null
-//											and WR.ResourceID = @r
-//                                            and WR.IsComplete = 0
-//		left join reporting.Global_Resource R on R.ResourceID = W.Data.value('(/fields/RequestingResourceID)[1]', 'int' )
-//		left join TaxonomyType TT on TT.ID = W.Data.value('(/fields/TaxonomyTypeID)[1]', 'int' )
-//		left join ArtifactType AT on AT.ID = W.Data.value('(/fields/ArtifactTypeID)[1]', 'int' )
-//where W.ID = @w";            
-//            var models = Company.Query<WorkflowTask>(sql, new { r = Company.CurrentResourceID, w = id }).ToList();
-
-//            hydrateTasks(models);
-
-//            if (models.Count > 0)
-//                return models[0];
-//            else
-//                return null;
         }
 
         /// <summary>
