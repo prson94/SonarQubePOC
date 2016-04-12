@@ -5106,7 +5106,7 @@ order by  D.TextPath
         public JsonResult FusionPromotionRule_DeleteFields(int id)
         {
             var list = new List<EditableField>();
-            var a = Company.GetById<Fusion>(id);
+            var a = Company.GetById<FusionAttributePromotionRule>(id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
