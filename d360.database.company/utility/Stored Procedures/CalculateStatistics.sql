@@ -1,4 +1,4 @@
-﻿CREATE procedure [utility].[CalculateStatistics]
+﻿create procedure [utility].[CalculateStatistics]
 --declare
 	@Type varchar(50) = NULL,
 	@ID int = NULL,
@@ -175,7 +175,7 @@ begin
 		if (@CheckType = 3)
 		begin
 			select	@PropertyName = f.value('(PropertyName/text())[1]', 'varchar(250)'),
-					@Value = f.value('(Value/text())[1]', 'nvarchar(4000)')
+					@Value = f.value('(PropertyValue/text())[1]', 'nvarchar(4000)')
 			from	@Configuration.nodes('/fields') as F(f)
 
 			if @Object = 'ArtifactType' and @PropertyName = 'Status'
@@ -447,7 +447,7 @@ begin
 		-- PREDICATE CHECK
 		if (@CheckType = 10)
 		begin
-			select	@PredicateID = f.value('(PredicateID/text())[1]', 'int')
+			select	@PredicateID = f.value('(Predicate/text())[1]', 'int')
 			from	@Configuration.nodes('/fields') as F(f)
 
 			insert into #Statistics
