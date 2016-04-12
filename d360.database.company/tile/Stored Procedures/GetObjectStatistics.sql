@@ -7,8 +7,9 @@ declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25
 	
 	insert into @table
 		select NULL, count(1), 'Followers', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/followers'
-		from	Follow
-		where	ObjectType = @type and ObjectID = @id
+		from	Follow F
+		inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID
+		where	F.ObjectType = @type and F.ObjectID = @id
 	
 	insert into @table
 		select	NULL, count(1), 'Comments', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/comments'
