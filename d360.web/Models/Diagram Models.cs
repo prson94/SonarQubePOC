@@ -44,10 +44,9 @@ namespace d360.web.Models
         public bool exclude { get; set; }
         public int intersectMapId { get; set; }
         public int intersectId { get; set; }
-
         public int sourceRuleCount { get; set; }
-
         public int mappingRuleCount { get; set; }
+        public int challengeCount { get; set; }
         public override string ToString()
         {
             return level.ToString();
@@ -57,6 +56,7 @@ namespace d360.web.Models
     public class JsonLinkItem
     {
         public int id { get; set; }
+        public int intersectTypeId { get; set; }
         public string from { get; set; }
         public string frompid { get { return "OUT"; } }
         public string to { get; set; }

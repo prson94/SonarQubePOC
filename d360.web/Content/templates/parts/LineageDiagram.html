@@ -47,10 +47,6 @@
             </div>
         </div>
     </div>
-    <!--<div id="{{control}}_window_sourcemapping_editor">
-        <div>Source To Target Mapping Rules</div>
-        <div id="{{control}}_popover_sourcemapping_editor_body" data-bind="template: {name: 'sourceMappingEditTmpl' }"></div>
-    </div>-->
     <div id="{{control}}_popover_sourcerule_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:500px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px;">
         <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcerule_editor').hide(200);"><i class="fa fa-remove"></i></a></div>
         <div id="{{control}}_popover_sourcerule_editor_body" data-bind="template: {name: 'hierarchyRuleEditTmpl' }"></div>
@@ -59,6 +55,7 @@
         <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcemapping_editor').hide(200); return false;"><i class="fa fa-remove"></i></a></div>
         <div id="{{control}}_popover_sourcemapping_editor_body" data-bind="template: {name: 'sourceMappingEditTmpl' }"></div>
     </div>
+    
     <div id="{{control}}_ribbon_expander" style="width:100%;">
         <div style="font-size:1.1em;">
             <i class="fa fa-gear"></i> Diagram Controls
@@ -161,30 +158,56 @@
                     <div id="{{control}}_sidebar" style="height:100%; overflow-y: scroll;">
                         <div id="{{control}}_info">
                             <div><i class="fa fa-info-circle"></i> Info</div>
-                            <div style="padding: 10px" id="{{control}}_info_body"></div>
-                        </div>
-                        <div id="{{control}}_sourcerules">
-                            <div><i class="fa fa-code-fork"></i> Hierarchy Rules</div>
-                            <div style="padding:10px">
-                                <div id="{{control}}_sourcerules_table"></div>
+                            <div style="padding: 10px">
+                                <div id="{{control}}_info_body"></div>
+                                <div id="{{control}}_info_detail_wrapper">
+                                    <div>
+                                        <div style="text-align:right;display:none;" id="{{control}}_info_detail_edit"></div>
+                                    </div>
+                                    <div id="{{control}}_info_detail"></div>
+                                </div>
                             </div>
                         </div>
-                        <div id="{{control}}_mappingrules">
-                            <div><i class="fa fa-exchange"></i> Mapping Rules</div>
-                            <div style="padding:10px">
-                                <div id="{{control}}_mappingrules_table"></div>
-                            </div>
-                        </div>
-                        <div id="{{control}}_responsibilities">
-                            <div><i class="fa fa-retweet"></i> Responsibilities</div>
-                            <div style="padding:10px">
-                                <div id="{{control}}_responsibilities_table"></div>
-                            </div>
-                        </div>
-                        <div id="{{control}}_fusion">
-                            <div><i class="fa fa-database"></i> Fusion Relationships</div>
-                            <div style="padding:10px">
-                                <div id="{{control}}_fusion_body"></div>
+                        <div>
+                            <div id="{{control}}_tabs">
+                                <ul>
+                                    <li id="{{control}}_sourcerules_tab">
+                                        <i class="fa fa-2x fa-code-fork"></i>
+                                    </li>
+                                    <li id="{{control}}_mappingrules_tab">
+                                        <i class="fa fa-2x fa-exchange"></i>
+                                    </li>
+                                    <li id="{{control}}_responsibilities_tab">
+                                        <i class="fa fa-2x fa-user"></i>
+                                    </li>
+                                    <li id="{{control}}_fusion_tab">
+                                        <i class="fa fa-2x fa-database"></i>
+                                    </li>
+                                </ul>
+                                <div style="padding:10px;">
+                                    <h4 style="padding-bottom:3px;">Hierarchy Rules</h4>
+
+                                    <div id="{{control}}_sourcerules_content">
+                                    </div>
+                                </div>
+                                <div style="padding:10px;">
+                                    <h4 style="padding-bottom:3px;">Mapping Rules</h4>
+
+                                    <div id="{{control}}_mappingrules_content">
+                                    </div>
+                                </div>
+                                <div style="padding:10px;">
+                                    <h4 style="padding-bottom:3px;">Responsibilities</h4>
+
+                                    <div id="{{control}}_responsibilities_content">
+                                    </div>
+                                </div>
+                                <div style="padding:10px;">
+                                    <h4 style="padding-bottom:3px;">Fusion Relationships</h4>
+
+                                    <div id="{{control}}_fusion_content">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

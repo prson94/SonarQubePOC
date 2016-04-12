@@ -1,5 +1,8 @@
-﻿function ObjectDetail(controlID, type, id) {
-    var tmpl = Handlebars.getTemplate('DetailTile');
+﻿function ObjectDetail(controlID, type, id, useSmallUI) {
+    var template = 'DetailTile';
+    if (useSmallUI)
+        template = 'DetailTileSmall';
+    var tmpl = Handlebars.getTemplate(template);
 
     var processFieldLabel = function (fix, f) {
         f.labelID = controlID + '_' + f.FieldName;

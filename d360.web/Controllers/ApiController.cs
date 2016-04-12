@@ -3008,6 +3008,16 @@ from	IntersectMapSourceRule J
             return rules;
         }
 
+        [HttpGet, Route("{focal}/{focalID:int}/{source}/{sourceID:int}/{target}/{targetID:int}/rules")]
+        public SourceRulesViewModel GetSourceRulesForRelationship(string focal, int focalID, string source, int sourceID, string target, int targetID)
+        {
+            var model = GetSourceRules(focal, focalID, target, targetID);
+
+            model.Rules = model.Rules.Where(r => r.Items.Count(i => i.SourceObject == source && i.SourceObjectID == sourceID) > 0).ToList();
+
+            return model;
+
+        }
 
         private List<int> LoadAttributes(int intersectTypeID)
         {                        

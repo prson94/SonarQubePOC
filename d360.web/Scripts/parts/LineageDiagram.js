@@ -2,6 +2,7 @@
     var originalObject = type;
     var originalObjectID = id;
     var fullscreen = false;
+    var selectedData = null;
     var permissions = new PermissionsModel();
     permissions.GetPermissionsForObject(type, id);
 
@@ -25,9 +26,9 @@
 
     var controlID_info = controlID + '_info';
     var controlID_info_body = controlID + '_info_body';
-
-    var controlID_sourcerules = controlID + '_sourcerules';
-    var controlID_sourcerules_table = controlID + '_sourcerules_table';
+    var controlID_info_detail = controlID + '_info_detail';
+    var controlID_info_detail_wrapper = controlID + '_info_detail_wrapper';
+    var controlID_info_detail_edit = controlID + '_info_detail_edit';
 
     var controlID_add_search_text = controlID + '_add_search_text';
     var controlID_add_search = controlID + '_add_search';
@@ -41,15 +42,6 @@
     var controlID_overlay_cancel = controlID + '_overlay_cancel';
     var controlID_overlay_add = controlID + '_overlay_add';
     var controlID_overlay_roles = controlID + '_overlay_roles';
-
-    var controlID_responsibilities = controlID + '_responsibilities';
-    var controlID_responsibilities_table = controlID + '_responsibilities_table';
-
-    var controlID_fusion = controlID + '_fusion';
-    var controlID_fusion_body = controlID + '_fusion_body';
-
-    var controlID_mappingrules = controlID + '_mappingrules';
-    var controlID_mappingrules_table = controlID + '_mappingrules_table';
 
     var controlID_ribbon_spacer = controlID + '_ribbon_spacer';
     var controlID_ribbon_content = controlID + '_ribbon_content';
@@ -79,11 +71,32 @@
     var controlID_popover_sourcemapping_editor = controlID + '_popover_sourcemapping_editor';
     var controlID_popover_sourcemapping_editor_body = controlID_popover_sourcemapping_editor + '_body';
 
-    //var controlID_window_sourcemapping_editor = controlID + '_window_sourcemapping_editor';
+    var controlID_tabs = controlID + '_tabs';
+    var controlID_fusion_tab = controlID + '_fusion_tab';
+    var controlID_sourcerules_tab = controlID + '_sourcerules_tab';
+    var controlID_mappingrules_tab = controlID + '_mappingrules_tab';
+    var controlID_responsibilities_tab = controlID + '_responsibilities_tab';
+    var controlID_fusion_content = controlID + '_fusion_content';
+    var controlID_sourcerules_content = controlID + '_sourcerules_content';
+    var controlID_mappingrules_content = controlID + '_mappingrules_content';
+    var controlID_responsibilities_content = controlID + '_responsibilities_content';
+    var tabs = {
+        "sourcerules": 0,
+        "mappingrules": 1,
+        "responsibilities": 2,
+        "fusion": 3
+    };
+    var defaultTabContent = '<div style="height:100px;text-align:center;padding:25px;"><i class="fa fa-2x fa-spinner fa-spin"></i></div>';
+
     //#endregion
 
     //#region Control instantiation
 
+    $("#" + controlID_tabs).jqxTabs({ theme: theme, animationType: 'fade', selectionTracker: true }).on('tabclick',function(event) {
+        var index = event.args.item;
+        loadTab(index);
+    });
+    
     $("#" + controlID_ribbon_zoom_100).jqxButton({ theme: theme, height: "100%", width: "40%" });
     $("#" + controlID_ribbon_zoom_fit).jqxButton({ theme: theme, height: "100%", width: "40%" });
     $("#" + controlID_ribbon_save).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true });
@@ -97,12 +110,12 @@
 
     $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
     $("#" + controlID_ribbon_sourcemapping_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
-    $("#" + controlID_sourcerules).jqxExpander({ theme: theme }).jqxExpander('collapse');
+
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
-    $("#" + controlID_responsibilities).jqxExpander({ theme: theme }).jqxExpander('collapse');
-    $("#" + controlID_fusion).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
-    $("#" + controlID_mappingrules).jqxExpander({ theme: theme }).jqxExpander('collapse');
+
+    //$("#" + controlID_info_table_wrapper).hide();
+
     //#endregion
 
     //#region Event Handlers
@@ -375,7 +388,7 @@
 
     var lineageResponsibilityAdapter = new $.jqx.dataAdapter(lineageResponsibilitySource);
 
-    $('#' + controlID_responsibilities_table).jqxGrid({
+    $('#' + controlID_responsibilities_content).jqxGrid({
         altrows: true,
         width: overlay_grid_width,
         autoheight: true,
@@ -432,7 +445,7 @@
 
     var technicalRelationsAdapter = new $.jqx.dataAdapter(technicalRelationsSource);
 
-    $('#' + controlID_fusion_body).jqxGrid({
+    $('#' + controlID_fusion_content).jqxGrid({
         width: overlay_grid_width,
         autoheight: true,
         sortable: true,
@@ -450,7 +463,7 @@
         theme: list_theme,
         groupable: false,
         ready: function () {
-            $('#' + controlID_fusion_body).jqxGrid('autoresizecolumns');
+            $(this).jqxGrid('autoresizecolumns');
         },
         columns: [
             //{ text: 'Type', groupable: true, datafield: 'TargetTypeName' },
@@ -464,6 +477,7 @@
     });
 
     //#endregion
+
 
     //#region methods
 
@@ -614,6 +628,7 @@
         return {
             key: null,
             id: null,
+            intersectTypeId: null,
             from: null,
             fromPortId: "OUT",
             to: null,
@@ -651,7 +666,9 @@
             sourceRuleCount: 0,
             sourceMappingCount: 0,
             hasMappingRules: false,
-            hasSourceRules: false
+            hasSourceRules: false,
+            challengeCount: 0,
+            hasChallenges: false
         };
     };
 
@@ -797,12 +814,12 @@
 
     function getObjectsBySearch() {
         var typeSelect = $('#' + controlID_add_artifact_type).val().split('|');
-
         var data = {
             type: typeSelect[0].replace('Type', ''),
             id: typeSelect[1],
             search: $('#' + controlID_add_search_text).val()
         };
+
 
         $.ajax({
             url: '/Diagrams/ObjectsBySearch',
@@ -838,7 +855,6 @@
             type1: $('#' + controlID_add_artifact_type + ' option:selected').text(),
             type2: ''
         };
-
         //for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
         //    if (myDiagram.model.nodeDataArray[i].key == $('#ddlRel').val()) {
         //        data.type2 = myDiagram.model.nodeDataArray[i].type;
@@ -959,80 +975,9 @@
                 alignment: go.Spot.BottomLeft,
                 margin: 5
             },
-            g(go.Panel,
-                "Auto",
-                {
-                    alignment: go.Spot.Center,
-                    margin: 2
-                },
-                            g(go.Shape, "Circle",
-                {
-                    stroke: null,
-                    toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: 'Source rule defined' })))
-                },
-                new go.Binding("fill", "foreColor")
-            ),
-            g(go.TextBlock,
-                {
-                    row: 0,
-                    margin: 0,
-                    alignment: go.Spot.Center,
-                    editable: false,
-                    font: (fontSize) + "pt FontAwesome",
-                    text: "\uf126"
-                },
-                new go.Binding("stroke", "backColor")
-            ),
-            //g(go.TextBlock,
-            //    {
-            //        row: 0,
-            //        margin: 0,
-            //        alignment: go.Spot.Right,
-            //        editable: false,
-            //        font: "5pt sans-serif",
-            //    },
-            //    new go.Binding("text", "sourceRuleCount"),
-            //    new go.Binding("stroke", "backColor")
-            //),
-            new go.Binding("visible", "hasSourceRules")
-             ),
-             g(go.Panel,
-                "Auto",
-                {
-                    alignment: go.Spot.Center,
-                    margin: 2
-                },
-                            g(go.Shape, "Circle",
-                {
-                    stroke: null,
-                    toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: 'Mapping rule defined' })))
-                },
-                new go.Binding("fill", "foreColor")
-            ),
-            g(go.TextBlock,
-                {
-                    row: 0,
-                    margin: 0,
-                    alignment: go.Spot.Center,
-                    editable: false,
-                    font: (fontSize) + "pt FontAwesome",
-                    text: "\uf0ec"
-                },
-                new go.Binding("stroke", "backColor")
-            ),
-            //g(go.TextBlock,
-            //    {
-            //        row: 0,
-            //        margin: 0,
-            //        alignment: go.Spot.Right,
-            //        editable: false,
-            //        font: "5pt sans-serif",
-            //    },
-            //    new go.Binding("text", "mappingRuleCount"),
-            //    new go.Binding("stroke", "backColor")
-            //),
-            new go.Binding("visible", "hasMappingRules")
-          )
+            makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", fontSize),
+            makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", fontSize),
+            makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", fontSize)
         ),
         g(go.Panel, "Table",
             g(go.TextBlock, {
@@ -1114,6 +1059,36 @@
            ));
 
         myPalette.nodeTemplateMap.add("Artifact", node);
+    }
+
+    function makeIconPanel(icon, tooltip, binding, fontSize) {
+        var iconPanel = g(go.Panel,
+         "Auto",
+         {
+             alignment: go.Spot.Center,
+             margin: 2
+         },
+              g(go.Shape, "Circle",
+                 {
+                     stroke: null,
+                     toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: tooltip })))
+                 },
+             new go.Binding("fill", "foreColor")),
+         g(go.TextBlock,
+             {
+                 row: 0,
+                 margin: 0,
+                 alignment: go.Spot.Center,
+                 editable: false,
+                 font: (fontSize) + "pt FontAwesome",
+                 text: icon
+             },
+             new go.Binding("stroke", "backColor")
+         ),
+        new go.Binding("visible", binding)
+       );
+
+        return iconPanel;
     }
 
     function markForDeletion(set) {
@@ -1198,41 +1173,40 @@
         }
     }
 
-    function toggleExpanders(data) {
-        //console.log(data);
-        if (data == null) {
-            $("#" + controlID_sourcerules).jqxExpander('collapse');
-            $("#" + controlID_info).jqxExpander('collapse');
-            $("#" + controlID_responsibilities).jqxExpander('collapse');
-            $("#" + controlID_fusion).jqxExpander('collapse');
-            $("#" + controlID_mappingrules).jqxExpander('collapse');
-            $("#" + controlID_info_body).html('');
-            $("#" + controlID_sourcerules_table).html('');
-            $("#" + controlID_mappingrules_table).html('');
+    function toggleTabs(data) {
+        var first = -1;
+        var delay = 0;
 
-            try {
-                technicalRelationsSource.url = null;
-                $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
-            } catch (e) { }
-            try {
-                lineageResponsibilitySource.url = null;
-                $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
-            } catch (e) { }
+        if (data == null) {
+            $("#" + controlID_info).jqxExpander('collapse');
+            $("#" + controlID_info_body).html('');
+            $("#" + controlID_info_detail_wrapper).hide();
+            $("#" + controlID_info_detail).html('');
+
+            $('#' + controlID_tabs).hide(delay);
+            for (var i = 0; i < tabs.length; i++) {
+                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + i + ")").css("display", "none");
+            }
 
         } else {
+            $('#' + controlID_tabs).show(delay);
             if (data.diagramObjectType == 'Node') {
+                first = tabs["responsibilities"];
 
-                try {
-                    lineageResponsibilitySource.url = '/api/' + data.type + '/' + data.id + '/ownership?showHidden=false';
-                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
-                    $("#" + controlID_responsibilities).jqxExpander('expand');
-                } catch (e) { $("#" + controlID_responsibilities).jqxExpander('collapse'); }
+                $("#" + controlID_info_detail_wrapper).hide();
+                $("#" + controlID_info_detail).html('');
 
-                try {
-                    technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.type + '&tID=' + data.id;
-                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
-                    $("#" + controlID_fusion).jqxExpander('expand');
-                } catch (e) { $("#" + controlID_fusion).jqxExpander('collapse'); }
+                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "block");
+                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
+
+                    try {
+                        technicalRelationsSource.url = null;
+                        $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
+                    } catch (e) { }
+                    try {
+                        lineageResponsibilitySource.url = null;
+                        $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
+                    } catch (e) { }
 
 
                 $.ajax({
@@ -1246,90 +1220,198 @@
                     $("#" + controlID_info).jqxExpander('collapse');
                 });
 
-                
-                if (data.hasSourceRules) {
-                    $.ajax({
-                        url: '/api/' + type + '/' + id + '/sources/' + data.type + '/' + data.id + '/rules',
-                        async: true
-                    }).done(function (data) {
-                        var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
-                        $('#' + controlID_sourcerules_table).html(sourceTemplate(data));
-                        $("#" + controlID_sourcerules).jqxExpander('expand');
-                    }).fail(function () {
-                        $('#' + controlID_sourcerules_table).html('');
-                        $("#" + controlID_sourcerules).jqxExpander('collapse');
-                    });
-                } else {
-                    $('#' + controlID_sourcerules_table).html('');
-                    $("#" + controlID_sourcerules).jqxExpander('collapse');
-                }
-
-
                 if (data.hasMappingRules) {
-                    $.ajax({
-                        url: '/form/sourcetarget/load/' + type + '/' + id + '/' + data.type + '/' + data.id + '/' + data.type + '/' + data.id
-                    }).done(function (data) {
-                        for (var i = 0; i < data.items.length; i++) {
-                            data.items[i].index = i + 1;
-                        }
-                        var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
-                        $('#' + controlID_mappingrules_table).html(sourceTemplate(data));
-                        $("#" + controlID_mappingrules).jqxExpander('expand');
-                    }).fail(function () {
-                        $('#' + controlID_mappingrules_table).html('');
-                        $("#" + controlID_mappingrules).jqxExpander('collapse');
-                    });
-                } else {
-                    $('#' + controlID_mappingrules_table).html('');
-                    $("#" + controlID_mappingrules).jqxExpander('collapse');
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
+                    $("#" + controlID_mappingrules_content).html(defaultTabContent);
+                    first = tabs["mappingrules"];
+                } else { 
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
                 }
 
-                
-            } else {
+                if (data.hasSourceRules) {
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "block");
+                    $("#" + controlID_sourcerules_content).html(defaultTabContent);
+                    first = tabs["sourcerules"];
+                } else {
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "none");
+                }
+
+            } else if (data.diagramObjectType == 'Link') { //
                 var from = myDiagram.model.findNodeDataForKey(data.from);
                 var to = myDiagram.model.findNodeDataForKey(data.to);
+                first = tabs["fusion"];
 
-                $("#" + controlID_sourcerules).jqxExpander('collapse');
-                $("#" + controlID_info).jqxExpander('collapse');
-                $("#" + controlID_responsibilities).jqxExpander('collapse');
-                $("#" + controlID_fusion).jqxExpander('collapse');
-                $("#" + controlID_info_body).html('');
-                $("#" + controlID_sourcerules_table).html('');
-               
+                //if (permissions.HasPermission("Root", "Update")) {
+                //    TileTools("#" + controlID_info_table_add, [
+                //        { icon: 'plus', uri: '/form/AddFieldType?type=' + 'IntersectType' + '&id=' + data.intersectTypeId, context: contextList.FieldType, title: 'Add definition attribute' }
+                //    ]);
+                //} else {
+                //    $("#" + controlID_info_table_add).html('');
+                //}
+
+                var intersectId = 0;
+
+                if (from != null && from.intersectMapId == data.key)
+                    intersectId = from.intersectId;
+                if (to != null && to.intersectMapId == data.key)
+                    intersectId = to.intersectId;
+
+                $.ajax({
+                    url: '/resources/IntersectType/' + data.intersectTypeId + '/templates/tooltip/Preview',
+                    async: true
+                }).done(function (data) {
+                    $('#' + controlID_info_body).html(data);
+                    $("#" + controlID_info).jqxExpander('expand');
+                }).fail(function () {
+                    $('#' + controlID_info_body).html('');
+                    $("#" + controlID_info).jqxExpander('collapse');
+                });
+
+                ObjectDetail(controlID_info_detail, 'Intersect', intersectId, true);
+
+                if (permissions.HasPermission("Root", "Update") && intersectId != 0) {
+                    TileTools("#" + controlID_info_detail_edit, [
+                        { icon: 'pencil', uri: '/form/EditRelationship?id=' + intersectId, context: 'intersectform', title: 'Edit Relationship' }
+                         //,{ icon: 'plus', uri: '/form/AddFieldType?type=' + 'IntersectType' + '&id=' + data.intersectTypeId, context: contextList.FieldType, title: 'Add definition attribute' }
+                    ]);
+                } else {
+                    $("#" + controlID_info_detail_edit).html('');
+                }
+
+                //$('#' + controlID_popover_edit_relationship).load('/form/EditRelationship?id=' + intersectId, function (response, status, xhr) {
+                //});
+
+                //amplify.publish('intersectform');
+
+
+                $("#" + controlID_info_detail_wrapper).show();
+                
+
+                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "none");
+                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
+
                 try {
                     technicalRelationsSource.url = null;
-                    $('#' + controlID_fusion_body).jqxGrid('updatebounddata');
+                    $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
                 } catch (e) { }
                 try {
                     lineageResponsibilitySource.url = null;
-                    $('#' + controlID_responsibilities_table).jqxGrid('updatebounddata');
+                    $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
                 } catch (e) { }
 
                 if (data.hasMappingRules) {
-                    $.ajax({
-                        url: '/form/sourcetarget/load/' + type + '/' + id + '/' + from.type + '/' + from.id + '/' + to.type + '/' + to.id
-                    }).done(function (data) {
-                        for (var i = 0; i < data.items.length; i++) {
-                            data.items[i].index = i + 1;
-                        }
-                        var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
-                        $('#' + controlID_mappingrules_table).html(sourceTemplate(data));
-                        $("#" + controlID_mappingrules).jqxExpander('expand');
-                    }).fail(function () {
-                        $('#' + controlID_mappingrules_table).html('');
-                        $("#" + controlID_mappingrules).jqxExpander('collapse');
-                    });
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
+                    $("#" + controlID_mappingrules_content).html(defaultTabContent);
+                    first = tabs["mappingrules"];
                 } else {
-                    $('#' + controlID_mappingrules_table).html('');
-                    $("#" + controlID_mappingrules).jqxExpander('collapse');
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
                 }
+
+                if (to.hasSourceRules) {
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "block");
+                    $("#" + controlID_sourcerules_content).html(defaultTabContent);
+                    first = tabs["sourcerules"];
+                } else {
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "none");
+                }
+
+
             }
-        }  
+        }
+
+        if (first == -1)
+            $("#" + controlID_tabs).hide(delay);
+        else
+        {
+            $("#" + controlID_tabs).jqxTabs('select', first);
+            loadTab(first);
+        }
+    }
+
+    function loadTab(index) {
+        if (index < 0 || index > tabs.length || selectedData == null)
+            return;
+
+        var from = null;
+        var to = null;
+        var url = '';
+
+        if (selectedData.diagramObjectType == 'Node') {
+
+        } else {
+            from = myDiagram.model.findNodeDataForKey(selectedData.from);
+            to = myDiagram.model.findNodeDataForKey(selectedData.to);
+        }
+
+        switch(index)
+        {
+            case tabs["fusion"]:
+                url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + selectedData.type + '&tID=' + selectedData.id;
+                if (selectedData.diagramObjectType != 'Node') {
+                    url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + from.type + '&sID=' + from.id + '&t=' + to.type + '&tID=' + to.id;
+                }
+                if (technicalRelationsSource.url != null)
+                    return;
+                        try {
+                            technicalRelationsSource.url = url;
+                            $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
+                        } catch (e) {  }
+                break;
+            case tabs["responsibilities"]:
+                if (lineageResponsibilitySource.url != null)
+                    return;
+
+                        try {
+                            lineageResponsibilitySource.url = '/api/' + selectedData.type + '/' + selectedData.id + '/ownership?showHidden=false';
+                            $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
+                        } catch (e) { }
+                break;
+            case tabs["sourcerules"]:
+                if ($("#" + controlID_sourcerules_content).html().toString() != defaultTabContent) {
+                    return;
+                }
+
+                url = '/api/' + type + '/' + id + '/sources/' + selectedData.type + '/' + selectedData.id + '/rules';
+                if (selectedData.diagramObjectType != 'Node') {
+                    url = '/api/' + type + '/' + id + '/' + from.type + '/' + from.id + '/' + to.type + '/' + to.id + '/rules';
+                }
+                $.ajax({
+                    url: url,
+                    async: true
+                }).done(function (data) {
+                    var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
+                    $('#' + controlID_sourcerules_content).html(sourceTemplate(data));
+                }).fail(function () {
+                    $('#' + controlID_sourcerules_content).html(defaultTabContent);
+                });
+                break;
+            case tabs["mappingrules"]:
+                if ($("#" + controlID_mappingrules_content).html().toString() != defaultTabContent) {
+                    return;
+                }
+                url = '/form/sourcetarget/load/' + type + '/' + id + '/' + selectedData.type + '/' + selectedData.id + '/' + selectedData.type + '/' + selectedData.id;
+                if (selectedData.diagramObjectType != 'Node') {
+                    url = '/form/sourcetarget/load/' + type + '/' + id + '/' + from.type + '/' + from.id + '/' + to.type + '/' + to.id;
+                }
+
+                $.ajax({
+                    url: url
+                }).done(function (data) {
+                    for (var i = 0; i < data.items.length; i++) {
+                        data.items[i].index = i + 1;
+                    }
+                    var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
+                    $('#' + controlID_mappingrules_content).html(sourceTemplate(data));
+                }).fail(function () {
+                    $('#' + controlID_mappingrules_content).html(defaultTabContent);
+                });
+                break;
+        }
     }
 
     function toggleButtons(data) {
         //console.log(data);
-        var delay = 200;
+        var delay = 0;
 
         if (!readonly) {
             $("#" + controlID_ribbon_add).show(delay);
@@ -1368,19 +1450,20 @@
     function onSelectionChange(e) {
         selection = e.diagram.selection;
 
-        //get a deep copy of the selection as an array
-        var sel = $.extend(true, [], selection.toArray()); //JSON.parse(JSON.stringify(selection.toArray()));
+        if (selection.count == 0) {
+            selectedData = null;
+        } else {
+            //get a deep copy of the selection as an array
+            var sel = $.extend(true, [], selection.toArray());
 
-        var selectionData = null;
-        if (sel != null && sel.length != 0) {
-            selectionData = sel[0].data;
+            if (sel != null && sel.length != 0) {
+                selectedData = sel[0].data;
+            }
         }
         
-        toggleExpanders(selectionData);
-        toggleButtons(selectionData);
+        toggleTabs(selectedData);
+        toggleButtons(selectedData);
 
-        if (sel == null || sel.length == 0)
-            return;
     }
 
     function onViewportBoundsChanged() {
@@ -1549,6 +1632,8 @@
             model.mappingRuleCount = d.mappingRuleCount;
             model.hasSourceRules = (d.sourceRuleCount > 0);
             model.hasMappingRules = (d.mappingRuleCount > 0);
+            model.challengeCount = d.challengeCount;
+            model.hasChallenges = (d.challengeCount > 0);
             modelList.push(model);
         }
 
@@ -1556,6 +1641,7 @@
             var d = data.links[i];
             var link = createLinkModel();
             link.id = d.id;
+            link.intersectTypeId = d.intersectTypeId;
             link.key = d.id;
             link.from = d.from;
             link.to = d.to;
@@ -1579,7 +1665,7 @@
         initialLinks = $.extend(true, [], linkList); //JSON.parse(JSON.stringify(linkList));
 
         //set buttons/expanders to defaults
-        toggleExpanders(null);
+        toggleTabs(null);
         toggleButtons(null);
 
         myDiagram.commitTransaction("load_all_data");
@@ -1855,9 +1941,13 @@
 
     amplify.subscribe("SaveAction", function (saveActionEventData) {
         try {
+            console.log(saveActionEventData);
             switch (saveActionEventData.context) {
                 case contextList.SourceToTarget:
                     populateDiagram();
+                    break;
+                case contextList.FieldType:
+                   // $('#' + controlID_info_table).jqxGrid('updatebounddata');
                     break;
                 case 'sourcemapping':
                     //populateDiagram();
@@ -1871,5 +1961,16 @@
         }
     });
 
+    //amplify.subscribe("RelationshipCancel", function (data) {
+    //    $('#Overlay').remove();
+    //    $('#OverlayBackground').remove();
+
+    //});
+
+    //amplify.subscribe("RelationshipSave", function (data) {
+    //    $('#Overlay').remove();
+    //    $('#OverlayBackground').remove();
+    //});
     //#endregion
 }
+

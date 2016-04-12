@@ -1,0 +1,45 @@
+﻿<div style="line-height:10px">&nbsp;</div>
+{{#each rows}}
+<div class="row" style="margin-bottom: 10px" data-category="{{Category}}">
+    {{#if hasOneColumn}}
+
+    <div class="col l6 m6 s12">
+        {{#each FirstColumnFields}}
+        <div id="{{labelID}}" class="FieldName FieldDisplayName">{{Name}}</div>
+        {{/each}}
+    </div>
+    <div class="col l6 m6 s12">
+        {{#each FirstColumnFields}}
+        <div id="{{valueID}}" class="FieldDisplayContent"></div>
+        {{/each}}
+    </div>
+
+    {{else}}
+
+    <div class="col l6 m6 s12">
+        {{#each FirstColumnFields}}
+        <div id="{{labelID}}" class="FieldName FieldDisplayName">{{Name}}</div>
+        {{/each}}
+    </div>
+    <div class="col l6 m6 s12">
+        {{#each FirstColumnFields}}
+        <div id="{{valueID}}" class="FieldDisplayContent"></div>
+        {{/each}}
+    </div>
+
+
+    <div class="col l6 m6 s12">
+        {{#each SecondColumnFields}}
+        <div id="{{labelID}}" class="FieldName FieldDisplayName">{{Name}}</div>
+        {{/each}}
+    </div>
+    <div class="col l6 m6 s12">
+        {{#each SecondColumnFields}}
+        <div id="{{valueID}}" class="FieldDisplayContent"></div>
+        {{/each}}
+    </div>
+
+
+    {{/if}}
+</div>
+{{/each}}

@@ -27,6 +27,70 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region Models
+
+        public class SourcesToObjectModel
+        {
+            public int ID { get; set; }
+            public int IntersectID { get; set; }
+            public int IntersectTypeID { get; set; }
+            public string Type { get; set; }
+            public bool IsStart { get; set; }
+            public bool IsEnd { get; set; }
+            public int Level { get; set; }
+            public int NodeID { get; set; }
+            public string TypeName { get; set; }
+            public string ObjectType { get; set; }
+            public int ObjectTypeID { get; set; }
+            public string ObjectName { get; set; }
+            public string O { get; set; }
+            public int OID { get; set; }
+            public string BackColor { get; set; }
+            public string ForeColor { get; set; }
+            public int PredicateID { get; set; }
+            public string Predicate { get; set; }
+            public int RawSourceRuleCount { get; set; }
+            public int SourceRuleCount { get; set; } = 0;
+            public int RawMappingRuleCount { get; set; }
+            public int LinkMappingRuleCount { get; set; }
+            public int ChallengeCount { get; set; }
+        }
+
+        public class HierarchyModel
+        {
+            public int ID { get; set; }
+            public string Subject { get; set; }
+            public string Object { get; set; }
+            public int SubjectID { get; set; }
+            public int ObjectID { get; set; }
+            public string ObjectType { get; set; }
+            public int ObjectTypeID { get; set; }
+            public string ParentID { get; set; }
+            public string Name { get; set; }
+            public string Path { get; set; }
+            public string Url { get; set; }
+            public string ObjectTypeName { get; set; }
+            public int Level { get; set; }
+            public int PredicateID { get; set; }
+            public string PredicatePhrase { get; set; }
+            public MapType Type { get; set; }
+            public int GroupNumber { get; set; }
+            public string UID { get; set; }
+
+        }
+
+        public class HierarchyArtifactsModel
+        {
+            public int IntersectMapID { get; set; }
+            public MapType MapType { get; set; }
+            public SystemObjects Type { get; set; }
+            public int ID { get; set; }
+            public int GroupNumber { get; set; }
+            public bool IsAddingParent { get; set; }
+        }
+
+        #endregion
+
         #region Json
 
         [Route("contexts")]
@@ -332,73 +396,24 @@ order by D.TextPath";
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public class SourcesToObjectModel
+        [HttpGet]
+        public JsonNetResult GetFieldsByIntersectMap(int id)
         {
-            public SourcesToObjectModel()
+            var sql = @" select t.Name, t.FriendlyName, t.[Type], f.Value, f.FormattedValue from field f
+                        join fieldtype t on  f.fieldtypeid = t.id
+						join intersectmap m on m.id = @id
+						join intersectnode n on n.id = m.subjectintersectnodeid and f.objectid = n.intersectid
+                        where f.objecttype = 'Intersect'";
+
+            var fields = Company.Query<dynamic>(sql, new { id });
+            return new JsonNetResult
             {
-                SourceRuleCount = 0;
-            }
-
-            public int ID { get; set; }
-            public int IntersectID { get; set; }
-            public string Type { get; set; }
-            public bool IsStart { get; set; }
-            public bool IsEnd { get; set; }
-            public int Level { get; set; }
-            public int NodeID { get; set; }
-            public string TypeName { get; set; }
-            public string ObjectType { get; set; }
-            public int ObjectTypeID { get; set; }
-            public string ObjectName { get; set; }
-            public string O { get; set; }
-            public int OID { get; set; }
-            public string BackColor { get; set; }
-            public string ForeColor { get; set; }
-            public int PredicateID { get; set; }
-            public string Predicate { get; set; }
-
-            public int RawSourceRuleCount { get; set; }
-
-            public int SourceRuleCount { get; set; }
-
-            public int RawMappingRuleCount { get; set; }
-            public int LinkMappingRuleCount { get; set; }
+                Data = fields,
+                Formatting = Formatting.None
+            };
         }
-
+  
         #region Hierarchy
-
-        public class HierarchyModel
-        {
-            public int ID { get; set; }
-            public string Subject { get; set; }
-            public string Object { get; set; }
-            public int SubjectID { get; set; }
-            public int ObjectID { get; set; }
-            public string ObjectType { get; set; }
-            public int ObjectTypeID { get; set; }
-            public string ParentID { get; set; }
-            public string Name { get; set; }
-            public string Path { get; set; }
-            public string Url { get; set; }
-            public string ObjectTypeName { get; set; }
-            public int Level { get; set; }
-            public int PredicateID { get; set; }
-            public string PredicatePhrase { get; set; }
-            public MapType Type { get; set; }
-            public int GroupNumber { get; set; }
-            public string UID { get; set; }
-
-        }
-
-        public class HierarchyArtifactsModel
-        {
-            public int IntersectMapID { get; set; }
-            public MapType MapType { get; set; }
-            public SystemObjects Type { get; set; }
-            public int ID { get; set; }
-            public int GroupNumber { get; set; }
-            public bool IsAddingParent { get; set; }
-        }
 
         [ValidateHttpAntiForgeryToken, HttpPost]
         [Route("hierarchy/save")]
@@ -970,7 +985,7 @@ order by D.TextPath";
 
             var sql1 = @"
                         declare @tbl table	(
-					                        IntersectID int, ID int, 
+					                        IntersectID int, IntersectTypeID int, ID int, 
 					                        SubjectNodeID int, SubjectTypeName nvarchar(1000), SourceType varchar(50), SourceTypeID int, SubjectObjectName nvarchar(1000), Subject varchar(50), SubjectID int, SubjectBackColor varchar(10), SubjectForeColor varchar(10),  
 					                        ObjectNodeID int, ObjectTypeName nvarchar(1000), ObjectType varchar(50), ObjectTypeID int, ObjectObjectName nvarchar(1000), Object varchar(50), ObjectID int, ObjectBackColor varchar(10), ObjectForeColor varchar(10),
 					                        PredicateID int, Predicate nvarchar(250), MappingRuleCount int
@@ -978,6 +993,7 @@ order by D.TextPath";
                         insert into @tbl
 	                        select	distinct
 			                        R.IntersectID,
+									R.IntersectTypeID,
 			                        M.ID,
 			                        M.SubjectIntersectNodeID,
 			                        R.SourceTypeName,
@@ -1010,6 +1026,7 @@ order by D.TextPath";
 	                        union
 	                        select	distinct
 			                        R.IntersectID,
+									R.IntersectTypeID,
 			                        M.ID,
 			                        M.SubjectIntersectNodeID,
 			                        R.SourceTypeName,
@@ -1040,6 +1057,7 @@ order by D.TextPath";
 	                        union
 	                        select	distinct
 			                        R.IntersectID,
+									R.IntersectTypeID,
 			                        M.ID,
 			                        M.SubjectIntersectNodeID,
 			                        R.SourceTypeName,
@@ -1080,12 +1098,12 @@ order by D.TextPath";
                         declare @h table	(
 					                        ID int, [Type] varchar(1), IsStart bit, IsEnd bit,
 					                        [Level] int, NodeID int, TypeName nvarchar(1000), [ObjectType] varchar(50), ObjectTypeID int, ObjectName nvarchar(1000), O varchar(50), OID int, BackColor varchar(10), ForeColor varchar(10),
-					                        IntersectID int, PredicateID int, Predicate nvarchar(250),
-					                        RawSourceRuleCount int, RawMappingRuleCount int, LinkMappingRuleCount int
+					                        IntersectID int, IntersectTypeID int,  PredicateID int, Predicate nvarchar(250),
+					                        RawSourceRuleCount int, RawMappingRuleCount int, LinkMappingRuleCount int, ChallengeCount int
 					                        )
 
                         insert into @h
-	                        select	ID, 'S', 0, 0, 0, SubjectNodeID, SubjectTypeName, SourceType, SourceTypeID, SubjectObjectName, Subject, SubjectID, SubjectBackColor, SubjectForeColor, IntersectID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount
+	                        select	ID, 'S', 0, 0, 0, SubjectNodeID, SubjectTypeName, SourceType, SourceTypeID, SubjectObjectName, Subject, SubjectID, SubjectBackColor, SubjectForeColor, IntersectID, IntersectTypeID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount, C.[Count]
 	                        from	@tbl S
 			                        cross apply (
 						                        select	count(1) as [Count]
@@ -1097,35 +1115,58 @@ order by D.TextPath";
 						                            from SourceTargetRule
 						                            where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Subject and SourceObjectID = S.SubjectID and TargetObject = S.Subject and TargetObjectID = S.SubjectID
 						                        ) M
+									cross apply (
+													select count(1) as [Count]     
+													from Workflow W            			                          
+													where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column(""S.SubjectID"")]') = 1 and W.DateCompleted is null   
+												) C
                         insert into @h
-	                        select	ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectType, ObjectTypeID, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount
-	                        from	@tbl S
-			                        cross apply (
-						                        select	count(1) as [Count]
-						                        from	SourceRule
-						                        where	AppliesToObject = @type and AppliesToObjectID = @id and Object = S.Object and ObjectID = S.ObjectID
-						                        ) R
-			                        cross apply (
-						                            select count(1) as [Count]
-						                            from SourceTargetRule
-						                            where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Object and SourceObjectID = S.ObjectID and TargetObject = S.Object and TargetObjectID = S.ObjectID
-						                        ) M
-                        update	T
-                        set		T.[Level] = 1,
+
+                            select ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectType, ObjectTypeID, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, IntersectTypeID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount, C.[Count]
+
+                            from @tbl S
+
+                                    cross apply(
+                                                select  count(1) as [Count]
+
+                                                from SourceRule
+
+                                                where AppliesToObject = @type and AppliesToObjectID = @id and Object = S.Object and ObjectID = S.ObjectID
+                                                ) R
+                                    cross apply(
+                                                    select count(1) as [Count]
+
+                                                    from SourceTargetRule
+
+                                                    where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Object and SourceObjectID = S.ObjectID and TargetObject = S.Object and TargetObjectID = S.ObjectID
+                                                ) M
+                                    cross apply(
+                                                    select count(1) as [Count]
+
+                                                    from Workflow W
+
+                                                    where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column(""S.ObjectID"")]') = 1 and W.DateCompleted is null
+                                                ) C
+                        update  T
+                        set     T.[Level] = 1,
 		                        T.IsStart = 1
-                        from	@h T
-		                        left join @h S on S.O = T.O and S.OID = T.OID and S.[Type] = 'O'
-                        where	T.[Type] = 'S'
-		                        and S.ID is null
+                        from @h T
 
-                        update	T
-                        set		T.IsEnd = 1
-                        from	@h T
-		                        left join @h S on S.O = T.O and S.OID = T.OID and S.[Type] = 'S'
-                        where	T.[Type] = 'O'
-		                        and S.ID is null
+                                left
+                        join @h S on S.O = T.O and S.OID = T.OID and S.[Type] = 'O'
+                        where T.[Type] = 'S'
 
-                        select * from @h";
+                                and S.ID is null
+
+                        update T
+                        set T.IsEnd = 1
+                        from @h T
+                                left join @h S on S.O = T.O and S.OID = T.OID and S.[Type] = 'S'
+                        where T.[Type] = 'O'
+
+                                and S.ID is null
+
+                        select* from @h";
 
             #endregion
 
@@ -1157,14 +1198,14 @@ order by D.TextPath";
                 var s = list.Single(i => i.ID == m && i.Type == "S");
                 var sKey = $"{s.Level}{s.O}{s.OID}";
                 if (!model.nodes.Any(i => i.key == sKey))
-                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, objecttype = s.ObjectType, objecttypeid = s.ObjectTypeID, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID, mappingRuleCount = s.RawMappingRuleCount }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
+                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, objecttype = s.ObjectType, objecttypeid = s.ObjectTypeID, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID, mappingRuleCount = s.RawMappingRuleCount, challengeCount = s.ChallengeCount }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
                 //else
                 //    model.nodes.First(i => i.key == sKey).sourceRuleCount = getTotal(s.O, s.OID, s.Type);
 
                 var o = list.Single(i => i.ID == m && i.Type == "O");
                 var oKey = $"{o.Level}{o.O}{o.OID}";
                 if (!model.nodes.Any(i => i.key == oKey))
-                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, objecttype = o.ObjectType, objecttypeid = o.ObjectTypeID, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type), mappingRuleCount = o.RawMappingRuleCount });
+                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, objecttype = o.ObjectType, objecttypeid = o.ObjectTypeID, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type), mappingRuleCount = o.RawMappingRuleCount, challengeCount = o.ChallengeCount });
                 else
                     model.nodes.First(i => i.key == oKey).sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type);
 
@@ -1175,7 +1216,7 @@ order by D.TextPath";
                 }
                 else
                 {
-                    model.links.Add(new JsonLinkItem { id = s.ID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID, mappingRuleCount = s.LinkMappingRuleCount });
+                    model.links.Add(new JsonLinkItem { id = s.ID, intersectTypeId = s.IntersectTypeID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID, mappingRuleCount = s.LinkMappingRuleCount });
                 }
             });
 
@@ -1503,6 +1544,7 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
 
             return new JsonNetResult { Data = new { message = message, success = success }, Formatting = Newtonsoft.Json.Formatting.None };
         }
+
         public ActionResult EditRelationship(int id)
         {
             ViewData.Add("IntersectID", id);
