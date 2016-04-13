@@ -351,21 +351,49 @@ namespace d360.extensions.search
 
         private bool isElasticSearchSpecialChar(char ch)
         {
-            if (ch == '\\' || ch == '/' || ch == '"') return true;
+            if (ch == '\\' || ch == '/' || ch == ':' || ch == '^' || ch == '~') return true;
 
             return false;
         }
 
         private string EscapeSpecialCharacters(string phrase)
         {
-            if(phrase.Any( ch => isElasticSearchSpecialChar(ch)))
+            if (string.IsNullOrEmpty(phrase)) return "";
+            bool padWithQuotes = false;
+                        
+            if(phrase.Contains('"'))
             {
-                phrase = phrase.Replace("\\", "?");
+                //special rules for quotes.  If quotes are in the string they must be in pairs at begining and end
+                if((phrase.Length > 0) && (phrase[0] == '"') && (phrase[phrase.Length-1] == '"'))
+                {
+                    phrase = phrase.Trim('"');
 
-                phrase = phrase.Replace("/", "\\\\/");
-                
-                phrase = phrase.Replace("\"", "\\\"");
+                    phrase = phrase.Replace("\"", "?");
+
+                    padWithQuotes = true;
+                }
+                else
+                {
+                    phrase = phrase.Replace("\"", "?");
+                }
             }
+
+            if (phrase.Any( ch => isElasticSearchSpecialChar(ch)))
+            {
+                phrase = phrase.Replace("\\", "?");  // replace backslash with wildcard LEAVE FIRST
+
+                phrase = phrase.Replace(":", "\\\\:"); // escape colon
+
+                phrase = phrase.Replace("^", "\\\\^"); // escape carat
+
+                phrase = phrase.Replace("~", "\\\\~"); // escape carat
+
+                phrase = phrase.Replace("/", "\\\\/"); // replace / with escaped slash                
+                
+            }
+
+            if(padWithQuotes)
+                phrase = "\\\"" + phrase + "\\\"";
 
             return phrase;
         }
@@ -380,10 +408,8 @@ namespace d360.extensions.search
         {
             IndexResults result = new IndexResults();
 
-            createIndexIfNotExists(companyID);
-
             var searchType = type != null ? type + "/" : null;
-
+            
             var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/{searchType}_search", companyID);
 
             StringBuilder sb = new StringBuilder();
@@ -412,7 +438,12 @@ namespace d360.extensions.search
 
                     var searchTerm = phrase = EscapeSpecialCharacters(item.value);
 
-                    if (item.exact) searchTerm = "\\\"" + searchTerm + "\\\"";
+                    if (item.exact)
+                    {
+                        searchTerm = searchTerm.Replace("\\\"","");
+
+                        searchTerm = "\\\"" + searchTerm + "\\\"";
+                    }
 
                     compositeSearchTerm += $"{item.field}:{searchTerm}";
                 }
