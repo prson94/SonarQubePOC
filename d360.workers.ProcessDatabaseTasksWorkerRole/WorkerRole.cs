@@ -186,9 +186,9 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
                                 detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
                                 fields = companyConnection.Query<FieldWithRelation>(
                                     "SELECT * from FieldWithRelation where ObjectType = @t and ObjectID = @i order by SortOrder",
-                                    new { t = o, i = oid }
+                                    new { t = new Dapper.DbString { Value = o.ToString(), IsAnsi = true }, i = oid }
                                     ).ToDictionary(k => k.Name, v => v.FormattedValue);
-
+                                
                                 if (detail != null)
                                 {
                                     if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
