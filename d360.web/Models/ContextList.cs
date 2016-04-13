@@ -89,6 +89,7 @@ public static class ContextList
         public const string TooltipTemplate = "tooltiptemplateform";
 
         public const string Workflow = "workflowform";
+        public const string WorkflowIssue = "IssueWorkflow";
         public const string WorkflowTypeRelation = "workflowtyperelationform";
 
         public const string ActionBoard = "board";

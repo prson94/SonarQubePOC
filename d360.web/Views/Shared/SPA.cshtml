@@ -166,6 +166,7 @@
             self.EmbeddedAttribute = "embeddedattributeform";
 
             self.Workflow = "@(ContextList.Workflow)";
+            self.WorkflowIssue = "@(ContextList.WorkflowIssue)";
             self.WorkflowTypeRelation = "@(ContextList.WorkflowTypeRelation)";
 
             self.ActionBoard = "@(ContextList.ActionBoard)";
@@ -496,7 +497,7 @@
                 }
             });
 
-            amplify.subscribe("CancelAction", function (data) {
+            amplify.subscribe("CancelAction", function (data) {                
                 try {
                     switch (data.context) {
                         case contextList.Attribute:
@@ -529,8 +530,8 @@
                 }
             });
 
-            amplify.subscribe("SaveAction", function (data) {
-                try {
+            amplify.subscribe("SaveAction", function (data) {                
+                try {                    
                     switch (data.context) {
                         case contextList.Attribute:
                         case contextList.Attribute_Embedded:
@@ -551,6 +552,7 @@
                         case contextList.ResponsibilityTypeHierarchy:
                         case contextList.SourceToTarget:
                         case contextList.TaxonomyTypeClass:
+                        case contextList.WorkflowIssue:                            
                             break;
                         default:
                             removeOverlay();
@@ -576,7 +578,7 @@
 
             amplify.subscribe("ToolAction", function (data) {
                 if (data.context != "nullform") {
-                    try {
+                    try {                        
                         switch (data.context) {
                             case contextList.ActionBoard:
                                 var target = $('#Board');
@@ -636,6 +638,7 @@
                             case contextList.ResponsibilityTypeHierarchy:
                             case contextList.SourceToTarget:
                             case contextList.TaxonomyTypeClass:
+                            case contextList.Workflow:
                                 break;
                             default:
                                 var overlaybg = $('<div id="OverlayBackground" style="display:none"></div>');

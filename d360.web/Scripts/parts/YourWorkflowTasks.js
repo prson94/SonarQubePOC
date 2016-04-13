@@ -16,46 +16,13 @@
     var objectID = givenObjectID === undefined ? -1 : givenObjectID;
 
     //#region Event Subscriptions
-
-
-
-    //function saveAction(data) {
-    /*var reloadControlData = function () {
-        var reloadChartData = function () {
-            var pr = new $.Deferred();
-            chartAdapter.dataBind();
-            return pr.promise();
-        }
-        reloadChartData().then(function () {
-            chart.jqxGrid('updatebounddata');
-            $(gridControlID).jqxGrid('updatebounddata');
-        });
-    }
-    try {
-        switch (data.context) {
-            case "Workflow":
-            case "OwnerApprovalWorkflow":
-            case "OwnerCertificationWorkflow":
-            case "IssueWorkflow":
-                reloadControlData();
-                break;
-            case "commentform":
-                if (data.custom.CommentTypeID == 5) {
-                    reloadControlData();
-                }
-                break;
-        }
-    } catch (e) { }*/
-    //}
-
-    function saveAction(data) {
-        //console.log(data);
+    
+    function saveAction(data) {      
         try {
-            switch (data.context) {
-                case "workflowform":
-                case "artifactform":
+            switch (data.context) {                
+                case "IssueWorkflow":
                     switchToViewer();
-                    // $(gridControlID).jqxGrid('updatebounddata');
+                     $(gridControlID).jqxGrid('updatebounddata');
             }
         } catch (e) {
             logError("YourWorkflowTasks : SaveAction", e);
@@ -65,23 +32,8 @@
     function pageResized() {
         $(gridControlID).jqxGrid('autoresizecolumns');
     }
-
-    /* function cancelAction(data) {
-         console.log(data);
-         try {
-             switch (data.context) {
-                 case "workflowform":
-                 case "artifactform":
-                     switchToViewer();
-                     break;
-             }
-         } catch (e) {
-             logError("YourWorkflowTasks : CancelAction", e);
-         }
-     }*/
-
-    function localAction(data) {
-        //console.log(data.context);
+    
+    function localAction(data) {        
         try {
             switch (data.context) {
                 case "workflowform":
@@ -103,8 +55,7 @@
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
-        amplify.unsubscribe('ToolAction', localAction);
-        //     amplify.unsubscribe('CancelAction', cancelAction);
+        amplify.unsubscribe('ToolAction', localAction);       
     }
 
     amplify.subscribe("PageResized", pageResized);
@@ -112,28 +63,28 @@
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
-    amplify.subscribe('ToolAction', localAction);
-    // amplify.subscribe('CancelAction', cancelAction);
+    amplify.subscribe('ToolAction', localAction);   
 
     //#endregion
 
     //#region Helper Functions
 
-    var switchToViewer = function () {
-        $('#assignmentoverlay').show();
+    var switchToViewer = function () {        
+        $('#AssignmentViewer').fadeIn(10);
+        $('#AssignmentEditor').fadeOut(10);
     }
 
     var switchToEditor = function (uri) {
         try {
-            $('#assignmentoverlay').fadeOut(10);
-            /*  $('#PromotionEditor').fadeIn(10);
-              $('#PromotionEditor').html(progressIndicatorHtml);
-              $('#PromotionEditor').load(uri, function (response, status, xhr) {
+            $('#AssignmentViewer').fadeOut(10);
+              $('#AssignmentEditor').fadeIn(10);
+              $('#AssignmentEditor').html(progressIndicatorHtml);
+              $('#AssignmentEditor').load(uri, function (response, status, xhr) {
                   if (status == "error") {
                       amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.status + ' ' + xhr.statusText, type: 'error' });
                       switchToViewer();
                   }
-              });*/
+              });
         } catch (e) {
 
         }
@@ -268,7 +219,7 @@
 
                             tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
 
-                            return renderToolsHtml(value, tools, contextList.Artifact, data);
+                            return renderToolsHtml(value, tools, contextList.Workflow, data);
                         }
                     }
                 ];
@@ -298,7 +249,7 @@
 
                             tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
 
-                            return renderToolsHtml(value, tools, contextList.Artifact, data);
+                            return renderToolsHtml(value, tools, contextList.Workflow, data);
                         }
                     }
                 ];
