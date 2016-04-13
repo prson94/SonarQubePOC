@@ -246,8 +246,8 @@
             taxonomies_root(this, new PageViewModel("Models", "Double-click on a type below to view a list of items for that type.  Or click on the information icon at the end of the row.", []), templatePath, contextList);
             taxonomies_list(this, new PageViewModel("", "@(Resources.PageInfo.Taxonomies_Description)", []), templatePath, contextList);
 
-            search(this, new PageViewModel("@(Resources.PageInfo.Search_Title)", "", [],'',0,false,true), templatePath, contextList);
-            home(this, new PageViewModel("@(Resources.PageInfo.Home_Title)", "", [],'',0,false,true), templatePath, contextList,@(CurrentResourceID));
+            search(this, new PageViewModel("@(Resources.PageInfo.Search_Title)", "", [],'',0,true), templatePath, contextList);
+            home(this, new PageViewModel("@(Resources.PageInfo.Home_Title)", "", [],'',0,true), templatePath, contextList,@(CurrentResourceID));
             community_home(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
 
             this.before(function(){
