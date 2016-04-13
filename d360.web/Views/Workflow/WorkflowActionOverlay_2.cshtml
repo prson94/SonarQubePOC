@@ -73,29 +73,17 @@
                 var requestor = "";
                 var detailHtml = "";
 
-                title = data.WorkflowName;// + ' : ' + data.ActivityName;
-                description = data.WorkflowDescription;// + '<br/>' + data.ActivityDescription;
-
-
-                //var detailHtml = "";
-                //for (var key in data.Properties) {
-                //    if (data.Properties.hasOwnProperty(key)) {
-                //        detailHtml += '<div class="form-group">';
-                //        detailHtml += '<label for="fld' + key + '">' + key + '</label>';
-                //        detailHtml += '<div id="fld' + key + '">' + data.Properties[key] + '</div>';
-                //        detailHtml += '</div>';
-                //    }
-                //}
+                title = data.WorkflowName;
+                description = data.WorkflowDescription;
 
                 $('#FormTitle').text(title);
                 $('#FormDescription').html(description);
-                //$('#RequestDetail').html(detailHtml); //requestor +
-
+                
                 $('#TypeValue').html(data.TypeName);
                 $('#NameValue').html('<a href="' + data.Url + '">' + data.Name + '</a>');
-                $('#StartDateValue').html(data.StartDate);
-                $('#DueDateValue').html(data.DueDate);
-
+                $('#StartDateValue').html(moment.utc(data.StartDate).local().format('dddd, MMMM Do YYYY, h:mm:ss a'));
+                $('#DueDateValue').html(moment.utc(data.DueDate).local().format('dddd, MMMM Do YYYY, h:mm:ss a'));
+                
                 $('#CertifyButton').on('click', function () {
                     postApprovalForm();
                 });
