@@ -9,7 +9,7 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class FieldType : BaseIntObject, IIntObject
     {
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
         public string Name { get; set; }
 
         [DataMember]
@@ -24,19 +24,19 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ValidationDescription_Name", Description = "ValidationDescription_Description")]
         public string ValidationDescription { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "FriendlyName_Name", Description = "FriendlyName_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "FriendlyName_Name", Description = "FriendlyName_Description"), StringLength(250)]
         public string FriendlyName { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description"), Column(TypeName = "varchar"), StringLength(25)]
         public string Type { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupObjectType_Name", Description = "LookupObjectType_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupObjectType_Name", Description = "LookupObjectType_Description"), Column(TypeName = "varchar"), StringLength(250)]
         public string LookupObjectType { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupObjectID_Name", Description = "LookupObjectID_Description")]
         public int? LookupObjectID { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupDisplayFormat_Name", Description = "LookupDisplayFormat_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "LookupDisplayFormat_Name", Description = "LookupDisplayFormat_Description"), StringLength(250)]
         public string LookupDisplayFormat { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Length_Name", Description = "Length_Description")]
@@ -51,7 +51,7 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Pattern_Name", Description = "Pattern_Description")]
         public string Pattern { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]

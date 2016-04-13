@@ -7,7 +7,7 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class FieldTypeLookupValue : BaseObject
     {
-        [Column(Order = 1), DataMember, Key]
+        [Column(Order = 1, TypeName = "varchar"), DataMember, Key, StringLength(8)]
         public string LookupObjectType { get; set; }
 
         [Column(Order = 2), DataMember, Key]

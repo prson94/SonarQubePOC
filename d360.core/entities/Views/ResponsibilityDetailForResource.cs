@@ -13,7 +13,7 @@ namespace d360.core.entities.Views
         [DataMember, Key, Column(Order = 1)]
         public int ResponsibilityID { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember, Key, Column(Order = 2, TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
 
         [DataMember, Key, Column(Order = 3)]
@@ -31,7 +31,7 @@ namespace d360.core.entities.Views
         [DataMember]
         public string ObjectUrl { get; set; }
 
-        [DataMember, Key, Column(Order = 4)]
+        [DataMember, Key, Column(Order = 4, TypeName = "varchar"), StringLength(50)]
         public string ResponsibleObjectType { get; set; }
 
         [DataMember, Key, Column(Order = 5)]

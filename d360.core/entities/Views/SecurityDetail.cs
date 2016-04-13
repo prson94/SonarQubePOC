@@ -10,13 +10,13 @@ namespace d360.core.entities.Views
     {
         #region Properties
 
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember, Key, Column(Order = 1, TypeName = "varchar"), StringLength(50)]
         public string ResponsibleObjectType { get; set; }
 
         [DataMember, Key, Column(Order = 2)]
         public int ResponsibleObjectID { get; set; }
 
-        [DataMember, Key, Column(Order = 3)]
+        [DataMember, Key, Column(Order = 3, TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
 
         [DataMember, Key, Column(Order = 4)]

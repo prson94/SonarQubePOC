@@ -331,67 +331,7 @@ namespace d360.model
 
         #endregion
 
-        #region Internal Models
-
-        class RedFlagByTypeAndCurrentResource : ObjectDetail
-        {
-            public int CriticalRelationshipCount { get; set; }
-        }
-
-        #endregion
-
         #region Repository Methods
-
-        #region AlertFlag
-
-        public void AddActiveAlertFlag(SystemObjects type, int id, string comment)
-        {
-            var sType = type.ToString();
-            var anyActive = AlertFlags.Where(i => i.ObjectType == sType && i.ObjectID == id && i.Active).OrderByDescending(i => i.Date).ToList();
-            foreach (var a in anyActive)
-            {
-                a.Active = false;
-            }
-
-            if (string.IsNullOrEmpty(comment))
-            {
-                comment = "This item has been red flagged due to a critical issue.";
-            }
-
-            var c = new Comment { Body = comment, OwnerObjectID = id, OwnerObjectType = sType, CommentTypeID = core.enums.CommentType.RedFlag, CreatingResourceID = CurrentResourceID, DateCreated = DateTime.UtcNow };
-            Comments.Add(c);
-            SaveChanges();
-
-            CommentRelations.Add(new CommentRelation { CommentID = c.ID, ObjectID = id, ObjectType = sType, Date = DateTime.UtcNow });
-            AlertFlags.Add(new AlertFlag { Date = DateTime.UtcNow, Active = true, ObjectID = id, ObjectType = sType, CommentID = c.ID });
-            SaveChanges();
-        }
-
-        public void CloseActiveAlertFlag(SystemObjects type, int id, string comment)
-        {
-            var sType = type.ToString();
-            var active = AlertFlags.Where(i => i.ObjectType == sType && i.ObjectID == id && i.Active).FirstOrDefault();
-
-            if (active != null)
-            {
-                active.Active = false;
-                if (string.IsNullOrEmpty(comment))
-                {
-                    comment = "The critical issue is resolved.  Closing red flag.";
-                }
-
-                Comments.Add(new Comment { Body = comment, OwnerObjectID = id, OwnerObjectType = sType, CommentTypeID = core.enums.CommentType.RedFlag, DateCreated = DateTime.UtcNow, CreatingResourceID = CurrentResourceID, ParentID = active.CommentID });
-                SaveChanges();
-            }
-        }
-
-        public AlertFlag GetActiveAlertFlagByObject(SystemObjects type, int id)
-        {
-            var sType = type.ToString();
-            return AlertFlags.Where(i => i.ObjectType == sType && i.ObjectID == id && i.Active).OrderByDescending(i => i.Date).FirstOrDefault();
-        }
-
-        #endregion
 
         public void AddOrUpdateFields(List<Field> items)
         {
@@ -606,7 +546,7 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
                 .Query<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID, @IntersectID", 
                 new 
                 { 
-                    SourceType = type.ToString(), 
+                    SourceType = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, 
                     SourceTypeID = id, 
                     IntersectID = intersectID 
                 }).ToList();
@@ -618,7 +558,7 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
             {
                 return Database.Connection.Query<ResponsibilityType>("EXEC GetAllowedResponsibilityTypesByObject @type, @id", new
                 {
-                    type = type.ToString(),
+                    type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
                     id = id
                 }).AsQueryable();
             }
@@ -634,22 +574,22 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
         
         public IQueryable<AttributeHierarchyItem> GetAttributeAndIntersectHierarchyByObject(SystemObjects type, int id)
         {
-            return Query<AttributeHierarchyItem>("EXEC GetAttributeAndIntersectHierarchyByObject @type, @id", new { type = type.ToString(), id = id }).AsQueryable();
+            return Query<AttributeHierarchyItem>("EXEC GetAttributeAndIntersectHierarchyByObject @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
         }
 
-        public List<ChildArtifactStatisticsByObject> GetChildArtifactStatisticsByObject(int id)
-        {
-            var list = Database.Connection.Query<ChildArtifactStatisticsByObject>("tile.GetChildArtifactStatisticsByObject @id", new { id = id}).ToList();
+        //public List<ChildArtifactStatisticsByObject> GetChildArtifactStatisticsByObject(int id)
+        //{
+        //    var list = Database.Connection.Query<ChildArtifactStatisticsByObject>("tile.GetChildArtifactStatisticsByObject @id", new { id = id}).ToList();
 
-            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+        //    var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
-            list.ForEach(i =>
-            {
-                i.Name = pluralize.Pluralize(i.Name);
-            });
+        //    list.ForEach(i =>
+        //    {
+        //        i.Name = pluralize.Pluralize(i.Name);
+        //    });
 
-            return list;
-        }
+        //    return list;
+        //}
 
         public List<KeyValuePair<int, string>> GetClassifications()
         {
@@ -915,7 +855,7 @@ order by	ColumnIndex", new { id });
             var model = Database.SqlQuery<ObjectDetail>(query).SingleOrDefault();
             if (model != null)
             {
-                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 model.PluralizedName = pluralize.Pluralize(model.Name);
                 pluralize = null;
             }
@@ -934,36 +874,13 @@ order by	ColumnIndex", new { id });
             var xmlString = Database.SqlQuery<string>(query).First();
             return XElement.Parse(xmlString);
         }
-        
-        public IEnumerable<dynamic> GetRedFlagsByTypeAndCurrentResource(SystemObjects type, int id)
-        {
-            return
-                Database.Connection.Query<RedFlagByTypeAndCurrentResource>(
-                    "EXEC tile.GetRedFlagsByTypeAndResource @type, @id, @resourceID",
-                    new
-                    {
-                        type = type.ToString(),
-                        id = id,
-                        resourceID = CurrentResourceID
-                    }
-                );
-        }
-        
-        public IEnumerable<RedFlagSummariesByResource> GetRedFlagSummariesByCurrentResource()
-        {
-            return
-                Database.Connection.Query<RedFlagSummariesByResource>(
-                    "EXEC tile.GetRedFlagSummariesByResource @resourceID", 
-                    new { resourceID = CurrentResourceID }
-                );
-        }
 
         public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(SystemObjects type, int id, bool showHidden = true)
         {
             try
             {
                 var sql = @"select * from ResponsibilityDetail where ObjectType = @type and ObjectID = @id" + (showHidden ? "" : " and Visible = 1") + " order by [Role], [ResponsibleObjectName]";
-                return Query<ResponsibilityDetail>(sql, new { type = type.ToString(), id = id }).AsQueryable();
+                return Query<ResponsibilityDetail>(sql, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
             }
             catch (SqlException ex)
             {
@@ -1010,15 +927,8 @@ order by	ColumnIndex", new { id });
 
         public List<StatisticDetail> GetStatisticDetailsByType(SystemObjects type, int id)
         {
-            return Query<StatisticDetail>(string.Format("GetStatisticDetails '{0}', {1}", type.ToString(), id)).ToList();
+            return Query<StatisticDetail>($"GetStatisticDetails '{type.ToString()}', {id}").ToList();
         }
-
-        //public IEnumerable<dynamic> GetStatisticTypeCountCheckOptions()
-        //{
-        //    string sql = @"SELECT 'AttributeType|'+ cast(ID as varchar(15)) as ID, 'Attribute :' + Name as Name from AttributeType Where ParentID is null
-        //    union SELECT 'ResponsibilityType|'+ cast(ID as varchar(15)) as ID, 'Responsibility :' + Name as Name from ResponsibilityType";
-        //    return Query<dynamic>(sql);
-        //}
 
         public IEnumerable<dynamic> GetStatisticTypeRollupCheckOptions()
         {
@@ -1187,7 +1097,7 @@ group by	R.Name,
 				else 'Active'
 			end
 order by	Date desc",
-                new { t = type.ToString(), i = id }
+                new { t = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, i = id }
             ).AsQueryable();
         }
 
@@ -1197,7 +1107,7 @@ order by	Date desc",
         {
             var model = new ObjectStatisticTileModel { Items = new List<ObjectStatisticTileItemModel>() };
 
-            var list = Database.Connection.Query<RawObjectStatistic>("[tile].[GetObjectStatistics] @type, @id", new { type = type.ToString(), id = id }).ToList();
+            var list = Database.Connection.Query<RawObjectStatistic>("[tile].[GetObjectStatistics] @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).ToList();
             
             var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
@@ -1291,23 +1201,6 @@ order by Name");
             }
 
             return hasPermission;
-        }
-
-        #endregion
-
-        #region Queue
-
-        public bool AddFusionQueueItem(QueueFusionItem model)
-        {
-            try
-            {
-                Database.CommandTimeout = 1500;
-                return Add<QueueFusionItem>(model);
-            }
-            catch
-            {
-                throw;
-            }
         }
 
         #endregion
@@ -1416,7 +1309,7 @@ order by Name");
 				and R.SourceObjectID = @id
 				and R.Classification = 1
 	order by	R.TargetTypeName,
-				R.TargetObjectName", new { type = type.ToString(), id = id }).AsQueryable();
+				R.TargetObjectName", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
         }
 
         public class DetailDisplayableRelationship
@@ -1454,7 +1347,7 @@ where	R.SourceObject = 'FusionAttribute'
 		--and R.SourceTypeID = 301
         --and R.SourceObject =  @type
         and R.SourceObjectID = @id
-        and R.TargetTypeID = 302", new { type = type.ToString(), id }).ToList();
+        and R.TargetTypeID = 302", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
         }
 
         public List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? startType = null, int? startID = null, SystemObjects? endType = null, int? endID = null)
@@ -1625,11 +1518,11 @@ or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = @obj and T.Subje
 
             if (obj.HasValue && objID.HasValue)
             {
-                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = sub.ToString(), subID, obj = obj.ToString(), objID }).ToList();
+                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = new Dapper.DbString { Value = sub.ToString(), IsAnsi = true }, subID, obj = new Dapper.DbString { Value = obj.ToString(), IsAnsi = true }, objID }).ToList();
             }
             else
             {
-                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = sub.ToString(), subID }).ToList();
+                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = new Dapper.DbString { Value = sub.ToString(), IsAnsi = true }, subID }).ToList();
             }
         }
 
@@ -1685,7 +1578,7 @@ left join ObjectStyle S on  T.TargetType = S.ObjectType and T.TargetTypeID = S.O
 order by T.[Group], T.TargetTypeName";
             #endregion
 
-            return Query<RelationshipAggregate>(sql, new { type = type.ToString(), id = id });
+            return Query<RelationshipAggregate>(sql, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id });
         }
 
         #endregion
@@ -1699,7 +1592,7 @@ declare @commandText nvarchar(max)
 select @commandText = CommandText from ReportTile where ID = @id
 set  @commandText = REPLACE(@commandText, '[TYPE]', @t)
 set  @commandText = REPLACE(@commandText, '[ID]', @i)
-exec sp_executesql @commandText", new { id = reportTileID, t = type.ToString(), i = id }, 180);
+exec sp_executesql @commandText", new { id = reportTileID, t = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, i = id }, 180);
         }
 
         public class SqlStatementValidityTest
@@ -1990,7 +1883,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
         {
                 dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
             }
-            return Query<CommentCount>("GetCommentCountByType @type, @id, @dateStart, @dateEnd, @searchPhrase", new { type = type.ToString(), id, dateStart, dateEnd, searchPhrase }).AsQueryable();
+            return Query<CommentCount>("GetCommentCountByType @type, @id, @dateStart, @dateEnd, @searchPhrase", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id, dateStart, dateEnd, searchPhrase }).AsQueryable();
         }
 
         public IQueryable<CommentVote> VoteComment(int CommentID, int ResourceID, int Vote)
@@ -2018,7 +1911,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             var comments =
                 Query<CommentDetail>("GetCommentDetailsByType @type, @id, @skip, @take, @dateStart, @dateEnd, @commentTypeID, @searchPhrase",
                 new {
-                    type = type.ToString(),
+                    type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
                     id = id,
                     skip = skip,
                     take = take,
@@ -2073,16 +1966,16 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             return Database.SqlQuery<MostActiveUserReportModel>("report.GetMostActiveUsers").AsQueryable();
         }
 
-        public SocialStatisticsByObject GetSocialStatisticsByObject(SystemObjects type, int id)
-        {
-            return
-            ExecuteQuery<SocialStatisticsByObject>("tile.GetSocialStatisticsByObject @type, @id",
-                new List<SqlParameter>() {
-                    new SqlParameter("type", type.ToString()),
-                    new SqlParameter("id", id)
-                }
-            ).FirstOrDefault();
-        }
+        //public SocialStatisticsByObject GetSocialStatisticsByObject(SystemObjects type, int id)
+        //{
+        //    return
+        //    ExecuteQuery<SocialStatisticsByObject>("tile.GetSocialStatisticsByObject @type, @id",
+        //        new List<SqlParameter>() {
+        //            new SqlParameter("type", type.ToString()),
+        //            new SqlParameter("id", id)
+        //        }
+        //    ).FirstOrDefault();
+        //}
 
         public dynamic GetSocialDataForCurrentResource()
         {

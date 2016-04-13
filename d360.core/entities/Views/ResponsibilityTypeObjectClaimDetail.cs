@@ -1,5 +1,6 @@
 ﻿using d360.core.enums;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -32,7 +33,7 @@ namespace d360.core.entities
         [DataMember, NotMapped]
         public string ClaimObjectDescription { get { return Enum.GetName(typeof(ClaimObject), ClaimObject); } }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
 
         [DataMember]

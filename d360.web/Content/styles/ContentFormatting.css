@@ -483,10 +483,6 @@ ul.hierarchy :last-child {
   font-size: 150%;
   font-weight: 400;
 }
-.redflag {
-  color: red;
-  font-size: 35px;
-}
 .tile-stat-value-red {
   color: red;
   font-size: 150%;

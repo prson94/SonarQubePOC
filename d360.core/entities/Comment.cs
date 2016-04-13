@@ -15,7 +15,7 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
         public string Body { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string OwnerObjectType { get; set; }
 
         [DataMember]

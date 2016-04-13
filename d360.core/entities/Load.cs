@@ -3,6 +3,7 @@ using d360.core.entities.Contracts;
 using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
@@ -14,10 +15,10 @@ namespace d360.core.entities
         [DataMember]
         public string Action { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(10)]
         public string Extension { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]

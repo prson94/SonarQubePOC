@@ -21,7 +21,7 @@ namespace d360.core.entities
         [DataMember]
         public string Value { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string LookupObject { get; set; }
 
         [DataMember]

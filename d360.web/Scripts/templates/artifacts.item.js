@@ -135,8 +135,20 @@
                             $('#RelatedArtifactsTile').hide();
                         }
 
-                        CollapsibleSynonymsTile('SynonymsTile', contextList, permissions, type, id);
-                        CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, id);
+                        if (json.AllowAttributes) {
+                            CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, id);
+                        }
+                        else {
+                            $('#AttributesTile').hide();
+                        }
+
+                        if (json.AllowSynonyms) {
+                            CollapsibleSynonymsTile('SynonymsTile', contextList, permissions, type, id);
+                        }
+                        else {
+                            $('#SynonymsTile').hide();
+                        }
+
                         if (json.AllowPredicateHierarchies) {
                             CollapsibleTypeHierarchyTile('StructureTile', contextList, permissions, type, id);
                             //HierarchyTile('GroupHierarchyTile', contextList, permissions, type, id, 4, 'Groupings');

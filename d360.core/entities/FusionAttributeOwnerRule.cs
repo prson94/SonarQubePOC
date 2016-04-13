@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -10,10 +12,12 @@ namespace d360.core.entities
     {
         public int FusionID { get; set; }
 
+        [Column(TypeName = "varchar"), StringLength(25)]
         public string ObjectType { get; set; }
 
         public int ObjectID { get; set; }
 
+        [Column(TypeName = "varchar"), StringLength(25)]
         public string RelationshipOwnerObjectType { get; set; }
 
         public int RelationshipOwnerObjectID { get; set; }

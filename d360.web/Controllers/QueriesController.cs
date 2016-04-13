@@ -129,7 +129,7 @@ group by Type, TypeName, TypeID", new { id = id });
         {
             var query = Company.Query<dynamic>(@"select ObjectType, ObjectID, Name, ID, Url, CurrentScore, OpenEventCount
 from FollowDetail
-where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = type, i = id });
+where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = new Dapper.DbString { Value = type, IsAnsi = true }, i = id });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -258,14 +258,14 @@ order by	ObjectTypeName, ObjectName", new { id = resourceID, r = responsibilityT
         [Route("{type}/{id:int}/ScoreHistoryByObject")]
         public JsonNetResult GetScoreHistoryByObject(SystemObjects type, int id)
         {
-            var query = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @type, @id", new { type = type.ToString(), id = id });
+            var query = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id });
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [Route("{type}/{id:int}/AverageScoreByObjectType")]
         public JsonNetResult GetAverageScoreByObjectType(SystemObjects type, int id)
         {
-            var query = Company.Query<dynamic>(@"EXEC GetAverageScoreByObjectType @type, @id", new { type = type.ToString(), id = id }).SingleOrDefault();
+            var query = Company.Query<dynamic>(@"EXEC GetAverageScoreByObjectType @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).SingleOrDefault();
             return new JsonNetResult{ Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -373,7 +373,7 @@ from	Comment C
 		inner join CommentRelation R	on R.CommentID = C.ID 
 										and R.ObjectType = @type 
 										and R.ObjectID = @id
-                                        and C.ParentID is null", new { type = type, id = id });
+                                        and C.ParentID is null", new { type = new Dapper.DbString { Value = type, IsAnsi = true }, id = id });
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }

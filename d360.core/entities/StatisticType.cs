@@ -35,7 +35,7 @@ namespace d360.core.entities
         [DataMember]
         public string Configuration { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]

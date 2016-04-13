@@ -15,7 +15,7 @@ namespace d360.core.entities
         [DataMember]
         public int ResourceID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
 
         [DataMember]

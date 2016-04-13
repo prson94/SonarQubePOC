@@ -16,7 +16,7 @@ namespace d360.core.entities.Views
         [DataMember]
         public string ObjectName { get; set; }
 
-        [DataMember, Key, Column(Order = 3)]
+        [DataMember, Key, Column(Order = 3, TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
 
         [DataMember]

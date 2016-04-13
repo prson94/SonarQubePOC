@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using d360.core.entities.Contracts;
 using System.Xml.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
@@ -15,10 +16,12 @@ namespace d360.core.entities
 
         public int ObjectID { get; set; }
 
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
         
         public int? InheritanceObjectID { get; set; }
 
+        [Column(TypeName = "varchar"), StringLength(50)]
         public string InheritanceObjectType { get; set; }
 
         [DataMember]

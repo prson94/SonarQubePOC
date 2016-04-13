@@ -492,34 +492,34 @@ namespace d360.web.Models
         public string SaveActionName { get; set; }
     }
 
-    //public class FusionAttributeTypeEditorControl
-    //{
-    //    public string Title { get; set; }
-    //    public List<FusionAttributeType> Types { get; set; }
-    //    public int? SelectedID { get; set; }
-    //}
+    public class FusionAttributeTypeEditorControl
+    {
+        public string Title { get; set; }
+        public List<FusionAttributeType> Types { get; set; }
+        public int? SelectedID { get; set; }
+    }
 
-    //public class FusionOwnerEditModel
-    //{
-    //    public string ObjectType { get; set; }
+    public class FusionOwnerEditModel
+    {
+        public string ObjectType { get; set; }
 
-    //    public int? ObjectID { get; set; }
+        public int? ObjectID { get; set; }
 
-    //    public string ParentObjectType { get; set; }
+        public string ParentObjectType { get; set; }
 
-    //    public int? ParentObjectID { get; set; }
-    //}
+        public int? ParentObjectID { get; set; }
+    }
 
-    //public class FusionOwnerEditListModel
-    //{
-    //    public string RelationshipOwnerObjectType { get; set; }
+    public class FusionOwnerEditListModel
+    {
+        public string RelationshipOwnerObjectType { get; set; }
 
-    //    public int RelationshipOwnerObjectID { get; set; }
+        public int RelationshipOwnerObjectID { get; set; }
 
-    //    public int FusionID { get; set; }
+        public int FusionID { get; set; }
 
-    //    public List<FusionOwnerEditModel> Items { get; set; }
-    //}
+        public List<FusionOwnerEditModel> Items { get; set; }
+    }
 
     public class FusionOwnerRuleEditorModel
     {
@@ -555,16 +555,16 @@ namespace d360.web.Models
         public FusionAttributeOwnerRuleItem Item { get; set; }
     }
 
-    //public class FusionPromotionEditModel
-    //{
-    //    public string ObjectType { get; set; }
+    public class FusionPromotionEditModel
+    {
+        public string ObjectType { get; set; }
 
-    //    public int? ObjectID { get; set; }
+        public int? ObjectID { get; set; }
 
-    //    public string ParentObjectType { get; set; }
+        public string ParentObjectType { get; set; }
 
-    //    public int? ParentObjectID { get; set; }
-    //}
+        public int? ParentObjectID { get; set; }
+    }
 
     public class FusionPromotionRuleEditorModel
     {
@@ -640,7 +640,7 @@ namespace d360.web.Models
 
         public string Object { get; set; }
 
-        public int PredicateID { get; set; }
+        public MapType PredicateType { get; set; }
 
         /// <summary>
         /// Should certain fields be made read-only based on whether any 

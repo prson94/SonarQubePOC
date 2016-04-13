@@ -433,7 +433,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\TaxonomyController.cs" />
-    <Compile Include="Controllers\TooltipsController.cs" />
     <Compile Include="Controllers\TilesController.cs" />
     <Compile Include="Filters\ValidateHttpAntiForgeryTokenAttribute.cs" />
     <Compile Include="Global.asax.cs">
@@ -863,7 +862,6 @@
     <Content Include="Scripts\handlebars.runtime.js" />
     <Content Include="Scripts\jquery-2.2.1.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
-    <Content Include="Scripts\jquery-2.2.1.min.map" />
     <None Include="Scripts\jqx\3.7.1\jqx-all.js" />
     <None Include="Scripts\redactor.js" />
     <None Include="Scripts\sammy-0.7.5.js" />

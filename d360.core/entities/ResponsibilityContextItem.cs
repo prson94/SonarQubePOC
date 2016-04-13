@@ -10,7 +10,7 @@ namespace d360.core.entities
         [DataMember, Key, Column(Order = 1)]
         public int ResponsibilityID { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember, Key, Column(Order = 2, TypeName = "varchar"), StringLength(25)]
         public string ObjectType { get; set; }
 
         [DataMember, Key, Column(Order = 3)]

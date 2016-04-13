@@ -96,8 +96,13 @@
 
                         LineageDiagram('SourcingTile', selectedType, id, true);
 
-                        $('#AttributesTile').fadeIn(fadoutTime);
-                        CollapsibleAttributesTile('AttributesTile', contextList, permissions, selectedType, id);
+                        if (json.AllowAttributes) {
+                            $('#AttributesTile').fadeIn(fadoutTime);
+                            CollapsibleAttributesTile('AttributesTile', contextList, permissions, selectedType, id);
+                        }
+                        else {
+                            $('#AttributesTile').hide();
+                        }
                     }
                     permissions.GetPermissionsForObject(selectedType, id).then(loadPermissionsDependentTiles);
                 }

@@ -7196,7 +7196,6 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);                        
             document.AddWorksheet("Lookups");
             document.SelectWorksheet(defaultSheet);
-            
             var columns = getFieldNamesByType(type, id);
             var lookupColumns = 1;
             var parentColumnName = string.Empty;
@@ -7308,6 +7307,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
             #endregion
 
+            document.HideWorksheet("Lookups");
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
@@ -9597,7 +9597,7 @@ order by D.TextPath";
                 LimitedChangesOnly = anyCurrentRelations,
                 Subject = $"{type.Subject}|{type.SubjectID}",
                 Object = $"{type.Object}|{type.ObjectID}",
-                PredicateID = type.PredicateID
+                PredicateType = type.PredicateType
             };
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
@@ -9619,24 +9619,24 @@ order by D.TextPath";
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public JsonNetResult RelationType_PredicateOptions(SystemObjects Subject, int SubjectID, SystemObjects Object, int ObjectID, int? PredicateID)
+        public JsonNetResult RelationType_PredicateOptions(SystemObjects Subject, int SubjectID, SystemObjects Object, int ObjectID, MapType? PredicateType)
         {
             var allowedPredicateTypes = MapType.Lineage.GetAsList().Select(i => i.ID).ToList();
             var models = Company.Query<Predicate>(@"
 select	* 
 from	Predicate
 where	ID not in	(
-					select	PredicateID 
+					select	PredicateType
 					from	RelationType
 					where	(
                             (Subject = @s and SubjectID = @SubjectID and Object = @o and ObjectID = @ObjectID)
 							or (Object = @s and ObjectID = @SubjectID and Subject = @o and SubjectID = @ObjectID)
                             )
                             and (
-                                (@p is not null and PredicateID <> @p) or
+                                (@p is not null and PredicateType <> @p) or
                                 (@p is null)
                                 )
-					)", new { s = Subject.ToString(), SubjectID, o = Object.ToString(), ObjectID, p = PredicateID })
+					)", new { s = new Dapper.DbString { Value = Subject.ToString(), IsAnsi = true }, SubjectID, o = new Dapper.DbString { Value = Object.ToString(), IsAnsi = true }, ObjectID, p = (int)PredicateType })
                     .Where(i => allowedPredicateTypes.Contains(i.Type))
                     .Select(i => new { title = i.Name, value = i.ID.ToString() })
                     .OrderBy(i => i.title);
@@ -9670,7 +9670,7 @@ where	ID not in	(
                     SubjectID = int.Parse(subInfo[1]),
                     Object = objInfo[0],
                     ObjectID = int.Parse(objInfo[1]),
-                    PredicateID = formModel.PredicateID
+                    PredicateType = formModel.PredicateType
                 };
 
                 Company.Add<RelationType>(model);
@@ -9766,7 +9766,7 @@ where	ID not in	(
                 model.SubjectID = int.Parse(subInfo[1]);
                 model.Object = objInfo[0];
                 model.ObjectID = int.Parse(objInfo[1]);
-                model.PredicateID = formModel.PredicateID;
+                model.PredicateType = formModel.PredicateType;
 
                 Company.Update<RelationType>(model);
 

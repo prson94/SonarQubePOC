@@ -3,6 +3,7 @@ using d360.core.entities.Contracts;
 using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -19,6 +20,7 @@ namespace d360.core.entities
 
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ReportObjectType_Name", Description = "ReportObjectType_Description")]
+        [Column(TypeName = "varchar"), StringLength(25)]
         public string ObjectType { get; set; }
 
         [DataMember]

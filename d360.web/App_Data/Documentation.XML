@@ -195,6 +195,16 @@
               Looks up a localized string similar to group.
             </summary>
         </member>
+        <member name="P:Resources.Actions.Issue">
+            <summary>
+              Looks up a localized string similar to Raise Issue.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Issue_Icon">
+            <summary>
+              Looks up a localized string similar to flag.
+            </summary>
+        </member>
         <member name="P:Resources.Actions.Levels">
             <summary>
               Looks up a localized string similar to Levels.
@@ -2581,6 +2591,9 @@
             <param name="id">ID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_Challenge(System.Int32)">
+            <param name="id">ID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Artifact_RaiseIssue(System.Int32)">
             <param name="id">ID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_SuggestFields(System.Int32,System.Int32)">

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
@@ -19,7 +20,7 @@ namespace d360.core.entities
         [DataMember]
         public int? ObjectID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string ObjectType { get; set; }
         
         [DataMember]
@@ -28,7 +29,7 @@ namespace d360.core.entities
         [DataMember]
         public int PromotionObjectID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string PromotionObjectType { get; set; }
 
 
@@ -38,7 +39,7 @@ namespace d360.core.entities
         [DataMember]
         public int? PromotionParentObjectID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string PromotionParentObjectType { get; set; }
 
         [DataMember]

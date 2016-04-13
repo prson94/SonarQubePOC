@@ -13,7 +13,7 @@ namespace d360.core.entities.Views
         [DataMember, Key, Column(Order = 2)]
         public int ObjectID { get; set; }
 
-        [DataMember, Key, Column(Order = 3)]
+        [DataMember, Key, Column(Order = 3, TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
 
         [DataMember]
@@ -34,7 +34,7 @@ namespace d360.core.entities.Views
         [DataMember]
         public int? ParentID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(19)]
         public string ParentType { get; set; }
 
         [DataMember]
@@ -43,16 +43,16 @@ namespace d360.core.entities.Views
         [DataMember]
         public int? TypeID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string Type { get; set; }
 
         [DataMember]
         public string TypeName { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(7)]
         public string IconBackColor { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(7)]
         public string IconForeColor { get; set; }
 
         [DataMember]

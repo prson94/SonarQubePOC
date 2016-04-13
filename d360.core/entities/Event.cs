@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core
 {
@@ -75,7 +76,7 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "SourceID_Name", Description = "SourceID_Description")]
         public string SourceID { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Status_Name", Description = "Status_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Status_Name", Description = "Status_Description"), Column(TypeName = "varchar"), StringLength(50)]
         public string Status { get; set; }
 
         [DataMember]

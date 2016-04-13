@@ -30,10 +30,10 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ValidationDescription_Name", Description = "ValidationDescription_Description")]
         public string ValidationDescription { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string Type { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string LookupObjectType { get; set; }
 
         [DataMember]
@@ -54,7 +54,7 @@ namespace d360.core.entities
         [DataMember]
         public string Pattern { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember, Key, Column(Order = 2, TypeName ="varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember, Key, Column(Order = 3)]

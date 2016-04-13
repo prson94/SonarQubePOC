@@ -21,7 +21,10 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ValidationDescription_Name", Description = "ValidationDescription_Description")]
         public string ValidationDescription { get; set; }
 
+        [Column(TypeName = "varchar"), StringLength(25)]
         public string Type { get; set; }
+
+        [Column(TypeName = "varchar"), StringLength(25)]
         public string LookupObjectType { get; set; }
         public int? LookupObjectID { get; set; }
         public string LookupDisplayFormat { get; set; }
@@ -36,12 +39,13 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
 
         /* Field Properties */
-        [Key, Column(Order = 2)]
+        [Key, Column(Order = 2, TypeName = "varchar"), StringLength(25)]
         public string ObjectType { get; set; }
         [Key, Column(Order = 3)]
         public int ObjectID { get; set; }
         public string Value { get; set; }
         public string FormattedValue { get; set; }
+        [Column(TypeName = "varchar"), StringLength(500)]
         public string LookupUrl { get; set; }
     }
 }

@@ -2123,29 +2123,29 @@ var BaseOverlayTileModel = function () {
 }
 BaseOverlayTileModel.prototype = new BaseTileModel();
 
-var ChildArtifactsMicroTileModel = function (type, id) {
-    var self = this;
+//var C hildArtifactsMicroTileModel = function (type, id) {
+//    var self = this;
 
-    self.Statistics = ko.observableArray();
-    self.ObjectID = id;
-    self.ObjectType = type;
+//    self.Statistics = ko.observableArray();
+//    self.ObjectID = id;
+//    self.ObjectType = type;
 
-    self.GetStatistics = function () {
-        $.getJSON(
-            '/api/' + self.ObjectType + '/' + self.ObjectID + '/artifacts/statistics',
-            function (data) {
-                var mappedItems = $.map(data, function (item) { return new ChildArtifactsMicroTileItem(self.ObjectID, item.Name, item.ID, item.Count); });
-                self.Statistics(self.Statistics().concat(mappedItems));
+//    self.GetStatistics = function () {
+//        $.getJSON(
+//            '/api/' + self.ObjectType + '/' + self.ObjectID + '/artifacts/statistics',
+//            function (data) {
+//                var mappedItems = $.map(data, function (item) { return new ChildArtifactsMicroTileItem(self.ObjectID, item.Name, item.ID, item.Count); });
+//                self.Statistics(self.Statistics().concat(mappedItems));
 
-                //self.Statistics().length
+//                //self.Statistics().length
 
-            }
-        );
-    }
+//            }
+//        );
+//    }
 
-    return self;
-}
-ChildArtifactsMicroTileModel.prototype = new BaseOverlayTileModel();
+//    return self;
+//}
+//C hildArtifactsMicroTileModel.prototype = new BaseOverlayTileModel();
 
 var EventsMicroTileModel = function (type, id) {
     var self = this;
@@ -2525,96 +2525,38 @@ var ProfileSocialMicroTileModel = function (resourceID) {
     return self;
 }
 
-var RedFlagSummaryMicroTileModel = function () {
-    var self = this;
+//var SocialMicroTileModel = function (type, id) {
+//    var self = this;
 
-    self.OverlayName = 'RedFlags';
+//    self.ObjectID = id;
+//    self.ObjectType = type;
 
-    self.Statistics = ko.observableArray();
+//    self.FollowerCount = ko.observable(0);
+//    self.CommentCount = ko.observable(0);
+//    self.CommentCountLast48Hours = ko.observable(0);
 
-    self.Overlay = $('<div id="RedFlagsOverlay" class="overlay"></div>');
-    self.Overlay.appendTo('body');
+//    self.commentsOverlayUri = ko.computed(function () {
+//        return '/overlays/' + self.ObjectType + '/' + self.ObjectID + '/comments';
+//    }, self);
 
-    self.GetStatistics = function () {
-        $.getJSON(
-            '/api/resources/me/redflagsummaries',
-            function (data) {
-                var mappedItems = $.map(data, function (item) { return new RedFlagSummaryMicroTileItem(item); });
-                self.Statistics(mappedItems); //self.Statistics().concat(mappedItems)
-            }
-        );
-    }
+//    self.followersOverlayUri = ko.computed(function () {
+//        return '/overlays/' + self.ObjectType + '/' + self.ObjectID + '/followers';
+//    }, self);
 
-    self.OpenOverlay = function (redflag) {
-        self.Overlay.html('');
-        self.Overlay.fadeIn(500);
-        self.Overlay.load('/overlays/' + redflag.Type() + '/' + redflag.TypeID() + '/RedFlags');
+//    self.GetStatistics = function () {
+//        $.getJSON(
+//            '/api/' + self.ObjectType + '/' + self.ObjectID + '/social/statistics',
+//            function (data) {
+//                self.FollowerCount(data.FollowerCount);
+//                self.CommentCount(data.CommentCount);
+//                self.CommentCountLast48Hours(data.CommentCountLast48Hours);
+//            }
+//        );
+//    }
 
-        amplify.publish('OverlayOpening', { name: self.OverlayName });
-
-        amplify.subscribe('OverlayOpening', function (data) {
-            if (data.name != self.OverlayName) {
-                self.Overlay.fadeOut(500);
-                //$('body').remove(overlay, false);
-            }
-        });
-
-        amplify.subscribe('OverlayClosing', function (data) {
-            if (data.name = self.OverlayName) {
-                self.Overlay.fadeOut(500);
-                //$('body').remove(overlay, false);
-            }
-        });
-    }
-
-    amplify.subscribe("SaveAction", function (data) {
-        try {
-            switch (data.context) {
-                case "AlertFlag":
-                    self.GetStatistics();
-                    break;
-            }
-
-        } catch (e) {
-            logError("Detail", e);
-        }
-    });
-
-    return self;
-}
-
-var SocialMicroTileModel = function (type, id) {
-    var self = this;
-
-    self.ObjectID = id;
-    self.ObjectType = type;
-
-    self.FollowerCount = ko.observable(0);
-    self.CommentCount = ko.observable(0);
-    self.CommentCountLast48Hours = ko.observable(0);
-
-    self.commentsOverlayUri = ko.computed(function () {
-        return '/overlays/' + self.ObjectType + '/' + self.ObjectID + '/comments';
-    }, self);
-
-    self.followersOverlayUri = ko.computed(function () {
-        return '/overlays/' + self.ObjectType + '/' + self.ObjectID + '/followers';
-    }, self);
-
-    self.GetStatistics = function () {
-        $.getJSON(
-            '/api/' + self.ObjectType + '/' + self.ObjectID + '/social/statistics',
-            function (data) {
-                self.FollowerCount(data.FollowerCount);
-                self.CommentCount(data.CommentCount);
-                self.CommentCountLast48Hours(data.CommentCountLast48Hours);
-            }
-        );
-    }
-
-    return self;
-}
-SocialMicroTileModel.prototype = new BaseOverlayTileModel();
+//    return self;
+//}
+//SocialMicroTileModel.prototype = new BaseOverlayTileModel();
 
 function ObjectStatistic(data, type, id) {
     var self = this;
@@ -3416,14 +3358,13 @@ function SearchViewModel() {
 
 //#region VIEW MODELS
 
-var PageViewModel = function (title, directions, breadcrumbs, type, id, redflagged, hideHeader) {
+var PageViewModel = function (title, directions, breadcrumbs, type, id, hideHeader) {
     var self = this;
     self.Title = title;
     self.Directions = directions;
     self.breadcrumbs = breadcrumbs;
     self.ObjectType = type || "";
-    self.ObjectID = id || 0;
-    self.RedFlagged = redflagged || false;        
+    self.ObjectID = id || 0;      
     self.ShowHeader = !(hideHeader || false);
     return self;
 }

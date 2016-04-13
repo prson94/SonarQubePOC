@@ -1,6 +1,7 @@
 ﻿using d360.core.entities.Contracts;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -34,15 +35,15 @@ namespace d360.core.entities
     {
         [DataMember]
         public  int FocalObjectID { get; set; }
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(150)]
         public string FocalObject { get; set; }
         [DataMember]
         public int SourceObjectID { get; set; }
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(150)]
         public string SourceObject { get; set; }
         [DataMember]
         public int TargetObjectID { get; set; }
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(150)]
         public string TargetObject { get; set; }
 
         [NotMapped, DataMember]

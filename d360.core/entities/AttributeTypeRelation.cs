@@ -10,7 +10,7 @@ namespace d360.core.entities
         [Column(Order = 1), DataMember, Key]
         public int AttributeTypeID { get; set; }
 
-        [Column(Order = 2), DataMember, Key]
+        [Column(Order = 2, TypeName = "varchar"), DataMember, Key, StringLength(50)]
         public string ObjectType { get; set; }
 
         [Column(Order = 3), DataMember, Key]

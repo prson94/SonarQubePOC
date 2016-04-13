@@ -208,12 +208,6 @@ where A.AuditID = {0}", auditID);
             return PartialView();
         }
 
-        [Route("{type}/{id:int}/redflags")]
-        public ActionResult RedFlags(SystemObjects type, int id)
-        {
-            return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
-        }
-
         public ActionResult ResponsibilityTypeHierarchies()
         {
             return PartialView();

@@ -1629,7 +1629,7 @@ where       T.ID not in (select ObjectID from FieldType where [Object] = 'Attrib
 group by	T.ID,
 			T.Name
 order by	T.Name
-", new { type = type.ToString(), id = id });
+", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id });
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
@@ -1654,7 +1654,7 @@ from	AttributeDetail A
 		inner join types O on O.[Object] = A.ObjectType and O.ID = A.ObjectID and A.AttributeTypeID = @attributeTypeID
 group by A.FormattedValue
 order by A.FormattedValue
-", new { type = type.ToString(), id, attributeTypeID });
+", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id, attributeTypeID });
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
@@ -1680,27 +1680,48 @@ order by A.FormattedValue
             model.Add("AllowRelatedArtifacts", a.ArtifactType.AllowRelatedArtifacts);
             model.Add("Status", a.Status);
 
-            var allowed = false;
             try
             {
-                var sql = @"select  case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end  as Allowed
-from	utility.RelationshipTypes T
-		inner join IntersectTypePredicate TP on TP.IntersectTypeID = T.IntersectTypeID and T.SourceObjectType = 'ArtifactType' and T.SourceObjectID = @id
-		inner join Predicate P on P.ID = TP.PredicateID and P.Type in (3,4)";
+                var sql = @"select	*
+from	(
+		select	case 
+					when count(1) > 0 then cast(1 as bit)
+					else cast(0 as bit)
+				end as AllowAttributes
+		from	AttributeTypeRelation
+		where	ObjectType = 'ArtifactType' and ObjectID = @id
+		) A
+		inner join	(
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit) 
+							end as AllowSynonyms
+					from	(
+								select	*
+								from	AttributeTypeRelation
+								where	ObjectType = 'ArtifactType' and ObjectID = @id and AttributeTypeID = 1
+								union
+								select	ATR.*
+								from	AttributeTypeRelation ATR
+										inner join [utility].[RelationshipTypes] RT on RT.SourceObjectType = 'ArtifactType' and RT.SourceObjectID = @id and ATR.ObjectType = 'IntersectType' and ATR.ObjectID = RT.IntersectTypeID and ATR.AttributeTypeID = 1
+							) O
+					) S on 1=1
+		inner join	(
+					select  case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end  as AllowPredicateHierarchies
+					from	utility.RelationshipTypes T
+							inner join IntersectTypePredicate TP on TP.IntersectTypeID = T.IntersectTypeID and T.SourceObjectType = 'ArtifactType' and T.SourceObjectID = @id
+							inner join Predicate P on P.ID = TP.PredicateID and P.Type in (3,4)
+					) P on 1=1";
 
-                allowed = Company.Query<bool>(sql, new { id = a.ArtifactTypeID }).Single();
+                var row = Company.Query<dynamic>(sql, new { id = a.ArtifactTypeID }).Single();
+
+                model.Add("AllowAttributes", (bool)row.AllowAttributes);
+                model.Add("AllowSynonyms", (bool)row.AllowSynonyms);
+                model.Add("AllowPredicateHierarchies", (bool)row.AllowPredicateHierarchies);
             }
-            catch
+            catch(Exception ex)
             { }
 
-            model.Add("AllowPredicateHierarchies", allowed);
-
-            //// Dynamic fields
-            //var values = Company.GetFieldRelationsByObject(SystemObjects.Artifact, a.ID).ToList();
-            //values.ForEach(f =>
-            //{
-            //    model.Add(f.Name, f.FormattedValue);
-            //});
 
             var hSql = $@"
 with h as
@@ -1802,14 +1823,33 @@ select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]
         }
 
         [Route("domains/{id:int}")]
-        public DomainType GetDomainType(int id)
+        public HttpResponseMessage GetDomainType(int id)
         {
-            var model = Company.GetById<DomainType>(id);
+            var a = Company.GetById<DomainType>(id);
 
-            if (model == null)
+            if (a == null)
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
-            return model;
+            var model = new Dictionary<string, object>();
+
+            var sql = @"select	*
+from	(
+		select	case 
+					when count(1) > 0 then cast(1 as bit)
+					else cast(0 as bit)
+				end as AllowAttributes
+		from	AttributeTypeRelation
+		where	ObjectType = 'DomainType' and ObjectID = @id
+		) A";
+
+            var row = Company.Query<dynamic>(sql, new { id = id }).Single();
+
+            model.Add("ID", a.ID);
+            model.Add("Name", a.Name);
+            model.Add("Description", a.Description);
+            model.Add("AllowAttributes", (bool)row.AllowAttributes);
+
+            return Request.CreateResponse<dynamic>(model);
         }
 
         [Route("domains/{typeID:int}/all")]
@@ -2985,7 +3025,7 @@ from	IntersectMapSourceRule J
 		inner join SourceRule S on S.ID = J.SourceRuleID and S.AppliesToObject = @focal and S.AppliesToObjectID = @focalID 
 		inner join IntersectMap M on J.IntersectMapID = M.ID
 		inner join cache.Relationships R on R.SourceIntersectNodeID = M.SubjectIntersectNodeID and R.TargetObject = @obj and R.TargetObjectID = @objID";
-            var rawItems = Company.Query<RawSourceRuleItem>(sql, new { focal, focalID, obj, objID }).OrderBy(i => i.Name).ThenBy(i => i.SortOrder).ToList();
+            var rawItems = Company.Query<RawSourceRuleItem>(sql, new { focal = new Dapper.DbString { Value = focal, IsAnsi = true }, focalID, obj = new Dapper.DbString { Value = obj, IsAnsi = true }, objID }).OrderBy(i => i.Name).ThenBy(i => i.SortOrder).ToList();
 
             rawItems.Select(r => new { r.Name, r.SourceRuleID, r.RuleContexts }).Distinct().ToList().ForEach(r => {
                 var ruleModel = new SourceRuleViewModel { Name = r.Name, SourceRuleID = r.SourceRuleID, RuleContexts = r.RuleContexts, Items = new List<SourceRuleItemViewModel>() };
@@ -3265,9 +3305,30 @@ from	IntersectMapSourceRule J
         }
 
         [Route("policytypes/{id:int}")]
-        public PolicyType GetPolicyType(int id)
+        public HttpResponseMessage GetPolicyType(int id)
         {
-            return Company.GetById<PolicyType>(id);
+            var a = Company.GetById<PolicyType>(id);
+
+            var model = new Dictionary<string, object>();
+
+            var sql = @"select	*
+from	(
+		select	case 
+					when count(1) > 0 then cast(1 as bit)
+					else cast(0 as bit)
+				end as AllowAttributes
+		from	AttributeTypeRelation
+		where	ObjectType = 'PolicyType' and ObjectID = @id
+		) A";
+
+            var row = Company.Query<dynamic>(sql, new { id = id }).Single();
+
+            model.Add("ID", a.ID);
+            model.Add("Name", a.Name);
+            model.Add("Description", a.Description);
+            model.Add("AllowAttributes", (bool)row.AllowAttributes);
+
+            return Request.CreateResponse<dynamic>(model);
         }
 
         [Route("policytypes/{id:int}/policies")]
@@ -3374,11 +3435,6 @@ where    A.PolicyTypeID = @id", columns, joins);
             }
         }
 
-        [Route("resources/me/redflagsummaries")]
-        public IEnumerable<RedFlagSummariesByResource> GetResource()
-        {
-            return Company.GetRedFlagSummariesByCurrentResource();
-        }
 
         #endregion
 
@@ -3442,22 +3498,22 @@ where    A.PolicyTypeID = @id", columns, joins);
             return Company.GetObjectDetail(type, id);
         }
 
-        [Route("Artifact/{id:int}/artifacts/statistics")]
-        public List<ChildArtifactStatisticsByObject> GetChildArtifactTileStatistics(int id)
-        {
-            return Company.GetChildArtifactStatisticsByObject(id);
-        }
+        //[Route("Artifact/{id:int}/artifacts/statistics")]
+        //public List<ChildArtifactStatisticsByObject> GetChildArtifactTileStatistics(int id)
+        //{
+        //    return Company.GetChildArtifactStatisticsByObject(id);
+        //}
 
-        [Route("{type}/{id:int}/flags")]
-        public HttpResponseMessage GetFlags(SystemObjects type, int id)
-        {
-            var flag = Company.GetActiveAlertFlagByObject(type, id);
-            return Request.CreateResponse(HttpStatusCode.OK, 
-                new {
-                    RedFlagged = (flag != null) ? flag.Active : false, 
-                    RedFlaggedOn = (flag != null) ? flag.Date : DateTime.MinValue
-                });
-        }
+        //[Route("{type}/{id:int}/flags")]
+        //public HttpResponseMessage GetFlags(SystemObjects type, int id)
+        //{
+        //    var flag = Company.GetActiveAlertFlagByObject(type, id);
+        //    return Request.CreateResponse(HttpStatusCode.OK, 
+        //        new {
+        //            RedFlagged = (flag != null) ? flag.Active : false, 
+        //            RedFlaggedOn = (flag != null) ? flag.Date : DateTime.MinValue
+        //        });
+        //}
 
         /// <summary>
         /// Used mainly by the client-side search tool.
@@ -5436,17 +5492,11 @@ where    A.PolicyTypeID = @id", columns, joins);
             return permissions;
         }
 
-        [Route("{type}/{id:int}/redflags")]
-        public IQueryable<dynamic> GetRedFlagsByTypeAndResource(SystemObjects type, int id)
-        {
-            return Company.GetRedFlagsByTypeAndCurrentResource(type, id).AsQueryable();
-        }
-
-        [Route("{type}/{id:int}/social/statistics")]
-        public SocialStatisticsByObject GetSocialTileStatistics(SystemObjects type, int id)
-        {
-            return Company.GetSocialStatisticsByObject(type, id);
-        }
+        //[Route("{type}/{id:int}/social/statistics")]
+        //public SocialStatisticsByObject GetSocialTileStatistics(SystemObjects type, int id)
+        //{
+        //    return Company.GetSocialStatisticsByObject(type, id);
+        //}
 
         [Route("{type}/{id:int}/statistics")]
         public IQueryable<StatisticDetail> GetStatisticDetails(SystemObjects type, int id)
@@ -5491,7 +5541,7 @@ from	A
 					select	F.Value as Description 
 					from	Field F
 							inner join FieldType FT on FT.ID = F.FieldTypeID and F.ObjectType = 'Attribute' and F.ObjectID = A.ID and FT.Name = 'Description'					
-					) FD", new { type = type.ToString(), id });
+					) FD", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id });
             return Request.CreateResponse(
                 HttpStatusCode.OK,
                 models
@@ -5637,9 +5687,48 @@ order by D.Name, S.Name");
         [Route("catalogs/{typeID:int}")]
         public HttpResponseMessage GetTaxonomyType(int typeID)
         {
-            var model = Company.GetById<TaxonomyType>(typeID);
-            if (model == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Information model not found.");
-            return Request.CreateResponse<TaxonomyType>(model);
+            var a = Company.GetById<TaxonomyType>(typeID);
+            if (a == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Information model not found.");
+
+            var model = new Dictionary<string, object>();
+
+            var sql = @"select	*
+from	(
+		select	case 
+					when count(1) > 0 then cast(1 as bit)
+					else cast(0 as bit)
+				end as AllowAttributes
+		from	AttributeTypeRelation
+		where	ObjectType = 'TaxonomyType' and ObjectID = @id
+		) A
+		inner join	(
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit) 
+							end as AllowSynonyms
+					from	(
+								select	*
+								from	AttributeTypeRelation
+								where	ObjectType = 'TaxonomyType' and ObjectID = @id and AttributeTypeID = 1
+								union
+								select	ATR.*
+								from	AttributeTypeRelation ATR
+										inner join [utility].[RelationshipTypes] RT on RT.SourceObjectType = 'TaxonomyType' and RT.SourceObjectID = @id and ATR.ObjectType = 'IntersectType' and ATR.ObjectID = RT.IntersectTypeID and ATR.AttributeTypeID = 1
+							) O
+					) S on 1=1";
+
+            var row = Company.Query<dynamic>(sql, new { id = typeID }).Single();
+
+            model.Add("ID", a.ID);
+            model.Add("MaximumDepth", a.MaximumDepth);
+            model.Add("Name", a.Name);
+            //model.Add("TaxonomyTypeClass", a.TaxonomyTypeClass.Name);
+            //model.Add("TaxonomyTypeClassID", a.TaxonomyTypeClassID);
+            model.Add("Description", a.Description);
+            model.Add("AllowAttributes", (bool)row.AllowAttributes);
+            model.Add("AllowSynonyms", (bool)row.AllowSynonyms);
+
+            return Request.CreateResponse<dynamic>(model);
         }
 
         [Route("catalogs/{typeID:int}/all")]

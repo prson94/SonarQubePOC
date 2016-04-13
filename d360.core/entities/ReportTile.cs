@@ -11,7 +11,7 @@ namespace d360.core.entities
     public class ReportTile : BaseIntObject, IIntObject, IUpdatedMetadata
     {
         [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "ReportTileName_Description")]
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "ReportTileName_Description"), StringLength(250)]
         public string Name { get; set; }
 
         [DataMember]

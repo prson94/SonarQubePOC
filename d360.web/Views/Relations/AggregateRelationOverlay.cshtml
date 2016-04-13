@@ -253,7 +253,12 @@
             }
 
             var relationIconRowRender = function (type, id, uri, data) {
-                return "<div class='RowMultiTools'>" + (data.HasLineage ? "<i class='lineage fa fa-@Resources.Actions.Lineage_Icon' title='Lineage'></i> " : "") + (data.HasTechnicalRelationships ? "<i class='fusion fa fa-@Resources.Actions.Fusion_Icon' title='Child Relationships'></i> " :"") + (data.HasAttributes ? "<i class='attribute fa fa-@Resources.Actions.Attributes_Icon' title='Attributes'></i>" : "") + previewIconLink(type, id, uri) + " </div>";
+                return "<div class='RowMultiTools'>" + 
+                    //(data.HasLineage ? "<i class='lineage fa fa-@Resources.Actions.Lineage_Icon' title='Lineage'></i> " : "") + 
+                    (data.HasTechnicalRelationships ? "<i class='fusion fa fa-@Resources.Actions.Fusion_Icon' title='Child Relationships'></i> " :"") + 
+                    (data.HasAttributes ? "<i class='attribute fa fa-@Resources.Actions.Attributes_Icon' title='Attributes'></i>" : "") + 
+                    previewIconLink(type, id, uri) + 
+                    " </div>";
             }
 
             var complexAttributeColumnRenderer = function(index, datafield, value, defaultvalue, column, data) {
@@ -374,7 +379,7 @@
                     text: '',
                     groupable: false,
                     datafield: 'IntersectID',
-                    width: '85px',
+                    width: '60px',
                     filterable: false,
                     pinned: true,
                     cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {

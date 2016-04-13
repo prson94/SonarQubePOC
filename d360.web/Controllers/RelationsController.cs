@@ -1170,7 +1170,7 @@ order by D.TextPath";
 
             #endregion
 
-            var list = Company.Query<SourcesToObjectModel>(sql1, new { type = type.ToString(), id }).ToList();
+            var list = Company.Query<SourcesToObjectModel>(sql1, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true } , id }).ToList();
 
             list.Where(i => i.Level == 1).ToList().ForEach(i =>
             {
@@ -1246,7 +1246,7 @@ from	Relationship R
 										and S.IntersectID = R.SourceObjectID 
 										and S.SourceObjectType = @sType 
 										and S.SourceObjectID = @sID";
-                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType, sID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
             }
             else
             {
@@ -1259,7 +1259,7 @@ from	Relationship R
 										and S.SourceObjectID = @sID
 										and S.TargetObjectType = @tType 
 										and S.TargetObjectID = @tID";
-                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType, sID, tType, tID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
+                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID, tType = new Dapper.DbString { Value = tType.ToString(), IsAnsi = true }, tID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
             }
         }
 
@@ -1316,7 +1316,7 @@ where	    SourceObjectType = @type and SourceObjectID = @id
 order by    OD.TextPath
 for		    xml path('relationship'), root('item')
 ";
-            var xmls = Company.Query<string>(sql, new { type = type.ToString(), id }).ToList();
+            var xmls = Company.Query<string>(sql, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
             var xml = string.Join<string>("", xmls);
             //var doc = XElement.Parse(xml);
             //var obj = JObject.Parse(JsonConvert.SerializeXNode(XElement.Parse(xml)));
@@ -1429,7 +1429,7 @@ from [IntersectNode] S
 inner join IntersectNode O on O.IntersectID = S.IntersectID 
 and S.[ObjectType] = @s and S.ObjectID = @sid 
 and O.[ObjectType] = @o and O.ObjectID = @oid",
-        new { s = model.Subject, sid = model.SubjectID, o = model.Object, oid = model.ObjectID }
+        new { s = new Dapper.DbString { Value = model.Subject, IsAnsi = true }, sid = model.SubjectID, o = new Dapper.DbString { Value = model.Object, IsAnsi = true }, oid = model.ObjectID }
         ).SingleOrDefault();
                             if (intersect != null)
                             {

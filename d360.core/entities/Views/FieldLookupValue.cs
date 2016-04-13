@@ -9,8 +9,8 @@ namespace d360.core.entities
     {
         [Column(Order = 1), DataMember, Key]
         public int FieldTypeID { get; set; }
-        
-        [Column(Order = 2), DataMember, Key]
+
+        [Column(Order = 2, TypeName = "varchar"), DataMember, Key, StringLength(25)]
         public string LookupObjectType { get; set; }
 
         [Column(Order = 3), DataMember, Key]

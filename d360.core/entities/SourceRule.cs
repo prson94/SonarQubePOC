@@ -13,16 +13,16 @@ namespace d360.core.entities
     {
         #region Properties
 
-        [DataMember]
+        [DataMember, StringLength(1000)]
         public string Name { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
         [DataMember]
         public int ObjectID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string AppliesToObject { get; set; }
 
         [DataMember]

@@ -16,12 +16,10 @@ namespace d360.core.entities
         [StringLength(250)]
         public string Name { get; set; }
 
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description"), Column(TypeName = "varchar"), StringLength(25)]
         public string ObjectType { get; set; }
 
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "SurveyTypeObject_Name", Description = "SurveyTypeObject_Description")]
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "SurveyTypeObject_Name", Description = "SurveyTypeObject_Description")]
         public int ObjectID { get; set; }
 
         public DateTime? UpdatedOn { get; set; }

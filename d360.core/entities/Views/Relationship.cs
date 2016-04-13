@@ -26,7 +26,7 @@ namespace d360.core.entities
         [DataMember]
         public int SourceIntersectTypeNodeID { get; set; }
         
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember, Key, Column(Order = 2, TypeName = "varchar"), StringLength(50)]
         public string SourceObjectType { get; set; }
 
         [DataMember, Key, Column(Order = 3)]
@@ -35,7 +35,7 @@ namespace d360.core.entities
         [DataMember]
         public string SourceName { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(19)]
         public string SourceParent { get; set; }
 
         [DataMember]
@@ -47,19 +47,19 @@ namespace d360.core.entities
         [DataMember]
         public int SourceTypeID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string SourceType { get; set; }
 
         [DataMember]
         public string SourceTypeName { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(500)]
         public string SourceUrl { get; set; }
 
         [DataMember]
         public int TargetIntersectTypeNodeID { get; set; }
 
-        [DataMember, Key, Column(Order = 4)]
+        [DataMember, Key, Column(Order = 4, TypeName = "varchar")]
         public string TargetObjectType { get; set; }
 
         [DataMember, Key, Column(Order = 5)]
@@ -68,7 +68,7 @@ namespace d360.core.entities
         [DataMember]
         public string TargetName { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(19)]
         public string TargetParent { get; set; }
 
         [DataMember]
@@ -80,13 +80,13 @@ namespace d360.core.entities
         [DataMember]
         public int TargetTypeID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string TargetType { get; set; }
 
         [DataMember]
         public string TargetTypeName { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName="varchar"), StringLength(500)]
         public string TargetUrl { get; set; }
 
         [DataMember]

@@ -13,7 +13,7 @@ namespace d360.core.entities
         [DataMember, Key, Column(Order = 2)]
         public int TypeID { get; set; }
 
-        [DataMember, Key, Column(Order = 3)]
+        [DataMember, Key, Column(Order = 3, TypeName = "varchar"), StringLength(50)]
         public string Type { get; set; }
 
         [DataMember]
@@ -25,13 +25,13 @@ namespace d360.core.entities
         [DataMember]
         public string TypeName { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(7)]
         public string IconBackColor { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(7)]
         public string IconForeColor { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
         public string IconText { get; set; }
 
         [DataMember]

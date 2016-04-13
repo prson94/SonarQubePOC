@@ -10,7 +10,7 @@ namespace d360.core.entities
         [Key, Column(Order = 1)]
         public int FusionAttributeID { get; set; }
 
-        [Key, Column(Order = 2)]
+        [Key, Column(Order = 2, TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
 
         [Key, Column(Order = 3)]

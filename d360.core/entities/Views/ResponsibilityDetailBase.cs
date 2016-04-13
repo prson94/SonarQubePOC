@@ -9,7 +9,7 @@ namespace d360.core.entities.Views
     {
         #region Properties
 
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember, Key, Column(Order = 1, TypeName = "varchar"), StringLength(50)]
         public string AssigningItemType { get; set; }
 
         [DataMember, Key, Column(Order = 2)]
@@ -36,7 +36,7 @@ namespace d360.core.entities.Views
         [DataMember, Key, Column(Order = 3)]
         public int ResponsibilityID { get; set; }
 
-        [DataMember, Key, Column(Order = 4)]
+        [DataMember, Key, Column(Order = 4, TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
 
         [DataMember]
@@ -48,13 +48,13 @@ namespace d360.core.entities.Views
         [DataMember]
         public string ObjectName { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(500)]
         public string ObjectUrl { get; set; }
 
         [DataMember]
         public int ResponsibilityTypeID { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string ResponsibleObjectType { get; set; }
 
         [DataMember]
@@ -63,7 +63,7 @@ namespace d360.core.entities.Views
         [DataMember]
         public string ResponsibleObjectName { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(500)]
         public string ResponsibleObjectUrl { get; set; }
 
         [DataMember]

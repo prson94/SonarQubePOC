@@ -124,18 +124,29 @@
 
                     if (ctx == contextList.Taxonomy) {
 
-                        $.getJSON('/api/Taxonomy/' + selectedID + '/flags', function (flagdata) {
+                        //$.getJSON('/api/Taxonomy/' + selectedID + '/flags', function (flagdata) {
                             //pageViewModel.RedFlagged = flagdata.RedFlagged;
                             context.contentHeader(pageViewModel);
-                        });
+                        //});
 
                         ObjectDetail('DetailTile', type, selectedID);
 
                         var loadPermissionsDependentTiles = function () {
                             amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
-                            CollapsibleSynonymsTile('SynonymsTile', contextList, permissions, type, selectedID);
-                            CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, selectedID);
+                            if (json.AllowAttributes) {
+                                CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, selectedID);
+                            }
+                            else {
+                                $('#AttributesTile').hide();
+                            }
+
+                            if (json.AllowSynonyms) {
+                                CollapsibleSynonymsTile('SynonymsTile', contextList, permissions, type, selectedID);
+                            }
+                            else {
+                                $('#SynonymsTile').hide();
+                            }
 
                             ObjectStatisticsTile('StatisticsTile', type, selectedID);
                             PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, selectedID, '', false);

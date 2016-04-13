@@ -7,7 +7,7 @@ namespace d360.core.entities.Views
     [DataContract(Namespace = NAMESPACE)]
     public class StatisticTypeCheckOption : BaseObject
     {
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember, Key, Column(Order = 1, TypeName = "varchar"), StringLength(18)]
         public string ObjectType { get; set; }
 
         [DataMember, Key, Column(Order = 2)]
@@ -16,7 +16,7 @@ namespace d360.core.entities.Views
         [DataMember]
         public string Name { get; set; }
 
-        [DataMember]
+        [DataMember, Column(TypeName = "varchar"), StringLength(17)]
         public string NamePrefix { get; set; }
     }
 }

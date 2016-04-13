@@ -13,7 +13,7 @@ namespace d360.core.entities
         [Key, Column(Order = 2), DataMember]
         public int AttributeTypeID { get; set; }
 
-        [Key, Column(Order = 3), DataMember]
+        [Key, Column(Order = 3, TypeName = "varchar"), DataMember, StringLength(25)]
         public string LocationType { get; set; }
 
         [Key, Column(Order = 4), DataMember]

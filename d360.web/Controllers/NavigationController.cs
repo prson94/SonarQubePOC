@@ -108,12 +108,6 @@ SELECT	'#Models' as MenuID,
 
 UNION ALL
 
-SELECT	'#People' as MenuID,
-		0 as Feature,
-		NULL AS Items
-
-UNION ALL
-
 		
 SELECT	'#Monitor' as MenuID,
 		1 as Feature, 
@@ -182,7 +176,13 @@ UNION ALL
 
 SELECT	'#Community' as MenuID, 
 		4 as Feature,
-		NULL AS Items
+		(
+        SELECT	'People' AS name, --'#People' as MenuID,
+                '#/groups' AS url, 		        
+                0 as feature,
+		        NULL AS Items
+        FOR XML PATH('nav'), TYPE
+        ) AS Items
 
 UNION ALL
 

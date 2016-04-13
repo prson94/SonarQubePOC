@@ -59,7 +59,13 @@
                     ObjectDetail('DetailTile', iType, iID);
 
                     var loadPermissionsDependentTiles = function () {
-                        CollapsibleAttributesTile('AttributesTile', contextList, permissions, iType, iID);
+
+                        if (json.AllowAttributes) {
+                            CollapsibleAttributesTile('AttributesTile', contextList, permissions, iType, iID);
+                        }
+                        else {
+                            $('#AttributesTile').hide();
+                        }
 
                         statisticsTileVm.ChangeObject(iType, iID);
                         statisticsTileVm.GetStatistics();

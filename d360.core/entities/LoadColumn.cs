@@ -15,7 +15,7 @@ namespace d360.core.entities
         [DataMember, Key, Column(Order = 2)]
         public int ColumnIndex { get; set; }
 
-        [DataMember]
+        [DataMember, StringLength(250)]
         public string Name { get; set; }
 
         [DataMember]
