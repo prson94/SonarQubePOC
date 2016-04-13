@@ -156,8 +156,7 @@
                         });
                         self.TypeIndex(indexToSelect);
                     }
-                );
-                //self.ActionSelected(true);
+                );                
             }
         });
 
@@ -177,8 +176,8 @@
 
         //#region Methods
 
-        self.cancel = function () {
-            amplify.publish("CancelAction", { context: self.Context() });
+        self.cancel = function () {            
+            amplify.publish("CancelAction", { context: 'bulkload' });
         };
 
         self.save = function () {
@@ -237,8 +236,7 @@
 
     $(function () {
         var model = new LoadViewModel({});
-        ko.applyBindings(model, document.getElementById('LoadWrapper'));
-        //$('#BulkLoadFile').jqxFileUpload({ theme: theme, uploadUrl: '', fileInputName: 'BulkUpload', accept: '.xls, .xlsx', multipleFilesUpload: false, uploadTemplate: 'info' });
+        ko.applyBindings(model, document.getElementById('LoadWrapper'));       
         $("html, body").animate({ scrollTop: 0 }, "slow");
     });
 </script>
