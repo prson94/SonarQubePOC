@@ -13329,7 +13329,7 @@ order by	D.Name, I.Name";
 
             #endregion
 
-            var sql = @"select distinct r.id as RuleID, n.objectid as FusionID, a.name, 'source' as [type] from sourcetargetrule r
+            var sql = @"select distinct r.id as RuleID, n.objectid as FusionID, a.textpath as name, 'source' as [type] from sourcetargetrule r
                         join intersectmapsourcetargetrule st on st.ruleid = r.id
                         join intersectmap m on m.type = 2 and m.id = st.intersectmapid
                         join intersectnode n on n.id = m.subjectintersectnodeid

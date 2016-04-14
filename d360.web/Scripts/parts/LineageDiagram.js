@@ -679,6 +679,32 @@
         }
     }
 
+    function findNodeIndexByObject(obj, objid) {
+        for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
+            if (myDiagram.model.nodeDataArray[i].type == obj && myDiagram.model.nodeDataArray[i].id == objid)
+                return i
+        }
+        return -1;
+    }
+
+    function findLinkIndexByObjects(source, sourceid, target, targetid) {
+        var sourceIx = findNodeIndexByObject(source, sourceid);
+        var targetIx = findNodeIndexByObject(target, targetid);
+
+        if (sourceIx < 0 || targetIx < 0)
+            return -1;
+
+        var sourceKey = myDiagram.model.nodeDataArray[sourceIx].key;
+        var targetKey = myDiagram.model.nodeDataArray[targetIx].key;
+
+        for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
+            if (myDiagram.model.linkDataArray[i].from == sourceKey && myDiagram.model.linkDataArray[i].to == targetKey)
+                return i;
+        }
+        return -1;
+    }
+
+
     function getImmediateParents(key) {
         //console.log(key);
         var parents = [];
@@ -829,17 +855,23 @@
                 myPalette.model.nodeDataArray = [];
                 temp = data[0];
                 for (var i = 0; i < data.length; i++) {
-                    data[i].template = "Artifact";
-                    data[i].type = data[i].object;
-                    data[i].objecttype = data[i].objecttype;
-                    data[i].objecttypeid = data[i].objecttypeid;
-                    data[i].key = data[i].type + data[i].id.toString();
-                    data[i].isDeletable = true;
-                    data[i].hasMappingRules = false;
-                    data[i].hasSourceRules = false;
-                    data[i].sourceRuleCount = 0;
-                    data[i].mappingRuleCount = 0;
-                    myPalette.model.addNodeData(data[i]);
+                    var d = createNodeModel();
+
+                    d.backColor = data[i].backColor;
+                    d.foreColor = data[i].foreColor;
+                    d.id = data[i].id;
+                    d.name = data[i].name;
+                    d.object = data[i].object;
+                    d.typeName = data[i].typeName;
+                    d.url = data[i].url;
+                    d.template = "Artifact";
+                    d.type = data[i].object;
+                    d.objecttype = data[i].objecttype;
+                    d.objecttypeid = data[i].objecttypeid;
+                    d.key = data[i].type + data[i].id.toString();
+                    d.isDeletable = true;
+
+                    myPalette.model.addNodeData(d);
                 }
                 if (data.length < 1) {
                     $('#' + controlID_add_search_message).show();
@@ -855,12 +887,7 @@
             type1: $('#' + controlID_add_artifact_type + ' option:selected').text(),
             type2: ''
         };
-        //for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
-        //    if (myDiagram.model.nodeDataArray[i].key == $('#ddlRel').val()) {
-        //        data.type2 = myDiagram.model.nodeDataArray[i].type;
-        //        break;
-        //    }
-        //}
+
         populatePredicateList();
         myPalette.scale = 1.0;
     }
@@ -1460,7 +1487,7 @@
                 selectedData = sel[0].data;
             }
         }
-        
+
         toggleTabs(selectedData);
         toggleButtons(selectedData);
 
@@ -1940,38 +1967,67 @@
 
     //#region Amplify Subscribes
 
-    amplify.subscribe("SaveAction", function (saveActionEventData) {
+    amplify.subscribe("SaveAction", function (data) {
         try {
-            console.log(saveActionEventData);
-            switch (saveActionEventData.context) {
-                case contextList.SourceToTarget:
-                    populateDiagram();
-                    break;
-                case contextList.FieldType:
-                   // $('#' + controlID_info_table).jqxGrid('updatebounddata');
-                    break;
-                case 'sourcemapping':
-                    //populateDiagram();
+            switch (data.context) {
+                case 'mappingrule':
+                    if (data.source && data.sourceID && data.target && data.targetID && data.count != null) {
+                        console.log(data);
+                        var ix = -1;
+                        var obj = null;
+
+                        if (data.source == data.target && data.sourceID == data.targetID) {
+                            var ix = findNodeIndexByObject(data.source, data.sourceID);
+                            if (ix > -1)
+                                obj = myDiagram.model.nodeDataArray[ix];
+                        } else {
+                            var ix = findLinkIndexByObjects(data.source, data.sourceID, data.target, data.targetID);
+                            if (ix > -1)
+                                obj = myDiagram.model.linkDataArray[ix];
+                        }
+                        if (obj != null) {
+                            myDiagram.model.setDataProperty(obj, "sourceMappingCount", data.count);
+                            myDiagram.model.setDataProperty(obj, "hasMappingRules", (data.count > 0 ? true : false));
+                        }
+                    }
+                    toggleTabs(selectedData);
                     break;
                 case 'sourcerule':
-                    //populateDiagram();
+                    if (data.action && data.object && data.objectid) {
+                        if (data.action == 'add') {
+                            
+                            var ix = findNodeIndexByObject(data.object, data.objectid);
+                            if (ix > -1) {
+                                var node = myDiagram.model.nodeDataArray[ix];
+                                var count = node.sourceRuleCount;
+                                count++;
+                                myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "sourceRuleCount", count);
+                                myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "hasSourceRules", true);
+                            }
+                        }
+                    }
+                    toggleTabs(selectedData);
                     break;
             }
         } catch (e) {
-            logError("artifact.item : SaveAction", e);
+            logError("LineageDiagram : SaveAction", e);
         }
     });
 
-    //amplify.subscribe("RelationshipCancel", function (data) {
-    //    $('#Overlay').remove();
-    //    $('#OverlayBackground').remove();
+    amplify.subscribe("RelationshipCancel", function (data) {
+        if (!$('#TreeGridItemViewer').length) {
+            $('#Overlay').remove();
+            $('#OverlayBackground').remove();
+        }
+    });
 
-    //});
-
-    //amplify.subscribe("RelationshipSave", function (data) {
-    //    $('#Overlay').remove();
-    //    $('#OverlayBackground').remove();
-    //});
+    amplify.subscribe("RelationshipSave", function (data) {
+        if (!$('#TreeGridItemViewer').length) {
+            $('#Overlay').remove();
+            $('#OverlayBackground').remove();
+        }
+        toggleTabs(selectedData);
+    });
     //#endregion
 }
 

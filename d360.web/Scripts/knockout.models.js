@@ -1253,6 +1253,7 @@ function SourceToTargetMappingModel(data, permissions) {
         $.ajax({
             url: 'form/sourcetarget/load/' + self.Object() + '/' + self.ObjectID() + '/' + self.Source() + '/' + self.SourceID() + '/' + self.Target() + '/' + self.TargetID()
         }).done(function (data) {
+            self.SourceRules([]);
             //console.log(data);
             if (data == null) {
                 data = {
@@ -1373,6 +1374,8 @@ function SourceToTargetMappingModel(data, permissions) {
             rules: rules
         };
 
+        var count = data.rules.length;
+
         if (error) {
             self.IsLoading(false);
         } else {
@@ -1382,15 +1385,13 @@ function SourceToTargetMappingModel(data, permissions) {
                 data: data
             }).done(function (data) {
                 if (data == null || data.error == null || data.error == true) {
-                    console.log(data.message);
                     self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the source rules.</span>');
                     self.LoadRules();
-                    amplify.publish("SaveAction", { context: 'sourcemapping' });
                 } else {
-                    self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
+                    self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
+                    amplify.publish("SaveAction", { context: 'mappingrule', count: count, source: self.Source(), sourceID: self.SourceID(), target: self.Target(), targetID: self.TargetID() });
+                    self.LoadRules();
                 }
-
-                
             }).always(function () {
                 self.IsLoading(false);
             });
@@ -1758,6 +1759,8 @@ function HierarchySourceRuleModel(data, permissions) {
             Items: ko.toJS(self.Items())
         }
 
+        var action = (self.ID() > 0) ? 'edit' : 'add';
+
         $.ajax({
             url: '/form/SourceRules/save',
             data: SourceRule,
@@ -1766,7 +1769,7 @@ function HierarchySourceRuleModel(data, permissions) {
             self.IsSaving(false);
             if (!data.error) {
                 self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
-                amplify.publish("SaveAction", { context: 'sourcerule' });
+                amplify.publish("SaveAction", { context: 'sourcerule', action: action, object: self.Object(), objectid: self.ObjectID() });
             } else {
                 self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
                 console.log(data.message);
