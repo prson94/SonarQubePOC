@@ -14,11 +14,11 @@ namespace d360.core.enums
         SourceToTarget = 2,
         [Name("Type Hierarchy"), Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(false)]
         TypeHierarchy = 3,
-        [Name("Group Hierarchy"), Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(false)]
+        [Name("Group Hierarchy"), Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(true)]
         GroupHierarchy = 4,
         [Name("Parent Child Hierarchy"), Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(true)]
         ParentChildHierarchy = 5,
-        [Name("Synonym"), Description("Allows you to establish synonyms between two objects."), ReadOnly(false)]
+        [Name("Synonym"), Description("Allows you to establish synonyms between two objects."), ReadOnly(true)]
         Synonym = 6,
         [Name("Simple"), Description(""), ReadOnly(false)]
         Simple = 7

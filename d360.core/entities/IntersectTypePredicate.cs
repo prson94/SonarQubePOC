@@ -1,10 +1,5 @@
-﻿using System.Collections.Generic;
-using d360.core.entities.Contracts;
-using System;
-using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Runtime.Serialization;
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -15,10 +10,13 @@ namespace d360.core.entities
         public int IntersectTypeID { get; set; }
 
         [DataMember]
-        public int PredicateID { get; set; }
+        public MapType PredicateType { get; set; }
+
+        //[DataMember]
+        //public int PredicateID { get; set; }
 
         public virtual IntersectType IntersectType { get; set; }
 
-        public virtual Predicate Predicate { get; set; }
+        //public virtual Predicate Predicate { get; set; }
     }
 }

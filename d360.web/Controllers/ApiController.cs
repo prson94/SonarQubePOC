@@ -1710,7 +1710,7 @@ from	(
 					select  case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end  as AllowPredicateHierarchies
 					from	utility.RelationshipTypes T
 							inner join IntersectTypePredicate TP on TP.IntersectTypeID = T.IntersectTypeID and T.SourceObjectType = 'ArtifactType' and T.SourceObjectID = @id
-							inner join Predicate P on P.ID = TP.PredicateID and P.Type in (3,4)
+							inner join Predicate P on P.Type = TP.PredicateType and P.Type in (3)--, 4)
 					) P on 1=1";
 
                 var row = Company.Query<dynamic>(sql, new { id = a.ArtifactTypeID }).Single();
@@ -1916,44 +1916,6 @@ from	(
         {
             return Company.GetEventHeadersByObject(type, id);
         }
-
-        //[Route("{type}/{id:int}/events/headers/{groupID:int}/items")]
-        //public List<Dictionary<string, object>> GetEventHeaderItems(SystemObjects type, int id, int groupID)
-        //{
-        //    return Company.GetEventsByGroupAsDictionary(groupID);
-        //}
-
-        //[Route("{type}/{id:int}/events/headers/{groupID:int}/layout")]
-        //public GridLayout GetEventHeaderLayout(SystemObjects type, int id, int groupID)
-        //{
-        //    var fields = (
-        //                 from g in Company.Filter<EventGroup>(i => i.ID == groupID)
-        //                 join f in Company.Filter<FieldType>(i => i.Object == "Rule") on g.RuleID equals f.ObjectID
-        //                 orderby f.SortOrder
-        //                 orderby f.FriendlyName
-        //                 select f
-        //                 ).ToList();
-
-        //    fields.Insert(0, new FieldType { FriendlyName = "ID", Name = "ID", SortOrder = 0, Type = "Number" });
-        //    fields.Insert(0, new FieldType { FriendlyName = "Source ID", Name = "SourceID", SortOrder = 0, Type = "Text" });
-        //    fields.Insert(0, new FieldType { FriendlyName = "Status", Name = "Status", SortOrder = 0, Type = "Text" });
-        //    fields.Insert(0, new FieldType { FriendlyName = "Date", Name = "Date", SortOrder = 0, Type = "Date" });
-
-        //    var model = new GridLayout(fields);
-        //    return model;
-        //}
-
-        //[Route("resources/{id:int}/assignments")]
-        //public IQueryable<EventHeader> GetAssignmentsByResource(int id)
-        //{
-        //    return Company.GetEventsByAssignedResource(id);
-        //}
-
-        //[Route("Rule/{id:int}/resolutions")]
-        //public IQueryable<Resolution> GetResolutionsByRule(int id)
-        //{
-        //    return Company.Filter<Resolution>(i => i.RuleID == id);
-        //}
 
         #endregion
 
@@ -2328,12 +2290,8 @@ inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID", new { i
         [HttpGet, Route("IntersectTypePredicates/{id:int}")]
         public IQueryable<Predicate> GetAllocatedPredicates(int id)
         {
-            var allocations = Company.IntersectTypePredicates.Where(p => p.IntersectTypeID == id);
-            var predicates = Company.Predicates.Where(p => allocations.Select(a => a.PredicateID).Distinct().ToList().Contains(p.ID));
-
-            var xx = predicates.ToList();
-
-            return predicates;
+            var allocations = Company.Filter<IntersectTypePredicate>(p => p.IntersectTypeID == id);
+            return Company.Filter<Predicate>(p => allocations.Select(a => a.PredicateType).Distinct().ToList().Contains(p.Type));
         }
 
         [HttpGet, Route("IntersectTypePredicates/{id:int}/available")]
@@ -2362,7 +2320,7 @@ inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID", new { i
                 }
             }
 
-            var predicates = Company.Predicates.Where(p => availableTypes.Contains((int)p.Type));
+            var predicates = Company.Filter<Predicate>(p => availableTypes.Contains((int)p.Type));
             var allocatedIDs = allocated.Select(a => a.ID).Distinct().ToList();
 
             var availablePredicates = predicates.Where(p => !allocatedIDs.Contains(p.ID));
@@ -2461,7 +2419,7 @@ from	    ResponsibilityTypeHierarchy H
 
             //load the definition of the field from the [FieldTypeFusionLookupDefinition] table
             int fusionAttributeID = int.Parse(k.Value);
-            var def = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
+            var def = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
 
             var sql =string.Empty;
 
@@ -3060,23 +3018,13 @@ from	IntersectMapSourceRule J
         }
 
         private List<int> LoadAttributes(int intersectTypeID)
-        {                        
-            var list = new List<int>();
-            
-            {
-                list = (
-                        from t in Company.AttributeTypes
-                        join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID
-                        where r.ObjectType == "IntersectType" && r.ObjectID == intersectTypeID
-                        select r.AttributeTypeID).ToList();                
-            }
-            
-            return list;
+        {
+            return Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID).Select(i => i.AttributeTypeID).ToList();
         }
 
         [Route("{type}/{id:int}/relationshipsAndAttributes/{targetType}/{targetID:int}/{criticalOnly:bool=false?}"), HttpGet]
         public List<RelationAttributeValue> GetRelationshipsAndAttributesForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, bool criticalOnly, int intersectTypeID)
-        {            
+        {
             //get list of relationships
             var sType = type.ToString();
             var tType = targetType.ToString();
@@ -4544,8 +4492,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                         var comparer = new AllocationPossibilityComparer();
                         var allocationPossibilities = 
                             Company.GetAllocationOptions()
-                            .Intersect(Company.ResponsibilityTypeRelations
-                            .Where(i => i.ResponsibilityTypeID == responsibilityType.ID)
+                            .Intersect(Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == responsibilityType.ID)
                             .Select(i => new AllocationPossibility { ObjectType = i.ObjectType, ObjectTypeID = i.ObjectID })
                             .ToList(), comparer)
                             .ToList();
@@ -5374,7 +5321,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                     }
                     break;
                 case SystemObjects.Taxonomy:
-                    var imItems = Company.Taxonomies.AsQueryable();
+                    var imItems = Company.Table<Taxonomy>();
                     if (!string.IsNullOrEmpty(prefix)) imItems = imItems.Where(i => i.TextPath.Contains(prefix));
                     imItems = imItems.OrderBy(i => i.TextPath).Take(take);
                     foreach (var item in imItems)

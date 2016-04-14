@@ -1848,15 +1848,16 @@
             promises.push($.ajax({
                 url: '/relations/update/' + data.intersectMapID + '/' + data.predicateID,
                 async: true
-            }).fail(function () {
+            }).fail(function (data) {
                 flagError = true;
+                errors += data.message;
             }));
 
         }
 
         $.when.apply($, promises).done(function () {
             if (flagError) {
-                amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: xhr.statusText + xhr.responseText, success: false });
+                amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: errors, success: false });
             } else {
                 amplify.publish("SourceSave");
                 deletedNodes = [];

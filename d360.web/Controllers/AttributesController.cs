@@ -72,25 +72,21 @@ namespace d360.web.Controllers
             if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Read, ClaimObject.Attribute))
             {                
                 {
-                    list = (
-                            from t in Company.AttributeTypes
-                            join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID                 
-                            where r.ObjectType == "IntersectType" && r.ObjectID == intersectTypeID                            
-                            select new GridDynamicAttributeField {
-                                attributeID = r.AttributeTypeID,
-                                label = t.Name,
-                                allowMultiple = r.AllowMultipleEntries,
-                                description = t.Description,
-                                fieldCount = (from p in Company.FieldTypes where p.ObjectID == t.ID && p.Object == "AttributeType" select p).Count()
-                            }
-                            ).OrderByDescending(i => i.label).ToList();
+                    list = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID)
+                        .Select(i => new GridDynamicAttributeField {
+                            attributeID = i.AttributeTypeID,
+                            label = i.AttributeType.Name,
+                            allowMultiple = i.AllowMultipleEntries,
+                            description = i.AttributeType.Description,
+                            fieldCount = Company.Count<FieldType>(p => p.ObjectID == i.AttributeTypeID && p.Object == "AttributeType")
+                        }).OrderByDescending(i => i.label).ToList();
 
                     //determine if any of these attributes are complex
                     var attributeIDList = list.Select(i => i.attributeID).ToList();
 
-                    var complexAttributes = (from t in Company.AttributeTypes where attributeIDList.Contains(t.ParentID.Value) select  t.ParentID  ).ToList();
+                    var complexAttributes = Company.Filter<AttributeType>(t => attributeIDList.Contains(t.ParentID.Value)).Select(t => t.ParentID).ToList();
 
-                    foreach(var attr in list)
+                    foreach (var attr in list)
                     {
                         if (complexAttributes.Contains(attr.attributeID)) attr.isComplex = true;
                     }
@@ -130,12 +126,13 @@ namespace d360.web.Controllers
             {
                 if (type == SystemObjects.Attribute)
                 {
-                    types= (
-                           from t in Company.AttributeTypes
-                           join a in Company.Attributes on t.ParentID equals a.AttributeTypeID
-                           where a.ID == id
-                           select t
-                           ).OrderBy(i => i.Name).AsQueryable();
+                    types = Company.GetById<core.entities.Attribute>(id, i => i.AttributeType).AttributeType.Children.OrderBy(i => i.Name).AsQueryable();
+                    //types= (
+                    //       from t in Company.AttributeTypes
+                    //       join a in Company.Attributes on t.ParentID equals a.AttributeTypeID
+                    //       where a.ID == id
+                    //       select t
+                    //       ).OrderBy(i => i.Name).AsQueryable();
                 }
                 else
                 {
@@ -143,17 +140,10 @@ namespace d360.web.Controllers
                     var sType = type.ToString();
                     var _id = sType.EndsWith("Type") ? detail.ID : detail.TypeID;
 
-                    var usedIDs = Company.Filter<d360.core.entities.Attribute>(i => i.ObjectType == sType && i.ObjectID == id).Select(i => i.AttributeTypeID).ToList();
+                    var usedIDs = Company.Filter<core.entities.Attribute>(i => i.ObjectType == sType && i.ObjectID == id).Select(i => i.AttributeTypeID).ToList();
 
                     if (!sType.EndsWith("Type")) sType += "Type";
-                    types = (
-                            from t in Company.AttributeTypes
-                            join r in Company.AttributeTypeRelations on t.ID equals r.AttributeTypeID
-                            where r.ObjectType == sType
-                            where r.ObjectID == _id
-                            where (r.AllowMultipleEntries || !usedIDs.Contains(t.ID))
-                            select t
-                            ).OrderBy(i => i.Name).AsQueryable();
+                    types = Company.Filter<AttributeTypeRelation>(r => r.ObjectType == sType && r.ObjectID == _id && (r.AllowMultipleEntries || !usedIDs.Contains(r.AttributeTypeID))).Select(r => r.AttributeType).OrderBy(t => t.Name);
                 }
 
                 if (types.Count() > 0)

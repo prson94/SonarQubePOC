@@ -104,8 +104,6 @@ namespace d360.model
                     x.MapLeftKey("CompanyID");
                     x.MapRightKey("PackageID");
                 });
-
-            //modelBuilder.Entity<EventHeader>().HasKey(p => new { p.EventGroupID });
         }
 
         #endregion

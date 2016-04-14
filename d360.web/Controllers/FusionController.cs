@@ -729,7 +729,8 @@ select * from h where ID <> @t order by h.[Level] desc;
             var fields = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == fusionAttributeTypeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
 
             fields.ForEach(f => {
-                var name = f.Name.Replace("'", "''").Replace("--", "");
+                var name = $"Field{f.ID}";
+                //var name = f.Name.Replace("'", "''").Replace("--", "");
                 sqlFieldModels.Add(new SqlFieldModel
                 {
                     FieldColumnName = $"{name}",
@@ -1135,8 +1136,8 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
         {
             var model = new
             {
-                OwnershipRuleCount = Company.FusionAttributeOwnerRules.Count(i => i.FusionID == id),
-                PromotionRuleCount = Company.FusionAttributePromotionRules.Count(i => i.FusionID == id)
+                OwnershipRuleCount = Company.Count<FusionAttributeOwnerRule>(i => i.FusionID == id),
+                PromotionRuleCount = Company.Count<FusionAttributePromotionRule>(i => i.FusionID == id)
             };
 
             return Json(model, JsonRequestBehavior.AllowGet);

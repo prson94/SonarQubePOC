@@ -54070,15 +54070,16 @@ function LineageDiagram(controlID, type, id, readonly) {
             promises.push($.ajax({
                 url: '/relations/update/' + data.intersectMapID + '/' + data.predicateID,
                 async: true
-            }).fail(function () {
+            }).fail(function (data) {
                 flagError = true;
+                errors += data.message;
             }));
 
         }
 
         $.when.apply($, promises).done(function () {
             if (flagError) {
-                amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: xhr.statusText + xhr.responseText, success: false });
+                amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: errors, success: false });
             } else {
                 amplify.publish("SourceSave");
                 deletedNodes = [];
@@ -56110,46 +56111,13 @@ function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenO
     var objectID = givenObjectID === undefined ? -1 : givenObjectID;
 
     //#region Event Subscriptions
-
-
-
-    //function saveAction(data) {
-    /*var reloadControlData = function () {
-        var reloadChartData = function () {
-            var pr = new $.Deferred();
-            chartAdapter.dataBind();
-            return pr.promise();
-        }
-        reloadChartData().then(function () {
-            chart.jqxGrid('updatebounddata');
-            $(gridControlID).jqxGrid('updatebounddata');
-        });
-    }
-    try {
-        switch (data.context) {
-            case "Workflow":
-            case "OwnerApprovalWorkflow":
-            case "OwnerCertificationWorkflow":
-            case "IssueWorkflow":
-                reloadControlData();
-                break;
-            case "commentform":
-                if (data.custom.CommentTypeID == 5) {
-                    reloadControlData();
-                }
-                break;
-        }
-    } catch (e) { }*/
-    //}
-
-    function saveAction(data) {
-        //console.log(data);
+    
+    function saveAction(data) {      
         try {
-            switch (data.context) {
-                case "workflowform":
-                case "artifactform":
+            switch (data.context) {                
+                case "IssueWorkflow":
                     switchToViewer();
-                    // $(gridControlID).jqxGrid('updatebounddata');
+                     $(gridControlID).jqxGrid('updatebounddata');
             }
         } catch (e) {
             logError("YourWorkflowTasks : SaveAction", e);
@@ -56159,23 +56127,8 @@ function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenO
     function pageResized() {
         $(gridControlID).jqxGrid('autoresizecolumns');
     }
-
-    /* function cancelAction(data) {
-         console.log(data);
-         try {
-             switch (data.context) {
-                 case "workflowform":
-                 case "artifactform":
-                     switchToViewer();
-                     break;
-             }
-         } catch (e) {
-             logError("YourWorkflowTasks : CancelAction", e);
-         }
-     }*/
-
-    function localAction(data) {
-        //console.log(data.context);
+    
+    function localAction(data) {        
         try {
             switch (data.context) {
                 case "workflowform":
@@ -56197,8 +56150,7 @@ function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenO
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
-        amplify.unsubscribe('ToolAction', localAction);
-        //     amplify.unsubscribe('CancelAction', cancelAction);
+        amplify.unsubscribe('ToolAction', localAction);       
     }
 
     amplify.subscribe("PageResized", pageResized);
@@ -56206,28 +56158,28 @@ function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenO
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
-    amplify.subscribe('ToolAction', localAction);
-    // amplify.subscribe('CancelAction', cancelAction);
+    amplify.subscribe('ToolAction', localAction);   
 
     //#endregion
 
     //#region Helper Functions
 
-    var switchToViewer = function () {
-        $('#assignmentoverlay').show();
+    var switchToViewer = function () {        
+        $('#AssignmentViewer').fadeIn(10);
+        $('#AssignmentEditor').fadeOut(10);
     }
 
     var switchToEditor = function (uri) {
         try {
-            $('#assignmentoverlay').fadeOut(10);
-            /*  $('#PromotionEditor').fadeIn(10);
-              $('#PromotionEditor').html(progressIndicatorHtml);
-              $('#PromotionEditor').load(uri, function (response, status, xhr) {
+            $('#AssignmentViewer').fadeOut(10);
+              $('#AssignmentEditor').fadeIn(10);
+              $('#AssignmentEditor').html(progressIndicatorHtml);
+              $('#AssignmentEditor').load(uri, function (response, status, xhr) {
                   if (status == "error") {
                       amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.status + ' ' + xhr.statusText, type: 'error' });
                       switchToViewer();
                   }
-              });*/
+              });
         } catch (e) {
 
         }
@@ -56362,7 +56314,7 @@ function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenO
 
                             tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
 
-                            return renderToolsHtml(value, tools, contextList.Artifact, data);
+                            return renderToolsHtml(value, tools, contextList.Workflow, data);
                         }
                     }
                 ];
@@ -56392,7 +56344,7 @@ function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenO
 
                             tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
 
-                            return renderToolsHtml(value, tools, contextList.Artifact, data);
+                            return renderToolsHtml(value, tools, contextList.Workflow, data);
                         }
                     }
                 ];
@@ -62166,10 +62118,10 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
 
         function listRowSelect(event) {
 
+            // event args.
             var args = event.args;
-            var row = args.rowindex;
-
-            var data = $('#List').jqxGrid('getrowdata', row);
+            // row data.
+            var data = args.row;
 
             if (data) {
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
@@ -62184,14 +62136,14 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
             try {
                 switch (data.context) {
                     case contextList.IntersectType:
-                        $('#List').jqxGrid('updatebounddata');
+                        $('#List').jqxDataTable('updateBoundData');
                         break;
                     case contextList.Predicate:
-                        $('#Predicates').jqxGrid('updatebounddata');
+                        $('#Predicates').jqxDataTable('updateBoundData');
                         break;
                     case contextList.RelationType:
-                        if (CompanySettings.UseNewRelationships) {
-                            $('#NewRelationTypes').jqxGrid('updatebounddata');
+                        if (CompanySettings.UseNewRelationships == "true") {
+                            $('#NewRelationTypes').jqxDataTable('updateBoundData');
                         }
                         break;
                 }
@@ -62247,35 +62199,32 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
 
                     var IntersectTypeAdapter = new $.jqx.dataAdapter(IntersectTypeSource);
 
-                    $("#List").jqxGrid({
-                        altrows: true,
-                        width: grid_width,
-                        pagesizeoptions: ['10', '20', '50'],
-                        pagesize: 20,
-                        autoheight: true,
-                        sortable: true,
-                        filterable: true,
-                        showfilterrow: true,
+                    $("#List").jqxDataTable({
                         pageable: true,
+                        pagerButtonsCount: 10,
+                        altRows: true,
+                        filterable: true,
+                        pagerMode: 'advanced',
+                        width: '100%',
+                        filterMode: 'simple',
                         source: IntersectTypeAdapter,
                         theme: theme,
-                        columnsresize: true,
-                        columngroups: 
-                            [
-                                { text: 'Relationship Side 1', align: 'center', name: 'S1' },
-                                { text: 'Relationship Side 2', align: 'center', name: 'S2' }
-                            ],
+                        columnsResize: true,
+                        columnGroups: [
+                            { text: 'Relationship Side 1', align: 'center', name: 'S1' },
+                            { text: 'Relationship Side 2', align: 'center', name: 'S2' }
+                        ],
                         columns: [
-                            { datafield: "Source", text: "Type", columngroup: 'S1', filtertype: 'checkedlist', width: '125px' },
-                            { datafield: "SourceName", text: "Name", columngroup: 'S1', filtertype: 'checkedlist' },
-                            { datafield: "Target", text: "Type", columngroup: 'S2', filtertype: 'checkedlist', width: '125px' },
-                            { datafield: "TargetName", text: "Name", columngroup: 'S2', filtertype: 'checkedlist' },
+                            { dataField: "Source", text: "Type", columnGroup: 'S1', width: '125px' },
+                            { dataField: "SourceName", text: "Name", columnGroup: 'S1' },
+                            { dataField: "Target", text: "Type", columnGroup: 'S2', width: '125px' },
+                            { dataField: "TargetName", text: "Name", columnGroup: 'S2' },
                             {
                                 text: '',
                                 dataField: 'ID',
-                                width: 80,
+                                width: 100,
                                 filterable: false,
-                                cellsrenderer: function (row, column, value) {
+                                cellsRenderer: function (row, column, value, rowData) {
 
                                     var tools = [];
                                     if (permissions.HasPermission('Root', 'Update')) {
@@ -62315,28 +62264,26 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
 
                     PredicateAdapter = new $.jqx.dataAdapter(PredicateSource);
 
-                    $("#Predicates").jqxGrid({
-                        altrows: true,
-                        width: grid_width,
-                        pagesizeoptions: ['10', '20', '50'],
-                        pagesize: 20,
-                        autoheight: true,
-                        sortable: true,
-                        filterable: true,
-                        showfilterrow: true,
+                    $("#Predicates").jqxDataTable({
                         pageable: true,
+                        pagerButtonsCount: 10,
+                        altRows: true,
+                        filterable: true,
+                        pagerMode: 'advanced',
+                        width: '100%',
+                        filterMode: 'simple',
                         source: PredicateAdapter,
                         theme: theme,
+                        columnsResize: true,
                         columns: [
-                            { datafield: "Name", text: "Name" },
-                            { datafield: "Inverse", text: "Inverse" },
-                            { datafield: "Type", text: "Type" },
+                            { dataField: "Name", text: "Name" },
+                            { dataField: "Inverse", text: "Inverse" },
+                            { dataField: "Type", text: "Type" },
                             {
                                 text: '',
                                 dataField: 'ID',
-                                width: 80,
-                                filterable: false,
-                                cellsrenderer: function (row, column, value) {
+                                width: 100,
+                                cellsRenderer: function (row, column, value, rowData) {
 
                                     var tools = [];
                                     if (permissions.HasPermission('Root', 'Update')) {
@@ -62354,7 +62301,7 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
 
                     //#endregion
 
-                    if (CompanySettings.UseNewRelationships) {
+                    if (CompanySettings.UseNewRelationships == "true") {
 
                         $('#NewRelationTypesWrapper').show();
 
@@ -62378,39 +62325,35 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
                                 { name: 'Object' },
                                 { name: 'ObjectID' },
                                 { name: 'ObjectName' },
-                                { name: 'PredicateID' },
-                                { name: 'Predicate' },
-                                { name: 'Inverse' }
+                                { name: 'PredicateType' },
+                                { name: 'PredicateTypeName' }
                             ]
                         };
 
                         var RelationTypeAdapter = new $.jqx.dataAdapter(RelationTypeSource);
 
-                        $("#NewRelationTypes").jqxGrid({
-                            altrows: true,
-                            width: grid_width,
-                            pagesizeoptions: ['10', '20', '50'],
-                            pagesize: 20,
-                            autoheight: true,
-                            sortable: true,
-                            filterable: true,
-                            showfilterrow: true,
+                        $("#NewRelationTypes").jqxDataTable({
                             pageable: true,
+                            pagerButtonsCount: 10,
+                            altRows: true,
+                            filterable: true,
+                            pagerMode: 'advanced',
+                            width: '100%',
+                            filterMode: 'simple',
                             source: RelationTypeAdapter,
                             theme: theme,
-                            columnsresize: true,
+                            columnsResize: true,
                             columns: [
-                                { datafield: "Subject", text: "Type", filtertype: 'checkedlist', width: '125px' },
-                                { datafield: "SubjectName", text: "Name", filtertype: 'checkedlist' },
-                                { datafield: "Predicate", text: "Predicate", filtertype: 'checkedlist', width: '125px' },
-                                { datafield: "Object", text: "Type", filtertype: 'checkedlist', width: '125px' },
-                                { datafield: "ObjectName", text: "Name", filtertype: 'checkedlist' },
+                                { dataField: "Subject", text: "Type", width: '125px' },
+                                { dataField: "SubjectName", text: "Name" },
+                                { dataField: "Object", text: "Type", width: '125px' },
+                                { dataField: "ObjectName", text: "Name"},
+                                { dataField: "PredicateTypeName", text: "Predicate", width: '125px' },
                                 {
                                     text: '',
                                     dataField: 'ID',
-                                    width: 80,
-                                    filterable: false,
-                                    cellsrenderer: function (row, column, value) {
+                                    width: 100,
+                                    cellsRenderer: function (row, column, value, rowData) {
 
                                         var tools = [];
                                         if (permissions.HasPermission('Root', 'Update')) {
@@ -62432,7 +62375,7 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
 
                     //#region Event Subscriptions
 
-                    $('#List').on('rowselect', listRowSelect);
+                    $('#List').on('rowSelect', listRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 

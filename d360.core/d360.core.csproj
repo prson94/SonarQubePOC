@@ -77,7 +77,6 @@
     <Compile Include="attributes\Attributes.cs" />
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
-    <Compile Include="entities\AlertFlag.cs" />
     <Compile Include="entities\Relation.cs" />
     <Compile Include="entities\RelationType.cs" />
     <Compile Include="entities\Environment.cs" />
@@ -106,7 +105,6 @@
     <Compile Include="entities\Contracts\ISearchable.cs" />
     <Compile Include="entities\Contracts\IUpdatedMetadata.cs" />
     <Compile Include="entities\FusionAttributePromotionRuleMapping.cs" />
-    <Compile Include="entities\QueueFusionItem.cs" />
     <Compile Include="entities\Setting.cs" />
     <Compile Include="entities\FusionExecution.cs" />
     <Compile Include="entities\Rule.cs" />
@@ -159,7 +157,6 @@
     <Compile Include="entities\Transitive\RedFlagSummariesByResource.cs" />
     <Compile Include="entities\Transitive\SocialStatisticsByObject.cs" />
     <Compile Include="entities\Views\Relationship.cs" />
-    <Compile Include="entities\Views\RelationshipWithContextAggregate.cs" />
     <Compile Include="entities\Report.cs" />
     <Compile Include="entities\ResponsibilityTypeObjectClaim.cs" />
     <Compile Include="entities\ResponsibilityTypeClaim.cs" />
@@ -240,7 +237,6 @@
     <Compile Include="entities\Views\SecurityDetail.cs" />
     <Compile Include="entities\Views\StatisticTypeCheckOption.cs" />
     <Compile Include="entities\Views\FusionAttributePromotionDetail.cs" />
-    <Compile Include="entities\Views\LeafFusionAttribute.cs" />
     <Compile Include="entities\Views\FusionAttributeOwnerDetail.cs" />
     <Compile Include="entities\Views\RelationshipAggregate.cs" />
     <Compile Include="entities\Views\ResponsibilityDetail.cs" />

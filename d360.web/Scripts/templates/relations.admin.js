@@ -24,10 +24,10 @@
 
         function listRowSelect(event) {
 
+            // event args.
             var args = event.args;
-            var row = args.rowindex;
-
-            var data = $('#List').jqxGrid('getrowdata', row);
+            // row data.
+            var data = args.row;
 
             if (data) {
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
@@ -42,14 +42,14 @@
             try {
                 switch (data.context) {
                     case contextList.IntersectType:
-                        $('#List').jqxGrid('updatebounddata');
+                        $('#List').jqxDataTable('updateBoundData');
                         break;
                     case contextList.Predicate:
-                        $('#Predicates').jqxGrid('updatebounddata');
+                        $('#Predicates').jqxDataTable('updateBoundData');
                         break;
                     case contextList.RelationType:
-                        if (CompanySettings.UseNewRelationships) {
-                            $('#NewRelationTypes').jqxGrid('updatebounddata');
+                        if (CompanySettings.UseNewRelationships == "true") {
+                            $('#NewRelationTypes').jqxDataTable('updateBoundData');
                         }
                         break;
                 }
@@ -105,35 +105,32 @@
 
                     var IntersectTypeAdapter = new $.jqx.dataAdapter(IntersectTypeSource);
 
-                    $("#List").jqxGrid({
-                        altrows: true,
-                        width: grid_width,
-                        pagesizeoptions: ['10', '20', '50'],
-                        pagesize: 20,
-                        autoheight: true,
-                        sortable: true,
-                        filterable: true,
-                        showfilterrow: true,
+                    $("#List").jqxDataTable({
                         pageable: true,
+                        pagerButtonsCount: 10,
+                        altRows: true,
+                        filterable: true,
+                        pagerMode: 'advanced',
+                        width: '100%',
+                        filterMode: 'simple',
                         source: IntersectTypeAdapter,
                         theme: theme,
-                        columnsresize: true,
-                        columngroups: 
-                            [
-                                { text: 'Relationship Side 1', align: 'center', name: 'S1' },
-                                { text: 'Relationship Side 2', align: 'center', name: 'S2' }
-                            ],
+                        columnsResize: true,
+                        columnGroups: [
+                            { text: 'Relationship Side 1', align: 'center', name: 'S1' },
+                            { text: 'Relationship Side 2', align: 'center', name: 'S2' }
+                        ],
                         columns: [
-                            { datafield: "Source", text: "Type", columngroup: 'S1', filtertype: 'checkedlist', width: '125px' },
-                            { datafield: "SourceName", text: "Name", columngroup: 'S1', filtertype: 'checkedlist' },
-                            { datafield: "Target", text: "Type", columngroup: 'S2', filtertype: 'checkedlist', width: '125px' },
-                            { datafield: "TargetName", text: "Name", columngroup: 'S2', filtertype: 'checkedlist' },
+                            { dataField: "Source", text: "Type", columnGroup: 'S1', width: '125px' },
+                            { dataField: "SourceName", text: "Name", columnGroup: 'S1' },
+                            { dataField: "Target", text: "Type", columnGroup: 'S2', width: '125px' },
+                            { dataField: "TargetName", text: "Name", columnGroup: 'S2' },
                             {
                                 text: '',
                                 dataField: 'ID',
-                                width: 80,
+                                width: 100,
                                 filterable: false,
-                                cellsrenderer: function (row, column, value) {
+                                cellsRenderer: function (row, column, value, rowData) {
 
                                     var tools = [];
                                     if (permissions.HasPermission('Root', 'Update')) {
@@ -173,28 +170,26 @@
 
                     PredicateAdapter = new $.jqx.dataAdapter(PredicateSource);
 
-                    $("#Predicates").jqxGrid({
-                        altrows: true,
-                        width: grid_width,
-                        pagesizeoptions: ['10', '20', '50'],
-                        pagesize: 20,
-                        autoheight: true,
-                        sortable: true,
-                        filterable: true,
-                        showfilterrow: true,
+                    $("#Predicates").jqxDataTable({
                         pageable: true,
+                        pagerButtonsCount: 10,
+                        altRows: true,
+                        filterable: true,
+                        pagerMode: 'advanced',
+                        width: '100%',
+                        filterMode: 'simple',
                         source: PredicateAdapter,
                         theme: theme,
+                        columnsResize: true,
                         columns: [
-                            { datafield: "Name", text: "Name" },
-                            { datafield: "Inverse", text: "Inverse" },
-                            { datafield: "Type", text: "Type" },
+                            { dataField: "Name", text: "Name" },
+                            { dataField: "Inverse", text: "Inverse" },
+                            { dataField: "Type", text: "Type" },
                             {
                                 text: '',
                                 dataField: 'ID',
-                                width: 80,
-                                filterable: false,
-                                cellsrenderer: function (row, column, value) {
+                                width: 100,
+                                cellsRenderer: function (row, column, value, rowData) {
 
                                     var tools = [];
                                     if (permissions.HasPermission('Root', 'Update')) {
@@ -212,7 +207,7 @@
 
                     //#endregion
 
-                    if (CompanySettings.UseNewRelationships) {
+                    if (CompanySettings.UseNewRelationships == "true") {
 
                         $('#NewRelationTypesWrapper').show();
 
@@ -236,39 +231,35 @@
                                 { name: 'Object' },
                                 { name: 'ObjectID' },
                                 { name: 'ObjectName' },
-                                { name: 'PredicateID' },
-                                { name: 'Predicate' },
-                                { name: 'Inverse' }
+                                { name: 'PredicateType' },
+                                { name: 'PredicateTypeName' }
                             ]
                         };
 
                         var RelationTypeAdapter = new $.jqx.dataAdapter(RelationTypeSource);
 
-                        $("#NewRelationTypes").jqxGrid({
-                            altrows: true,
-                            width: grid_width,
-                            pagesizeoptions: ['10', '20', '50'],
-                            pagesize: 20,
-                            autoheight: true,
-                            sortable: true,
-                            filterable: true,
-                            showfilterrow: true,
+                        $("#NewRelationTypes").jqxDataTable({
                             pageable: true,
+                            pagerButtonsCount: 10,
+                            altRows: true,
+                            filterable: true,
+                            pagerMode: 'advanced',
+                            width: '100%',
+                            filterMode: 'simple',
                             source: RelationTypeAdapter,
                             theme: theme,
-                            columnsresize: true,
+                            columnsResize: true,
                             columns: [
-                                { datafield: "Subject", text: "Type", filtertype: 'checkedlist', width: '125px' },
-                                { datafield: "SubjectName", text: "Name", filtertype: 'checkedlist' },
-                                { datafield: "Predicate", text: "Predicate", filtertype: 'checkedlist', width: '125px' },
-                                { datafield: "Object", text: "Type", filtertype: 'checkedlist', width: '125px' },
-                                { datafield: "ObjectName", text: "Name", filtertype: 'checkedlist' },
+                                { dataField: "Subject", text: "Type", width: '125px' },
+                                { dataField: "SubjectName", text: "Name" },
+                                { dataField: "Object", text: "Type", width: '125px' },
+                                { dataField: "ObjectName", text: "Name"},
+                                { dataField: "PredicateTypeName", text: "Predicate", width: '125px' },
                                 {
                                     text: '',
                                     dataField: 'ID',
-                                    width: 80,
-                                    filterable: false,
-                                    cellsrenderer: function (row, column, value) {
+                                    width: 100,
+                                    cellsRenderer: function (row, column, value, rowData) {
 
                                         var tools = [];
                                         if (permissions.HasPermission('Root', 'Update')) {
@@ -290,7 +281,7 @@
 
                     //#region Event Subscriptions
 
-                    $('#List').on('rowselect', listRowSelect);
+                    $('#List').on('rowSelect', listRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 

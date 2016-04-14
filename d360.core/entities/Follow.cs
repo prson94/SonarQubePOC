@@ -7,11 +7,8 @@ using d360.core.enums;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Follow : BaseObject
+    public class Follow : BaseIntObject
     {
-        [Column(Order = 1), Key]
-        public int ID { get; set; }
-
         [DataMember]
         public int ResourceID { get; set; }
 

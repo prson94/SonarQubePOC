@@ -3735,7 +3735,7 @@ from    utility.RelationshipTypes RT
         and RT.SourceObjectType = @type and RT.SourceObjectID = @id
 order by  D.TextPath
 ", new { type, id });
-            var fusionAttributeTypes = Company.FusionAttributeTypes.OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
+            var fusionAttributeTypes = Company.Table<FusionAttributeType>().OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
             var lookups = Company.GetFieldTypeLookupOptions().Select(i => new { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" });
             var patterns = new Dictionary<string, string>() {
                 { "Choose sample...", "" },
@@ -4066,8 +4066,8 @@ order by  D.TextPath
         {
             var a = Company.GetById<FieldType>(id);
             if (a == null) return HttpNotFound();
-            var used = Company.Fields.Any(i => i.FieldTypeID == id);
-            var qry = Company.FieldTypeLookupValues.OrderBy(i => i.LookupObjectType).ThenBy(i => i.Name).AsQueryable();
+            var used = Company.Any<Field>(i => i.FieldTypeID == id);
+            var qry = Company.Table<FieldTypeLookupValue>().OrderBy(i => i.LookupObjectType).ThenBy(i => i.Name).AsQueryable();
 
             var fusDef = a.FieldTypeFusionLookupDefinitions.FirstOrDefault();
 
@@ -4092,7 +4092,7 @@ order by  D.TextPath
                 CheckIsFieldTypeNameReserved(model.FieldType.Name);
 
                 var ft = Company.GetById<FieldType>(model.FieldType.ID);
-                var used = Company.Fields.Any(i => i.FieldTypeID == ft.ID);
+                var used = Company.Any<Field>(i => i.FieldTypeID == ft.ID);
 
                 if (ft == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
 
@@ -4231,7 +4231,7 @@ order by  D.TextPath
                         }
 
                         if (oldType == "RelationLookup" && eri != null)
-                            Company.FieldTypeRelationLookupDefinitions.Remove(eri);
+                            Company.Set<FieldTypeRelationLookupDefinition>().Remove(eri);
 
                         break;
                         #endregion
@@ -4344,7 +4344,7 @@ order by  D.TextPath
                     if (defs.Count != 0)
                         Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
                     if (eri != null)
-                        Company.FieldTypeRelationLookupDefinitions.Remove(eri);
+                        Company.Set<FieldTypeRelationLookupDefinition>().Remove(eri);
                 }
 
                 Company.Update<FieldType>(ft);
@@ -5022,7 +5022,7 @@ order by  D.TextPath
                 var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
                 if (fusionAttributeIDs.Count == 0)
                 {
-                    Company.FusionAttributeOwnerRuleItems.Add(
+                    Company.Set<FusionAttributeOwnerRuleItem>().Add(
                         new FusionAttributeOwnerRuleItem { FusionAttributeOwnerRuleID = ruleID, FusionAttributeID = null }
                         );
                 }
@@ -5035,7 +5035,7 @@ order by  D.TextPath
                         {
                             fusionAttributeID = int.Parse(fa);
                         }
-                        Company.FusionAttributeOwnerRuleItems.Add(
+                        Company.Set<FusionAttributeOwnerRuleItem>().Add(
                             new FusionAttributeOwnerRuleItem { FusionAttributeOwnerRuleID = ruleID, FusionAttributeID = fusionAttributeID }
                             );
                     });
@@ -5348,7 +5348,7 @@ order by  D.TextPath
                 var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
                 if (fusionAttributeIDs.Count == 0)
                 {
-                    Company.FusionAttributePromotionRuleItems.Add(
+                    Company.Set<FusionAttributePromotionRuleItem>().Add(
                         new FusionAttributePromotionRuleItem { FusionAttributePromotionRuleID = ruleID, FusionAttributeID = null }
                         );
                 }
@@ -5361,7 +5361,7 @@ order by  D.TextPath
                         {
                             fusionAttributeID = int.Parse(fa);
                         }
-                        Company.FusionAttributePromotionRuleItems.Add(
+                        Company.Set<FusionAttributePromotionRuleItem>().Add(
                             new FusionAttributePromotionRuleItem { FusionAttributePromotionRuleID = ruleID, FusionAttributeID = fusionAttributeID }
                             );
                     });
@@ -6333,14 +6333,15 @@ order by  D.TextPath
                 { "Side2DisplayText", last.MenuDisplayText }
             };
 
-            model.Add("Predicates", type.IntersectTypePredicates.Select(i => i.PredicateID).ToArray());
+            model.Add("Predicates", type.IntersectTypePredicates.Select(i => (int)i.PredicateType).ToArray());
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         public JsonNetResult IntersectType_PredicateOptions()
         {
-            var models = Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
+            var models = MapType.Lineage.GetAsList().Select(i => new { title = i.Name, value = (int)i.ID }).OrderBy(i => i.title); //Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
+            //var models = Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -6467,10 +6468,10 @@ order by  D.TextPath
 
                 if (!string.IsNullOrEmpty(form["Predicates[]"]))
                 {
-                    var predicates = form["Predicates[]"].Split(',').Select(i => int.Parse(i)).ToList();
+                    var predicates = form["Predicates[]"].Split(',').Select(i => (MapType)Enum.Parse(typeof(MapType), i)).ToList();
 
                     predicates.ForEach(p => {
-                        Company.IntersectTypePredicates.Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateID = p });
+                        Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
                     });
                     Company.SaveChanges();
                 }
@@ -6600,26 +6601,28 @@ order by  D.TextPath
                 Company.Update<IntersectTypeNode>(existingSide1Node);
                 Company.Update<IntersectTypeNode>(existingSide2Node);
 
-                List<int> predicates = null;
+                List<MapType> predicates = null;
                 if (!string.IsNullOrEmpty(form["Predicates[]"]))
                 {
-                    predicates = form["Predicates[]"].Split(',').Select(i => int.Parse(i)).ToList();
+                    predicates = form["Predicates[]"].Split(',').Select(i => (MapType)Enum.Parse(typeof(MapType), i)).ToList();
                 }
 
-                var invalidPredicates = model.IntersectTypePredicates.Select(i => i.PredicateID).Except(predicates).ToList();
+                var invalidPredicates = model.IntersectTypePredicates.Select(i => i.PredicateType).Except(predicates).ToList();
                 invalidPredicates.ForEach(p => {
-                    var ip = model.IntersectTypePredicates.FirstOrDefault(i => i.PredicateID == p);
+                    var ip = model.IntersectTypePredicates.FirstOrDefault(i => i.PredicateType == p);
                     if (ip != null)
                     {
-                        Company.IntersectTypePredicates.Remove(ip);
+                        Company.Set<IntersectTypePredicate>().Remove(ip);
                     }
                 });
                 if (invalidPredicates.Count > 0)
                 {
                     Company.SaveChanges();
                 }
+
                 predicates.ForEach(p => {
-                    Company.IntersectTypePredicates.Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateID = p });
+                    if (!model.IntersectTypePredicates.Any(i => i.PredicateType == p))
+                        Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
                 });
                 Company.SaveChanges();
 
@@ -6672,7 +6675,7 @@ order by  D.TextPath
         public JsonResult Group_AddGroupUserFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update)) return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
-            if (!Company.Groups.Any(i => i.ID == id)) return jsonException("No group exists for the specified ID.", HttpStatusCode.NotFound);
+            if (!Company.Any<Group>(i => i.ID == id)) return jsonException("No group exists for the specified ID.", HttpStatusCode.NotFound);
 
             var list = new List<EditableField>();
 
@@ -7227,7 +7230,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 if(type == "ArtifactType" && lowerColName == "subject area")
                 {
-                    var items = Company.TaxonomyTypes.OrderBy(x => x.Name).Select(x => x.Name);
+                    var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
 
                     if (items.Any())
                     {
@@ -7255,7 +7258,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 }
                 else if (type == "Lineage" && lowerColName == "predicate")
                 {
-                    var items = Company.Predicates.Where(x => x.Type == MapType.Lineage).OrderBy(x => x.Name).Select(x => x.Name);
+                    var items = Company.Filter<Predicate>(x => x.Type == MapType.Lineage).OrderBy(x => x.Name).Select(x => x.Name);
 
                     if (items.Any())
                     {
@@ -7277,7 +7280,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 }
                 else if (type == "Lineage" && (lowerColName == "focal point subject area" || lowerColName == "source object subject area" || lowerColName == "target object subject area") )
                 {
-                    var items = Company.TaxonomyTypes.OrderBy(x => x.Name).Select(x => x.Name);
+                    var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
 
                     if (items.Any())
                     {
@@ -7290,7 +7293,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 }
                 else if (type == "DomainType" && lowerColName == "domain group")
                 {
-                    var items = Company.DomainGroups.Where(x => x.DomainTypeID == id).OrderBy(x => x.Name).Select(x => x.Name);
+                    var items = Company.Filter<DomainGroup>(x => x.DomainTypeID == id).OrderBy(x => x.Name).Select(x => x.Name);
 
                     if (items.Any())
                     {
@@ -8223,7 +8226,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 for (int i = 1; i <= a.MaximumDepth; i++)
                 {
-                    Company.PolicyTypeLevels.Add(new PolicyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), PolicyTypeID = a.ID });
+                    Company.Set<PolicyTypeLevel>().Add(new PolicyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), PolicyTypeID = a.ID });
                 }
                 Company.SaveChanges();
 
@@ -8342,11 +8345,12 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     var level = model.PolicyTypeLevels.SingleOrDefault(l => l.Level == i);
                     if (level == null)
                     {
-                        Company.PolicyTypeLevels.Add(new PolicyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), PolicyTypeID = model.ID });
+                        Company.Set<PolicyTypeLevel>().Add(new PolicyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), PolicyTypeID = model.ID });
                     }
                 }
-                Company.PolicyTypeLevels.RemoveRange(model.PolicyTypeLevels.Where(l => l.Level > model.MaximumDepth));
                 Company.SaveChanges();
+
+                Company.Delete<PolicyTypeLevel>(l => l.Level > model.MaximumDepth);
 
                 upsertObjectStyle(SystemObjects.PolicyType, model.ID, form, model.Name);
 
@@ -8828,7 +8832,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         {
             var list = new List<EditableField>();
             var a = Company.GetById<Predicate>(id);
-            var any = Company.IntersectMaps.Any(i => i.PredicateID == id);
+            var any = Company.Any<IntersectMap>(i => i.PredicateID == id);
             if (!Company.HasPermission(SystemObjects.Predicate, id, Claim.Update))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
@@ -10357,7 +10361,7 @@ order by    Name
             {
                 foreach (var o in contexts)
                 {
-                    Company.ResponsibilityContextItems.Add(o);
+                    Company.Set<ResponsibilityContextItem>().Add(o);
                 }
                 Company.SaveChanges();
             }
@@ -10730,7 +10734,7 @@ order by	D.Name, I.Name";
                 foreach (var o in items)
                 {
                     var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = a.ID };
-                    Company.ResponsibilityTypeRelations.Add(r);
+                    Company.Set<ResponsibilityTypeRelation>().Add(r);
                 }
                 Company.SaveChanges();
 
@@ -10842,7 +10846,7 @@ order by	D.Name, I.Name";
                 foreach (var o in items)
                 {
                     var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = id };
-                    Company.ResponsibilityTypeRelations.Add(r);
+                    Company.Set<ResponsibilityTypeRelation>().Add(r);
                 }
                 Company.SaveChanges();
 
@@ -11224,7 +11228,7 @@ order by	D.Name, I.Name";
                 {
                     if (!existingClaims.Any(i => i.ClaimObject == nc.ClaimObject && i.Claim == nc.Claim))
                     {
-                        Company.ResponsibilityTypeObjectClaims.Add(nc);
+                        Company.Set<ResponsibilityTypeObjectClaim>().Add(nc);
                     }
                 }
                 // Remove old that are no longer present.
@@ -11232,7 +11236,7 @@ order by	D.Name, I.Name";
                 {
                     if (!list.Any(i => i.ClaimObject == ec.ClaimObject && i.Claim == ec.Claim))
                     {
-                        Company.ResponsibilityTypeObjectClaims.Remove(ec);
+                        Company.Set<ResponsibilityTypeObjectClaim>().Remove(ec);
                     }
                 }
 
@@ -11943,7 +11947,7 @@ order by	D.Name, I.Name";
                     Community.Update<CompanyResource>(cr);                
                 }
 
-                GlobalReportingResource gr = Company.GlobalReportingResources.Find(id);
+                GlobalReportingResource gr = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
 
                 gr.FirstName = model.FirstName;
                 gr.LastName = model.LastName;
@@ -12713,7 +12717,7 @@ order by	D.Name, I.Name";
 
             var list = new List<EditableField>();
             var model = Company.GetById<Rule>(id);
-            var anyEvents = Company.Events.Any(i => i.EventGroup.RuleID == id);
+            var anyEvents = Company.Any<Event>(i => i.EventGroup.RuleID == id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
@@ -13225,19 +13229,19 @@ order by	D.Name, I.Name";
                         continue;
                     }
 
-                    var contexts = Company.IntersectMapSourceRuleContexts.Where(c => c.IntersectMapSourceRuleID == i.ID).ToList();
+                    var contexts = Company.Filter<IntersectMapSourceRuleContext>(c => c.IntersectMapSourceRuleID == i.ID).ToList();
                     foreach (var c in ctx)
                     {
                         c.IntersectMapSourceRuleID = i.ID;
                         c.IntersectMapSourceRule = i;
                         if (contexts.Count(r => r.Object == c.Object && r.ObjectID == c.ObjectID) < 1)
-                            Company.IntersectMapSourceRuleContexts.Add(c);
+                            Company.Set<IntersectMapSourceRuleContext>().Add(c);
                     }
 
                     foreach (var c in contexts)
                     {
                         if (ctx.Count(r => r.Object == c.Object && r.ObjectID == c.ObjectID) < 1)
-                            Company.IntersectMapSourceRuleContexts.Remove(c);
+                            Company.Set<IntersectMapSourceRuleContext>().Remove(c);
                     }
                     try
                     {
@@ -13268,9 +13272,9 @@ order by	D.Name, I.Name";
                 {
                     //delete contexts first
 
-                    Company.IntersectMapSourceRuleContexts.Where(r => r.IntersectMapSourceRuleID == i).ToList().ForEach(j =>
+                    Company.Filter<IntersectMapSourceRuleContext>(r => r.IntersectMapSourceRuleID == i).ToList().ForEach(j =>
                     {
-                        Company.IntersectMapSourceRuleContexts.Remove(j);
+                        Company.Set<IntersectMapSourceRuleContext>().Remove(j);
                     });
                     Company.Delete(Company.GetById<IntersectMapSourceRule>(i));
                 }
@@ -13296,7 +13300,7 @@ order by	D.Name, I.Name";
             var sourceObj = Company.GetObjectDetail(source, sourceid);
             var targetObj = Company.GetObjectDetail(target, targetid);
 
-            items = Company.SourceTargetRules.Where(r => r.FocalObject == focal && r.FocalObjectID == focalid
+            items = Company.Filter<SourceTargetRule>(r => r.FocalObject == focal && r.FocalObjectID == focalid
             && r.SourceObject == source && r.SourceObjectID == sourceid
             && r.TargetObject == target && r.TargetObjectID == targetid).ToList();
 
@@ -13535,9 +13539,9 @@ order by	D.Name, I.Name";
                             intersectId = Company.Query<int>(intersectSql, new { sourceId = source.FusionID, targetId = target.FusionID }).FirstOrDefault();
                         }
 
-                        var intersectNodeSub = Company.IntersectNodes.Where(i => i.IntersectID == intersectId && i.ObjectID == source.FusionID).FirstOrDefault();
-                        var intersectNodeObj = Company.IntersectNodes.Where(i => i.IntersectID == intersectId && i.ObjectID == target.FusionID).FirstOrDefault();
-                        var intersectMap = Company.IntersectMaps.Where(m => m.SubjectIntersectNodeID == intersectNodeSub.ID && m.ObjectIntersectNodeID == intersectNodeObj.ID && m.Type == MapType.SourceToTarget).FirstOrDefault();
+                        var intersectNodeSub = Company.Filter<IntersectNode>(i => i.IntersectID == intersectId && i.ObjectID == source.FusionID).FirstOrDefault();
+                        var intersectNodeObj = Company.Filter<IntersectNode>(i => i.IntersectID == intersectId && i.ObjectID == target.FusionID).FirstOrDefault();
+                        var intersectMap = Company.Filter<IntersectMap>(m => m.SubjectIntersectNodeID == intersectNodeSub.ID && m.ObjectIntersectNodeID == intersectNodeObj.ID && m.Type == MapType.SourceToTarget).FirstOrDefault();
 
                         if (intersectMap == null || intersectMap.ID < 1)
                         {
@@ -13546,7 +13550,7 @@ order by	D.Name, I.Name";
                             newMap.ObjectIntersectNodeID = intersectNodeObj.ID;
                             newMap.Type = MapType.SourceToTarget;
                             newMap.PredicateID = 1;
-                            Company.IntersectMaps.Add(newMap);
+                            Company.Set<IntersectMap>().Add(newMap);
                             intersectMap = newMap;
                         }
                         try
@@ -13565,7 +13569,7 @@ order by	D.Name, I.Name";
 
                 foreach (IntersectMap map in intersectMaps)
                 {
-                    var mapRule = Company.IntersectMapSourceTargetRules.Where(r => r.IntersectMapID == map.ID && r.RuleID == rule.ID).FirstOrDefault();
+                    var mapRule = Company.Filter<IntersectMapSourceTargetRule>(r => r.IntersectMapID == map.ID && r.RuleID == rule.ID).FirstOrDefault();
                     if (mapRule == null || mapRule.ID == 0)
                     {
                         mapRule = new IntersectMapSourceTargetRule();
@@ -13584,7 +13588,7 @@ order by	D.Name, I.Name";
                     }
                 }
 
-                foreach (IntersectMapSourceTargetRule mapRule in Company.IntersectMapSourceTargetRules.Where(r => r.RuleID == rule.ID).ToList())
+                foreach (IntersectMapSourceTargetRule mapRule in Company.Filter<IntersectMapSourceTargetRule>(r => r.RuleID == rule.ID).ToList())
                 {
                     if (intersectMaps.Count(m => m.ID == mapRule.IntersectMapID) != 0)
                         continue;
@@ -13625,7 +13629,7 @@ order by	D.Name, I.Name";
 
             }
 
-            var rules = Company.SourceTargetRules.Where(r => r.FocalObject == model.Focal && r.FocalObjectID == model.FocalID
+            var rules = Company.Filter<SourceTargetRule>(r => r.FocalObject == model.Focal && r.FocalObjectID == model.FocalID
             && r.SourceObject == model.Source && r.SourceObjectID == model.SourceID
             && r.TargetObject == model.Target && r.TargetObjectID == model.TargetID).ToList();
 
@@ -13634,7 +13638,7 @@ order by	D.Name, I.Name";
                 if (model.Rules.Count(r => r.ID == rule.ID) > 0)
                     continue;
 
-                var intersectMapSourceTargetRules = Company.IntersectMapSourceTargetRules.Where(r => r.RuleID == rule.ID).ToList();
+                var intersectMapSourceTargetRules = Company.Filter<IntersectMapSourceTargetRule>(r => r.RuleID == rule.ID).ToList();
                 var intersectMaps = new List<IntersectMap>();
                 if (canDelete)
                     intersectMapSourceTargetRules.ForEach(r =>
@@ -14688,7 +14692,7 @@ order by TextPath
 
                 for (int i = 1; i <= a.MaximumDepth; i++)
                 {
-                    Company.TaxonomyTypeLevels.Add(new TaxonomyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), TaxonomyTypeID = a.ID });
+                    Company.Set<TaxonomyTypeLevel>().Add(new TaxonomyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), TaxonomyTypeID = a.ID });
                 }
                 Company.SaveChanges();
 
@@ -14809,10 +14813,10 @@ order by TextPath
                     var level = model.TaxonomyTypeLevels.SingleOrDefault(l => l.Level == i);
                     if (level == null)
                     {
-                        Company.TaxonomyTypeLevels.Add(new TaxonomyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), TaxonomyTypeID = model.ID });
+                        Company.Set<TaxonomyTypeLevel>().Add(new TaxonomyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), TaxonomyTypeID = model.ID });
                     }
                 }
-                Company.TaxonomyTypeLevels.RemoveRange(model.TaxonomyTypeLevels.Where(l => l.Level > model.MaximumDepth));
+                Company.Delete<TaxonomyTypeLevel>(l => l.Level > model.MaximumDepth);
                 Company.SaveChanges();
 
                 upsertObjectStyle(SystemObjects.TaxonomyType, model.ID, form, model.Name);

@@ -133,26 +133,54 @@ where c.object = @type and c.objecttypeid = @id and lower(c.name) like lower(@se
 
         public JsonNetResult GetPredicateInfoByAllocation(int id)
         {
-            var items = Company.Query<dynamic>(@"select p.id, p.name, p.type from predicate p
-                join intersecttypepredicate t on t.predicateid = p.id and t.intersecttypeid in (
-	                select t.intersecttypeid from intersectmap m
-	                join intersectnode n on n.id = subjectintersectnodeid
-	                join intersecttypenode t on t.id = n.intersecttypenodeid
-	                where m.id = @id
-	                union all
-	                select t.intersecttypeid from intersectmap m
-	                join intersectnode n on n.id = objectintersectnodeid
-	                join intersecttypenode t on t.id = n.intersecttypenodeid
-	                where m.id = @id
-                )
-                where p.type = (select type from intersectmap where id = @id)", new { id = id});
+            var items = Company.Query<dynamic>(@"
+select	p.id, p.name, p.type 
+from	predicate p
+		join intersecttypepredicate t on t.predicatetype = p.[type] 
+									and t.intersecttypeid in (
+															select	t.intersecttypeid 
+															from	intersectmap m
+																	join intersectnode n on n.id = subjectintersectnodeid
+																	join intersecttypenode t on t.id = n.intersecttypenodeid
+															where	m.id = @id
+															union all
+															select	t.intersecttypeid 
+															from	intersectmap m
+																	join intersectnode n on n.id = objectintersectnodeid
+																	join intersecttypenode t on t.id = n.intersecttypenodeid
+															where	m.id = @id
+															)
+where	p.type = (select type from intersectmap where id = @id)", new { id = id});
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         public JsonNetResult GetPredicateInfoByTypes(string type1, string type2, int id1, int id2, MapType mapType)
         {
+            var intersectTypeID = Company.Query<int>("select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = @s and SourceObjectID = @si and TargetObjectType = @t and TargetObjectID = @ti", new { s = new Dapper.DbString { IsAnsi = true, Value = type1 }, si = id1, t = new Dapper.DbString { IsAnsi = true, Value = type2 }, ti = id2 }).FirstOrDefault();
+
+            var predicateTypeAssigned = false;
+            if (intersectTypeID > 0)
+            {
+                predicateTypeAssigned = Company.Any<IntersectTypePredicate>(i => i.IntersectTypeID == intersectTypeID && i.PredicateType == mapType);
+            }
+            else
+            {
+                var intersectType = new IntersectType();
+                intersectType.Nodes = new List<IntersectTypeNode>() {
+                    new IntersectTypeNode { ObjectType = type1, ObjectID = id1, Order = 1 },
+                    new IntersectTypeNode { ObjectType = type2, ObjectID = id2, Order = 2 }
+                };
+                Company.Add<IntersectType>(intersectType);
+                intersectTypeID = intersectType.ID;
+            }
+
+            if (!predicateTypeAssigned)
+            {
+                Company.Add<IntersectTypePredicate>(new IntersectTypePredicate { IntersectTypeID = intersectTypeID, PredicateType = mapType });
+            }
+
             var items = Company.Query<dynamic>(@"select p.id, p.name, p.type from predicate p
-                join intersecttypepredicate t on t.predicateid = p.id and t.intersecttypeid in 
+                join intersecttypepredicate t on t.predicatetype = p.type and t.intersecttypeid in 
                 (
 	                select distinct n1.intersecttypeid from intersecttypenode n1
 	                join intersecttypenode n2 on n2.intersecttypeid = n1.intersecttypeid and n2.objectType = @type2  and n2.objectid = @id2 

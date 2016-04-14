@@ -120,6 +120,16 @@ namespace d360.model
             return Set<T>().Any(i => i.ID == id);
         }
 
+        public bool Any<T>(Expression<Func<T, bool>> expression) where T : BaseObject
+        {
+            return Set<T>().Any(expression);
+        }
+
+        public int Count<T>(Expression<Func<T, bool>> expression) where T : BaseObject
+        {
+            return Set<T>().Count(expression);
+        }
+
         public IQueryable<T> Filter<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : BaseObject
         {
             return GetWithIncludes<T>(includes).Where(predicate);

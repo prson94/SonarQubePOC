@@ -235,12 +235,14 @@ namespace d360.web.Controllers
         {
             //get values for attribute and all attributes that have this as a parent for specified element
             StringBuilder sb = new StringBuilder();
-                        
-            var fieldValues = (from ft in Company.FieldTypes
-            join f in Company.Fields on ft.ID equals f.FieldTypeID
-            join ad in Company.AttributeDetails on f.ObjectID equals ad.ID
-            where ft.Object == "AttributeType" && ft.ObjectID == attribute && ad.ObjectID == id && ad.ObjectType == "Intersect"
-            select new { ID = ad.ID, Name = ft.FriendlyName, Value = f.FormattedValue, Order = ft.SortOrder}).OrderBy(i => i.ID).ThenBy(i => i.Order);
+
+            var fieldValues = Company.Query<dynamic>(@"
+select	FT.FriendlyName as Name,
+		F.FormattedValue as Value
+from	AttributeDetail A
+		inner join Field F on F.ObjectID = A.ID and A.ObjectType = 'Intersect' and A.ObjectID = @id
+		inner join FieldType FT on FT.Object = 'AttributeType' and FT.ObjectID = @attribute
+order by A.ID, FT.SortOrder", new { id, attribute });
 
             int PreviousObjectID = -1;
             foreach(var val in fieldValues)

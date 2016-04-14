@@ -75,8 +75,6 @@ namespace d360.model
 
         #region DbSets
 
-        public DbSet<AlertFlag> AlertFlags { get; set; }
-
         public DbSet<Artifact> Artifacts { get; set; }
 
         public DbSet<ArtifactType> ArtifactTypes { get; set; }
@@ -142,7 +140,7 @@ namespace d360.model
         public DbSet<FusionExecution> FusionExecutions { get; set; }
 
         public DbSet<FusionExecutionResultDetail> FusionExecutionResultDetails { get; set; }    /* VIEW */
-        
+
         public DbSet<Fusion> FusionTypeConfigurations { get; set; }
 
         public DbSet<FusionAttributeOwnerDetail> FusionAttributeOwnerDetails { get; set; }          /* VIEW */
@@ -229,11 +227,7 @@ namespace d360.model
 
         public DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
 
-        //public DbSet<PredicatePhrase> PredicatePhrases { get; set; }
-
         public DbSet<Predicate> Predicates { get; set; }
-
-        public DbSet<QueueFusionItem> QueueFusionItems { get; set; }
 
         public DbSet<Question> Questions { get; set; }
 
@@ -241,9 +235,6 @@ namespace d360.model
 
         public DbSet<Relationship> Relationships { get; set; }                                              /* VIEW */
 
-        //public DbSet<RelationshipAggregate> RelationshipAggregates { get; set; }                            /* VIEW */
-
-        //public DbSet<RelationshipWithContextAggregate> RelationshipWithContextAggregates { get; set; }      /* VIEW */
 
         public DbSet<Relation> Relations { get; set; }
 
@@ -304,7 +295,7 @@ namespace d360.model
         public DbSet<StatisticType> StatisticTypes { get; set; }
 
         public DbSet<StatisticTypeCheckOption> StatisticTypeCheckOptions { get; set; }
-        
+
         public DbSet<Survey> Surveys { get; set; }
 
         public DbSet<SurveyObjectCache> SurveyObjectCaches { get; set; }
@@ -339,27 +330,27 @@ namespace d360.model
             {
                 var oID = items[0].ObjectID;
                 var oType = items[0].ObjectType;
-                var existingFieldTypeIDs = Fields.Where(i => i.ObjectID == oID && i.ObjectType == oType).Select(i => i.FieldTypeID).ToList();
+                var existingFieldTypeIDs = Filter<Field>(i => i.ObjectID == oID && i.ObjectType == oType).Select(i => i.FieldTypeID).ToList();
                 items.ForEach(item =>
                 {
                     if (existingFieldTypeIDs.Any(i => item.FieldTypeID == i))
                     {
-                        Fields.Attach(item);
+                        Set<Field>().Attach(item);
                         Entry(item).State = EntityState.Modified;
                     }
                     else
                     {
-                        Fields.Add(item);
+                        Set<Field>().Add(item);
                     }
                 });
                 try
                 {
-                    var existingFields = Fields.Where(i => i.ObjectID == oID && i.ObjectType == oType).ToList();
+                    var existingFields = Filter<Field>(i => i.ObjectID == oID && i.ObjectType == oType).ToList();
                     existingFields.ForEach(item =>
                     {
                         if (!items.Any(i => i.FieldTypeID == item.FieldTypeID))
                         {
-                            Fields.Remove(item);
+                            Set<Field>().Remove(item);
                         }
                     });
                 }
@@ -865,7 +856,7 @@ order by	ColumnIndex", new { id });
         public ObjectStyle GetObjectStyle(SystemObjects type, int id)
         {
             var sType = type.ToString();
-            return ObjectStyles.SingleOrDefault(i => i.ObjectType == sType && i.ObjectID == id);
+            return Filter<ObjectStyle>(i => i.ObjectType == sType && i.ObjectID == id).FirstOrDefault();
         }
         
         public XElement GetRandomSurveyQuestionForUser(SystemObjects type, int id)
@@ -953,7 +944,7 @@ order by	ColumnIndex", new { id });
             }
             string sType = type.ToString();
 
-            var follow = FollowDetails.Any(i => i.ResourceID == resourceID && i.ObjectID == objectID && i.ObjectType == sType);
+            var follow = Any<FollowDetail>(i => i.ResourceID == resourceID && i.ObjectID == objectID && i.ObjectType == sType);
 
             return follow;
         }
@@ -971,10 +962,11 @@ order by	ColumnIndex", new { id });
             }
             string sType = type.ToString();
 
-            var fd = FollowDetails.FirstOrDefault(i => i.ResourceID == resourceID && i.ObjectID == objectID && i.ObjectType == sType);
+            var fd = Filter<FollowDetail>(i => i.ResourceID == resourceID && i.ObjectID == objectID && i.ObjectType == sType).FirstOrDefault();
             if (fd != null)
             {
-                return Follows.SingleOrDefault(i => i.ID == fd.FollowID);
+                var followID = fd.FollowID;
+                return GetById<Follow>(followID);
             }
             else
             {
@@ -998,7 +990,7 @@ order by	ColumnIndex", new { id });
             bool value = false;
 
             string sType = type.ToString();
-            var f = Follows.SingleOrDefault(i => i.ObjectID == objectID && i.ObjectType == sType && i.ResourceID == resourceID);
+            var f = Filter<Follow>(i => i.ObjectID == objectID && i.ObjectType == sType && i.ResourceID == resourceID).FirstOrDefault();
 
             if (f != null)
             {
@@ -1188,7 +1180,7 @@ order by Name");
         public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int id)
         {
             var sType = type.ToString();
-            return SecurityDetails.Where(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
+            return Filter<SecurityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
         }
 
         public bool HasPermission(SystemObjects type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
@@ -1197,7 +1189,7 @@ order by Name");
             if (!hasPermission)
             {
                 var sType = type.ToString();
-                hasPermission = SecurityDetails.Any(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID && i.Claim == claim && i.ClaimObject == claimObject);
+                hasPermission = Any<SecurityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID && i.Claim == claim && i.ClaimObject == claimObject);
             }
 
             return hasPermission;
@@ -1711,11 +1703,11 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             if (relations == null)
                 relations = new List<CommentRelation>();
 
-            var removeRelations = CommentRelations.Where(t => t.CommentID == comment.ID && !(t.ObjectType == "Resource" && t.ObjectID == CurrentResourceID )).ToList();
+            var removeRelations = Filter<CommentRelation>(t => t.CommentID == comment.ID && !(t.ObjectType == "Resource" && t.ObjectID == CurrentResourceID )).ToList();
 
             foreach (var r in removeRelations)
                 if (!relations.ToList().Contains(r))
-                CommentRelations.Remove(r);
+                Set<CommentRelation>().Remove(r);
 
             foreach (var r in relations)
             {
@@ -1724,18 +1716,18 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                 {
                     r.Date = now;
                     if (r.CommentID == 0) r.CommentID = comment.ID; //If comment ID is not 0, then a parent comment ID has already been assigned.
-                    CommentRelations.Add(r);
+                    Set<CommentRelation>().Add(r);
                     SaveChanges();
                 }
                 catch
                 {
-                    CommentRelations.Remove(r);
+                    Set<CommentRelation>().Remove(r);
                 }
             }
 
 
             Comment c = GetById<Comment>(comment.ID);
-            var hasReplies = Comments.Any(x => x.ParentID == c.ID);
+            var hasReplies = Any<Comment>(x => x.ParentID == c.ID);
             if (((c.Body != comment.Body || removeRelations.Count() + 1 != relations.Count()) && !hasReplies) || (c.IsDeleted != comment.IsDeleted && (!hasReplies || CurrentResourceIsAdmin)))
             {
                 c.IsDeleted = comment.IsDeleted;
@@ -1763,12 +1755,12 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                 {
                     r.Date = comment.DateCreated;
                     if (r.CommentID == 0) r.CommentID = comment.ID; //If comment ID is not 0, then a parent comment ID has already been assigned.
-                    CommentRelations.Add(r);
+                    Set<CommentRelation>().Add(r);
                     SaveChanges();
                 }
                 catch
                 {
-                    CommentRelations.Remove(r);
+                    Set<CommentRelation>().Remove(r);
                 }
             }
 
@@ -1802,10 +1794,10 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
                         DateEdited = c.DateEdited,
                         IsDeleted = c.IsDeleted,
                         IsEditable = (CurrentResourceID == c.CreatingResourceID
-                            && (!Comments.Any(re => re.ParentID == c.ID))
+                            && (!Any<Comment>(re => re.ParentID == c.ID))
                             && DateTime.UtcNow.Subtract(c.DateCreated).Duration() < TimeSpan.FromMinutes(5)),
                         IsDeletable = (CurrentResourceIsAdmin || (CurrentResourceID == c.CreatingResourceID
-                            && (!Comments.Any(re => re.ParentID == c.ID))
+                            && (!Any<Comment>(re => re.ParentID == c.ID))
                             && DateTime.UtcNow.Subtract(c.DateCreated).Duration() < TimeSpan.FromMinutes(5)))
                     }
                    );          
@@ -1846,7 +1838,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             foreach (CommentDetail cd in comments)
             {
                 cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
-                        && !Comments.Any(c => c.ParentID == cd.ID)
+                        && !Any<Comment>(c => c.ParentID == cd.ID)
                         && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
                 cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
 
@@ -1923,7 +1915,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             foreach (CommentDetail cd in comments)
             {
                 cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
-                        && !Comments.Any(c => c.ParentID == cd.ID)
+                        && !Any<Comment>(c => c.ParentID == cd.ID)
                         && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
                 cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
 
@@ -1943,7 +1935,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
             foreach (CommentDetail cd in comments)
             {
                 cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
-                        && !Comments.Any(c => c.ParentID == cd.ID)
+                        && !Any<Comment>(c => c.ParentID == cd.ID)
                         && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
                 cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
 
@@ -1958,7 +1950,7 @@ where	TABLE_SCHEMA = 'reporting'").ToList();
         public IQueryable<FollowDetail> GetFollowersByObject(SystemObjects type, int id)
         {
             var fs = type.ToString();
-            return FollowDetails.Where(i => i.ObjectType == fs && i.ObjectID == id);
+            return Filter<FollowDetail>(i => i.ObjectType == fs && i.ObjectID == id);
         }
 
         public IQueryable<MostActiveUserReportModel> GetMostActiveUsersReport()
@@ -2274,18 +2266,18 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     { 
                         case EntityState.Added:
-                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
                             var any = false;
-                            any = IntersectNodes.Any(i => i.ObjectType == "Artifact" && i.ObjectID == o.ID);
+                            any = Any<IntersectNode>(i => i.ObjectType == "Artifact" && i.ObjectID == o.ID);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
 
-                            any = Artifacts.Any(i => i.ParentID == o.ID);
+                            any = Any<Artifact>(i => i.ParentID == o.ID);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);
                             break;
                         case EntityState.Modified:
-                            if (Artifacts.Any(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<Artifact>(i => i.Name == o.Name && i.ArtifactTypeID == o.ArtifactTypeID && i.TaxonomyTypeID == o.TaxonomyTypeID & i.ParentID == o.ParentID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
 
@@ -2302,20 +2294,20 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (ArtifactTypes.Any(i => i.Name == o.Name))
+                            if (Any<ArtifactType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            if (Artifacts.Any(i => i.ArtifactTypeID == o.ID))
+                            if (Any<Artifact>(i => i.ArtifactTypeID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
-                            var childIDs = ArtifactTypes.Where(i => i.ParentID == o.ID).Select(i => i.ID).ToList();
+                            var childIDs = Filter<ArtifactType>(i => i.ParentID == o.ID).Select(i => i.ID).ToList();
                             if (childIDs.Count > 0)
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ChildTypesAssignedToType);
                             //if (Artifacts.Any(i => childIDs.Contains(i.ArtifactTypeID)))
                             //    throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
                             break;
                         case EntityState.Modified:
-                            if (ArtifactTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                            if (Any<ArtifactType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2331,15 +2323,15 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (AttributeTypes.Any(i => i.ParentID == o.ParentID && i.Name == o.Name))
+                            if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            if (AttributeTypeRelations.Any(i => i.AttributeTypeID == o.ID))
+                            if (Any<AttributeTypeRelation>(i => i.AttributeTypeID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_AttributeType_Allocations);
                             break;
                         case EntityState.Modified:
-                            if (AttributeTypes.Any(i => i.ParentID == o.ParentID && i.Name == o.Name && i.ID != o.ID))
+                            if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2351,27 +2343,20 @@ order by Name", new { workflowType, type, id });
                 {
                     var o = entry.Entity as Domain;
                     var id = o.ID.ToString();
-
+                    var domainTypeID = o.DomainTypeID;
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (Domains.Any(i => i.Name == o.Name && i.DomainTypeID == o.DomainTypeID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<Domain>(i => i.Name == o.Name && i.DomainTypeID == o.DomainTypeID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            var any = (
-                                        from f in Fields
-                                        join t in FieldTypes on f.FieldTypeID equals t.ID
-                                        where t.LookupObjectType == "Domain"
-                                        where t.LookupObjectID == o.DomainTypeID
-                                        where f.Value == id
-                                        select f
-                                      ).Any();
+                            var any = Any<Field>(f => f.FieldType.LookupObjectType == "Domain" && f.FieldType.LookupObjectID == domainTypeID && f.Value == id);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Domain list"), Messages.Error_List_FieldReferences);
-                            any = IntersectNodes.Any(i => i.ObjectType == "Domain" && i.ObjectID == o.ID);
+                            any = Any<IntersectNode>(i => i.ObjectType == "Domain" && i.ObjectID == o.ID);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Domain list"), Messages.Error_List_FieldReferences);
                             break;
                         case EntityState.Modified:
-                            if (Domains.Any(i => i.Name == o.Name && i.DomainTypeID == o.DomainTypeID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<Domain>(i => i.Name == o.Name && i.DomainTypeID == o.DomainTypeID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
                 }
@@ -2386,11 +2371,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (DomainGroups.Any(i => i.DomainTypeID == o.DomainTypeID && i.Name == o.Name))
+                            if (Any<DomainGroup>(i => i.DomainTypeID == o.DomainTypeID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (DomainGroups.Any(i => i.DomainTypeID == o.DomainTypeID && i.Name == o.Name && i.ID != o.ID))
+                            if (Any<DomainGroup>(i => i.DomainTypeID == o.DomainTypeID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2406,11 +2391,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (DomainItems.Any(i => ((i.Code == o.Code) || (i.Name == o.Name)) && i.DomainID == o.DomainID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<DomainItem>(i => ((i.Code == o.Code) || (i.Name == o.Name)) && i.DomainID == o.DomainID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         //case EntityState.Unchanged:
                         case EntityState.Modified:
-                            if (DomainItems.Any(i => ((i.Code == o.Code) || (i.Name == o.Name)) && i.DomainID == o.DomainID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<DomainItem>(i => ((i.Code == o.Code) || (i.Name == o.Name)) && i.DomainID == o.DomainID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
                 }
@@ -2425,11 +2410,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (DomainTypes.Any(i => i.Name == o.Name))
+                            if (Any<DomainType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (DomainTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                            if (Any<DomainType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2445,11 +2430,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (EmailTemplates.Any(i => i.Name == o.Name && i.Action == o.Action))
+                            if (Any<EmailTemplate>(i => i.Name == o.Name && i.Action == o.Action))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (EmailTemplates.Any(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
+                            if (Any<EmailTemplate>(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2465,15 +2450,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (FieldTypes.Any(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
+                            if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
-                        //case EntityState.Deleted:
-                        //    if (Fields.Any(i => i.FieldTypeID == o.ID))
-                        //        throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.FriendlyName), Messages.Error_FieldType_Allocations);
-                        //    break;
                         case EntityState.Modified:
-                            if (FieldTypes.Any(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
+                            if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2489,11 +2470,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (FusionAttributeTypes.Any(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name))
+                            if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (FusionAttributeTypes.Any(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ID != o.ID))
+                            if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2509,11 +2490,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (FusionTypes.Any(i => i.Name == o.Name))
+                            if (Any<FusionType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (FusionTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                            if (Any<FusionType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2529,15 +2510,15 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (Groups.Any(i => i.Name == o.Name))
+                            if (Any<Group>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (Groups.Any(i => i.Name == o.Name && i.ID != o.ID))
+                            if (Any<Group>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            if (Responsibilities.Any(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == o.ID))
+                            if (Any<Responsibility>(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
                             break;
                     }
@@ -2549,22 +2530,16 @@ order by Name", new { workflowType, type, id });
                 {
                     var o = entry.Entity as Intersect;
                     var id = o.ID.ToString();
+                    var intersectTypeID = o.IntersectTypeID;
 
                     switch (entry.State)
                     {
                         case EntityState.Deleted:
-                            var any = (
-                                        from f in Fields
-                                        join t in FieldTypes on f.FieldTypeID equals t.ID
-                                        where t.LookupObjectType == "Intersect"
-                                        where t.LookupObjectID == o.IntersectTypeID
-                                        where f.Value == id
-                                        select f
-                                      ).Any();
+                            var any = Any<Field>(f => f.FieldType.LookupObjectType == "Intersect" && f.FieldType.LookupObjectID == intersectTypeID && f.Value == id);
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more fields reference this relationship.");
-                            any = Attributes.Any(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
+                            any = Any<core.entities.Attribute>(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more attributes reference this relationship.");
-                            any = IntersectNodes.Any(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
+                            any = Any<IntersectNode>(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more relationships reference this relationship.");
                             break;
                     }
@@ -2576,18 +2551,12 @@ order by Name", new { workflowType, type, id });
                 {
                     var o = entry.Entity as Lookup;
                     var id = o.ID.ToString();
+                    var lookupTypeID = o.LookupTypeID;
 
                     switch (entry.State)
                     {
                         case EntityState.Deleted:
-                            var any = (
-                                        from f in Fields
-                                        join t in FieldTypes on f.FieldTypeID equals t.ID
-                                        where t.LookupObjectType == "Lookup"
-                                        where t.LookupObjectID == o.LookupTypeID
-                                        where f.Value == id
-                                        select f
-                                      ).Any();
+                            var any = Any<Field>(f => f.FieldType.LookupObjectType == "Lookup" && f.FieldType.LookupObjectID == lookupTypeID && f.Value == id);
                             if (any) throw new ConflictException("Lookup Could not be Removed", "One or more fields reference this lookup.");
                             break;
                     }
@@ -2603,11 +2572,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (LookupTypes.Any(i => i.Name == o.Name))
+                            if (Any<LookupType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (LookupTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                            if (Any<LookupType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2623,11 +2592,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (QuestionTypes.Any(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name))
+                            if (Any<QuestionType>(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (QuestionTypes.Any(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name && i.ID != o.ID))
+                            if (Any<QuestionType>(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2643,14 +2612,14 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (Reports.Any(i => i.Name == o.Name)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<Report>(i => i.Name == o.Name)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            var any = ReportTiles.Any(i => i.ReportID == o.ID);
+                            var any = Any<ReportTile>(i => i.ReportID == o.ID);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Report"), Messages.Error_List_FieldReferences);
                             break;
                         case EntityState.Modified:
-                            if (Reports.Any(i => i.Name == o.Name && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<Report>(i => i.Name == o.Name && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
                 }
@@ -2665,10 +2634,10 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (ReportTiles.Any(i => i.Name == o.Name && i.ReportID == o.ReportID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<ReportTile>(i => i.Name == o.Name && i.ReportID == o.ReportID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (ReportTiles.Any(i => i.Name == o.Name && i.ReportID == o.ReportID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
+                            if (Any<ReportTile>(i => i.Name == o.Name && i.ReportID == o.ReportID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
                 }
@@ -2683,11 +2652,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (ResponseTypes.Any(i => i.Name == o.Name))
+                            if (Any<ResponseType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (ResponseTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                            if (Any<ResponseType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2703,17 +2672,17 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (ResponsibilityTypes.Any(i =>
+                            if (Any<ResponsibilityType>(i =>
                                 i.Name == o.Name
                                 )) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            if (Responsibilities.Any(i =>
+                            if (Any<Responsibility>(i =>
                                 i.ResponsibilityTypeID == o.ID
                                 )) throw new ArgumentException(Messages.Error_ResponsibilityType_ExistingResponsibilities);
                             break;
                         case EntityState.Modified:
-                            if (ResponsibilityTypes.Any(i =>
+                            if (Any<ResponsibilityType>(i =>
                                 i.Name == o.Name &&
                                 i.ID != o.ID
                                 )) throw new ArgumentException(Messages.Error_NameTaken);
@@ -2731,14 +2700,14 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (ResponsibilityTypeClaims.Any(i =>
+                            if (Any<ResponsibilityTypeClaim>(i =>
                                 i.Claim == o.Claim &&
                                 i.ClaimObject == o.ClaimObject &&
                                 i.ResponsibilityTypeID == o.ResponsibilityTypeID
                                 )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
                             break;
                         case EntityState.Modified:
-                            if (ResponsibilityTypeClaims.Any(i =>
+                            if (Any<ResponsibilityTypeClaim>(i =>
                                 i.Claim == o.Claim &&
                                 i.ClaimObject == o.ClaimObject &&
                                 i.ResponsibilityTypeID == o.ResponsibilityTypeID &&
@@ -2758,7 +2727,7 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (ResponsibilityTypeObjectClaims.Any(i =>
+                            if (Any<ResponsibilityTypeObjectClaim>(i =>
                                 i.Claim == o.Claim &&
                                 i.ClaimObject == o.ClaimObject &&
                                 i.ObjectID == o.ObjectID &&
@@ -2767,7 +2736,7 @@ order by Name", new { workflowType, type, id });
                                 )) throw new ArgumentException(Messages.Error_Claim_AlreadyAssignedToItem);
                             break;
                         case EntityState.Modified:
-                            if (ResponsibilityTypeObjectClaims.Any(i => 
+                            if (Any<ResponsibilityTypeObjectClaim>(i => 
                                 i.Claim == o.Claim &&
                                 i.ClaimObject == o.ClaimObject &&
                                 i.ObjectID == o.ObjectID &&
@@ -2789,11 +2758,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (StatisticTypes.Any(i => i.Name == o.Name && i.Object == o.Object && i.ObjectID == o.ObjectID))
+                            if (Any<StatisticType>(i => i.Name == o.Name && i.Object == o.Object && i.ObjectID == o.ObjectID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (StatisticTypes.Any(i => i.Name == o.Name && i.Object == o.Object && i.ObjectID == o.ObjectID && i.ID != o.ID))
+                            if (Any<StatisticType>(i => i.Name == o.Name && i.Object == o.Object && i.ObjectID == o.ObjectID && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2809,11 +2778,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (SurveyTypes.Any(i => i.Name == o.Name))
+                            if (Any<SurveyType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (SurveyTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                            if (Any<SurveyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2825,37 +2794,31 @@ order by Name", new { workflowType, type, id });
                 {
                     var o = entry.Entity as Taxonomy;
                     var id = o.ID.ToString();
+                    var taxonomyTypeID = o.TaxonomyTypeID;
 
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (Taxonomies.Any(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) 
+                            if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID)) 
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            var any = (
-                                        from f in Fields
-                                        join t in FieldTypes on f.FieldTypeID equals t.ID
-                                        where t.LookupObjectType == "Taxonomy"
-                                        where t.LookupObjectID == o.TaxonomyTypeID
-                                        where f.Value == id
-                                        select f
-                                      ).Any();
+                            var any = Any<Field>(f => f.FieldType.LookupObjectType == "Taxonomy" && f.FieldType.LookupObjectID == taxonomyTypeID && f.Value == id);
                             if (any) 
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_FieldReference);
-                            if (Attributes.Any(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
+                            if (Any<core.entities.Attribute>(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_AttributeReference);
-                            if (IntersectNodes.Any(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
+                            if (Any<IntersectNode>(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_RelationshipReference);
-                            if (Taxonomies.Any(i => i.ParentID == o.ID)) 
+                            if (Any<Taxonomy>(i => i.ParentID == o.ID)) 
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_ChildModelsExist);
-                            if (Responsibilities.Any(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectType == "Taxonomy" && i.ObjectID == o.ID)) 
+                            if (Any<Responsibility>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People && i.ObjectType == "Taxonomy" && i.ObjectID == o.ID)) 
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_PeopleResponsibilitiesExist);
-                            if (Responsibilities.Any(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.Sourcing && i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
+                            if (Any<Responsibility>(i => i.ResponsibilityType.ResponsibilityTypeGroup == ResponsibilityTypeGroup.Sourcing && i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_SourcingResponsibilitiesExist);
                             break;
                         case EntityState.Modified:
-                            if (Taxonomies.Any(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID && i.ID != o.ID)) 
+                            if (Any<Taxonomy>(i => i.Name == o.Name && i.TaxonomyTypeID == o.TaxonomyTypeID && i.ParentID == o.ParentID && i.ID != o.ID)) 
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2874,15 +2837,15 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (TaxonomyTypes.Any(i => i.Name == o.Name))
+                            if (Any<TaxonomyType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (TaxonomyTypes.Any(i => i.Name == o.Name && i.ID != o.ID))
+                            if (Any<TaxonomyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Deleted:
-                            if (Artifacts.Any(i => i.TaxonomyTypeID == o.ID))
+                            if (Any<Artifact>(i => i.TaxonomyTypeID == o.ID))
                                 throw new ArgumentException(Messages.TaxonomyType_Assigned);
                             break;
                     }
@@ -2900,11 +2863,11 @@ order by Name", new { workflowType, type, id });
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (TooltipTemplates.Any(i => i.Name == o.Name && i.Action == o.Action))
+                            if (Any<TooltipTemplate>(i => i.Name == o.Name && i.Action == o.Action))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (TooltipTemplates.Any(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
+                            if (Any<TooltipTemplate>(i => i.Name == o.Name && i.Action == o.Action && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }

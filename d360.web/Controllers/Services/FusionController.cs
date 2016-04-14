@@ -130,20 +130,7 @@ where A.FusionTypeID = @id", columns, joins);
 
             Trace.TraceInformation("Fusion.GetNextConfigurationInSchedule BEGIN");
 
-            var model = (
-                        from fs in Company.FusionStatusLogs
-                        orderby fs.DateStarted ascending
-                        where !fs.DateCompleted.HasValue
-                        where string.IsNullOrEmpty(fs.MachineQueuedOn)
-                        select new
-                        {
-                            fs.ID,
-                            fs.MachineQueuedOn,
-                            fs.Success,
-                            fs.Fusion
-                        }
-                        ).Take(1)
-                        .SingleOrDefault();
+            var model = Company.Filter<FusionStatusLog>(fs => !fs.DateCompleted.HasValue && string.IsNullOrEmpty(fs.MachineQueuedOn)).OrderBy(fs => fs.DateStarted).Select(fs => new { fs.ID, fs.MachineQueuedOn, fs.Success, fs.Fusion }).Take(1).FirstOrDefault();
 
             if (model != null)
             {

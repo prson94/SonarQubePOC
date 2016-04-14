@@ -457,7 +457,7 @@ namespace d360.web.Controllers
                     if (f.Type == DataType.FusionLookup.ToString())
                     {
                         //need to render drop down of all fusion attributes that have the same type as the current
-                        var IDs = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == f.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
+                        var IDs = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == f.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
 
                         if (!f.IsRequired)
                             fld.Items.Add(new SelectListItem { Text = "", Value = "" });
@@ -544,7 +544,7 @@ namespace d360.web.Controllers
 
                     if (ft.Type == DataType.FusionLookup.ToString())
                     {
-                        var IDs = Company.FieldTypeFusionLookupDefinitions.Where(x => x.FieldTypeID == ft.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
+                        var IDs = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == ft.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
 
                         if (!ft.IsRequired)
                             fld.Items.Add(new SelectListItem { Text = "", Value = "" });

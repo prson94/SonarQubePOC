@@ -15,6 +15,7 @@ using System.Dynamic;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using System.Web.Http.Description;
+using d360.core.enums;
 
 namespace d360.web.Controllers.Services
 {
@@ -213,24 +214,37 @@ from	FusionAttribute FA
         [Route("types"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
         public IEnumerable<dynamic> GetRelationTypes()
         {
-            return Company.Query<dynamic>(
-@"select    R.ID,
+            var sql = @"select    R.ID,
 			R.Subject,
 			R.SubjectID,
 			SD.TextPath as SubjectName,
 			R.Object,
 			R.ObjectID,
 			TD.TextPath as ObjectName,
-            R.PredicateID,
-            P.Name as Predicate,
-            P.Inverse as Inverse
+            R.PredicateType
 from		RelationType R
 			left join cache.ObjectDetails SD on SD.[Object] = R.Subject and SD.ObjectID = R.SubjectID
 			left join cache.ObjectDetails TD on TD.[Object] = R.Object and TD.ObjectID = R.ObjectID
-            left join [Predicate] P on P.ID = R.PredicateID
 --where       R.IsSystem = 0
 order by	SD.Name,
-			TD.Name");
+			TD.Name";
+            var predicateTypes = MapType.Lineage.GetAsList();
+            var models = from r in Company.Query<dynamic>(sql)
+                         join p in predicateTypes on r.PredicateType equals (int)p.ID
+                         select new
+                         {
+                             r.ID,
+                             r.Subject,
+                             r.SubjectID,
+                             r.SubjectName,
+                             r.Object,
+                             r.ObjectID,
+                             r.ObjectName,
+                             r.PredicateType,
+                             PredicateTypeName = p.Name
+                         };
+
+            return models;
         }
 
         #endregion

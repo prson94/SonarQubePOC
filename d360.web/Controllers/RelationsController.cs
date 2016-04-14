@@ -542,7 +542,7 @@ order by D.TextPath";
                         {
                             try
                             {
-                                var intersectMapGroup = Company.IntersectMapGroups.Where(g => g.IntersectMapID == model.IntersectMapID && g.GroupNumber == model.GroupNumber).FirstOrDefault();
+                                var intersectMapGroup = Company.Filter<IntersectMapGroup>(g => g.IntersectMapID == model.IntersectMapID && g.GroupNumber == model.GroupNumber).FirstOrDefault();
 
                                 if (intersectMapGroup != null)
                                 {
@@ -669,7 +669,7 @@ order by D.TextPath";
             try
             {
                 var model = Company.GetById<IntersectMap>(id);
-                var group = Company.IntersectMapGroups.Where(g => g.IntersectMapID == id).FirstOrDefault();
+                var group = Company.Filter<IntersectMapGroup>(g => g.IntersectMapID == id).FirstOrDefault();
                 if (model == null) throw new NotFoundException("hierarchy");
 
                 Company.Delete(model);
@@ -1242,9 +1242,9 @@ order by D.TextPath";
                 //These objects are the same
                 sql = @"select	R.* 
 from	Relationship R
-		inner join Relationship S on R.SourceObjectType = 'Intersect' 
+		inner join cache.Relationship S on R.SourceObjectType = 'Intersect' 
 										and S.IntersectID = R.SourceObjectID 
-										and S.SourceObjectType = @sType 
+										and S.SourceObject = @sType 
 										and S.SourceObjectID = @sID";
                 return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
             }
@@ -1253,11 +1253,11 @@ from	Relationship R
                 //Objects are different
                 sql = @"select	R.*
 from	Relationship R
-		inner join Relationship S on R.SourceObjectType = 'Intersect' 
+		inner join cache.Relationship S on R.SourceObjectType = 'Intersect' 
 										and S.IntersectID = R.SourceObjectID 
-										and S.SourceObjectType = @sType 
+										and S.SourceObject = @sType 
 										and S.SourceObjectID = @sID
-										and S.TargetObjectType = @tType 
+										and S.TargetObject = @tType 
 										and S.TargetObjectID = @tID";
                 return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID, tType = new Dapper.DbString { Value = tType.ToString(), IsAnsi = true }, tID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
             }
@@ -1306,7 +1306,7 @@ select	IntersectTypeID,
 		(
 		select	    P.*
 		from	    IntersectTypePredicate IP
-				    inner join Predicate P on P.ID = IP.PredicateID and IP.IntersectTypeID = O.IntersectTypeID
+				    inner join Predicate P on P.[Type] = IP.PredicateType and IP.IntersectTypeID = O.IntersectTypeID
 		order by    P.Name
         for         xml path('predicates'), TYPE
 		)

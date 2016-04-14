@@ -19,7 +19,7 @@ namespace d360.web.Controllers
         [Route("groups/{id:int}/ownership")]
         public ActionResult OwnershipForGroup(int id)
         {
-            ViewData.Add("IsAdmin", Company.ResourceGroups.Any(i => i.GroupID == id && i.ResourceID == id));
+            ViewData.Add("IsAdmin", Company.Any<ResourceGroup>(i => i.GroupID == id && i.ResourceID == id));
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = SystemObjects.Group.ToString() });
         }
 
