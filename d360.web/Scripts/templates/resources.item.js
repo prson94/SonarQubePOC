@@ -4,6 +4,7 @@
 
         var type = 'Resource';
         var id = context.params['id'];
+        var assignmentsTile;
 
         $.getJSON('/api/resources/1/' + id, function (model) {
 
@@ -17,6 +18,14 @@
 
             var ProfileSocial;
             var socialTile;
+
+            function loadAssignments() {
+                assignmentsTile.LookBackDays = 7;
+                $.getJSON("/api/Count/Assignments/7" , function (data) {
+                    assignmentsTile.Rows([]);
+                    assignmentsTile.Rows(data);
+                });
+            }
 
             //#region Event Handlers
 
@@ -47,6 +56,7 @@
             function unsubscribe(data) {
                 ProfileSocial = null;
                 socialTile = null;
+                assignmentsTile = null;
 
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
@@ -74,6 +84,12 @@
                     ProfileSocial = new BoardViewModel();
                     ko.applyBindings(ProfileSocial, document.getElementById('ProfileBoard'));
                     ProfileSocial.changeObject(type, id);
+
+                    assignmentsTile = new HomePageCountTileModel('Your Assignments', 7);
+                    assignmentsTile.NoDataMessage('');
+                    ko.applyBindings(assignmentsTile, document.getElementById('AssignmentsTile'));
+
+                    loadAssignments();
 
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);

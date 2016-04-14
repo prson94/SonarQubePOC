@@ -5,8 +5,9 @@
     <div class="col l11 s10">
         <div class="row">
             <div class="col s12 m12 l5">
-                <div id="DetailTile" class="tile tile-detail"></div>
-                <div id="RandomQuestion" class="tile tile-detail"></div>
+                <div id="DetailTile" class="tile tile-detail"></div>                
+                <div id="AssignmentsTile" class="tile tile-detail" data-bind="template: {name: 'homePageCountTileTmpl' }"></div>
+                <div id="SocialTile" class="tile tile-detail" data-bind="template: { name: 'profileSocialMicroTileTmpl' }"></div>
             </div>
             <div class="col s12 m12 l7">
                 <div class="tile tile-detail">
@@ -20,15 +21,12 @@
                 </div>
             </div>
 
-            <div class="col s12 m12 l9">
+            <div class="col s12">
                 <div class="tile tile-detail">
                     <header>{{Title}}'s Board</header>
                     <article id="ProfileBoard" data-bind="template: {name: 'boardTmpl' }"></article>
                 </div>
-            </div>
-            <div class="col s12 m12 l3">
-                <div id="SocialTile" class="tile tile-detail" data-bind="template: { name: 'profileSocialMicroTileTmpl' }"></div>
-            </div>
+            </div>            
         </div>
     </div>
 </div>
