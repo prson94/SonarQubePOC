@@ -11,6 +11,9 @@
 
     //#region Control constants
 
+    var ribbon_button_width = 58;
+    var ribbon_button_height = "90%";
+
     var controlID_header = controlID + "_header";
     var controlID_wrapper = controlID + '_wrapper';
     var controlID_diagram = controlID + '_dgm';
@@ -80,12 +83,14 @@
     var controlID_sourcerules_content = controlID + '_sourcerules_content';
     var controlID_mappingrules_content = controlID + '_mappingrules_content';
     var controlID_responsibilities_content = controlID + '_responsibilities_content';
+
     var tabs = {
         "sourcerules": 0,
         "mappingrules": 1,
         "responsibilities": 2,
         "fusion": 3
     };
+
     var defaultTabContent = '<div style="height:100px;text-align:center;padding:25px;"><i class="fa fa-2x fa-spinner fa-spin"></i></div>';
 
     //#endregion
@@ -96,35 +101,42 @@
         var index = event.args.item;
         loadTab(index);
     });
-    
-    $("#" + controlID_ribbon_zoom_100).jqxButton({ theme: theme, height: "100%", width: "40%" });
-    $("#" + controlID_ribbon_zoom_fit).jqxButton({ theme: theme, height: "100%", width: "40%" });
-    $("#" + controlID_ribbon_save).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true });
-    $("#" + controlID_ribbon_reset).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $("#" + controlID_ribbon_fullscreen).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $("#" + controlID_ribbon_remove).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
-    $("#" + controlID_ribbon_undo).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $("#" + controlID_ribbon_redo).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $("#" + controlID_ribbon_zoom_slider).jqxSlider({ theme: theme, width: 150, showButtons: true, min: 750, max: 2250, value: 1500, showTicks: false });
 
-    $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
-    $("#" + controlID_ribbon_sourcemapping_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_tabs).hide();
+    
+    $("#" + controlID_ribbon_zoom_100).jqxButton({ theme: theme, width: "40%" });
+    $("#" + controlID_ribbon_zoom_fit).jqxButton({ theme: theme, width: "40%" });
+    $("#" + controlID_ribbon_save).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width, disabled: true });
+    $("#" + controlID_ribbon_reset).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
+    $("#" + controlID_ribbon_fullscreen).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
+    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
+    $("#" + controlID_ribbon_remove).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width }).hide();
+    $("#" + controlID_ribbon_undo).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
+    $("#" + controlID_ribbon_redo).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
+    $("#" + controlID_ribbon_zoom_slider).jqxSlider({ theme: theme, width: 150, showButtons: true, min: 750, max: 2250, value: 1500, showTicks: false, step: 10 });
+
+    $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width }).hide();
+    $("#" + controlID_ribbon_sourcemapping_add).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width }).hide();
 
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
 
-    //$("#" + controlID_info_table_wrapper).hide();
+    $("#" + controlID_add_search).jqxButton({ theme: theme, width: "15%" });
+
 
     //#endregion
 
     //#region Event Handlers
 
     $("#" + controlID_ribbon_add).on('click', function () {
-        $('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
+        if ($(this).jqxButton('disabled'))
+            return;
+        $('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left).css('top', $(this).position().top + 80);
     });
 
     $("#" + controlID_ribbon_sourcerule_add).on('click', function () {
+                if ($(this).jqxButton('disabled'))
+            return;
         var selected = myDiagram.selection;
         if (selected == null)
             return;
@@ -132,7 +144,7 @@
         if (selected == null)
             return;
         //console.log(selected);
-        $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 150);
+        $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 80);
 
         //TODO: logic for nothing selected
         var data = {
@@ -151,7 +163,9 @@
     });
 
     $("#" + controlID_ribbon_sourcemapping_add).on('click', function () {
-        $('#' + controlID_popover_sourcemapping_editor).toggle(200).css('left', $(this).position().left - 500).css('top', $(this).position().top + 150);
+        if ($(this).jqxButton('disabled'))
+            return;
+        $('#' + controlID_popover_sourcemapping_editor).toggle(200).css('left', $(this).position().left - 500).css('top', $(this).position().top + 80);
         var selected = myDiagram.selection;
         if (selected == null)
             return;
@@ -194,22 +208,26 @@
         ko.applyBindings(model, $('#' + controlID_popover_sourcemapping_editor_body)[0]);
     });
 
-    $('#' + controlID_ribbon).jqxRibbon({
-        width: "100%",
-        height: 64,
-        animationType: "fade",
-        selectionMode: "click",
-        position: "top",
-        theme: theme,
-        mode: "default",
-        selectedIndex: 0
-    });
+    //$('#' + controlID_ribbon).jqxRibbon({
+    //    width: "100%",
+    //    height: 64,
+    //    animationType: "fade",
+    //    selectionMode: "click",
+    //    position: "top",
+    //    theme: theme,
+    //    mode: "default",
+    //    selectedIndex: 0
+    //});
 
     $('#' + controlID_ribbon_fullscreen).on('click', function () {
+        if ($(this).jqxButton('disabled'))
+            return;
+        var defaultHtml = '<div style="padding:5px 0 5px 0;"><div><i class="fa fa-2x fa-arrows-alt"></i></div><div style="padding-top:5px">Fullscreen</div></div>';
+        var exitHtml = '<div style="padding:5px 0 5px 0;"><div><i class="fa fa-2x fa-sign-out"></i></div><div style="padding-top:5px">Exit Fullscreen</div></div>';
         fullscreen = !fullscreen;
         if (fullscreen) {
             window.scrollTo(0, 0); //scroll to top
-            $('#' + controlID_ribbon_fullscreen).html('<i class="fa fa-2x fa-sign-out"></i><br />Exit Fullscreen');
+            $('#' + controlID_ribbon_fullscreen).html(exitHtml);
             $('#' + controlID_wrapper_fullscreen).css('position', 'fixed')
                 .css('left', '0')
                 .css('top', '0')
@@ -224,7 +242,7 @@
 
             $('#' + controlID_sidebar).height($('#' + controlID_wrapper_fullscreen).height() - 20);
         } else {
-            $('#' + controlID_ribbon_fullscreen).html('<i class="fa fa-2x fa-arrows-alt"></i><br />Fullscreen');
+            $('#' + controlID_ribbon_fullscreen).html(defaultHtml);
             $('#' + controlID_wrapper_fullscreen).attr('style', 'z-index:1000000;background-color:white;');
             $('#' + controlID_wrapper).height(520);
             $('#' + controlID_diagram).height(520);
@@ -238,6 +256,8 @@
     });
 
     $('#' + controlID_ribbon_save).on('click', function () {
+        if ($(this).jqxButton('disabled'))
+            return;
         saveChanges();
 
         //var message = $('<p />', { text: 'Are you sure you want to save changes?' }),
@@ -256,10 +276,14 @@
     });
 
     $('#' + controlID_ribbon_undo).on('click', function () {
+        if ($(this).jqxButton('disabled'))
+            return;
         myDiagram.undoManager.undo();
     });
 
     $('#' + controlID_ribbon_redo).on('click', function () {
+        if ($(this).jqxButton('disabled'))
+            return;
         myDiagram.undoManager.redo();
     });
 
@@ -305,9 +329,12 @@
         $('#' + controlID_ribbon_zoom_text).text(Math.round(myDiagram.scale * 100) + '%');
         var sliderValue = Math.round(myDiagram.scale * 100) / 1500;
         $('#' + controlID_ribbon_zoom_text).jqxSlider('setValue', sliderValue);
+        myDiagram.zoomToFit();
     });
 
     $('#' + controlID_ribbon_reset).on('click', function () {
+        if ($(this).jqxButton('disabled'))
+            return;
         //type = originalObject;
         //id = originalObjectID;
         //populateDiagram();
@@ -877,19 +904,20 @@
                     $('#' + controlID_add_search_message).show();
                 }
             },
-            async: false
+            async: true
+        }).then(function () {
+            if (temp == null) {
+                return;
+            }
+            var data = {
+                type1: $('#' + controlID_add_artifact_type + ' option:selected').text(),
+                type2: ''
+            };
+
+            populatePredicateList();
+            myPalette.scale = 1.0;
         });
-
-        if (temp == null) {
-            return;
-        }
-        var data = {
-            type1: $('#' + controlID_add_artifact_type + ' option:selected').text(),
-            type2: ''
-        };
-
-        populatePredicateList();
-        myPalette.scale = 1.0;
+       
     }
 
     function initializeDiagram() {
@@ -1153,6 +1181,7 @@
 
         }
         myDiagram.commitTransaction("markSelection");
+        refreshControls(null);
     }
 
     function mouseEnter(e, node) {
@@ -1200,13 +1229,20 @@
         }
     }
 
+    function refreshControls(data) {
+        toggleButtons(data);
+        toggleTabs(data);
+    }
+
     function toggleTabs(data) {
         var first = -1;
         var delay = 0;
+        var defaultInfo = '<div style="color:#999;height:25px;text-align:center">Nothing selected</div>';
+        var errorInfo = '<div style="color:maroon;height:100px;text-align:center">An error occurred</div>';
 
         if (data == null) {
             $("#" + controlID_info).jqxExpander('collapse');
-            $("#" + controlID_info_body).html('');
+            $("#" + controlID_info_body).html(defaultInfo);
             $("#" + controlID_info_detail_wrapper).hide();
             $("#" + controlID_info_detail).html('');
 
@@ -1243,7 +1279,7 @@
                     $('#' + controlID_info_body).html(data);
                     $("#" + controlID_info).jqxExpander('expand');
                 }).fail(function () {
-                    $('#' + controlID_info_body).html('');
+                    $('#' + controlID_info_body).html(errorInfo);
                     $("#" + controlID_info).jqxExpander('collapse');
                 });
 
@@ -1263,18 +1299,10 @@
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "none");
                 }
 
-            } else if (data.diagramObjectType == 'Link') { //
+            } else if (data.diagramObjectType == 'Link') {
                 var from = myDiagram.model.findNodeDataForKey(data.from);
                 var to = myDiagram.model.findNodeDataForKey(data.to);
                 first = tabs["fusion"];
-
-                //if (permissions.HasPermission("Root", "Update")) {
-                //    TileTools("#" + controlID_info_table_add, [
-                //        { icon: 'plus', uri: '/form/AddFieldType?type=' + 'IntersectType' + '&id=' + data.intersectTypeId, context: contextList.FieldType, title: 'Add definition attribute' }
-                //    ]);
-                //} else {
-                //    $("#" + controlID_info_table_add).html('');
-                //}
 
                 var intersectId = 0;
 
@@ -1290,7 +1318,7 @@
                     $('#' + controlID_info_body).html(data);
                     $("#" + controlID_info).jqxExpander('expand');
                 }).fail(function () {
-                    $('#' + controlID_info_body).html('');
+                    $('#' + controlID_info_body).html(errorInfo);
                     $("#" + controlID_info).jqxExpander('collapse');
                 });
 
@@ -1299,16 +1327,10 @@
                 if (permissions.HasPermission("Root", "Update") && intersectId != 0) {
                     TileTools("#" + controlID_info_detail_edit, [
                         { icon: 'pencil', uri: '/form/EditRelationship?id=' + intersectId, context: 'intersectform', title: 'Edit Relationship' }
-                         //,{ icon: 'plus', uri: '/form/AddFieldType?type=' + 'IntersectType' + '&id=' + data.intersectTypeId, context: contextList.FieldType, title: 'Add definition attribute' }
                     ]);
                 } else {
                     $("#" + controlID_info_detail_edit).html('');
                 }
-
-                //$('#' + controlID_popover_edit_relationship).load('/form/EditRelationship?id=' + intersectId, function (response, status, xhr) {
-                //});
-
-                //amplify.publish('intersectform');
 
 
                 $("#" + controlID_info_detail_wrapper).show();
@@ -1437,8 +1459,7 @@
     }
 
     function toggleButtons(data) {
-        //console.log(data);
-        var delay = 0;
+        var delay = 200;
 
         if (!readonly) {
             $("#" + controlID_ribbon_add).show(delay);
@@ -1488,9 +1509,7 @@
             }
         }
 
-        toggleTabs(selectedData);
-        toggleButtons(selectedData);
-
+        refreshControls(selectedData);
     }
 
     function onViewportBoundsChanged() {
@@ -1692,8 +1711,7 @@
         initialLinks = $.extend(true, [], linkList); //JSON.parse(JSON.stringify(linkList));
 
         //set buttons/expanders to defaults
-        toggleTabs(null);
-        toggleButtons(null);
+        refreshControls(null);
 
         myDiagram.commitTransaction("load_all_data");
         reOrderLayout();
@@ -1741,7 +1759,6 @@
 
     function populateTypeSelectList() {
         var html = '';
-
         $.ajax({
             url: '/services/glossary/artifacts?$orderby=Name',
             data: null,
@@ -1909,6 +1926,8 @@
     } else {
         $("#" + controlID_ribbon_remove).jqxButton({ theme: theme });
         $("#" + controlID_ribbon_remove).on('click', function () {
+            if ($(this).jqxButton('disabled'))
+                return;
             //console.log(selection.length);
             markForDeletion(selection);
             $("#" + controlID_ribbon_remove).hide(200);
@@ -1972,7 +1991,6 @@
             switch (data.context) {
                 case 'mappingrule':
                     if (data.source && data.sourceID && data.target && data.targetID && data.count != null) {
-                        console.log(data);
                         var ix = -1;
                         var obj = null;
 
@@ -1990,12 +2008,11 @@
                             myDiagram.model.setDataProperty(obj, "hasMappingRules", (data.count > 0 ? true : false));
                         }
                     }
-                    toggleTabs(selectedData);
+                    refreshControls(selectedData);
                     break;
                 case 'sourcerule':
                     if (data.action && data.object && data.objectid) {
                         if (data.action == 'add') {
-                            
                             var ix = findNodeIndexByObject(data.object, data.objectid);
                             if (ix > -1) {
                                 var node = myDiagram.model.nodeDataArray[ix];
@@ -2006,7 +2023,7 @@
                             }
                         }
                     }
-                    toggleTabs(selectedData);
+                    refreshControls(selectedData);
                     break;
             }
         } catch (e) {
@@ -2026,7 +2043,7 @@
             $('#Overlay').remove();
             $('#OverlayBackground').remove();
         }
-        toggleTabs(selectedData);
+        refreshControls(selectedData);
     });
     //#endregion
 }
