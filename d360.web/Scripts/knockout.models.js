@@ -3318,6 +3318,7 @@ function SearchViewModel() {
     self.categories = ko.observableArray();
     self.results = ko.observableArray();
     self.elapsedTime = ko.observable();
+    self.AdvancedSearchCallback = null;
 
     self.addFilter = function () {
         self.advancedFilter.push(new SearchAdvancedFilter(-1,"", false));
@@ -3327,6 +3328,13 @@ function SearchViewModel() {
         if (index > -1) {            
             self.advancedFilter.splice(index, 1);
         }
+    };
+
+    self.onEnter = function (d, e) {
+        if (e.keyCode === 13) {            
+            if (self.AdvancedSearchCallback) self.AdvancedSearchCallback();
+        }
+        return true;
     };
 
     self.advancedFilterJSON = function () {

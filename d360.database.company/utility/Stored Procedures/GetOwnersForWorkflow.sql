@@ -125,7 +125,7 @@ begin
 				select 
 					R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
 				from 
-					reporting.Global_Resource R where isadministrator = 1
+					reporting.Global_Resource R where isadministrator = 1 and status = 'Active'
 		end
 	end
 
@@ -168,7 +168,7 @@ begin
 				select 
 					R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.DateLastLoggedIn, 1 as ResourceTypeID, R.Status 
 				from 
-					reporting.Global_Resource R where isadministrator = 1
+					reporting.Global_Resource R where isadministrator = 1 and status = 'Active'
 		end
 	end
 

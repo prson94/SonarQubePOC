@@ -15,14 +15,14 @@
     var resultsctrl = '#' + resultsCtrlId;
     var categoryctrl = '#' + categoriesCtrlId;
 
-    searchVm = new SearchViewModel();
+    searchVm = new SearchViewModel();        
     try {
         ko.applyBindings(searchVm, document.getElementById(mainCtrlId));
     }
     catch (e) {
         console.log(e);
     }
-
+        
     //#region Event Registration
 
 
@@ -30,7 +30,7 @@
 
     //#endregion
 
-    self.loadCategories = true;
+    self.loadCategories = true;        
 
     if ($("#SearchString").val().length == 0 && phrase !== undefined && phrase.length > 0)
         $("#SearchString").val(phrase);
@@ -130,6 +130,8 @@
             ]
         });
     }
+
+    searchVm.AdvancedSearchCallback = this.doAdvancedSearch;
 
     self.showAdvanced = function (text) {
         searchVm.showAdvanced(text);
