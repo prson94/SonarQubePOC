@@ -241,20 +241,7 @@ where A.FusionTypeID = @id", columns, joins);
         [Route("agenthistory")]
         public IQueryable<AgentHistoryApiModel> GetAgentHistory()
         {
-            return Company.Query<AgentHistoryApiModel>(
-@"select    S.DateStarted, 
-            S.DateCompleted, 
-            S.MachineQueuedOn, 
-            S.Success,             
-            S.Message, 
-            F.ID as FusionID, 
-            F.Name as Fusion, 
-            F.FusionTypeID,
-            FT.Name as FusionType 
-from        FusionStatusLog S 
-            inner join Fusion F on F.ID = S.FusionID
-            inner join FusionType FT on FT.ID = F.FusionTypeID
-            order by S.DateStarted desc").AsQueryable();
+            return Company.Query<AgentHistoryApiModel>(QueryConstants.AgentHistoryList).AsQueryable();
         }
 
         public class ExecutionHistoryApiModel
@@ -277,30 +264,7 @@ from        FusionStatusLog S
         [Route("executionhistory")]
         public IQueryable<ExecutionHistoryApiModel> GetExecutionHistory()
         {
-            return Company.Query<ExecutionHistoryApiModel>(
-@"select	E.ID,
-		    E.RawLogFileName,
-		    E.DateStarted,
-		    E.DateCompleted,
-		    E.Adds,
-		    E.Updates,
-		    E.Deletes,
-		    X.[C] as ErrorCount,
-		    R.[C] as ResultCount,
-            F.ID as FusionID, 
-            F.Name as Fusion, 
-            F.FusionTypeID,
-            FT.Name as FusionType
-from	    fusion.Execution E
-            inner join Fusion F on F.ID = E.FusionID
-            inner join FusionType FT on FT.ID = F.FusionTypeID
-            cross apply (
-			            select count(1) as [C] from fusion.Error where ExecutionID = E.ID
-			            ) X
-            cross apply (
-			            select count(1) as [C] from fusion.Result where ExecutionID = E.ID
-			            ) R 
-order by    DateStarted desc").AsQueryable();
+            return Company.Query<ExecutionHistoryApiModel>(QueryConstants.ExecutionHistoryList).AsQueryable();
         }
 
         public class ExecutionErrorModel
@@ -317,18 +281,7 @@ order by    DateStarted desc").AsQueryable();
         [Route("executionerrors")]
         public IQueryable<ExecutionErrorModel> GetExecutionErrors()
         {
-            return Company.Query<ExecutionErrorModel>(
-@"select	ER.Date,
-            ER.Error,
-            ER.ExecutionID,
-            F.ID as FusionID, 
-            F.Name as Fusion, 
-            F.FusionTypeID,
-            FT.Name as FusionType
-from	fusion.Error ER
-        inner join fusion.Execution EX on EX.ID = ER.ExecutionID
-        inner join Fusion F on F.ID = EX.FusionID
-        inner join FusionType FT on FT.ID = F.FusionTypeID").AsQueryable();
+            return Company.Query<ExecutionErrorModel>(QueryConstants.ExecutionErrorList).AsQueryable();
         }
 
         public class AgentErrorModel
@@ -344,43 +297,13 @@ from	fusion.Error ER
         [Route("agenterrors")]
         public IQueryable<AgentErrorModel> GetAgentErrors()
         {
-            return Company.Query<AgentErrorModel>(
-                    @"select	ER.Date,
-                                ERI.Message,
-                                ER.MachineName,                
-                                F.ID as FusionID, 
-                                F.Name as Fusion,             
-                                FT.Name as FusionType
-                    from	fusion.AgentError ER
-                            inner join fusion.AgentErrorItem ERI on ER.ID = ERI.AgentErrorID                            
-                            inner join Fusion F on F.ID = ER.FusionID
-                            inner join FusionType FT on FT.ID = F.FusionTypeID").AsQueryable();
+            return Company.Query<AgentErrorModel>(QueryConstants.AgentErrorList).AsQueryable();
         }
 
         [Route("executions/{id:int}/results")]
-        public HttpResponseMessage GetExecutionResults(int id) //IQueryable<FusionExecutionResultDetail> 
+        public HttpResponseMessage GetExecutionResults(int id) 
         {
-            var querySql = string.Format(@"select	A.TextPath as FusionAttribute,
-        AT.TextPath as FusionAttributeType,
-        E.ExecutionID,
-        E.FusionAttributeID,
-        E.Body,
-        E.FieldTypeID,
-        E.FieldName,
-        case E.[Action] when 'A' then 'Added' when 'U' then 'Updated' else 'Removed' end as [Action],
-        E.OldValue,
-        E.NewValue,
-        E.ID,
-        F.ID as FusionID, 
-        F.Name as Fusion, 
-        F.FusionTypeID,
-        FT.Name as FusionType
-from	fusion.Result E
-        inner join FusionAttribute A on A.ID = E.FusionAttributeID 
-        inner join FusionAttributeType AT on AT.ID = A.FusionAttributeTypeID
-        inner join Fusion F on F.ID = A.FusionID
-        inner join FusionType FT on FT.ID = F.FusionTypeID
-where   ExecutionID = {0}", id);
+            var querySql = string.Format(QueryConstants.ExecutionResultList, id);
 
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
 
@@ -764,20 +687,7 @@ where   ExecutionID = {0}", id);
         [Route("promotionhistory")]
         public IQueryable<PromotionHistoryApiModel> GetPromotionHistory()
         {
-            return Company.Query<PromotionHistoryApiModel>(
-                    @"select	ID,
-		                        DateStarted,
-		                        DateCompleted,
-		                        PromotedTaxonomies,
-		                        PromotedDomainItems,
-		                        PromotedDomains,
-		                        PromotedArtifacts,
-		                        TotalNewPromotions,
-		                        AttributesConsidered,
-                                NumberOfRules,
-                                RelationshipsAdded
-                    from	    [dbo].[FusionAttributePromotionLogSummary]
-                    order by    DateStarted desc").AsQueryable();
+            return Company.Query<PromotionHistoryApiModel>(QueryConstants.PromotionHistoryList).AsQueryable();
         }
     }
 }

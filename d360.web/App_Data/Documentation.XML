@@ -2099,136 +2099,6 @@
             <param name="listID">The ID of the domain to get the items from.</param>
             <returns>A list of items.</returns>
         </member>
-        <member name="T:d360.web.Controllers.Services.WorkflowController.WorkflowBreakdown">
-            <summary>
-            A workflow breakdown.
-            </summary>
-        </member>
-        <member name="T:d360.web.Controllers.Services.WorkflowController.WorkflowTask">
-            <summary>
-            An open workflow task.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.WorkflowID">
-            <summary>
-            The instance ID of the workflow that this task is related to.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.Workflow">
-            <summary>
-            The workflow type for this instance.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.WorkflowName">
-            <summary>
-            The name of the workflow type for this instance.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.WorkflowDescription">
-            <summary>
-            The description of the workflow type for this instance.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.Activity">
-            <summary>
-            The type of task.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.ActivityName">
-            <summary>
-            The name for this type of task.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.ActivityDescription">
-            <summary>
-            The description for this type of task.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.Data">
-            <summary>
-            Contains the raw XML data settings for this workflow.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.DateStarted">
-            <summary>
-            The date this task was created.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowTask.Properties">
-            <summary>
-            Contains the hydrated list of key properties for this workflow.
-            </summary>
-        </member>
-        <member name="T:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment">
-            <summary>
-            An open workflow assignment.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.WorkflowID">
-            <summary>
-            The instance ID of the workflow that this task is related to.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.Workflow">
-            <summary>
-            The workflow type for this instance.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.WorkflowName">
-            <summary>
-            The name of the workflow type for this instance.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.WorkflowDescription">
-            <summary>
-            The description of the workflow type for this instance.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.Data">
-            <summary>
-            Contains the raw XML data settings for this workflow.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.Settings">
-            <summary>
-            Contains the data settings for this workflow.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.DateStarted">
-            <summary>
-            The date this task was created.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.Activity">
-            <summary>
-            The type of task.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.ActivityName">
-            <summary>
-            The name for this type of task.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.ActivityDescription">
-            <summary>
-            The description for this type of task.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.RequestingResourceID">
-            <summary>
-            The ID of the user that made the initial request.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.RequestingResourceName">
-            <summary>
-            The full name of the user that made the initial request.
-            </summary>
-        </member>
-        <member name="P:d360.web.Controllers.Services.WorkflowController.WorkflowAssignment.RequestingResourceUrl">
-            <summary>
-            The relative url of the user that made the initial request.
-            </summary>
-        </member>
         <member name="M:d360.web.Controllers.Services.WorkflowController.GetTaskBreakdownForCurrentUser">
             <summary>
             Gets a list of open workflow tasks for the current user.
@@ -2247,7 +2117,7 @@
             </summary>
             <returns>A list of workflow tasks.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.WorkflowController.ActOnTaskForCurrentUser(System.Guid,d360.web.Controllers.Services.WorkflowController.WorkflowRequestModel)">
+        <member name="M:d360.web.Controllers.Services.WorkflowController.ActOnTaskForCurrentUser(System.Guid,d360.web.Models.WorkflowRequestModel)">
             <summary>
             Approve or reject the current workflow task for the current user.
             </summary>
@@ -2976,6 +2846,136 @@
         <member name="T:d360.web.Models.Formatters.ExpandoJsonConverter">
             <summary>
             Allows JSON serialization of Expando objects into expected results (e.g., "x: 1, y: 2") instead of the default dictionary serialization.
+            </summary>
+        </member>
+        <member name="T:d360.web.Models.WorkflowBreakdown">
+            <summary>
+            A workflow breakdown.
+            </summary>
+        </member>
+        <member name="T:d360.web.Models.WorkflowTask">
+            <summary>
+            An open workflow task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.WorkflowID">
+            <summary>
+            The instance ID of the workflow that this task is related to.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.Workflow">
+            <summary>
+            The workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.WorkflowName">
+            <summary>
+            The name of the workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.WorkflowDescription">
+            <summary>
+            The description of the workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.Activity">
+            <summary>
+            The type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.ActivityName">
+            <summary>
+            The name for this type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.ActivityDescription">
+            <summary>
+            The description for this type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.Data">
+            <summary>
+            Contains the raw XML data settings for this workflow.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.DateStarted">
+            <summary>
+            The date this task was created.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowTask.Properties">
+            <summary>
+            Contains the hydrated list of key properties for this workflow.
+            </summary>
+        </member>
+        <member name="T:d360.web.Models.WorkflowAssignment">
+            <summary>
+            An open workflow assignment.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.WorkflowID">
+            <summary>
+            The instance ID of the workflow that this task is related to.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.Workflow">
+            <summary>
+            The workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.WorkflowName">
+            <summary>
+            The name of the workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.WorkflowDescription">
+            <summary>
+            The description of the workflow type for this instance.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.Data">
+            <summary>
+            Contains the raw XML data settings for this workflow.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.Settings">
+            <summary>
+            Contains the data settings for this workflow.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.DateStarted">
+            <summary>
+            The date this task was created.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.Activity">
+            <summary>
+            The type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.ActivityName">
+            <summary>
+            The name for this type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.ActivityDescription">
+            <summary>
+            The description for this type of task.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.RequestingResourceID">
+            <summary>
+            The ID of the user that made the initial request.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.RequestingResourceName">
+            <summary>
+            The full name of the user that made the initial request.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.WorkflowAssignment.RequestingResourceUrl">
+            <summary>
+            The relative url of the user that made the initial request.
             </summary>
         </member>
         <member name="T:d360.web.Filters.ValidateHttpAntiForgeryTokenAttribute">

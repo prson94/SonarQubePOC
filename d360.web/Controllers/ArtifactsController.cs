@@ -199,36 +199,7 @@ where    A.ArtifactTypeID = @id", columns, joins);
         {
             return new JsonNetResult
             {
-                Data = Company.Query<dynamic>(@"
-select		T.ID,
-			T.ParentID,
-			T.Name,
-			T.Description,
-            cast(1 as bit) as expanded,
-			AC.*,
-			BC.*
-from		ArtifactType T
-			cross apply (
-						select	count(1) AS [Total]
-						from	Artifact
-						where	ArtifactTypeID = T.ID
-								and Status in ('Draft', 'Under Review', 'Certified')
-						) AC
-			cross apply (
-						select	[Draft], [Under Review] as UnderReview, [Certified]
-						from	(
-								select		Status
-								from		Artifact
-								where		ArtifactTypeID = T.ID
-											and Status in ('Draft', 'Under Review', 'Certified')
-								) S
-						pivot	(
-								count(Total) for Status in ([Draft], [Under Review], [Certified])
-								) as pt
-						) BC
-order by	T.ParentID,
-			T.Name
-"),
+                Data = Company.Query<dynamic>(QueryConstants.ArtifactTypeStatisticsList),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

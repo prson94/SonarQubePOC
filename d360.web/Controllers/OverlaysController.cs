@@ -208,10 +208,10 @@ where A.AuditID = {0}", auditID);
             return PartialView();
         }
 
-        public ActionResult ResponsibilityTypeHierarchies()
-        {
-            return PartialView();
-        }
+        //public ActionResult ResponsibilityTypeHierarchies()
+        //{
+        //    return PartialView();
+        //}
 
         [Route("{type}/{id:int}/score")]
         public ActionResult Score(SystemObjects type, int id)

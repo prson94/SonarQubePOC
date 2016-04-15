@@ -18,7 +18,7 @@ namespace d360.core.enums
         GroupHierarchy = 4,
         [Name("Parent Child Hierarchy"), Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), ReadOnly(true)]
         ParentChildHierarchy = 5,
-        [Name("Synonym"), Description("Allows you to establish synonyms between two objects."), ReadOnly(true)]
+        [Name("Synonym"), Description("Allows you to establish synonyms between two objects that are synonyms of each other."), ReadOnly(false)]
         Synonym = 6,
         [Name("Simple"), Description(""), ReadOnly(false)]
         Simple = 7

@@ -195,18 +195,10 @@ from	FusionAttribute FA
         [Route("responsibilities/{type}/{id:int}")]
         public IQueryable<dynamic> GetResponsibilities(SystemObjects type, int id)
         {
-            return Company.Query<dynamic>(@"select distinct  r.responsibilityid as [ID],
-		                                    r.responsibilitytype as [Type],
-		                                    r.responsibleobjectname as [Name],
-		                                    r.responsibleobjecturl as [Url],
-		                                    d.PrimaryOwnerResourceName as [Owner],
-		                                    d.PrimaryOwnerResourceUrl as [OwnerUrl],
-		                                    d.ContextItems as [Context]
-		                                    from cache.Responsibilities r
-		                                    inner join ResponsibilityDetail d on d.ResponsibilityID = r.ResponsibilityID
-		                                    where
-		                                    r.objectid = @ObjectID and r.[object] = @ObjectType",
-                                        new { ObjectType = type.ToString(), ObjectID = id }).AsQueryable();
+            return Company.Query<dynamic>(
+                QueryConstants.ResponsibilityList,
+                new { ObjectType = type.ToString(), ObjectID = id }
+            ).AsQueryable();
         }
 
         #region New Relationship Logic
@@ -214,22 +206,8 @@ from	FusionAttribute FA
         [Route("types"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
         public IEnumerable<dynamic> GetRelationTypes()
         {
-            var sql = @"select    R.ID,
-			R.Subject,
-			R.SubjectID,
-			SD.TextPath as SubjectName,
-			R.Object,
-			R.ObjectID,
-			TD.TextPath as ObjectName,
-            R.PredicateType
-from		RelationType R
-			left join cache.ObjectDetails SD on SD.[Object] = R.Subject and SD.ObjectID = R.SubjectID
-			left join cache.ObjectDetails TD on TD.[Object] = R.Object and TD.ObjectID = R.ObjectID
---where       R.IsSystem = 0
-order by	SD.Name,
-			TD.Name";
             var predicateTypes = MapType.Lineage.GetAsList();
-            var models = from r in Company.Query<dynamic>(sql)
+            var models = from r in Company.Query<dynamic>(QueryConstants.RelationshipTypeList)
                          join p in predicateTypes on r.PredicateType equals (int)p.ID
                          select new
                          {

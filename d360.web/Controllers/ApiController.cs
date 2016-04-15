@@ -1330,16 +1330,6 @@ where   h.ID <> @t order by h.[Level] desc;
                     break;
                 case SystemObjects.ResponsibilityType:
                     #region Actions
-                    //addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
-                    //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityType, Icon = "lock", Title = ResponsibilityTypeGroup.People.ToString() + " Type", Uri = string.Format("/form/AddResponsibilityType?Group=1") });
-                    //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityType, Icon = "database", Title = ResponsibilityTypeGroup.Sourcing.ToString() + " Type", Uri = string.Format("/form/AddResponsibilityType?Group=2") });
-                    //if (id > 0)
-                    //{
-                        //addItem.Items.Add(new PageActionItem { Context = ContextList.ResponsibilityTypeClaim, Icon = "key", Title = Resources.Actions.AddClaim_Text, Uri = string.Format("/form/AddResponsibilityTypeClaim?id={0}", id) });
-                        //list.Add(addItem);
-                    //}
-                    //list.Add(addItem);
-                    //list.Add(new PageActionItem { Context = "ResponsibilityTypeHierarchies", Icon = "tags", Title = "Type Order", Uri = "/overlays/ResponsibilityTypeHierarchies" });
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     break;
                     #endregion
@@ -1610,54 +1600,16 @@ where   h.ID <> @t order by h.[Level] desc;
         [HttpGet, Route("{type}/{id:int}/attributetypefilters")]
         public HttpResponseMessage GetFilterableAttributeTypesByType(SystemObjects type, int id)
         {
-            var models = Company.Query<dynamic>(@"
-with relations as	(
-					select	'IntersectType' as [Type],
-							IntersectTypeID as ID
-					from	[utility].[RelationshipTypes]
-					where	SourceObjectType = @type and SourceObjectID = @id
-					union
-					select	@type as [Type],
-							@id as ID
-					)
-select		T.ID,
-			T.Name
-from		AttributeTypeRelation ATR
-			inner join relations R on R.[Type] = ATR.ObjectType and R.ID = ATR.ObjectID
-			inner join AttributeType T on T.ID = ATR.AttributeTypeID
-where       T.ID not in (select ObjectID from FieldType where [Object] = 'AttributeType' and ObjectID = T.ID and [Type] in ('Html', 'Link', 'UncLink') and CHARINDEX(Name, T.TextFormatString) > 0)
-group by	T.ID,
-			T.Name
-order by	T.Name
-", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id });
+            var models = Company.Query<dynamic>(QueryConstants.FilterableAttributeTypesByTypeList, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id });
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
         [HttpGet, Route("{type}/{id:int}/{attributeTypeID:int}/attributefiltervalues")]
         public HttpResponseMessage GetFilterableAttributeValues(SystemObjects type, int id, int attributeTypeID)
         {
-            var models = Company.Query<dynamic>(@"
-with types as	(
-				select	'Intersect' as [Object],
-						IntersectID as ID
-				from	cache.Relationships
-				where	SourceType = @type and SourceTypeID = @id
-				union
-				select	[Object] as [Object],
-						ObjectID
-				from	cache.ObjectDetails
-				where	ObjectType = @type 
-						and ObjectTypeID = @id
-				)
-select	A.FormattedValue as Name 
-from	AttributeDetail A
-		inner join types O on O.[Object] = A.ObjectType and O.ID = A.ObjectID and A.AttributeTypeID = @attributeTypeID
-group by A.FormattedValue
-order by A.FormattedValue
-", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id, attributeTypeID });
+            var models = Company.Query<dynamic>(QueryConstants.FilterableAttributeValuesList, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id, attributeTypeID });
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
-
 
         #endregion
 
@@ -1682,38 +1634,7 @@ order by A.FormattedValue
 
             try
             {
-                var sql = @"select	*
-from	(
-		select	case 
-					when count(1) > 0 then cast(1 as bit)
-					else cast(0 as bit)
-				end as AllowAttributes
-		from	AttributeTypeRelation
-		where	ObjectType = 'ArtifactType' and ObjectID = @id
-		) A
-		inner join	(
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit) 
-							end as AllowSynonyms
-					from	(
-								select	*
-								from	AttributeTypeRelation
-								where	ObjectType = 'ArtifactType' and ObjectID = @id and AttributeTypeID = 1
-								union
-								select	ATR.*
-								from	AttributeTypeRelation ATR
-										inner join [utility].[RelationshipTypes] RT on RT.SourceObjectType = 'ArtifactType' and RT.SourceObjectID = @id and ATR.ObjectType = 'IntersectType' and ATR.ObjectID = RT.IntersectTypeID and ATR.AttributeTypeID = 1
-							) O
-					) S on 1=1
-		inner join	(
-					select  case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end  as AllowPredicateHierarchies
-					from	utility.RelationshipTypes T
-							inner join IntersectTypePredicate TP on TP.IntersectTypeID = T.IntersectTypeID and T.SourceObjectType = 'ArtifactType' and T.SourceObjectID = @id
-							inner join Predicate P on P.Type = TP.PredicateType and P.Type in (3)--, 4)
-					) P on 1=1";
-
-                var row = Company.Query<dynamic>(sql, new { id = a.ArtifactTypeID }).Single();
+                var row = Company.Query<dynamic>(QueryConstants.ArtifactSettingsItem, new { id = a.ArtifactTypeID }).Single();
 
                 model.Add("AllowAttributes", (bool)row.AllowAttributes);
                 model.Add("AllowSynonyms", (bool)row.AllowSynonyms);
@@ -1722,25 +1643,7 @@ from	(
             catch(Exception ex)
             { }
 
-
-            var hSql = $@"
-with h as
-	(
-	select	[ObjectID] as ID, [Name], [ParentID], [Url], [ObjectTypeName], [ObjectTypeID],
-			[dbo].GenerateObjectUrl(ObjectType, ObjectTypeID, ObjectTypeID) as TypeUrl,
-			0 as [Level]
-	from	[cache].[ObjectDetails]
-	where	[Object] = 'Artifact' and ObjectID = {id}
-	union all
-	select	P.[ObjectID] as ID, P.[Name], P.[ParentID], P.[Url], P.[ObjectTypeName], P.[ObjectTypeID],
-			[dbo].GenerateObjectUrl(P.ObjectType, P.ObjectTypeID, P.ObjectTypeID) as TypeUrl,
-			C.[Level]-1 as [Level]
-	from	[cache].[ObjectDetails] P
-			inner join h C on P.[Object] = 'Artifact' and P.ObjectID = C.ParentID
-	)
-select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]
-";
-            var breadcrumbItems = Company.Query<dynamic>(hSql).ToList();
+            var breadcrumbItems = Company.Query<dynamic>(QueryConstants.ArtifactBreadcrumbItem, new { id = id }).ToList();
             var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
             var breadcrumbs = new List<BreadcrumbItem>() {
@@ -1830,26 +1733,16 @@ select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]
             if (a == null)
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
-            var model = new Dictionary<string, object>();
+            var row = Company.Query<dynamic>(QueryConstants.DomainSettingsItem, new { id = id }).Single();
 
-            var sql = @"select	*
-from	(
-		select	case 
-					when count(1) > 0 then cast(1 as bit)
-					else cast(0 as bit)
-				end as AllowAttributes
-		from	AttributeTypeRelation
-		where	ObjectType = 'DomainType' and ObjectID = @id
-		) A";
-
-            var row = Company.Query<dynamic>(sql, new { id = id }).Single();
-
-            model.Add("ID", a.ID);
-            model.Add("Name", a.Name);
-            model.Add("Description", a.Description);
-            model.Add("AllowAttributes", (bool)row.AllowAttributes);
-
-            return Request.CreateResponse<dynamic>(model);
+            return Request.CreateResponse<dynamic>(
+                new Dictionary<string, object> {
+                    { "ID", a.ID },
+                    { "Name", a.Name },
+                    { "Description", a.Description },
+                    { "AllowAttributes", (bool)row.AllowAttributes }
+                }
+            );
         }
 
         [Route("domains/{typeID:int}/all")]
@@ -1953,25 +1846,13 @@ from	(
         [Route("fusion/{fusionAttributeID:int}/configurations/fromFusionAttribute")]
         public HttpResponseMessage GetFusionConfigurationFromFusionAttribute(int fusionAttributeID)        
         {
-            var fusionItemInfo = Company.Query<dynamic>(@"
-                            select
-	                            f.name as 'ItemName',
-	                            f.fusionID as 'ID',
-	                            f.parentID as 'ParentID',
-	                            f.fusionattributetypeid as 'FusionAttributeTypeID',
-	                            fu.fusiontypeid as 'FusionTypeID',
-	                            fu.name as 'Name',
-	                            fu.[description] as 'Description',
-                                f.id as 'SelectedID'
-                            from
-	                            fusionattribute f
-	                            inner join fusion fu on (f.fusionID = fu.id)
-	                            left outer join fusionattribute fp on (f.parentID = fp.id)
-                            where 
-	                            f.id = @fusAttrID
-                        ", new { fusAttrID = fusionAttributeID });
-                        
-            return Request.CreateResponse(HttpStatusCode.OK, fusionItemInfo);
+            return Request.CreateResponse(
+                HttpStatusCode.OK, 
+                Company.Query<dynamic>(
+                    QueryConstants.FusionConfigurationFromFusionAttributeItem,
+                    new { id = fusionAttributeID }
+                )
+            );
         }
 
         [Route("fusion/selectedbreadcrumb/{selectedItemID:int}")]
@@ -1983,20 +1864,12 @@ from	(
             
             while(itemID > 0)
             {
-                var currentItem = Company.Query<dynamic>(@"
-                                select
-                                    f.parentID as 'parentID', 
-	                                f.name as 'name', 
-	                                f.id as 'id', 
-	                                f.fusionattributetypeid as 'typeid',
-	                                ft.name as 'typename'                                    
-                                from fusionattribute f
-                                inner
-                                join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
-                                where f.id = @item", new { item = itemID }).FirstOrDefault();
+                var currentItem = Company.Query<dynamic>(
+                    QueryConstants.FusionBreadcrumbItem, 
+                    new { item = itemID }
+                ).FirstOrDefault();
 
                 if (currentItem == null) throw new Exception("invalid item id specified to generate breadcrumb from");
-
                 
                 itemID = currentItem.parentID ?? default(int);
                 itemPathData.Insert(0,currentItem);
@@ -2008,57 +1881,16 @@ from	(
         [Route("fusion/ownership/ChildAttributeNodes"), HttpGet]
         public HttpResponseMessage GetOwnershipChildAttributeNodes(int fusionID, int targetFusionAttributeTypeID, int ruleID, int currentFusionAttributeTypeID = 0, int fusionAttributeID = 0)
         {
-            var models = Company.Query<dynamic>(@"
-declare @tbl table (ID int, ParentID int);
-
-with at as	(
-			select	ID,
-					ParentID
-			from	FusionAttributeType
-			where	ID = @targetFusionAttributeTypeID
-			union all
-			select	P.ID,
-					P.ParentID
-			from	FusionAttributeType P
-					inner join at C on C.ParentID = P.ID and P.ID <> C.ID
-			)
-insert into @tbl 
-	select * from at
-
-if @currentFusionAttributeTypeID = 0 and @fusionAttributeID = 0
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID is null and A.FusionAttributeTypeiD = t.ID and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.FusionAttributeID
-                                from    FusionAttributeOwnerRuleItem RI
-                                        inner join FusionAttributeOwnerRule R on R.ID = RI.FusionAttributeOwnerRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
-                                )
-		order by	A.Name
-	end
-else
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID = @currentFusionAttributeTypeID 
-								and A.FusionAttributeTypeiD = t.ID 
-								and A.ParentID = @fusionAttributeID
-								and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.FusionAttributeID
-                                from    FusionAttributeOwnerRuleItem RI
-                                        inner join FusionAttributeOwnerRule R on R.ID = RI.FusionAttributeOwnerRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
-                                )
-        order by	Name
-	end
-", new { fusionID, targetFusionAttributeTypeID, ruleID, currentFusionAttributeTypeID, fusionAttributeID });
+            var models = Company.Query<dynamic>(
+                QueryConstants.FusionOwnershipChildAttributeNodeList, 
+                new {
+                    fusionID,
+                    targetFusionAttributeTypeID,
+                    ruleID,
+                    currentFusionAttributeTypeID,
+                    fusionAttributeID
+                }
+            );
 
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
@@ -2066,57 +1898,16 @@ else
         [Route("fusion/promotion/ChildAttributeNodes"), HttpGet]
         public HttpResponseMessage GetPromotionChildAttributeNodes(int fusionID, int targetFusionAttributeTypeID, int ruleID, int currentFusionAttributeTypeID = 0, int fusionAttributeID = 0)
         {
-            var models = Company.Query<dynamic>(@"
-declare @tbl table (ID int, ParentID int);
-
-with at as	(
-			select	ID,
-					ParentID
-			from	FusionAttributeType
-			where	ID = @targetFusionAttributeTypeID
-			union all
-			select	P.ID,
-					P.ParentID
-			from	FusionAttributeType P
-					inner join at C on C.ParentID = P.ID and P.ID <> C.ID
-			)
-insert into @tbl 
-	select * from at
-
-if @currentFusionAttributeTypeID = 0 and @fusionAttributeID = 0
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID is null and A.FusionAttributeTypeiD = t.ID and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.FusionAttributeID
-                                from    FusionAttributePromotionRuleItem RI
-                                        inner join FusionAttributePromotionRule R on R.ID = RI.FusionAttributePromotionRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
-                                )
-		order by	A.Name
-	end
-else
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID = @currentFusionAttributeTypeID 
-								and A.FusionAttributeTypeiD = t.ID 
-								and A.ParentID = @fusionAttributeID
-								and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.FusionAttributeID
-                                from    FusionAttributePromotionRuleItem RI
-                                        inner join FusionAttributePromotionRule R on R.ID = RI.FusionAttributePromotionRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
-                                )
-        order by	Name
-	end
-", new { fusionID, targetFusionAttributeTypeID, ruleID, currentFusionAttributeTypeID, fusionAttributeID });
+            var models = Company.Query<dynamic>(
+                QueryConstants.FusionPromotionChildAttributeNodeList, 
+                new {
+                    fusionID,
+                    targetFusionAttributeTypeID,
+                    ruleID,
+                    currentFusionAttributeTypeID,
+                    fusionAttributeID
+                }
+            );
 
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
@@ -2177,59 +1968,28 @@ else
         [Route("fusion/{id:int}/OwnershipRuleItems")]
         public HttpResponseMessage GetFusionAttributeOwnershipRuleItems(int id)
         {
-            var models = Company.Query<dynamic>(@"
-select	I.ID,
-        I.FusionAttributeOwnerRuleID,
-        I.FusionAttributeID,
-        case 
-			when F.FusionAttributeTypeID = FT.ID then F.TextPath
-			else coalesce(FT.Name + ' attributes under ' + F.TextPath, 'All ' + FT.Name + ' attributes') 
-		end as FusionAttributeName
-from	FusionAttributeOwnerRuleItem I
-		inner join FusionAttributeOwnerRule R on R.ID = I.FusionAttributeOwnerRuleID
-		inner join FusionAttributeType FT on FT.ID = R.ObjectID
-		left join FusionAttribute F on F.ID = I.FusionAttributeID
-where   I.FusionAttributeOwnerRuleID = @id
-", new { id });
-            return Request.CreateResponse(HttpStatusCode.OK, models);
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                Company.Query<dynamic>(QueryConstants.FusionOwnershipRuleList, new { id })
+            );
         }
         
         [Route("fusion/{id:int}/PromotionRuleItems")]
         public HttpResponseMessage GetFusionAttributePromotionRuleItems(int id)
         {
-            var models = Company.Query<dynamic>(@"
-select	I.ID,
-        I.FusionAttributePromotionRuleID,
-        I.FusionAttributeID,
-        case 
-			when F.FusionAttributeTypeID = FT.ID then F.TextPath
-			else coalesce(FT.Name + ' attributes under ' + F.TextPath, 'All ' + FT.Name + ' attributes') 
-		end as FusionAttributeName
-from	FusionAttributePromotionRuleItem I
-		inner join FusionAttributePromotionRule R on R.ID = I.FusionAttributePromotionRuleID
-		inner join FusionAttributeType FT on FT.ID = R.ObjectID
-        left join FusionAttribute F on F.ID = I.FusionAttributeID
-where   I.FusionAttributePromotionRuleID = @id
-", new { id });
-            return Request.CreateResponse(HttpStatusCode.OK, models);
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                Company.Query<dynamic>(QueryConstants.FusionPromotionRuleList, new { id })
+            );
         }
 
         [Route("fusion/{id:int}/PromotionRuleMappings")]
         public HttpResponseMessage GetFusionAttributePromotionRuleMappings(int id)
         {
-            var models = Company.Query<dynamic>(@"
-select	I.ID,
-        I.FusionAttributePromotionRuleID,
-        I.SourceFieldTypeID,
-        coalesce(I.SourceFieldName, SF.FriendlyName + ' (' + SF.Name + ')') as SourceFieldName,
-        I.TargetFieldTypeID,
-        coalesce(I.TargetFieldName, TF.FriendlyName + ' (' + TF.Name + ')') as TargetFieldName
-from	FusionAttributePromotionRuleMapping I
-		left join FieldType SF on SF.ID = I.SourceFieldTypeID
-		left join FieldType TF on TF.ID = I.TargetFieldTypeID
-where   I.FusionAttributePromotionRuleID = @id
-", new { id });
-            return Request.CreateResponse(HttpStatusCode.OK, models);
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                Company.Query<dynamic>(QueryConstants.FusionPromotionRuleMappingList, new { id })
+            );
         }
 
         #endregion
@@ -2267,20 +2027,13 @@ where   I.FusionAttributePromotionRuleID = @id
         [Route("groups/{id:int}/resources")]
         public IQueryable<GroupResourceInfo> GetResourcesByGroup(int id)
         {
-            return Company.Query<GroupResourceInfo>(@"select  RG.GroupID,
-R.Email,
-R.FirstName,
-R.LastName,
-R.ResourceID,
-case 
-    when G.PrimaryOwnerResourceID = R.ResourceID then 'Primary'
-    when G.SecondaryOwnerResourceID = R.ResourceID then 'Secondary'
-	else ''
-end as [Owner]
-from [Group] G
-inner join ResourceGroup RG on RG.GroupID = G.ID and G.ID = @id
-inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID", new { id })
-        .OrderBy(i => i.LastName).ThenBy(i => i.FirstName).AsQueryable();
+            return Company.Query<GroupResourceInfo>(
+                QueryConstants.GroupResourceInfoList, 
+                new { id }
+                )
+                .OrderBy(i => i.LastName)
+                .ThenBy(i => i.FirstName)
+                .AsQueryable();
         }
 
         #endregion
@@ -2359,17 +2112,17 @@ inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID", new { i
 
         #region Lookup Methods
 
-        [Route("allitems")]
-        public IEnumerable<dynamic> GetAllItems()
-        {
-            return Company.Query<dynamic>(@"select		[Object], 
-			ObjectID, 
-			ObjectTypeName + ': ' + TextPath as Name
-from		cache.ObjectDetails 
-where		[Object] in ('Artifact', 'Rule', 'Policy', 'Domain') 
-			and ObjectID <> 0
-order by	Name");
-        }
+//        [Route("allitems")]
+//        public IEnumerable<dynamic> GetAllItems()
+//        {
+//            return Company.Query<dynamic>(@"select		[Object], 
+//			ObjectID, 
+//			ObjectTypeName + ': ' + TextPath as Name
+//from		cache.ObjectDetails 
+//where		[Object] in ('Artifact', 'Rule', 'Policy', 'Domain') 
+//			and ObjectID <> 0
+//order by	Name");
+//        }
 
         [Route("AttributeTypeCategories")]
         public IQueryable<AttributeTypeCategory> GetAttributeTypeCategories()
@@ -2377,19 +2130,19 @@ order by	Name");
             return Company.Table<AttributeTypeCategory>();
         }
 
-        [Route("ResponsibilityTypeHierarchies")]
-        public HttpResponseMessage GetResponsibilityTypeHierarchies()
-        {
-            var models = Company.Query<ResponsibilityTypeHierarchy>(
-@"select	H.ID as StartID,
-		    S.Name as StartName,
-		    H.ParentID as EndID,
-		    T.Name as EndName
-from	    ResponsibilityTypeHierarchy H
-		    inner join ResponsibilityType S on S.ID = H.ID
-		    left join ResponsibilityType T on T.ID = H.ParentID");
-            return Request.CreateResponse(HttpStatusCode.OK, models);
-        }
+        //        [Route("ResponsibilityTypeHierarchies")]
+        //        public HttpResponseMessage GetResponsibilityTypeHierarchies()
+        //        {
+        //            var models = Company.Query<ResponsibilityTypeHierarchy>(
+        //@"select	H.ID as StartID,
+        //		    S.Name as StartName,
+        //		    H.ParentID as EndID,
+        //		    T.Name as EndName
+        //from	    ResponsibilityTypeHierarchy H
+        //		    inner join ResponsibilityType S on S.ID = H.ID
+        //		    left join ResponsibilityType T on T.ID = H.ParentID");
+        //            return Request.CreateResponse(HttpStatusCode.OK, models);
+        //        }
 
         [Route("lookups/{id:int}/allocations")]
         public IQueryable<LookupAllocation> GetAllocationsByLookupType(int id)
@@ -2425,68 +2178,6 @@ from	    ResponsibilityTypeHierarchy H
 
             switch (def.ReferenceType)
             {
-//                case 1: //Self Reference
-//                    sql = $@"
-//select  ID,
-//	    ParentID,
-//	    Name,
-//	    TextPath,
-//	    SourceID,
-//        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
-//from    FusionAttribute
-//where   ID = {fusionAttributeID}";
-
-//                    var selfReference = Company.Query<dynamic>(sql).SingleOrDefault();
-
-//                    if (selfReference != null)
-//                    {
-//                        list.Add(new DetailReadOnlyRowModel
-//                        {
-//                            columns = 1,
-//                            FirstColumnFields = new List<ReadOnlyField> {
-//                                new ReadOnlyField
-//                                {
-//                                    Column = 1,
-//                                    Name = k.FriendlyName,
-//                                    FieldDescription = k.DisplayDescription,
-//                                    FieldName = k.Name,
-//                                    Value = $"<a data-context='Preview' data-type='FusionAttribute' data-id='{selfReference.ID}' href='{selfReference.Url}'>{selfReference.TextPath}</a>"
-//                                }
-//                            }
-//                        });
-//                    }
-
-//                    break;
-//                case 2: //Parent Reference
-//                    sql = $@"
-//select  ID,
-//	    ParentID,
-//	    Name,
-//	    TextPath,
-//	    SourceID,
-//        [dbo].GenerateObjectUrl('FusionAttribute', FusionAttributeTypeID, ID) as Url
-//from    FusionAttribute c
-//        inner join FusionAttribute p on c.ID = {fusionAttributeID} and p.ID = c.ParentID and p.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
-//                    var parentReference = Company.Query<dynamic>(sql).SingleOrDefault();
-
-//                    if (parentReference != null)
-//                    {
-//                        list.Add(new DetailReadOnlyRowModel
-//                        {
-//                            columns = 1,
-//                            FirstColumnFields = new List<ReadOnlyField> {
-//                                new ReadOnlyField
-//                                {
-//                                    Column = 1,
-//                                    Name = k.FriendlyName,
-//                                    FieldDescription = k.DisplayDescription,
-//                                    FieldName = k.Name,
-//                                    Value = $"<a data-context='Preview' data-type='FusionAttribute' data-id='{parentReference.ID}' href='{parentReference.Url}'>{parentReference.TextPath}</a>"
-//                                }
-//                            }
-//                        });
-//                    }
-//                    break;
                 case 1: //Self Reference
                 case 2: //Parent Reference
                 case 3: //Child Reference
@@ -2950,40 +2641,7 @@ from	(
         public SourceRulesViewModel GetSourceRules(string focal, int focalID, string obj, int objID)
         {
             var rules = new SourceRulesViewModel { Rules = new List<SourceRuleViewModel>() };
-
-            var sql = @"
-select	J.IntersectMapID,
-		J.SourceRuleID,
-		S.Name,
-		R.SourceObject,
-		R.SourceObjectID,
-		R.SourceObjectName,
-		R.SourceTypeName,
-		J.Description,
-		(
-		select substring(
-						(
-						SELECT  ', ' + D.TextPath AS 'data()' 
-						from	SourceRuleContext JI
-								inner join cache.ObjectDetails D on JI.Object = D.Object and JI.ObjectID = D.ObjectID and JI.SourceRuleID = J.ID
-						FOR		XML PATH('')
-						), 2, 2500)
-		) as RuleContexts,
-		(
-		select substring(
-						(
-						SELECT  ', ' + D.TextPath AS 'data()' 
-						from	IntersectMapSourceRuleContext JI
-								inner join cache.ObjectDetails D on JI.Object = D.Object and JI.ObjectID = D.ObjectID and JI.IntersectMapSourceRuleID = J.ID
-						FOR		XML PATH('')
-						), 2, 2500)
-		) as ItemContexts,
-		J.SortOrder
-from	IntersectMapSourceRule J
-		inner join SourceRule S on S.ID = J.SourceRuleID and S.AppliesToObject = @focal and S.AppliesToObjectID = @focalID 
-		inner join IntersectMap M on J.IntersectMapID = M.ID
-		inner join cache.Relationships R on R.SourceIntersectNodeID = M.SubjectIntersectNodeID and R.TargetObject = @obj and R.TargetObjectID = @objID";
-            var rawItems = Company.Query<RawSourceRuleItem>(sql, new { focal = new Dapper.DbString { Value = focal, IsAnsi = true }, focalID, obj = new Dapper.DbString { Value = obj, IsAnsi = true }, objID }).OrderBy(i => i.Name).ThenBy(i => i.SortOrder).ToList();
+            var rawItems = Company.Query<RawSourceRuleItem>(QueryConstants.SourceRuleList, new { focal = new Dapper.DbString { Value = focal, IsAnsi = true }, focalID, obj = new Dapper.DbString { Value = obj, IsAnsi = true }, objID }).OrderBy(i => i.Name).ThenBy(i => i.SortOrder).ToList();
 
             rawItems.Select(r => new { r.Name, r.SourceRuleID, r.RuleContexts }).Distinct().ToList().ForEach(r => {
                 var ruleModel = new SourceRuleViewModel { Name = r.Name, SourceRuleID = r.SourceRuleID, RuleContexts = r.RuleContexts, Items = new List<SourceRuleItemViewModel>() };
@@ -3010,11 +2668,8 @@ from	IntersectMapSourceRule J
         public SourceRulesViewModel GetSourceRulesForRelationship(string focal, int focalID, string source, int sourceID, string target, int targetID)
         {
             var model = GetSourceRules(focal, focalID, target, targetID);
-
             model.Rules = model.Rules.Where(r => r.Items.Count(i => i.SourceObject == source && i.SourceObjectID == sourceID) > 0).ToList();
-
             return model;
-
         }
 
         private List<int> LoadAttributes(int intersectTypeID)
@@ -3255,28 +2910,15 @@ from	IntersectMapSourceRule J
         [Route("policytypes/{id:int}")]
         public HttpResponseMessage GetPolicyType(int id)
         {
-            var a = Company.GetById<PolicyType>(id);
-
-            var model = new Dictionary<string, object>();
-
-            var sql = @"select	*
-from	(
-		select	case 
-					when count(1) > 0 then cast(1 as bit)
-					else cast(0 as bit)
-				end as AllowAttributes
-		from	AttributeTypeRelation
-		where	ObjectType = 'PolicyType' and ObjectID = @id
-		) A";
-
-            var row = Company.Query<dynamic>(sql, new { id = id }).Single();
-
-            model.Add("ID", a.ID);
-            model.Add("Name", a.Name);
-            model.Add("Description", a.Description);
-            model.Add("AllowAttributes", (bool)row.AllowAttributes);
-
-            return Request.CreateResponse<dynamic>(model);
+            var row = Company.Query<dynamic>(QueryConstants.PolicySettingsItem, new { id }).Single();
+            return Request.CreateResponse<dynamic>(
+                new Dictionary<string, object>() {
+                    { "ID", row.ID },
+                    { "Name", row.Name },
+                    { "Description", row.Description },
+                    { "AllowAttributes", (bool)row.AllowAttributes }
+                }
+            );
         }
 
         [Route("policytypes/{id:int}/policies")]
@@ -3396,47 +3038,47 @@ where    A.PolicyTypeID = @id", columns, joins);
 
         #endregion
 
-        #region Comment Tag Suggestions
+        //#region Comment Tag Suggestions
 
-        [DataContract]
-        public class TagSuggestionModel
-        {
-            [DataMember]
-            public string Object { get; set; }
+        //[DataContract]
+        //public class TagSuggestionModel
+        //{
+        //    [DataMember]
+        //    public string Object { get; set; }
 
-            [DataMember]
-            public int ObjectID { get; set; }
+        //    [DataMember]
+        //    public int ObjectID { get; set; }
 
-            [DataMember]
-            public string TextPath { get; set; }
+        //    [DataMember]
+        //    public string TextPath { get; set; }
 
-            [DataMember]
-            public string Url { get; set; }
+        //    [DataMember]
+        //    public string Url { get; set; }
 
-            [DataMember]
-            public string ObjectTypeName { get; set; }
+        //    [DataMember]
+        //    public string ObjectTypeName { get; set; }
 
-            [DataMember]
-            public string IconForeColor { get; set; }
+        //    [DataMember]
+        //    public string IconForeColor { get; set; }
 
-            [DataMember]
-            public string IconBackColor { get; set; }
-        }
+        //    [DataMember]
+        //    public string IconBackColor { get; set; }
+        //}
 
-        [HttpGet, Route("tagsuggestions")]
-        public List<TagSuggestionModel> TagSuggestions(string phrase)
-        {
-            if (string.IsNullOrWhiteSpace(phrase))
-                return new List<TagSuggestionModel>();
+        //[HttpGet, Route("tagsuggestions")]
+        //public List<TagSuggestionModel> TagSuggestions(string phrase)
+        //{
+        //    if (string.IsNullOrWhiteSpace(phrase))
+        //        return new List<TagSuggestionModel>();
 
-            var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName, IconForeColor, IconBackColor from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and (lower(Name) like lower('{0}%') or (len('{0}') > 2 and lower(Name) like lower('%{0}%')))", phrase.Replace("'", "''").Replace("--", ""));
+        //    var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName, IconForeColor, IconBackColor from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and (lower(Name) like lower('{0}%') or (len('{0}') > 2 and lower(Name) like lower('%{0}%')))", phrase.Replace("'", "''").Replace("--", ""));
 
-            var list = Company.Query<TagSuggestionModel>(sql).ToList();
+        //    var list = Company.Query<TagSuggestionModel>(sql).ToList();
 
-            return list;
-        }
+        //    return list;
+        //}
 
-        #endregion
+        //#endregion
 
         #region Type/ID Endpoints
 
@@ -5246,16 +4888,7 @@ where    A.PolicyTypeID = @id", columns, joins);
         [Route("fusion/statistics")]
         public FusionStatisticTileModel GetFusionStatistics()
         {
-            FusionStatisticTileModel res =  Company.Query<FusionStatisticTileModel>(
-                            @"  select
-	                                (select count(1) from fusion.agenterror where [date] > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as AgentErrors,
-	                                (select count(1) from fusion.execution where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as AgentExecutions,
-	                                (select count(1) from fusionstatuslog where success = 1 and datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as FusionExecutions,
-	                                (select count(1) from fusion.error where [date] > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as FusionErrors,
-	                                (select count(1) from fusionattributepromotionlogsummary where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as NumberOfPromotions"
-                ).FirstOrDefault();
-
-            return res;
+            return Company.Query<FusionStatisticTileModel>(QueryConstants.FusionStatisticsItem).FirstOrDefault();
         }
 
         [Route("{type}/{id:int}/fieldlookup")]
@@ -5454,47 +5087,18 @@ where    A.PolicyTypeID = @id", columns, joins);
         [Route("{type}/{id:int}/synonyms")]
         public HttpResponseMessage GetSynonymsByObject(SystemObjects type, int id)
         {
-            //var sType = type.ToString();
-
             var models = Company.Query<dynamic>(
-@"with A as	(
-			select	D.Name as [Source],
-					A.ID
-			from	Attribute A
-					inner join cache.ObjectDetails D on D.[Object] = A.ObjectType and D.ObjectID = A.ObjectID
-			where	A.AttributeTypeID = 1
-					and A.ObjectType = @type
-					and A.ObjectID = @id
-			union
-			select	R.TargetObjectName as [Source],
-					A.ID
-			from	Attribute A
-					inner join [cache].[Relationships] R on A.ObjectType = 'Intersect' and R.IntersectID = A.ObjectID and R.SourceObject = @type and R.SourceObjectID = @id
-                    inner join IntersectTypeNode N on N.ID = R.[SourceIntersectTypeNodeID] --and N.[Order] = 2
-			where	A.AttributeTypeID = 1
-			)
+                QueryConstants.SynonymsByObjectList, 
+                new {
+                    type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
+                    id
+                }
+            );
 
-select	A.[Source],
-		A.ID,
-		FN.Name,
-		FD.Description
-from	A
-		cross apply (
-					select	F.Value as Name
-					from	Field F
-							inner join FieldType FT on FT.ID = F.FieldTypeID and F.ObjectType = 'Attribute' and F.ObjectID = A.ID and FT.Name = 'Name'
-					) FN
-		outer apply (
-					select	F.Value as Description 
-					from	Field F
-							inner join FieldType FT on FT.ID = F.FieldTypeID and F.ObjectType = 'Attribute' and F.ObjectID = A.ID and FT.Name = 'Description'					
-					) FD", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id });
             return Request.CreateResponse(
                 HttpStatusCode.OK,
                 models
             );
-
-            //Company.Filter<Synonym>(i => i.ObjectType == sType && i.ObjectID == id, i => i.SynonymType).Select(i => new { i.ID, i.Name, i.Description, SynonymType = i.SynonymType.Name })
         }
 
         [Route("workflows/relations")]
@@ -5605,12 +5209,7 @@ from	A
         [Route("statistics")]
         public IEnumerable<dynamic> GetStatisticTypes()
         {
-            return Company.Query<dynamic>(@"
-select	S.*,
-		D.Name as ObjectName
-from	StatisticType S
-		inner join cache.ObjectDetails D on D.Object = S.Object and D.ObjectID = S.ObjectID 
-order by D.Name, S.Name");
+            return Company.Query<dynamic>(QueryConstants.StatisticTypeDetailList);
         }
 
         #endregion
@@ -5634,48 +5233,17 @@ order by D.Name, S.Name");
         [Route("catalogs/{typeID:int}")]
         public HttpResponseMessage GetTaxonomyType(int typeID)
         {
-            var a = Company.GetById<TaxonomyType>(typeID);
-            if (a == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Information model not found.");
-
-            var model = new Dictionary<string, object>();
-
-            var sql = @"select	*
-from	(
-		select	case 
-					when count(1) > 0 then cast(1 as bit)
-					else cast(0 as bit)
-				end as AllowAttributes
-		from	AttributeTypeRelation
-		where	ObjectType = 'TaxonomyType' and ObjectID = @id
-		) A
-		inner join	(
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit) 
-							end as AllowSynonyms
-					from	(
-								select	*
-								from	AttributeTypeRelation
-								where	ObjectType = 'TaxonomyType' and ObjectID = @id and AttributeTypeID = 1
-								union
-								select	ATR.*
-								from	AttributeTypeRelation ATR
-										inner join [utility].[RelationshipTypes] RT on RT.SourceObjectType = 'TaxonomyType' and RT.SourceObjectID = @id and ATR.ObjectType = 'IntersectType' and ATR.ObjectID = RT.IntersectTypeID and ATR.AttributeTypeID = 1
-							) O
-					) S on 1=1";
-
-            var row = Company.Query<dynamic>(sql, new { id = typeID }).Single();
-
-            model.Add("ID", a.ID);
-            model.Add("MaximumDepth", a.MaximumDepth);
-            model.Add("Name", a.Name);
-            //model.Add("TaxonomyTypeClass", a.TaxonomyTypeClass.Name);
-            //model.Add("TaxonomyTypeClassID", a.TaxonomyTypeClassID);
-            model.Add("Description", a.Description);
-            model.Add("AllowAttributes", (bool)row.AllowAttributes);
-            model.Add("AllowSynonyms", (bool)row.AllowSynonyms);
-
-            return Request.CreateResponse<dynamic>(model);
+            var row = Company.Query<dynamic>(QueryConstants.TaxonomySettingsItem, new { id = typeID }).Single();
+            return Request.CreateResponse<dynamic>(
+                new Dictionary<string, object> {
+                    { "ID", row.ID },
+                    { "MaximumDepth", row.MaximumDepth },
+                    { "Name", row.Name },
+                    { "Description", row.Description },
+                    { "AllowAttributes", (bool)row.AllowAttributes },
+                    { "AllowSynonyms", (bool)row.AllowSynonyms }
+                }
+            );
         }
 
         [Route("catalogs/{typeID:int}/all")]
@@ -5771,31 +5339,12 @@ from	(
             if (days != 0)
             {
                 days = days * -1;
-
-                sql = @"select
-                            at.name as Name,
-	                        count(1) as New,
-                            '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri							
-                        from
-                            artifact a
-
-                            inner
-                        join artifacttype at on a.artifacttypeid = at.id
-                        where
-                            a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP)
-                        group by at.name,at.id order by at.name";
-
-                return Company.Query<CountModel>(sql, new { d = days });
+                sql = QueryConstants.ArtifactActivitySpecificDateCountList;
             }
-
-            sql = @"select
-                            at.name as Name,
-	                        count(1) as New,
-                            '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri							
-                        from
-                            artifact a
-                            inner join artifacttype at on a.artifacttypeid = at.id                        
-                        group by at.name,at.id order by at.name";
+            else
+            {
+                sql = QueryConstants.ArtifactActivityAllDateCountList;
+            }
 
             return Company.Query<CountModel>(sql, new { d = days });
         }

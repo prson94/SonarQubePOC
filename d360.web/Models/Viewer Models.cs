@@ -593,6 +593,32 @@ namespace d360.web.Models
         public string EndName { get; set; }
     }
 
+    public class SchemaFieldLookupItemModel
+    {
+        public SchemaFieldLookupItemModel()
+        {
+            Enabled = true;
+        }
+
+        public string Value { get; set; }
+        public string Text { get; set; }
+        public bool Enabled { get; set; }
+    }
+
+    public class SchemaFieldModel
+    {
+        public SchemaFieldModel()
+        {
+            LookupItems = new List<SchemaFieldLookupItemModel>();
+        }
+
+        public SystemObjects Type { get; set; }
+        public int TypeID { get; set; }
+        public FieldType Field { get; set; }
+
+        public List<SchemaFieldLookupItemModel> LookupItems { get; set; }
+    }
+
     [DataContract(Name = "Survey", Namespace = constants.NAMESPACE)]
     public class SurveyModel
     {

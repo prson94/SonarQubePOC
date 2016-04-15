@@ -237,7 +237,8 @@ namespace d360.web.Controllers
             StringBuilder sb = new StringBuilder();
 
             var fieldValues = Company.Query<dynamic>(@"
-select	FT.FriendlyName as Name,
+select	A.ID,
+        FT.FriendlyName as Name,
 		F.FormattedValue as Value
 from	AttributeDetail A
 		inner join Field F on F.ObjectID = A.ID and A.ObjectType = 'Intersect' and A.ObjectID = @id

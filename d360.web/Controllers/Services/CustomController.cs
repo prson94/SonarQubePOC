@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Mvc;
-using d360.core.entities;
-using d360.web.Models;
+﻿using System.Web.Mvc;
 using d360.model;
-using d360.core;
-using System.IO;
-using d360.web.Models.Attributes;
-using System.Diagnostics;
-using SpreadsheetLight;
-using System.Data;
 
 namespace d360.web.Controllers
 {

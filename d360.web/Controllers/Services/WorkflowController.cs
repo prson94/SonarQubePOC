@@ -9,15 +9,11 @@ using d360.core;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using System.Xml.Linq;
-using d360.web.Models.Attributes;
 using d360.core.entities;
 using d360.workflow.models;
 using System.Net;
-using Newtonsoft.Json;
-using System.Diagnostics;
-using System.Xml.Serialization;
-using System.IO;
 using d360.workflow.entities;
+using d360.web.Models;
 
 namespace d360.web.Controllers.Services
 {
@@ -30,385 +26,6 @@ namespace d360.web.Controllers.Services
             : base(community, company)
         {
         }
-
-        #endregion
-
-        #region Models
-
-        /// <summary>
-        /// A workflow breakdown.
-        /// </summary>
-        [DataContract(Name = "WorkflowBreakdown", Namespace = constants.NAMESPACE)]
-        public class WorkflowBreakdown
-        {
-            [DataMember]
-            public int WorkflowTypeID { get; set; }
-            [DataMember]
-            public string WorkflowTypeName { get; set; }
-            [DataMember]
-            public WorkflowType Workflow { get; set; }
-            [DataMember]
-            public int Count { get; set; }
-        }
-
-        /// <summary>
-        /// An open workflow task.
-        /// </summary>
-        [DataContract(Name = "WorkflowTask", Namespace = constants.NAMESPACE)]
-        public class WorkflowTask
-        {
-            public WorkflowTask()
-            {
-                Properties = new Dictionary<string, string>();
-            }
-
-            /// <summary>
-            /// The instance ID of the workflow that this task is related to.
-            /// </summary>
-            [DataMember]
-            public Guid WorkflowID { get; set; }
-
-            /// <summary>
-            /// The workflow type for this instance.
-            /// </summary>
-            [DataMember]
-            public WorkflowType Workflow { get; set; }
-
-            /// <summary>
-            /// The name of the workflow type for this instance.
-            /// </summary>
-            [DataMember, NotMapped]
-            public string WorkflowName { get; set; }
-
-            /// <summary>
-            /// The description of the workflow type for this instance.
-            /// </summary>
-            [DataMember, NotMapped]
-            public string WorkflowDescription { get; set; }
-
-            /// <summary>
-            /// The type of task.
-            /// </summary>
-            [DataMember]
-            public ActivityType Activity { get; set; }
-
-            /// <summary>
-            /// The name for this type of task.
-            /// </summary>
-            [DataMember, NotMapped]
-            public string ActivityName { get; set; }
-
-            /// <summary>
-            /// The description for this type of task.
-            /// </summary>
-            [DataMember, NotMapped]
-            public string ActivityDescription { get; set; }
-
-            /// <summary>
-            /// Contains the raw XML data settings for this workflow.
-            /// </summary>
-            public string Data { get; set; }
-
-            /// <summary>
-            /// The date this task was created.
-            /// </summary>
-            [DataMember]
-            public DateTime DateStarted { get; set; }
-
-            /// <summary>
-            /// Contains the hydrated list of key properties for this workflow.
-            /// </summary>
-            [DataMember]
-            public Dictionary<string, string> Properties { get; set; }
-        }
-
-        /// <summary>
-        /// An open workflow assignment.
-        /// </summary>
-        [DataContract(Name = "WorkflowAssignment", Namespace = constants.NAMESPACE)]
-        public class WorkflowAssignment
-        {
-            public void Hydrate()
-            {
-                WorkflowName = Workflow.GetWorkflowTypeDisplayName();
-                WorkflowDescription = Workflow.GetWorkflowTypeDescription();
-                ActivityName = Activity.GetActivityTypeDisplayName();
-                ActivityDescription = Activity.GetReportTileTypeDescription();
-                Settings = (
-                            from e in XElement.Parse(Data).Elements()
-                            where e.Name.LocalName != "RequestingResourceID"
-                            select new Property { Name = e.Name.LocalName, Value = e.Value }
-                           ).ToList();
-
-                if (!string.IsNullOrEmpty(ArtifactTypeName))
-                    Settings.Add(new Property { Name = "ArtifactTypeName", Value = ArtifactTypeName });
-                if (!string.IsNullOrEmpty(TaxonomyTypeName))
-                    Settings.Add(new Property { Name = "TaxonomyTypeName", Value = TaxonomyTypeName });
-            }
-
-            /// <summary>
-            /// The instance ID of the workflow that this task is related to.
-            /// </summary>
-            [DataMember]
-            public Guid WorkflowID { get; set; }
-
-            /// <summary>
-            /// The workflow type for this instance.
-            /// </summary>
-            [DataMember]
-            public WorkflowType Workflow { get; set; }
-
-            /// <summary>
-            /// The name of the workflow type for this instance.
-            /// </summary>
-            [DataMember, NotMapped]
-            public string WorkflowName { get; set; }
-
-            /// <summary>
-            /// The description of the workflow type for this instance.
-            /// </summary>
-            [DataMember, NotMapped]
-            public string WorkflowDescription { get; set; }
-
-            /// <summary>
-            /// Contains the raw XML data settings for this workflow.
-            /// </summary>
-            public string Data { get; set; }
-
-            /// <summary>
-            /// Contains the data settings for this workflow.
-            /// </summary>
-            [DataMember, NotMapped]
-            public List<Property> Settings { get; set; }
-
-            /// <summary>
-            /// The date this task was created.
-            /// </summary>
-            [DataMember]
-            public DateTime DateStarted { get; set; }
-
-            /// <summary>
-            /// The type of task.
-            /// </summary>
-            [DataMember]
-            public ActivityType Activity { get; set; }
-
-            /// <summary>
-            /// The name for this type of task.
-            /// </summary>
-            [DataMember, NotMapped]
-            public string ActivityName { get; set; }
-
-            /// <summary>
-            /// The description for this type of task.
-            /// </summary>
-            [DataMember, NotMapped]
-            public string ActivityDescription { get; set; }
-
-            /// <summary>
-            /// The ID of the user that made the initial request.
-            /// </summary>
-            [DataMember]
-            public int? RequestingResourceID { get; set; }
-
-            /// <summary>
-            /// The full name of the user that made the initial request.
-            /// </summary>
-            [DataMember]
-            public string RequestingResourceName { get; set; }
-
-            /// <summary>
-            /// The relative url of the user that made the initial request.
-            /// </summary>
-            [DataMember]
-            public string RequestingResourceUrl { get; set; }
-
-            public string TaxonomyTypeName { get; set; }
-
-            public string ArtifactTypeName { get; set; }
-        }
-
-        public class WorkflowRequestModel: Dictionary<string, string>
-        {
-        }
-
-        #endregion
-
-        #region Fields
-
-        string CurrentUserWorkflowCountSql =
-@"select	W.WorkflowType as Workflow,
-			count(1) as [Count]
-from		Workflow W
-			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-											    and W.DateCompleted is null
-											    and WR.ResourceID = @r
-				                                and WR.IsComplete = 0
-group by	W.WorkflowType";
-
-        public class WorkflowTaskBaseModel
-        {
-            public string WorkflowName { get; set; }
-            public string WorkflowDescription { get; set; }
-            public string ActivityName { get; set; }
-            public string ActivityDescription { get; set; }
-            public Guid WorkflowID { get; set; }
-            public ActivityType Activity { get; set; }
-        }
-
-        public class WorkflowTask1Model: WorkflowTaskBaseModel
-        {
-            public int ID { get; set; }
-            public string Name { get; set; }
-            public string Url { get; set; }
-            public DateTime StartDate { get; set; }
-            public string ProposedName { get; set; }
-            public string PropsoedDescription { get; set; }
-            public int RequestingResourceID { get; set; }
-            public string RequestingResourceName { get; set; }
-            public int TaxonomyTypeID { get; set; }
-            public string TaxonomyTypeName { get; set; }
-        }
-
-        string CurrentUserWorkflow1TaskSql =
-@"select    W.ID as WorkflowID,
-		    W.Data.value('(fields/ArtifactTypeID)[1]', 'int') as ID,
-			A.Name as Name,
-			A.Url as Url,
-            W.DateStarted as StartDate,
-			W.Data.value('(fields/Name)[1]', 'nvarchar(250)') as ProposedName,
-			W.Data.value('(fields/Description)[1]', 'nvarchar(max)') as ProposedDescription,
-			W.Data.value('(fields/RequestingResourceID)[1]', 'int') as RequestingResourceID,
-			R.FirstName + ' ' + R.LastName as RequestingResourceName,
-			W.Data.value('(fields/TaxonomyTypeID)[1]', 'int') as TaxonomyTypeID,
-			TT.Name as TaxonomyTypeName,
-		    WR.Activity
-from	    Workflow W
-		    inner join cache.ObjectDetails A on A.[Object] = 'ArtifactType' and A.ObjectID = W.Data.value('(fields/ArtifactTypeID)[1]', 'int')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/RequestingResourceID)[1]', 'int')
-			inner join TaxonomyType TT on TT.ID = W.Data.value('(fields/TaxonomyTypeID)[1]', 'int')
-			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-											    and W.DateCompleted is null
-											    and WR.ResourceID = @r
-												and W.WorkflowType = 1
-                                                and WR.IsComplete = 0 
-{0} 
-order by    A.Name, W.Data.value('(fields/Name)[1]', 'nvarchar(250)')";
-
-        public class WorkflowTask2Model : WorkflowTaskBaseModel
-        {
-            public int ID { get; set; }
-            public string Name { get; set; }
-            public string Url { get; set; }
-            public string TypeName { get; set; }
-            public DateTime StartDate { get; set; }
-            public DateTime DueDate { get; set; }
-        }
-
-        string CurrentUserWorkflow2TaskSql =
-@"select    W.ID as WorkflowID,
-		    W.Data.value('(fields/ArtifactID)[1]', 'int') as ID,
-			A.Name as Name,
-			A.Url as Url,
-            A.ObjectTypeName as TypeName,
-			W.Data.value('(fields/StartDate)[1]', 'datetime') as StartDate,
-			W.Data.value('(fields/DueDate)[1]', 'datetime') as DueDate,
-		    WR.Activity
-from	    Workflow W
-		    inner join cache.ObjectDetails A on A.[Object] = 'Artifact' and A.ObjectID = W.Data.value('(fields/ArtifactID)[1]', 'int')
-			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-											    and W.DateCompleted is null
-											    and WR.ResourceID = @r
-												and W.WorkflowType = 2
-                                                and WR.IsComplete = 0 
-{0} 
-order by    A.ObjectTypeName, A.Name";
-
-        public class WorkflowTask3Model : WorkflowTaskBaseModel
-        {
-            public string Issue { get; set; }
-            public int ResourceID { get; set; }
-            public string ResourceName { get; set; }
-            public string ResourceUrl { get; set; }
-            public DateTime DateStarted { get; set; }            
-        }
-
-        string CurrentUserWorkflow3TaskSql =
-@"select		W.ID as WorkflowID,
-		    C.Body as Issue,
-			R.ResourceID,
-			R.FirstName + ' ' + R.LastName as ResourceName,
-			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
-			W.DateStarted,
-		    WR.Activity
-from	    Workflow W
-		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
-			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-											    and W.DateCompleted is null
-											    and WR.ResourceID = @r
-												and W.WorkflowType = 3
-                                                and WR.IsComplete = 0 
-{0} 
-order by    W.DateStarted";
-
-
-        string CurrentUserWorkflow3SpecificObjectTaskSql =
-@"select		W.ID as WorkflowID,
-		    C.Body as Issue,
-			R.ResourceID,
-			R.FirstName + ' ' + R.LastName as ResourceName,
-			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
-			W.DateStarted,
-		    WR.Activity            
-from	    Workflow W
-		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
-            inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
-			left outer join WorkflowResource WR on	WR.WorkflowID = W.ID 											    
-                                                and WR.ResourceID = @r												
-                                                and WR.IsComplete = 0 												                        
-            where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3
-order by    W.DateStarted";
-
-
-
-        public class WorkflowTask4Model : WorkflowTaskBaseModel
-        {
-            public string Issue { get; set; }
-            public int ResourceID { get; set; }
-            public string ResourceName { get; set; }
-            public string ResourceUrl { get; set; }
-            public DateTime DateStarted { get; set; }
-            public string Name { get; set; }
-            public string TypeName { get; set; }
-            public string Url { get; set; }
-            public int ArtifactID { get; set; }
-        }
-
-        string CurrentUserWorkflow4TaskSql =
-@"select		W.ID as WorkflowID,
-		    C.Body as Issue,
-			R.ResourceID,
-			R.FirstName + ' ' + R.LastName as ResourceName,
-			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
-			W.DateStarted,
-		    WR.Activity,
-            A.Name as Name,
-			A.Url as Url,
-            A.ObjectTypeName as TypeName,
-            A.ObjectID as ArtifactID
-from	    Workflow W
-		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
-			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/RequestingResourceID)[1]', 'int')
-            left outer join cache.ObjectDetails A on A.[Object] = 'Artifact' and A.ObjectID = W.Data.value('(fields/ArtifactID)[1]', 'int')
-			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-											    and W.DateCompleted is null
-											    and WR.ResourceID = @r
-												and W.WorkflowType = 4
-                                                and WR.IsComplete = 0 
-{0} 
-order by    W.DateStarted";
 
         #endregion
 
@@ -575,7 +192,7 @@ order by    W.DateStarted";
         [Route("tasks/types/breakdown"), HttpGet]
         public List<WorkflowBreakdown> GetTaskBreakdownForCurrentUser()
         {
-            var items = Company.Query<WorkflowBreakdown>(CurrentUserWorkflowCountSql, new { r = Company.CurrentResourceID }).ToList();
+            var items = Company.Query<WorkflowBreakdown>(QueryConstants.CurrentUserWorkflowCount, new { r = Company.CurrentResourceID }).ToList();
             items.ForEach(i => { 
                 i.WorkflowTypeID = (int)i.Workflow;
                 i.WorkflowTypeName = i.Workflow.GetWorkflowTypeDisplayName();
@@ -595,7 +212,7 @@ order by    W.DateStarted";
             switch (workflowType)
             {
                 case WorkflowType.SuggestNewArtifact:
-                    var list1 = Company.Query<WorkflowTask1Model>(string.Format(CurrentUserWorkflow1TaskSql, ""), new { r = Company.CurrentResourceID }).ToList();
+                    var list1 = Company.Query<WorkflowTask1Model>(string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, ""), new { r = Company.CurrentResourceID }).ToList();
                     list1.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
@@ -604,7 +221,7 @@ order by    W.DateStarted";
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list1);
                 case WorkflowType.CertifyArtifact:
-                    var list2 = Company.Query<WorkflowTask2Model>(string.Format(CurrentUserWorkflow2TaskSql, ""), new { r = Company.CurrentResourceID }).ToList();
+                    var list2 = Company.Query<WorkflowTask2Model>(string.Format(QueryConstants.CurrentUserWorkflow2TaskItem, ""), new { r = Company.CurrentResourceID }).ToList();
                     list2.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
@@ -613,7 +230,7 @@ order by    W.DateStarted";
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list2);
                 case WorkflowType.WorkIssue:
-                    var list3 = Company.Query<WorkflowTask3Model>(string.Format(CurrentUserWorkflow3TaskSql, ""), new { r = Company.CurrentResourceID }).ToList();
+                    var list3 = Company.Query<WorkflowTask3Model>(string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, ""), new { r = Company.CurrentResourceID }).ToList();
                     list3.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
@@ -622,7 +239,7 @@ order by    W.DateStarted";
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list3);
                 case WorkflowType.ChallengeArtifact:
-                    var list4 = Company.Query<WorkflowTask4Model>(string.Format(CurrentUserWorkflow4TaskSql, ""), new { r = Company.CurrentResourceID }).ToList();
+                    var list4 = Company.Query<WorkflowTask4Model>(string.Format(QueryConstants.CurrentUserWorkflow4TaskItem, ""), new { r = Company.CurrentResourceID }).ToList();
                     list4.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
@@ -641,7 +258,7 @@ order by    W.DateStarted";
             switch (workflowType)
             {
                 case WorkflowType.WorkIssue:                    
-                    var list = Company.Query<WorkflowTask3Model>(CurrentUserWorkflow3SpecificObjectTaskSql, new { r = Company.CurrentResourceID, type = objecttype, id = objectid });
+                    var list = Company.Query<WorkflowTask3Model>(QueryConstants.CurrentUserWorkflow3SpecificObjectTaskItem, new { r = Company.CurrentResourceID, type = objecttype, id = objectid });
 
                     foreach (var item in list)
                     {
@@ -676,7 +293,7 @@ order by    W.DateStarted";
             switch (workflow.WorkflowType)
             {
                 case WorkflowType.SuggestNewArtifact:
-                    sql = string.Format(CurrentUserWorkflow1TaskSql, whereSuffix);
+                    sql = string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, whereSuffix);
                     var model1 = Company.Query<WorkflowTask1Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
                     if (model1 != null)
                     {
@@ -689,7 +306,7 @@ order by    W.DateStarted";
                     }
                     break;
                 case WorkflowType.CertifyArtifact:
-                    sql = string.Format(CurrentUserWorkflow2TaskSql, whereSuffix);
+                    sql = string.Format(QueryConstants.CurrentUserWorkflow2TaskItem, whereSuffix);
                     var model2 = Company.Query<WorkflowTask2Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
                     if (model2 != null)
                     {
@@ -702,7 +319,7 @@ order by    W.DateStarted";
                     }
                     break;
                 case WorkflowType.WorkIssue:
-                    sql = string.Format(CurrentUserWorkflow3TaskSql, whereSuffix);
+                    sql = string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, whereSuffix);
                     var model3 = Company.Query<WorkflowTask3Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
                     if (model3 != null)
                     {
@@ -715,7 +332,7 @@ order by    W.DateStarted";
                     }
                     break;
                 case WorkflowType.ChallengeArtifact:
-                    sql = string.Format(CurrentUserWorkflow4TaskSql, whereSuffix);
+                    sql = string.Format(QueryConstants.CurrentUserWorkflow4TaskItem, whereSuffix);
                     var model4 = Company.Query<WorkflowTask4Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
                     if (model4 != null)
                     {
@@ -740,21 +357,7 @@ order by    W.DateStarted";
         public HttpResponseMessage ActOnTaskForCurrentUser(Guid id, WorkflowRequestModel model)//ApprovalFormModel model)
         {
             HttpResponseMessage response = null;
-            
-            string sql = 
-@"select    W.ID as WorkflowID,
-		    W.WorkflowType as Workflow,
-		    W.Data,
-		    W.DateStarted,
-		    WR.Activity
-from	    Workflow W
-		    inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
-											    and W.DateCompleted is null
-											    and WR.ResourceID = @r
-                                                and WR.IsComplete = 0";
-
-            sql += " where W.ID = @w";
-            var task = Company.Query<WorkflowTask>(sql, new { r = Company.CurrentResourceID, w = id }).SingleOrDefault();
+            var task = Company.Query<WorkflowTask>(QueryConstants.CurrentWorkflowTaskItem, new { r = Company.CurrentResourceID, w = id }).SingleOrDefault();
 
             string bookmarkName = "";
             Object obj = null;

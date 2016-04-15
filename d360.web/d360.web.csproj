@@ -443,6 +443,7 @@
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
+    <Compile Include="Models\MimeTypeExtensionsMap.cs" />
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
     <Compile Include="Models\ContextList.cs" />
@@ -450,6 +451,7 @@
     <Compile Include="Models\Formatters\ExpandoJsonConverter.cs" />
     <Compile Include="Models\ModelMetadataExtensions.cs" />
     <Compile Include="Models\Action Models.cs" />
+    <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1053,7 +1055,6 @@
     <Content Include="Views\Form\ResponsibilityEditForm.cshtml" />
     <Content Include="Views\Overlays\ArtifactListMetricsDashboard.cshtml" />
     <Content Include="Views\Overlays\AttributeTypeCategories.cshtml" />
-    <Content Include="Views\Overlays\ResponsibilityTypeHierarchies.cshtml" />
     <Content Include="Views\Overlays\FusionConfigurationFilters.cshtml" />
     <Content Include="Views\Overlays\FusionConfigurationHistory.cshtml" />
     <Content Include="Views\Overlays\FusionConfigurationPromotionRules.cshtml" />

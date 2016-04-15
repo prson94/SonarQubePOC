@@ -63,37 +63,26 @@ namespace d360.web.Controllers
         /// </summary>        
         /// <param name="intersectTypeID">The object ID to get list of attributes for.</param>        
         /// <returns></returns>
-        public JsonResult RelationshipAttributesFieldList(int intersectTypeID)
+        public JsonNetResult RelationshipAttributesFieldList(int intersectTypeID)
         {         
             var permissions = Company.GetPermissions(SystemObjects.IntersectType, intersectTypeID).ToList();
-            
-            var list = new List<GridDynamicAttributeField>();
-                        
+
             if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Read, ClaimObject.Attribute))
-            {                
+            {
+                return new JsonNetResult
                 {
-                    list = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID)
-                        .Select(i => new GridDynamicAttributeField {
-                            attributeID = i.AttributeTypeID,
-                            label = i.AttributeType.Name,
-                            allowMultiple = i.AllowMultipleEntries,
-                            description = i.AttributeType.Description,
-                            fieldCount = Company.Count<FieldType>(p => p.ObjectID == i.AttributeTypeID && p.Object == "AttributeType")
-                        }).OrderByDescending(i => i.label).ToList();
-
-                    //determine if any of these attributes are complex
-                    var attributeIDList = list.Select(i => i.attributeID).ToList();
-
-                    var complexAttributes = Company.Filter<AttributeType>(t => attributeIDList.Contains(t.ParentID.Value)).Select(t => t.ParentID).ToList();
-
-                    foreach (var attr in list)
-                    {
-                        if (complexAttributes.Contains(attr.attributeID)) attr.isComplex = true;
-                    }
-                }                
+                    Data = Company.Query<GridDynamicAttributeField>(QueryConstants.RelationshipAttributesFieldList, new { intersectTypeID }),
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
             }
-
-            return Json(list, JsonRequestBehavior.AllowGet);
+            else
+            {
+                return new JsonNetResult
+                {
+                    Data = new { message = "You do not have permissions to see this" },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
         }
 
         /// <summary>
