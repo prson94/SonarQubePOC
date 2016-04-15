@@ -243,7 +243,7 @@
             monitor_list(this, new PageViewModel("@(Resources.PageInfo.Monitor_Title)", "@(Resources.PageInfo.Monitor_Description)", []), templatePath, contextList);
             policies_list(this, new PageViewModel("@(Resources.PageInfo.Policies_Title)", "@(Resources.PageInfo.Policies_Description)", []), templatePath, contextList);
             rules_list(this, new PageViewModel("@(Resources.PageInfo.Rules_Title)", "@(Resources.PageInfo.Rules_Description)", []), templatePath, contextList);
-            resources_item(this, new ResourcePageViewModel("", "", [{ Name: "@(Resources.PageInfo.People_Title)" }]), templatePath, contextList);
+            resources_item(this, new ResourcePageViewModel("", "", [{ Name: "@(Resources.PageInfo.People_Title)" }]), templatePath, contextList, @(CurrentResourceID));
             taxonomies_root(this, new PageViewModel("Models", "Double-click on a type below to view a list of items for that type.  Or click on the information icon at the end of the row.", []), templatePath, contextList);
             taxonomies_list(this, new PageViewModel("", "@(Resources.PageInfo.Taxonomies_Description)", []), templatePath, contextList);
 

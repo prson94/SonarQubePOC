@@ -4406,9 +4406,24 @@ where    A.PolicyTypeID = @id", columns, joins);
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {                                
-                                new ReadOnlyField { Name = resource.GetName(i => i.Email), FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
+                                new ReadOnlyField { Name = resource.GetName(i => i.Email), FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }                                
                             }
                         });
+
+                        var lastSeen = getUserLastSeenText(resource.DateLastLoggedIn);
+
+                        if (!string.IsNullOrEmpty(lastSeen))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Last Seen", FieldName = "LastSeen", Value = lastSeen }
+                            }
+                            });
+                        }
+
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     resource = null;
@@ -4427,7 +4442,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = resourceType.GetName(i => i.Name), FieldName = "ResourceTypeName", FieldDescription = resourceType.GetDescription(i => i.Name), Value = resourceType.Name }
-                            }
+                            }                            
                         });
                     }
                     resourceType = null;
@@ -4877,6 +4892,21 @@ where    A.PolicyTypeID = @id", columns, joins);
             return model;
 
             //return Request.CreateResponse(HttpStatusCode.OK, sections);//new { Fields = list });
+        }
+
+        private string getUserLastSeenText(DateTime? dateLastLoggedIn)
+        {
+            if (dateLastLoggedIn.HasValue)
+            {                
+                DateTime now = DateTime.UtcNow;
+                if (dateLastLoggedIn.Value > now.AddHours(-24) && dateLastLoggedIn.Value <= now)
+                    return "Today";
+                else if (dateLastLoggedIn.Value > now.AddDays(-7) && dateLastLoggedIn.Value <= now)
+                    return "This week";
+                else
+                    return dateLastLoggedIn.Value.ToShortDateString();
+            }
+            return "";
         }
 
         [Route("{type}/{id:int}/object/statistics")]

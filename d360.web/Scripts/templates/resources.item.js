@@ -1,10 +1,11 @@
-﻿function resources_item(app, pageViewModel, templatePath, contextList) {
+﻿function resources_item(app, pageViewModel, templatePath, contextList, currentUserResourceID) {
     app.get('#/resources/:id', function (context) {
         context.app.swap('');
 
         var type = 'Resource';
         var id = context.params['id'];
         var assignmentsTile;
+        var currentResourceID = currentUserResourceID;
 
         $.getJSON('/api/resources/1/' + id, function (model) {
 
@@ -84,12 +85,12 @@
 
                     ObjectDetail('DetailTile', type, id);
 
-                    YourFollowedItemsTile('FollowingTile', id, 'Items ' + model.FirstName  + ' Follows');
-                    YourOwnedItemsTile('OwnedTile', id, 'Items ' + model.FirstName + ' Owns');
+                    YourFollowedItemsTile('FollowingTile', id, 'Items ' + (currentResourceID == id ? 'You ' : model.FirstName) + ' Follow' + (currentResourceID == id ? '' : 's'));
+                    YourOwnedItemsTile('OwnedTile', id, 'Items ' + (currentResourceID == id ? 'You ' : model.FirstName) + ' Own' + (currentResourceID == id ? '' : 's'));
 
                     ResourceStatisticsTile('SocialTile', type, id);
 
-                    assignmentsTile = new HomePageCountTileModel(model.FirstName + '\'s Assignments', 7);
+                    assignmentsTile = new HomePageCountTileModel((currentResourceID == id ? 'Your ' : model.FirstName + '\'s') + ' Assignments', 7);
                     assignmentsTile.NoDataMessage('');
                     ko.applyBindings(assignmentsTile, document.getElementById('AssignmentsTile'));
 
