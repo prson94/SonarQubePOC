@@ -205,14 +205,16 @@ namespace d360.web.Controllers.Services
         /// </summary>
         /// <returns>A list of workflow tasks.</returns>
         [Route("tasks/types/{id:int}"), HttpGet]
-        public HttpResponseMessage GetTasksForCurrentUser(int id)
+        public HttpResponseMessage GetTasksForUser(int id, int resourceID = -1)
         {
+            var userId = resourceID > 0 ? resourceID : Company.CurrentResourceID;
+
             var workflowType = (WorkflowType)Enum.Parse(typeof(WorkflowType), id.ToString());
 
             switch (workflowType)
             {
                 case WorkflowType.SuggestNewArtifact:
-                    var list1 = Company.Query<WorkflowTask1Model>(string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, ""), new { r = Company.CurrentResourceID }).ToList();
+                    var list1 = Company.Query<WorkflowTask1Model>(string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, ""), new { r = userId }).ToList();
                     list1.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
@@ -221,7 +223,7 @@ namespace d360.web.Controllers.Services
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list1);
                 case WorkflowType.CertifyArtifact:
-                    var list2 = Company.Query<WorkflowTask2Model>(string.Format(QueryConstants.CurrentUserWorkflow2TaskItem, ""), new { r = Company.CurrentResourceID }).ToList();
+                    var list2 = Company.Query<WorkflowTask2Model>(string.Format(QueryConstants.CurrentUserWorkflow2TaskItem, ""), new { r = userId }).ToList();
                     list2.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
@@ -230,7 +232,7 @@ namespace d360.web.Controllers.Services
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list2);
                 case WorkflowType.WorkIssue:
-                    var list3 = Company.Query<WorkflowTask3Model>(string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, ""), new { r = Company.CurrentResourceID }).ToList();
+                    var list3 = Company.Query<WorkflowTask3Model>(string.Format(QueryConstants.CurrentUserWorkflow3TaskItem, ""), new { r = userId }).ToList();
                     list3.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
@@ -239,7 +241,7 @@ namespace d360.web.Controllers.Services
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list3);
                 case WorkflowType.ChallengeArtifact:
-                    var list4 = Company.Query<WorkflowTask4Model>(string.Format(QueryConstants.CurrentUserWorkflow4TaskItem, ""), new { r = Company.CurrentResourceID }).ToList();
+                    var list4 = Company.Query<WorkflowTask4Model>(string.Format(QueryConstants.CurrentUserWorkflow4TaskItem, ""), new { r = userId }).ToList();
                     list4.ForEach(i => {
                         i.ActivityDescription = i.Activity.GetReportTileTypeDescription();
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();

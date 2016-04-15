@@ -1,85 +1,62 @@
 ﻿function YourOwnedItemsTile(controlID, resourceID, title) {
-    try {
 
-        var chart = $(controlID);
-        var parentWidth = chart.parent().innerWidth();
+    var chartsExist;
+    var parent;    
+    var gridControlID = controlID + "_grid";
 
-        chart.css('width', '100%');
-        chart.css('height', '400px');
+    try {        
+        parent = $('#' + controlID);
 
-        try {
-            chart.jqxChart('destroy');
-        } catch (e) { }
+        var html = "";
+        html += "<header>" + title +"</header>";
+        html += "<div style='margin-left: 5px' id='" + gridControlID + "'></div>";
 
-        try {
-            var source = {
-                datatype: 'json',
-                url: '/queries/ResponsibilityBreakdownByResource?id=' + resourceID,
-                datafields:
-                [
-                    { name: 'ObjectType' },
-                    { name: 'ObjectTypeID' },
-                    { name: 'ObjectTypeName' },
-                    { name: 'Count' }
-                ]
-            };
+        gridControlID = '#' + gridControlID;
 
-            var adapter = new $.jqx.dataAdapter(source);
+        parent.html(html);
+        
+        var clickKpiTitle = function () {
+            var kpi = $(this);
+            var url = '/parts/resources/' + resourceID + '/ownership/' + kpi.data("t") + '/' + kpi.data("i");
+            openTileOverlay(url);
+        }
 
-            chart.jqxChart({
-                title: title,
-                description: "",
-                enableAnimations: true,
-                showLegend: true,
-                showBorderLine: false,
-                legendLayout: { left: 0, top: 250, width: parentWidth - 25, height: 150, flow: 'vertical' },
-                padding: { left: 0, right: 0, top: 0, bottom: 150 },
-                source: adapter,
-                colorScheme: chartDefaultTheme,
-                seriesGroups: [{
-                    useGradientColors: false,
-                    type: 'pie',
-                    series: [
-                        {
-                            showLabels: true,
-                            useGradient: false,
-                            dataField: 'Count',
-                            displayText: 'ObjectTypeName',
-                            labelRadius: 50,
-                            initialAngle: 15,
-                            radius: 100,
-                            centerOffset: 0
-                        }
-                    ],
-                    click: function (e) {
-                        var data = adapter.records[e.elementIndex];
-                        var url = '/parts/resources/' + resourceID + '/ownership/' + data.ObjectType + '/' + data.ObjectTypeID;
-                        openTileOverlay(url);
-                    }
-                }]
+        $.ajax({
+            url: '/tiles/ResponsibilityBreakdownByResource',
+            method: 'GET',
+            data: {
+                id: resourceID
+            },
+            dataType: 'json'
+        }).fail(function (xhr, status, error) {
+
+        }).done(function (data, status, xhr) {
+
+            var collectionHtml = '<div class="kpi-grid">';
+            // Load unique group names
+            $.each(data, function () {
+                collectionHtml += '<div class="kpi-grid-item" style="background-color: ' + this.IconBackColor + '; color: ' + this.IconForeColor + '" data-t="' + this.Type + '" data-i="' + this.TypeID + '">' +
+                        '<div class="icon">' + this.IconText + '</div>' +
+                        '<div class="value">' + this.Count + '</div>' +
+                        '<div class="title">' + this.TypeName + '</div>' +
+                        '</div>';
             });
-            //chart.jqxChart('addColorScheme', 'myScheme', colorScheme);
-            //chart.jqxChart('colorScheme', 'myScheme');
-            //chart.jqxChart('refresh');
-        } catch (e) { }
 
-        function pageResized() {
-            chart.jqxChart('refresh');
-        }
+            collectionHtml += '</div>';
+            $(gridControlID).html(collectionHtml);           
+            
+            $('.kpi-grid').isotope({
+                // options
+                itemSelector: '.kpi-grid-item',
+                layoutMode: 'fitRows',
+                fitRows: {
+                    gutter: 10
+                }
+            });            
+            $('#' + controlID + ' .kpi-grid-item').on('click', clickKpiTitle);
+        });
 
-        function unsubscribe(data) {
-            source = null;
-            adapter = null;
-
-            amplify.unsubscribe("PageResized", pageResized);
-            amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-            amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
-        }
-
-        amplify.subscribe("PageResized", pageResized);
-        amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
-        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-    }
-    catch (e) {
+    } catch (e) {
+        console.log(e);
     }
 }

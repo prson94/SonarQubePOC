@@ -118,6 +118,12 @@
                 var d = new Date(f.Value);
                 $(valueID).html(d.toLocaleString());
             }
+            else if(f.FieldName == 'ResourceEmail')
+            {                
+                $(valueID).html(
+                        $("<a>").attr("href", "mailto:" + f.Value).text(f.Value)
+                );
+            }
             else
                 $(valueID).html(f.Value);
         }

@@ -23,33 +23,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-//        [Route("CriticalNonCriticalRedFlagAggregates")]
-//        public JsonNetResult GetCriticalNonCriticalRedFlagAggregates()
-//        {
-//            var query = Company.Query<dynamic>(
-//@"select D.ObjectType as Type,
-//D.ObjectTypeName as TypeName,
-//D.ObjectTypeID as TypeID,
-//count(1) as [Count],
-//sum(C.CriticalCount) as [CriticalCount]
-//from		AlertFlag AF
-//			inner join cache.ObjectDetails D on D.[Object] = AF.ObjectType and D.ObjectID = AF.ObjectID 
-//			cross apply (
-//						select	case 
-//									when count(1) > 0 then 1 
-//									else 0
-//								end as CriticalCount
-//						from	Relationship R 
-//						where	R.SourceType = AF.ObjectType
-//								and R.SourceObjectID = AF.ObjectID
-//								and R.Classification = 1 -- CRITICAL
-//						) C
-//where		AF.Active = 1
-//group by	D.ObjectType, D.ObjectTypeName, D.ObjectTypeID
-//order by	D.ObjectTypeName");
-//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-//        }
-
         [Route("{id:int}/UsedVsUnusedResponsibilitiesByArtifactType")]
         public JsonNetResult UsedVsUnusedResponsibilitiesByArtifactType(int id)
         {
@@ -112,18 +85,6 @@ order by	Status ", new { id = id });
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
         
-        [Route("FollowingBreakdownByResource")]
-        public JsonNetResult GetFollowingBreakdownByResource(int id)
-        {
-            var query = Company.Query<dynamic>(@"select Type, TypeName, TypeID, count(1) as [Count]
-from FollowDetail
-where ResourceID = @id
-and ObjectType not in ('ArtifactType', 'DomainType', 'DomainGroup', 'PolicyType', 'ResourceType', 'TaxonomyType')
-group by Type, TypeName, TypeID", new { id = id });
-
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
         [Route("FollowingByResourceByType")]
         public JsonNetResult GetFollowingByResourceByType(int resourceID, string type, int id)
         {
@@ -133,38 +94,7 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
-
-        [Route("ResponsibilityBreakdownByResource")]
-        public JsonNetResult GetResponsibilityBreakdownByResource(int id)
-        {
-            var query = Company.Query<dynamic>(
-@"select	ObjectType, 
-		ObjectTypeName, 
-		ObjectTypeID, 
-		count(1) as [Count]
-from (
-	select	ObjectName, 
-			ObjectType, 
-			ObjectTypeName, 
-			case ObjectType 
-				when 'Policy' then 0 
-				when 'Rule' then 0 
-				else ObjectTypeID 
-			end as ObjectTypeID
-	from ResponsibilityDetailForResource
-	where ResponsibleObjectType = 'Resource' and ResponsibleObjectID = @id and Visible = 1 and ObjectTypeName is not null
-	group by ObjectName, 
-			ObjectType, ObjectTypeName, 		case ObjectType 
-				when 'Policy' then 0 
-				when 'Rule' then 0 
-				else ObjectTypeID 
-			end
-	) O
-group by ObjectType, ObjectTypeID, ObjectTypeName", new { id = id });
-
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
+        
         [Route("ResponsibilityTypeBreakdown")]
         public JsonNetResult GetResponsibilityTypeBreakdown()
         {

@@ -2,6 +2,7 @@
 @{
     var title = (string)ViewData["Title"];
     var resourceID = (int)ViewData["ResourceID"];
+    var isCurrentUser = (bool)ViewData["IsCurrentUser"];
 }
 <div class="container medium-overlay">
     <div class="ui segment">
@@ -78,21 +79,16 @@
                      cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                          return previewLinkRenderer(data.ObjectType, data.ObjectID, data.Url, data.Name);
                      }
-                 },
-                 {
+                 }
+                 ,{
                      datafield: "CurrentScore",
                      text: "Score",
                      width: '60px',
                      cellsrenderer: currentScoreRenderer
-                 },
+                 }
+                 @if (isCurrentUser)
                  {
-                     datafield: "ObjectID",
-                     text: "",
-                     width: '40px',
-                     filterable: false,
-                     cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                         return "<div class='RowTools'><a onclick='UnFollow(" + index + ")'><i title='Stop Following' class='fa fa-bookmark-o'></i></a></div>";
-                     }
+                  @:, { datafield: "ObjectID", text: "", width: '40px', filterable: false, cellsrenderer: function (index, datafield, value, defaultvalue, column, data) { return "<div class='RowTools'><a onclick='UnFollow(" + index + ")'><i title='Stop Following' class='fa fa-bookmark-o'></i></a></div>"; } }
                  }
             ]
         });

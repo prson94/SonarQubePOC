@@ -4395,7 +4395,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                     var resource = Community.GetById<Resource>(id);
                     if (resource != null)
                     {
-                        model.columns = 1;
+                        model.columns = 1;                        
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
@@ -4405,7 +4405,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                                 new ReadOnlyField { Name = "Name", Value = resource.FormatDisplayName() }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
-                            {
+                            {                                
                                 new ReadOnlyField { Name = resource.GetName(i => i.Email), FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
                             }
                         });
@@ -5316,18 +5316,19 @@ where    A.PolicyTypeID = @id", columns, joins);
         }
 
         [Route("Count/{area}/{days}")]
-        public IEnumerable<CountModel> GetHomeCounts(string area, int days)
+        public IEnumerable<CountModel> GetHomeCounts(string area, int days, int id = -1)
         {
             var areaName = (area ?? string.Empty).ToUpper();
+            var resourceId = id > 0 ? id : Company.CurrentResourceID;
 
             switch (areaName)
             {
                 case "SOCIAL":
-                    return LoadSocialActivityCount(days);
+                    return LoadSocialActivityCount(days,resourceId);
                 case "ACTIVITY":
                     return LoadArtifactActivityCount(days);
                 case "ASSIGNMENTS":
-                    return LoadWorkflowAssignmentsCount();
+                    return LoadWorkflowAssignmentsCount(resourceId);
             }
 
             return null;
@@ -5349,12 +5350,12 @@ where    A.PolicyTypeID = @id", columns, joins);
             return Company.Query<CountModel>(sql, new { d = days });
         }
 
-        private IEnumerable<CountModel> LoadSocialActivityCount(int days)
+        private IEnumerable<CountModel> LoadSocialActivityCount(int days, int resourceId)
         {
             days = days * -1;
             var socialUri = "/Home/SocialActivityOverlay";
 
-            var counts = Company.GetCommentCountByFollower(Company.CurrentResourceID, days).ToList().OrderBy(i => i.CommentTypeName);
+            var counts = Company.GetCommentCountByFollower(resourceId, days).ToList().OrderBy(i => i.CommentTypeName);
             
             List<CountModel> items = new List<CountModel>();
 
@@ -5379,18 +5380,18 @@ where    A.PolicyTypeID = @id", columns, joins);
             return commentsItem == null ? 0 : commentsItem.Count;
         }
 
-        private IEnumerable<CountModel> LoadWorkflowAssignmentsCount()
+        private IEnumerable<CountModel> LoadWorkflowAssignmentsCount(int resourceId)
         {
-            var sql = @"(select '/Home/AssignmentActivityOverlay?mode=total&type=1' as TotalUri, '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 1
+            var sql = @"(select '/Home/AssignmentActivityOverlay?mode=total&type=1&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 1
                         union
-                        select '/Home/AssignmentActivityOverlay?mode=total&type=2' as TotalUri, '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
+                        select '/Home/AssignmentActivityOverlay?mode=total&type=2&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
                         union
-                        select '/Home/AssignmentActivityOverlay?mode=total&type=3' as TotalUri, '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3
+                        select '/Home/AssignmentActivityOverlay?mode=total&type=3&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_WorkIssue + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 3
                         union
-                        select '/Home/AssignmentActivityOverlay?mode=total&type=4' as TotalUri, '" + Resources.Core.WorkflowType_ChallengeArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 4)
+                        select '/Home/AssignmentActivityOverlay?mode=total&type=4&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_ChallengeArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 4)
                         order by Name";
 
-            return Company.Query<CountModel>(sql, new { r = Company.CurrentResourceID });
+            return Company.Query<CountModel>(sql, new { r = resourceId });
         }
 
         #endregion

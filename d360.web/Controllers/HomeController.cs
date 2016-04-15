@@ -53,10 +53,11 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
-        public ActionResult AssignmentActivityOverlay(string mode, int type, int lookBackDays)
+        public ActionResult AssignmentActivityOverlay(string mode, int type, int lookBackDays, int resourceID = -1)
         {
             ViewData.Add("LookBackDays", lookBackDays);
             ViewData.Add("WorkflowTypeID", type);
+            ViewData.Add("ResourceID", resourceID == Company.CurrentResourceID ? -1 : resourceID);
 
             switch ((workflow.WorkflowType)type)
             {

@@ -1,4 +1,4 @@
-﻿function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenObjectID) {
+﻿function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenObjectID, givenResourceID) {
     var gridControlID = controlID + "_grid";
     controlID = '#' + controlID;
     var html = "";
@@ -14,6 +14,7 @@
     var inputWorkflowID = givenWorkflowType;
     var objectType = givenObjectType === undefined ? "" : givenObjectType;
     var objectID = givenObjectID === undefined ? -1 : givenObjectID;
+    var resourceID = givenResourceID === undefined ? -1 : givenResourceID;
 
     //#region Event Subscriptions
     
@@ -91,7 +92,7 @@
     }
 
     var getWorkflowUrl = function (workflowTypeID) {
-        return '/services/workflow/tasks/types/' + workflowTypeID + (objectID >0 ? "/" + objectID : "") + (objectType != "" ? "/" + objectType : "") + '?$orderby=DateStarted%20asc';
+        return '/services/workflow/tasks/types/' + workflowTypeID + (objectID >0 ? "/" + objectID : "") + (objectType != "" ? "/" + objectType : "") + '?' + (resourceID > 0 ? ('resourceID='+resourceID +'&'):'') + '$orderby=DateStarted%20asc';
     }
 
     var gridDataSource = function (workflowTypeID) {
@@ -101,7 +102,7 @@
                 // Suggest
                 gridSource = {
                     datatype: 'json',
-                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    url: getWorkflowUrl(workflowTypeID),
                     datafields: [
                         { name: 'WorkflowID' },
                         { name: 'ID', type: 'number' },
@@ -125,7 +126,7 @@
                 // Certify
                 gridSource = {
                     datatype: 'json',
-                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    url: getWorkflowUrl(workflowTypeID),
                     datafields: [
                         { name: 'WorkflowID' },
                         { name: 'ID', type: 'number' },
@@ -162,7 +163,7 @@
                 // WorkIssue
                 gridSource = {
                     datatype: 'json',
-                    url: '/services/workflow/tasks/types/' + workflowTypeID + '?$orderby=DateStarted%20asc',
+                    url: getWorkflowUrl(workflowTypeID),
                     datafields: [
                         { name: 'WorkflowID' },
                         { name: 'Issue', type: 'string' },
@@ -217,7 +218,8 @@
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             var tools = [];
 
-                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
+                            if (resourceID < 0)
+                                tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
 
                             return renderToolsHtml(value, tools, contextList.Workflow, data);
                         }
@@ -247,7 +249,8 @@
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             var tools = [];
 
-                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
+                            if (resourceID < 0)
+                                tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
 
                             return renderToolsHtml(value, tools, contextList.Workflow, data);
                         }
@@ -279,7 +282,7 @@
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             var tools = [];
 
-                            if(data.Activity > 0)
+                            if(data.Activity > 0 && resourceID < 0)
                                 tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
 
                             return renderToolsHtml(value, tools, contextList.Workflow, data);
@@ -314,7 +317,8 @@
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                             var tools = [];
 
-                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
+                            if (resourceID < 0)
+                                tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay' });
 
                             return renderToolsHtml(value, tools, contextList.Workflow, data);
                         }

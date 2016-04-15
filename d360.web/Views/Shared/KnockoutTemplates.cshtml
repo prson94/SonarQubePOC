@@ -576,8 +576,12 @@
                 <div class="tile-clickable StatisticValue SocialStatisticValue" data-tile data-uri="{{FollowerUrl}}" data-context="TileOverlay">{{FollowerCount}}</div>
                 <div class="StatisticName SocialStatisticName">followers</div>
             </td>
+            <td>
+                <div class="tile-clickable StatisticValue SocialStatisticValue" data-tile data-uri="{{CommentUrl}}" data-context="TileOverlay">{{CommentCount}}</div>
+                <div class="StatisticName SocialStatisticName">comments</div>
+            </td>
             <td style="width: 160px; vertical-align: top; text-align: right" align="right" class="tile-clickable" data-tile data-uri="{{ScoreUrl}}" data-context="TileOverlay">
-                <div id="ScoreKpi" style="width: 150px; height: 150px;"></div>
+                <div class="ScoreKpi" style="width: 150px; height: 150px;"></div>
             </td>
         </tr>
     </table>
@@ -820,23 +824,6 @@
             <td class="tile-stat-value" data-bind="text: MemberCount"></td>
         </tr>
     </table>
-</script>
-<script id="profileSocialMicroTileTmpl" type="text/html">
-    <header>Community</header>
-    <div title="Get more info">
-        <div id="HomeSocialFollowerCount" class="clear tile-clickable" data-bind="click: OpenFollowers">
-            <div class="left tile-stat-name"># Following User</div>
-            <div class="right tile-stat-value" data-bind="text: FollowerCount"></div>
-        </div>
-        <div id="HomeSocialFollowingCount" class="clear tile-clickable" data-bind="click: OpenFollowing">
-            <div class="left tile-stat-name"># User Is Following</div>
-            <div class="right tile-stat-value" data-bind="text: FollowingCount"></div>
-        </div>
-        <div id="HomeSocialGroupCount" class="clear tile-clickable" data-bind="click: OpenGroups">
-            <div class="left tile-stat-name"># Group Memberships</div>
-            <div class="right tile-stat-value" data-bind="text: GroupCount"></div>
-        </div>
-    </div>
 </script>
 
 <script id="socialStatisticsMicroTileTmpl" type="text/html">

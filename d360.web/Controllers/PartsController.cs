@@ -76,7 +76,9 @@ namespace d360.web.Controllers
                 resource = null;
             }
 
-            ViewData.Add("Title", string.Format("{0} That {1}", detail.PluralizedName, resourceName));
+            var name = detail == null ? "" : detail.PluralizedName;
+
+            ViewData.Add("Title", string.Format("{0} That {1}", name, resourceName));
 
             detail = null;
 
@@ -136,12 +138,14 @@ namespace d360.web.Controllers
             if (Company.CurrentResourceID == resourceID)
             {
                 resourceName = "You Are";
+                ViewData.Add("IsCurrentUser", true);
             }
             else
             {
                 var resource = Community.GetById<Resource>(resourceID);
                 resourceName = resource.FirstName + " Is";
                 resource = null;
+                ViewData.Add("IsCurrentUser", false);
             }
 
             var objectName = "";

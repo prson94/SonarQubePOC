@@ -16,12 +16,12 @@
             pageViewModel.breadcrumbs.push({ Name: 'Resources' });
             pageViewModel.breadcrumbs.push({ Name: pageViewModel.Title, Active: true });
 
-            var ProfileSocial;
+            
             var socialTile;
 
             function loadAssignments() {
                 assignmentsTile.LookBackDays = 7;
-                $.getJSON("/api/Count/Assignments/7" , function (data) {
+                $.getJSON("/api/Count/Assignments/7?id=" +id , function (data) {
                     assignmentsTile.Rows([]);
                     assignmentsTile.Rows(data);
                 });
@@ -29,10 +29,11 @@
 
             //#region Event Handlers
 
-            function commandExecuted(commandName) {
+            function commandExecuted(commandName) {                
                 switch (commandName) {
                     case 'follow':
                         ResourceStatisticsTile('SocialTile', type, id);
+                        YourFollowedItemsTile('FollowingTile', id, 'Items ' + model.FirstName + ' Follows');
                         break;
                 }
             }
@@ -42,10 +43,18 @@
             }
 
             function saveAction(data) {
-                try {
+                try {                    
                     switch (data.context) {
+                        case contextList.Resource:
+                            ObjectDetail('DetailTile', type, id);
+                            break;
                         case contextList.Comment:
                             ResourceStatisticsTile('SocialTile', type, id);
+                            break;
+                        case "OwnerCertificationWorkflow":
+                        case "OwnerApprovalWorkflow":
+                        case contextList.WorkflowIssue:
+                            loadAssignments();
                             break;
                     }
                 } catch (e) {
@@ -53,8 +62,7 @@
                 }
             }
 
-            function unsubscribe(data) {
-                ProfileSocial = null;
+            function unsubscribe(data) {                
                 socialTile = null;
                 assignmentsTile = null;
 
@@ -76,16 +84,12 @@
 
                     ObjectDetail('DetailTile', type, id);
 
-                    YourFollowedItemsTile('#FollowingTile', id, 'Items User Follows');
-                    YourOwnedItemsTile('#OwnedTile', id, 'Items User Owns');
+                    YourFollowedItemsTile('FollowingTile', id, 'Items ' + model.FirstName  + ' Follows');
+                    YourOwnedItemsTile('OwnedTile', id, 'Items ' + model.FirstName + ' Owns');
 
                     ResourceStatisticsTile('SocialTile', type, id);
 
-                    ProfileSocial = new BoardViewModel();
-                    ko.applyBindings(ProfileSocial, document.getElementById('ProfileBoard'));
-                    ProfileSocial.changeObject(type, id);
-
-                    assignmentsTile = new HomePageCountTileModel('Your Assignments', 7);
+                    assignmentsTile = new HomePageCountTileModel(model.FirstName + '\'s Assignments', 7);
                     assignmentsTile.NoDataMessage('');
                     ko.applyBindings(assignmentsTile, document.getElementById('AssignmentsTile'));
 

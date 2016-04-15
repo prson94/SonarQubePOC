@@ -2105,7 +2105,7 @@
             </summary>
             <returns>A list of workflow tasks.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.WorkflowController.GetTasksForCurrentUser(System.Int32)">
+        <member name="M:d360.web.Controllers.Services.WorkflowController.GetTasksForUser(System.Int32,System.Int32)">
             <summary>
             Gets a list of open workflow tasks for the current user, based on the workflow type.
             </summary>
