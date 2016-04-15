@@ -795,7 +795,7 @@ where   h.ID <> @t order by h.[Level] desc;
             #region Determine permissions
 
             List<SecurityDetail> permissions = null;
-            if (type != SystemObjects.FusionAttributeType)
+            if (type != SystemObjects.FusionAttributeType && type != SystemObjects.Resource)
             {
                 if (context == "root")
                 {
@@ -817,7 +817,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     }
                 }
                 else
-                {
+                {                    
                     permissions = Company.GetPermissions(type, id).ToList();
                 }
             }

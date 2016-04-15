@@ -25,6 +25,7 @@ using gudusoft.gsqlparser;
 using d360.workflow;
 using d360.workflow.entities;
 using d360.workflow.models;
+using System.Threading.Tasks;
 
 namespace d360.model
 {
@@ -978,6 +979,11 @@ order by	ColumnIndex", new { id });
         public IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90)
         {
             return Database.Connection.Query<T>(sql, param, null, true, timeout);
+        }
+
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
+        {
+            return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
         }
 
         public bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false)

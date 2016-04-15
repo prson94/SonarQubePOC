@@ -103,6 +103,9 @@ h6 {
 .FieldDisplayContent p:first-child {
   display: inline;
 }
+.FieldDisplayContent img {
+  width: 100%;
+}
 .emptymessage {
   padding: 25px;
   color: #ddd;

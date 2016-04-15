@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.model;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace d360.web.Controllers
@@ -36,9 +37,9 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = Company.GetAggregateRelationshipBreakdownsByObject(type, id), Formatting = Newtonsoft.Json.Formatting.None };
         }
         
-        public JsonNetResult FollowingBreakdownByResource(int id)
+        public async Task<JsonNetResult> FollowingBreakdownByResource(int id)
         {
-            var query = Company.Query<dynamic>(@"select  		                
+            var query = await Company.QueryAsync<dynamic>(@"select  		                
 		                T.[Type], 
 		                T.TypeName,
 		                T.TypeID, 		
@@ -63,45 +64,31 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public JsonNetResult ResponsibilityBreakdownByResource(int id)
-        {
-            var query = Company.Query<dynamic>(
+        public async Task<JsonNetResult> ResponsibilityBreakdownByResource(int id)
+        {            
+            var query = await Company.QueryAsync<dynamic>(
             @"            
-            select		            
-		            T.ObjectType as [Type], 
-		            T.ObjectTypeName as TypeName, 
-		            T.ObjectTypeID as TypeID, 		
-		            T.[Count],
-		            coalesce(S.IconBackColor, '#000') as IconBackColor,
-                    coalesce(S.IconForeColor, '#fff') as IconForeColor,
-                    coalesce(S.IconText, substring(T.ObjectTypeName, 1, 2)) as IconText
-            from (
-			            select	O.ObjectType, 
-					            O.ObjectTypeName, 
-					            O.ObjectTypeID, 		
-					            count(1) as [Count]
-			            from (
-				            select	ObjectName, 
-						            ObjectType, 
-						            ObjectTypeName, 
-						            case ObjectType 
+            select
+					O.ObjectType as [Type],
+					O.ObjectTypeName as TypeName,
+					O.ObjectTypeID as TypeID,
+					O.Count as [Count],
+					coalesce(S.IconBackColor, '#000') as IconBackColor,
+					coalesce(S.IconForeColor, '#fff') as IconForeColor,
+					coalesce(S.IconText, substring(O.ObjectTypeName, 1, 2)) as IconText
+				from(
+						select	r.ObjectType, 
+						        r.ObjectTypeName, 
+						        case r.ObjectType 
 							            when 'Policy' then 0 
 							            when 'Rule' then 0 
-							            else ObjectTypeID 
-						            end as ObjectTypeID
-				            from ResponsibilityDetailForResource
+							            else r.ObjectTypeID 
+						        end as ObjectTypeID,													            
+								count(1) as [Count]
+				            from ResponsibilityDetailForResource r							
 				            where ResponsibleObjectType = 'Resource' and ResponsibleObjectID = @r and Visible = 1 and ObjectTypeName is not null
-				            group by ObjectName, 
-						            ObjectType, ObjectTypeName, 		case ObjectType 
-							            when 'Policy' then 0 
-							            when 'Rule' then 0 
-							            else ObjectTypeID 
-						            end
-				            ) O
-			            group by O.ObjectType, O.ObjectTypeID, O.ObjectTypeName
-			            ) T
-			            left join ObjectStyle S on  T.ObjectType + 'Type' = S.ObjectType and T.ObjectTypeID = S.ObjectID order by TypeName
-
+				            group by r.ObjectType, r.ObjectTypeName, ObjectTypeID) O
+				left join ObjectStyle S on  O.ObjectType + 'Type' = S.ObjectType and O.ObjectTypeID = S.ObjectID order by typename
             ", new { r = id });
 
                     return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
