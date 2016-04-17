@@ -52,10 +52,10 @@
         <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcerule_editor').hide(200);"><i class="fa fa-remove"></i></a></div>
         <div id="{{control}}_popover_sourcerule_editor_body" data-bind="template: {name: 'hierarchyRuleEditTmpl' }"></div>
     </div>
-    <div id="{{control}}_popover_sourcemapping_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:1000px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px 7px;">
+    <!--<div id="{{control}}_popover_sourcemapping_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:1000px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px;">
         <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcemapping_editor').hide(200); return false;"><i class="fa fa-remove"></i></a></div>
         <div id="{{control}}_popover_sourcemapping_editor_body" data-bind="template: {name: 'sourceMappingEditTmpl' }"></div>
-    </div>
+    </div>-->
 
     <div id="{{control}}_ribbon_expander" style="width:100%;">
         <div style="font-size:1.1em;">
@@ -74,31 +74,34 @@
                     <table style="width:auto;height:115px;">
                         <tbody>
                             <tr style="font-size:.8em;padding-top:2px;height:15px;">
-                                <td colspan="2" style="padding-left:5px;">
+                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
                                     Overview
                                 </td>
-                                <td colspan="2" style="padding-left:5px;">
+                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
                                     Zoom
                                 </td>
-                                <td colspan="2" style="padding-left:5px;">
+                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
                                     Other
                                 </td>
-                                <td colspan="2" style="padding-left:5px;">
+                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
                                     Edit
                                 </td>
-                                <td colspan="2" style="padding-left:5px;">
+                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
                                     Rules
+                                </td>
+                                <td colspan="2" style="padding-left:5px;" class="sourcemapping">
+                                    Mappings
                                 </td>
                             </tr>
                             <tr>
-                                <td style="padding:5px;">
+                                <td style="padding:5px;" class="diagramcommands">
                                     <div style="border: 1px solid #ccc;margin:2px;">
                                         <div id="{{control}}_overview" style="width:100px;height:80px"></div>
                                     </div>
                                 </td>
 
-                                <td style="width:1px;border-left:1px solid #ccc;"></td>
-                                <td style="padding:0 5px 0 5px">
+                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
+                                <td style="padding:0 5px 0 5px" class="diagramcommands">
                                     <table style="height:80px;">
                                         <tbody>
                                             <tr>
@@ -117,71 +120,34 @@
                                     </table>
                                 </td>
 
-                                <td style="width:1px;border-left:1px solid #ccc;"></td>
-                                <td style="padding:5px;vertical-align:top;">
-                                    <div id="{{control}}_ribbon_fullscreen" style="display:inline-block;text-align:center;vertical-align:top;">
-                                        <div style="padding:5px 0 5px 0;">
-                                            <div><i class="fa fa-2x fa-arrows-alt"></i></div>
-                                            <div style="padding-top:5px">Fullscreen</div>
-                                        </div>
-                                    </div>
-                                    <div id="{{control}}_ribbon_reset" style="display:inline-block;text-align:center;vertical-align:top;">
-                                        <div style="padding:5px;">
-                                            <div><i class="fa fa-2x fa-refresh"></i></div>
-                                            <div style="padding-top:5px">Reset</div>
-                                        </div>
-                                    </div>
+                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
+                                <td style="padding:5px;vertical-align:top;" class="diagramcommands">
+                                    <button id="{{control}}_ribbon_fullscreen" style="vertical-align:top;"><i class="fa fa-2x fa-arrows-alt"></i><br />Fullscreen</button>
+                                    <button id="{{control}}_ribbon_reset"><i class="fa fa-2x fa-refresh"></i><br />Reset</button>
                                 </td>
 
-                                <td style="width:1px;border-left:1px solid #ccc;"></td>
-                                <td style="padding:5px;vertical-align:top;">
-                                    <div id="{{control}}_ribbon_undo" style="display:inline-block;text-align:center;vertical-align:top;">
-                                        <div style="padding:5px;">
-                                            <div><i class="fa fa-2x fa-undo"></i></div>
-                                            <div style="padding-top:5px;">Undo</div>
-                                        </div>
-                                    </div>
-                                    <div id="{{control}}_ribbon_redo" style="display:inline-block;text-align:center;vertical-align:top;">
-                                        <div style="padding:5px;">
-                                            <div><i class="fa fa-2x fa-repeat"></i></div>
-                                            <div style="padding-top:5px;">Redo</div>
-                                        </div>
-                                    </div>
-                                    <div id="{{control}}_ribbon_add" style="display:inline-block;text-align:center;vertical-align:top;">
-                                        <div style="padding:5px;">
-                                            <div><i class="fa fa-2x fa-plus"></i></div>
-                                            <div style="padding-top:5px;">Insert a Node</div>
-                                        </div>
-                                    </div>
-                                    <div id="{{control}}_ribbon_remove" style="display:inline-block;text-align:center;vertical-align:top;">
-                                        <div style="padding:5px;">
-                                            <div><i class="fa fa-2x fa-trash-o"></i></div>
-                                            <div style="padding-top:5px;">Remove</div>
-                                        </div>
-                                    </div>
-                                    <div id="{{control}}_ribbon_save" style="display:inline-block;text-align:center;vertical-align:top;">
-                                        <div style="padding:5px;">
-                                            <div><i class="fa fa-2x fa-save"></i></div>
-                                            <div style="padding-top:5px;">Save Changes</div>
-                                        </div>
-                                    </div>
+                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
+                                <td style="padding:5px;vertical-align:top;" class="diagramcommands">
+                                    <button id="{{control}}_ribbon_undo"><i class="fa fa-2x fa-undo"></i><br />Undo</button>
+                                    <button id="{{control}}_ribbon_redo"><i class="fa fa-2x fa-repeat"></i><br />Redo</button>
+                                    <!-- not sure why valign top is needed here -->
+                                    <button id="{{control}}_ribbon_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Insert a Node</button>
+                                    <button id="{{control}}_ribbon_remove" style="vertical-align:top;"><i class="fa fa-2x fa-remove"></i><br />Remove</button>
+                                    <button id="{{control}}_ribbon_save" style="vertical-align:top;"><i class="fa fa-2x fa-save"></i><br />Save Changes</button>
                                     <div id="{{control}}_ribbon_save_spinner" style="border:none; display:none;vertical-align:top;"><i class="fa fa-2x fa-spinner fa-spin"></i></div>
                                 </td>
 
-                                <td style="width:1px;border-left:1px solid #ccc;"></td>
-                                <td style="padding:5px;vertical-align:top;">
-                                    <div id="{{control}}_ribbon_sourcerule_add" style="display:inline-block;text-align:center;">
-                                        <div style="padding:5px;">
-                                            <div><i class="fa fa-2x fa-code-fork"></i></div>
-                                            <div style="padding-top:5px;">Source Rules</div>
-                                        </div>
-                                    </div>
-                                    <div id="{{control}}_ribbon_sourcemapping_add" style="display:inline-block;text-align:center;">
-                                        <div style="padding:5px;">
-                                            <div><i class="fa fa-2x fa-exchange"></i></div>
-                                            <div style="padding-top:5px;">Mapping Rules</div>
-                                        </div>
-                                    </div>
+                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
+                                <td style="padding:5px;vertical-align:top;" class="diagramcommands">
+                                    <button id="{{control}}_ribbon_sourcerule_add" style="vertical-align: top;"><i class="fa fa-2x fa-code-fork"></i><br />Source Rules</button>
+                                    <button id="{{control}}_ribbon_sourcemapping" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Mapping Rules</button>
+                                </td>
+
+                                <td style="width:1px;border-left:1px solid #ccc;" class="sourcemapping"></td>
+                                <td style="padding:5px;vertical-align:top;" class="sourcemapping">
+                                    <button id="{{control}}_ribbon_sourcemapping_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Rule</button>
+                                    <button id="{{control}}_ribbon_sourcemapping_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
+                                    <button id="{{control}}_ribbon_sourcemapping_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Save</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -194,6 +160,10 @@
         <tbody>
             <tr style="vertical-align:top;height:520px">
                 <td style="vertical-align:top">
+                    <div id="{{control}}_popover_sourcemapping_editor" style="display:none">
+                        <header>Manage Mappings</header>
+                        <div id="{{control}}_popover_sourcemapping_editor_body" data-bind="template: {name: 'sourceMappingEditTmpl' }"></div>
+                    </div>
                     <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
                         <div id="{{control}}_dgm" style="height:400px; overflow: no-display"></div>
                         <div id="{{control}}_message" style="background-color:rgba(141, 14, 14, 1);color:white;padding:2px;font-size:.8em; border-radius:3px;display:none;"><i class="fa fa-warning"></i> You have unsaved changes in this diagram!</div>

@@ -9,6 +9,8 @@
     var tmpl = Handlebars.getTemplate('LineageDiagram');
     $('#' + controlID).html(tmpl({ control: controlID }));
 
+    var sourceToTargetMappingModel;
+
     //#region Control constants
 
     var ribbon_button_width = 58;
@@ -65,7 +67,10 @@
     var controlID_ribbon_redo = controlID + '_ribbon_redo';
     var controlID_ribbon_remove = controlID + '_ribbon_remove';
     var controlID_ribbon_sourcerule_add = controlID + '_ribbon_sourcerule_add';
+    var controlID_ribbon_sourcemapping = controlID + '_ribbon_sourcemapping';
     var controlID_ribbon_sourcemapping_add = controlID + '_ribbon_sourcemapping_add';
+    var controlID_ribbon_sourcemapping_cancel = controlID + '_ribbon_sourcemapping_cancel';
+    var controlID_ribbon_sourcemapping_save = controlID + '_ribbon_sourcemapping_save';
 
     var controlID_popover_add = controlID + '_popover_add';
 
@@ -101,22 +106,24 @@
         var index = event.args.item;
         loadTab(index);
     });
-
-    $("#" + controlID_tabs).hide();
     
-    $("#" + controlID_ribbon_zoom_100).jqxButton({ theme: theme, width: "40%" });
-    $("#" + controlID_ribbon_zoom_fit).jqxButton({ theme: theme, width: "40%" });
-    $("#" + controlID_ribbon_save).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width, disabled: true });
-    $("#" + controlID_ribbon_reset).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
-    $("#" + controlID_ribbon_fullscreen).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
-    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
-    $("#" + controlID_ribbon_remove).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width }).hide();
-    $("#" + controlID_ribbon_undo).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
-    $("#" + controlID_ribbon_redo).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width });
-    $("#" + controlID_ribbon_zoom_slider).jqxSlider({ theme: theme, width: 150, showButtons: true, min: 750, max: 2250, value: 1500, showTicks: false, step: 10 });
+    $("#" + controlID_ribbon_zoom_100).jqxButton({ theme: theme, height: "100%", width: "40%" });
+    $("#" + controlID_ribbon_zoom_fit).jqxButton({ theme: theme, height: "100%", width: "40%" });
+    $("#" + controlID_ribbon_save).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true });
+    $("#" + controlID_ribbon_reset).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_fullscreen).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_remove).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_ribbon_undo).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_redo).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_zoom_slider).jqxSlider({ theme: theme, width: 150, showButtons: true, min: 750, max: 2250, value: 1500, showTicks: false });
 
-    $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width }).hide();
-    $("#" + controlID_ribbon_sourcemapping_add).jqxButton({ theme: theme, height: ribbon_button_height, width: ribbon_button_width }).hide();
+    $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_ribbon_sourcemapping).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $('#' + controlID_ribbon_sourcemapping_add).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $('#' + controlID_ribbon_sourcemapping_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $('#' + controlID_ribbon_sourcemapping_save).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $('.sourcemapping').hide();
 
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
@@ -162,10 +169,8 @@
         //model.ApplyJqxBindings();
     });
 
-    $("#" + controlID_ribbon_sourcemapping_add).on('click', function () {
-        if ($(this).jqxButton('disabled'))
-            return;
-        $('#' + controlID_popover_sourcemapping_editor).toggle(200).css('left', $(this).position().left - 500).css('top', $(this).position().top + 80);
+    $("#" + controlID_ribbon_sourcemapping).on('click', function () {
+        //$('#' + controlID_popover_sourcemapping_editor).toggle(200).css('left', $(this).position().left - 500).css('top', $(this).position().top + 150);
         var selected = myDiagram.selection;
         if (selected == null)
             return;
@@ -203,9 +208,43 @@
             Object: type,
             ObjectID: id,
         };
-        var model = new SourceToTargetMappingModel(data, permissions);
+
+        $('#' + controlID_wrapper).hide();
+        $('.diagramcommands').hide();
+
+        sourceToTargetMappingModel = new SourceToTargetMappingModel(data, permissions);
         ko.cleanNode($('#' + controlID_popover_sourcemapping_editor_body)[0]);
-        ko.applyBindings(model, $('#' + controlID_popover_sourcemapping_editor_body)[0]);
+        ko.applyBindings(sourceToTargetMappingModel, $('#' + controlID_popover_sourcemapping_editor_body)[0]);
+
+        $('#' + controlID_popover_sourcemapping_editor).show();
+        $('.sourcemapping').show();
+
+    });
+
+    $('#' + controlID_ribbon_sourcemapping_add).on('click', function () {
+        sourceToTargetMappingModel.AddSourceRule();
+    });
+    $('#' + controlID_ribbon_sourcemapping_cancel).on('click', function () {
+        $('.sourcemapping').fadeOut();
+        $('#' + controlID_ribbon_sourcemapping_add).show();
+        $('#' + controlID_ribbon_sourcemapping_save).show();
+        $('.diagramcommands').show();
+        $('#' + controlID_popover_sourcemapping_editor).hide();
+        $('#' + controlID_wrapper).show();
+    });
+    $('#' + controlID_ribbon_sourcemapping_save).on('click', function () {
+        sourceToTargetMappingModel.SaveRules().then(function(){
+            $('.sourcemapping').fadeOut();
+            $('.diagramcommands').show();
+            $('#' + controlID_popover_sourcemapping_editor).hide();
+            $('#' + controlID_wrapper).show();
+        });
+    });
+
+    amplify.subscribe("NoFusionAvailable", function () {
+        $('#' + controlID_popover_sourcemapping_editor).height(300);
+        $('#' + controlID_ribbon_sourcemapping_add).hide();
+        $('#' + controlID_ribbon_sourcemapping_save).hide();
     });
 
     //$('#' + controlID_ribbon).jqxRibbon({
@@ -1468,16 +1507,16 @@
         }
         if (data == null) {
             $("#" + controlID_ribbon_sourcerule_add).hide(delay);
-            $("#" + controlID_ribbon_sourcemapping_add).hide(delay);
+            $("#" + controlID_ribbon_sourcemapping).hide(delay);
             $("#" + controlID_ribbon_remove).hide(delay);
         } else {
             if (data.diagramObjectType == 'Node') {
                 if (!readonly) {
-                    $("#" + controlID_ribbon_sourcemapping_add).show(delay);
+                    $("#" + controlID_ribbon_sourcemapping).show(delay);
                     $("#" + controlID_ribbon_sourcerule_add).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
-                    $("#" + controlID_ribbon_sourcemapping_add).hide(delay);
+                    $("#" + controlID_ribbon_sourcemapping).hide(delay);
                     $("#" + controlID_ribbon_sourcerule_add).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
@@ -1485,10 +1524,10 @@
                 $("#" + controlID_ribbon_sourcerule_add).hide(delay);
 
                 if (!readonly) {
-                    $("#" + controlID_ribbon_sourcemapping_add).show(delay);
+                    $("#" + controlID_ribbon_sourcemapping).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
-                    $("#" + controlID_ribbon_sourcemapping_add).hide(delay);
+                    $("#" + controlID_ribbon_sourcemapping).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
             }

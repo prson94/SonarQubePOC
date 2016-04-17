@@ -12,7 +12,6 @@ ko.bindingHandlers.fadeVisible = {
     }
 };
 
-
 ko.bindingHandlers.htmlareasimple = {
     init: function (element, valueAccessor) {
         var value = valueAccessor();
@@ -63,6 +62,7 @@ ko.bindingHandlers.sourceSystemFilteredDropdown = {
     },
     update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {}
 };
+
 ko.bindingHandlers.sourceObjectFilteredDropdown = {
     init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
         $(element).on('change', function (event) {
@@ -71,6 +71,7 @@ ko.bindingHandlers.sourceObjectFilteredDropdown = {
     },
     update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
 };
+
 ko.bindingHandlers.sourceFusionAttributeFilteredDropdown = {
     init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
         $(element).on('change', function (event) {
@@ -88,6 +89,7 @@ ko.bindingHandlers.targetSystemFilteredDropdown = {
     },
     update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
 };
+
 ko.bindingHandlers.targetObjectFilteredDropdown = {
     init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
         $(element).on('change', function (event) {
@@ -96,6 +98,7 @@ ko.bindingHandlers.targetObjectFilteredDropdown = {
     },
     update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
 };
+
 ko.bindingHandlers.targetFusionAttributeFilteredDropdown = {
     init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
         $(element).on('change', function (event) {
@@ -113,6 +116,7 @@ ko.bindingHandlers.actionFilteredDropdown = {
     },
     update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
 };
+
 ko.bindingHandlers.typeFilteredDropdown = {
     init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
         $(element).on('change', function (event) {
@@ -121,6 +125,38 @@ ko.bindingHandlers.typeFilteredDropdown = {
     },
     update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
 };
+
+//ko.bindingHandlers.mappingFusionAttributeFilteredDropdown = {
+//    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+
+//        $(element).on('change', function (event) {
+//            var args = event.args;
+//            var value = args.item.value;
+//            viewModel.SelectedFusionName(value);
+//            //var checkedItems = $(element).jqxDropDownList('getCheckedItems');
+//            //if (checkedItems) {
+//            //    viewModel.CheckObjects.removeAll();
+
+//            //    if (checkedItems.length > 0) {
+//            //        $.each(checkedItems, function (cix, ci) {
+//            //            viewModel.CheckObjects.push(ci.value);
+//            //        });
+//            //    }
+//            //}
+//        });
+//    },
+//    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+//        //var value = ko.utils.unwrapObservable(valueAccessor()) || '';
+//        //console.log(value);
+//        //if (value) {
+//        //    alert(value);
+//        //    //var item = $(element).jqxDropDownList('getItemByValue', "Bon app");
+//        //    //if (item) {
+//        //    //    $(element).jqxDropDownList('checkItem', item);
+//        //    //}
+//        //}
+//    }
+//};
 
 var fileBindings = {
     customFileInputSystemOptions: {
@@ -384,6 +420,7 @@ ko.bindingHandlers.customFileInput = {
         }
     }
 };
+
 //#endregion
 
 //#region    BASE MODELS
@@ -1272,6 +1309,7 @@ function SourceToTargetMappingModel(data, permissions) {
 
                 if (data.sourceCount == 0 || data.targetCount == 0) {
                     self.NoFusionAvailable(true);
+                    amplify.publish("NoFusionAvailable");
                 }
             } else {
                 data = data.items;
@@ -1298,6 +1336,9 @@ function SourceToTargetMappingModel(data, permissions) {
     }
 
     self.SaveRules = function () {
+
+        var deferred = $.Deferred();
+
         if (self.IsLoading())
             return;
         var data = {};
@@ -1394,9 +1435,11 @@ function SourceToTargetMappingModel(data, permissions) {
                 }
             }).always(function () {
                 self.IsLoading(false);
+                deferred.resolve();
             });
         }
 
+        return deferred.promise();
     }
 
     return self;
@@ -1414,14 +1457,10 @@ function SourceToTargetMappingItem(data, parent, permissions) {
     self.Sources = ko.observableArray([]);
     self.Targets = ko.observableArray([]);
     self.Transformation = ko.observable(data.Transformation || '');
-    //self.SourceItems = ko.observableArray([]);
-    //self.TargetItems = ko.observableArray([]);
     self.Keywords = ko.observableArray([]);
     self.ErrorMessages = ko.observableArray([]);
 
     self.IsLoading = ko.observable(false);
-
-
 
     self.CanUpdate = ko.observable(false);
     self.CanDelete = ko.observable(false);
@@ -1435,8 +1474,6 @@ function SourceToTargetMappingItem(data, parent, permissions) {
         if (permissions.HasPermission("Relationship", "Delete"))
             self.CanDelete(true);
     }
-
-
 
     self.LoadItems = function () {
         self.IsLoading(true);
