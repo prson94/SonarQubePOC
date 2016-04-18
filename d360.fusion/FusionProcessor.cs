@@ -151,10 +151,7 @@ namespace d360.fusion
                     await UpdateExecutionWithStats(companyConnection);
 
                     //If any changes were made add record to queue.task
-                    await UpdateQueue(companyConnection);
-
-                    //add a call to update the cache
-                    await UpdateCache(companyConnection);
+                    await UpdateQueue(companyConnection);                    
                 }
                 catch (AggregateException exception)
                 {                                           
@@ -198,14 +195,7 @@ namespace d360.fusion
                 ", new { id = ExecutionID }, commandTimeout: ExecuteQueryTimeout);
             }
         }
-
-        private async Task UpdateCache(SqlConnection companyConnection)
-        {
-            await companyConnection.ExecuteAsync(@"
-                                        insert into [queue].[FusionCache] (FusionID) values (@f)
-                                ", new { f = FusionID });
-        }
-
+        
         private void LogFusionError(SqlConnection companyConnection, Exception ex)
         {
             if (ex == null || ExecutionID <= 0)
