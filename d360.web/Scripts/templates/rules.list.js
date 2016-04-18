@@ -117,6 +117,7 @@
                     altrows: true,
                     source: RuleGridAdapter,
                     filterable: true,
+                    pageable: true,
                     showfilterrow: true,
                     columns: [
                         { text: 'ID', dataField: 'ID', width: '7%' },
