@@ -21,12 +21,12 @@
             $(row).append(col);
 
             col.append("<div class='FieldName FieldDisplayName'>Name</div>");
-            col.append("<div class='FieldContent wrapword'>" + data.Name + "</div>");
+            col.append("<div class='FieldContent break-wrap'>" + data.Name + "</div>");
 
             col = $("<div class='col l6 m6'>");
             $(row).append(col);
             col.append("<div class='FieldName FieldDisplayName'>Path</div>");
-            col.append("<div class='FieldContent wrapword'>" + data.TextPath + "</div>");
+            col.append("<div class='FieldContent break-wrap'>" + data.TextPath + "</div>");
 
             row = $("<div class='row'>");
             $(detailControlID).append(row);
@@ -39,7 +39,7 @@
                 col = $("<div class='col l6 m6'>");
                 $(row).append(col);
                 col.append("<div class='FieldName FieldDisplayName'>" + item.Name + "</div>");
-                col.append("<div class='FieldContent wrapword'>" + item.Value + "</div>");
+                col.append("<div class='FieldContent break-wrap'>" + item.Value + "</div>");
             });
 
             $(controlID).show();
