@@ -1410,8 +1410,9 @@ where   h.ID <> @t order by h.[Level] desc;
 
                         following = Company.IsUserFollowing(type, id, null);
                         list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
+                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    
                     break;
                     #endregion
                 case SystemObjects.StatisticType:
@@ -4073,20 +4074,7 @@ where    A.PolicyTypeID = @id", columns, joins);
                     #region Fields
                     var rule = Company.GetById<Rule>(id);
                     if (rule != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = rule.GetName(i => i.Name), FieldName = "RuleName", FieldDescription = rule.GetDescription(i => i.Description), Value = rule.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = rule.GetName(i => i.RuleType), FieldName = "RuleRuleType", FieldDescription = rule.GetDescription(i => i.RuleType), Value = rule.RuleType.GetRuleTypeDisplayName() }
-                            }
-                        });
-
+                    {                        
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,

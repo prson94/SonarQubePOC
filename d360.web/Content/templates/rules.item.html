@@ -1,0 +1,40 @@
+﻿        <div class="row">
+            <div class="col s12 m8 l8">
+                <div id="DetailContainerTile" class="tile tile-detail">
+                    <div id="DetailTile"></div>
+                    <div id="AttributesTile"></div>
+                </div>
+                <div class="tile tile-detail">
+                    <header>
+                        Event Breakdown For
+                        <select id="EventBreakdownTimeScale" class="browser-default" style="display: inline; width: 150px">
+                            <option value="">All Time</option>
+                            <option value="7">Last 7 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="180">Last 6 Months</option>
+                        </select>
+                    </header>
+                    <div class="row">
+                        <div class="col s12 m12 l4">
+                            <div id="EventStatusChart"></div>
+                        </div>
+                        <div class="col s12 m12 l4">
+                            <div id="EventAgeChart"></div>
+                        </div>
+                        <div class="col s12 m12 l4">
+                            <div id="EventCriticalityChart"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="GovernanceTile" class="tile tile-detail"></div>
+                <div id="SourcingTile" class="tile tile-detail"></div>
+                <div id="EventHeadersTile" class="tile tile-detail" style="margin-bottom: 15px"></div>
+                <div id="EventsTile" class="tile tile-detail" style="margin-bottom: 15px"></div>
+            </div>
+            <div class="col s12 m4 l4">
+                <div id="StatisticsTile" class="tile tile-detail" style="height: 100%" data-bind="template: {name: 'policyRuleStatisticsTileTmpl' }"></div>
+                <div id="AggregatesTileContainer" class="tile tile-detail"></div>
+                <div id="Fields" class="tile tile-detail" style="display:none"></div>
+            </div>
+        </div>
