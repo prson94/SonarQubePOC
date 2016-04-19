@@ -1392,8 +1392,6 @@ where   h.ID <> @t order by h.[Level] desc;
                     #endregion
                 case SystemObjects.Rule:
                     #region Actions
-                    if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
-                        list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Add_Icon, Title = "Rule", Uri = "/form/AddRule" });
 
                     if (id > 0)
                     {
@@ -1401,16 +1399,18 @@ where   h.ID <> @t order by h.[Level] desc;
 
                         if (hasPermission(permissions, Claim.Update, ClaimObject.Root))
                             list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Edit_Icon, Title = Resources.Actions.Edit, Uri = string.Format("/form/EditRule?id={0}", id) });
-
-                        if (hasPermission(permissions, Claim.Delete, ClaimObject.Root))
-                            list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/DeleteRule?id={0}", id) });
-
+                        
                         reportNode = appendReportMenu(type, id, SystemObjects.RuleType, (int)rule.RuleType, true);
                         if (reportNode != null) list.Add(reportNode);
 
                         following = Company.IsUserFollowing(type, id, null);
                         list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
                         list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    }
+                    else
+                    {
+                        if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
+                            list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Add_Icon, Title = "Rule", Uri = "/form/AddRule" });
                     }
                     
                     break;
@@ -3033,8 +3033,14 @@ where    A.PolicyTypeID = @id", columns, joins);
 
         [Route("rules")]
         public IQueryable<Rule> GetRules()
+        {            
+            return Company.Rules.Include("Dimension");            
+        }
+
+        [Route("ruledimensions")]
+        public IQueryable<RuleDimension> GetRuleDimensions()
         {
-            return Company.Table<Rule>();
+            return Company.Table<RuleDimension>();
         }
 
         #endregion
@@ -4072,9 +4078,23 @@ where    A.PolicyTypeID = @id", columns, joins);
                     #endregion
                 case SystemObjects.Rule:
                     #region Fields
-                    var rule = Company.GetById<Rule>(id);
+                    var rule = Company.Rules.Include("dimension").Where(x => x.ID == id).FirstOrDefault();
                     if (rule != null)
-                    {                        
+                    {
+                        if (rule.RuleDimensionID > 0)
+                        {
+                            var dimensionLink =  string.Format("<span data-context='Preview' data-type='RuleDimension' data-id='{1}'>{0} <i class='fa fa-question-circle' aria-hidden='true'></i></span>", rule.Dimension.Name, rule.RuleDimensionID);
+
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = rule.GetName(i => i.RuleDimensionID), FieldName = "RuleDimensionID", FieldDescription = rule.GetDescription(i => i.RuleDimensionID), Value = dimensionLink }
+                                }
+                            });
+                        }
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,

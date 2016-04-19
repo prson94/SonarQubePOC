@@ -667,6 +667,18 @@ BEGIN
 			set @hasDynamicFields = 1
 		end;
 
+		if @Type = 'RuleDimension'
+		begin
+			insert into @tbl
+				select	'Description', [Description]
+				from	RuleDimension
+				where	ID = @ID
+			insert into @tbl
+				select	'Name', [Name]
+				from	RuleDimension
+				where	ID = @ID						
+		end;
+
 		if @Type = 'Taxonomy'
 		begin
 			insert into @tbl

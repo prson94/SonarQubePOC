@@ -283,6 +283,8 @@ namespace d360.model
 
         public DbSet<d360.core.entities.Rule> Rules { get; set; }
 
+        public DbSet<d360.core.entities.RuleDimension> RuleDimensions { get; set; }
+
         public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
 
         public DbSet<SourceRule> SourceRules { get; set; }

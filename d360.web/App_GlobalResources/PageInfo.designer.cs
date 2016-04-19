@@ -313,6 +313,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Here you can configure the properties available to rules, including what dimensions are defined..
+        /// </summary>
+        internal static string Administration_RuleType_Description {
+            get {
+                return ResourceManager.GetString("Administration_RuleType_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rule Types.
+        /// </summary>
+        internal static string Administration_RuleType_Title {
+            get {
+                return ResourceManager.GetString("Administration_RuleType_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Manage system-wide settings for your environment..
         /// </summary>
         internal static string Administration_Settings_Description {

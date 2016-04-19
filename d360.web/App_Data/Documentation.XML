@@ -718,6 +718,16 @@
               Looks up a localized string similar to Add Claims to Responsibility Type.
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.Add_Rule_Dimension_Directions">
+            <summary>
+              Looks up a localized string similar to Add a data quality dimension that can be used to classify new or existing rules..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_Rule_Dimension_Title">
+            <summary>
+              Looks up a localized string similar to Add Rule Data Quality Dimension.
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.Add_Rule_Directions">
             <summary>
               Looks up a localized string similar to Add a rule to track events against..
@@ -786,6 +796,11 @@
         <member name="P:Resources.FormInfo.Delete_Attribute_Description">
             <summary>
               Looks up a localized string similar to Removing this attribute may affect the score of the item it is tagged to..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Delete_Error_Rule_Exist">
+            <summary>
+              Looks up a localized string similar to You cannot delete the selected dimension, there are existing rules which reference this dimension.  Please change the existing rules which reference this dimension before deleting it..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Delete_FieldType_Confirmation">
@@ -906,6 +921,16 @@
         <member name="P:Resources.FormInfo.Edit_ResponsibilityTypeClaims_Title">
             <summary>
               Looks up a localized string similar to Edit Claims for Responsibility Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Rule_Dimension_Directions">
+            <summary>
+              Looks up a localized string similar to Edit an existing data quality dimension that can be used to classify new or existing rules..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_Rule_Dimension_Title">
+            <summary>
+              Looks up a localized string similar to Edit Rule Data Quality Dimension.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Edit_Rule_Directions">
@@ -1157,6 +1182,16 @@
         <member name="P:Resources.PageInfo.Administration_ResponseType_Title">
             <summary>
               Looks up a localized string similar to Response Types.
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_RuleType_Description">
+            <summary>
+              Looks up a localized string similar to Here you can configure the properties available to rules, including what dimensions are defined..
+            </summary>
+        </member>
+        <member name="P:Resources.PageInfo.Administration_RuleType_Title">
+            <summary>
+              Looks up a localized string similar to Rule Types.
             </summary>
         </member>
         <member name="P:Resources.PageInfo.Administration_Settings_Description">
@@ -2736,6 +2771,12 @@
             <param name="id">RuleID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Rule_EditFields(System.Int32)">
+            <param name="id">RuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.RuleDimension_DeleteFields(System.Int32)">
+            <param name="id">RuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.RuleDimension_EditFields(System.Int32)">
             <param name="id">RuleID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.StatisticType_DeleteFields(System.Int32)">

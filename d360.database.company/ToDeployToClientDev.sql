@@ -103,6 +103,16 @@ ALTER TABLE [Artifact] ENABLE TRIGGER Artifact_AfterUpdate
 go
 
 
+-- 4/19/16 Added dimension to rules
+-- ALSO UPDATE - [dbo].[GetRenderedTemplateBody] PROC  and get create table script for [dbo].[RuleDimension]
+
+-- add column RuleDimensionID to [dbo].[rule]
+ALTER TABLE [dbo].[Rule] ADD RuleDimensionID int NULL
+
+-- add fk so that rule dimension corresponds to an existing rule dimension
+ALTER TABLE [dbo].[Rule]
+add constraint FK_Rule_RuleDimension FOREIGN KEY ( [RuleDimensionID] ) references [dbo].[RuleDimension] ([ID])
+
 
 
 

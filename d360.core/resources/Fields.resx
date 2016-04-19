@@ -1149,4 +1149,10 @@
   <data name="ShowNameInTree_Name" xml:space="preserve">
     <value>Show Name in Tree?</value>
   </data>
+  <data name="RuleDimensionID_Description" xml:space="preserve">
+    <value>Data Quality Dimension for this rule.</value>
+  </data>
+  <data name="RuleDimensionID_Name" xml:space="preserve">
+    <value>Dimension</value>
+  </data>
 </root>

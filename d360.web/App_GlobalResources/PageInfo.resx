@@ -318,4 +318,10 @@
   <data name="Administration_Settings_Title" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="Administration_RuleType_Title" xml:space="preserve">
+    <value>Rule Types</value>
+  </data>
+  <data name="Administration_RuleType_Description" xml:space="preserve">
+    <value>Here you can configure the properties available to rules, including what dimensions are defined.</value>
+  </data>
 </root>

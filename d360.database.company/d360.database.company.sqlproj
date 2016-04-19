@@ -468,6 +468,7 @@
     <Build Include="dbo\Stored Procedures\AddSingleIntersect.sql" />
     <Build Include="dbo\Tables\SourceTargetRule_1.sql" />
     <Build Include="dbo\Tables\IntersectMapSourceTargetRule_1.sql" />
+    <Build Include="dbo\Tables\RuleDimension.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

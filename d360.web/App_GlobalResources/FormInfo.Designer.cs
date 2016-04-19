@@ -259,6 +259,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add a data quality dimension that can be used to classify new or existing rules..
+        /// </summary>
+        internal static string Add_Rule_Dimension_Directions {
+            get {
+                return ResourceManager.GetString("Add_Rule_Dimension_Directions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Rule Data Quality Dimension.
+        /// </summary>
+        internal static string Add_Rule_Dimension_Title {
+            get {
+                return ResourceManager.GetString("Add_Rule_Dimension_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add a rule to track events against..
         /// </summary>
         internal static string Add_Rule_Directions {
@@ -381,6 +399,15 @@ namespace Resources {
         internal static string Delete_Attribute_Description {
             get {
                 return ResourceManager.GetString("Delete_Attribute_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You cannot delete the selected dimension, there are existing rules which reference this dimension.  Please change the existing rules which reference this dimension before deleting it..
+        /// </summary>
+        internal static string Delete_Error_Rule_Exist {
+            get {
+                return ResourceManager.GetString("Delete_Error_Rule_Exist", resourceCulture);
             }
         }
         
@@ -597,6 +624,24 @@ namespace Resources {
         internal static string Edit_ResponsibilityTypeClaims_Title {
             get {
                 return ResourceManager.GetString("Edit_ResponsibilityTypeClaims_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit an existing data quality dimension that can be used to classify new or existing rules..
+        /// </summary>
+        internal static string Edit_Rule_Dimension_Directions {
+            get {
+                return ResourceManager.GetString("Edit_Rule_Dimension_Directions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit Rule Data Quality Dimension.
+        /// </summary>
+        internal static string Edit_Rule_Dimension_Title {
+            get {
+                return ResourceManager.GetString("Edit_Rule_Dimension_Title", resourceCulture);
             }
         }
         

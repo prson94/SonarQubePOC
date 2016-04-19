@@ -39,9 +39,14 @@
             RuleGridAdapter = null;
             RuleGridSource = null;
                         
+            amplify.unsubscribe("PageResized", listPageResized);
             $('#RuleGrid').off('rowdoubleclick', listRowDoubleClick);                   
             amplify.unsubscribe("SaveAction", saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        }
+
+        function listPageResized() {
+            $("#RuleGrid").jqxGrid('refresh');
         }
 
         function listRowDoubleClick(event) {
@@ -70,7 +75,8 @@
                         { name: 'ID' },
                         { name: 'Name', type: 'string' },
                         { name: 'RuleType', type: 'int' },
-                        { name: 'TypeName', type: 'string' }
+                        { name: 'TypeName', type: 'string' },
+                        { name: 'DimensionName', type: 'string', map:'Dimension>Name' }
                       //  { name: 'Actions' },
                     ],
                     id: 'ID'
@@ -120,9 +126,10 @@
                     pageable: true,
                     showfilterrow: true,
                     columns: [
-                        { text: 'ID', dataField: 'ID', width: '7%' },
-                        { text: 'Name', dataField: 'Name', width: '78%' },
+                        { text: 'ID', dataField: 'ID', width: '50px' },
+                        { text: 'Name', dataField: 'Name' },
                         { text: 'Type', dataField: 'TypeName', width: '10%', filtertype: 'checkedlist' },
+                        { text: 'Dimension', dataField: 'DimensionName', width: '10%', filtertype: 'checkedlist' },
                         {
                             text: '', width: '80px',
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {                                
@@ -138,7 +145,8 @@
 
                 //#endregion
 
-                //#region Event Subscriptions                                
+                //#region Event Subscriptions  
+                amplify.subscribe("PageResized", listPageResized);
                 $('#RuleGrid').on('rowdoubleclick', listRowDoubleClick);
                 amplify.subscribe("SaveAction", saveAction);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);                

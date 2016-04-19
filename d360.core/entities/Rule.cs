@@ -3,6 +3,7 @@ using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using d360.core.enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
 {
@@ -19,6 +20,12 @@ namespace d360.core.entities
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "SourceID_Name", Description = "SourceID_Description"), StringLength(250)]
         public string SourceID { get; set; }
+
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "RuleDimensionID_Name", Description = "RuleDimensionID_Description")]
+        public int? RuleDimensionID { get; set; }
+
+        [DataMember, ForeignKey("RuleDimensionID")]
+        public RuleDimension Dimension { get; set; }
     }
 
 

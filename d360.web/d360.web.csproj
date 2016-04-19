@@ -481,6 +481,7 @@
     <Content Include="Content\templates\parts\LineageDiagram.html" />
     <Content Include="Content\templates\parts\LineageDiagramMappingRules.html" />
     <Content Include="Content\templates\parts\LineageDiagramSourceRules.html" />
+    <Content Include="Content\templates\rules.admin.html" />
     <Content Include="Content\templates\rules.item.html" />
     <Content Include="Content\templates\rules.list.html" />
     <Content Include="Content\templates\policies.list.html" />
@@ -969,6 +970,7 @@
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\templates\artifacts.root.js" />
+    <Content Include="Scripts\templates\rules.admin.js" />
     <Content Include="Scripts\templates\rules.item.js" />
     <Content Include="Scripts\templates\rules.list.js" />
     <Content Include="Scripts\templates\policies.list.js" />

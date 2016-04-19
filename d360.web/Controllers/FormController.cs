@@ -12645,8 +12645,12 @@ order by	D.Name, I.Name";
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "RuleType", Name = model.GetName(i => i.RuleType), FieldDescription = model.GetDescription(i => i.RuleType), Items = RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList(), FieldType = DataType.Lookup.ToString() });
+                        
+            var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+            dimensions.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "RuleDimensionID", Name = model.GetName(i => i.RuleDimensionID), FieldDescription = model.GetDescription(i => i.RuleDimensionID), Items = dimensions, FieldType = DataType.Lookup.ToString() });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -12676,7 +12680,12 @@ order by	D.Name, I.Name";
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, ReadOnly = anyEvents, FieldName = "RuleType", Name = model.GetName(i => i.RuleType), FieldDescription = model.GetDescription(i => i.RuleType), Items = RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList(), FieldType = DataType.Lookup.ToString(), Value = ((int)model.RuleType).ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Html.ToString(), Value = model.Description });
+
+            var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+            dimensions.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "RuleDimensionID", Name = model.GetName(i => i.RuleDimensionID), FieldDescription = model.GetDescription(i => i.RuleDimensionID), Items = dimensions, FieldType = DataType.Lookup.ToString(), Value = model.RuleDimensionID.GetValueOrDefault(-1).ToString()});
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Html.ToString(), Value = model.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -12715,9 +12724,10 @@ order by	D.Name, I.Name";
                 {
                     Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
-                    RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"])
+                    RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"]),
+                    RuleDimensionID = parseNullableIntField(form, "RuleDimensionID")
                 };
-
+                
                 Company.Add<Rule>(model);
 
                 dynamic custom = new
@@ -12826,6 +12836,7 @@ order by	D.Name, I.Name";
                 model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"]);
+                model.RuleDimensionID = parseNullableIntField(form, "RuleDimensionID");
 
                 Company.Update<Rule>(model);
 
@@ -12850,6 +12861,229 @@ order by	D.Name, I.Name";
         }
 
         #endregion
+
+        #endregion
+
+        #region RuleDimension
+
+        #region Field Generation
+
+        public JsonResult RuleDimension_AddFields()
+        {
+            var model = new Rule();
+            if (!Company.HasPermission(SystemObjects.RuleType, 0, Claim.Create, ClaimObject.Root))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });           
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">RuleID</param>
+        public JsonResult RuleDimension_DeleteFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">RuleID</param>
+        public JsonResult RuleDimension_EditFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var model = Company.GetById<RuleDimension>(id);            
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });            
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Html.ToString(), Value = model.Description });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+        
+        public ActionResult AddRuleDimension()
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.RuleDimension,
+                FieldUri = "/form/RuleDimension_AddFields",
+                FormTitle = Resources.FormInfo.Add_Rule_Dimension_Title,
+                FormDescription = Resources.FormInfo.Add_Rule_Dimension_Directions,
+                FormUri = "/form/AddRuleDimension",
+                FormMethod = "POST"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddRuleDimension(FormCollection form)
+        {
+            try
+            {                
+                if (!Company.HasPermission(SystemObjects.RuleType, 0, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
+
+                var model = new RuleDimension
+                {
+                    Name = parseTextField(form, "Name", null, true),
+                    Description = parseTextField(form, "Description"),     
+                    UpdatedBy = Company.CurrentResourceID               
+                };
+
+                Company.Add<RuleDimension>(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "add",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeleteRuleDimension(int id)
+        {
+            var a = Company.GetById<RuleDimension>(id);
+            if (a == null) return HttpNotFound();
+
+            var model = new EditableForm
+            {
+                Context = ContextList.RuleDimension,
+                FieldUri = string.Format("/form/RuleDimension_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
+                FormUri = "/form/DeleteRuleDimension",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteRuleDimension(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<RuleDimension>(id);
+                if (model == null) throw new NotFoundException("RuleDimension");
+
+                if (Company.Rules.Where(x => x.RuleDimensionID == id).Any())
+                {
+                    return jsonException(FormInfo.Delete_Error_Rule_Exist, HttpStatusCode.Forbidden);
+                }
+
+                if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "delete",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult EditRuleDimension(int id)
+        {
+            if (!Company.Exists<RuleDimension>(id)) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.RuleDimension,
+                FieldUri = string.Format("/form/RuleDimension_EditFields?id={0}", id),
+                FormTitle = Resources.FormInfo.Edit_Rule_Dimension_Title,
+                FormDescription = Resources.FormInfo.Edit_Rule_Dimension_Directions,
+                FormUri = "/form/EditRuleDimension",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditRuleDimension(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<RuleDimension>(id);
+                if (model == null) throw new NotFoundException("RuleDimension");
+
+                if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name", null, true);
+                model.Description = parseTextField(form, "Description");
+
+                model.UpdatedBy = Company.CurrentResourceID;
+
+                Company.Update<RuleDimension>(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "edit",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
 
         #endregion
 

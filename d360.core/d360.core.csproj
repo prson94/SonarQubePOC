@@ -88,6 +88,7 @@
     <Compile Include="entities\FusionAgentErrorItem.cs" />
     <Compile Include="entities\IntersectMapGroup.cs" />
     <Compile Include="entities\IntersectTypePredicate.cs" />
+    <Compile Include="entities\RuleDimension.cs" />
     <Compile Include="entities\SourceRuleContext .cs" />
     <Compile Include="entities\IntersectMapSourceRuleContext.cs" />
     <Compile Include="entities\Predicate.cs" />

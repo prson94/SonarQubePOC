@@ -6,7 +6,9 @@
     [UpdatedOn]   DATETIME        NULL,
     [UpdatedBy]   INT             NULL,
     [SourceID]    VARCHAR (250)   NULL,
-    CONSTRAINT [PK_Rule] PRIMARY KEY CLUSTERED ([ID] ASC)
+    [RuleDimensionID] INT		  NULL, 
+    CONSTRAINT [PK_Rule] PRIMARY KEY CLUSTERED ([ID] ASC),
+	CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY ([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID])
 );
 
 

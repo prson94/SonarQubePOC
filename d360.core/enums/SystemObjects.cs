@@ -126,7 +126,9 @@ namespace d360.core
         [Description("Relation")]
         Relation = 59,
         [Description("Relation Type")]
-        RelationType = 60
+        RelationType = 60,
+        [Description("Rule Dimension"), AllowSurvey(false)]
+        RuleDimension = 61,
     }
 
     public class SystemObjectInfo

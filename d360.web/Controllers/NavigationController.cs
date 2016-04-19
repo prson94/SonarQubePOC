@@ -254,6 +254,11 @@ SELECT	'#Admin' as MenuID,
 											'#/relations/administration' AS url, 
 											0 as feature,
 											NULL AS items
+                                    union all
+                                    SELECT	'Rules' AS name, 
+											'#/rules/administration' AS url, 
+											0 as feature,
+											NULL AS items
 									) bg
 							FOR XML PATH('nav'), TYPE
 							) AS items

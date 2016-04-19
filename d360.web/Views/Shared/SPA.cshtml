@@ -153,6 +153,7 @@
             self.ResponsibilityTypeHierarchy = "@(ContextList.ResponsibilityTypeHierarchy)";
             self.Role = "@(ContextList.Role)";
             self.Rule = "@(ContextList.Rule)";
+            self.RuleDimension = "@(ContextList.RuleDimension)";
             self.StatisticType = "@(ContextList.StatisticType)";
             self.StatisticTypeRelation = "@(ContextList.StatisticTypeRelation)";
             self.SurveyType = "@(ContextList.SurveyType)";
@@ -221,6 +222,7 @@
             relations_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Intersect_Title)", "@(Resources.PageInfo.Administration_Intersect_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Intersect_Title)", Active: true }]), templatePath, contextList);
             reporting_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Reporting_Title)", "@(Resources.PageInfo.Administration_Reporting_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Reporting_Title)", Active: true }]), templatePath, contextList);
             resources_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Resource_Title)", "@(Resources.PageInfo.Administration_Resource_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Resource_Title)", Active: true }]), templatePath, contextList);
+            rules_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_RuleType_Title)", "@(Resources.PageInfo.Administration_RuleType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_RuleType_Title)", Active: true }]), templatePath, contextList);
             settings_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_Settings_Title)", "@(Resources.PageInfo.Administration_Settings_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_Settings_Title)", Active: true }]), templatePath, contextList);
             surveys_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_SurveyType_Title)", "@(Resources.PageInfo.Administration_SurveyType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SurveyType_Title)", Active: true }]), templatePath, contextList);
             surveyresponsetypes_admin(this, new PageViewModel("@(Resources.PageInfo.Administration_ResponseType_Title)", "@(Resources.PageInfo.Administration_ResponseType_Description)", [{ Name: adminTitle }, { Name: "@(Resources.PageInfo.Administration_SurveyType_Title)" }, { Name: "@(Resources.PageInfo.Administration_ResponseType_Title)", Active: true }]), templatePath, contextList);

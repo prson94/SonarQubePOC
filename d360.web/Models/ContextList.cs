@@ -77,6 +77,7 @@ public static class ContextList
         public const string Role = "roleform";
 
         public const string Rule = "ruleform";
+        public const string RuleDimension = "ruledimensionform";
 
         public const string StatisticType = "statistictypeform";
         public const string StatisticTypeRelation = "statistictyperelationform";

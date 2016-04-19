@@ -2734,6 +2734,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data Quality Dimension for this rule..
+        /// </summary>
+        public static string RuleDimensionID_Description {
+            get {
+                return ResourceManager.GetString("RuleDimensionID_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dimension.
+        /// </summary>
+        public static string RuleDimensionID_Name {
+            get {
+                return ResourceManager.GetString("RuleDimensionID_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The type of rule defined.  This impacts whether the events under a rule can be assigned..
         /// </summary>
         public static string RuleType_Description {
