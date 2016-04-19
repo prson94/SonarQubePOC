@@ -35,9 +35,23 @@
                 EventCriticalityBreakdownChart('EventCriticalityChart', contextList, type, ruleID, timescale);
             }
 
-            function saveAction(data) {
-                try {
+            function commandExecuted(commandName) {
+                switch (commandName) {
+                    case 'follow':
+                        statisticsTileVm.GetStatistics();
+                        break;
+                }
+            }
+
+            function saveAction(data) {                
+                try {                    
                     switch (data.context) {
+                        case 'commentform':
+                            statisticsTileVm.GetStatistics();
+                            break;
+                        case contextList.Rule:
+                            ObjectDetail('DetailTile', type, ruleID);
+                            break;
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTileContainer', type, ruleID, permissions);
                             break;
@@ -50,6 +64,7 @@
             function unsubscribe(data) {
                 statisticsTileVm = null;
 
+                amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe('EventHeaderSelected', eventHeaderSelected);
                 $('#EventBreakdownTimeScale').off('change', timeScaleChanged);
                 amplify.unsubscribe("SaveAction", saveAction);
@@ -116,6 +131,7 @@
 
                     //#region Event Subscriptions
 
+                    amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe('EventHeaderSelected', eventHeaderSelected);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
