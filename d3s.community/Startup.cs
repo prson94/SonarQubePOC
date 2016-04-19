@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using d3s.community.Models;
 using d3s.community.Services;
+using d3s.community.startup;
+using Microsoft.AspNet.Owin;
 
 namespace d3s.community
 {
@@ -90,6 +92,16 @@ namespace d3s.community
 
             app.UseIdentity();
 
+            app.UseCompanyCheck();
+            app.UseUserCheck();
+
+            //app.UseOwin(pipeline =>
+            //{
+            //    pipeline(n => OwinMiddleware.CompanyCheck);
+            //    pipeline(n => OwinMiddleware.CompanyCheck);
+            //});
+
+
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 
             app.UseMvc(routes =>
@@ -102,5 +114,8 @@ namespace d3s.community
 
         // Entry point for the application.
         public static void Main(string[] args) => WebApplication.Run<Startup>(args);
+
+
+
     }
 }
