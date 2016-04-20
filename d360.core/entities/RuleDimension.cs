@@ -17,12 +17,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string Description { get; set; }
-
-        [DataMember]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+                
         public DateTime UpdatedOn { get; set; }
-
-        [DataMember]
+                
         public int? UpdatedBy { get; set; }
     }
 }

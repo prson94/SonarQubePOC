@@ -12943,8 +12943,9 @@ order by	D.Name, I.Name";
                 {
                     Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),     
-                    UpdatedBy = Company.CurrentResourceID               
-                };
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+            };
 
                 Company.Add<RuleDimension>(model);
 
@@ -13061,6 +13062,7 @@ order by	D.Name, I.Name";
                 model.Description = parseTextField(form, "Description");
 
                 model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
 
                 Company.Update<RuleDimension>(model);
 
