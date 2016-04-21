@@ -38,6 +38,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.diagram canvas {
+  outline: none;
+}
 .qtip-btn-inline {
   display: inline-block !important;
   margin: 2px;
