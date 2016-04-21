@@ -190,9 +190,13 @@ namespace d360.fusion
         {
             if (_workArea.Changes.AddCount > 0 || _workArea.Changes.UpdateCount > 0 || _workArea.Changes.DeleteCount > 0)
             {
-                var res = await companyConnection.ExecuteAsync(@"
+                await companyConnection.ExecuteAsync(@"
                     insert into [queue].[task] ([Action], [Object], [ObjectID]) values ('Notify','FusionExecution',@id)                    
                 ", new { id = ExecutionID }, commandTimeout: ExecuteQueryTimeout);
+
+                await companyConnection.ExecuteAsync(@"
+                    insert into [queue].[task] ([Action], [Object], [ObjectID]) values ('FusionCache','Fusion',@id)                    
+                ", new { id = FusionID  }, commandTimeout: ExecuteQueryTimeout);
             }
         }
         
