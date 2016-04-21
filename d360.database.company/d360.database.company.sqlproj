@@ -490,6 +490,7 @@
     <None Include="dbo\Stored Procedures\GetGroupHierarchy.sql" />
     <None Include="dbo\Tables\IntersectMapSourceTargetRule.sql" />
     <None Include="dbo\Tables\SourceTargetRule.sql" />
+    <None Include="dbo\Tables\BusinessTransformationRules.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

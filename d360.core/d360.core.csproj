@@ -77,6 +77,7 @@
     <Compile Include="attributes\Attributes.cs" />
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
+    <Compile Include="entities\BusinessTransformationRule.cs" />
     <Compile Include="entities\Relation.cs" />
     <Compile Include="entities\RelationType.cs" />
     <Compile Include="entities\Environment.cs" />

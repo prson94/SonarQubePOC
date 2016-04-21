@@ -1,4 +1,25 @@
-﻿<script id="hierarchyRuleContextEditTmpl" type="text/html">
+﻿<script id="businessTransformationEditTmpl" type="text/html">
+    <div style="padding:5px;min-height:300px">
+        <div data-bind="visible: IsLoading" style="padding:30px; text-align:center"><i class="fa fa-3x fa-spinner fa-spin"></i></div>
+        <table data-bind="visible: !IsLoading()">
+            <thead>
+                <tr>
+                    <th style="background-color: #666; color: #fff; width: 35%">&nbsp;Source (<span style="font-weight: 400" data-bind="text: SourceName"></span>)</th>
+                    <th style="background-color: #ebebeb; color: #666; width: 35%">&nbsp;Target (<span style="font-weight: 400" data-bind="text: TargetName"></span>)</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="2" style="padding:10px; text-align:center;">
+                        <textarea style="width:80%; height:120px" data-bind="value: Transformation"></textarea>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</script>
+<script id="hierarchyRuleContextEditTmpl" type="text/html">
     <tr style="margin-bottom: 10px">
         <td style="vertical-align: top">
             <div data-bind="jqxDropDownList: {
@@ -37,9 +58,9 @@
         <table>
             <thead>
                 <tr>
-                    <th style="background-color: #666; color: #fff; width: 35%">Source (<span style="font-weight: 400" data-bind="text: SourceName"></span>)</th>
+                    <th style="background-color: #666; color: #fff; width: 35%">&nbsp;Source (<span style="font-weight: 400" data-bind="text: SourceName"></span>)</th>
                     <th style="min-width: 20px">&nbsp;</th>
-                    <th style="background-color: #ebebeb; color: #666; width: 35%">Target (<span style="font-weight: 400" data-bind="text: TargetName"></span>)</th>
+                    <th style="background-color: #ebebeb; color: #666; width: 35%">&nbsp;Target (<span style="font-weight: 400" data-bind="text: TargetName"></span>)</th>
                     <th style="min-width: 20px">&nbsp;</th>
                     <th>Transformation</th>
                 </tr>

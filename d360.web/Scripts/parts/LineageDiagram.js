@@ -10,6 +10,7 @@
     $('#' + controlID).html(tmpl({ control: controlID }));
 
     var sourceToTargetMappingModel;
+    var transformationModel;
 
     //#region Control constants
 
@@ -71,6 +72,9 @@
     var controlID_ribbon_sourcemapping_add = controlID + '_ribbon_sourcemapping_add';
     var controlID_ribbon_sourcemapping_cancel = controlID + '_ribbon_sourcemapping_cancel';
     var controlID_ribbon_sourcemapping_save = controlID + '_ribbon_sourcemapping_save';
+    var controlID_ribbon_transformation = controlID + '_ribbon_transformation';
+    var controlID_ribbon_transformation_save = controlID + '_ribbon_transformation_save';
+    var controlID_ribbon_transformation_cancel = controlID + '_ribbon_transformation_cancel';
 
     var controlID_popover_add = controlID + '_popover_add';
 
@@ -78,22 +82,27 @@
     var controlID_popover_sourcerule_editor_body = controlID_popover_sourcerule_editor + '_body';
     var controlID_popover_sourcemapping_editor = controlID + '_popover_sourcemapping_editor';
     var controlID_popover_sourcemapping_editor_body = controlID_popover_sourcemapping_editor + '_body';
+    var controlID_popover_transformation_editor = controlID + '_popover_transformation_editor';
+    var controlID_popover_transformation_editor_body = controlID_popover_transformation_editor + '_body';
 
     var controlID_tabs = controlID + '_tabs';
     var controlID_fusion_tab = controlID + '_fusion_tab';
     var controlID_sourcerules_tab = controlID + '_sourcerules_tab';
     var controlID_mappingrules_tab = controlID + '_mappingrules_tab';
     var controlID_responsibilities_tab = controlID + '_responsibilities_tab';
+    var controlID_transformations_tab = controlID + '_transformations_tab';
     var controlID_fusion_content = controlID + '_fusion_content';
     var controlID_sourcerules_content = controlID + '_sourcerules_content';
     var controlID_mappingrules_content = controlID + '_mappingrules_content';
     var controlID_responsibilities_content = controlID + '_responsibilities_content';
+    var controlID_transformations_content = controlID + '_transformations_content';
 
     var tabs = {
         "sourcerules": 0,
         "mappingrules": 1,
         "responsibilities": 2,
-        "fusion": 3
+        "fusion": 3,
+        "transformations": 4
     };
 
     var defaultTabContent = '<div style="height:100px;text-align:center;padding:25px;"><i class="fa fa-2x fa-spinner fa-spin"></i></div>';
@@ -119,11 +128,15 @@
     $("#" + controlID_ribbon_zoom_slider).jqxSlider({ theme: theme, width: 150, showButtons: true, min: 750, max: 2250, value: 1500, showTicks: false });
 
     $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_ribbon_transformation).jqxButton({ theme: theme, height: "100%", width: 98 }).hide();
     $("#" + controlID_ribbon_sourcemapping).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
     $('#' + controlID_ribbon_sourcemapping_add).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_sourcemapping_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_sourcemapping_save).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $('#' + controlID_ribbon_transformation_save).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $('#' + controlID_ribbon_transformation_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('.sourcemapping').hide();
+    $('.transformation').hide();
 
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
@@ -134,6 +147,9 @@
     //#endregion
 
     //#region Event Handlers
+
+    $('#' + controlID_ribbon_expander).on('expanded', toggleRibbon);
+    $('#' + controlID_ribbon_expander).on('collapsed', toggleRibbon);
 
     $("#" + controlID_ribbon_add).on('click', function () {
         if ($(this).jqxButton('disabled'))
@@ -221,6 +237,57 @@
 
     });
 
+    $("#" + controlID_ribbon_transformation).on('click', function () {
+        var selected = myDiagram.selection;
+        if (selected == null)
+            return;
+        var selected = selected.first().data;
+        if (selected == null)
+            return;
+
+
+        var from = {};
+        var to = {};
+
+        if (selected.diagramObjectType == 'Node') {
+            from = {
+                id: selected.id,
+                type: selected.type,
+                name: selected.name,
+                typeName: selected.typeName
+            };
+            to = from;
+        } else {
+            from = myDiagram.model.findNodeDataForKey(selected.from);
+            to = myDiagram.model.findNodeDataForKey(selected.to);
+        }
+
+
+        var data = {
+            Source: from.type,
+            SourceID: from.id,
+            SourceName: from.name,
+            SourceTypeName: from.typeName,
+            Target: to.type,
+            TargetID: to.id,
+            TargetName: to.name,
+            TargetTypeName: to.typeName,
+            Object: type,
+            ObjectID: id,
+            Transformation: ''
+        };
+
+        $('#' + controlID_wrapper).hide();
+        $('.diagramcommands').hide();
+
+        transformationModel = new BusinessTransformationRuleModel(data, permissions);
+        ko.cleanNode($('#' + controlID_popover_transformation_editor_body)[0]);
+        ko.applyBindings(transformationModel, $('#' + controlID_popover_transformation_editor_body)[0]);
+
+        $('#' + controlID_popover_transformation_editor).show();
+        $('.transformation').show();
+    });
+
     $('#' + controlID_ribbon_sourcemapping_add).on('click', function () {
         sourceToTargetMappingModel.AddSourceRule();
     });
@@ -237,6 +304,23 @@
             $('.sourcemapping').fadeOut();
             $('.diagramcommands').show();
             $('#' + controlID_popover_sourcemapping_editor).hide();
+            $('#' + controlID_wrapper).show();
+        });
+    });
+
+    $('#' + controlID_ribbon_transformation_cancel).on('click', function () {
+        $('.transformation').fadeOut();
+        $('#' + controlID_ribbon_transformation_save).show();
+        $('.diagramcommands').show();
+        $('#' + controlID_popover_transformation_editor).hide();
+        $('#' + controlID_wrapper).show();
+    });
+
+    $('#' + controlID_ribbon_transformation_save).on('click', function () {
+        transformationModel.Save().then(function(){
+            $('.transformation').fadeOut();
+            $('.diagramcommands').show();
+            $('#' + controlID_popover_transformation_editor).hide();
             $('#' + controlID_wrapper).show();
         });
     });
@@ -261,37 +345,7 @@
     $('#' + controlID_ribbon_fullscreen).on('click', function () {
         if ($(this).jqxButton('disabled'))
             return;
-        var defaultHtml = '<div style="padding:5px 0 5px 0;"><div><i class="fa fa-2x fa-arrows-alt"></i></div><div style="padding-top:5px">Fullscreen</div></div>';
-        var exitHtml = '<div style="padding:5px 0 5px 0;"><div><i class="fa fa-2x fa-sign-out"></i></div><div style="padding-top:5px">Exit Fullscreen</div></div>';
-        fullscreen = !fullscreen;
-        if (fullscreen) {
-            window.scrollTo(0, 0); //scroll to top
-            $('#' + controlID_ribbon_fullscreen).html(exitHtml);
-            $('#' + controlID_wrapper_fullscreen).css('position', 'fixed')
-                .css('left', '0')
-                .css('top', '0')
-                .css('width', '100%')
-                .height($(window).height())
-                .css('overflow', 'hidden');
-
-            var top = $('#' + controlID_wrapper).position().top;
-
-            $('#' + controlID_wrapper).height($('#' + controlID_wrapper_fullscreen).height() - top - 20);
-            $('#' + controlID_diagram).height($('#' + controlID_wrapper_fullscreen).height() - top - 20);
-
-            $('#' + controlID_sidebar).height($('#' + controlID_wrapper_fullscreen).height() - 20);
-        } else {
-            $('#' + controlID_ribbon_fullscreen).html(defaultHtml);
-            $('#' + controlID_wrapper_fullscreen).attr('style', 'z-index:1000000;background-color:white;');
-            $('#' + controlID_wrapper).height(520);
-            $('#' + controlID_diagram).height(520);
-            $('#' + controlID_sidebar).height(520);
-        }
-        //force this to queue behind browser layout updates
-        setTimeout(function () {
-            myDiagram.requestUpdate();
-            myDiagram.focus();
-        }, 0);
+       toggleFullscreen();
     });
 
     $('#' + controlID_ribbon_save).on('click', function () {
@@ -705,7 +759,10 @@
             exclude: 'false',
             diagramObjectType: "Link",
             sourceMappingCount: 0,
-            hasMappingRules: false
+            hasMappingRules: false,
+            transformationCount: 0,
+            hasTransformations: false,
+            hasProperties: false
         };
     };
 
@@ -734,7 +791,9 @@
             hasMappingRules: false,
             hasSourceRules: false,
             challengeCount: 0,
-            hasChallenges: false
+            hasChallenges: false,
+            transformationCount: 0,
+            hasTransformations: false
         };
     };
 
@@ -1071,7 +1130,8 @@
             },
             makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", fontSize),
             makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", fontSize),
-            makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", fontSize)
+            makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", fontSize),
+            makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", fontSize)
         ),
         g(go.Panel, "Table",
             g(go.TextBlock, {
@@ -1273,6 +1333,44 @@
         toggleTabs(data);
     }
 
+    function toggleFullscreen() {
+
+        var defaultHtml = '<div style="padding:5px 0 5px 0;"><div><i class="fa fa-2x fa-arrows-alt"></i></div><div style="padding-top:5px">Fullscreen</div></div>';
+        var exitHtml = '<div style="padding:5px 0 5px 0;"><div><i class="fa fa-2x fa-sign-out"></i></div><div style="padding-top:5px">Exit Fullscreen</div></div>';
+        fullscreen = !fullscreen;
+        if (fullscreen) {
+            window.scrollTo(0, 0); //scroll to top
+            $('#' + controlID_ribbon_fullscreen).html(exitHtml);
+            $('#' + controlID_wrapper_fullscreen).css('position', 'fixed')
+                .css('left', '0')
+                .css('top', '0')
+                .css('width', '100%')
+                .height($(window).height())
+                .css('overflow', 'hidden');
+
+            var top = $('#' + controlID_wrapper).position().top;
+            var wrapperHeight = $('#' + controlID_wrapper_fullscreen).height();
+            var ribbonHeight = $("#" + controlID_ribbon_expander).height();
+
+            $('#' + controlID_wrapper).height(wrapperHeight - ribbonHeight);
+            $('#' + controlID_diagram).height(wrapperHeight - ribbonHeight);
+
+            $('#' + controlID_sidebar).height(wrapperHeight - ribbonHeight);
+        } else {
+            $('#' + controlID_ribbon_fullscreen).html(defaultHtml);
+            $('#' + controlID_wrapper_fullscreen).attr('style', 'z-index:1000000;background-color:white;');
+            $('#' + controlID_wrapper).height(520);
+            $('#' + controlID_diagram).height(520);
+            $('#' + controlID_sidebar).height(520);
+        }
+        myDiagram.requestUpdate();
+        //force this to queue behind browser layout updates
+        setTimeout(function () {
+            myDiagram.requestUpdate();
+            myDiagram.focus();
+        }, 0);
+    }
+
     function toggleTabs(data) {
         var first = -1;
         var delay = 0;
@@ -1300,6 +1398,8 @@
 
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "block");
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
+
+                
 
                     try {
                         technicalRelationsSource.url = null;
@@ -1338,10 +1438,26 @@
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "none");
                 }
 
+                var tranCount = 0;
+
+                var links = myDiagram.model.linkDataArray;
+                for (var i = 0; i < links.length; i++) {
+                    if (links[i].to == data.key && links[i].hasTransformations)
+                        tranCount++;
+                }
+
+                if (data.hasTransformations || tranCount > 0) {
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "block");
+                    $("#" + controlID_transformations_content).html(defaultTabContent);
+                } else {
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "none");
+                }
+
             } else if (data.diagramObjectType == 'Link') {
                 var from = myDiagram.model.findNodeDataForKey(data.from);
                 var to = myDiagram.model.findNodeDataForKey(data.to);
                 first = tabs["fusion"];
+
 
                 var intersectId = 0;
 
@@ -1367,6 +1483,7 @@
                     TileTools("#" + controlID_info_detail_edit, [
                         { icon: 'pencil', uri: '/form/EditRelationship?id=' + intersectId, context: 'intersectform', title: 'Edit Relationship' }
                     ]);
+                    $('#' + controlID_info_detail_edit).on('click', function () { if (fullscreen) toggleFullscreen(); })
                 } else {
                     $("#" + controlID_info_detail_edit).html('');
                 }
@@ -1377,6 +1494,7 @@
 
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "none");
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
+                
 
                 try {
                     technicalRelationsSource.url = null;
@@ -1395,6 +1513,13 @@
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
                 }
 
+                if (data.hasTransformations) {
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "block");
+                    $("#" + controlID_transformations_content).html(defaultTabContent);
+                } else {
+                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "none");
+                }
+
                 if (to.hasSourceRules) {
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "block");
                     $("#" + controlID_sourcerules_content).html(defaultTabContent);
@@ -1402,8 +1527,6 @@
                 } else {
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "none");
                 }
-
-
             }
         }
 
@@ -1433,6 +1556,29 @@
 
         switch(index)
         {
+            case tabs["transformations"]:
+                url = 'form/transformation/load/' + type + '/' + id + '/';
+                if (selectedData.diagramObjectType == 'Node') {
+                    url += selectedData.type + '/' + selectedData.id;
+                } else {
+                    url += from.type + '/' + from.id + '/' + to.type + '/' + to.id;
+                }
+                $.ajax({
+                    url: url
+                }).done(function (data) {
+                    if (data.rules == null && data.rule != null) {
+                        data.rules = [];
+                        data.rules.push(data.rule);
+                    }
+                        
+                    var transformationTemplate = Handlebars.getTemplate('LineageDiagramBusinessTransformations');
+                    $('#' + controlID_transformations_content).html(transformationTemplate(data));
+
+                }).fail(function () {
+                    $('#' + controlID_transformations_content).html(defaultTabContent);
+                });
+
+                break;
             case tabs["fusion"]:
                 url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + selectedData.type + '&tID=' + selectedData.id;
                 if (selectedData.diagramObjectType != 'Node') {
@@ -1507,16 +1653,19 @@
         }
         if (data == null) {
             $("#" + controlID_ribbon_sourcerule_add).hide(delay);
+            $("#" + controlID_ribbon_transformation).hide(delay);
             $("#" + controlID_ribbon_sourcemapping).hide(delay);
             $("#" + controlID_ribbon_remove).hide(delay);
         } else {
             if (data.diagramObjectType == 'Node') {
                 if (!readonly) {
                     $("#" + controlID_ribbon_sourcemapping).show(delay);
+                    $("#" + controlID_ribbon_transformation).show(delay);
                     $("#" + controlID_ribbon_sourcerule_add).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
                     $("#" + controlID_ribbon_sourcemapping).hide(delay);
+                    $("#" + controlID_ribbon_transformation).hide(delay);
                     $("#" + controlID_ribbon_sourcerule_add).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
@@ -1525,13 +1674,33 @@
 
                 if (!readonly) {
                     $("#" + controlID_ribbon_sourcemapping).show(delay);
+                    $("#" + controlID_ribbon_transformation).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
                     $("#" + controlID_ribbon_sourcemapping).hide(delay);
+                    $("#" + controlID_ribbon_transformation).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
             }
         }
+    }
+
+    function toggleRibbon()
+    {
+        if (!fullscreen)
+            return;
+
+        var ribbonHeight = $('#' + controlID_ribbon_expander).height();
+        var wrapperHeight = $('#' + controlID_wrapper_fullscreen).height()
+
+        var top = $('#' + controlID_wrapper).position().top;
+
+        $('#' + controlID_wrapper).height(wrapperHeight - ribbonHeight);
+        $('#' + controlID_diagram).height(wrapperHeight - ribbonHeight);
+        $('#' + controlID_sidebar).height(wrapperHeight - ribbonHeight);
+
+        myDiagram.focus();
+        myDiagram.requestUpdate();
     }
 
     function onSelectionChange(e) {
@@ -1547,7 +1716,6 @@
                 selectedData = sel[0].data;
             }
         }
-
         refreshControls(selectedData);
     }
 
@@ -1719,6 +1887,7 @@
             model.hasMappingRules = (d.mappingRuleCount > 0);
             model.challengeCount = d.challengeCount;
             model.hasChallenges = (d.challengeCount > 0);
+            model.hasTransformations = (d.transformationCount > 0);
             modelList.push(model);
         }
 
@@ -1735,6 +1904,8 @@
             link.diagramObjectType = "Link";
             link.sourceMappingCount = d.mappingRuleCount;
             link.hasMappingRules = (d.mappingRuleCount > 0);
+            link.hasTransformations = (d.transformationCount > 0);
+            link.hasProperties = (link.hasTransformations || link.hasMappingRules);
             linkList.push(link);
         }
 
@@ -1998,8 +2169,8 @@
     myDiagram.linkTemplate = g(
         go.Link, { routing: go.Link.AvoidsNodes, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel
         g(go.Shape, { stroke: "gray", strokeWidth: 2 },
-            new go.Binding("strokeWidth", "hasMappingRules", function (h) { return h ? 3 : 2;}),
-            new go.Binding("stroke", "hasMappingRules", function (h) { return h ? "black" : "gray" })), // the link shape
+            new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2;}),
+            new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
         g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
         g(go.Panel, "Auto",
             g(go.Shape, { visible: false, fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }), stroke: null },
@@ -2045,6 +2216,8 @@
                         if (obj != null) {
                             myDiagram.model.setDataProperty(obj, "sourceMappingCount", data.count);
                             myDiagram.model.setDataProperty(obj, "hasMappingRules", (data.count > 0 ? true : false));
+                            if (obj.diagramObjectType == 'Link')
+                                myDiagram.model.setDataProperty(obj, "hasProperties", (data.count > 0 ? true : false));
                         }
                     }
                     refreshControls(selectedData);
@@ -2060,6 +2233,29 @@
                                 myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "sourceRuleCount", count);
                                 myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "hasSourceRules", true);
                             }
+                        }
+                    }
+                    refreshControls(selectedData);
+                    break;
+                case 'transformationrule':
+                    if (data.source && data.sourceID && data.target && data.targetID && data.count != null) {
+                        var ix = -1;
+                        var obj = null;
+
+                        if (data.source == data.target && data.sourceID == data.targetID) {
+                            var ix = findNodeIndexByObject(data.source, data.sourceID);
+                            if (ix > -1)
+                                obj = myDiagram.model.nodeDataArray[ix];
+                        } else {
+                            var ix = findLinkIndexByObjects(data.source, data.sourceID, data.target, data.targetID);
+                            if (ix > -1)
+                                obj = myDiagram.model.linkDataArray[ix];
+                        }
+                        if (obj != null) {
+                            myDiagram.model.setDataProperty(obj, "transformationCount", data.count);
+                            myDiagram.model.setDataProperty(obj, "hasTransformations", (data.count > 0 ? true : false));
+                            if (obj.diagramObjectType == 'Link')
+                                myDiagram.model.setDataProperty(obj, "hasProperties", (data.count > 0 ? true : false));
                         }
                     }
                     refreshControls(selectedData);

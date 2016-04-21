@@ -54,6 +54,8 @@ namespace d360.web.Controllers
             public int RawMappingRuleCount { get; set; }
             public int LinkMappingRuleCount { get; set; }
             public int ChallengeCount { get; set; }
+            public int RawTransformationCount { get; set; }
+            public int LinkTransformationCount { get; set; }
         }
 
         public class HierarchyModel
@@ -1182,12 +1184,11 @@ from	(
 
             #region SQL
 
-            var sql1 = @"
-                        declare @tbl table	(
+            var sql1 = @"                        					    declare @tbl table	(
 					                        IntersectID int, IntersectTypeID int, ID int, 
 					                        SubjectNodeID int, SubjectTypeName nvarchar(1000), SourceType varchar(50), SourceTypeID int, SubjectObjectName nvarchar(1000), Subject varchar(50), SubjectID int, SubjectBackColor varchar(10), SubjectForeColor varchar(10),  
 					                        ObjectNodeID int, ObjectTypeName nvarchar(1000), ObjectType varchar(50), ObjectTypeID int, ObjectObjectName nvarchar(1000), Object varchar(50), ObjectID int, ObjectBackColor varchar(10), ObjectForeColor varchar(10),
-					                        PredicateID int, Predicate nvarchar(250), MappingRuleCount int
+					                        PredicateID int, Predicate nvarchar(250), MappingRuleCount int, TransformationCount int
 					                        )
                         insert into @tbl
 	                        select	distinct
@@ -1214,7 +1215,8 @@ from	(
 			                        TD.[IconForeColor] as TargetIconForeColor,
 			                        M.PredicateID,
 			                        P.Name as Predicate,
-			                        0
+			                        0,
+									0
 	                        from	IntersectMap M
 			                        inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
 			                        inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
@@ -1247,7 +1249,8 @@ from	(
 			                        TD.[IconForeColor] as TargetIconForeColor,
 			                        M.PredicateID,
 			                        P.Name as Predicate,
-			                        0
+			                        0,
+									0
 	                        from	IntersectMap M
 			                        inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.SourceObject = @type and R.SourceObjectID = @id and M.[Type] = 1
 			                        inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
@@ -1278,7 +1281,8 @@ from	(
 			                        TD.[IconForeColor] as TargetIconForeColor,
 			                        M.PredicateID,
 			                        P.Name as Predicate,
-			                        0
+			                        0,
+									0
 	                        from	IntersectMap M
 			                        inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.TargetObject = @type and R.TargetObjectID = @id and M.[Type] = 1
 			                        inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
@@ -1286,23 +1290,30 @@ from	(
 			                        inner join Predicate P on P.ID = M.PredicateID
 
                         update r
-                        set r.mappingrulecount = l.[Count]
+                        set r.mappingrulecount = l.[Count],
+						r.transformationcount = t.[Count]
                         from @tbl r
                         cross apply (
 				                        select count(1) as [Count]
 				                        from SourceTargetRule
 				                        where FocalObjectID = @id and FocalObject = @type and SourceObject = r.Subject and SourceObjectID = r.SubjectID and TargetObject = r.Object and TargetObjectID = r.ObjectID
-			                        ) l;
+			                        ) l
+						cross apply (
+				                        select count(1) as [Count]
+				                        from BusinessTransformationRule
+				                        where FocalObjectID = @id and FocalObject = @type and SourceObject = r.Subject and SourceObjectID = r.SubjectID and TargetObject = r.Object and TargetObjectID = r.ObjectID
+			                        ) t;
+
 
                         declare @h table	(
 					                        ID int, [Type] varchar(1), IsStart bit, IsEnd bit,
 					                        [Level] int, NodeID int, TypeName nvarchar(1000), [ObjectType] varchar(50), ObjectTypeID int, ObjectName nvarchar(1000), O varchar(50), OID int, BackColor varchar(10), ForeColor varchar(10),
 					                        IntersectID int, IntersectTypeID int,  PredicateID int, Predicate nvarchar(250),
-					                        RawSourceRuleCount int, RawMappingRuleCount int, LinkMappingRuleCount int, ChallengeCount int
+					                        RawSourceRuleCount int, RawMappingRuleCount int, LinkMappingRuleCount int, ChallengeCount int, RawTransformationCount int, LinkTransformationCount int
 					                        )
 
                         insert into @h
-	                        select	ID, 'S', 0, 0, 0, SubjectNodeID, SubjectTypeName, SourceType, SourceTypeID, SubjectObjectName, Subject, SubjectID, SubjectBackColor, SubjectForeColor, IntersectID, IntersectTypeID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount, C.[Count]
+	                        select	ID, 'S', 0, 0, 0, SubjectNodeID, SubjectTypeName, SourceType, SourceTypeID, SubjectObjectName, Subject, SubjectID, SubjectBackColor, SubjectForeColor, IntersectID, IntersectTypeID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount, C.[Count], T.[Count], S.TransformationCount
 	                        from	@tbl S
 			                        cross apply (
 						                        select	count(1) as [Count]
@@ -1315,35 +1326,39 @@ from	(
 						                            where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Subject and SourceObjectID = S.SubjectID and TargetObject = S.Subject and TargetObjectID = S.SubjectID
 						                        ) M
 									cross apply (
+						                            select count(1) as [Count]
+						                            from BusinessTransformationRule
+						                            where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Subject and SourceObjectID = S.SubjectID and TargetObject = S.Subject and TargetObjectID = S.SubjectID
+						                        ) T
+									cross apply (
 													select count(1) as [Count]     
 													from Workflow W            			                          
 													where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column(""S.SubjectID"")]') = 1 and W.DateCompleted is null   
 												) C
                         insert into @h
 
-                            select ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectType, ObjectTypeID, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, IntersectTypeID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount, C.[Count]
+                            select ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectType, ObjectTypeID, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, IntersectTypeID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount, C.[Count], T.[Count], S.TransformationCount
 
                             from @tbl S
 
                                     cross apply(
                                                 select  count(1) as [Count]
-
                                                 from SourceRule
-
                                                 where AppliesToObject = @type and AppliesToObjectID = @id and Object = S.Object and ObjectID = S.ObjectID
                                                 ) R
                                     cross apply(
                                                     select count(1) as [Count]
-
                                                     from SourceTargetRule
-
                                                     where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Object and SourceObjectID = S.ObjectID and TargetObject = S.Object and TargetObjectID = S.ObjectID
                                                 ) M
+									cross apply(
+                                                    select count(1) as [Count]
+                                                    from BusinessTransformationRule
+                                                    where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Object and SourceObjectID = S.ObjectID and TargetObject = S.Object and TargetObjectID = S.ObjectID
+                                                ) T
                                     cross apply(
                                                     select count(1) as [Count]
-
                                                     from Workflow W
-
                                                     where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column(""S.ObjectID"")]') = 1 and W.DateCompleted is null
                                                 ) C
                         update  T
@@ -1397,14 +1412,14 @@ from	(
                 var s = list.Single(i => i.ID == m && i.Type == "S");
                 var sKey = $"{s.Level}{s.O}{s.OID}";
                 if (!model.nodes.Any(i => i.key == sKey))
-                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, objecttype = s.ObjectType, objecttypeid = s.ObjectTypeID, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID, mappingRuleCount = s.RawMappingRuleCount, challengeCount = s.ChallengeCount }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
+                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, objecttype = s.ObjectType, objecttypeid = s.ObjectTypeID, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID, mappingRuleCount = s.RawMappingRuleCount, challengeCount = s.ChallengeCount, transformationCount = s.RawTransformationCount }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
                 //else
                 //    model.nodes.First(i => i.key == sKey).sourceRuleCount = getTotal(s.O, s.OID, s.Type);
 
                 var o = list.Single(i => i.ID == m && i.Type == "O");
                 var oKey = $"{o.Level}{o.O}{o.OID}";
                 if (!model.nodes.Any(i => i.key == oKey))
-                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, objecttype = o.ObjectType, objecttypeid = o.ObjectTypeID, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type), mappingRuleCount = o.RawMappingRuleCount, challengeCount = o.ChallengeCount });
+                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, objecttype = o.ObjectType, objecttypeid = o.ObjectTypeID, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type), mappingRuleCount = o.RawMappingRuleCount, challengeCount = o.ChallengeCount, transformationCount = o.RawTransformationCount });
                 else
                     model.nodes.First(i => i.key == oKey).sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type);
 
@@ -1415,7 +1430,7 @@ from	(
                 }
                 else
                 {
-                    model.links.Add(new JsonLinkItem { id = s.ID, intersectTypeId = s.IntersectTypeID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID, mappingRuleCount = s.LinkMappingRuleCount });
+                    model.links.Add(new JsonLinkItem { id = s.ID, intersectTypeId = s.IntersectTypeID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID, mappingRuleCount = s.LinkMappingRuleCount, transformationCount = s.LinkTransformationCount });
                 }
             });
 

@@ -2028,6 +2028,138 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region BusinessTransformationRule
+
+        [HttpGet, Route("transformation/load/{focal}/{focalid}/{source}/{sourceid}/{target}/{targetid}")]
+        public JsonNetResult LoadBusinessTransformationRule(string focal, int focalid, string source, int sourceid, string target, int targetid)
+        {
+            var rule = Company.Filter<BusinessTransformationRule>(b => 
+                b.FocalObject == focal && 
+                b.FocalObjectID == focalid && 
+                b.SourceObject == source && 
+                b.SourceObjectID == sourceid && 
+                b.TargetObject == target && 
+                b.TargetObjectID == targetid).SingleOrDefault();
+            if (rule != null)
+            {
+                var sourceObj = Company.GetObjectDetail(source, sourceid);
+                var targetObj = Company.GetObjectDetail(target, targetid);
+
+                rule.SourceName = sourceObj.Name;
+                rule.SourceTypeName = sourceObj.TypeName;
+                rule.SourceForeColor = sourceObj.IconForeColor;
+                rule.SourceBackColor = sourceObj.IconBackColor;
+
+                rule.TargetName = targetObj.Name;
+                rule.TargetTypeName = targetObj.TypeName;
+                rule.TargetForeColor = targetObj.IconForeColor;
+                rule.TargetBackColor = targetObj.IconBackColor;
+            }
+
+
+            return new JsonNetResult
+            {
+                Data = new { rule },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, Route("transformation/save")]
+        public JsonNetResult SaveBusinessTransformationRule(BusinessTransformationRule rule)
+        {
+            var error = false;
+            var message = "";
+
+            if (rule.ID < 1)
+            {
+                if (string.IsNullOrWhiteSpace(rule.Transformation))
+                {
+                    return new JsonNetResult
+                    {
+                        Data = new { error, message },
+                        Formatting = Newtonsoft.Json.Formatting.None
+                    };
+                }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(rule.Transformation))
+                {
+                    try
+                    {
+                        rule = Company.GetById<BusinessTransformationRule>(rule.ID);
+                        Company.Delete(rule);
+                    }
+                    catch (Exception ex)
+                    {
+                        error = true;
+                        message += $"[{DateTime.Now}] An error occurred while trying to save the transformation.\n{ex.Message}\n{ex.StackTrace}";
+                    }
+                    return new JsonNetResult
+                    {
+                        Data = new { error, message },
+                        Formatting = Newtonsoft.Json.Formatting.None
+                    };
+                }
+            }
+            try
+            {
+                Company.SaveOrUpdate(rule);
+            }
+            catch (Exception ex)
+            {
+                error = true;
+                message += $"[{DateTime.Now}] An error occurred while trying to save the transformation.\n{ex.Message}\n{ex.StackTrace}";
+            }
+            return new JsonNetResult
+            {
+                Data = new { error, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpGet, Route("transformation/load/{focal}/{focalid}/{target}/{targetid}")]
+        public JsonNetResult LoadBusinessTransformationRulesByTarget(string focal, int focalid, string target, int targetid)
+        {
+            var rules = Company.Filter<BusinessTransformationRule>(b =>
+                b.FocalObject == focal &&
+                b.FocalObjectID == focalid &&
+                b.TargetObject == target &&
+                b.TargetObjectID == targetid).ToList();
+
+            var targetObj = Company.GetObjectDetail(target, targetid);
+
+            rules.ForEach(r =>
+            {
+                ObjectDetail sourceObj;
+                if (r.SourceObject == r.TargetObject && r.SourceObjectID == r.TargetObjectID)
+                    sourceObj = targetObj;
+                else
+                    sourceObj = Company.GetObjectDetail(r.SourceObject, r.SourceObjectID);
+
+                r.SourceName = sourceObj.Name;
+                r.SourceTypeName = sourceObj.TypeName;
+                r.SourceForeColor = sourceObj.IconForeColor;
+                r.SourceBackColor = sourceObj.IconBackColor;
+
+                r.TargetName = targetObj.Name;
+                r.TargetTypeName = targetObj.TypeName;
+                r.TargetForeColor = targetObj.IconForeColor;
+                r.TargetBackColor = targetObj.IconBackColor;
+            });
+
+            return new JsonNetResult
+            {
+                Data = new { rules },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
+        #endregion
+
         #region Company Settings
 
         public JsonNetResult CompanySettings()

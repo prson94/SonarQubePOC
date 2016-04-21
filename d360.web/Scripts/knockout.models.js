@@ -1252,6 +1252,76 @@ function CompanySettingsViewModel(data) {
     return self;
 }
 
+function BusinessTransformationRuleModel(data, permissions) {
+    var self = this;
+    self.IsLoading = ko.observable(false);
+    self.ID = ko.observable(data.ID || 0);
+    self.Object = ko.observable(data.Object);
+    self.ObjectID = ko.observable(data.ObjectID);
+    self.Source = ko.observable(data.Source);
+    self.SourceID = ko.observable(data.SourceID);
+    self.SourceName = ko.observable(data.SourceName);
+    self.SourceTypeName = ko.observable(data.SourceTypeName);
+    self.Target = ko.observable(data.Target);
+    self.TargetID = ko.observable(data.TargetID);
+    self.TargetName = ko.observable(data.TargetName);
+    self.TargetTypeName = ko.observable(data.TargetTypeName);
+    self.Transformation = ko.observable(data.Transformation);
+
+    self.Load = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: 'form/transformation/load/' + self.Object() + '/' + self.ObjectID() + '/' + self.Source() + '/' + self.SourceID() + '/' + self.Target() + '/' + self.TargetID()
+        }).done(function (data) {
+            if (data == null || data.rule == null)
+                return;
+            self.ID(data.rule.ID);
+            self.Transformation(data.rule.Transformation);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.Load();
+
+    self.Save = function () {
+        self.IsLoading(true);
+        var deferred = $.Deferred();
+
+        var data = {
+            ID: self.ID(),
+            FocalObject: self.Object(),
+            FocalObjectID: self.ObjectID(),
+            SourceObject: self.Source(),
+            SourceObjectID: self.SourceID(),
+            TargetObject: self.Target(),
+            TargetObjectID: self.TargetID(),
+            Transformation: self.Transformation()
+        };
+
+
+        $.ajax({
+            url: 'form/transformation/save',
+            data: data,
+            method: 'POST'
+        }).done(function (data) {
+            if (data && data.error == false) {
+                if (self.Transformation() == null || self.Transformation().match(/^\s*$/) != null)
+                    count = 0;
+                else
+                    count = 1;
+                amplify.publish("SaveAction", { context: 'transformationrule', count: count, source: self.Source(), sourceID: self.SourceID(), target: self.Target(), targetID: self.TargetID() });
+            }
+        }).always(function () {
+            self.IsLoading(false);
+            deferred.resolve();
+        });
+
+        return deferred.promise();
+    }
+    
+}
+
 function SourceToTargetMappingModel(data, permissions) {
     var self = this;
     self.Object = ko.observable(data.Object);

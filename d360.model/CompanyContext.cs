@@ -92,6 +92,8 @@ namespace d360.model
 
         public DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }    /* VIEW */
 
+        public DbSet<BusinessTransformationRule> BusinessTransformationRules { get; set; }
+
         public DbSet<Comment> Comments { get; set; }
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
