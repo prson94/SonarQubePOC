@@ -66,6 +66,8 @@
 
                 $('#SideIcons').PageTools({ type: type, id: 0 });
                 
+
+                var loadAfterPermissionsRetrieved = function () {
                 //#region RuleGrid
 
                 RuleGridSource = {
@@ -134,8 +136,12 @@
                             text: '', width: '80px',
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {                                
                                 var tools = [];
-                                tools.push({ icon: 'pencil', urlprefix: 'form/editrule?id=' + data.ID });
-                                tools.push({ icon: 'trash-o', urlprefix: 'form/deleterule?id=' + data.ID });
+                                if (permissions.HasPermission("Root", "Update")) {
+                                    tools.push({ icon: 'pencil', urlprefix: 'form/editrule?id=' + data.ID });
+                                }
+                                if (permissions.HasPermission("Root", "Delete")) {
+                                    tools.push({ icon: 'trash-o', urlprefix: 'form/deleterule?id=' + data.ID });
+                                }                                
 
                                 return renderToolsHtml(value, tools, contextList.Rule, data);
                             }
@@ -150,7 +156,11 @@
                 $('#RuleGrid').on('rowdoubleclick', listRowDoubleClick);
                 amplify.subscribe("SaveAction", saveAction);
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);                
-                //#endregion
+                    //#endregion
+
+                }
+
+                permissions.GetPermissionsForObject(type, 0).then(loadAfterPermissionsRetrieved);
             });
     }
 
