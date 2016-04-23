@@ -792,6 +792,10 @@
             hasSourceRules: false,
             challengeCount: 0,
             hasChallenges: false,
+            openEventCount: 0,
+            hasOpenEvents: false,
+            openIssueCount: 0,
+            hasOpenIssues: false,
             transformationCount: 0,
             hasTransformations: false
         };
@@ -1131,7 +1135,10 @@
             makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", fontSize),
             makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", fontSize),
             makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", fontSize),
-            makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", fontSize)
+            makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", fontSize),
+            makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", fontSize),
+            makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", fontSize),
+            makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", fontSize)
         ),
         g(go.Panel, "Table",
             g(go.TextBlock, {
@@ -1235,7 +1242,8 @@
                  alignment: go.Spot.Center,
                  editable: false,
                  font: (fontSize) + "pt FontAwesome",
-                 text: icon
+                 text: icon,
+                 toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: tooltip })))
              },
              new go.Binding("stroke", "backColor")
          ),
@@ -1887,6 +1895,10 @@
             model.hasMappingRules = (d.mappingRuleCount > 0);
             model.challengeCount = d.challengeCount;
             model.hasChallenges = (d.challengeCount > 0);
+            model.openEventCount = d.openEventCount;
+            model.hasOpenEvents = (d.openEventCount > 0);
+            model.openIssueCount = d.openIssueCount;
+            model.hasOpenIssues = (d.openIssueCount > 0);
             model.hasTransformations = (d.transformationCount > 0);
             modelList.push(model);
         }
@@ -2025,99 +2037,61 @@
         var nodeChanges = getNodeChanges();
         var linkChanges = getLinkChanges();
 
-        var flagError = false;
-        var errors = "";
-
-        var promises = [];
+        var model = {
+            Adds: [],
+            Deletes: [],
+            Edits: []
+        };
 
         for (var i = 0; i < nodeChanges.deleted.length; i++) {
             var node = nodeChanges.deleted[i];
-            var data = {
-                target: type,
-                targetID: id,
-                id: node.intersectMapId
-            };
-
-            promises.push($.ajax({
-                async: true,
-                method: 'DELETE',
-                url: '/relations/' + data.target + '/' + data.targetID + '/sources/' + data.id
-            }).done(function (data, status, xhr) {
-                if (!data.success) {
-                    flagError = true;
-                    errors += data.message;
-                }
-            }).fail(function (xhr, status, error) {
-                flagError = true;
-                errors += data.message;
-            }));
-
+            model.Deletes.push({
+                Focal: type,
+                FocalID: id,
+                IntersectMapID: node.intersectMapId
+            });
         }
 
         for (var i = 0; i < linkChanges.added.length; i++) {
             var link = linkChanges.added[i];
+
             var to = myDiagram.model.findNodeDataForKey(link.to);
             var from = myDiagram.model.findNodeDataForKey(link.from);
             var predicate = link.predicateId;
 
-            var source = {
-                target: type,
-                targetID: id,
-                subject: from.type,
-                subjectID: from.id,
-                object: to.type,
-                objectID: to.id,
-                predicateID: link.predicateId
-            };
-
-            promises.push($.ajax({
-                url: '/Relations/sources',
-                async: true,
-                data: JSON.stringify(source),
-                processData: false,
-                type: 'POST',
-                contentType: "application/json; charset=utf-8",
-                dataType: "json"
-            }).done(function (data) {
-                if (!data.success) {
-                    flagError = true;
-                    errors += data.message;
-                }
-            }).fail(function (data) {
-                flagError = true;
-                errors += data.message;
-            }));
-
+            model.Adds.push({
+                Focal: type,
+                FocalID: id,
+                Subject: from.type,
+                SubjectID: from.id,
+                Object: to.type,
+                ObjectID: to.id,
+                PredicateID: link.predicateId
+            });
         }
 
         for (var i = 0; i < linkChanges.modified.length; i++) {
-            var data = {
-                intersectMapID: linkChanges.modified[i].id,
-                predicateID: linkChanges.modified[i].predicateId
-            };
-
-            if (data.intersectMapID == null || data.predicateID == null)
-                continue;
-
-            promises.push($.ajax({
-                url: '/relations/update/' + data.intersectMapID + '/' + data.predicateID,
-                async: true
-            }).fail(function (data) {
-                flagError = true;
-                errors += data.message;
-            }));
-
+            model.Edits.push({
+                IntersectMapID: linkChanges.modified[i].id,
+                PredicateID: linkChanges.modified[i].predicateId
+            });
         }
 
-        $.when.apply($, promises).done(function () {
-            if (flagError) {
-                amplify.publish("SourceFormStatus", { title: 'An error occurred while saving changes.', message: errors, success: false });
-            } else {
-                amplify.publish("SourceSave");
-                deletedNodes = [];
-                populateDiagram();
-                $('#' + controlID_ribbon_save_spinner).hide();
-            }
+        $.ajax({
+            url: '/relations/sources',
+            async: true,
+            data: JSON.stringify(model),
+            processData: false,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json"
+        }).fail(function (data) {
+            amplify.publish("ShowMessage", { title: 'An error occurred while saving changes.', message: data.message, success: false });
+        }).done(function () {
+            amplify.publish("ShowMessage", { title: 'Success', message: 'Updated lineage diagram.', success: true });
+            deletedNodes = [];
+            populateDiagram();
+            $('#' + controlID_ribbon_save_spinner).hide();
         });
     }
 

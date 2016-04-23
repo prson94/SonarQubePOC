@@ -1,7 +1,7 @@
-﻿CREATE procedure [dbo].[ProcessBulkLoad] 
+﻿CREATE procedure [dbo].[ProcessBulkLoad]
 --declare
 	@LoadID int
---set @LoadID = 201
+--set @LoadID = 29
 as
 begin
 	set nocount on;

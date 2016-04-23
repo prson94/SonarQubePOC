@@ -1,6 +1,7 @@
 ﻿using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using d360.core.enums;
+using System.Collections.Generic;
 
 namespace d360.core.entities
 {
@@ -18,5 +19,8 @@ namespace d360.core.entities
 
         [DataMember]
         public MapType Type { get; set; }
+
+        [DataMember]
+        public virtual ICollection<IntersectMapSourceRule> IntersectMapSourceRules { get; set; }
     }
 }

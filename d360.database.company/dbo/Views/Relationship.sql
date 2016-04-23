@@ -1,38 +1,48 @@
-﻿
-CREATE view [dbo].[Relationship]
+﻿CREATE view [dbo].[Relationship]
 as
-	select	R.IntersectTypeID,
+	select	I.IntersectTypeID,
 			R.IntersectID,
-			case R.Classification
+			case I.Classification
 				when 0 then 2
-				else R.Classification
+				else I.Classification
 			end as Classification,
-			R.Description,
-			R.[Role],
+			I.Description,
+			substring((
+						select	', ' + P.Name as [text()]
+						from	IntersectMap IM
+								inner join [Predicate] P on	P.ID = IM.PredicateID	
+															and (
+																(IM.SubjectIntersectNodeID = R.[SourceIntersectNodeID] and IM.ObjectIntersectNodeID = R.[TargetIntersectNodeID]) or
+																(IM.SubjectIntersectNodeID = R.[TargetIntersectNodeID] and IM.ObjectIntersectNodeID = R.[SourceIntersectNodeID])
+																)
+						for xml path('')
+						), 3, 1000) as [Role],
+			--R.[Role],
 			R.SourceIntersectTypeNodeID,
 			R.SourceObject as SourceObjectType,
 			R.SourceObjectID,
-			coalesce(S.TextPath, R.SourceObjectName) as SourceName, 
+			coalesce(S.TextPath, S.Name) as SourceName, 
 			S.Parent as SourceParent,
 			S.ParentID as SourceParentID,
 			S.ParentName as SourceParentName,
-			R.SourceTypeID,
-			R.SourceType,
-			R.SourceTypeName,
-			dbo.GenerateObjectUrl(R.SourceObject, R.SourceTypeID, R.SourceObjectID) as SourceUrl,
+			S.ObjectTypeID as SourceTypeID,
+			S.ObjectType as SourceType,
+			S.ObjectTypeName as SourceTypeName,
+			S.[Url] as SourceUrl,
 			R.TargetIntersectTypeNodeID,
-			R.TargetObject as TargetObjectType,
-			R.TargetObjectID,
-			coalesce(T.TextPath, R.TargetObjectName) as TargetName,
+			T.Object as TargetObjectType,
+			T.ObjectID as TargetObjectID,
+			coalesce(T.TextPath, T.Name) as TargetName,
 			T.Parent as TargetParent,
 			T.ParentID as TargetParentID,
 			T.ParentName as TargetParentName,
-			R.TargetTypeID,
-			R.TargetType,
-			R.TargetTypeName,
-			dbo.GenerateObjectUrl(R.TargetObject, R.TargetTypeID, R.TargetObjectID) as TargetUrl,
+			T.ObjectTypeID as TargetTypeID,
+			T.ObjectType as TargetType,
+			T.ObjectTypeName as TargetTypeName,
+			T.[Url] as TargetUrl,
 			TR.[Exists] as HasTechnicalRelationships
-	from	cache.Relationships R
+	from	cache.Relationship R
+			inner join [Intersect] I on I.ID = R.IntersectID
 			left join [cache].[ObjectDetails] S on S.[Object] = R.SourceObject and S.ObjectID = R.SourceObjectID
 			left join [cache].[ObjectDetails] T on T.[Object] = R.TargetObject and T.ObjectID = R.TargetObjectID
 			cross apply (

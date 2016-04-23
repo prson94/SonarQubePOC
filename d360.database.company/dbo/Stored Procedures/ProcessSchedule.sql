@@ -1,4 +1,4 @@
-﻿create procedure [dbo].[ProcessSchedule]
+﻿CREATE procedure [dbo].[ProcessSchedule]
 as
 begin
 	set nocount on;
@@ -15,7 +15,6 @@ begin
 			@LastRunComplete bit,
 			@IntervalType int,
 			@Interval int,
-			@QueueCount int,
 			@MinDateJobMustStartNext datetime,
 			@ShouldTriggerJob bit
 
@@ -31,8 +30,7 @@ begin
 				@IntervalType = F.IntervalType,
 				@DateStarted = S.DateStarted,
 				@DateCompleted = C.DateCompleted,
-				@Interval = F.Interval,
-				@QueueCount = Q.QueueCount
+				@Interval = F.Interval
 		from	Fusion F
 				inner join @FusionIDs I on I.FusionID = F.ID and I.ID = @current
 				outer apply (
@@ -46,18 +44,12 @@ begin
 							where	FusionID = F.ID
 									and DateStarted = S.DateStarted
 							) C
-				outer apply (
-							select	count(1) as QueueCount
-							from	queue.Fusion
-							where	FusionID = F.ID
-									and NumberOfRetries < 3
-							) Q
 			set @LastRunComplete = case 
 									when @DateStarted is not null and @DateCompleted is not null then 1
 									else 0
 								   end
 	
-		if (@DateStarted is null or @LastRunComplete = 1) and @QueueCount = 0
+		if (@DateStarted is null or @LastRunComplete = 1)
 		begin
 			if @DateCompleted is not null
 			begin

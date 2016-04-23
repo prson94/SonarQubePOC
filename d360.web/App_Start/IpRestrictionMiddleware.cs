@@ -52,8 +52,13 @@ namespace d360.web
         Dictionary<string, List<IpRange>> loadCache()
         {
             var key = "CompanyIpRanges";
-            var cache = new MemoryCachingProvider();//RedisCachingProvider();
-            var dict = cache.GetItem<Dictionary<string, List<IpRange>>>(key);
+            Dictionary<string, List<IpRange>> dict = null;
+            var cache = new MemoryCachingProvider();
+            //var cache = new RedisCachingProvider();
+            if (cache != null)
+            {
+                dict = cache.GetItem<Dictionary<string, List<IpRange>>>(key);
+            }
 
             if (dict == null)
             {
@@ -67,7 +72,7 @@ from	Company C
                     .ToDictionary(k => k.UrlPrefix, v => v.Ranges);
                 cnn.Close();
                 cnn.Dispose();
-                cache.SetItem(key, dict, true, 3);
+                cache.SetItem(key, dict, true, 1);
             }
             return dict;
         }

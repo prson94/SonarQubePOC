@@ -1,4 +1,4 @@
-﻿CREATE FUNCTION utility.GetDirectlyAssignedResponsibilityList
+﻿CREATE FUNCTION [utility].[GetDirectlyAssignedResponsibilityList]
 (
 	@Object varchar(50),
 	@ObjectID int,
@@ -159,6 +159,21 @@ BEGIN
 							and (
 								(RU.ID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
 								);
+		end
+	if @Object = 'RuleType'
+		begin
+			insert into @tbl
+				select	'Rule Type Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						@ObjectID as AssigningItemID,
+						@Object as ObjectType,
+						@ObjectID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	Responsibility R where R.ObjectType = @Object and R.ObjectID = @ObjectID;				
 		end
 	if @Object = 'Taxonomy'
 		begin

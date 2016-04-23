@@ -7,6 +7,13 @@
     [TargetObjectID] INT           NOT NULL,
     [TargetObject]   VARCHAR (150) NOT NULL,
     [Transformation] VARCHAR (500) NULL,
-    PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK_SourceTargetRule] PRIMARY KEY NONCLUSTERED ([ID] ASC)
 );
+
+
+
+
+GO
+CREATE CLUSTERED INDEX [CIX_SourceTargetRule]
+    ON [dbo].[SourceTargetRule]([FocalObject] ASC, [FocalObjectID] ASC, [SourceObject] ASC, [SourceObjectID] ASC, [TargetObject] ASC, [TargetObjectID] ASC);
 

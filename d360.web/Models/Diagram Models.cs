@@ -47,6 +47,9 @@ namespace d360.web.Models
         public int sourceRuleCount { get; set; }
         public int mappingRuleCount { get; set; }
         public int challengeCount { get; set; }
+        public int openEventCount { get; set; }
+        public int openIssueCount { get; set; }
+
         public int transformationCount { get; set; }
         public override string ToString()
         {

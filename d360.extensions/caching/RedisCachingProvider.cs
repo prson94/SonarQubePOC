@@ -7,6 +7,7 @@ using StackExchange.Redis;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace d360.extensions.caching
 {
@@ -51,7 +52,7 @@ namespace d360.extensions.caching
 
         public RedisCachingProvider()
         {
-            Connection = ConnectionMultiplexer.Connect("d3ssession.redis.cache.windows.net,ssl=true,password=V8oa+l3HhHOxzLJtltnHBXPKVxzvH3vjbrI4NxLeXX4=");
+            Connection = ConnectionMultiplexer.Connect("d3s.redis.cache.windows.net:6380,password=AzQsO/Ea1y4fEwT715ifLOw9simClvoUQezXr9JGhY0=,ssl=True,abortConnect=False");//("d3ssession.redis.cache.windows.net,ssl=true,password=V8oa+l3HhHOxzLJtltnHBXPKVxzvH3vjbrI4NxLeXX4=");
             _Cache = Connection.GetDatabase();
         }
 
@@ -71,9 +72,10 @@ namespace d360.extensions.caching
 
             if (!data.IsNull && data.HasValue)
             {
-                var blobBytes = (byte[])data;
-                var deserializedObject = blobBytes.Deserialize<T>();
-                return deserializedObject;
+                //var blobBytes = (byte[])data;
+                //var deserializedObject = blobBytes.Deserialize<T>();
+                //return deserializedObject;
+                return JsonConvert.DeserializeObject<T>(data);
             }
             else
             {
@@ -87,9 +89,10 @@ namespace d360.extensions.caching
 
             if (!data.IsNull && data.HasValue)
             {
-                var blobBytes = (byte[])data;
-                var deserializedObject = blobBytes.Deserialize<T>();
-                return deserializedObject;
+                //var blobBytes = (byte[])data;
+                //var deserializedObject = blobBytes.Deserialize<T>();
+                //return deserializedObject;
+                return JsonConvert.DeserializeObject<T>(data);
             }
             else
             {
@@ -114,20 +117,21 @@ namespace d360.extensions.caching
             {
                 expiry = DateTime.Now.AddMinutes(expirationMinutes).TimeOfDay;
             }
-
-            _Cache.StringSet(name, item.Serialize(), expiry);
+            
+            //_Cache.StringSet(name, item.Serialize(), expiry);
+            _Cache.StringSet(name, JsonConvert.SerializeObject(item), expiry);
         }
 
         public void SetList<T, TIdentifier>(string name, SortedDictionary<TIdentifier, T> list, bool isAbsoluteExpiration = true, int expirationMinutes = 10)
         {
-            RedisValue[] entries = new RedisValue[list.Keys.Count];
-            var i = 0;
-            foreach(var k in list.Keys)
-            {
-                entries[i] = list[k].Serialize();
-                i++;
-            }
-            _Cache.SetAdd(name, entries);
+            //RedisValue[] entries = new RedisValue[list.Keys.Count];
+            //var i = 0;
+            //foreach(var k in list.Keys)
+            //{
+            //    entries[i] = list[k].Serialize();
+            //    i++;
+            //}
+            _Cache.SetAdd(name, JsonConvert.SerializeObject(list));//entries);
         }
 
         public void SetItemInListByID<T, TIdentifier>(string name, TIdentifier id, T item, bool isAbsoluteExpiration = true, int expirationMinutes = 10)

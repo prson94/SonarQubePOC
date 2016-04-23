@@ -37,12 +37,13 @@
                 text: "",
                 sortable: false,
                 filterable: false,
-                width: '80px',
+                resizable: false,
+                width: '40px',
                 resizable: false,
                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                     var tools = [];
 
-                    tools.push({ icon: 'info', urlprefix: '/overlays/Event/' + data.ID + '/detail' });
+                    //tools.push({ icon: 'info', urlprefix: '/overlays/Event/' + data.ID + '/detail' });
                     tools.push({ icon: 'pencil', urlprefix: '/form/EditEvent?id=' + data.ID });
 
                     return renderToolsHtml(value, tools, contextList.Event, data);
@@ -78,7 +79,7 @@
                             $(gridControlID).jqxGrid('selectrow', selectedEventIndex);
                         }
                     }
-                    $(gridControlID).jqxGrid('autoresizecolumns');
+                    //$(gridControlID).jqxGrid('autoresizecolumns');
                 }
             });
         } catch (e) {

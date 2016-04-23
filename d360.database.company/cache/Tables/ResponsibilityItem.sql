@@ -1,4 +1,4 @@
-CREATE TABLE [cache].[ResponsibilityItem] (
+﻿CREATE TABLE [cache].[ResponsibilityItem] (
     [ResponsibilityID]        INT            NOT NULL,
     [ResponsibilityTypeID]    INT            NOT NULL,
     [ResponsibilityType]      NVARCHAR (250) NOT NULL,
@@ -18,7 +18,14 @@ CREATE TABLE [cache].[ResponsibilityItem] (
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_CacheResponsibilityItem_ResponsibleObject]
     ON [cache].[ResponsibilityItem]([ResponsibleObject] ASC, [ResponsibleObjectID] ASC);
+
+
+GO
+CREATE NONCLUSTERED INDEX [IX_CacheResponsibilityItem_ResponsibilityTypeID__Object_ObjectID]
+    ON [cache].[ResponsibilityItem]([ResponsibilityTypeID] ASC, [Object] ASC, [ObjectID] ASC);
 

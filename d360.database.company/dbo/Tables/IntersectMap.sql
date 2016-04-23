@@ -5,10 +5,12 @@
     [PredicateID]            INT NOT NULL,
     [Type]                   INT DEFAULT ((1)) NOT NULL,
     CONSTRAINT [PK_IntersectMap] PRIMARY KEY CLUSTERED ([ID] ASC),
-    CONSTRAINT [FK_IntersectMap_ObjectIntersectNode] FOREIGN KEY ([ObjectIntersectNodeID]) REFERENCES [dbo].[IntersectNode] ([ID]),
-    CONSTRAINT [FK_IntersectMap_Predicate] FOREIGN KEY ([PredicateID]) REFERENCES [dbo].[Predicate] ([ID]),
+    CONSTRAINT [FK_IntersectMap_ObjectIntersectNode] FOREIGN KEY ([ObjectIntersectNodeID]) REFERENCES [dbo].[IntersectNode] ([ID]) ON DELETE CASCADE,
+    CONSTRAINT [FK_IntersectMap_Predicate] FOREIGN KEY ([PredicateID]) REFERENCES [dbo].[Predicate] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [FK_IntersectMap_SubjectIntersectNode] FOREIGN KEY ([SubjectIntersectNodeID]) REFERENCES [dbo].[IntersectNode] ([ID])
 );
+
+
 
 
 
@@ -25,3 +27,6 @@ CREATE NONCLUSTERED INDEX [IX_IntersectMap_PredicateID]
 
 
 GO
+CREATE NONCLUSTERED INDEX [IX_IntersectMap_SubjectIntersectNodeID_ObjectIntersectNodeID]
+    ON [dbo].[IntersectMap]([SubjectIntersectNodeID] ASC, [ObjectIntersectNodeID] ASC);
+

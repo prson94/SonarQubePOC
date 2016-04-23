@@ -676,7 +676,10 @@ BEGIN
 			insert into @tbl
 				select	'Name', [Name]
 				from	RuleDimension
-				where	ID = @ID						
+				where	ID = @ID
+
+			--set @html = @html + '<div><b>Path:</b> {Description}</div>'
+						
 		end;
 
 		if @Type = 'Taxonomy'

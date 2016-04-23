@@ -211,7 +211,7 @@
         There are no available sources for this item.
     </div>
     <div data-bind="fadeVisible: (Sources().length > 0 && !InProgress())">
-        <div data-bind="jqxButton: { theme: theme }, click: AddSourceRule" style="margin:8px 25px 8px 25px;"><i class="fa fa-plus"></i> Add Hierarchy Rule</div>
+        <div data-bind="jqxButton: { theme: theme }, click: AddSourceRule" style="margin:8px 25px 8px 25px;"><i class="fa fa-plus"></i> Add Source Rule</div>
     </div>
     <div data-bind="visible: (Sources().length > 0 && SourceRules().length < 1 && !InProgress())" style="text-align: center; padding: 15px;">
         There are no rules defined for this item
@@ -222,11 +222,11 @@
                 <i class="fa fa-3x fa-spinner fa-spin"></i>
             </div>
         </div>
-        @*<div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioAddChecked, disabled: (Sources().length < 1 || !CanAdd()) }"> Add Hierarchy Rules</div>
-        <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioEditChecked, disabled: (SourceRules().length < 1) }"> Edit Hierarchy Rules</div>*@
+        @*<div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioAddChecked, disabled: (Sources().length < 1 || !CanAdd()) }"> Add Source Rules</div>
+    <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioEditChecked, disabled: (SourceRules().length < 1) }"> Edit Source Rules</div>*@
         <div data-bind="fadeVisible: Mode() != 'template'">
             <div style="padding-left: 20px" data-bind="fadeVisible: (SourceRules().length > 1)">
-                <div class="FieldName">Hierarchy Rules</div>
+                <div class="FieldName">Source Rules</div>
                 <div>
                     <div data-bind="jqxDropDownList: { theme: theme, source: SourceRules, displayMember: 'Name', valueMember: 'ID', selectedIndex: SelectedRuleIndex, width: 250 }"></div>
                 </div>

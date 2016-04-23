@@ -54,6 +54,8 @@ namespace d360.web.Controllers
             public int RawMappingRuleCount { get; set; }
             public int LinkMappingRuleCount { get; set; }
             public int ChallengeCount { get; set; }
+            public int OpenEventCount { get; set; }
+            public int OpenIssueCount { get; set; }
             public int RawTransformationCount { get; set; }
             public int LinkTransformationCount { get; set; }
         }
@@ -1100,301 +1102,12 @@ from	(
         [HttpGet, Route("{type}/{id:int}/sources")]
         public JsonNetResult GetSourcesByObject(SystemObjects type, int id)
         {
-            #region Legacy SQL
-
-//            var sql = @"
-//select	distinct
-//		R.IntersectID,
-//		M.ID,
-//		M.SubjectIntersectNodeID,
-//		R.SourceTypeName,
-//		R.SourceObjectName,
-//		R.SourceObject,
-//		R.SourceObjectID,
-//		SD.[IconBackColor] as SourceIconBackColor,
-//		SD.[IconForeColor] as SourceIconForeColor,
-//        M.ObjectIntersectNodeID,
-//		R.TargetTypeName,
-//		R.TargetObjectName,
-//		R.TargetObject,
-//		R.TargetObjectID,
-//		TD.[IconBackColor] as TargetIconBackColor,
-//		TD.[IconForeColor] as TargetIconForeColor,
-//        M.PredicateID,
-//		P.Name as Predicate
-//from	IntersectMap M
-//		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
-//		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-//		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-//        inner join Predicate P on P.ID = M.PredicateID
-//		inner join [cache].[Relationship] SR on SR.SourceObject = @type and SR.SourceObjectID = @id and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
-//		inner join [cache].[Relationship] TR on TR.SourceObject = @type and TR.SourceObjectID = @id and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
-//union
-//select	distinct
-//		R.IntersectID,
-//		M.ID,
-//		M.SubjectIntersectNodeID,
-//		R.SourceTypeName,
-//		R.SourceObjectName,
-//		R.SourceObject,
-//		R.SourceObjectID,
-//		SD.[IconBackColor] as SourceIconBackColor,
-//		SD.[IconForeColor] as SourceIconForeColor,
-//		M.ObjectIntersectNodeID,
-//		R.TargetTypeName,
-//		R.TargetObjectName,
-//		R.TargetObject,
-//		R.TargetObjectID,
-//		TD.[IconBackColor] as TargetIconBackColor,
-//		TD.[IconForeColor] as TargetIconForeColor,
-//		M.PredicateID,
-//		P.Name as Predicate
-//from	IntersectMap M
-//		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.SourceObject = @type and R.SourceObjectID = @id and M.[Type] = 1
-//		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-//		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-//		inner join Predicate P on P.ID = M.PredicateID
-//union
-//select	distinct
-//		R.IntersectID,
-//		M.ID,
-//		M.SubjectIntersectNodeID,
-//		R.SourceTypeName,
-//		R.SourceObjectName,
-//		R.SourceObject,
-//		R.SourceObjectID,
-//		SD.[IconBackColor] as SourceIconBackColor,
-//		SD.[IconForeColor] as SourceIconForeColor,
-//		M.ObjectIntersectNodeID,
-//		R.TargetTypeName,
-//		R.TargetObjectName,
-//		R.TargetObject,
-//		R.TargetObjectID,
-//		TD.[IconBackColor] as TargetIconBackColor,
-//		TD.[IconForeColor] as TargetIconForeColor,
-//		M.PredicateID,
-//		P.Name as Predicate
-//from	IntersectMap M
-//		inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.TargetObject = @type and R.TargetObjectID = @id and M.[Type] = 1
-//		inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-//		inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-//		inner join Predicate P on P.ID = M.PredicateID";
-
-            #endregion
-
-            #region SQL
-
-            var sql1 = @"                        					    declare @tbl table	(
-					                        IntersectID int, IntersectTypeID int, ID int, 
-					                        SubjectNodeID int, SubjectTypeName nvarchar(1000), SourceType varchar(50), SourceTypeID int, SubjectObjectName nvarchar(1000), Subject varchar(50), SubjectID int, SubjectBackColor varchar(10), SubjectForeColor varchar(10),  
-					                        ObjectNodeID int, ObjectTypeName nvarchar(1000), ObjectType varchar(50), ObjectTypeID int, ObjectObjectName nvarchar(1000), Object varchar(50), ObjectID int, ObjectBackColor varchar(10), ObjectForeColor varchar(10),
-					                        PredicateID int, Predicate nvarchar(250), MappingRuleCount int, TransformationCount int
-					                        )
-                        insert into @tbl
-	                        select	distinct
-			                        R.IntersectID,
-									R.IntersectTypeID,
-			                        M.ID,
-			                        M.SubjectIntersectNodeID,
-			                        R.SourceTypeName,
-			                        R.SourceType,
-			                        R.SourceTypeID,
-			                        R.SourceObjectName,
-			                        R.SourceObject,
-			                        R.SourceObjectID,
-			                        SD.[IconBackColor] as SourceIconBackColor,
-			                        SD.[IconForeColor] as SourceIconForeColor,
-			                        M.ObjectIntersectNodeID,
-			                        R.TargetTypeName,
-			                        R.TargetType,
-			                        R.TargetTypeID,
-			                        R.TargetObjectName,
-			                        R.TargetObject,
-			                        R.TargetObjectID,
-			                        TD.[IconBackColor] as TargetIconBackColor,
-			                        TD.[IconForeColor] as TargetIconForeColor,
-			                        M.PredicateID,
-			                        P.Name as Predicate,
-			                        0,
-									0
-	                        from	IntersectMap M
-			                        inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
-			                        inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-			                        inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-			                        inner join Predicate P on P.ID = M.PredicateID
-			                        inner join [cache].[Relationship] SR on SR.SourceObject = @type and SR.SourceObjectID = @id and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
-			                        inner join [cache].[Relationship] TR on TR.SourceObject = @type and TR.SourceObjectID = @id and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
-	                        union
-	                        select	distinct
-			                        R.IntersectID,
-									R.IntersectTypeID,
-			                        M.ID,
-			                        M.SubjectIntersectNodeID,
-			                        R.SourceTypeName,
-			                        R.SourceType,
-			                        R.SourceTypeID,
-			                        R.SourceObjectName,
-			                        R.SourceObject,
-			                        R.SourceObjectID,
-			                        SD.[IconBackColor] as SourceIconBackColor,
-			                        SD.[IconForeColor] as SourceIconForeColor,
-			                        M.ObjectIntersectNodeID,
-			                        R.TargetTypeName,
-			                        R.TargetType,
-			                        R.TargetTypeID,
-			                        R.TargetObjectName,
-			                        R.TargetObject,
-			                        R.TargetObjectID,
-			                        TD.[IconBackColor] as TargetIconBackColor,
-			                        TD.[IconForeColor] as TargetIconForeColor,
-			                        M.PredicateID,
-			                        P.Name as Predicate,
-			                        0,
-									0
-	                        from	IntersectMap M
-			                        inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.SourceObject = @type and R.SourceObjectID = @id and M.[Type] = 1
-			                        inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-			                        inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-			                        inner join Predicate P on P.ID = M.PredicateID
-	                        union
-	                        select	distinct
-			                        R.IntersectID,
-									R.IntersectTypeID,
-			                        M.ID,
-			                        M.SubjectIntersectNodeID,
-			                        R.SourceTypeName,
-			                        R.SourceType,
-			                        R.SourceTypeID,
-			                        R.SourceObjectName,
-			                        R.SourceObject,
-			                        R.SourceObjectID,
-			                        SD.[IconBackColor] as SourceIconBackColor,
-			                        SD.[IconForeColor] as SourceIconForeColor,
-			                        M.ObjectIntersectNodeID,
-			                        R.TargetTypeName,
-			                        R.TargetType,
-			                        R.TargetTypeID,
-			                        R.TargetObjectName,
-			                        R.TargetObject,
-			                        R.TargetObjectID,
-			                        TD.[IconBackColor] as TargetIconBackColor,
-			                        TD.[IconForeColor] as TargetIconForeColor,
-			                        M.PredicateID,
-			                        P.Name as Predicate,
-			                        0,
-									0
-	                        from	IntersectMap M
-			                        inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.TargetObject = @type and R.TargetObjectID = @id and M.[Type] = 1
-			                        inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-			                        inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-			                        inner join Predicate P on P.ID = M.PredicateID
-
-                        update r
-                        set r.mappingrulecount = l.[Count],
-						r.transformationcount = t.[Count]
-                        from @tbl r
-                        cross apply (
-				                        select count(1) as [Count]
-				                        from SourceTargetRule
-				                        where FocalObjectID = @id and FocalObject = @type and SourceObject = r.Subject and SourceObjectID = r.SubjectID and TargetObject = r.Object and TargetObjectID = r.ObjectID
-			                        ) l
-						cross apply (
-				                        select count(1) as [Count]
-				                        from BusinessTransformationRule
-				                        where FocalObjectID = @id and FocalObject = @type and SourceObject = r.Subject and SourceObjectID = r.SubjectID and TargetObject = r.Object and TargetObjectID = r.ObjectID
-			                        ) t;
-
-
-                        declare @h table	(
-					                        ID int, [Type] varchar(1), IsStart bit, IsEnd bit,
-					                        [Level] int, NodeID int, TypeName nvarchar(1000), [ObjectType] varchar(50), ObjectTypeID int, ObjectName nvarchar(1000), O varchar(50), OID int, BackColor varchar(10), ForeColor varchar(10),
-					                        IntersectID int, IntersectTypeID int,  PredicateID int, Predicate nvarchar(250),
-					                        RawSourceRuleCount int, RawMappingRuleCount int, LinkMappingRuleCount int, ChallengeCount int, RawTransformationCount int, LinkTransformationCount int
-					                        )
-
-                        insert into @h
-	                        select	ID, 'S', 0, 0, 0, SubjectNodeID, SubjectTypeName, SourceType, SourceTypeID, SubjectObjectName, Subject, SubjectID, SubjectBackColor, SubjectForeColor, IntersectID, IntersectTypeID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount, C.[Count], T.[Count], S.TransformationCount
-	                        from	@tbl S
-			                        cross apply (
-						                        select	count(1) as [Count]
-						                        from	SourceRule
-						                        where	AppliesToObject = @type and AppliesToObjectID = @id and Object = S.Subject and ObjectID = S.SubjectID
-						                        ) R
-			                        cross apply (
-						                            select count(1) as [Count]
-						                            from SourceTargetRule
-						                            where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Subject and SourceObjectID = S.SubjectID and TargetObject = S.Subject and TargetObjectID = S.SubjectID
-						                        ) M
-									cross apply (
-						                            select count(1) as [Count]
-						                            from BusinessTransformationRule
-						                            where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Subject and SourceObjectID = S.SubjectID and TargetObject = S.Subject and TargetObjectID = S.SubjectID
-						                        ) T
-									cross apply (
-													select count(1) as [Count]     
-													from Workflow W            			                          
-													where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column(""S.SubjectID"")]') = 1 and W.DateCompleted is null   
-												) C
-                        insert into @h
-
-                            select ID, 'O', 0, 0, 0, ObjectNodeID, ObjectTypeName, ObjectType, ObjectTypeID, ObjectObjectName, Object, ObjectID, ObjectBackColor, ObjectForeColor, IntersectID, IntersectTypeID, PredicateID, Predicate, R.[Count], M.[Count], S.MappingRuleCount, C.[Count], T.[Count], S.TransformationCount
-
-                            from @tbl S
-
-                                    cross apply(
-                                                select  count(1) as [Count]
-                                                from SourceRule
-                                                where AppliesToObject = @type and AppliesToObjectID = @id and Object = S.Object and ObjectID = S.ObjectID
-                                                ) R
-                                    cross apply(
-                                                    select count(1) as [Count]
-                                                    from SourceTargetRule
-                                                    where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Object and SourceObjectID = S.ObjectID and TargetObject = S.Object and TargetObjectID = S.ObjectID
-                                                ) M
-									cross apply(
-                                                    select count(1) as [Count]
-                                                    from BusinessTransformationRule
-                                                    where FocalObjectID = @id and FocalObject = @type and SourceObject = S.Object and SourceObjectID = S.ObjectID and TargetObject = S.Object and TargetObjectID = S.ObjectID
-                                                ) T
-                                    cross apply(
-                                                    select count(1) as [Count]
-                                                    from Workflow W
-                                                    where W.WorkflowType = 4 and W.Data.exist('/fields/ArtifactID[text() = sql:column(""S.ObjectID"")]') = 1 and W.DateCompleted is null
-                                                ) C
-                        update  T
-                        set     T.[Level] = 1,
-		                        T.IsStart = 1
-                        from @h T
-
-                                left
-                        join @h S on S.O = T.O and S.OID = T.OID and S.[Type] = 'O'
-                        where T.[Type] = 'S'
-
-                                and S.ID is null
-
-                        update T
-                        set T.IsEnd = 1
-                        from @h T
-                                left join @h S on S.O = T.O and S.OID = T.OID and S.[Type] = 'S'
-                        where T.[Type] = 'O'
-
-                                and S.ID is null
-
-                        select* from @h";
-
-            #endregion
-
-            var list = Company.Query<SourcesToObjectModel>(sql1, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true } , id }).ToList();
+            var list = Company.Query<SourcesToObjectModel>(@"exec GetLineageDiagram @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
 
             list.Where(i => i.Level == 1).ToList().ForEach(i =>
             {
                 processSourceLevel(list, i.ID); //assumes type is "O"
             });
-
-            //foreach(var o in list.Where(o => o.Type == "O"))
-            //{
-            //    o.SourceRuleCount = list.Where(s => s.O == o.O && s.OID == o.OID && s.Type == "S").Sum(s => s.RawSourceRuleCount);
-            //}
 
             var model = new DiagramModel();
 
@@ -1412,14 +1125,12 @@ from	(
                 var s = list.Single(i => i.ID == m && i.Type == "S");
                 var sKey = $"{s.Level}{s.O}{s.OID}";
                 if (!model.nodes.Any(i => i.key == sKey))
-                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, objecttype = s.ObjectType, objecttypeid = s.ObjectTypeID, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID, mappingRuleCount = s.RawMappingRuleCount, challengeCount = s.ChallengeCount, transformationCount = s.RawTransformationCount }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
-                //else
-                //    model.nodes.First(i => i.key == sKey).sourceRuleCount = getTotal(s.O, s.OID, s.Type);
+                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, objecttype = s.ObjectType, objecttypeid = s.ObjectTypeID, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID, mappingRuleCount = s.RawMappingRuleCount, challengeCount = s.ChallengeCount, openEventCount = s.OpenEventCount, openIssueCount = s.OpenIssueCount }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
 
                 var o = list.Single(i => i.ID == m && i.Type == "O");
                 var oKey = $"{o.Level}{o.O}{o.OID}";
                 if (!model.nodes.Any(i => i.key == oKey))
-                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, objecttype = o.ObjectType, objecttypeid = o.ObjectTypeID, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type), mappingRuleCount = o.RawMappingRuleCount, challengeCount = o.ChallengeCount, transformationCount = o.RawTransformationCount });
+                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, objecttype = o.ObjectType, objecttypeid = o.ObjectTypeID, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type), mappingRuleCount = o.RawMappingRuleCount, challengeCount = o.ChallengeCount, openEventCount = o.OpenEventCount, openIssueCount = o.OpenIssueCount });
                 else
                     model.nodes.First(i => i.key == oKey).sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type);
 
@@ -1441,8 +1152,6 @@ from	(
                 Data = new { model.nodes, model.links },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
-
-            //return new JsonNetResult { Data = null, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [HttpGet]
@@ -1581,61 +1290,64 @@ for		    xml path('relationship'), root('item')
             return PartialView();// (list);
         }
 
-        [HttpGet, Route("sources/{type}/{id:int}/add")]
-        public ActionResult AddSource(SystemObjects type, int id)
-        {
-            var dtl = Company.GetObjectDetail(type, id);
-            ViewBag.ObjectName = dtl.Name;
-            ViewBag.Object = type.ToString();
-            ViewBag.ObjectID = id;
-            dtl = null;
-            return PartialView();
-        }
+        //[HttpGet, Route("sources/{type}/{id:int}/add")]
+        //public ActionResult AddSource(SystemObjects type, int id)
+        //{
+        //    var dtl = Company.GetObjectDetail(type, id);
+        //    ViewBag.ObjectName = dtl.Name;
+        //    ViewBag.Object = type.ToString();
+        //    ViewBag.ObjectID = id;
+        //    dtl = null;
+        //    return PartialView();
+        //}
 
         [HttpPost, Route("sources")]
-        public JsonNetResult AddSourcePost(AddSourcePostModel model)
+        public JsonNetResult LineageSourcePost(SourcePostModel models)
         {
             var message = "";
             var success = false;
 
-            if (string.IsNullOrEmpty(model.Target) || model.TargetID <= 0)
+            models.Adds.ForEach(model =>
             {
-                message = $"The Target, or current object, you provided is invalid.";
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
+                #region 
+                if (string.IsNullOrEmpty(model.Focal) || model.FocalID <= 0)
                 {
-                    message = $"The Subject you provided is invalid.";
+                    message += $"The Target, or current object, you provided is invalid.";
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
+                    if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
                     {
-                        message = $"The Object you provided is invalid.";
+                        message += $"The Subject you provided is invalid.";
                     }
                     else
                     {
-                        if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+                        if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
                         {
-                            message = $"A source may not map to itself directly.";
+                            message += $"The Object you provided is invalid.";
                         }
                         else
                         {
-                            var predicate = Company.GetById<Predicate>(model.PredicateID);
-
-                            if (predicate.Type == MapType.Lineage)
+                            if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
                             {
-                                if ($"{model.Target}{model.TargetID}" != $"{model.Subject}{model.SubjectID}")
-                                    Company.AddRelationship(model.Target, model.TargetID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
-
-                                if ($"{model.Target}{model.TargetID}" != $"{model.Object}{model.ObjectID}")
-                                    Company.AddRelationship(model.Target, model.TargetID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                                message += $"A source may not map to itself directly.";
                             }
+                            else
+                            {
+                                var predicate = Company.GetById<Predicate>(model.PredicateID);
+
+                                if (predicate.Type == MapType.Lineage)
+                                {
+                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Subject}{model.SubjectID}")
+                                        Company.AddRelationship(model.Focal, model.FocalID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
+
+                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Object}{model.ObjectID}")
+                                        Company.AddRelationship(model.Focal, model.FocalID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                                }
 
 
-                            Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-                            var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
+                                Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+                                var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
 S.IntersectID,
 S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
 O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
@@ -1643,42 +1355,97 @@ from [IntersectNode] S
 inner join IntersectNode O on O.IntersectID = S.IntersectID 
 and S.[ObjectType] = @s and S.ObjectID = @sid 
 and O.[ObjectType] = @o and O.ObjectID = @oid",
-        new { s = new Dapper.DbString { Value = model.Subject, IsAnsi = true }, sid = model.SubjectID, o = new Dapper.DbString { Value = model.Object, IsAnsi = true }, oid = model.ObjectID }
-        ).SingleOrDefault();
-                            if (intersect != null)
-                            {
-                                var existingSourceRecordCount = Company.Query<int>(
-                                    "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p", 
-                                    new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
-                                ).Single();
-
-                                if (existingSourceRecordCount <= 0)
+            new { s = new Dapper.DbString { Value = model.Subject, IsAnsi = true }, sid = model.SubjectID, o = new Dapper.DbString { Value = model.Object, IsAnsi = true }, oid = model.ObjectID }
+            ).SingleOrDefault();
+                                if (intersect != null)
                                 {
-                                    // If we got here, we are all good.
+                                    var existingSourceRecordCount = Company.Query<int>(
+                                        "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
+                                        new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
+                                    ).Single();
 
-                                    var intersectMap = new IntersectMap
+                                    if (existingSourceRecordCount <= 0)
                                     {
-                                        ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
-                                        PredicateID = model.PredicateID,
-                                        SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                        Type = MapType.Lineage
-                                    };
-                                    Company.Add<IntersectMap>(intersectMap);
-                                    success = true;
+                                        // If we got here, we are all good.
+
+                                        var intersectMap = new IntersectMap
+                                        {
+                                            ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
+                                            PredicateID = model.PredicateID,
+                                            SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
+                                            Type = MapType.Lineage
+                                        };
+                                        Company.Add<IntersectMap>(intersectMap);
+                                    }
                                 }
                                 else
                                 {
-                                    success = true;
-                                    //message = $"There is already an existing source with this role.";
+                                    message += $"The Subject or Object did not match up with the Relationship you provided.";
                                 }
-                            }
-                            else
-                            {
-                                message = $"The Subject or Object did not match up with the Relationship you provided.";
                             }
                         }
                     }
                 }
+                #endregion
+            });
+
+            models.Deletes.ForEach(model =>
+            {
+                #region 
+                if (model.IntersectMapID <= 0)
+                {
+                    message = $"The source ID ({model.IntersectMapID}) is invalid.";
+                }
+                else
+                {
+                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
+                    if (o == null)
+                    {
+                        message += $"The source with ID ({model.IntersectMapID}) could not be found.";
+                    }
+                    else
+                    {
+                        if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Delete, ClaimObject.Relationship))
+                        {
+                            message = FormInfo.Permisions_Error_Delete;
+                        }
+                        else
+                        {
+                            Company.Delete<IntersectMap>(o);
+                        }
+                    }
+                }
+                #endregion
+            });
+
+            models.Edits.ForEach(model =>
+            {
+                #region 
+                if (model.IntersectMapID <= 0)
+                {
+                    message += $"The intersect map ID ({model.IntersectMapID}) is invalid.";
+                }
+                else
+                {
+                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
+                    if (o == null)
+                    {
+                        message += $"The intersect map record with ID ({model.IntersectMapID}) cound not be found.";
+                    }
+                    else
+                    {
+                        o.PredicateID = model.PredicateID;
+                        Company.Update(o);
+                    }
+                }
+                #endregion
+            });
+
+            success = string.IsNullOrEmpty(message);
+
+            if (string.IsNullOrEmpty(message))
+            {
+                message = "Successfully updated lineage.";
             }
 
             return new JsonNetResult {
@@ -1686,78 +1453,78 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
                     message = message,
                     success = success
                 },
-                Formatting = Newtonsoft.Json.Formatting.None
+                Formatting = Formatting.None
             };
         }
 
-        [HttpDelete, Route("{target}/{targetID:int}/sources/{id:int}")]
-        public JsonNetResult DeleteSource(SystemObjects target, int targetID, int id)
-        {
-            var message = "";
-            var success = false;
+        //[HttpDelete, Route("{target}/{targetID:int}/sources/{id:int}")]
+        //public JsonNetResult DeleteSource(SystemObjects target, int targetID, int id)
+        //{
+        //    var message = "";
+        //    var success = false;
 
-            if (id <= 0)
-            {
-                message = $"The source ID ({id}) is invalid.";
-            }
-            else
-            {
-                var model = Company.GetById<IntersectMap>(id);
-                if (model == null)
-                {
-                    message = $"The source with ID ({id}) could not be found.";
-                }
-                else
-                {
-                    if (!Company.HasPermission(target, targetID, Claim.Delete, ClaimObject.Relationship))
-                    {
-                        message = FormInfo.Permisions_Error_Delete;
-                    }
-                    else
-                    {
-                        Company.Delete<IntersectMap>(model);
-                        success = true;
-                    }
-                }
-            }
+        //    if (id <= 0)
+        //    {
+        //        message = $"The source ID ({id}) is invalid.";
+        //    }
+        //    else
+        //    {
+        //        var model = Company.GetById<IntersectMap>(id);
+        //        if (model == null)
+        //        {
+        //            message = $"The source with ID ({id}) could not be found.";
+        //        }
+        //        else
+        //        {
+        //            if (!Company.HasPermission(target, targetID, Claim.Delete, ClaimObject.Relationship))
+        //            {
+        //                message = FormInfo.Permisions_Error_Delete;
+        //            }
+        //            else
+        //            {
+        //                Company.Delete<IntersectMap>(model);
+        //                success = true;
+        //            }
+        //        }
+        //    }
 
-            return new JsonNetResult
-            {
-                Data = new
-                {
-                    message = message,
-                    success = success
-                },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
+        //    return new JsonNetResult
+        //    {
+        //        Data = new
+        //        {
+        //            message = message,
+        //            success = success
+        //        },
+        //        Formatting = Newtonsoft.Json.Formatting.None
+        //    };
+        //}
 
-        [HttpGet, Route("update/{intersectMapID:int}/{predicateID:int}")]
-        public JsonNetResult EditRelationship(int intersectMapID, int predicateID)
-        {
-            var message = "";
-            var success = false;
-            if (intersectMapID <= 0)
-            {
-                message = $"The intersect map ID ({intersectMapID}) is invalid.";
-            }
-            else
-            {
-                var record = Company.GetById<IntersectMap>(intersectMapID);
-                if (record == null)
-                {
-                    message = $"The intersect map record with ID ({intersectMapID}) cound not be found.";
-                }
-                else
-                {
-                    record.PredicateID = predicateID;
-                    Company.Update(record);
-                    success = true;
-                }
-            }
+        //[HttpGet, Route("update/{intersectMapID:int}/{predicateID:int}")]
+        //public JsonNetResult EditRelationship(int intersectMapID, int predicateID)
+        //{
+        //    var message = "";
+        //    var success = false;
+        //    if (intersectMapID <= 0)
+        //    {
+        //        message = $"The intersect map ID ({intersectMapID}) is invalid.";
+        //    }
+        //    else
+        //    {
+        //        var record = Company.GetById<IntersectMap>(intersectMapID);
+        //        if (record == null)
+        //        {
+        //            message = $"The intersect map record with ID ({intersectMapID}) cound not be found.";
+        //        }
+        //        else
+        //        {
+        //            record.PredicateID = predicateID;
+        //            Company.Update(record);
+        //            success = true;
+        //        }
+        //    }
 
-            return new JsonNetResult { Data = new { message = message, success = success }, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+        //    return new JsonNetResult { Data = new { message = message, success = success }, Formatting = Newtonsoft.Json.Formatting.None };
+        //}
 
         public ActionResult EditRelationship(int id)
         {

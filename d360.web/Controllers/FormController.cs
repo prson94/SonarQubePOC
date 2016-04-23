@@ -4213,8 +4213,34 @@ order by  D.TextPath
 
                 if (!ft.IsRequired) ft.MinimumLength = 0;
 
-                if (!used)
+                if (used)
+                {
+                    var allowTypeChange = false;
+                    switch (ft.Type)
+                    {
+                        case "Text":
+                            allowTypeChange = (model.FieldType.Type == DataType.Html.ToString()) || (model.FieldType.Type == DataType.Password.ToString());
+                            break;
+                        case "Number":
+                            allowTypeChange = (model.FieldType.Type == DataType.Decimal.ToString());
+                            break;
+                        case "Password":
+                            allowTypeChange = (model.FieldType.Type == DataType.Html.ToString()) || (model.FieldType.Type == DataType.Text.ToString());
+                            break;
+                    }
+                    if (allowTypeChange)
+                    {
+                        ft.Type = model.FieldType.Type;
+                    }
+                    else
+                    {
+                        throw new ConflictException("Error Occurred!", $"You may not change the input type for {ft.FriendlyName} as it is already used.");
+                    }
+                }
+                else
+                {
                     ft.Type = model.FieldType.Type;
+                }
 
                 bool isNew;
 

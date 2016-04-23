@@ -2,8 +2,10 @@
     [ID]             INT IDENTITY (1, 1) NOT NULL,
     [RuleID]         INT NOT NULL,
     [IntersectMapID] INT NOT NULL,
-    PRIMARY KEY CLUSTERED ([ID] ASC),
-    CONSTRAINT [FK_IntersectMap_ID] FOREIGN KEY ([IntersectMapID]) REFERENCES [dbo].[IntersectMap] ([ID]),
-    CONSTRAINT [FK_SourceTargetRule_ID] FOREIGN KEY ([RuleID]) REFERENCES [dbo].[SourceTargetRule] ([ID])
+    CONSTRAINT [PK_IntersectMapSourceTargetRule] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_IntersectMapSourceTargetRule_IntersectMap] FOREIGN KEY ([IntersectMapID]) REFERENCES [dbo].[IntersectMap] ([ID]) ON DELETE CASCADE,
+    CONSTRAINT [FK_IntersectMapSourceTargetRule_SourceTargetRule] FOREIGN KEY ([RuleID]) REFERENCES [dbo].[SourceTargetRule] ([ID]) ON DELETE CASCADE
 );
+
+
 

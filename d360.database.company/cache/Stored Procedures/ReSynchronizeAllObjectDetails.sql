@@ -151,10 +151,10 @@ begin
 	end;
 
 	begin
-		INSERT INTO #Recache VALUES ('RuleType', 1, 'RuleType', 0)
-		INSERT INTO #Recache VALUES ('RuleType', 2, 'RuleType', 0)
-		INSERT INTO #Recache VALUES ('RuleType', 3, 'RuleType', 0)
-		INSERT INTO #Recache VALUES ('RuleType', 4, 'RuleType', 0)
+		INSERT INTO #Recache VALUES ('RuleType', 1, 'RuleType', 1)
+		INSERT INTO #Recache VALUES ('RuleType', 2, 'RuleType', 2)
+		INSERT INTO #Recache VALUES ('RuleType', 3, 'RuleType', 3)
+		INSERT INTO #Recache VALUES ('RuleType', 4, 'RuleType', 4)
 
 		set @type = 'Rule';
 		insert into #Recache

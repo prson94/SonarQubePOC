@@ -30,7 +30,7 @@ namespace d360.web.Controllers.Services
         }
 
         #endregion
-        
+
         #region Models
 
         public class CreateEventsModelRequest
@@ -47,7 +47,7 @@ namespace d360.web.Controllers.Services
             public List<CreateEventModelRequest> Events { get; set; }
         }
 
-        public class CreateEventModelRequest : Dictionary<string, string> 
+        public class CreateEventModelRequest : Dictionary<string, string>
         {
             //public EventCriticality? Criticality { get; set; }
             //public DateTime? DateCreated { get; set; }
@@ -96,10 +96,10 @@ namespace d360.web.Controllers.Services
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add a policy.");
 
-            if (model.ParentID.HasValue) 
+            if (model.ParentID.HasValue)
             {
                 if (Company.GetById<Policy>(model.ParentID.Value) == null)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format("The Parent Policy does not exist for ID: {0}.", model.ParentID.Value));            
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format("The Parent Policy does not exist for ID: {0}.", model.ParentID.Value));
             }
 
             try
@@ -107,7 +107,7 @@ namespace d360.web.Controllers.Services
                 var policy = new Policy
                 {
                     Description = model.Description,
-                    Name = model.Name, 
+                    Name = model.Name,
                     ParentID = model.ParentID
                 };
 
@@ -158,7 +158,8 @@ namespace d360.web.Controllers.Services
                     Description = model.Description,
                     Name = model.Name,
                     RuleType = model.RuleType,
-                    SourceID = model.SourceID
+                    SourceID = model.SourceID,
+                    RuleDimensionID = model.RuleDimensionID
                 };
 
                 Company.Add<Rule>(rule);
@@ -172,7 +173,7 @@ namespace d360.web.Controllers.Services
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
-            
+
         }
 
         /// <summary>
@@ -182,7 +183,7 @@ namespace d360.web.Controllers.Services
         /// <param name="model">An object containing a collection of events, all associated to a group or job run in a source system.</param>
         /// <returns></returns>
         [Route("sourcerules/{sourceID}/events"), HttpPost]
-        public HttpResponseMessage AddSourceRuleEvents(string sourceID, CreateEventsModelRequest model)           
+        public HttpResponseMessage AddSourceRuleEvents(string sourceID, CreateEventsModelRequest model)
         {
             var rule = Company.Filter<Rule>(i => i.SourceID == sourceID).FirstOrDefault();
 
@@ -238,9 +239,9 @@ namespace d360.web.Controllers.Services
                 if (eventGroup == null)
                 {
                     eventGroup = new EventGroup { PublicID = model.GroupKey, RuleID = id, Name = string.IsNullOrEmpty(model.Name) ? "Event for " + model.GroupKey : model.Name };
-                    
+
                 }
-                
+
                 if (rule.RuleType == RuleType.Metric || rule.RuleType == RuleType.Profile)
                 {
                     if (model.EventCount.HasValue)
@@ -263,10 +264,10 @@ namespace d360.web.Controllers.Services
                         {
                             foreach (var key in log.Keys)
                             {
-                                if (key != "Criticality" 
-                                    && key != "DateCreated" 
-                                    && key != "SourceID" 
-                                    && key != "Status" 
+                                if (key != "Criticality"
+                                    && key != "DateCreated"
+                                    && key != "SourceID"
+                                    && key != "Status"
                                     && !fieldTypes.Any(i => i.Name == key))
                                 {
                                     var newFieldType = new FieldType { Object = sType, ObjectID = id, IsRequired = false, IsListable = true, SortOrder = fieldTypes.Count + 1, FriendlyName = key, Name = key, DisplayDescription = "", FormDescription = "", Type = "Text" };
@@ -302,9 +303,9 @@ namespace d360.web.Controllers.Services
                                     fields.Add(fld);
                                 }
                             }
-                            else 
+                            else
                             {
-                                errorDetailMessage += string.Format("{0}: Event does not contain {1} field {2}.  ", f.IsRequired ? "ERROR" : "WARNING",  f.IsRequired ? "required" : "optional", f.Name);
+                                errorDetailMessage += string.Format("{0}: Event does not contain {1} field {2}.  ", f.IsRequired ? "ERROR" : "WARNING", f.IsRequired ? "required" : "optional", f.Name);
                                 if (f.IsRequired)
                                 {
                                     throw new MissingPropertiesException("Event");
@@ -339,7 +340,8 @@ namespace d360.web.Controllers.Services
                             evt = new Event { Criticality = criticality, Status = status.ToString(), Date = dateCreated, EventGroupID = eventGroup.ID, SourceID = sourceID };
                             Company.SaveOrUpdate<Event>(evt);
                         }
-                        else {
+                        else
+                        {
                             responseCode = HttpStatusCode.OK.ToString();
 
                             evt.Criticality = criticality;
@@ -347,7 +349,8 @@ namespace d360.web.Controllers.Services
                             Company.SaveOrUpdate<Event>(evt);
                         }
 
-                        fields.ForEach(f => {
+                        fields.ForEach(f =>
+                        {
                             f.ObjectID = evt.ID;
                         });
 
@@ -384,7 +387,7 @@ namespace d360.web.Controllers.Services
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
             }
         }
-        
+
         /// <summary>
         /// Add one or more relationships to a rule based on the source ID from an underlying system that originally created the rule.
         /// </summary>
@@ -446,7 +449,8 @@ namespace d360.web.Controllers.Services
                 {
                     throw new NotFoundException("Rule");
                 }
-                models.ForEach(m => {
+                models.ForEach(m =>
+                {
                     var t = (SystemObjects)Enum.Parse(typeof(SystemObjects), m.ObjectType);
                     Company.AddRelationship(SystemObjects.Rule, id, t, m.ObjectID, IntersectClassification.Normal, null, null);
                 });
@@ -492,5 +496,43 @@ inner join AttributeType T on T.ID = A.AttributeTypeID and T.ID = @typeID and A.
             return response;
         }
 
+
+        /// <summary>
+        /// GEts all events for a rule.
+        /// </summary>
+        /// <param name="id">The ID of the rule to get events from.</param>
+        /// <returns></returns>
+        [Route("rules/{id:int}/events"), HttpGet]
+        public HttpResponseMessage GetRuleEvents(int id)
+        {
+            var joins = "";
+            var columns = "";
+
+            var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "Rule" && i.ObjectID == id).OrderBy(i => i.SortOrder).ToList();
+
+            foreach (var f in fields)
+            {
+                var name = f.Name.Replace("'", "''").Replace("--", "");
+                columns += $"{name}_T.FormattedValue as [{name}], ";
+                joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = 'Event' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID}";
+            }
+
+
+            var sql = $@"
+select	A.ID,
+		A.SourceID,
+		A.Status,
+        A.Criticality,
+		V.Name as EventGroup,
+        V.PublicID as PublicID,
+        {columns}
+		A.[Date]
+from	[Event] A inner join EventGroup V on V.ID = A.EventGroupID and V.RuleID = {id} 
+        {joins}";
+
+            var models = Company.Query<dynamic>(sql);
+
+            return Request.CreateResponse<dynamic>(HttpStatusCode.OK, models);
+        }
     }
 }

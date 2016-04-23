@@ -74,24 +74,59 @@ namespace d360.web.Models
         public List<ObjectModel> Targets { get; set; }
     }
 
-    public class AddSourcePostModel
+    public class SourcePostModel
+    {
+        public SourcePostModel()
+        {
+            Adds = new List<SourcePostAddModel>();
+            Deletes = new List<SourcePostDeleteModel>();
+            Edits = new List<SourcePostEditModel>();
+        }
+
+        public List<SourcePostAddModel> Adds { get; set; }
+        public List<SourcePostDeleteModel> Deletes { get; set; }
+        public List<SourcePostEditModel> Edits { get; set; }
+    }
+
+    public class SourcePostAddModel
     {
         /// <summary>
         /// The current object that we are creating sources for.
         /// </summary>
-        public string Target { get; set; }
+        public string Focal { get; set; }
 
         /// <summary>
         /// The current object's ID that we are creating sources for.
         /// </summary>
-        public int TargetID { get; set; }
+        public int FocalID { get; set; }
 
         public string Subject { get; set; }
         public int SubjectID { get; set; }
         public string Object { get; set; }
         public int ObjectID { get; set; }
         public int PredicateID { get; set; }
-        public int IntersectID { get; set; }
+    }
+
+    public class SourcePostDeleteModel
+    {
+        /// <summary>
+        /// The current object that we are deleting sources for.
+        /// </summary>
+        public SystemObjects Focal { get; set; }
+
+        /// <summary>
+        /// The current object's ID that we are deleting sources for.
+        /// </summary>
+        public int FocalID { get; set; }
+
+        public int IntersectMapID { get; set; }
+    }
+
+    public class SourcePostEditModel
+    {
+        public int IntersectMapID { get; set; }
+        public int PredicateID { get; set; }
+
     }
 
     public class ArtifactTypeEditorModel : BaseEditorModel

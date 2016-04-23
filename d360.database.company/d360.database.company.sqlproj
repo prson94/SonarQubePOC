@@ -114,22 +114,15 @@
     <Build Include="dbo\Tables\FusionJobSchedule.sql" />
     <Build Include="dbo\Tables\EventType.sql" />
     <Build Include="dbo\Tables\Resolution.sql" />
-    <Build Include="queue\Tables\Analytic.sql">
-      <AnsiNulls>Off</AnsiNulls>
-    </Build>
     <Build Include="reporting\Tables\Global_Audit.sql" />
     <Build Include="dbo\Tables\ResolutionRelation.sql" />
     <Build Include="reporting\Tables\Global_FieldAudit.sql" />
     <Build Include="dbo\Tables\FusionAttributeOwnerRuleItem.sql" />
     <Build Include="dbo\Tables\FieldType.sql" />
-    <Build Include="queue\Tables\ObjectCache.sql">
-      <AnsiNulls>Off</AnsiNulls>
-    </Build>
     <Build Include="dbo\Tables\Attribute.sql" />
     <Build Include="dbo\Tables\EventGroup.sql" />
     <Build Include="dbo\Tables\PolicyTypeLevel.sql" />
     <Build Include="dbo\Tables\Event.sql" />
-    <Build Include="queue\Tables\Fusion.sql" />
     <Build Include="fusion\Tables\Error.sql">
       <AnsiNulls>Off</AnsiNulls>
     </Build>
@@ -143,7 +136,6 @@
     <Build Include="dbo\Tables\EmailTemplate.sql" />
     <Build Include="dbo\Tables\RelatedArtifact.sql" />
     <Build Include="dbo\Tables\DomainType.sql" />
-    <Build Include="utility\Tables\ApiError.sql" />
     <Build Include="dbo\Tables\Comment.sql" />
     <Build Include="dbo\Tables\SurveyObjectCache.sql" />
     <Build Include="dbo\Tables\CommentRelation.sql" />
@@ -155,14 +147,12 @@
       <AnsiNulls>Off</AnsiNulls>
     </Build>
     <Build Include="dbo\Tables\FusionFilter.sql" />
-    <Build Include="dbo\Tables\Tag.sql" />
     <Build Include="dbo\Tables\ReportTile.sql">
       <AnsiNulls>On</AnsiNulls>
     </Build>
     <Build Include="dbo\Tables\TaxonomyTypeLevel.sql" />
     <Build Include="dbo\Tables\WorkflowTypeRelation.sql" />
     <Build Include="dbo\Tables\TagRelation.sql" />
-    <Build Include="queue\Tables\FusionCache.sql" />
     <Build Include="dbo\Tables\Report.sql">
       <AnsiNulls>On</AnsiNulls>
     </Build>
@@ -204,34 +194,20 @@
     <Build Include="dbo\Tables\Load.sql" />
     <Build Include="dbo\Tables\Question.sql" />
     <Build Include="dbo\Tables\FusionAttribute.sql" />
-    <Build Include="queue\Tables\ObjectVersion.sql">
-      <AnsiNulls>Off</AnsiNulls>
-    </Build>
     <Build Include="dbo\Tables\TaxonomyTypeClass.sql" />
     <Build Include="dbo\Tables\ObjectVersion.sql" />
-    <Build Include="queue\Tables\ObjectIndex.sql">
-      <AnsiNulls>Off</AnsiNulls>
-    </Build>
     <Build Include="dbo\Tables\FollowChild.sql" />
     <Build Include="dbo\Tables\FusionAttributePromotion.sql" />
     <Build Include="dbo\Tables\ObjectStyle.sql" />
     <Build Include="dbo\Tables\LookupType.sql" />
-    <Build Include="queue\Tables\ObjectStyleCache.sql">
-      <AnsiNulls>Off</AnsiNulls>
-    </Build>
     <Build Include="dbo\Tables\LoadColumn.sql" />
     <Build Include="dbo\Tables\Artifact.sql" />
     <Build Include="dbo\Tables\Lookup.sql" />
     <Build Include="dbo\Tables\IntersectTypeRole.sql" />
     <Build Include="dbo\Tables\LoadItemColumn.sql" />
-    <Build Include="queue\Tables\FollowUpdate.sql" />
     <Build Include="dbo\Tables\IntersectTypeNode.sql" />
-    <Build Include="queue\Tables\Notification.sql">
-      <AnsiNulls>Off</AnsiNulls>
-    </Build>
     <Build Include="dbo\Tables\IntersectNode.sql" />
     <Build Include="dbo\Views\StatisticTypeCheckOption.sql" />
-    <Build Include="dbo\Views\EventHeader.sql" />
     <Build Include="dbo\Views\FieldLookupValue.sql" />
     <Build Include="dbo\Views\ResponsibilityDetail.sql">
       <AnsiNulls>On</AnsiNulls>
@@ -240,14 +216,9 @@
     <Build Include="utility\Views\RelationshipTypes.sql" />
     <Build Include="dbo\Views\SecurityDetail.sql" />
     <Build Include="dbo\Views\FollowDetail.sql" />
-    <Build Include="fusion\Views\LeafAttributes.sql" />
     <Build Include="fusion\Views\AttributePromotion.sql" />
     <Build Include="fusion\Views\AttributeOwner.sql" />
     <Build Include="dbo\Views\ResponsibilityTypeObjectClaimDetail.sql" />
-    <Build Include="dbo\Views\RelationshipAggregate.sql">
-      <AnsiNulls>Off</AnsiNulls>
-      <QuotedIdentifier>Off</QuotedIdentifier>
-    </Build>
     <Build Include="dbo\Views\LookupAllocation.sql" />
     <Build Include="dbo\Views\FieldWithRelation.sql" />
     <Build Include="dbo\Views\DomainAllocationDetail.sql" />
@@ -332,8 +303,8 @@
     </Build>
     <Build Include="dbo\Stored Procedures\AddMappingDependencies.sql" />
     <Build Include="dbo\Stored Procedures\ProcessSchedule.sql">
-      <AnsiNulls>Off</AnsiNulls>
-      <QuotedIdentifier>Off</QuotedIdentifier>
+      <AnsiNulls>On</AnsiNulls>
+      <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
     <Build Include="dbo\Stored Procedures\ProcessBulkLoad.sql" />
     <Build Include="cache\Stored Procedures\SynchronizeObjectDetails.sql" />
@@ -359,7 +330,6 @@
     </Build>
     <Build Include="dbo\Stored Procedures\DeleteIntersect.sql" />
     <Build Include="tile\Stored Procedures\GetSocialStatisticsByObject.sql" />
-    <Build Include="tile\Stored Procedures\GetChildArtifactStatisticsByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetAttributeAndIntersectHierarchyByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetFieldsWithRelationsByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetRenderedTemplateBody.sql" />
@@ -371,8 +341,6 @@
     <Build Include="dbo\Stored Procedures\GetNonIntersections.sql" />
     <Build Include="dbo\Stored Procedures\GetAllowedAndUnallocatedResponsibilityTypesByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetRelatedObjectsByEventTypeWrapper.sql" />
-    <Build Include="tile\Stored Procedures\GetRedFlagSummariesByResource.sql" />
-    <Build Include="tile\Stored Procedures\GetRedFlagsByTypeAndResource.sql" />
     <Build Include="validate\Stored Procedures\IntersectType.sql" />
     <Build Include="utility\Stored Procedures\GetOwnersForWorkflow.sql" />
     <Build Include="dbo\Stored Procedures\SetChildrenByFollowID.sql" />
@@ -417,8 +385,6 @@
     <Build Include="fusion\Stored Procedures\FindEagleToDBRelationships.sql" />
     <Build Include="queue\Tables\Task.sql" />
     <Build Include="queue\Functions\WriteIndexXml.sql" />
-    <Build Include="dbo\Tables\Transformation.sql" />
-    <Build Include="dbo\Tables\IntersectMapTransformation.sql" />
     <Build Include="cache\Tables\ResponsibilityItem.sql" />
     <Build Include="cache\Tables\Relationship.sql" />
     <Build Include="cache\Tables\Object.sql" />
@@ -469,6 +435,9 @@
     <Build Include="dbo\Tables\SourceTargetRule_1.sql" />
     <Build Include="dbo\Tables\IntersectMapSourceTargetRule_1.sql" />
     <Build Include="dbo\Tables\RuleDimension.sql" />
+    <Build Include="dbo\Tables\BusinessTransformationRule.sql" />
+    <Build Include="dbo\Functions\EventCountByObject.sql" />
+    <Build Include="dbo\Functions\EventsByObject.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -490,7 +459,6 @@
     <None Include="dbo\Stored Procedures\GetGroupHierarchy.sql" />
     <None Include="dbo\Tables\IntersectMapSourceTargetRule.sql" />
     <None Include="dbo\Tables\SourceTargetRule.sql" />
-    <None Include="dbo\Tables\BusinessTransformationRules.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

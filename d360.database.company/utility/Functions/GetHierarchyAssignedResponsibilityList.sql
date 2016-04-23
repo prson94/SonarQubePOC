@@ -1,4 +1,5 @@
-﻿CREATE FUNCTION utility.GetHierarchyAssignedResponsibilityList
+﻿
+CREATE FUNCTION [utility].[GetHierarchyAssignedResponsibilityList]
 (
 	@Object varchar(50),
 	@ObjectID int,
@@ -90,6 +91,7 @@ BEGIN
 								and (
 									(A.ID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
 									)
+							inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = P.ResponsibilityTypeID and RTR.ObjectType = 'ArtifactType' and RTR.ObjectID = A.ArtifactTypeID
 				where		P.ResponsibilityID is not null;
 
 

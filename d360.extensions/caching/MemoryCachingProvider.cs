@@ -57,27 +57,29 @@ namespace d360.extensions.caching
 
             if (cachePresent)
             {
-                HttpContext.Current.Cache[name] = item;
+                RemoveItem(name);
+                //HttpContext.Current.Cache[name] = item;
+            }
+            //else
+            //{
+            //}
+
+            if (isAbsoluteExpiration)
+            {
+                HttpContext.Current.Cache.Insert(name, item,
+                    null, DateTime.UtcNow.AddMinutes(expirationMinutes),
+                    Cache.NoSlidingExpiration,
+                    CacheItemPriority.Default,
+                    null);
             }
             else
             {
-                if (isAbsoluteExpiration)
-                {
-                    HttpContext.Current.Cache.Insert(name, item,
-                        null, DateTime.UtcNow.AddMinutes(expirationMinutes),
-                        Cache.NoSlidingExpiration,
-                        CacheItemPriority.Default,
-                        null);
-                }
-                else
-                {
-                    HttpContext.Current.Cache.Insert(name, item,
-                        null,
-                        Cache.NoAbsoluteExpiration,
-                        TimeSpan.FromMinutes(expirationMinutes),
-                        CacheItemPriority.Default,
-                        null);
-                }
+                HttpContext.Current.Cache.Insert(name, item,
+                    null,
+                    Cache.NoAbsoluteExpiration,
+                    TimeSpan.FromMinutes(expirationMinutes),
+                    CacheItemPriority.Default,
+                    null);
             }
         }
 
@@ -86,27 +88,28 @@ namespace d360.extensions.caching
             var obj = HttpContext.Current.Cache.Get(name);
             if (obj != null)
             {
-                HttpContext.Current.Cache[name] = list;
+                //HttpContext.Current.Cache[name] = list;
+                RemoveItem(name);
+            }
+            //else
+            //{
+            //}
+            if (isAbsoluteExpiration)
+            {
+                HttpContext.Current.Cache.Insert(name, list,
+                    null, DateTime.UtcNow.AddMinutes(expirationMinutes),
+                    Cache.NoSlidingExpiration,
+                    CacheItemPriority.Default,
+                    null);
             }
             else
             {
-                if (isAbsoluteExpiration)
-                {
-                    HttpContext.Current.Cache.Insert(name, list,
-                        null, DateTime.UtcNow.AddMinutes(expirationMinutes),
-                        Cache.NoSlidingExpiration,
-                        CacheItemPriority.Default,
-                        null);
-                }
-                else
-                {
-                    HttpContext.Current.Cache.Insert(name, list,
-                        null,
-                        Cache.NoAbsoluteExpiration,
-                        TimeSpan.FromMinutes(expirationMinutes),
-                        CacheItemPriority.Default,
-                        null);
-                }
+                HttpContext.Current.Cache.Insert(name, list,
+                    null,
+                    Cache.NoAbsoluteExpiration,
+                    TimeSpan.FromMinutes(expirationMinutes),
+                    CacheItemPriority.Default,
+                    null);
             }
         }
 
@@ -118,13 +121,13 @@ namespace d360.extensions.caching
             else
                 dictionary.Add(id, item);
 
-            try
-            {
-                T obj = (T)HttpContext.Current.Cache.Get(name);
-                HttpContext.Current.Cache[name] = dictionary;
-            }
-            catch
-            {
+            //try
+            //{
+            //    T obj = (T)HttpContext.Current.Cache.Get(name);
+            //    HttpContext.Current.Cache[name] = dictionary;
+            //}
+            //catch
+            //{
                 if (isAbsoluteExpiration)
                 {
                     HttpContext.Current.Cache.Insert(name, dictionary,
@@ -142,7 +145,7 @@ namespace d360.extensions.caching
                         CacheItemPriority.Default,
                         null);
                 }
-            }
+            //}
         }
 
         private SortedDictionary<TIdentifier, T> getOrCreateDictionary<T, TIdentifier>(string name)

@@ -71,7 +71,8 @@ BEGIN
 																and @ObjectID is not null 
 															)
 															OR @ObjectID is null 
-														);
+														)
+						inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = R.ResponsibilityTypeID and RTR.ObjectType = 'ArtifactType' and RTR.ObjectID = A.ArtifactTypeID;
 		end
 	if @Object = 'DomainType' OR @Object = 'Domain'
 		begin

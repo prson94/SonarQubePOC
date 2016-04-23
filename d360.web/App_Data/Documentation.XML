@@ -2231,6 +2231,13 @@
             <param name="typeID">The ID of the attribute type to get.</param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.EventsController.GetRuleEvents(System.Int32)">
+            <summary>
+            GEts all events for a rule.
+            </summary>
+            <param name="id">The ID of the rule to get events from.</param>
+            <returns></returns>
+        </member>
         <member name="T:d360.web.Controllers.Services.GlossaryController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
@@ -2841,14 +2848,24 @@
             Serves as the base editor model for all forms.
             </summary>
         </member>
-        <member name="P:d360.web.Models.AddSourcePostModel.Target">
+        <member name="P:d360.web.Models.SourcePostAddModel.Focal">
             <summary>
             The current object that we are creating sources for.
             </summary>
         </member>
-        <member name="P:d360.web.Models.AddSourcePostModel.TargetID">
+        <member name="P:d360.web.Models.SourcePostAddModel.FocalID">
             <summary>
             The current object's ID that we are creating sources for.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.SourcePostDeleteModel.Focal">
+            <summary>
+            The current object that we are deleting sources for.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.SourcePostDeleteModel.FocalID">
+            <summary>
+            The current object's ID that we are deleting sources for.
             </summary>
         </member>
         <member name="P:d360.web.Models.FieldValidationModel.message">

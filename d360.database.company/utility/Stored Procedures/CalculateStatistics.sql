@@ -1,4 +1,4 @@
-﻿create procedure [utility].[CalculateStatistics]
+﻿CREATE procedure [utility].[CalculateStatistics]
 --declare
 	@Type varchar(50) = NULL,
 	@ID int = NULL,
@@ -28,7 +28,7 @@ begin
 	END
 	create table #Statistics (StatisticTypeID int, ObjectType varchar(50), ObjectID int, Score int)
 
---select * from StatisticType
+--select * from #StatisticTypes
 
 	while @current <= @max
 	begin
@@ -53,9 +53,9 @@ begin
 		from	#StatisticTypes T
 				inner join StatisticType S on S.ID = T.StatisticTypeID
 		where	T.ID = @current
-
+				
 		delete @relations
-
+		
 		insert into @relations
 			select	[Object],
 					ObjectID
@@ -65,7 +65,8 @@ begin
 					and (
 						(@Type is not null and [Object] = @Type and ObjectID = @ID) OR (@Type is null) 
 						)
-						
+		
+		
 		-- EXISTENCE
 		if (@CheckType = 1)
 		begin
@@ -479,6 +480,7 @@ begin
 		set @current = @current + 1
 	end
 
+	
 	-- now merge the Statistics table
 	MERGE	Statistic AS T
 	USING	(
@@ -518,4 +520,5 @@ begin
 					getutcdate(), 
 					S.Score
 					);
+	
 end
