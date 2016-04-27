@@ -402,5 +402,39 @@ namespace d360.web.Controllers.Services
         {
             return Company.Filter<DomainItem>(i => i.DomainID == listID);
         }
+
+        [Route("lists/{sourceArtifactID:int}"), HttpGet]
+        public IQueryable<Domain> GetDomainsBySource(int sourceArtifactID)
+        {
+            return Company.Filter<Domain>(i => i.SourceArtifactID == sourceArtifactID);
+        }
+
+        [Route("sources"), HttpGet]
+        public IQueryable<dynamic> GetDomainSources()
+        {
+            return Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
+                                                    join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType'").AsQueryable();
+        }
+
+        [Route("sources/used"), HttpGet]
+        public IQueryable<dynamic> GetUsedDomainSources()
+        {
+            return Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + d.name as name from cache.objectdetails d
+                                                    join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType'
+													where objectid in (select sourceartifactid from domain)").AsQueryable();
+        }
+
+        [Route("lists/xref/{houseDomainItemID:int}"), HttpGet]
+        public IQueryable<DomainXrefGridItem> GetXrefsByItem(int houseDomainItemID)
+        {
+            var sql = @"select x.ID, x.HouseDomainItemID, x.DomainItemID, d1.Code as HouseCode, d2.Code as Code, d.SourceArtifactID, o.Name as SourceArtifactName from domainitemxref x
+                        join domainitem d1 on d1.id = x.housedomainitemid
+                        join domainitem d2 on d2.id = x.domainitemid
+                        join domain d on d.id = d2.domainid
+                        join cache.objectdetails o on o.object = 'Artifact' and o.objectid = d.SourceArtifactID
+                        where x.HouseDomainItemID = @houseDomainItemID";
+
+            return Company.Query<DomainXrefGridItem>(sql, new { houseDomainItemID }).AsQueryable();
+        }
     }
 }

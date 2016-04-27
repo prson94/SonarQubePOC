@@ -106,6 +106,10 @@ namespace d360.model
 
         public DbSet<DomainItem> DomainItems { get; set; }
 
+        public DbSet<DomainItemXref> DomainItemXrefs { get; set; }
+
+        public DbSet<DomainSourceType> DomainSourceTypes { get; set; }
+
         public DbSet<DomainType> DomainTypes { get; set; }
 
         public DbSet<EmailTemplate> EmailTemplates { get; set; }

@@ -1,30 +1,33 @@
-﻿function DomainItemsTile(controlID, contextList, permissions, typeID, domainID) {
+﻿function DomainItemXrefTile(controlID, contextList, permissions, domainItemID) {
 
     var toolsControlID = controlID + "_tools";
     var gridControlID = controlID + "_grid";
 
     controlID = '#' + controlID;
-    $(controlID).html('<header>Items<div id="' + toolsControlID + '"></div></header><div id="' + gridControlID + '"></div>')
+    $(controlID).html('<header>Cross Reference Items<div id="' + toolsControlID + '"></div></header><div id="' + gridControlID + '"></div>')
     gridControlID = '#' + gridControlID;
     toolsControlID = '#' + toolsControlID;
 
-    var srcDomainItemsGrid = {
+    var srcDomainXrefItemsGrid = {
         datatype: 'json',
-        url: '/services/domains/' + typeID + '/lists/' + domainID,
+        url: '/services/domains/lists/xref/' + domainItemID,
         datafields:
         [
-            { name: 'ID' },
-            { name: 'Name' },
+            {name: 'ID' },
+            { name: 'HouseDomainItemID' },
+            { name: 'DomainItemID' },
+            { name: 'HouseCode' },
             { name: 'Code' },
-            { name: 'Description' }
+            { name: 'SourceArtifactID' },
+            { name: 'SourceArtifactName' },
         ]
     };
 
-    var adapterDomainItemsGrid = new $.jqx.dataAdapter(srcDomainItemsGrid);
+    var adapterDomainXrefItemsGrid = new $.jqx.dataAdapter(srcDomainXrefItemsGrid);
 
     var tools = [];
     if (permissions.HasPermission("Root", "Update")) {
-        tools.push({ icon: 'plus', uri: '/form/AddDomainItem?typeID=' + typeID + '&listID=' + domainID, context: contextList.DomainItem, title: 'Add domain item' });
+        tools.push({ icon: 'plus', uri: '/form/AddDomainXrefItem?domainItemID=' + domainItemID, context: contextList.DomainXrefItem, title: 'Add xref item' });
     }
     TileTools(toolsControlID, tools);
 
@@ -39,13 +42,13 @@
         pageable: true,
         pagesizeoptions: ['10', '20', '50'],
         pagesize: 20,
-        source: adapterDomainItemsGrid,
+        source: adapterDomainXrefItemsGrid,
         theme: list_theme,
         columns: [
-            { text: 'Name', dataField: 'Name' },
-            { text: 'Code', dataField: 'Code' },
-            { text: 'Description', dataField: 'Description' },
-            {
+            { text: 'Source Artifact', datafield: 'SourceArtifactName' },
+            { text: 'House Code', datafield: 'HouseCode' },
+            { text: 'Code', datafield: 'Code' },
+            ,{
                 text: '',
                 dataField: 'ID',
                 width: 80,
@@ -56,34 +59,15 @@
                     var tools = [];
 
                     if (permissions.HasPermission("Root", "Update")) {
-                        tools.push({ icon: 'pencil', urlprefix: '/form/EditDomainItem?id={0}' });
-                        tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteDomainItem?id={0}' });
+                       // tools.push({ icon: 'pencil', urlprefix: '/form/EditDomainXrefItem?id={0}' });
+                        tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteDomainItemXref?id={0}' });
                     }
-
-                    return renderToolsHtml(value, tools, contextList.DomainItem);
+                    return renderToolsHtml(value, tools, contextList.DomainXrefItem);
                 }
             }
         ]
     });
 
-
-    function itemSelect(evt) {
-        var args = evt.args;
-        var row = args.row;
-
-        var oID = row.ID;
-
-        if (oID && oID > 0) {
-            DomainItemXrefTile('XrefTile', contextList, permissions, oID);
-            $('#XrefTile').fadeIn(300);
-
-        } else {
-            $('#XrefTile').html('').fadeOut(300);
-        }
-        
-    }
-
-    $(gridControlID).on('rowselect', itemSelect);
     //#endregion
 
     //#region Event Subscriptions
@@ -91,7 +75,7 @@
     function saveAction(data) {
         try {
             switch (data.context) {
-                case contextList.DomainItem:
+                case contextList.DomainXrefItem:
                     $(gridControlID).jqxGrid('updatebounddata');
                     break;
             }
@@ -101,8 +85,8 @@
     }
 
     function unsubscribe(data) {
-        srcDomainItemsGrid = null;
-        adapterDomainItemsGrid = null;
+        srcDomainXrefItemsGrid = null;
+        adapterDomainXrefItemsGrid = null;
 
         amplify.unsubscribe("SaveAction", saveAction);
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);

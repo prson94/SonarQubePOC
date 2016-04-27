@@ -459,6 +459,8 @@
     <None Include="dbo\Stored Procedures\GetGroupHierarchy.sql" />
     <None Include="dbo\Tables\IntersectMapSourceTargetRule.sql" />
     <None Include="dbo\Tables\SourceTargetRule.sql" />
+    <None Include="dbo\Tables\DomainItemXref.sql" />
+    <None Include="dbo\Tables\DomainSourceType.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

@@ -12,6 +12,7 @@ public static class ContextList
         public const string Domain = "domainform";
         public const string DomainGroup = "domaingroupform";
         public const string DomainItem = "domainitemform";
+        public const string DomainXrefItem = "domainxrefitemform";
         public const string DomainType = "domaintypeform";
         public const string EmailTemplate = "emailtemplateform";
         public const string Event = "eventform";

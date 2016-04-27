@@ -861,4 +861,16 @@ namespace d360.web.Models
 
         public List<SelectListItem> ResponsibilityTypes { get; set; }
     }
+
+    public class DomainItemXrefEditorModel : BaseEditorModel
+    {
+        public int HouseDomainItemID { get; set; }
+        public int DomainItemID { get; set; }
+        public string HouseCode { get; set; }
+        public string Code { get; set; }
+        public int? SourceArtifactID { get; set; }
+        public string SourceArtifactName { get; set; }
+        public int DomainID { get; set; }
+
+    }
 }

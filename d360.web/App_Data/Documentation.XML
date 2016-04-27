@@ -2577,6 +2577,9 @@
         <member name="M:d360.web.Controllers.FormController.DomainItem_EditFields(System.Int32)">
             <param name="id">DomainItemID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.DomainItemXref_DeleteFields(System.Int32)">
+            <param name="id">DomainItemID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.DomainType_DeleteFields(System.Int32)">
             <param name="id">DomainTypeID</param>
         </member>

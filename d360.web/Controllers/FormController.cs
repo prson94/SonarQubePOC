@@ -2457,9 +2457,17 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
 
+            var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
+                                                    join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType' where objecttypename is not null").ToList();
+            var sourcesList = new List<SelectListItem>();
+            sourcesList.Add(new SelectListItem { Text = "(None)", Value = "-1" });
+            sourcesList.AddRange(sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList());
+            
+
             list.Add(new EditableField { FieldName = "DomainGroupID", FieldType = DataType.Hidden.ToString(), Value = g.ToString() });
             list.Add(new EditableField { FieldName = "DomainTypeID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourcesList, Value = "-1" });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -2494,9 +2502,16 @@ namespace d360.web.Controllers
                 .OrderBy(i => i.Text)
                 .ToList();
 
+            var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
+                                                    join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType' where objecttypename is not null").ToList();
+            var sourcesList = new List<SelectListItem>();
+            sourcesList.Add(new SelectListItem { Text = "(None)", Value = "-1" });
+            sourcesList.AddRange(sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList());
+
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DomainGroupID", Name = "Grouping", FieldType = DataType.Lookup.ToString(), Items = groups, Value = a.DomainGroupID.Value.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 3, Required = false, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourcesList, Value = a.SourceArtifactID.ToString() ?? "-1" });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -2537,13 +2552,16 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.DomainType, typeID, Claim.Create))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
+                int? source = parseIntField(form, "Source");
+                if (source < 1) source = null;
                 var a = new Domain
                 {
                     DomainTypeID = typeID,
                     Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
                     EnforceParentItemSelection = false,
-                    DomainGroupID = parseIntField(form, "DomainGroupID")
+                    DomainGroupID = parseIntField(form, "DomainGroupID"),
+                    SourceArtifactID = source
                 };
 
                 Company.Add<Domain>(a);
@@ -2639,10 +2657,12 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.Domain, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
+                int? source = parseIntField(form, "Source");
+                if (source < 1) source = null;
                 model.Name = parseTextField(form, "Name", null, true);
                 model.Description = parseTextField(form, "Description");
                 model.DomainGroupID = parseIntField(form, "DomainGroupID");
-
+                model.SourceArtifactID = source;
                 Company.Update<Domain>(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", string.Format("Domain|{0}", id), form["_context"], "edit", HttpStatusCode.OK, new { });
@@ -3072,6 +3092,167 @@ namespace d360.web.Controllers
         }
 
         #endregion
+
+        #endregion
+
+        #region DomainXrefItem
+
+        public JsonResult DomainXrefItem_AddFields(int t)
+        {
+            if (!Company.HasPermission(SystemObjects.Domain, t, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var domainItem = Company.GetById<DomainItem>(t);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "DomainItemID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
+
+            list.Add(new EditableField { Row = 1, Column = 1,  FieldName = "HouseCode", Name = "House Code", Value = domainItem.Code, ReadOnly = true });
+
+            var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
+                                                    join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType'
+                                                    ").ToList();
+            var sourceItems = sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList();
+
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourceItems });
+
+            var lists = Company.Domains.ToList();
+            var listItems = lists.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+
+            list.Add(new EditableField { Row = 1, Column = 3, Required = true, FieldName = "Domain", Name = "Domain", FieldType = DataType.Lookup.ToString(), Items = listItems });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Code", Name = "Code", FieldType = DataType.Lookup.ToString(), Items = null });
+            //list.Add(new EditableFieldLookupList { FieldName})
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult AddDomainXrefItem(int domainItemID)
+        {
+            var item = Company.GetById<DomainItem>(domainItemID);
+            var domain = Company.GetById<Domain>(item.DomainID);
+            if (item == null) return HttpNotFound();
+            var model = new DomainItemXrefEditorModel
+            {
+                HouseDomainItemID = item.ID,
+                HouseCode = item.Code,
+                SourceArtifactID = domain.SourceArtifactID
+            };
+
+            //var model = new EditableForm
+            //{
+            //    Context = ContextList.DomainXrefItem,
+            //    FieldUri = string.Format("/form/DomainXrefItem_AddFields?t={0}", domainItemID),
+            //    FormTitle = "Add cross reference to " + item.Code,
+            //    FormUri = "/form/AddDomainXrefItem",
+            //    FormMethod = "POST"
+            //};
+
+            return PartialView("DomainXrefItemForm", model);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, Route("xref/add/{houseDomainItem:int}/{domainItem:int}")]
+        public JsonNetResult AddDomainXrefItem(int houseDomainItem, int domainItem)
+        {
+            var error = false;
+            var message = "";
+            if (houseDomainItem < 1)
+            {
+                error = true;
+                message += "An error occurred: house domain item ID missing\n";
+            }
+            if (domainItem < 1)
+            {
+                error = true;
+                message += "An error occurred: domain item ID missing\n";
+            }
+
+            DomainItemXref i = new DomainItemXref();
+            i.DomainItemID = domainItem;
+            i.HouseDomainItemID = houseDomainItem;
+
+            var existing = Company.DomainItemXrefs.Where(e => e.HouseDomainItemID == i.HouseDomainItemID && e.DomainItemID == i.DomainItemID).Count();
+
+            if (existing == 0)
+            {
+                try
+                {
+                Company.DomainItemXrefs.Add(i);
+                Company.SaveChanges();
+                } catch(Exception ex)
+                {
+                    error = true;
+                    message += $"An error occurred: {ex.Message}\n{ex.StackTrace}";
+                }
+            }
+
+            return new JsonNetResult
+            {
+                Data = new {error = error, message = message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        public ActionResult DeleteDomainItemXref(int id)
+        {
+            var a = Company.GetById<DomainItemXref>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.DomainXrefItem,
+                FieldUri = string.Format("/form/DomainItemXref_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this cross reference"),
+                FormUri = "/form/DeleteDomainItemXref",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteDomainItemXref(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("domain list item");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<DomainItemXref>(id);
+                if (model == null) throw new NotFoundException("domain list item");
+                var domainItem = Company.GetById<DomainItem>(model.HouseDomainItemID);
+
+                if (!Company.HasPermission(SystemObjects.Domain, domainItem.DomainID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<DomainItemXref>(model);
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        /// <param name="id">DomainItemID</param>
+        public JsonResult DomainItemXref_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<DomainItemXref>(id);
+            var d = Company.GetById<DomainItem>(a.HouseDomainItemID);
+            if (!Company.HasPermission(SystemObjects.Domain, d.DomainID, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
 
         #endregion
 

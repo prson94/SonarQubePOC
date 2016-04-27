@@ -9,6 +9,9 @@
     [Path]                       XML             NULL,
     [UpdatedOn]                  DATETIME        NULL,
     [UpdatedBy]                  INT             NULL,
+    [IsXref] BIT NULL, 
+    [IsHouse] BIT NULL, 
+	[SourceArtifactID] INT NULL,
     CONSTRAINT [PK_Domain] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Domain_DomainType] FOREIGN KEY ([DomainTypeID]) REFERENCES [dbo].[DomainType] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [FK_Domain_ParentDomain] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[Domain] ([ID])

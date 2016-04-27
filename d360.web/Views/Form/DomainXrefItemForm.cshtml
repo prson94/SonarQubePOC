@@ -1,0 +1,220 @@
+﻿@using d360.core.enums;
+@model d360.web.Models.DomainItemXrefEditorModel
+<script id="domainItemXrefTemplate" type="text/html">
+    <div class="left form-header-info">
+        <h4>@((Model.DomainItemID > 0) ? "Edit cross reference" : "Add cross reference")</h4>
+    </div>
+    <div class="right">
+        <button type="button" data-bind="click: cancel, disabled: IsLoading" class="btn waves-effect waves-light brown lighten-4">Cancel</button>
+        <button type="button" data-bind="click: save, disabled: IsLoading" class="btn waves-effect waves-light brown lighten-1 saveButton">Save</button>
+    </div>
+    <div class="clear"></div>
+    <div class="row">
+        <div class="col m4">
+            <div class="FieldNameRequired">Source Artifact</div>
+            <div id="xref_sourceDropDownList"></div>
+        </div>
+        <div class="col m4">
+            <div class="FieldNameRequired">List</div>
+            <div id="xref_domainDropDownList"></div>
+        </div>
+        <div class="col m4">
+            <div class="FieldNameRequired">Code</div>
+            <div id="xref_codeDropDownList"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col m12 error" data-bind="visible:HasError, text:ErrorMessage">
+        </div>
+    </div>
+</script>
+
+<div class="medium-overlay">
+    <div class="ui segment">
+        <div id="domainFormWrapper" data-bind="template: {name: 'domainItemXrefTemplate' }"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function DomainItemXrefModel(data) {
+        var self = this;
+
+        self.HouseDomainItemID = ko.observable(data.HouseDomainItemID || 0);
+        self.DomainItemID = ko.observable(data.DomainItemID || 0);
+        self.HouseCode = ko.observable(data.HouseCode || '');
+        self.Code = ko.observable(data.Code || '');
+        self.SourceArtifactID = ko.observable(data.SourceArtifactID || 0);
+        self.SourceArtifactName = ko.observable(data.SourceArtifactName || 0);
+        self.DomainID = ko.observable(data.DomainID || 0);
+
+        self.HasError = ko.observable(false);
+        self.ErrorMessage = ko.observable('');
+        self.IsLoading = ko.observable(false);
+
+        self.load = function () {
+        
+        }
+
+        self.load();
+
+        self.save = function () {
+            self.IsLoading(true);
+            var error = false;
+            var message = "";
+
+            if (self.HouseDomainItemID() < 1) {
+                error = true;
+                message += 'An error occurred while saving.'
+            }
+            if (self.DomainItemID() < 1) {
+                error = true;
+                message += 'Please select a code.'
+            }
+
+            if (!error) {
+                $.ajax({
+                    url: 'form/xref/add/' + self.HouseDomainItemID() + '/' + self.DomainItemID(),
+                    method: 'POST'
+                }).done(function (data) {
+                    if (data) {
+                        if (data.error) {
+                            error = true;
+                            message += 'An error occurred while saving';
+                            console.log(data.message);
+                        } else {
+                            amplify.publish("SaveAction", { context: contextList.DomainXrefItem });
+                        }
+                    }
+                }).always(function () {
+                    self.IsLoading(false);
+                });
+            }
+
+            self.HasError(error);
+            self.ErrorMessage(message);
+        }
+
+        self.cancel = function () {
+            amplify.publish("CancelAction", { context: contextList.DomainXrefItem });
+        }
+
+    }
+
+    $(function () {
+        var model = new DomainItemXrefModel({
+            HouseDomainItemID: '@(Model.HouseDomainItemID)',
+            DomainItemID: '@(Model.DomainItemID)',
+            HouseCode: '@(Model.HouseCode)',
+            Code: '@(Model.Code)',
+            SourceArtifactID: '@(Model.SourceArtifactID)',
+            SourceArtifactName: '@(Model.SourceArtifactName)',
+            DomainID: '@(Model.DomainID)'
+        });
+        ko.applyBindings(model, document.getElementById('domainFormWrapper'));
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        var sources = {
+            datatype: 'json',
+            datafields: [
+                { name: 'id' },
+                { name: 'name' }
+            ],
+            url: 'services/domains/sources/used',
+            async: true
+        };
+        var sourceAdapter = new $.jqx.dataAdapter(sources);
+
+        var domains = {
+            datatype: 'json',
+            datafields: [
+                { name: 'ID' },
+                { name: 'Name' }
+            ],
+            url: null,
+            async: true
+        };
+        var domainAdapter = new $.jqx.dataAdapter(domains);
+
+        var codes = {
+            datatype: 'json',
+            datafields: [
+                { name: 'ID' },
+                { name: 'Code' }
+            ],
+            url: null,
+            async: true
+        };
+        var codeAdapter = new $.jqx.dataAdapter(codes);
+
+        $('#xref_sourceDropDownList').jqxDropDownList({
+            theme: theme,
+            source: sourceAdapter,
+            valueMember: 'id',
+            displayMember: 'name',
+            filterable: true,
+            searchMode: 'containsignorecase',
+            width: field_width98
+        }).on('select', function (event) {
+            var args = event.args;
+            if (args) {
+                var index = args.index;
+                var item = args.item;
+                var value = item.value;
+                model.SourceArtifactID(value);
+                //console.log(value);
+                domains.url = 'services/domains/lists/' + value;
+                codes.url = null;
+                model.DomainItemID(-1);
+                var da = new $.jqx.dataAdapter(domains);
+                var ca = new $.jqx.dataAdapter(codes);
+                $('#xref_domainDropDownList').jqxDropDownList({ source: da });
+                $('#xref_codeDropDownList').jqxDropDownList({ source: ca });
+
+            }
+        });
+
+        $('#xref_domainDropDownList').jqxDropDownList({
+            theme: theme,
+            source: domainAdapter,
+            valueMember: 'ID',
+            displayMember: 'Name',
+            filterable: true,
+            searchMode: 'containsignorecase',
+            width: field_width98
+        }).on('select', function (event) {
+            var args = event.args;
+            if (args) {
+                var index = args.index;
+                var item = args.item;
+                var value = item.value;
+                codes.url = 'services/domains/0/lists/' + value;
+                var ca = new $.jqx.dataAdapter(codes);
+                $('#xref_codeDropDownList').jqxDropDownList({ source: ca });
+                model.DomainItemID(-1);
+            }
+        });
+
+        $('#xref_codeDropDownList').jqxDropDownList({
+            theme: theme,
+            source: codeAdapter,
+            valueMember: 'ID',
+            displayMember: 'Code',
+            filterable: true,
+            searchMode: 'containsignorecase',
+            width: field_width98
+        }).on('select', function (event) {
+            var args = event.args;
+            if (args) {
+                var index = args.index;
+                var item = args.item;
+                var value = item.value;
+                model.DomainItemID(value);
+            }
+        });
+
+    });
+
+
+</script>
