@@ -2806,6 +2806,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The source artifact for this item..
+        /// </summary>
+        public static string SourceArtifact_Description {
+            get {
+                return ResourceManager.GetString("SourceArtifact_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source.
+        /// </summary>
+        public static string SourceArtifact_Name {
+            get {
+                return ResourceManager.GetString("SourceArtifact_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The item&apos;s ID from the system that generated it..
         /// </summary>
         public static string SourceID_Description {

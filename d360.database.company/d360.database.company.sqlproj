@@ -461,6 +461,7 @@
     <None Include="dbo\Tables\SourceTargetRule.sql" />
     <None Include="dbo\Tables\DomainItemXref.sql" />
     <None Include="dbo\Tables\DomainSourceType.sql" />
+    <None Include="dbo\Tables\DomainClassification.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

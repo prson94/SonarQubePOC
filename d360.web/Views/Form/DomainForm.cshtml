@@ -1,0 +1,271 @@
+﻿
+@using d360.core.enums;
+@model d360.web.Models.DomainEditorModel
+<script id="domainTemplate" type="text/html">
+    <div class="left form-header-info">
+        <h4>@((Model.DomainID > 0) ? "Edit " + Model.Name : "Add Domain")</h4>
+    </div>
+    <div class="right">
+        <button type="button" data-bind="click: cancel, disabled: IsLoading" class="btn waves-effect waves-light brown lighten-4">Cancel</button>
+        <button type="button" data-bind="click: save, disabled: IsLoading" class="btn waves-effect waves-light brown lighten-1 saveButton">Save</button>
+    </div>
+    <div class="clear"></div>
+    <div class="row">
+        <div class="col m4">
+            <div class="FieldNameRequired">Name</div>
+            <input data-bind="jqxInput: { theme: theme, value: Name, width: field_width98, height: 25 }" />
+        </div>
+        <div class="col m4">
+            <div class="FieldNameRequired">Classification</div>
+            <div id="domain_classDropDownList"></div>
+        </div>
+        <div class="col m4">
+            <div data-bind="visible: DomainID() != 0">
+                <div class="FieldNameRequired">Grouping</div>
+                <div id="domain_groupDropDownList"></div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col m4">
+            <div data-bind="visible: DomainClassificationID() != 2">
+                <div class="FieldNameRequired">Source</div>
+                <div id="domain_sourceDropDownList"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col m12">
+            <div class="FieldNameRequired">Description</div>
+            <textarea data-bind="htmlarea: Description"></textarea>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col m12 error" data-bind="visible:HasError, text:ErrorMessage">
+        </div>
+    </div>
+</script>
+
+<div class="medium-overlay">
+    <div class="ui segment">
+        <div id="domainFormWrapper" data-bind="template: {name: 'domainTemplate' }"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function DomainModel(data) {
+        var self = this;
+        self.DomainID = ko.observable(data.DomainID || 0);
+        self.DomainClassificationID = ko.observable(data.DomainClassificationID || 1);
+        self.Name = ko.observable(data.Name || '');
+        self.SourceArtifactID = ko.observable(data.SourceArtifactID || 0);
+        self.DomainGroupID = ko.observable(data.DomainGroupID || 0);
+        self.Description = ko.observable(data.Description || '');
+        self.DomainTypeID = ko.observable(data.DomainTypeID || 0);
+
+        self.HasError = ko.observable(false);
+        self.ErrorMessage = ko.observable('');
+        self.IsLoading = ko.observable(false);
+
+        self.save = function () {
+            if (self.IsLoading())
+                return;
+            self.IsLoading(true);
+            self.HasError(false);
+            self.ErrorMessage('');
+            if (self.DomainClassificationID() == 2)
+                self.SourceArtifactID(null);
+            if (self.Name() == '') {
+                self.HasError(true);
+                self.ErrorMessage('Name is a required field.');
+                return;
+            }
+            if (self.DomainClassificationID() == 0) {
+                self.HasError(true);
+                self.ErrorMessage('Please choose a classification.');
+                return;
+            }
+            if (self.DomainGroupID() == 0) {
+                self.HasError(true);
+                self.ErrorMessage('Please choose a grouping.');
+                return;
+            }
+
+            var model = {
+                DomainClassificationID: self.DomainClassificationID(),
+                DomainTypeID: self.DomainTypeID(),
+                DomainGroupID: self.DomainGroupID(),
+                Name: self.Name(),
+                Description: self.Description(),
+                SourceArtifactID: self.SourceArtifactID()
+            }
+
+            if (self.DomainID() > 0) { //edit
+                model.DomainID = self.DomainID();
+                self.IsLoading(true);
+                $.ajax({
+                    url: 'form/domain/edit',
+                    data: model,
+                    method: 'PUT'
+                }).done(function (data) {
+                    if (data.type == 'error') {
+                        amplify.publish("ShowMessage", { type: "error", title: data.title, message: data.message });
+                    } else {
+                        amplify.publish("SaveAction", { context: contextList.Domain, action: 'edit', id: model.DomainID, custom: {} });
+                    }
+                }).always(function () {
+                    self.IsLoading(false);
+                });
+            } else { //add
+                
+
+                self.IsLoading(true);
+                $.ajax({
+                    url: 'form/domain/add',
+                    data: model,
+                    method: 'POST'
+                }).done(function (data) {
+                    if (data.type == 'error') {
+                        amplify.publish("ShowMessage", { type: "error", title: data.title, message: data.message });
+                    } else {
+                        amplify.publish("SaveAction", { context: contextList.Domain, action: 'add', id: 0, custom: {} });
+                    }
+                }).always(function () {
+                    self.IsLoading(false);
+                });
+            }
+        }
+
+        self.cancel = function () {
+           amplify.publish("CancelAction", { context: contextList.Domain });
+        }
+    }
+
+    $(function () {
+
+        var data = {
+            DomainID: '@(Model.DomainID)',
+            DomainClassificationID: '@Model.DomainClassificationID',
+            Name: '@(Model.Name)',
+            SourceArtifactID: '@(Model.SourceArtifactID)',
+            DomainGroupID: '@(Model.DomainGroupID)',
+            Description: `@Html.Raw(Model.Description)`,
+            DomainTypeID: '@(Model.DomainTypeID)'
+        };
+
+        var model = new DomainModel(data);
+        ko.applyBindings(model, document.getElementById('domainFormWrapper'));
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+
+        var sources = {
+            datatype: 'json',
+            datafields: [
+                { name: 'id' },
+                { name: 'name' }
+            ],
+            url: 'services/domains/sources',
+            async: true
+        };
+        var sourceAdapter = new $.jqx.dataAdapter(sources);
+
+        $('#domain_sourceDropDownList').jqxDropDownList({
+            theme: theme,
+            source: sourceAdapter,
+            valueMember: 'id',
+            displayMember: 'name',
+            filterable: true,
+            searchMode: 'containsignorecase',
+            width: field_width98
+        }).on('select', function (event) {
+            var args = event.args;
+            if (args) {
+                var index = args.index;
+                var item = args.item;
+                var value = item.value;
+                model.SourceArtifactID(value);
+            }
+        }).on('bindingComplete', function () {
+
+            if (data.DomainID > 0) {
+                var sourceItem = $(this).jqxDropDownList('getItemByValue', data.SourceArtifactID);
+                if (!sourceItem)
+                    return;
+                $(this).jqxDropDownList('selectIndex', sourceItem.index);
+            }
+        });
+
+        var groups = {
+            datatype: 'json',
+            datafields: [
+                { name: 'ID' },
+                { name: 'Name' }
+            ],
+            url: 'services/domains/@(Model.DomainTypeID)/groups',
+            async: true
+        };
+        var groupAdapter = new $.jqx.dataAdapter(groups);
+        $('#domain_groupDropDownList').jqxDropDownList({
+            theme: theme,
+            source: groupAdapter,
+            valueMember: 'ID',
+            displayMember: 'Name',
+            filterable: true,
+            searchMode: 'containsignorecase',
+            width: field_width98
+        }).on('select', function (event) {
+            var args = event.args;
+            if (args) {
+                var index = args.index;
+                var item = args.item;
+                var value = item.value;
+                model.DomainGroupID(value);
+            }
+        }).on('bindingComplete', function () {
+            if (data.DomainID > 0) {
+                var groupItem = $(this).jqxDropDownList('getItemByValue', data.DomainGroupID);
+                if (!groupItem)
+                    return;
+                $(this).jqxDropDownList('selectIndex', groupItem.index);
+            }
+        });
+
+        var classes = {
+            datatype: 'json',
+            datafields: [
+                { name: 'ID' },
+                { name: 'Name' }
+            ],
+            url: 'services/domains/lists/classifications',
+            async: true
+        };
+        var classAdapter = new $.jqx.dataAdapter(classes);
+        $('#domain_classDropDownList').jqxDropDownList({
+            theme: theme,
+            source: classAdapter,
+            valueMember: 'ID',
+            displayMember: 'Name',
+            filterable: true,
+            searchMode: 'containsignorecase',
+            width: field_width98
+        }).on('select', function (event) {
+            var args = event.args;
+            if (args) {
+                var index = args.index;
+                var item = args.item;
+                var value = item.value;
+                model.DomainClassificationID(value);
+            }
+        }).on('bindingComplete',function () {
+            if (data.DomainID > 0) {
+                var classItem = $(this).jqxDropDownList('getItemByValue', data.DomainClassificationID);
+                if (!classItem)
+                    return;
+                $(this).jqxDropDownList('selectIndex', classItem.index);
+            }
+        });
+
+    });
+</script>

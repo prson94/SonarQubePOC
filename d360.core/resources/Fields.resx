@@ -1155,4 +1155,10 @@
   <data name="RuleDimensionID_Name" xml:space="preserve">
     <value>Dimension</value>
   </data>
+  <data name="SourceArtifact_Description" xml:space="preserve">
+    <value>The source artifact for this item.</value>
+  </data>
+  <data name="SourceArtifact_Name" xml:space="preserve">
+    <value>Source</value>
+  </data>
 </root>

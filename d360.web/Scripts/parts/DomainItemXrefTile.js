@@ -20,6 +20,7 @@
             { name: 'Code' },
             { name: 'SourceArtifactID' },
             { name: 'SourceArtifactName' },
+            { name: 'ListName' }
         ]
     };
 
@@ -45,9 +46,10 @@
         source: adapterDomainXrefItemsGrid,
         theme: list_theme,
         columns: [
-            { text: 'Source Artifact', datafield: 'SourceArtifactName' },
-            { text: 'House Code', datafield: 'HouseCode' },
-            { text: 'Code', datafield: 'Code' },
+            { text: 'House Code', datafield: 'HouseCode', width: 100 },
+            { text: 'Source', datafield: 'SourceArtifactName' },
+            { text: 'List', datafield: 'ListName' },
+            { text: 'Code', datafield: 'Code' }
             ,{
                 text: '',
                 dataField: 'ID',

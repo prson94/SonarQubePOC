@@ -873,4 +873,15 @@ namespace d360.web.Models
         public int DomainID { get; set; }
 
     }
+
+    public class DomainEditorModel : BaseEditorModel
+    {
+        public int DomainID { get; set; }
+        public int DomainTypeID { get; set; }
+        public int DomainClassificationID { get; set; }
+        public int? SourceArtifactID { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int? DomainGroupID { get; set; }
+    }
 }

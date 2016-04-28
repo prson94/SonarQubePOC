@@ -3414,18 +3414,43 @@ where    A.PolicyTypeID = @id", columns, joins);
                     var domain = Company.GetById<Domain>(id, i => i.DomainType, i => i.DomainGroup);
                     if (domain != null)
                     {
+                        var classification = Company.GetById<DomainClassification>(domain.DomainClassificationID);
+                        ObjectDetail source = null;
+                        if (domain.SourceArtifactID != null)
+                        {
+                            source = GetObjectDetail(SystemObjects.Artifact, (int)domain.SourceArtifactID);
+                        }
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = domain.GetName(i => i.Name), FieldName = "DomainGroupName", FieldDescription = domain.GetDescription(i => i.Name), Value = domain.Name }
+                                new ReadOnlyField { Name = domain.GetName(i => i.Name), FieldName = "DomainGroupName", FieldDescription = domain.GetDescription(i => i.Name), Value = domain.Name },
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = domain.GetName(i => i.ID), FieldName = "DomainGroupID", FieldDescription = domain.GetDescription(i => i.ID), Value = domain.ID.ToString() }
+                                new ReadOnlyField { Name = domain.GetName(i => i.ID), FieldName = "DomainGroupID", FieldDescription = domain.GetDescription(i => i.ID), Value = domain.ID.ToString() },
                             }
                         });
+
+
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domain.GetName(i => i.DomainClassificationID) , FieldName = "DomainClassificationID", FieldDescription = domain.GetDescription(i => i.DomainClassificationID), Value = classification.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = domain.GetName(i => i.SourceArtifactID), FieldName = "SourceArtifactID", FieldDescription = domain.GetDescription(i => i.SourceArtifactID), Value = source?.Name ?? "(None)" }
+                            }
+                        });
+
+                        //if (source != null)
+                        //    model.rows.AddRange(loadDynamicDisplayFields(SystemObjects.Artifact, source.ID));
 
                         if (!string.IsNullOrEmpty(domain.Description))
                         {

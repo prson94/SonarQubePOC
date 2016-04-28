@@ -64,13 +64,19 @@
                 }
             }
         ]
+    }).on('bindingcomplete', function () {
+        $(this).jqxGrid('selectrow', 0);
     });
 
 
     function itemSelect(evt) {
         var args = evt.args;
         var row = args.row;
-
+        
+        if (!row) {
+            $('#XrefTile').html('').fadeOut(300);
+            return;
+        }
         var oID = row.ID;
 
         if (oID && oID > 0) {

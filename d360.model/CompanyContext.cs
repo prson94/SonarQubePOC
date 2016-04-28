@@ -102,6 +102,8 @@ namespace d360.model
 
         public DbSet<Domain> Domains { get; set; }
 
+        public DbSet<DomainClassification> DomainClassifications { get; set; }
+
         public DbSet<DomainGroup> DomainGroups { get; set; }
 
         public DbSet<DomainItem> DomainItems { get; set; }

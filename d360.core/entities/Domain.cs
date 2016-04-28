@@ -42,8 +42,9 @@ namespace d360.core.entities
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
-        public bool? IsXref { get; set; }
-        public bool? IsHouse { get; set; }
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Class_Name", Description = "Class_Description")]
+        public int DomainClassificationID { get; set; }
+        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "SourceArtifact_Name", Description = "SourceArtifact_Description")]
         public int? SourceArtifactID { get; set; }
 
         #region Navigation Properties

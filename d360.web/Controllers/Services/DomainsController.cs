@@ -427,7 +427,7 @@ namespace d360.web.Controllers.Services
         [Route("lists/xref/{houseDomainItemID:int}"), HttpGet]
         public IQueryable<DomainXrefGridItem> GetXrefsByItem(int houseDomainItemID)
         {
-            var sql = @"select x.ID, x.HouseDomainItemID, x.DomainItemID, d1.Code as HouseCode, d2.Code as Code, d.SourceArtifactID, o.Name as SourceArtifactName from domainitemxref x
+            var sql = @"select x.ID, x.HouseDomainItemID, x.DomainItemID, d1.Code as HouseCode, d2.Code as Code, d.SourceArtifactID, o.Name as SourceArtifactName, d.Name as ListName from domainitemxref x
                         join domainitem d1 on d1.id = x.housedomainitemid
                         join domainitem d2 on d2.id = x.domainitemid
                         join domain d on d.id = d2.domainid
@@ -435,6 +435,12 @@ namespace d360.web.Controllers.Services
                         where x.HouseDomainItemID = @houseDomainItemID";
 
             return Company.Query<DomainXrefGridItem>(sql, new { houseDomainItemID }).AsQueryable();
+        }
+
+        [Route("lists/classifications"), HttpGet]
+        public IQueryable<DomainClassification> GetClassifications()
+        {
+            return Company.DomainClassifications.AsQueryable();
         }
     }
 }
