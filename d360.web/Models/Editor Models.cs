@@ -871,6 +871,7 @@ namespace d360.web.Models
         public int? SourceArtifactID { get; set; }
         public string SourceArtifactName { get; set; }
         public int DomainID { get; set; }
+        public int LanguageID { get; set; }
 
     }
 

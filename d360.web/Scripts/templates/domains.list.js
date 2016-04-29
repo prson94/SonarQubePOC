@@ -88,6 +88,8 @@
                         //DomainAllocationsTile('AllocationsTile', contextList, permissions, typeID, id);
                         $('#ItemsTile').fadeIn(fadoutTime);
                         $('#XrefTile').fadeIn(fadoutTime);
+                        $('#XrefListTile').fadeIn(fadoutTime);
+                        DomainListXrefTile('XrefListTile', contextList, permissions, id);
                         DomainItemsTile('ItemsTile', contextList, permissions, typeID, id);
                         $('#OwnerTile').fadeIn(fadoutTime);
                         PeopleResponsibilityTile('OwnerTile', contextList, permissions, selectedType, id, '', false);
@@ -112,6 +114,7 @@
                     //$('#AllocationsTile').fadeOut(fadoutTime).html('');
                     $('#ItemsTile').fadeOut(fadoutTime).html('');
                     $('#XrefTile').fadeOut(fadoutTime).html('');
+                    $('#XrefListTile').fadeOut(fadoutTime).html('');
                     $('#OwnerTile').fadeOut(fadoutTime).html('');
                     $('#AggregatesTile').fadeOut(fadoutTime).html('');
                 }

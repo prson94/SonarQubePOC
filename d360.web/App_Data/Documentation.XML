@@ -2550,13 +2550,7 @@
         <member name="M:d360.web.Controllers.FormController.AttributeTypeRelation_EditFields(System.Int32,System.String,System.Int32)">
             <param name="at">AttributeTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Domain_AddFields(System.Int32,System.Int32)">
-            <param name="t">DomainTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Domain_DeleteFields(System.Int32)">
-            <param name="id">DomainID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Domain_EditFields(System.Int32)">
             <param name="id">DomainID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.DomainGroup_AddFields(System.Int32)">
@@ -2578,7 +2572,7 @@
             <param name="id">DomainItemID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.DomainItemXref_DeleteFields(System.Int32)">
-            <param name="id">DomainItemID</param>
+            <param name="id">DomainItemXrefID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.DomainType_DeleteFields(System.Int32)">
             <param name="id">DomainTypeID</param>

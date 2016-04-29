@@ -462,6 +462,7 @@
     <None Include="dbo\Tables\DomainItemXref.sql" />
     <None Include="dbo\Tables\DomainSourceType.sql" />
     <None Include="dbo\Tables\DomainClassification.sql" />
+    <None Include="dbo\Tables\Language.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

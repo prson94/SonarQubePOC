@@ -934,6 +934,7 @@
     <Content Include="Scripts\parts\DomainAllocationsTile.js" />
     <Content Include="Scripts\parts\DomainItemsTile.js" />
     <Content Include="Scripts\parts\DomainItemXrefTile.js" />
+    <Content Include="Scripts\parts\DomainListXrefTile.js" />
     <Content Include="Scripts\parts\EventAgeBreakdownChart.js" />
     <Content Include="Scripts\parts\EventCriticalityBreakdownChart.js" />
     <Content Include="Scripts\parts\EventHeadersGrid.js" />

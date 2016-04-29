@@ -2449,31 +2449,68 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
+        #region Old Add/Edit
+
         /// <param name="t">DomainTypeID</param>
-        public JsonResult Domain_AddFields(int t, int g)
-        {
-            if (!Company.HasPermission(SystemObjects.DomainType, t, Claim.Create, ClaimObject.Root))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+        //public JsonResult Domain_AddFields(int t, int g)
+        //{
+        //    if (!Company.HasPermission(SystemObjects.DomainType, t, Claim.Create, ClaimObject.Root))
+        //        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-            var list = new List<EditableField>();
+        //    var list = new List<EditableField>();
 
-            var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
-                                                    join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType' where objecttypename is not null").ToList();
-            var sourcesList = new List<SelectListItem>();
-            sourcesList.Add(new SelectListItem { Text = "(None)", Value = "-1" });
-            sourcesList.AddRange(sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList());
+        //    var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
+        //                                            join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType' where objecttypename is not null").ToList();
+        //    var sourcesList = new List<SelectListItem>();
+        //    sourcesList.Add(new SelectListItem { Text = "(None)", Value = "-1" });
+        //    sourcesList.AddRange(sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList());
 
-            var classificationList = Company.DomainClassifications.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();    
+        //    var classificationList = Company.DomainClassifications.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();    
 
-            list.Add(new EditableField { FieldName = "DomainGroupID", FieldType = DataType.Hidden.ToString(), Value = g.ToString() });
-            list.Add(new EditableField { FieldName = "DomainTypeID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourcesList, Value = "-1" });
-            list.Add(new EditableField { Row = 1, Column = 3, Required = false, FieldName = "Classification", Name = "Classification", FieldType = DataType.Lookup.ToString(), Items = classificationList, Value = "1" });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+        //    list.Add(new EditableField { FieldName = "DomainGroupID", FieldType = DataType.Hidden.ToString(), Value = g.ToString() });
+        //    list.Add(new EditableField { FieldName = "DomainTypeID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
+        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+        //    list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourcesList, Value = "-1" });
+        //    list.Add(new EditableField { Row = 1, Column = 3, Required = false, FieldName = "Classification", Name = "Classification", FieldType = DataType.Lookup.ToString(), Items = classificationList, Value = "1" });
+        //    list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
+
+        /// <param name="id">DomainID</param>
+        //public JsonResult Domain_EditFields(int id)
+        //{
+        //    if (!Company.HasPermission(SystemObjects.Domain, id, Claim.Update))
+        //        return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+        //    var list = new List<EditableField>();
+        //    var a = Company.GetById<Domain>(id);
+
+        //    var groups = Company.Filter<DomainGroup>(i => i.DomainTypeID == a.DomainTypeID)
+        //        .ToList()
+        //        .Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = (i.ID == a.DomainGroupID.Value) })
+        //        .OrderBy(i => i.Text)
+        //        .ToList();
+
+        //    var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
+        //                                            join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType' where objecttypename is not null").ToList();
+        //    var sourcesList = new List<SelectListItem>();
+        //    sourcesList.Add(new SelectListItem { Text = "(None)", Value = "-1" });
+        //    sourcesList.AddRange(sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList());
+
+        //    var classificationList = Company.DomainClassifications.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+
+        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+        //    list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DomainGroupID", Name = "Grouping", FieldType = DataType.Lookup.ToString(), Items = groups, Value = a.DomainGroupID.Value.ToString() });
+        //    list.Add(new EditableField { Row = 1, Column = 3, Required = false, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourcesList, Value = a.SourceArtifactID.ToString() ?? "-1" });
+        //    list.Add(new EditableField { Row = 1, Column = 4, Required = true, FieldName = "Classification", Name = "Classification", FieldType = DataType.Lookup.ToString(), Items = classificationList, Value = a.DomainClassificationID.ToString() });
+        //    list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
+
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
+
+        #endregion
 
         /// <param name="id">DomainID</param>
         public JsonResult Domain_DeleteFields(int id)
@@ -2489,38 +2526,6 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        /// <param name="id">DomainID</param>
-        public JsonResult Domain_EditFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.Domain, id, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var a = Company.GetById<Domain>(id);
-
-            var groups = Company.Filter<DomainGroup>(i => i.DomainTypeID == a.DomainTypeID)
-                .ToList()
-                .Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = (i.ID == a.DomainGroupID.Value) })
-                .OrderBy(i => i.Text)
-                .ToList();
-
-            var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
-                                                    join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType' where objecttypename is not null").ToList();
-            var sourcesList = new List<SelectListItem>();
-            sourcesList.Add(new SelectListItem { Text = "(None)", Value = "-1" });
-            sourcesList.AddRange(sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList());
-
-            var classificationList = Company.DomainClassifications.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "DomainGroupID", Name = "Grouping", FieldType = DataType.Lookup.ToString(), Items = groups, Value = a.DomainGroupID.Value.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 3, Required = false, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourcesList, Value = a.SourceArtifactID.ToString() ?? "-1" });
-            list.Add(new EditableField { Row = 1, Column = 4, Required = true, FieldName = "Classification", Name = "Classification", FieldType = DataType.Lookup.ToString(), Items = classificationList, Value = a.DomainClassificationID.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
 
         #endregion
 
@@ -2530,14 +2535,6 @@ namespace d360.web.Controllers
         {
             var type = Company.GetById<DomainType>(typeID);
             if (type == null) return HttpNotFound();
-            //var model = new EditableForm
-            //{
-            //    Context = ContextList.Domain,
-            //    FieldUri = string.Format("/form/Domain_AddFields?t={0}&g={1}", typeID, groupID),
-            //    FormTitle = "Add domain for " + type.Name,
-            //    FormUri = "/form/AddDomain",
-            //    FormMethod = "POST"
-            //};
 
             var model = new DomainEditorModel
             {
@@ -2623,8 +2620,6 @@ namespace d360.web.Controllers
             }
 
         }
-
-
 
         public ActionResult DeleteDomain(int id)
         {
@@ -3186,36 +3181,36 @@ namespace d360.web.Controllers
 
         #region DomainXrefItem
 
-        public JsonResult DomainXrefItem_AddFields(int t)
-        {
-            if (!Company.HasPermission(SystemObjects.Domain, t, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+        //public JsonResult DomainXrefItem_AddFields(int t)
+        //{
+        //    if (!Company.HasPermission(SystemObjects.Domain, t, Claim.Create))
+        //        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-            var domainItem = Company.GetById<DomainItem>(t);
+        //    var domainItem = Company.GetById<DomainItem>(t);
 
-            var list = new List<EditableField>();
+        //    var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldName = "DomainItemID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
+        //    list.Add(new EditableField { FieldName = "DomainItemID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
 
-            list.Add(new EditableField { Row = 1, Column = 1,  FieldName = "HouseCode", Name = "House Code", Value = domainItem.Code, ReadOnly = true });
+        //    list.Add(new EditableField { Row = 1, Column = 1,  FieldName = "HouseCode", Name = "House Code", Value = domainItem.Code, ReadOnly = true });
 
-            var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
-                                                    join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType'
-                                                    ").ToList();
-            var sourceItems = sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList();
+        //    var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
+        //                                            join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType'
+        //                                            ").ToList();
+        //    var sourceItems = sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList();
 
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourceItems });
+        //    list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourceItems });
 
-            var lists = Company.Domains.ToList();
-            var listItems = lists.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+        //    var lists = Company.Domains.ToList();
+        //    var listItems = lists.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
 
-            list.Add(new EditableField { Row = 1, Column = 3, Required = true, FieldName = "Domain", Name = "Domain", FieldType = DataType.Lookup.ToString(), Items = listItems });
+        //    list.Add(new EditableField { Row = 1, Column = 3, Required = true, FieldName = "Domain", Name = "Domain", FieldType = DataType.Lookup.ToString(), Items = listItems });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Code", Name = "Code", FieldType = DataType.Lookup.ToString(), Items = null });
-            //list.Add(new EditableFieldLookupList { FieldName})
+        //    list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Code", Name = "Code", FieldType = DataType.Lookup.ToString(), Items = null });
+        //    //list.Add(new EditableFieldLookupList { FieldName})
 
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
 
         public ActionResult AddDomainXrefItem(int domainItemID)
         {
@@ -3229,21 +3224,12 @@ namespace d360.web.Controllers
                 SourceArtifactID = domain.SourceArtifactID
             };
 
-            //var model = new EditableForm
-            //{
-            //    Context = ContextList.DomainXrefItem,
-            //    FieldUri = string.Format("/form/DomainXrefItem_AddFields?t={0}", domainItemID),
-            //    FormTitle = "Add cross reference to " + item.Code,
-            //    FormUri = "/form/AddDomainXrefItem",
-            //    FormMethod = "POST"
-            //};
-
             return PartialView("DomainXrefItemForm", model);
         }
 
         [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("xref/add/{houseDomainItem:int}/{domainItem:int}")]
-        public JsonNetResult AddDomainXrefItem(int houseDomainItem, int domainItem)
+        [HttpPost, Route("xref/add")]
+        public JsonNetResult AddDomainXrefItem(int houseDomainItem, int domainItem, int languageID)
         {
             var error = false;
             var message = "";
@@ -3261,8 +3247,9 @@ namespace d360.web.Controllers
             DomainItemXref i = new DomainItemXref();
             i.DomainItemID = domainItem;
             i.HouseDomainItemID = houseDomainItem;
+            i.LanguageID = languageID;
 
-            var existing = Company.DomainItemXrefs.Where(e => e.HouseDomainItemID == i.HouseDomainItemID && e.DomainItemID == i.DomainItemID).Count();
+            var existing = Company.DomainItemXrefs.Where(e => e.HouseDomainItemID == i.HouseDomainItemID && e.DomainItemID == i.DomainItemID && e.LanguageID == i.LanguageID).Count();
 
             if (existing == 0)
             {
@@ -3329,7 +3316,7 @@ namespace d360.web.Controllers
             }
         }
 
-        /// <param name="id">DomainItemID</param>
+        /// <param name="id">DomainItemXrefID</param>
         public JsonResult DomainItemXref_DeleteFields(int id)
         {
             var list = new List<EditableField>();

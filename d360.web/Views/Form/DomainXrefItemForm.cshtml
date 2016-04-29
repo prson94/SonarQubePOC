@@ -10,17 +10,21 @@
     </div>
     <div class="clear"></div>
     <div class="row">
-        <div class="col m4">
+        <div class="col m3">
             <div class="FieldNameRequired">Source Artifact</div>
             <div id="xref_sourceDropDownList"></div>
         </div>
-        <div class="col m4">
+        <div class="col m3">
             <div class="FieldNameRequired">List</div>
             <div id="xref_domainDropDownList"></div>
         </div>
-        <div class="col m4">
+        <div class="col m3">
             <div class="FieldNameRequired">Code</div>
             <div id="xref_codeDropDownList"></div>
+        </div>
+        <div class="col m3">
+            <div class="FieldNameRequired">Language</div>
+            <div id="xref_languageDropDownList"></div>
         </div>
     </div>
     <div class="row">
@@ -47,7 +51,7 @@
         self.SourceArtifactID = ko.observable(data.SourceArtifactID || 0);
         self.SourceArtifactName = ko.observable(data.SourceArtifactName || 0);
         self.DomainID = ko.observable(data.DomainID || 0);
-
+        self.LanguageID = ko.observable(data.LanguageID || 40);
         self.HasError = ko.observable(false);
         self.ErrorMessage = ko.observable('');
         self.IsLoading = ko.observable(false);
@@ -74,7 +78,7 @@
 
             if (!error) {
                 $.ajax({
-                    url: 'form/xref/add/' + self.HouseDomainItemID() + '/' + self.DomainItemID(),
+                    url: 'form/xref/add?houseDomainItem=' + self.HouseDomainItemID() + '&domainItem=' + self.DomainItemID() + '&languageID=' + self.LanguageID(),
                     method: 'POST'
                 }).done(function (data) {
                     if (data) {
@@ -109,7 +113,8 @@
             Code: '@(Model.Code)',
             SourceArtifactID: '@(Model.SourceArtifactID)',
             SourceArtifactName: '@(Model.SourceArtifactName)',
-            DomainID: '@(Model.DomainID)'
+            DomainID: '@(Model.DomainID)',
+            LanguageID: '@(Model.LanguageID)'
         });
         ko.applyBindings(model, document.getElementById('domainFormWrapper'));
 
@@ -214,7 +219,42 @@
             }
         });
 
+        var languages = {
+            datatype: 'json',
+            datafields: [
+                { name: 'ID' },
+                { name: 'Name' }
+            ],
+            url: '/services/domains/lists/languages',
+            async: true
+        };
+        var languageAdapter = new $.jqx.dataAdapter(languages);
+
+        $('#xref_languageDropDownList').jqxDropDownList({
+            theme: theme,
+            source: languageAdapter,
+            valueMember: 'ID',
+            displayMember: 'Name',
+            filterable: true,
+            searchMode: 'containsignorecase',
+            width: field_width98
+        }).on('bindingComplete', function (event) {
+            var langItem = $(this).jqxDropDownList('getItemByValue', '40');
+            if (!langItem)
+                return;
+            $(this).jqxDropDownList('selectIndex', langItem.index);
+        }).on('select', function (event) {
+            var args = event.args;
+            if (args) {
+                var index = args.index;
+                var item = args.item;
+                var value = item.value;
+                model.LanguageID(value);
+            }
+        });
+
     });
 
+   
 
 </script>

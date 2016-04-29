@@ -15,6 +15,7 @@ namespace d360.core.entities
     {        
         public int HouseDomainItemID { get; set; }
         public int DomainItemID { get; set; }
+        public int LanguageID { get; set; }
     }
 
     public class DomainXrefGridItem: BaseObject
@@ -35,5 +36,9 @@ namespace d360.core.entities
         public string SourceArtifactName { get; set; }
         [DataMember]
         public string ListName { get; set; }
+        [DataMember]
+        public int LanguageID { get; set; }
+        [DataMember]
+        public string LanguageName { get; set; }
     }
 }

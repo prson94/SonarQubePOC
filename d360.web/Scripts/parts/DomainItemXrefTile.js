@@ -20,7 +20,9 @@
             { name: 'Code' },
             { name: 'SourceArtifactID' },
             { name: 'SourceArtifactName' },
-            { name: 'ListName' }
+            { name: 'ListName' },
+            { name: 'LanguageID' },
+            { name: 'LanguageName' }
         ]
     };
 
@@ -49,7 +51,8 @@
             { text: 'House Code', datafield: 'HouseCode', width: 100 },
             { text: 'Source', datafield: 'SourceArtifactName' },
             { text: 'List', datafield: 'ListName' },
-            { text: 'Code', datafield: 'Code' }
+            { text: 'Code', datafield: 'Code' },
+            { text: 'Language', datafield: 'LanguageName', width: 80 }
             ,{
                 text: '',
                 dataField: 'ID',

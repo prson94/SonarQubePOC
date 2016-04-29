@@ -208,6 +208,8 @@ namespace d360.model
 
         public DbSet<IntersectTypePredicate> IntersectTypePredicates { get; set; }
 
+        public DbSet<Language> Languages { get; set; }
+
         public DbSet<Load> Loads { get; set; }
 
         public DbSet<LoadItem> LoadItems { get; set; }

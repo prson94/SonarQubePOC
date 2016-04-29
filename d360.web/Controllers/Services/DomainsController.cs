@@ -427,11 +427,12 @@ namespace d360.web.Controllers.Services
         [Route("lists/xref/{houseDomainItemID:int}"), HttpGet]
         public IQueryable<DomainXrefGridItem> GetXrefsByItem(int houseDomainItemID)
         {
-            var sql = @"select x.ID, x.HouseDomainItemID, x.DomainItemID, d1.Code as HouseCode, d2.Code as Code, d.SourceArtifactID, o.Name as SourceArtifactName, d.Name as ListName from domainitemxref x
+            var sql = @"select x.ID, x.HouseDomainItemID, x.DomainItemID, d1.Code as HouseCode, d2.Code as Code, d.SourceArtifactID, o.Name as SourceArtifactName, d.Name as ListName, l.id as LanguageID, l.Name as LanguageName from domainitemxref x
                         join domainitem d1 on d1.id = x.housedomainitemid
                         join domainitem d2 on d2.id = x.domainitemid
                         join domain d on d.id = d2.domainid
                         join cache.objectdetails o on o.object = 'Artifact' and o.objectid = d.SourceArtifactID
+						join [language] l on l.id = x.languageid
                         where x.HouseDomainItemID = @houseDomainItemID";
 
             return Company.Query<DomainXrefGridItem>(sql, new { houseDomainItemID }).AsQueryable();
@@ -441,6 +442,34 @@ namespace d360.web.Controllers.Services
         public IQueryable<DomainClassification> GetClassifications()
         {
             return Company.DomainClassifications.AsQueryable();
+        }
+
+        [Route("lists/domain/{domainID:int}"), HttpGet]
+        public IQueryable<dynamic> GetXrefLists(int domainID)
+        {
+            var sql = @"select d2.ID, d2.Name as List, o.Name as Source from domain d
+                        join domainitem di on di.domainid = d.id
+                        join domainitemxref x on x.housedomainitemid = di.id
+                        join domainitem di2 on di2.id = x.domainitemid
+                        join domain d2 on d2.id = di2.domainid
+                        join cache.objectdetails o on o.object = 'Artifact' and o.objectid = d2.sourceartifactid
+                        where d.id = @id
+                        union
+                        select d2.ID, d2.Name as List, o.Name as Source from domain d
+                        join domainitem di on di.domainid = d.id
+                        join domainitemxref x on x.domainitemid = di.id
+                        join domainitem di2 on di2.id = x.housedomainitemid
+                        join domain d2 on d2.id = di2.domainid
+                        join cache.objectdetails o on o.object = 'Artifact' and o.objectid = d2.sourceartifactid
+                        where d.id = @id";
+
+            return Company.Query<dynamic>(sql, new { id = domainID }).AsQueryable();
+        }
+
+        [Route("lists/languages"), HttpGet]
+        public IQueryable<Language> GetLanguages()
+        {
+            return Company.Languages.AsQueryable();
         }
     }
 }
