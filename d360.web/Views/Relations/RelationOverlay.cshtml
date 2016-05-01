@@ -198,13 +198,13 @@
 
     function treeGridRowDoubleClick(event) {
         var row = $('#TreeGrid').jqxGrid('getrowdata', event.args.rowindex);
-        location.assign(row.TargetUrl);
+        location.assign(row.Url);
     }
 
     function treeGridRowSelect(event) {
         //var row = event.args.row;
         //try {
-        //    intersectID = row.IntersectID;
+        //    intersectID = row.ID;
         //    switch (selectedView) {
         //        case 'Attributes':
         //            AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", intersectID, 'Business Attributes');
@@ -218,8 +218,8 @@
         //            break;
         //    }
 
-        //    //relationsModel.TargetType = row.TargetType;
-        //    //relationsModel.TargetID = (row.TargetType == 'TaxonomyType') ? row.TargetTypeID : row.IntersectID;
+        //    //relationsModel.Type = row.Type;
+        //    //relationsModel.TargetID = (row.Type == 'TaxonomyType') ? row.TypeID : row.ID;
         //}
         //catch (e) {
         //    logError("RelationOverlay : TreeGrid.rowSelect", e);
@@ -241,11 +241,11 @@
 
     function technicalRelationsGridRowSelect(event) {
         var row = event.args.row;
-        $('#TechnicalRelationDetailHeader').text(row.TargetTypeName + ' Information');
-        $('#TechnicalRelationDetail').load('/parts/' + row.TargetObjectType + '/' + row.TargetObjectID + '/detail');
+        $('#TechnicalRelationDetailHeader').text(row.TypeName + ' Information');
+        $('#TechnicalRelationDetail').load('/parts/' + row.Object + '/' + row.ObjectID + '/detail');
 
         $('#TechnicalRelationIntersectDetailHeader').text('Relationship Information');
-        $('#TechnicalRelationIntersectDetail').load('/parts/Intersect/' + row.IntersectID + '/detail');
+        $('#TechnicalRelationIntersectDetail').load('/parts/Intersect/' + row.ID + '/detail');
     }
 
     function unsubscribe(data) {
@@ -401,22 +401,22 @@
             var row = $('#TreeGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
             if ($icon.hasClass('attribute')) {
                 $('#Attributes').show();
-                $('#attribute_heading').text('Business Attributes for ' + name + ' / ' + row.TargetName);
-                AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.IntersectID, 'Business Attributes');
+                $('#attribute_heading').text('Business Attributes for ' + name + ' / ' + row.Name);
+                AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.ID, 'Business Attributes');
             }
             else if ($icon.hasClass('details')) {
                 $('#Details').show();
-                $('#detail_heading').text('Details for ' + name + ' / ' + row.TargetName);
-                ObjectDetail('RelationshipDetailsTile', "Intersect", row.IntersectID);
+                $('#detail_heading').text('Details for ' + name + ' / ' + row.Name);
+                ObjectDetail('RelationshipDetailsTile', "Intersect", row.ID);
             }
             else if ($icon.hasClass('fusion')) {
                 $('#Fusion').show();
-                $('#fusion_heading').text('Child Relationships for ' + name + ' / ' + row.TargetName);
+                $('#fusion_heading').text('Child Relationships for ' + name + ' / ' + row.Name);
                 $('#TechnicalRelationsGrid').jqxGrid('clearselection');
-                technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
+                technicalRelationsSource.url = "/api/Intersect/" + row.ID + "/relations";
                 $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
 
-                $.getJSON('/relations/PossibleRelationshipsByIntersect?id=' + row.IntersectID, function (itemsData) {
+                $.getJSON('/relations/PossibleRelationshipsByIntersect?id=' + row.ID, function (itemsData) {
                     var html = "<ul>";
                     $.each(itemsData, function () {
                         //Context, Icon, Title, Type, Uri
@@ -429,7 +429,7 @@
             //else if ($icon.hasClass('lineage')) {
             //    $('#Lineage').show();
             //    setBreadCrumb('#Lineage', row);
-            //    LineageDiagram('DiagramTile', 'Intersect', row.IntersectID, null);
+            //    LineageDiagram('DiagramTile', 'Intersect', row.ID, null);
             //}
         }
     }
@@ -452,18 +452,18 @@
             datatype: 'json',
             url: '/api/' + type + '/' + typeID + '/relations',
             datafields: [
-                { name: 'IntersectID' },
+                { name: 'ID' },
                 { name: 'Description' },
-                { name: 'Role' },
-                { name: 'TargetName' },
-                { name: 'TargetObjectID' },
-                { name: 'TargetObjectType' },
-                { name: 'TargetTypeID' },
-                { name: 'TargetType' },
-                { name: 'TargetTypeName' },
+                //{ name: 'Role' },
+                { name: 'Name' },
+                { name: 'ObjectID' },
+                { name: 'Object' },
+                { name: 'TypeID' },
+                { name: 'Type' },
+                { name: 'TypeName' },
                 { name: 'Classification' },
-                { name: 'TargetUrl' },
-                { name: 'HasTechnicalRelationships' }
+                { name: 'Url' }//,
+                //{ name: 'HasTechnicalRelationships' }
             ]
         };
         RelationshipsAdapter = new $.jqx.dataAdapter(RelationshipsSource, {
@@ -489,20 +489,20 @@
             sortable: true,
             pageable: true,
             columns: [
-                { text: 'Type', datafield: 'TargetTypeName', width: '150px', filtertype: 'checkedlist' }, //, hidden: true
-                { text: 'Name', width: '250px', datafield: 'TargetName' },
+                { text: 'Type', datafield: 'TypeName', width: '150px', filtertype: 'checkedlist' }, //, hidden: true
+                { text: 'Name', width: '250px', datafield: 'Name' },
                 { text: 'Criticality', width: '125px', datafield: 'Classification', filtertype: 'checkedlist' },
                 { text: 'Description', datafield: 'Description' },
-                { text: 'Role', datafield: 'Role', width: '125px', filtertype: 'checkedlist' },
+                //{ text: 'Role', datafield: 'Role', width: '125px', filtertype: 'checkedlist' },
                 {
                     text: '',
                     groupable: false,
-                    datafield: 'IntersectID',
+                    datafield: 'ID',
                     width: '140px',
                     filterable: false,
                     sortable: false,
                     cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                        if (data.IntersectID) {
+                        if (data.ID) {
                             var html = "";
 
                             html += "<div class='RowMultiTools'>";
@@ -510,14 +510,14 @@
                             html += "<a><i class='fusion fa fa-" + iconFusion + "' title='Child Relationships'></i></a>";
                             html += "<a><i class='attribute fa fa-" + iconAttributes + "' title='Attributes'></i></a>";
                             html += "<a><i class='details fa fa-list-alt' title='Details'></i></a>";
-                            html += "<a title='Edit relationship' data-context='editrelation' data-local data-uri='/form/EditRelationship?id=" + data.IntersectID + "'><i class='fa fa-pencil'></i></a>";
-                            html += "<a title='Remove relationship' data-context='deleterelation' data-command data-method='DELETE' data-uri='/api/relationships/" + data.IntersectID + "'><i class='fa fa-trash-o'></i></a>";
+                            html += "<a title='Edit relationship' data-context='editrelation' data-local data-uri='/form/EditRelationship?id=" + data.ID + "'><i class='fa fa-pencil'></i></a>";
+                            html += "<a title='Remove relationship' data-context='deleterelation' data-command data-method='DELETE' data-uri='/api/relationships/" + data.ID + "'><i class='fa fa-trash-o'></i></a>";
                             html += "</div>";
 
                             return html;
                         }
                         else {
-                            return previewIconRenderer(data.TargetObjectType, data.TargetObjectID, data.TargetUrl);
+                            return previewIconRenderer(data.Object, data.ObjectID, data.Url);
                         }
                     }
                 }
@@ -532,16 +532,16 @@
             datatype: 'json',
             url: null,
             datafields: [
-                { name: 'IntersectID' },
+                { name: 'ID' },
                 { name: 'Description' },
-                { name: 'TargetName' },
-                { name: 'TargetObjectID' },
-                { name: 'TargetObjectType' },
-                { name: 'TargetTypeID' },
-                { name: 'TargetType' },
-                { name: 'TargetTypeName' },
+                { name: 'Name' },
+                { name: 'ObjectID' },
+                { name: 'Object' },
+                { name: 'TypeID' },
+                { name: 'Type' },
+                { name: 'TypeName' },
                 { name: 'Classification' },
-                { name: 'TargetUrl' }
+                { name: 'Url' }
             ]
         };
 
@@ -563,20 +563,20 @@
             theme: list_theme,
             groupable: false,
             columns: [
-                { text: 'Type', groupable: true, datafield: 'TargetTypeName' },
-                { text: 'Name', groupable: false, datafield: 'TargetName' },
+                { text: 'Type', groupable: true, datafield: 'TypeName' },
+                { text: 'Name', groupable: false, datafield: 'Name' },
                 {
                     text: '',
                     groupable: false,
-                    datafield: 'IntersectID',
+                    datafield: 'ID',
                     width: '60px',
                     filterable: false,
                     cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
                         var html = "";
 
                         html += "<div class='RowMultiTools'>";
-                        html += "<a title='Edit relationship' data-context='edittechnicalrelation' data-local data-uri='/form/EditRelationship?id=" + data.IntersectID + "'><i class='fa fa-pencil'></i></a>";
-                        html += "<a title='Remove relationship' data-context='deletetechnicalrelation' data-command data-method='DELETE' data-uri='/api/relationships/" + data.IntersectID + "'><i class='fa fa-trash-o'></i></a>";
+                        html += "<a title='Edit relationship' data-context='edittechnicalrelation' data-local data-uri='/form/EditRelationship?id=" + data.ID + "'><i class='fa fa-pencil'></i></a>";
+                        html += "<a title='Remove relationship' data-context='deletetechnicalrelation' data-command data-method='DELETE' data-uri='/api/relationships/" + data.ID + "'><i class='fa fa-trash-o'></i></a>";
                         html += "</div>";
 
                         return html;

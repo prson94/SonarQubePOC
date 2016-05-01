@@ -302,84 +302,92 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             return new JsonNetResult { Data = jsonItems, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public JsonNetResult PossibleRelationshipsBySource(string source, int id, string targetType, int targetTypeID)
-        {
-            var sql = "";
+//        public JsonNetResult PossibleRelationshipsBySource(string source, int id, string targetType, int targetTypeID)
+//        {
+//            var sql = "";
 
-            if (targetType == "FusionAttributeType")
-            {
-                sql = @"select	D.[Object], D.ObjectID, F.Name + '.' + D.TextPath as Name, D.Url
-from	cache.ObjectDetails D
-		inner join FusionAttribute FA on D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID and FA.ID = D.ObjectID
-		inner join Fusion F on F.ID = FA.FusionID
-where	D.ObjectTypeID <> D.ObjectID 
-        and D.ObjectTypeID <> 0
-        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-        and not exists  (
-					select	1 
-					from	[cache].[Relationship] R 
-					where	R.SourceObject = @source 
-							and R.SourceObjectID = @id
-							and R.TargetObject = D.[Object] 
-							and R.TargetObjectID = D.ObjectID
-					)
-order by F.Name, D.TextPath";
-            }
-            else if (targetType == "Group" || targetType == "GroupType")
-            {
-                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name, D.Url
-from	cache.ObjectDetails D
-where	D.[ObjectType] = 'Group'
-        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-        and not exists  (
-					select	1 
-					from	[cache].[Relationship] R 
-					where	R.SourceObject = @source 
-							and R.SourceObjectID = @id
-							and R.TargetObject = D.[Object] 
-							and R.TargetObjectID = D.ObjectID
-					)
-order by D.TextPath";
-            }
-            else if (targetType == "Resource" || targetType == "ResourceType")
-            {
-                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name, D.Url
-from	cache.ObjectDetails D
-where   D.[ObjectType] = 'ResourceType'
-        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-        and not exists  (
-					select	1 
-					from	[cache].[Relationship] R 
-					where	R.SourceObject = @source 
-							and R.SourceObjectID = @id
-							and R.TargetObject = D.[Object] 
-							and R.TargetObjectID = D.ObjectID
-					)
-order by D.TextPath";
-            }
-            else
-            {
-                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name, D.Url
-from	cache.ObjectDetails D
-where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
-        and D.ObjectTypeID <> D.ObjectID 
-        and D.ObjectTypeID <> 0
-        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-		and not exists (
-						select	1 
-						from	[cache].[Relationship] R 
-						where	R.SourceObject = @source 
-								and R.SourceObjectID = @id
-								and R.TargetObject = D.[Object] 
-								and R.TargetObjectID = D.ObjectID
-						)
-order by D.TextPath";
-            }
+//            if (targetType == "FusionAttributeType")
+//            {
+//                sql = @"
+//select	'FusionAttribute' as [Object], 
+//        FA.ID as ObjectID, 
+//        F.Name + '.' + FA.TextPath as Name
+//        --, D.Url
+//from	FusionAttribute FA with(nolock)
+//		inner join Fusion F with(nolock) on FA.FusionAttributeTypeID = @targetTypeID and F.ID = FA.FusionID
+//where	not exists  (
+//					select	1 
+//					from	[IntersectDetail] R 
+//					where	(
+//							 ( (O.Subject = @source and O.SubjectID = @id) AND (O.ObjectType = @targetType and O.ObjectTypeID = @targetTypeID) ) OR
+//							 ( (O.SubjectType = @targetType and O.SubjectTypeID = @targetTypeID) AND (O.Object = @source and O.ObjectID = @id) )
+//							)
+//					)
+//order by F.Name, FA.TextPath";
+//            }
+//            else if (targetType == "Group" || targetType == "GroupType")
+//            {
+//                sql = @"
+//select	'Group' as [Object], 
+//        D.ID as ObjectID, 
+//        D.Name
+//        --, D.Url
+//from	[Group] D with(nolock)
+//where	not exists  (
+//					select	1 
+//					from	[IntersectDetail] R 
+//					where	(
+//							 ( (O.Subject = @source and O.SubjectID = @id) AND (O.ObjectType = 'Group' and O.ObjectTypeID = 1) ) OR
+//							 ( (O.SubjectType = 'Group' and O.SubjectTypeID = 1) AND (O.Object = @source and O.ObjectID = @id) )
+//							)
+//					)
+//order by D.Name";
+//            }
+//            else if (targetType == "Resource" || targetType == "ResourceType")
+//            {
+//                sql = @"
+//select	'Resource' as [Object], 
+//        D.ResourceID as ObjectID, 
+//        D.LastName + ', ' + D.FirstName as Name
+//        --, D.Url
+//from	reporting.Global_Resource D with(nolock)
+//where   not exists  (
+//					select	1 
+//					from	[IntersectDetail]
+//					where	(
+//							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ResourceType' and ObjectTypeID = 1) ) OR
+//							 ( (SubjectType = 'ResourceType' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
+//							)
+//					)
+//order by D.LastName, D.FirstName";
+//            }
+//            else
+//            {
+//                sql = @"
+//select	D.[Object], 
+//        D.ObjectID, 
+//        D.TextPath as Name--, 
+//--        D.Url
+//from	cache.ObjectDetails D with(nolock)
+//where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
+//        and D.ObjectTypeID <> D.ObjectID 
+//        and D.ObjectTypeID <> 0
+//        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+//		and not exists (
+//						select	1 
+//						from	[cache].[Relationship] R 
+//						where	R.SourceObject = @source 
+//								and R.SourceObjectID = @id
+//								and R.TargetObject = D.[Object] 
+//								and R.TargetObjectID = D.ObjectID
+//						)
+//order by D.TextPath";
+//            }
 
-            var items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source, id }).ToList();
+//            var items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source, id }).ToList();
 
-            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
         public JsonResult RelationshipTypes(string type, int typeID)
         {
@@ -1159,31 +1167,44 @@ from	(
         {
             var sType = s.ToString();
             var tType = t.ToString();
-            var sql = "";
-            if (sType == tType && sID == tID)
-            {
-                //These objects are the same
-                sql = @"select	R.* 
-from	Relationship R
-		inner join cache.Relationship S on R.SourceObjectType = 'Intersect' 
-										and S.IntersectID = R.SourceObjectID 
-										and S.SourceObject = @sType 
-										and S.SourceObjectID = @sID";
-                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
-            }
-            else
-            {
-                //Objects are different
-                sql = @"select	R.*
-from	Relationship R
-		inner join cache.Relationship S on R.SourceObjectType = 'Intersect' 
-										and S.IntersectID = R.SourceObjectID 
-										and S.SourceObject = @sType 
-										and S.SourceObjectID = @sID
-										and S.TargetObject = @tType 
-										and S.TargetObjectID = @tID";
-                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID, tType = new Dapper.DbString { Value = tType.ToString(), IsAnsi = true }, tID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
-            }
+            var sql = $@"
+select T.Object,
+		T.ObjectID,
+		T.ObjectUrl,
+		T.ObjectName,
+		T.ObjectTypeName
+from[Intersect] O
+    inner join[IntersectDetail] T on (
+                                       ( (O.Subject = @s and O.SubjectID = @sid) AND (O.Object = @o and O.ObjectID = @oid) ) OR
+                                       ( (O.Subject = @o and O.SubjectID = @oid) AND (O.Object = @s and O.ObjectID = @sid) )
+							        )
+									and T.Subject = 'Intersect' and T.SubjectID = O.ID";
+            //            if (sType == tType && sID == tID)
+            //            {
+            //                //These objects are the same
+            //                sql = @"select	R.* 
+            //from	Relationship R
+            //		inner join cache.Relationship S on R.SourceObjectType = 'Intersect' 
+            //										and S.IntersectID = R.SourceObjectID 
+            //										and S.SourceObject = @sType 
+            //										and S.SourceObjectID = @sID";
+            //                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
+            //            }
+            //            else
+            //            {
+            //                //Objects are different
+            //                sql = @"select	R.*
+            //from	Relationship R
+            //		inner join cache.Relationship S on R.SourceObjectType = 'Intersect' 
+            //										and S.IntersectID = R.SourceObjectID 
+            //										and S.SourceObject = @sType 
+            //										and S.SourceObjectID = @sID
+            //										and S.TargetObject = @tType 
+            //										and S.TargetObjectID = @tID";
+            //                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID, tType = new Dapper.DbString { Value = tType.ToString(), IsAnsi = true }, tID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
+            //            }
+
+            return new JsonNetResult { Data = Company.Query<dynamic>(sql, new { s = new Dapper.DbString { Value = sType, IsAnsi = true }, sid = sID, o = new Dapper.DbString { Value = tType.ToString(), IsAnsi = true }, oid = tID }).OrderBy(i => i.ObjectTypeName).ThenBy(i => i.ObjectName), Formatting = Formatting.None };
         }
 
         JArray convertList(JToken i)
@@ -1277,18 +1298,18 @@ for		    xml path('relationship'), root('item')
 
         #region Partials
 
-        public ActionResult AddRelationship(SystemObjects source, int sourceID, SystemObjects target, int targetID)
-        {
-            ViewData.Add("Source", source.ToString());
-            ViewData.Add("SourceID", sourceID);
-            ViewData.Add("TargetType", target.ToString());
-            ViewData.Add("TargetTypeID", targetID);
+        //public ActionResult AddRelationship(SystemObjects source, int sourceID, SystemObjects target, int targetID)
+        //{
+        //    ViewData.Add("Source", source.ToString());
+        //    ViewData.Add("SourceID", sourceID);
+        //    ViewData.Add("TargetType", target.ToString());
+        //    ViewData.Add("TargetTypeID", targetID);
 
-            //var row = 0;
-            //var list = new List<EditableField>();
-            //list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, at).ToList(), row + 1);
-            return PartialView();// (list);
-        }
+        //    //var row = 0;
+        //    //var list = new List<EditableField>();
+        //    //list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, at).ToList(), row + 1);
+        //    return PartialView();// (list);
+        //}
 
         //[HttpGet, Route("sources/{type}/{id:int}/add")]
         //public ActionResult AddSource(SystemObjects type, int id)
@@ -1457,87 +1478,18 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
             };
         }
 
-        //[HttpDelete, Route("{target}/{targetID:int}/sources/{id:int}")]
-        //public JsonNetResult DeleteSource(SystemObjects target, int targetID, int id)
+        //public ActionResult EditRelationship(int id)
         //{
-        //    var message = "";
-        //    var success = false;
-
-        //    if (id <= 0)
-        //    {
-        //        message = $"The source ID ({id}) is invalid.";
-        //    }
-        //    else
-        //    {
-        //        var model = Company.GetById<IntersectMap>(id);
-        //        if (model == null)
-        //        {
-        //            message = $"The source with ID ({id}) could not be found.";
-        //        }
-        //        else
-        //        {
-        //            if (!Company.HasPermission(target, targetID, Claim.Delete, ClaimObject.Relationship))
-        //            {
-        //                message = FormInfo.Permisions_Error_Delete;
-        //            }
-        //            else
-        //            {
-        //                Company.Delete<IntersectMap>(model);
-        //                success = true;
-        //            }
-        //        }
-        //    }
-
-        //    return new JsonNetResult
-        //    {
-        //        Data = new
-        //        {
-        //            message = message,
-        //            success = success
-        //        },
-        //        Formatting = Newtonsoft.Json.Formatting.None
+        //    ViewData.Add("IntersectID", id);
+        //    var intersect = Company.GetById<Intersect>(id);
+        //    var model = new EditRelationshipModel {
+        //        Classification = intersect.Classification ?? 0,
+        //        Description = intersect.Description,
+        //        IntersectTypeID = intersect.IntersectTypeID
         //    };
+        //    intersect = null;
+        //    return PartialView(model);
         //}
-
-        //[HttpGet, Route("update/{intersectMapID:int}/{predicateID:int}")]
-        //public JsonNetResult EditRelationship(int intersectMapID, int predicateID)
-        //{
-        //    var message = "";
-        //    var success = false;
-        //    if (intersectMapID <= 0)
-        //    {
-        //        message = $"The intersect map ID ({intersectMapID}) is invalid.";
-        //    }
-        //    else
-        //    {
-        //        var record = Company.GetById<IntersectMap>(intersectMapID);
-        //        if (record == null)
-        //        {
-        //            message = $"The intersect map record with ID ({intersectMapID}) cound not be found.";
-        //        }
-        //        else
-        //        {
-        //            record.PredicateID = predicateID;
-        //            Company.Update(record);
-        //            success = true;
-        //        }
-        //    }
-
-        //    return new JsonNetResult { Data = new { message = message, success = success }, Formatting = Newtonsoft.Json.Formatting.None };
-        //}
-
-        public ActionResult EditRelationship(int id)
-        {
-            ViewData.Add("IntersectID", id);
-            var intersect = Company.GetById<Intersect>(id);
-            var model = new EditRelationshipModel {
-                Classification = intersect.Classification ?? 0,
-                Description = intersect.Description,
-                IntersectTypeID = intersect.IntersectTypeID
-            };
-            intersect = null;
-            return PartialView(model);
-        }
 
         public ActionResult AggregateRelationOverlay(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly = false)
         {

@@ -161,6 +161,7 @@
     <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />
     <Compile Include="entities\Transitive\RedFlagSummariesByResource.cs" />
     <Compile Include="entities\Transitive\SocialStatisticsByObject.cs" />
+    <Compile Include="entities\Views\IntersectDetail.cs" />
     <Compile Include="entities\Views\Relationship.cs" />
     <Compile Include="entities\Report.cs" />
     <Compile Include="entities\ResponsibilityTypeObjectClaim.cs" />
@@ -246,7 +247,6 @@
     <Compile Include="entities\Views\RelationshipAggregate.cs" />
     <Compile Include="entities\Views\ResponsibilityDetail.cs" />
     <Compile Include="entities\Views\AttributeDetail.cs" />
-    <Compile Include="entities\Views\LookupAllocation.cs" />
     <Compile Include="entities\Views\FieldTypeLookupValue.cs" />
     <Compile Include="entities\Views\FieldLookupValue.cs" />
     <Compile Include="entities\Views\FieldWithRelation.cs" />

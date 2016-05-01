@@ -50440,8 +50440,32 @@ function DomainItemsTile(controlID, contextList, permissions, typeID, domainID) 
                 }
             }
         ]
+    }).on('bindingcomplete', function () {
+        $(this).jqxGrid('selectrow', 0);
     });
 
+
+    function itemSelect(evt) {
+        var args = evt.args;
+        var row = args.row;
+        
+        if (!row) {
+            $('#XrefTile').html('').fadeOut(300);
+            return;
+        }
+        var oID = row.ID;
+
+        if (oID && oID > 0) {
+            DomainItemXrefTile('XrefTile', contextList, permissions, oID);
+            $('#XrefTile').fadeIn(300);
+
+        } else {
+            $('#XrefTile').html('').fadeOut(300);
+        }
+        
+    }
+
+    $(gridControlID).on('rowselect', itemSelect);
     //#endregion
 
     //#region Event Subscriptions
@@ -50461,6 +50485,173 @@ function DomainItemsTile(controlID, contextList, permissions, typeID, domainID) 
     function unsubscribe(data) {
         srcDomainItemsGrid = null;
         adapterDomainItemsGrid = null;
+
+        amplify.unsubscribe("SaveAction", saveAction);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    amplify.subscribe("SaveAction", saveAction);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+}
+function DomainItemXrefTile(controlID, contextList, permissions, domainItemID) {
+
+    var toolsControlID = controlID + "_tools";
+    var gridControlID = controlID + "_grid";
+
+    controlID = '#' + controlID;
+    $(controlID).html('<header>Cross Reference Items<div id="' + toolsControlID + '"></div></header><div id="' + gridControlID + '"></div>')
+    gridControlID = '#' + gridControlID;
+    toolsControlID = '#' + toolsControlID;
+
+    var srcDomainXrefItemsGrid = {
+        datatype: 'json',
+        url: '/services/domains/lists/xref/' + domainItemID,
+        datafields:
+        [
+            {name: 'ID' },
+            { name: 'HouseDomainItemID' },
+            { name: 'DomainItemID' },
+            { name: 'HouseCode' },
+            { name: 'Code' },
+            { name: 'SourceArtifactID' },
+            { name: 'SourceArtifactName' },
+            { name: 'ListName' },
+            { name: 'LanguageID' },
+            { name: 'LanguageName' }
+        ]
+    };
+
+    var adapterDomainXrefItemsGrid = new $.jqx.dataAdapter(srcDomainXrefItemsGrid);
+
+    var tools = [];
+    if (permissions.HasPermission("Root", "Update")) {
+        tools.push({ icon: 'plus', uri: '/form/AddDomainXrefItem?domainItemID=' + domainItemID, context: contextList.DomainXrefItem, title: 'Add xref item' });
+    }
+    TileTools(toolsControlID, tools);
+
+    $(gridControlID).jqxGrid({
+        altrows: true,
+        width: grid_width,
+        autoheight: true,
+        autorowheight: true,
+        sortable: true,
+        filterable: true,
+        showfilterrow: true,
+        pageable: true,
+        pagesizeoptions: ['10', '20', '50'],
+        pagesize: 20,
+        source: adapterDomainXrefItemsGrid,
+        theme: list_theme,
+        columns: [
+            { text: 'House Code', datafield: 'HouseCode', width: 100 },
+            { text: 'Source', datafield: 'SourceArtifactName' },
+            { text: 'List', datafield: 'ListName' },
+            { text: 'Code', datafield: 'Code' },
+            { text: 'Language', datafield: 'LanguageName', width: 80 }
+            ,{
+                text: '',
+                dataField: 'ID',
+                width: 80,
+                filterable: false,
+                sortable: false,
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+
+                    var tools = [];
+
+                    if (permissions.HasPermission("Root", "Update")) {
+                       // tools.push({ icon: 'pencil', urlprefix: '/form/EditDomainXrefItem?id={0}' });
+                        tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteDomainItemXref?id={0}' });
+                    }
+                    return renderToolsHtml(value, tools, contextList.DomainXrefItem);
+                }
+            }
+        ]
+    });
+
+    //#endregion
+
+    //#region Event Subscriptions
+
+    function saveAction(data) {
+        try {
+            switch (data.context) {
+                case contextList.DomainXrefItem:
+                    $(gridControlID).jqxGrid('updatebounddata');
+                    break;
+            }
+        } catch (e) {
+            logError("DomainItemsTile : SaveAction", e);
+        }
+    }
+
+    function unsubscribe(data) {
+        srcDomainXrefItemsGrid = null;
+        adapterDomainXrefItemsGrid = null;
+
+        amplify.unsubscribe("SaveAction", saveAction);
+        amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    amplify.subscribe("SaveAction", saveAction);
+    amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+}
+function DomainListXrefTile(controlID, contextList, permissions, domainID) {
+
+    var toolsControlID = controlID + "_tools";
+    var gridControlID = controlID + "_grid";
+
+    controlID = '#' + controlID;
+    $(controlID).html('<header>Cross Reference Lists</header><div id="' + gridControlID + '"></div>')
+    gridControlID = '#' + gridControlID;
+
+    var domains = {
+        datatype: 'json',
+        url: '/services/domains/lists/domain/' + domainID,
+        datafields: [
+            { name: 'ID' },
+            { name: 'List' },
+            { name: 'Source' }
+        ]
+    };
+
+    var domainAdapter = new $.jqx.dataAdapter(domains);
+
+
+    $(gridControlID).jqxDataTable({
+        theme: theme,
+        width: field_width98,
+        height: 150,
+        source: domainAdapter,
+        columnsResize: true,
+        columns: [
+          { text: 'Source', dataField: 'Source' },
+          { text: 'List', dataField: 'List' },
+        ]
+    });
+
+    function saveAction(data) {
+        try {
+            switch (data.context) {
+                case contextList.Domain:
+                    $(gridControlID).jqxGrid('updateBoundData');
+                    break;
+            }
+        } catch (e) {
+            logError("DomainItemsTile : SaveAction", e);
+        }
+    }
+
+    function unsubscribe(data) {
+        domains = null;
+        domainAdapter = null;
 
         amplify.unsubscribe("SaveAction", saveAction);
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
@@ -53313,16 +53504,11 @@ function LineageDiagram(controlID, type, id, readonly) {
         datatype: 'json',
         url: null,
         datafields: [
-            { name: 'IntersectID' },
-            { name: 'Description' },
-            { name: 'TargetName' },
-            { name: 'TargetObjectID' },
-            { name: 'TargetObjectType' },
-            { name: 'TargetTypeID' },
-            { name: 'TargetType' },
-            { name: 'TargetTypeName' },
-            { name: 'Classification' },
-            { name: 'TargetUrl' }
+            { name: 'Object' },
+            { name: 'ObjectID' },
+            { name: 'ObjectName' },
+            { name: 'ObjectUrl' },
+            { name: 'ObjectTypeName' }
         ]
     };
 
@@ -53351,9 +53537,9 @@ function LineageDiagram(controlID, type, id, readonly) {
         columns: [
             //{ text: 'Type', groupable: true, datafield: 'TargetTypeName' },
             {
-                text: 'Name', groupable: false, datafield: 'TargetName',
+                text: 'Name', groupable: false, datafield: 'ObjectName',
                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                    return textrenderer("<div class='cell-value-name'>" + data.TargetName + "</div><div class='cell-value-type'>" + data.TargetTypeName + "</div>");
+                    return textrenderer("<div class='cell-value-name'>" + data.ObjectName + "</div><div class='cell-value-type'>" + data.ObjectTypeName + "</div>");
                 }
             }
         ]
@@ -54227,7 +54413,7 @@ function LineageDiagram(controlID, type, id, readonly) {
             } else if (data.diagramObjectType == 'Link') {
                 var from = myDiagram.model.findNodeDataForKey(data.from);
                 var to = myDiagram.model.findNodeDataForKey(data.to);
-                first = tabs["fusion"];
+                first = -1;//tabs["fusion"];
 
 
                 var intersectId = 0;
@@ -54264,19 +54450,23 @@ function LineageDiagram(controlID, type, id, readonly) {
                 
 
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "none");
-                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
+                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "none");
                 
 
                 try {
                     technicalRelationsSource.url = null;
                     $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
                 } catch (e) { }
+
                 try {
                     lineageResponsibilitySource.url = null;
                     $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
                 } catch (e) { }
 
                 if (data.hasMappingRules) {
+
+                    first = tabs["mappingrules"];
+
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
                     $("#" + controlID_mappingrules_content).html(defaultTabContent);
                     first = tabs["mappingrules"];
@@ -54285,6 +54475,10 @@ function LineageDiagram(controlID, type, id, readonly) {
                 }
 
                 if (data.hasTransformations) {
+
+                    if (first == -1)
+                        first = tabs["transformations"];
+
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "block");
                     $("#" + controlID_transformations_content).html(defaultTabContent);
                 } else {
@@ -54292,6 +54486,9 @@ function LineageDiagram(controlID, type, id, readonly) {
                 }
 
                 if (to.hasSourceRules) {
+                    if (first == -1)
+                        first = tabs["sourcerules"];
+
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "block");
                     $("#" + controlID_sourcerules_content).html(defaultTabContent);
                     first = tabs["sourcerules"];
@@ -54352,15 +54549,17 @@ function LineageDiagram(controlID, type, id, readonly) {
                 break;
             case tabs["fusion"]:
                 url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + selectedData.type + '&tID=' + selectedData.id;
-                if (selectedData.diagramObjectType != 'Node') {
-                    url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + from.type + '&sID=' + from.id + '&t=' + to.type + '&tID=' + to.id;
+                //if (selectedData.diagramObjectType != 'Node') {
+                //    url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + from.type + '&sID=' + from.id + '&t=' + to.type + '&tID=' + to.id;
+                //}
+                //if (technicalRelationsSource.url != null)
+                //    return;
+                try {
+                    technicalRelationsSource.url = url;
+                    $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
                 }
-                if (technicalRelationsSource.url != null)
-                    return;
-                        try {
-                            technicalRelationsSource.url = url;
-                            $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
-                        } catch (e) {  }
+                catch (e) {
+                }
                 break;
             case tabs["responsibilities"]:
                 if (lineageResponsibilitySource.url != null)
@@ -59733,6 +59932,9 @@ function domains_list(app, pageViewModel, templatePath, contextList) {
                         //$('#AllocationsTile').fadeIn(fadoutTime);
                         //DomainAllocationsTile('AllocationsTile', contextList, permissions, typeID, id);
                         $('#ItemsTile').fadeIn(fadoutTime);
+                        $('#XrefTile').fadeIn(fadoutTime);
+                        $('#XrefListTile').fadeIn(fadoutTime);
+                        DomainListXrefTile('XrefListTile', contextList, permissions, id);
                         DomainItemsTile('ItemsTile', contextList, permissions, typeID, id);
                         $('#OwnerTile').fadeIn(fadoutTime);
                         PeopleResponsibilityTile('OwnerTile', contextList, permissions, selectedType, id, '', false);
@@ -59756,6 +59958,8 @@ function domains_list(app, pageViewModel, templatePath, contextList) {
                     $('#AttributesTile').fadeOut(fadoutTime).html('');
                     //$('#AllocationsTile').fadeOut(fadoutTime).html('');
                     $('#ItemsTile').fadeOut(fadoutTime).html('');
+                    $('#XrefTile').fadeOut(fadoutTime).html('');
+                    $('#XrefListTile').fadeOut(fadoutTime).html('');
                     $('#OwnerTile').fadeOut(fadoutTime).html('');
                     $('#AggregatesTile').fadeOut(fadoutTime).html('');
                 }
@@ -62897,8 +63101,8 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
 
         var permissions = new PermissionsModel();
 
-        var RelationTypeSource;
-        var RelationTypeAdapter;
+        //var RelationTypeSource;
+        //var RelationTypeAdapter;
         var IntersectTypeSource;
         var IntersectTypeAdapter;
         var PredicateSource;
@@ -62931,18 +63135,18 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
                     case contextList.Predicate:
                         $('#Predicates').jqxDataTable('updateBoundData');
                         break;
-                    case contextList.RelationType:
-                        if (CompanySettings.UseNewRelationships == "true") {
-                            $('#NewRelationTypes').jqxDataTable('updateBoundData');
-                        }
-                        break;
+                    //case contextList.RelationType:
+                    //    if (CompanySettings.UseNewRelationships == "true") {
+                    //        $('#NewRelationTypes').jqxDataTable('updateBoundData');
+                    //    }
+                    //    break;
                 }
             } catch (e) { }
         }
 
         function unsubscribe(data) {
-            RelationTypeAdapter = null;
-            RelationTypeSource = null;
+            //RelationTypeAdapter = null;
+            //RelationTypeSource = null;
             IntersectTypeAdapter = null;
             IntersectTypeSource = null;
             PredicateAdapter = null;
@@ -63091,77 +63295,77 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
 
                     //#endregion
 
-                    if (CompanySettings.UseNewRelationships == "true") {
+                    //if (CompanySettings.UseNewRelationships == "true") {
 
-                        $('#NewRelationTypesWrapper').show();
+                    //    $('#NewRelationTypesWrapper').show();
 
-                        //#region Grid
+                    //    //#region Grid
 
-                        var newRelationTypesTools = [];
-                        if (permissions.HasPermission("Root", "Create")) {
-                            newRelationTypesTools.push({ icon: 'plus', uri: '/form/AddRelationType', context: contextList.IntersectType, title: 'Add relation type' });
-                        }
-                        TileTools('#NewRelationTypesTools', newRelationTypesTools);
+                    //    var newRelationTypesTools = [];
+                    //    if (permissions.HasPermission("Root", "Create")) {
+                    //        newRelationTypesTools.push({ icon: 'plus', uri: '/form/AddRelationType', context: contextList.IntersectType, title: 'Add relation type' });
+                    //    }
+                    //    TileTools('#NewRelationTypesTools', newRelationTypesTools);
 
-                        RelationTypeSource = {
-                            datatype: 'json',
-                            url: '/services/relationships/types',
-                            datafields:
-                            [
-                                { name: 'ID' },
-                                { name: 'Subject' },
-                                { name: 'SubjectID' },
-                                { name: 'SubjectName' },
-                                { name: 'Object' },
-                                { name: 'ObjectID' },
-                                { name: 'ObjectName' },
-                                { name: 'PredicateType' },
-                                { name: 'PredicateTypeName' }
-                            ]
-                        };
+                    //    RelationTypeSource = {
+                    //        datatype: 'json',
+                    //        url: '/services/relationships/types',
+                    //        datafields:
+                    //        [
+                    //            { name: 'ID' },
+                    //            { name: 'Subject' },
+                    //            { name: 'SubjectID' },
+                    //            { name: 'SubjectName' },
+                    //            { name: 'Object' },
+                    //            { name: 'ObjectID' },
+                    //            { name: 'ObjectName' },
+                    //            { name: 'PredicateType' },
+                    //            { name: 'PredicateTypeName' }
+                    //        ]
+                    //    };
 
-                        var RelationTypeAdapter = new $.jqx.dataAdapter(RelationTypeSource);
+                    //    var RelationTypeAdapter = new $.jqx.dataAdapter(RelationTypeSource);
 
-                        $("#NewRelationTypes").jqxDataTable({
-                            pageable: true,
-                            pagerButtonsCount: 10,
-                            altRows: true,
-                            filterable: true,
-                            pagerMode: 'advanced',
-                            width: '100%',
-                            filterMode: 'simple',
-                            source: RelationTypeAdapter,
-                            theme: theme,
-                            columnsResize: true,
-                            columns: [
-                                { dataField: "Subject", text: "Type", width: '125px' },
-                                { dataField: "SubjectName", text: "Name" },
-                                { dataField: "Object", text: "Type", width: '125px' },
-                                { dataField: "ObjectName", text: "Name"},
-                                { dataField: "PredicateTypeName", text: "Predicate", width: '125px' },
-                                {
-                                    text: '',
-                                    dataField: 'ID',
-                                    width: 100,
-                                    cellsRenderer: function (row, column, value, rowData) {
+                    //    $("#NewRelationTypes").jqxDataTable({
+                    //        pageable: true,
+                    //        pagerButtonsCount: 10,
+                    //        altRows: true,
+                    //        filterable: true,
+                    //        pagerMode: 'advanced',
+                    //        width: '100%',
+                    //        filterMode: 'simple',
+                    //        source: RelationTypeAdapter,
+                    //        theme: theme,
+                    //        columnsResize: true,
+                    //        columns: [
+                    //            { dataField: "Subject", text: "Type", width: '125px' },
+                    //            { dataField: "SubjectName", text: "Name" },
+                    //            { dataField: "Object", text: "Type", width: '125px' },
+                    //            { dataField: "ObjectName", text: "Name"},
+                    //            { dataField: "PredicateTypeName", text: "Predicate", width: '125px' },
+                    //            {
+                    //                text: '',
+                    //                dataField: 'ID',
+                    //                width: 100,
+                    //                cellsRenderer: function (row, column, value, rowData) {
 
-                                        var tools = [];
-                                        if (permissions.HasPermission('Root', 'Update')) {
-                                            tools = [
-                                                { icon: 'pencil', urlprefix: '/form/EditRelationType?id={0}' },
-                                                { icon: 'trash-o', urlprefix: '/form/DeleteRelationType?id={0}' }
-                                            ];
-                                        }
+                    //                    var tools = [];
+                    //                    if (permissions.HasPermission('Root', 'Update')) {
+                    //                        tools = [
+                    //                            { icon: 'pencil', urlprefix: '/form/EditRelationType?id={0}' },
+                    //                            { icon: 'trash-o', urlprefix: '/form/DeleteRelationType?id={0}' }
+                    //                        ];
+                    //                    }
 
-                                        return renderToolsHtml(value, tools, contextList.IntersectType);
-                                    }
-                                }
-                            ]
-                        });
+                    //                    return renderToolsHtml(value, tools, contextList.IntersectType);
+                    //                }
+                    //            }
+                    //        ]
+                    //    });
 
-                        //#endregion
+                    //    //#endregion
 
-                    }
+                    //}
 
                     //#region Event Subscriptions
 

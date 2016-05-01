@@ -550,16 +550,11 @@
         datatype: 'json',
         url: null,
         datafields: [
-            { name: 'IntersectID' },
-            { name: 'Description' },
-            { name: 'TargetName' },
-            { name: 'TargetObjectID' },
-            { name: 'TargetObjectType' },
-            { name: 'TargetTypeID' },
-            { name: 'TargetType' },
-            { name: 'TargetTypeName' },
-            { name: 'Classification' },
-            { name: 'TargetUrl' }
+            { name: 'Object' },
+            { name: 'ObjectID' },
+            { name: 'ObjectName' },
+            { name: 'ObjectUrl' },
+            { name: 'ObjectTypeName' }
         ]
     };
 
@@ -588,9 +583,9 @@
         columns: [
             //{ text: 'Type', groupable: true, datafield: 'TargetTypeName' },
             {
-                text: 'Name', groupable: false, datafield: 'TargetName',
+                text: 'Name', groupable: false, datafield: 'ObjectName',
                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                    return textrenderer("<div class='cell-value-name'>" + data.TargetName + "</div><div class='cell-value-type'>" + data.TargetTypeName + "</div>");
+                    return textrenderer("<div class='cell-value-name'>" + data.ObjectName + "</div><div class='cell-value-type'>" + data.ObjectTypeName + "</div>");
                 }
             }
         ]
@@ -1464,7 +1459,7 @@
             } else if (data.diagramObjectType == 'Link') {
                 var from = myDiagram.model.findNodeDataForKey(data.from);
                 var to = myDiagram.model.findNodeDataForKey(data.to);
-                first = tabs["fusion"];
+                first = -1;//tabs["fusion"];
 
 
                 var intersectId = 0;
@@ -1501,19 +1496,23 @@
                 
 
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "none");
-                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
+                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "none");
                 
 
                 try {
                     technicalRelationsSource.url = null;
                     $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
                 } catch (e) { }
+
                 try {
                     lineageResponsibilitySource.url = null;
                     $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
                 } catch (e) { }
 
                 if (data.hasMappingRules) {
+
+                    first = tabs["mappingrules"];
+
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
                     $("#" + controlID_mappingrules_content).html(defaultTabContent);
                     first = tabs["mappingrules"];
@@ -1522,6 +1521,10 @@
                 }
 
                 if (data.hasTransformations) {
+
+                    if (first == -1)
+                        first = tabs["transformations"];
+
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "block");
                     $("#" + controlID_transformations_content).html(defaultTabContent);
                 } else {
@@ -1529,6 +1532,9 @@
                 }
 
                 if (to.hasSourceRules) {
+                    if (first == -1)
+                        first = tabs["sourcerules"];
+
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "block");
                     $("#" + controlID_sourcerules_content).html(defaultTabContent);
                     first = tabs["sourcerules"];
@@ -1589,15 +1595,17 @@
                 break;
             case tabs["fusion"]:
                 url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + selectedData.type + '&tID=' + selectedData.id;
-                if (selectedData.diagramObjectType != 'Node') {
-                    url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + from.type + '&sID=' + from.id + '&t=' + to.type + '&tID=' + to.id;
+                //if (selectedData.diagramObjectType != 'Node') {
+                //    url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + from.type + '&sID=' + from.id + '&t=' + to.type + '&tID=' + to.id;
+                //}
+                //if (technicalRelationsSource.url != null)
+                //    return;
+                try {
+                    technicalRelationsSource.url = url;
+                    $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
                 }
-                if (technicalRelationsSource.url != null)
-                    return;
-                        try {
-                            technicalRelationsSource.url = url;
-                            $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
-                        } catch (e) {  }
+                catch (e) {
+                }
                 break;
             case tabs["responsibilities"]:
                 if (lineageResponsibilitySource.url != null)

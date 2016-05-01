@@ -363,7 +363,9 @@ namespace d360.web.Controllers
                 pluralize = null;
             }
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            bool isPromoted = Company.Filter<FusionAttributePromotion>(i => i.ObjectType == "Artifact" && i.ObjectID == id).Any();
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, ReadOnly = isPromoted, FieldName = "Name", Name = "Name", FieldDescription = ((isPromoted) ? "Artifact promoted via Fusion.  No changes allowed to the Name." : ""), FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Value = a.TaxonomyTypeID.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
 
             list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
@@ -4476,13 +4478,13 @@ order by  D.TextPath
                     switch (ft.Type)
                     {
                         case "Text":
-                            allowTypeChange = (model.FieldType.Type == DataType.Html.ToString()) || (model.FieldType.Type == DataType.Password.ToString());
+                            allowTypeChange = (model.FieldType.Type == DataType.Text.ToString()) || (model.FieldType.Type == DataType.Html.ToString()) || (model.FieldType.Type == DataType.Password.ToString());
                             break;
                         case "Number":
-                            allowTypeChange = (model.FieldType.Type == DataType.Decimal.ToString());
+                            allowTypeChange = (model.FieldType.Type == DataType.Number.ToString()) || (model.FieldType.Type == DataType.Decimal.ToString());
                             break;
                         case "Password":
-                            allowTypeChange = (model.FieldType.Type == DataType.Html.ToString()) || (model.FieldType.Type == DataType.Text.ToString());
+                            allowTypeChange = (model.FieldType.Type == DataType.Password.ToString()) || (model.FieldType.Type == DataType.Html.ToString()) || (model.FieldType.Type == DataType.Text.ToString());
                             break;
                     }
                     if (allowTypeChange)
@@ -4491,7 +4493,10 @@ order by  D.TextPath
                     }
                     else
                     {
-                        throw new ConflictException("Error Occurred!", $"You may not change the input type for {ft.FriendlyName} as it is already used.");
+                        if (ft.Type != model.FieldType.Type)
+                        {
+                            throw new ConflictException("Error Occurred!", $"You may not change the input type for {ft.FriendlyName} as it is already used.");
+                        }
                     }
                 }
                 else
@@ -6830,7 +6835,11 @@ order by  D.TextPath
                 Company.ValidateIntersectType(0, nodes);
 
                 var model = new IntersectType { 
-                    Nodes = nodes
+                    Nodes = nodes,
+                    Subject = side1Info[0],
+                    SubjectID = int.Parse(side1Info[1]),
+                    Object = side2Info[0],
+                    ObjectID = int.Parse(side2Info[1])
                 };
                 Company.Add<IntersectType>(model);
                 var id = model.ID;
@@ -6965,6 +6974,11 @@ order by  D.TextPath
                 existingSide2Node.ObjectType = side2Node.ObjectType;
                 existingSide2Node.ObjectID = side2Node.ObjectID;
                 existingSide2Node.MenuDisplayText = side2Node.MenuDisplayText;
+
+                model.Subject = side1Info[0];
+                model.SubjectID = int.Parse(side1Info[1]);
+                model.Object = side2Info[0];
+                model.ObjectID = int.Parse(side2Info[1]);
 
                 Company.Update<IntersectType>(model);
                 Company.Update<IntersectTypeNode>(existingSide1Node);
@@ -9596,74 +9610,150 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
             var sql = "";
 
-            if (targetType == "FusionAttributeType")
+            switch (targetType)
             {
-                sql = @"select	D.[Object], D.ObjectID, F.Name + '.' + D.TextPath as Name
-from	cache.ObjectDetails D
-		inner join FusionAttribute FA on D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID and FA.ID = D.ObjectID
-		inner join Fusion F on F.ID = FA.FusionID
-where	D.ObjectTypeID <> D.ObjectID 
-        and D.ObjectTypeID <> 0
-        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-        and not exists  (
-					select	1 
-					from	[cache].[Relationship] R 
-					where	R.SourceObject = @source 
-							and R.SourceObjectID = @id
-							and R.TargetObject = D.[Object] 
-							and R.TargetObjectID = D.ObjectID
+                case "FusionAttributeType":
+                    sql = @"
+declare @OwnerSourceType varchar(50)
+declare @owners table (ID int)
+IF @source = 'Intersect'
+BEGIN
+	set @OwnerSourceType = 'Artifact'
+
+	insert into @owners
+		select	SubjectID
+		from	[IntersectDetail] N
+				inner join Artifact A with(nolock) on N.[Subject] = 'Artifact' and A.ID = N.SubjectID and N.ID = @id
+				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
+	insert into @owners
+		select	ObjectID
+		from	[IntersectDetail] N
+				inner join Artifact A with(nolock) on N.[Object] = 'Artifact' and A.ID = N.ObjectID and N.ID = @id
+				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
+END
+ELSE
+BEGIN
+	set @OwnerSourceType = @source
+	insert into @owners values (@id)
+END
+
+declare @h table (ID int);
+
+if @OwnerSourceType = 'Artifact'
+	begin
+		with h as	(
+					select	A.ID,
+							A.ParentID
+					from	Artifact A with(nolock)
+							inner join @owners O on O.ID = A.ID
+					union all
+					select	P.ID,
+							P.ParentID
+					from	Artifact P with(nolock)
+							inner join h as C on C.ParentID = P.ID
 					)
-order by F.Name, D.TextPath";
-            }
-            else if (targetType == "Group" || targetType == "GroupType")
-            {
-                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name
-from	cache.ObjectDetails D
-where	D.[ObjectType] = 'GroupType'
-        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-        and not exists  (
+		insert into @h
+			select ID from h;
+	end
+else
+	begin
+		insert into @h values (@id)
+	end;
+
+with attr as	(
+			select	A.ID,
+					A.ParentID,
+					A.FusionAttributeTypeID
+			from	FusionAttributeOwnerRule R with(nolock)
+					inner join FusionAttributeOwnerRuleItem RI with(nolock) on RI.FusionAttributeOwnerRuleID = R.ID and R.RelationshipOwnerObjectType = 'Artifact'
+					inner join @h H on H.ID = R.RelationshipOwnerObjectID
+					inner join FusionAttribute A with(nolock) on (
+													(RI.FusionAttributeID is not null and A.ID = RI.FusionAttributeID) OR 
+													(RI.FusionAttributeID is null and A.FusionAttributeTypeID = R.ObjectID)
+													)
+													AND A.FusionID = R.FusionID
+                                                    AND A.Deleted = 0
+			union all
+			select	C.ID,
+					C.ParentID,
+					C.FusionAttributeTypeID
+			from	FusionAttribute C with(nolock)
+					inner join attr P on C.ParentID = P.ID and C.Deleted = 0
+			)
+
+select	'FusionAttribute' as [Object], 
+        FA.ID as ObjectID, 
+        F.Name + '.' + FA.TextPath as Name
+from	FusionAttribute FA with(nolock)
+		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
+		inner join attr on attr.ID = FA.ID
+where	FA.ID not in (
 					select	1 
-					from	[cache].[Relationship] R 
-					where	R.SourceObject = @source 
-							and R.SourceObjectID = @id
-							and R.TargetObject = D.[Object] 
-							and R.TargetObjectID = D.ObjectID
+					from	[IntersectDetail]
+					where	(
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) ) --OR
+							 --( (SubjectType = @targetType and SubjectTypeID = @targetTypeID) AND (Object = @source and ObjectID = @id) )
+							)
 					)
-order by D.TextPath";
-            }
-            else if (targetType == "Resource" || targetType == "ResourceType")
-            {
-                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name
-from	cache.ObjectDetails D
-where   D.[ObjectType] = 'ResourceType'
-        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-        and not exists  (
-					select	1 
-					from	[cache].[Relationship] R 
-					where	R.SourceObject = @source 
-							and R.SourceObjectID = @id
-							and R.TargetObject = D.[Object] 
-							and R.TargetObjectID = D.ObjectID
+order by F.Name, FA.TextPath";
+                    break;
+                case "Group":
+                case "GroupType":
+                    sql = @"
+select	'Group' as [Object], 
+        D.ID as ObjectID, 
+        D.Name
+from	[Group] D with(nolock)
+where	D.ID not in (
+					select	case 
+                                when SubjectType = 'Group' then SubjectID
+                                else ObjectID
+                            end
+					from	[IntersectDetail]
+					where	(
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group' and ObjectTypeID = 1) ) OR
+							 ( (SubjectType = 'Group' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
+							)
 					)
-order by D.TextPath";
-            }
-            else
-            {
-                sql = @"select	D.[Object], D.ObjectID, D.TextPath as Name
-from	cache.ObjectDetails D
+order by D.Name";
+                    break;
+                case "Resource":
+                case "ResourceType":
+                    sql = @"
+select	'Resource' as [Object], 
+        D.ResourceID as ObjectID, 
+        D.LastName + ', ' + D.FirstName as Name
+from	reporting.Global_Resource D with(nolock)
+where   D.ResourceID not in (
+					select	case 
+                                when SubjectType = 'ResourceType' then SubjectID
+                                else ObjectID
+                            end
+					from	[IntersectDetail]
+					where	(
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ResourceType' and ObjectTypeID = 1) ) OR
+							 ( (SubjectType = 'ResourceType' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
+							)
+					)
+order by D.LastName, D.FirstName";
+                    break;
+                default:
+                    sql = @"
+select	D.[Object], 
+        D.ObjectID, 
+        D.TextPath as Name
+from	cache.ObjectDetails D with(nolock)
+		left join [IntersectDetail] I on	(
+											 ( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
+											 ( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+											)
 where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
         and D.ObjectTypeID <> D.ObjectID 
         and D.ObjectTypeID <> 0
         and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-		and not exists (
-						select	1 
-						from	[cache].[Relationship] R 
-						where	R.SourceObject = @source 
-								and R.SourceObjectID = @id
-								and R.TargetObject = D.[Object] 
-								and R.TargetObjectID = D.ObjectID
-						)
+        and I.ID is null
 order by D.TextPath";
+                    break;
             }
 
             #endregion
@@ -9934,229 +10024,229 @@ order by D.TextPath";
 
         #region RelationType
 
-        #region Field Generation
+//        #region Field Generation
 
-        /// <param name="id">RelationTypeID</param>
-        public JsonResult RelationType_DeleteFields(int id)
-        {
-            if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Delete))
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+//        /// <param name="id">RelationTypeID</param>
+//        public JsonResult RelationType_DeleteFields(int id)
+//        {
+//            if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Delete))
+//                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-            if (Company.Filter<Relation>(i => i.RelationTypeID == id).Count() > 0)
-                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
+//            if (Company.Filter<Relation>(i => i.RelationTypeID == id).Count() > 0)
+//                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
 
-            var list = new List<EditableField>();
-            var a = Company.GetById<RelationType>(id);
+//            var list = new List<EditableField>();
+//            var a = Company.GetById<RelationType>(id);
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+//            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
+//            return Json(list, JsonRequestBehavior.AllowGet);
+//        }
 
-        #endregion
+//        #endregion
 
-        #region Form Get/Post
+//        #region Form Get/Post
 
-        public JsonNetResult RelationType_FormData(int id)
-        {
-            var type = Company.GetById<RelationType>(id);
-            if (type == null) return new JsonNetResult { Data = null };
+//        public JsonNetResult RelationType_FormData(int id)
+//        {
+//            var type = Company.GetById<RelationType>(id);
+//            if (type == null) return new JsonNetResult { Data = null };
 
-            var anyCurrentRelations = Company.Filter<Relation>(i => i.RelationTypeID == id).Any();
+//            var anyCurrentRelations = Company.Filter<Relation>(i => i.RelationTypeID == id).Any();
 
-            var model = new RelationTypeEditorModel
-            {
-                ID = id,
-                LimitedChangesOnly = anyCurrentRelations,
-                Subject = $"{type.Subject}|{type.SubjectID}",
-                Object = $"{type.Object}|{type.ObjectID}",
-                PredicateType = type.PredicateType
-            };
+//            var model = new RelationTypeEditorModel
+//            {
+//                ID = id,
+//                LimitedChangesOnly = anyCurrentRelations,
+//                Subject = $"{type.Subject}|{type.SubjectID}",
+//                Object = $"{type.Object}|{type.ObjectID}",
+//                PredicateType = type.PredicateType
+//            };
 
-            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
-        public JsonNetResult RelationType_SubjectOptions()
-        {
-            var models = Company.GetRelationTypeOptions()
-                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
+//        public JsonNetResult RelationType_SubjectOptions()
+//        {
+//            var models = Company.GetRelationTypeOptions()
+//                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
-        public JsonNetResult RelationType_ObjectOptions(SystemObjects Subject, int SubjectID, SystemObjects? Object, int? ObjectID)
-        {
-            var models = Company.GetRelationTypeOptions(Subject, SubjectID, Object, ObjectID)
-                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
+//        public JsonNetResult RelationType_ObjectOptions(SystemObjects Subject, int SubjectID, SystemObjects? Object, int? ObjectID)
+//        {
+//            var models = Company.GetRelationTypeOptions(Subject, SubjectID, Object, ObjectID)
+//                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
-        public JsonNetResult RelationType_PredicateOptions(SystemObjects Subject, int SubjectID, SystemObjects Object, int ObjectID, MapType? PredicateType)
-        {
-            var allowedPredicateTypes = MapType.Lineage.GetAsList().Select(i => i.ID).ToList();
-            var models = Company.Query<Predicate>(@"
-select	* 
-from	Predicate
-where	ID not in	(
-					select	PredicateType
-					from	RelationType
-					where	(
-                            (Subject = @s and SubjectID = @SubjectID and Object = @o and ObjectID = @ObjectID)
-							or (Object = @s and ObjectID = @SubjectID and Subject = @o and SubjectID = @ObjectID)
-                            )
-                            and (
-                                (@p is not null and PredicateType <> @p) or
-                                (@p is null)
-                                )
-					)", new { s = new Dapper.DbString { Value = Subject.ToString(), IsAnsi = true }, SubjectID, o = new Dapper.DbString { Value = Object.ToString(), IsAnsi = true }, ObjectID, p = (int)PredicateType })
-                    .Where(i => allowedPredicateTypes.Contains(i.Type))
-                    .Select(i => new { title = i.Name, value = i.ID.ToString() })
-                    .OrderBy(i => i.title);
+//        public JsonNetResult RelationType_PredicateOptions(SystemObjects Subject, int SubjectID, SystemObjects Object, int ObjectID, MapType? PredicateType)
+//        {
+//            var allowedPredicateTypes = MapType.Lineage.GetAsList().Select(i => i.ID).ToList();
+//            var models = Company.Query<Predicate>(@"
+//select	* 
+//from	Predicate
+//where	ID not in	(
+//					select	PredicateType
+//					from	RelationType
+//					where	(
+//                            (Subject = @s and SubjectID = @SubjectID and Object = @o and ObjectID = @ObjectID)
+//							or (Object = @s and ObjectID = @SubjectID and Subject = @o and SubjectID = @ObjectID)
+//                            )
+//                            and (
+//                                (@p is not null and PredicateType <> @p) or
+//                                (@p is null)
+//                                )
+//					)", new { s = new Dapper.DbString { Value = Subject.ToString(), IsAnsi = true }, SubjectID, o = new Dapper.DbString { Value = Object.ToString(), IsAnsi = true }, ObjectID, p = (int)PredicateType })
+//                    .Where(i => allowedPredicateTypes.Contains(i.Type))
+//                    .Select(i => new { title = i.Name, value = i.ID.ToString() })
+//                    .OrderBy(i => i.title);
 
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+//            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+//        }
 
-        public ActionResult AddRelationType()
-        {
-            ViewBag.ID = 0;
-            return PartialView("RelationTypeEditForm");
-        }
+//        public ActionResult AddRelationType()
+//        {
+//            ViewBag.ID = 0;
+//            return PartialView("RelationTypeEditForm");
+//        }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddRelationType(RelationTypeEditorModel formModel)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+//        [ValidateHttpAntiForgeryToken]
+//        [HttpPost, ValidateInput(false)]
+//        public JsonResult AddRelationType(RelationTypeEditorModel formModel)
+//        {
+//            try
+//            {
+//                if (!Company.CurrentResourceIsAdmin)
+//                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                if (formModel == null) throw new NoFormDataException("relation type");
+//                if (formModel == null) throw new NoFormDataException("relation type");
 
-                var subInfo = formModel.Subject.Split('|');
-                var objInfo = formModel.Object.Split('|');
+//                var subInfo = formModel.Subject.Split('|');
+//                var objInfo = formModel.Object.Split('|');
 
-                var model = new RelationType
-                {
-                    Subject = subInfo[0],
-                    SubjectID = int.Parse(subInfo[1]),
-                    Object = objInfo[0],
-                    ObjectID = int.Parse(objInfo[1]),
-                    PredicateType = formModel.PredicateType
-                };
+//                var model = new RelationType
+//                {
+//                    Subject = subInfo[0],
+//                    SubjectID = int.Parse(subInfo[1]),
+//                    Object = objInfo[0],
+//                    ObjectID = int.Parse(objInfo[1]),
+//                    PredicateType = formModel.PredicateType
+//                };
 
-                Company.Add<RelationType>(model);
-                formModel.ID = model.ID;
+//                Company.Add<RelationType>(model);
+//                formModel.ID = model.ID;
 
-                return jsonSuccess("Relation type successfully created.", model.ID.ToString(), ContextList.RelationType, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult DeleteRelationType(int id)
-        {
-            var type = Company.GetById<RelationType>(id);
-            if (type == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.RelationType,
-                FieldUri = string.Format("/form/RelationType_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "relation type"),
-                FormUri = "/form/DeleteRelationType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteRelationType(FormCollection form)
-        {
-            try
-            {
-                var id = parseIntField(form, "ID");
-                if (!form.HasKeys()) throw new NoFormDataException("relation type");
-
-                if (!Company.HasPermission(SystemObjects.RelationType, id, Claim.Delete))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (Company.Filter<Relation>(i => i.RelationTypeID == id).Count() > 0)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
-
-                var model = Company.GetById<RelationType>(id);
-                if (model == null) throw new NotFoundException("relation type");
-
-                Company.Delete<RelationType>(model);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+//                return jsonSuccess("Relation type successfully created.", model.ID.ToString(), ContextList.RelationType, "add", HttpStatusCode.Created);
+//            }
+//            catch (BaseException ex)
+//            {
+//                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+//            }
+//            catch (Exception ex)
+//            {
+//                SendException(ex);
+//                return jsonException(ex, HttpStatusCode.InternalServerError);
+//            }
+//        }
 
 
-        public ActionResult EditRelationType(int id)
-        {
-            ViewBag.ID = id;
-            return PartialView("RelationTypeEditForm");
-        }
+//        public ActionResult DeleteRelationType(int id)
+//        {
+//            var type = Company.GetById<RelationType>(id);
+//            if (type == null) return HttpNotFound();
+//            var model = new EditableForm
+//            {
+//                Context = ContextList.RelationType,
+//                FieldUri = string.Format("/form/RelationType_DeleteFields?id={0}", id),
+//                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "relation type"),
+//                FormUri = "/form/DeleteRelationType",
+//                FormMethod = "DELETE"
+//            };
 
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditRelationType(RelationTypeEditorModel formModel)
-        {
-            try
-            {
-                if (formModel == null) throw new NoFormDataException("relation type");
+//            return PartialView("DeleteForm", model);
+//        }
 
-                // Permisisons validation.
-                if (!Company.HasPermission(SystemObjects.RelationType, formModel.ID, Claim.Update))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+//        [HttpDelete]
+//        public JsonResult DeleteRelationType(FormCollection form)
+//        {
+//            try
+//            {
+//                var id = parseIntField(form, "ID");
+//                if (!form.HasKeys()) throw new NoFormDataException("relation type");
 
-                var model = Company.GetById<RelationType>(formModel.ID);
-                if (model == null) throw new NotFoundException("relation type");
+//                if (!Company.HasPermission(SystemObjects.RelationType, id, Claim.Delete))
+//                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                var subInfo = formModel.Subject.Split('|');
-                var objInfo = formModel.Object.Split('|');
+//                if (Company.Filter<Relation>(i => i.RelationTypeID == id).Count() > 0)
+//                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
 
-                model.Subject = subInfo[0];
-                model.SubjectID = int.Parse(subInfo[1]);
-                model.Object = objInfo[0];
-                model.ObjectID = int.Parse(objInfo[1]);
-                model.PredicateType = formModel.PredicateType;
+//                var model = Company.GetById<RelationType>(id);
+//                if (model == null) throw new NotFoundException("relation type");
 
-                Company.Update<RelationType>(model);
+//                Company.Delete<RelationType>(model);
 
-                return jsonSuccess("Relation type successfully updated.", model.ID.ToString(), ContextList.RelationType, "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+//                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+//            }
+//            catch (BaseException ex)
+//            {
+//                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+//            }
+//            catch (Exception ex)
+//            {
+//                SendException(ex);
+//                return jsonException(ex, HttpStatusCode.InternalServerError);
+//            }
+//        }
 
-        #endregion
+
+//        public ActionResult EditRelationType(int id)
+//        {
+//            ViewBag.ID = id;
+//            return PartialView("RelationTypeEditForm");
+//        }
+
+//        [HttpPut, ValidateInput(false)]
+//        public JsonResult EditRelationType(RelationTypeEditorModel formModel)
+//        {
+//            try
+//            {
+//                if (formModel == null) throw new NoFormDataException("relation type");
+
+//                // Permisisons validation.
+//                if (!Company.HasPermission(SystemObjects.RelationType, formModel.ID, Claim.Update))
+//                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+//                var model = Company.GetById<RelationType>(formModel.ID);
+//                if (model == null) throw new NotFoundException("relation type");
+
+//                var subInfo = formModel.Subject.Split('|');
+//                var objInfo = formModel.Object.Split('|');
+
+//                model.Subject = subInfo[0];
+//                model.SubjectID = int.Parse(subInfo[1]);
+//                model.Object = objInfo[0];
+//                model.ObjectID = int.Parse(objInfo[1]);
+//                model.PredicateType = formModel.PredicateType;
+
+//                Company.Update<RelationType>(model);
+
+//                return jsonSuccess("Relation type successfully updated.", model.ID.ToString(), ContextList.RelationType, "edit", HttpStatusCode.OK);
+//            }
+//            catch (BaseException ex)
+//            {
+//                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+//            }
+//            catch (Exception ex)
+//            {
+//                SendException(ex);
+//                return jsonException(ex, HttpStatusCode.InternalServerError);
+//            }
+//        }
+
+//        #endregion
 
         #endregion
 

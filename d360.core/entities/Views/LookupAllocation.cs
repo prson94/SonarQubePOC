@@ -14,7 +14,7 @@ namespace d360.core.entities
         public string FieldTypeName { get; set; }
 
         [Column(Order = 3), DataMember, Key]
-        public int LookupTypeID { get; set; }
+        public int? LookupTypeID { get; set; }
 
         [Column(Order = 4), DataMember, Key, StringLength(250)]
         public string LookupTypeName { get; set; }

@@ -2707,9 +2707,6 @@
         <member name="M:d360.web.Controllers.FormController.Relationship_EditFields(System.Int32)">
             <param name="id">RelationshipID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.RelationType_DeleteFields(System.Int32)">
-            <param name="id">RelationTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Report_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>
         </member>

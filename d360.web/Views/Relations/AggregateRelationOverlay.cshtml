@@ -66,17 +66,19 @@
     var aggregateRelationshipOverlayTargetID = @targetID;
     var aggregateRelationshipIntersectTypeID = @intersectTypeID;
     var aggregateRelationshipSourceName = "@Html.Raw(source)";
+    var columnCount = 0;
 
     var aggregateRelationsModelType = function() {
         var self = this;
 
-        self.TargetType = 'Intersect';
-        self.TargetID = -1;
-        self.TargetName = '';
+        self.Object = 'Intersect';
+        self.ObjectID = -1;
+        self.Name = '';
     };
     var aggregateRelationsModel = new aggregateRelationsModelType();
 
     //#region Grid Loading Variables
+
     var aggregateRelationshipOverlaySource;
     var aggregateRelationshipOverlayAdapter;
     var technicalRelationsSource;
@@ -89,38 +91,42 @@
     function aggregateRelationsOverlayGridBindingComplete(event) {
         if ($("#AggregateRelationsOverlayGrid").jqxGrid('getdisplayrows').length > 0) {
 
-            try {
-                // gets all rows loaded from the data source.
-                var rows = $('#AggregateRelationsOverlayGrid').jqxGrid('getdisplayrows');
-                var showParent = false;
-                $.each(rows, function(){
-                    if (this.TargetParentName > '') {
-                        showParent = true;
-                    }
-                });
-                if (!showParent) {
-                    $('#AggregateRelationsOverlayGrid').jqxGrid('setcolumnproperty', 'TargetParentName', 'width', 250);
-                    $('#AggregateRelationsOverlayGrid').jqxGrid('hidecolumn', 'TargetParentName');
-                }
-            } catch (e) {
+            //try {
+            //    // gets all rows loaded from the data source.
+            //    var rows = $('#AggregateRelationsOverlayGrid').jqxGrid('getdisplayrows');
+            //    var showParent = false;
+            //    $.each(rows, function(){
+            //        if (this.TargetParentName > '') {
+            //            showParent = true;
+            //        }
+            //    });
+            //    if (!showParent) {
+            //        $('#AggregateRelationsOverlayGrid').jqxGrid('setcolumnproperty', 'TargetParentName', 'width', 250);
+            //        $('#AggregateRelationsOverlayGrid').jqxGrid('hidecolumn', 'TargetParentName');
+            //    }
+            //} catch (e) {
 
-            }
+            //}
 
-            $("#AggregateRelationsOverlayGrid").jqxGrid('selectrow', 0);
+            //if (columnCount > 7) {
+            //    $("#AggregateRelationsOverlayGrid").jqxGrid('autoresizecolumns');
+            //}
+
+            //$("#AggregateRelationsOverlayGrid").jqxGrid('selectrow');
         }
     }
 
     function aggregateRelationsOverlayGridRowDoubleClick(event) {
         var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', event.args.rowindex);
-        location.assign(row.TargetUrl);
+        location.assign(row.Url);
     }
 
     function aggregateRelationsOverlayGridRowSelect(event) {
         var row = event.args.row;
-
-        aggregateRelationsModel.TargetType = row.TargetType;
-        aggregateRelationsModel.TargetID = (row.TargetType == 'TaxonomyType') ? row.TargetTypeID : row.IntersectID;
-        aggregateRelationsModel.TargetName = row.TargetName;
+        console.log(row.Name);
+        //aggregateRelationsModel.Object = row.Object;
+        //aggregateRelationsModel.ObjectID = (row.Type == 'TaxonomyType') ? row.TypeID : row.ObjectID;
+        aggregateRelationsModel.Name = row.Name;
     }
 
     function technicalRelationsGridBindingComplete(event) {
@@ -132,29 +138,29 @@
     function technicalRelationsGridRowSelect(event) {
         var row = event.args.row;
         $('#TechnicalRelationDetailWrapper').fadeIn(250);
-        $('#TechnicalRelationDetailHeader').text(row.TargetTypeName + ' Information');
-        $('#TechnicalRelationDetail').load('/parts/' + row.TargetObjectType + '/' + row.TargetObjectID + '/detail');
-        ObjectDetail('ChildRelationshipDetail', 'Intersect', row.IntersectID);
+        $('#TechnicalRelationDetailHeader').text(row.TypeName + ' Information');
+        $('#TechnicalRelationDetail').load('/parts/' + row.Object + '/' + row.ObjectID + '/detail');
+        ObjectDetail('ChildRelationshipDetail', 'Intersect', row.ID);
     }
 
-    function lineageShow(event) {
-        $('#main-rel').hide();
-        $('#lineage').show();
-        $('#lineage_heading').text('Lineage for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.TargetName);
-        LineageDiagram('DiagramTile', aggregateRelationsModel.TargetObjectType, aggregateRelationsModel.TargetObjectID, true);
-    }
+    //function lineageShow(event) {
+    //    $('#main-rel').hide();
+    //    $('#lineage').show();
+    //    $('#lineage_heading').text('Lineage for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.Name);
+    //    LineageDiagram('DiagramTile', aggregateRelationsModel.Object, aggregateRelationsModel.ObjectID, true);
+    //}
 
     function fusionShow(event) {
         $('#main-rel').hide();
         $('#fusion').show();
-        $('#fusion_heading').text('Child Relationships for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.TargetName);
+        $('#fusion_heading').text('Child Relationships for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.Name);
         var getselectedrowindexes = $('#AggregateRelationsOverlayGrid').jqxGrid('getselectedrowindexes');
         if(getselectedrowindexes.length > 0){
             var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
             $('#TechnicalRelationDetailWrapper').fadeOut(100);
             $('#TechnicalRelationDetail').html('');
             $('#TechnicalRelationsGrid').jqxGrid('clearselection');
-            technicalRelationsSource.url = "/api/Intersect/" + row.IntersectID + "/relations";
+            technicalRelationsSource.url = "/api/Intersect/" + row.ID + "/relations";
             $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
         }
     }
@@ -162,11 +168,11 @@
     function attributeShow(event) {
         $('#main-rel').hide();
         $('#attribute').show();
-        $('#attribute_heading').text('Attributes for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.TargetName);
+        $('#attribute_heading').text('Attributes for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.Name);
         var getselectedrowindexes = $('#AggregateRelationsOverlayGrid').jqxGrid('getselectedrowindexes');
         if(getselectedrowindexes.length > 0){
             var row = $('#AggregateRelationsOverlayGrid').jqxGrid('getrowdata', getselectedrowindexes[0]);
-            AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.IntersectID, 'Business Attributes', true);
+            AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", row.ID, 'Business Attributes', true);
         }
     }
 
@@ -187,7 +193,7 @@
         $('#TechnicalRelationsGrid').off('rowselect', technicalRelationsGridRowSelect);
         $("#TechnicalRelationsGrid").off("bindingcomplete", technicalRelationsGridBindingComplete);
 
-        $("#AggregateRelationsOverlayGrid").off("click", ".lineage", lineageShow);
+        //$("#AggregateRelationsOverlayGrid").off("click", ".lineage", lineageShow);
         $("#AggregateRelationsOverlayGrid").off("click", ".fusion", fusionShow);
         $("#AggregateRelationsOverlayGrid").off("click", ".attribute", attributeShow);
         $("div.large-overlay").off("click", ".detailclose", closeDetailTab);
@@ -197,20 +203,20 @@
 
     //#endregion
 
-    function getDisplayFields() {
-        return JSON.parse($.ajax({
-            type: "GET",
-            url: '/attributes/RelationshipAttributesFieldList?intersectTypeID=' + aggregateRelationshipIntersectTypeID,
-            async: false
-        }).responseText);
-    }
+    //function getDisplayFields() {
+    //    return JSON.parse($.ajax({
+    //        type: "GET",
+    //        url: '/attributes/RelationshipAttributesFieldList?intersectTypeID=' + aggregateRelationshipIntersectTypeID,
+    //        async: false
+    //    }).responseText);
+    //}
 
-    function getDynamicValues(){
-        return JSON.parse($.ajax({ type:'GET',
-            url: '/api/' + aggregateRelationshipOverlayType + '/' + aggregateRelationshipOverlayId + '/relationshipsAndAttributes/' + aggregateRelationshipOverlayTargetType + '/' + aggregateRelationshipOverlayTargetID + '/' + aggregateRelationshipCriticalOnly + '?$orderby=TargetName&intersectTypeID=' + aggregateRelationshipIntersectTypeID,
-            async: false
-        }).responseText);
-    }
+    //function getDynamicValues(){
+    //    return JSON.parse($.ajax({ type:'GET',
+    //        url: '/api/' + aggregateRelationshipOverlayType + '/' + aggregateRelationshipOverlayId + '/relationshipsAndAttributes/' + aggregateRelationshipOverlayTargetType + '/' + aggregateRelationshipOverlayTargetID + '/' + aggregateRelationshipCriticalOnly + '?$orderby=Name&intersectTypeID=' + aggregateRelationshipIntersectTypeID,
+    //        async: false
+    //    }).responseText);
+    //}
 
     $(function () {
 
@@ -225,32 +231,32 @@
                 datafields: gridinfo.Fields
             };
 
-            var addColumns = function(newColumns){
-                var existing = $("#AggregateRelationsOverlayGrid").jqxGrid("columns");
-                var end = existing.length;
-                for(var i=0;i<newColumns.length;i++){
-                    existing.splice(end,0, newColumns[i]);
-                }
-                return existing;
-            }
+            //var addColumns = function(newColumns){
+            //    var existing = $("#AggregateRelationsOverlayGrid").jqxGrid("columns");
+            //    var end = existing.length;
+            //    for(var i=0;i<newColumns.length;i++){
+            //        existing.splice(end,0, newColumns[i]);
+            //    }
+            //    return existing;
+            //}
 
             //add dynamic fields
-            var fields = getDisplayFields();
-            // i no likey  syncy
-            var values = getDynamicValues();
-            var gridColumns = [];
+            //var fields = getDisplayFields();
+            //// i no likey  syncy
+            //var values = getDynamicValues();
+            //var gridColumns = [];
 
-            var findDynamicValue = function(attributeID, TargetID){
-                var val='';
-                for(var i = 0 ; i < values.length;i++)
-                {
-                    if(values[i].TargetID==TargetID && values[i].AttributeTypeID==attributeID){
-                        if(val.length) val+=', ';
-                        val +=values[i].Value
-                    }
-                }
-                return val;
-            }
+            //var findDynamicValue = function(attributeID, TargetID){
+            //    var val='';
+            //    for(var i = 0; i < values.length; i++)
+            //    {
+            //        if(values[i].TargetID == TargetID && values[i].AttributeTypeID == attributeID){
+            //            if (val.length) val += ', ';
+            //            val += values[i].Value;
+            //        }
+            //    }
+            //    return val;
+            //}
 
             var relationIconRowRender = function (type, id, uri, data) {
                 return "<div class='RowMultiTools'>" + 
@@ -262,7 +268,7 @@
             }
 
             var complexAttributeColumnRenderer = function(index, datafield, value, defaultvalue, column, data) {
-                return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ? "<div data-context='Preview' data-type='complexvalue' data-id='" + data.IntersectID + "/" + column.datafield + "' >Populated <i class='fusion fa fa-info-circle'></i></div>" : "") + "</div>";
+                return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ? "<div data-context='Preview' data-type='complexvalue' data-id='" + data.ID + "/" + column.datafield + "' >Populated <i class='fusion fa fa-info-circle'></i></div>" : "") + "</div>";
             }
 
             var attributeColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
@@ -270,7 +276,7 @@
             }
 
             var multipleFieldColumnCellRenderer = function(index, datafield, value, defaultvalue, column, data) {
-                return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ?  "<div data-context='Preview' data-type='fieldvalues' data-id='" + data.IntersectID + "/" + column.datafield + "' >" + value + " <i class='fusion fa fa-info-circle'></i></div></div>" : "") + "</div>";
+                return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'>" + (value ?  "<div data-context='Preview' data-type='fieldvalues' data-id='" + data.ID + "/" + column.datafield + "' >" + value + " <i class='fusion fa fa-info-circle'></i></div></div>" : "") + "</div>";
             }
 
             var headerTooltipRenderer = function(text) {
@@ -280,32 +286,32 @@
                 };
             };
 
-            for(var i = 0 ; i < fields.length;i++){
-                aggregateRelationshipOverlaySource.datafields.push({name:fields[i].attributeID});
-                gridColumns.push({
-                    text:fields[i].label,
-                    datafield:fields[i].attributeID,
-                    width:'250px',
-                    filterable: !fields[i].isComplex,
-                    cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : fields[i].fieldCount > 1 ? multipleFieldColumnCellRenderer : attributeColumnCellRenderer,
-                    rendered: headerTooltipRenderer (fields[i].description)
-                });
-            }
+            //for(var i = 0 ; i < fields.length;i++){
+            //    aggregateRelationshipOverlaySource.datafields.push({name:fields[i].attributeID});
+            //    gridColumns.push({
+            //        text:fields[i].label,
+            //        datafield:fields[i].attributeID,
+            //        width:'250px',
+            //        filterable: !fields[i].isComplex,
+            //        cellsRenderer: fields[i].isComplex ? complexAttributeColumnRenderer : fields[i].fieldCount > 1 ? multipleFieldColumnCellRenderer : attributeColumnCellRenderer,
+            //        rendered: headerTooltipRenderer (fields[i].description)
+            //    });
+            //}
 
             aggregateRelationshipOverlayAdapter = new $.jqx.dataAdapter(aggregateRelationshipOverlaySource, {
                 beforeLoadComplete: function (records) {
                     var data = new Array();
                     for (var i = 0; i < records.length; i++) {
                         var row = records[i];
-                        var bHasAttributes=false;
-                        for(var j = 0 ; j < fields.length;j++){
-                            var val=findDynamicValue(fields[j].attributeID,row.IntersectID);
-                            bHasAttributes=(bHasAttributes || (val!=null&&val.length>0));
-                            row[fields[j].attributeID]=val
-                        }
+                        //var bHasAttributes = false;
+                        //for(var j = 0 ; j < fields.length;j++){
+                        //    var val=findDynamicValue(fields[j].attributeID, row.ID);
+                        //    bHasAttributes=(bHasAttributes || (val!=null&&val.length>0));
+                        //    row[fields[j].attributeID]=val
+                        //}
                         row.Classification = row.Classification == @((int)d360.core.enums.IntersectClassification.Normal) ? "Normal" : "Critical";
-                        row.HasAttributes = bHasAttributes;
-                        row.HasLineage = true;
+                        //row.HasAttributes = bHasAttributes;
+                        //row.HasLineage = true;
                         data.push(row);
                     }
                     return data;
@@ -345,49 +351,56 @@
 
                 //#region Static fields
 
-                gridinfo.Columns.push({
-                    datafield: "Role",
-                    text: "Role",
-                    width: '125px',
-                    filtertype: 'checkedlist'
-                });
+                //gridinfo.Columns.push({
+                //    datafield: "Role",
+                //    text: "Role",
+                //    width: '125px',
+                //    filtertype: 'checkedlist'
+                //});
                 gridinfo.Columns.unshift({
                     datafield: "Classification",
                     text: "Classification",
-                    width: '100px',
+                    width: '125px',
                     filtertype: 'checkedlist'
                 });
-                gridinfo.Columns.unshift({
-                    datafield: "TargetParentName",
-                    text: "Parent",
-                    filtertype: 'checkedlist',
-                    width: '200px',
-                    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                        return "<div class='d3s-cell'>" + data.TargetParentName + "</div>";
-                    }
-                });
-                gridinfo.Columns.unshift({
-                    datafield: "TargetName",
+                //gridinfo.Columns.unshift({
+                //    datafield: "TargetParentName",
+                //    text: "Parent",
+                //    filtertype: 'checkedlist',
+                //    width: '200px',
+                //    cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                //        return "<div class='d3s-cell'>" + data.TargetParentName + "</div>";
+                //    }
+                //});
+                var nameColumn = {
+                    datafield: "Name",
                     text: "Name",
-                    width: '350px',
+                    //width: '350px',
                     pinned: true,
                     cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                        return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;' " + (data.Description != null ? "data-gridtip='" + data.Description + "'" : "") +" >" + data.TargetName + "</div>";
+                        return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;' " + (data.Description != null ? "data-gridtip='" + data.Description + "'" : "") +" >" + data.Name + "</div>";
                     }
-                });
+                };
+                if (gridinfo.Columns.length > 6) {
+                    nameColumn.width = '350px';
+                }
+                gridinfo.Columns.unshift(nameColumn);
+
                 gridinfo.Columns.unshift({
                     text: '',
                     groupable: false,
-                    datafield: 'IntersectID',
+                    datafield: 'ID',
                     width: '60px',
                     filterable: false,
                     pinned: true,
                     cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
-                        return relationIconRowRender(data.TargetObjectType, data.TargetObjectID, data.TargetUrl,data);
+                        return relationIconRowRender(data.Object, data.ObjectID, data.Url, data);
                     }
                 });
 
                 //#endregion
+
+                columnCount = gridinfo.Columns.length;
 
                 $('#AggregateRelationsOverlayGrid').jqxGrid({
                     altrows: true,
@@ -400,13 +413,15 @@
                     filterable: true,
                     pageable: false,
                     scrollmode: 'deferred',
-                    deferreddatafields: ['TargetName'],
+                    deferreddatafields: ['Name'],
                     source: aggregateRelationshipOverlayAdapter,
                     theme: theme,
                     columns: gridinfo.Columns
                 });
 
-                $("#AggregateRelationsOverlayGrid").jqxGrid({ columns: addColumns(gridColumns) });
+                $("#AggregateRelationsOverlayGrid").jqxGrid({ 
+                    columns: gridinfo.Columns //addColumns(gridColumns) 
+                });
             } catch (e) {
             }
         });
@@ -419,14 +434,16 @@
             datatype: 'json',
             url: null,
             datafields: [
-                { name: 'IntersectID' },
-                { name: 'TargetName' },
-                { name: 'TargetObjectID' },
-                { name: 'TargetObjectType' },
-                { name: 'TargetTypeID' },
-                { name: 'TargetType' },
-                { name: 'TargetTypeName' },
-                { name: 'TargetUrl' }
+                { name: 'ID' },
+                { name: 'Description' },
+                { name: 'Name' },
+                { name: 'ObjectID' },
+                { name: 'Object' },
+                { name: 'TypeID' },
+                { name: 'Type' },
+                { name: 'TypeName' },
+                { name: 'Classification' },
+                { name: 'Url' }
             ]
         };
 
@@ -448,24 +465,13 @@
                 columnsresize: true,
                 source: technicalRelationsAdapter,
                 theme: list_theme,
-                groupable: false,
-                groupsrenderer: function (text, group, expanded, data) {
-                    var style = "background-color: " + data.subItems[0].IconBackColor + "; color: " + data.subItems[0].IconForeColor;
-                    var html = "";
-                    html += "<h2>";
-                    html += group;
-                    html += "</h2>";
-                    return html;
-                },
-                groupsexpandedbydefault: false,
                 columns: [
-                    { text: 'Type', groupable: true, datafield: 'TargetTypeName', width: '100px' },
+                    { text: 'Type', datafield: 'TypeName', width: '100px' },
                     {
                         text: 'Name',
-                        groupable: false,
-                        datafield: 'TargetName',
+                        datafield: 'Name',
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            return previewLinkRenderer(data.TargetObjectType, data.TargetObjectID, data.TargetUrl, data.TargetName);
+                            return previewLinkRenderer(data.Object, data.ObjectID, data.Url, data.Name);
                         }
                     }
                 ]
@@ -484,7 +490,7 @@
         $("#TechnicalRelationsGrid").on("bindingcomplete", technicalRelationsGridBindingComplete);
 
         //tool clicks
-        $("#AggregateRelationsOverlayGrid").on("click", ".lineage", lineageShow);
+        //$("#AggregateRelationsOverlayGrid").on("click", ".lineage", lineageShow);
         $("#AggregateRelationsOverlayGrid").on("click", ".fusion", fusionShow);
         $("#AggregateRelationsOverlayGrid").on("click", ".attribute", attributeShow);
         $("div.large-overlay").on("click", ".detailclose", closeDetailTab);

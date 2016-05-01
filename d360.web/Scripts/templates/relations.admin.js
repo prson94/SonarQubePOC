@@ -13,8 +13,8 @@
 
         var permissions = new PermissionsModel();
 
-        var RelationTypeSource;
-        var RelationTypeAdapter;
+        //var RelationTypeSource;
+        //var RelationTypeAdapter;
         var IntersectTypeSource;
         var IntersectTypeAdapter;
         var PredicateSource;
@@ -47,18 +47,18 @@
                     case contextList.Predicate:
                         $('#Predicates').jqxDataTable('updateBoundData');
                         break;
-                    case contextList.RelationType:
-                        if (CompanySettings.UseNewRelationships == "true") {
-                            $('#NewRelationTypes').jqxDataTable('updateBoundData');
-                        }
-                        break;
+                    //case contextList.RelationType:
+                    //    if (CompanySettings.UseNewRelationships == "true") {
+                    //        $('#NewRelationTypes').jqxDataTable('updateBoundData');
+                    //    }
+                    //    break;
                 }
             } catch (e) { }
         }
 
         function unsubscribe(data) {
-            RelationTypeAdapter = null;
-            RelationTypeSource = null;
+            //RelationTypeAdapter = null;
+            //RelationTypeSource = null;
             IntersectTypeAdapter = null;
             IntersectTypeSource = null;
             PredicateAdapter = null;
@@ -207,77 +207,77 @@
 
                     //#endregion
 
-                    if (CompanySettings.UseNewRelationships == "true") {
+                    //if (CompanySettings.UseNewRelationships == "true") {
 
-                        $('#NewRelationTypesWrapper').show();
+                    //    $('#NewRelationTypesWrapper').show();
 
-                        //#region Grid
+                    //    //#region Grid
 
-                        var newRelationTypesTools = [];
-                        if (permissions.HasPermission("Root", "Create")) {
-                            newRelationTypesTools.push({ icon: 'plus', uri: '/form/AddRelationType', context: contextList.IntersectType, title: 'Add relation type' });
-                        }
-                        TileTools('#NewRelationTypesTools', newRelationTypesTools);
+                    //    var newRelationTypesTools = [];
+                    //    if (permissions.HasPermission("Root", "Create")) {
+                    //        newRelationTypesTools.push({ icon: 'plus', uri: '/form/AddRelationType', context: contextList.IntersectType, title: 'Add relation type' });
+                    //    }
+                    //    TileTools('#NewRelationTypesTools', newRelationTypesTools);
 
-                        RelationTypeSource = {
-                            datatype: 'json',
-                            url: '/services/relationships/types',
-                            datafields:
-                            [
-                                { name: 'ID' },
-                                { name: 'Subject' },
-                                { name: 'SubjectID' },
-                                { name: 'SubjectName' },
-                                { name: 'Object' },
-                                { name: 'ObjectID' },
-                                { name: 'ObjectName' },
-                                { name: 'PredicateType' },
-                                { name: 'PredicateTypeName' }
-                            ]
-                        };
+                    //    RelationTypeSource = {
+                    //        datatype: 'json',
+                    //        url: '/services/relationships/types',
+                    //        datafields:
+                    //        [
+                    //            { name: 'ID' },
+                    //            { name: 'Subject' },
+                    //            { name: 'SubjectID' },
+                    //            { name: 'SubjectName' },
+                    //            { name: 'Object' },
+                    //            { name: 'ObjectID' },
+                    //            { name: 'ObjectName' },
+                    //            { name: 'PredicateType' },
+                    //            { name: 'PredicateTypeName' }
+                    //        ]
+                    //    };
 
-                        var RelationTypeAdapter = new $.jqx.dataAdapter(RelationTypeSource);
+                    //    var RelationTypeAdapter = new $.jqx.dataAdapter(RelationTypeSource);
 
-                        $("#NewRelationTypes").jqxDataTable({
-                            pageable: true,
-                            pagerButtonsCount: 10,
-                            altRows: true,
-                            filterable: true,
-                            pagerMode: 'advanced',
-                            width: '100%',
-                            filterMode: 'simple',
-                            source: RelationTypeAdapter,
-                            theme: theme,
-                            columnsResize: true,
-                            columns: [
-                                { dataField: "Subject", text: "Type", width: '125px' },
-                                { dataField: "SubjectName", text: "Name" },
-                                { dataField: "Object", text: "Type", width: '125px' },
-                                { dataField: "ObjectName", text: "Name"},
-                                { dataField: "PredicateTypeName", text: "Predicate", width: '125px' },
-                                {
-                                    text: '',
-                                    dataField: 'ID',
-                                    width: 100,
-                                    cellsRenderer: function (row, column, value, rowData) {
+                    //    $("#NewRelationTypes").jqxDataTable({
+                    //        pageable: true,
+                    //        pagerButtonsCount: 10,
+                    //        altRows: true,
+                    //        filterable: true,
+                    //        pagerMode: 'advanced',
+                    //        width: '100%',
+                    //        filterMode: 'simple',
+                    //        source: RelationTypeAdapter,
+                    //        theme: theme,
+                    //        columnsResize: true,
+                    //        columns: [
+                    //            { dataField: "Subject", text: "Type", width: '125px' },
+                    //            { dataField: "SubjectName", text: "Name" },
+                    //            { dataField: "Object", text: "Type", width: '125px' },
+                    //            { dataField: "ObjectName", text: "Name"},
+                    //            { dataField: "PredicateTypeName", text: "Predicate", width: '125px' },
+                    //            {
+                    //                text: '',
+                    //                dataField: 'ID',
+                    //                width: 100,
+                    //                cellsRenderer: function (row, column, value, rowData) {
 
-                                        var tools = [];
-                                        if (permissions.HasPermission('Root', 'Update')) {
-                                            tools = [
-                                                { icon: 'pencil', urlprefix: '/form/EditRelationType?id={0}' },
-                                                { icon: 'trash-o', urlprefix: '/form/DeleteRelationType?id={0}' }
-                                            ];
-                                        }
+                    //                    var tools = [];
+                    //                    if (permissions.HasPermission('Root', 'Update')) {
+                    //                        tools = [
+                    //                            { icon: 'pencil', urlprefix: '/form/EditRelationType?id={0}' },
+                    //                            { icon: 'trash-o', urlprefix: '/form/DeleteRelationType?id={0}' }
+                    //                        ];
+                    //                    }
 
-                                        return renderToolsHtml(value, tools, contextList.IntersectType);
-                                    }
-                                }
-                            ]
-                        });
+                    //                    return renderToolsHtml(value, tools, contextList.IntersectType);
+                    //                }
+                    //            }
+                    //        ]
+                    //    });
 
-                        //#endregion
+                    //    //#endregion
 
-                    }
+                    //}
 
                     //#region Event Subscriptions
 

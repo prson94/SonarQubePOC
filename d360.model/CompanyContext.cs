@@ -200,6 +200,8 @@ namespace d360.model
 
         public DbSet<Intersect> Intersects { get; set; }
 
+        public DbSet<IntersectDetail> IntersectDetails { get; set; }      /* VIEW */
+
         public DbSet<IntersectNode> IntersectNodes { get; set; }
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
@@ -217,8 +219,6 @@ namespace d360.model
         public DbSet<LoadItemColumn> LoadItemColumns { get; set; }
 
         public DbSet<LoadColumn> LoadColumns { get; set; }
-
-        public DbSet<LookupAllocation> LookupAllocations { get; set; }                                      /* VIEW */
 
         public DbSet<Lookup> Lookups { get; set; }
 
@@ -789,6 +789,7 @@ order by	ColumnIndex", new { id });
 
         class LookupFieldValueModel
         {
+            public int ID { get; set; }
             public string Name { get; set; }
             public int SortOrder { get; set; }
             public int ObjectID { get; set; }
@@ -817,7 +818,8 @@ order by	ColumnIndex", new { id });
                 var subList = pageNumbers > 1 ? lookupIDs.Skip(i * pageSize).Take(pageSize) : lookupIDs;
                 fields.AddRange(Query<LookupFieldValueModel>(@"
                         select 
-	                        ft.Name,
+                            ft.ID,
+                            ft.Name,
 	                        ft.SortOrder,
 	                        f.ObjectID,	
 	                        f.FormattedValue
@@ -837,7 +839,8 @@ order by	ColumnIndex", new { id });
                 item.Add("ID", e.ID.ToString());
                 foreach (var field in fields.Where(i => i.ObjectID == e.ID).OrderBy(i => i.SortOrder))
                 {
-                    if (!item.ContainsKey(field.Name)) item.Add(field.Name, field.FormattedValue);
+                    var fieldName = $"Field{field.ID}";
+                    if (!item.ContainsKey(fieldName)) item.Add(fieldName, field.FormattedValue);
                 }
 
                 items.Add(item);
@@ -1536,15 +1539,21 @@ or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = @obj and T.Subje
             }
         }
 
-
-        //public List<GetRelationshipModel> GetRelationships(SystemObjects type, int id)
-        //{
-        //    var parameters = new List<SqlParameter>(){
-        //        new SqlParameter("ObjectType", type.ToString()),
-        //        new SqlParameter("ObjectID", id)
-        //    };
-        //    return ExecuteQuery<GetRelationshipModel>("GetRelationships @ObjectType, @ObjectID", parameters);
-        //}
+        internal class RelationModel
+        {
+            public int ID { get; set; }
+            public int IntersectTypeID { get; set; }
+            public string Object { get; set; }
+            public int ObjectID { get; set; }
+            public string Name { get; set; }
+            public string Type { get; set; }
+            public int TypeID { get; set; }
+            public string TypeName { get; set; }
+            public string IconBackColor { get; set; }
+            public string IconForeColor { get; set; }
+            public string IconText { get; set; }
+            public IntersectClassification Classification { get; set; }
+        }
 
         /// <summary>
         /// Gets a list of relationship counts for a given object, broken up by All Glossary Items, Critical Glossary ITems, and All Models.
@@ -1552,43 +1561,61 @@ or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = @obj and T.Subje
         /// <param name="type">The type of object</param>
         /// <param name="id">The ID of the object</param>
         /// <returns>A list of aggregate relationship data. <seealso cref="RelationshipAggregate"/></returns>
-        public IEnumerable<RelationshipAggregate> GetAggregateRelationshipBreakdownsByObject(SystemObjects type, int id)
+        public List<RelationshipAggregate> GetAggregateRelationshipBreakdownsByObject(SystemObjects type, int id)
         {
-            #region
-            var sql =
-@"select	T.[Group], T.GroupName, --T.Critical,
-		T.TargetTypeName as TypeName,
-		T.TargetTypeID as TypeID,
-		T.TargetType as [Type],
-		coalesce(S.IconBackColor, '#000') as IconBackColor,
-        coalesce(S.IconForeColor, '#fff') as IconForeColor,
-        coalesce(S.IconText, substring(T.TargetTypeName, 1, 2)) as IconText,
-        T.[Count],
-        T.IntersectTypeID
-from	(
-		select	'1' as [Group], 'All Glossary Items' as GroupName, --cast(0 as bit) as Critical,
-				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
-		from	cache.Relationships
-		where	SourceObject = @type and SourceObjectID = @id and TargetObject <> 'Taxonomy'
-		group by	TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
-union
-		select	'2' as [Group], 'Critical Glossary Items' as GroupName, --cast(1 as bit) as Critical,
-				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
-		from	cache.Relationships
-		where	SourceObject = @type and SourceObjectID = @id and TargetObject <> 'Taxonomy' and Classification = 1
-		group by	TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
-union
-		select	'3' as [Group], 'All Models' as GroupName, --cast(0 as bit) as Critical,
-				Count(1) as [Count], TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
-		from	cache.Relationships
-		where	SourceObject = @type and SourceObjectID = @id and TargetObject = 'Taxonomy'
-		group by	TargetType, TargetTypeID, TargetTypeName, IntersectTypeID
-) T 
-left join ObjectStyle S on  T.TargetType = S.ObjectType and T.TargetTypeID = S.ObjectID
-order by T.[Group], T.TargetTypeName";
-            #endregion
-
-            return Query<RelationshipAggregate>(sql, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id });
+            var list = new List<RelationshipAggregate>();
+            var models = Query<RelationModel>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
+            list.AddRange(
+                models.Where(i => i.Object != "Taxonomy")
+                    .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText } )
+                    .Select(i => new RelationshipAggregate {
+                        Group = "1",
+                        GroupName = "All Glossary Items",
+                        Count = i.Count(),
+                        IconBackColor = i.Key.IconBackColor,
+                        IconForeColor = i.Key.IconForeColor,
+                        IconText = i.Key.IconText,
+                        IntersectTypeID = i.Key.IntersectTypeID,
+                        Type = i.Key.Type,
+                        TypeID = i.Key.TypeID,
+                        TypeName = i.Key.TypeName
+                    }).OrderBy(i => i.TypeName)
+                );
+            list.AddRange(
+                models.Where(i => i.Object != "Taxonomy" && i.Classification == IntersectClassification.Critical)
+                    .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText })
+                    .Select(i => new RelationshipAggregate
+                    {
+                        Group = "2",
+                        GroupName = "Critical Glossary Items",
+                        Count = i.Count(),
+                        IconBackColor = i.Key.IconBackColor,
+                        IconForeColor = i.Key.IconForeColor,
+                        IconText = i.Key.IconText,
+                        IntersectTypeID = i.Key.IntersectTypeID,
+                        Type = i.Key.Type,
+                        TypeID = i.Key.TypeID,
+                        TypeName = i.Key.TypeName
+                    }).OrderBy(i => i.TypeName)
+                );
+            list.AddRange(
+                models.Where(i => i.Object == "Taxonomy")
+                    .GroupBy(i => new { i.IntersectTypeID, i.Type, i.TypeID, i.TypeName, i.IconBackColor, i.IconForeColor, i.IconText })
+                    .Select(i => new RelationshipAggregate
+                    {
+                        Group = "3",
+                        GroupName = "All Models",
+                        Count = i.Count(),
+                        IconBackColor = i.Key.IconBackColor,
+                        IconForeColor = i.Key.IconForeColor,
+                        IconText = i.Key.IconText,
+                        IntersectTypeID = i.Key.IntersectTypeID,
+                        Type = i.Key.Type,
+                        TypeID = i.Key.TypeID,
+                        TypeName = i.Key.TypeName
+                    }).OrderBy(i => i.TypeName)
+                );
+            return list;
         }
 
         #endregion
@@ -2222,9 +2249,12 @@ order by Name", new { workflowType, type, id });
             modelBuilder.Entity<FieldTypeRelationLookupDisplayField>().HasRequired(t => t.FieldTypeRelationLookupDefinition).WithMany(t => t.FieldTypeRelationLookupDisplayFields).HasForeignKey(k => k.FieldTypeRelationLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectTypeNode>().HasRequired(t => t.IntersectType).WithMany(t => t.Nodes).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
 
-            modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.SourceRule).WithMany(t => t.Items).HasForeignKey(k => k.SourceRuleID).WillCascadeOnDelete(true);
+            modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
+            modelBuilder.Entity<FusionAttributePromotionRuleItem>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleItems).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
+            modelBuilder.Entity<FusionAttributePromotionRuleMapping>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleMappings).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.IntersectMap).WithMany(t => t.IntersectMapSourceRules).HasForeignKey(k => k.IntersectMapID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectMapSourceRuleContext>().HasRequired(t => t.IntersectMapSourceRule).WithMany(t => t.Contexts).HasForeignKey(k => k.IntersectMapSourceRuleID).WillCascadeOnDelete(true);
+            modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.SourceRule).WithMany(t => t.Items).HasForeignKey(k => k.SourceRuleID).WillCascadeOnDelete(true);
             //modelBuilder.Entity<IntersectFlowMapping>().HasMany<DomainItem>(i => i.Contexts).WithMany(i => i.Mappings).Map(i =>
             //{
             //    i.MapLeftKey("IntersectFlowMappingID").MapRightKey("DomainItemID").ToTable("IntersectFlowMappingContextItem");

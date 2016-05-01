@@ -82,6 +82,21 @@ namespace d360.web.Models
         public int ObjectID { get; set; }
     }
 
+    public class CountModel
+    {
+        public string Name { get; set; }
+        public int? New { get; set; }
+        public int? Total { get; set; }
+        public string NewUri { get; set; }
+        public string TotalUri { get; set; }
+    }
+
+    public class CountTempModel
+    {
+        public int TypeID { get; set; }
+        public int Count { get; set; }
+    }
+
     public class DetailReadOnlyModel
     {
         public DetailReadOnlyModel()
@@ -505,6 +520,21 @@ namespace d360.web.Models
         public List<OptionsToRelateJsonModel> items { get; set; }
     }
 
+    public class RawSourceRuleItem
+    {
+        public int IntersectMapID { get; set; }
+        public int SourceRuleID { get; set; }
+        public string Name { get; set; }
+        public string SourceObject { get; set; }
+        public int SourceObjectID { get; set; }
+        public string SourceObjectName { get; set; }
+        public string SourceTypeName { get; set; }
+        public string Description { get; set; }
+        public string RuleContexts { get; set; }
+        public string ItemContexts { get; set; }
+        public int SortOrder { get; set; }
+    }
+
     [DataContract(Namespace = constants.NAMESPACE)]
     public class ReadOnlyField
     {
@@ -619,6 +649,31 @@ namespace d360.web.Models
         public List<SchemaFieldLookupItemModel> LookupItems { get; set; }
     }
 
+    public class SourceRulesViewModel
+    {
+        public List<SourceRuleViewModel> Rules { get; set; }
+    }
+
+    public class SourceRuleViewModel
+    {
+        public int SourceRuleID { get; set; }
+        public string Name { get; set; }
+        public string RuleContexts { get; set; }
+        public List<SourceRuleItemViewModel> Items { get; set; }
+    }
+
+    public class SourceRuleItemViewModel
+    {
+        public int IntersectMapID { get; set; }
+        public string SourceObject { get; set; }
+        public int SourceObjectID { get; set; }
+        public string SourceObjectName { get; set; }
+        public string SourceTypeName { get; set; }
+        public string Description { get; set; }
+        public string ItemContexts { get; set; }
+        public int SortOrder { get; set; }
+    }
+
     [DataContract(Name = "Survey", Namespace = constants.NAMESPACE)]
     public class SurveyModel
     {
@@ -630,5 +685,30 @@ namespace d360.web.Models
         public string ResourceName { get; set; }
         [DataMember]
         public int PercentComplete { get; set; }
+    }
+
+    [DataContract]
+    public class TagSuggestionModel
+    {
+        [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
+        public int ObjectID { get; set; }
+
+        [DataMember]
+        public string TextPath { get; set; }
+
+        [DataMember]
+        public string Url { get; set; }
+
+        [DataMember]
+        public string ObjectTypeName { get; set; }
+
+        [DataMember]
+        public string IconForeColor { get; set; }
+
+        [DataMember]
+        public string IconBackColor { get; set; }
     }
 }

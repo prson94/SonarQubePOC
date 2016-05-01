@@ -611,6 +611,52 @@ select  top 50
 from    cache.objectdetails c 
 where c.object = @type and c.objecttypeid = @id and lower(c.name) like lower(@search)";
 
+        public static string LookupAllocations = @"
+	SELECT	FT.Name as FieldTypeName,
+			D.ObjectID,
+			D.Name as ObjectName,
+			D.ObjectType,
+			D.ObjectTypeName,
+            D.Url as ObjectUrl
+	FROM	FieldType FT
+			inner join cache.ObjectDetails D on D.[Object] = FT.[Object] and D.ObjectID = FT.ObjectID
+	WHERE	FT.LookupObjectType = @type
+            AND FT.LookupObjectID = @id";
+
+        public static string ObjectRelationships = @"
+select	ID,
+        IntersectTypeID,
+        Object,
+		ObjectID,
+		ObjectName as Name,
+        ObjectUrl as Url,
+		ObjectType as Type,
+		ObjectTypeID as TypeID,
+		ObjectTypeName as TypeName,
+        ObjectIconBackColor as IconBackColor,
+		ObjectIconForeColor as IconForeColor,
+		ObjectIconText as IconText,
+        Classification
+from	IntersectDetail
+where	Subject = @type and SubjectID = @id
+union
+select	ID,
+        IntersectTypeID,
+        Subject as Object,
+		SubjectID as ObjectID,
+		SubjectName as Name,
+        SubjectUrl as Url,
+		SubjectType as Type,
+		SubjectTypeID as TypeID,
+		SubjectTypeName as TypeName,
+		SubjectIconBackColor as IconBackColor,
+		SubjectIconForeColor as IconForeColor,
+		SubjectIconText as IconText,
+        Classification
+from	IntersectDetail
+where	Object = @type and ObjectID = @id
+";
+
         public static string PolicySettingsItem = @"
 select	* 
 from	PolicyType T

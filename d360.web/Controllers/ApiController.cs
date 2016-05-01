@@ -416,24 +416,36 @@ namespace d360.web.Controllers
 
                     var intersectType = Company.GetById<IntersectType>(id);
 
-                    staticFieldCount = 4;
-                    remainingWidth = 50;
+                    staticFieldCount = 2;
+                    remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
-                    fields.Add(new GridField { name = "IntersectID", type = "number" });
+                    var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == id && !i.AllowMultipleEntries).ToList();
+                    foreach (var f in attributesTypes)
+                    {
+                        var name = $"AttributeType{f.AttributeType.ID}";
+                        columns.Add(
+                            new GridColumn { text = f.AttributeType.Name, datafield = $"{name}", width = string.Format("{0}%", dynamicFieldWidth), columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
+                        );
+
+                        fields.Add(new GridField { name = $"{name}", type = "string" });
+                    }
+
+                    fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Description", type = "string" });
-                    fields.Add(new GridField { name = "Role", type = "string" });
-                    fields.Add(new GridField { name = "TargetName", type = "string" });
-                    fields.Add(new GridField { name = "TargetObjectID", type = "string" });
-                    fields.Add(new GridField { name = "TargetObjectType", type = "date" });
-                    fields.Add(new GridField { name = "TargetTypeID", type = "string" });
-                    fields.Add(new GridField { name = "TargetType", type = "string" });
-                    fields.Add(new GridField { name = "TargetTypeName", type = "string" });
+                    //fields.Add(new GridField { name = "Role", type = "string" });
+                    fields.Add(new GridField { name = "Name", type = "string" });
+                    fields.Add(new GridField { name = "ObjectID", type = "number" });
+                    fields.Add(new GridField { name = "Object", type = "string" });
+                    fields.Add(new GridField { name = "TypeID", type = "number" });
+                    fields.Add(new GridField { name = "Type", type = "string" });
+                    fields.Add(new GridField { name = "TypeName", type = "string" });
                     fields.Add(new GridField { name = "Classification", type = "string" });
-                    fields.Add(new GridField { name = "TargetUrl", type = "string" });
-                    fields.Add(new GridField { name = "HasTechnicalRelationships", type = "string" });
+                    fields.Add(new GridField { name = "Url", type = "string" });
+                    fields.Add(new GridField { name = "HasTechnicalRelationships", type = "bool" });
+                    fields.Add(new GridField { name = "HasAttributes", type = "bool" });
                     break;
                 #endregion
                 case SystemObjects.LookupType:
@@ -2146,9 +2158,9 @@ where   h.ID <> @t order by h.[Level] desc;
         //        }
 
         [Route("lookups/{id:int}/allocations")]
-        public IQueryable<LookupAllocation> GetAllocationsByLookupType(int id)
+        public IEnumerable<dynamic> GetAllocationsByLookupType(int id)
         {
-            return Company.Filter<LookupAllocation>(i => i.LookupObjectType == "Lookup" && i.LookupTypeID == id);
+            return Company.Query<dynamic>(QueryConstants.LookupAllocations, new { type = "Lookup", id });
         }
 
         [Route("PolicyTypeClasses")]
@@ -2546,19 +2558,12 @@ from    IntersectNode S
         }
 
         [Route("{type}/{id:int}/relations")]
-        public IQueryable<Relationship> GetRelationships(SystemObjects type, int id)//List<GetRelationshipModel>
+        public IEnumerable<dynamic> GetRelationships(SystemObjects type, int id)
         {
-            var sType = type.ToString();
-            return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName).AsQueryable();
-            //return Company.GetRelationships(type, id);
+            return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
+            //var sType = type.ToString();
+            //return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName).AsQueryable();
         }
-
-        //[Route("{type}/{id:int}/relations/{intersectID:int}/items")]
-        //public List<GetRelationshipModel> GetChildRelationships(SystemObjects type, int id, int intersectID)
-        //{
-        //    var list = Company.GetRelationships(SystemObjects.Intersect, intersectID);
-        //    return list;
-        //}
 
         [Route("{type}/{id:int}/relations/critical")]
         public IQueryable<CriticalRelationshipsByObject> GetCriticalRelations(SystemObjects type, int id)
@@ -2577,65 +2582,91 @@ from    IntersectNode S
             //var whereClause = "";
             getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns);
 
+            var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
+            foreach (var f in attributesTypes)
+            {
+                var name = $"AttributeType{f.AttributeType.ID}";
+                columns += $"{name}_T.FormattedValue as [{name}], ";
+                joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
+            }
+
+
             var querySql = $@"
 select  {columns} 
         A.*
 from	(
-        select  IntersectID as ID, 
-                * 
-        from    Relationship 
-        where   SourceObjectType = '{type.ToString()}' 
-                and SourceObjectID = {id}
-                and TargetType = '{targetType.ToString()}' 
-                and TargetTypeID = {targetID}
+select	ID,
+        IntersectTypeID,
+        Object,
+		ObjectID,
+		ObjectName as Name,
+        ObjectUrl as Url,
+		ObjectType as Type,
+		ObjectTypeID as TypeID,
+		ObjectTypeName as TypeName,
+        Classification,
+		T.HasTechnicalRelationships,
+        A.HasAttributes
+from	IntersectDetail I
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID
+					) T
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasAttributes
+					from	[Attribute]
+					where	ObjectType = 'Intersect' and ObjectID = I.ID
+					) A
+where	Subject ='{type.ToString()}'  and SubjectID = {id}
+		and ObjectType = '{targetType.ToString()}' and ObjectTypeID = {targetID}
+union
+select	ID,
+        IntersectTypeID,
+        Subject as Object,
+		SubjectID as ObjectID,
+		SubjectName as Name,
+        SubjectUrl as Url,
+		SubjectType as Type,
+		SubjectTypeID as TypeID,
+		SubjectTypeName as TypeName,
+        Classification,
+		T.HasTechnicalRelationships,
+        A.HasAttributes
+from	IntersectDetail I
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID
+					) T
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasAttributes
+					from	[Attribute]
+					where	ObjectType = 'Intersect' and ObjectID = I.ID
+					) A
+
+where	Object = '{type.ToString()}' and ObjectID = {id}
+		and SubjectType = '{targetType.ToString()}' and SubjectTypeID = {targetID}
         ) A {joins}";
 
             if (criticalOnly)
                 querySql += $" where A.Classification = {(int)IntersectClassification.Critical}";
 
-            querySql += " order by A.TargetName";
+            querySql += " order by A.Name";
 
             return Company.Query<dynamic>(querySql);
-        }
-
-        public class RawSourceRuleItem
-        {
-            public int IntersectMapID { get; set; }
-            public int SourceRuleID { get; set; }
-            public string Name { get; set; }
-            public string SourceObject { get; set; }
-            public int SourceObjectID { get; set; }
-            public string SourceObjectName { get; set; }
-            public string SourceTypeName { get; set; }
-            public string Description { get; set; }
-            public string RuleContexts { get; set; }
-            public string ItemContexts { get; set; }
-            public int SortOrder { get; set; }
-        }
-
-        public class SourceRulesViewModel
-        {
-            public List<SourceRuleViewModel> Rules { get; set; }
-        }
-
-        public class SourceRuleViewModel
-        {
-            public int SourceRuleID { get; set; }
-            public string Name { get; set; }
-            public string RuleContexts { get; set; }
-            public List<SourceRuleItemViewModel> Items { get; set; }
-        }
-
-        public class SourceRuleItemViewModel
-        {
-            public int IntersectMapID { get; set; }
-            public string SourceObject { get; set; }
-            public int SourceObjectID { get; set; }
-            public string SourceObjectName { get; set; }
-            public string SourceTypeName { get; set; }
-            public string Description { get; set; }
-            public string ItemContexts { get; set; }
-            public int SortOrder { get; set; }
         }
 
         [Route("{focal}/{focalID:int}/sources/{obj}/{objID:int}/rules")]
@@ -2673,59 +2704,65 @@ from	(
             return model;
         }
 
-        private List<int> LoadAttributes(int intersectTypeID)
-        {
-            return Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID).Select(i => i.AttributeTypeID).ToList();
-        }
+        //[Route("{type}/{id:int}/relationshipsAndAttributes/{targetType}/{targetID:int}/{criticalOnly:bool=false?}"), HttpGet]
+        //public List<RelationAttributeValue> GetRelationshipsAndAttributesForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, bool criticalOnly, int intersectTypeID)
+        //{
+        //    //get list of relationships
+        //    var sType = type.ToString();
+        //    var tType = targetType.ToString();
+        //    var rels = Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && ((i.Classification == IntersectClassification.Critical && criticalOnly) || !criticalOnly));
 
-        [Route("{type}/{id:int}/relationshipsAndAttributes/{targetType}/{targetID:int}/{criticalOnly:bool=false?}"), HttpGet]
-        public List<RelationAttributeValue> GetRelationshipsAndAttributesForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, bool criticalOnly, int intersectTypeID)
-        {
-            //get list of relationships
-            var sType = type.ToString();
-            var tType = targetType.ToString();
-            var rels = Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && ((i.Classification == IntersectClassification.Critical && criticalOnly) || !criticalOnly));
+        //    //get list of attributes
+        //    var attributesList = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID).Select(i => i.AttributeTypeID).ToList();
 
-            //get list of attributes
-            List<int> attributesList = LoadAttributes(intersectTypeID);
-
-            //build a list of object ids so we dont make tons of queries
-            var targetIDList = rels.Select(i => i.IntersectID).ToList();
+        //    //build a list of object ids so we dont make tons of queries
+        //    var targetIDList = rels.Select(i => i.IntersectID).ToList();
             
-            List<RelationAttributeValue> results = Company.Filter<AttributeDetail>(i => targetIDList.Contains(i.ObjectID) && attributesList.Contains(i.AttributeTypeID))
-                    .Select(t => new RelationAttributeValue { AttributeTypeID = t.AttributeTypeID, Name = t.Name, Value = t.FormattedValue, TargetID = t.ObjectID }).OrderBy(t=>t.TargetID).ToList();
+        //    var results = Company.Filter<AttributeDetail>(i => 
+        //            targetIDList.Contains(i.ObjectID) && 
+        //            attributesList.Contains(i.AttributeTypeID)
+        //        )
+        //        .Select(t => 
+        //            new RelationAttributeValue {
+        //                AttributeTypeID = t.AttributeTypeID,
+        //                Name = t.Name,
+        //                Value = t.FormattedValue,
+        //                TargetID = t.ObjectID
+        //            })
+        //        .OrderBy(t => t.TargetID)
+        //        .ToList();
 
-            return results;
-        }
+        //    return results;
+        //}
 
-        [Route("{type}/{id:int}/relationships"), HttpPost]
-        public HttpResponseMessage AddRelationships(SystemObjects type, int id, AddRelationshipsModel model)
-        {
-            HttpResponseMessage msg = null;
+        //[Route("{type}/{id:int}/relationships"), HttpPost]
+        //public HttpResponseMessage AddRelationships(SystemObjects type, int id, AddRelationshipsModel model)
+        //{
+        //    HttpResponseMessage msg = null;
 
-            try
-            {
-                Company.AddRelationships(type, id, model.Classification, model.Role, model.Description, model.Targets);
-                msg = Request.CreateResponse<string>(HttpStatusCode.Created, "Relationships added successfully.");
-            }
-            catch (SqlException ex)
-            {
-                if (ex.Message.Contains("Cannot insert the value NULL into column 'IntersectID'"))
-                {
-                    msg = Request.CreateErrorResponse(HttpStatusCode.Conflict, string.Format("You do not yet have a relationship type defined for between {0} and {1}.", type.ToString(), model.Targets.First().ObjectType.ToString()), ex);
-                }
-                else
-                {
-                    msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
-                }
-            }
-            catch (Exception ex)
-            {
-                msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
-            }
+        //    try
+        //    {
+        //        Company.AddRelationships(type, id, model.Classification, model.Role, model.Description, model.Targets);
+        //        msg = Request.CreateResponse<string>(HttpStatusCode.Created, "Relationships added successfully.");
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        if (ex.Message.Contains("Cannot insert the value NULL into column 'IntersectID'"))
+        //        {
+        //            msg = Request.CreateErrorResponse(HttpStatusCode.Conflict, string.Format("You do not yet have a relationship type defined for between {0} and {1}.", type.ToString(), model.Targets.First().ObjectType.ToString()), ex);
+        //        }
+        //        else
+        //        {
+        //            msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
+        //    }
 
-            return msg;
-        }
+        //    return msg;
+        //}
 
         [Route("relationships/{id:int}"), HttpDelete]
         public HttpResponseMessage DeleteRelationship(int id)
@@ -2764,27 +2801,27 @@ from	(
             return msg;
         }
 
-        [Route("relationships/{id:int}"), HttpPut]
-        public HttpResponseMessage EditRelationship(int id, EditRelationshipModel model)
-        {
-            HttpResponseMessage msg = null;
+        //[Route("relationships/{id:int}"), HttpPut]
+        //public HttpResponseMessage EditRelationship(int id, EditRelationshipModel model)
+        //{
+        //    HttpResponseMessage msg = null;
 
-            try
-            {
-                Company.EditRelationship(id, model.Role, model.Classification, model.Description);
-                msg = Request.CreateResponse<string>(HttpStatusCode.Created, "Relationships updated successfully.");
-            }
-            catch (SqlException ex)
-            {
-                msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
-            }
-            catch (Exception ex)
-            {
-                msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
-            }
+        //    try
+        //    {
+        //        Company.EditRelationship(id, model.Role, model.Classification, model.Description);
+        //        msg = Request.CreateResponse<string>(HttpStatusCode.Created, "Relationships updated successfully.");
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
+        //    }
 
-            return msg;
-        }
+        //    return msg;
+        //}
        
         #endregion
 
@@ -3045,47 +3082,22 @@ where    A.PolicyTypeID = @id", columns, joins);
 
         #endregion
 
-        //#region Comment Tag Suggestions
+        #region Comment Tag Suggestions
 
-        //[DataContract]
-        //public class TagSuggestionModel
-        //{
-        //    [DataMember]
-        //    public string Object { get; set; }
+        [HttpGet, Route("tagsuggestions")]
+        public List<TagSuggestionModel> TagSuggestions(string phrase)
+        {
+            if (string.IsNullOrWhiteSpace(phrase))
+                return new List<TagSuggestionModel>();
 
-        //    [DataMember]
-        //    public int ObjectID { get; set; }
+            var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName, IconForeColor, IconBackColor from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and (lower(Name) like lower('{0}%') or (len('{0}') > 2 and lower(Name) like lower('%{0}%')))", phrase.Replace("'", "''").Replace("--", ""));
 
-        //    [DataMember]
-        //    public string TextPath { get; set; }
+            var list = Company.Query<TagSuggestionModel>(sql).ToList();
 
-        //    [DataMember]
-        //    public string Url { get; set; }
+            return list;
+        }
 
-        //    [DataMember]
-        //    public string ObjectTypeName { get; set; }
-
-        //    [DataMember]
-        //    public string IconForeColor { get; set; }
-
-        //    [DataMember]
-        //    public string IconBackColor { get; set; }
-        //}
-
-        //[HttpGet, Route("tagsuggestions")]
-        //public List<TagSuggestionModel> TagSuggestions(string phrase)
-        //{
-        //    if (string.IsNullOrWhiteSpace(phrase))
-        //        return new List<TagSuggestionModel>();
-
-        //    var sql = string.Format(@"select [Object], ObjectID, TextPath, Url, ObjectTypeName, IconForeColor, IconBackColor from cache.ObjectDetails where [Object] not in ('FusionAttribute', 'Intersect') and (lower(Name) like lower('{0}%') or (len('{0}') > 2 and lower(Name) like lower('%{0}%')))", phrase.Replace("'", "''").Replace("--", ""));
-
-        //    var list = Company.Query<TagSuggestionModel>(sql).ToList();
-
-        //    return list;
-        //}
-
-        //#endregion
+        #endregion
 
         #region Type/ID Endpoints
 
@@ -3286,15 +3298,27 @@ where    A.PolicyTypeID = @id", columns, joins);
                         }
 
                         var nodes = "None assigned";
-                        var owningModels = Company.Filter<Relationship>(i => i.SourceObjectType == "Artifact" && i.SourceObjectID == id && i.TargetType == "TaxonomyType" && i.TargetTypeID == artifact.TaxonomyTypeID).Select(i => new { i.TargetUrl, i.TargetName, i.TargetObjectID }).OrderBy(i => i.TargetName).ToList();
+
+
+                        var owningModels = Company.Query<dynamic>(
+                            QueryConstants.ObjectRelationships, 
+                            new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }
+                        ).Where(i => i.Type == "TaxonomyType" && i.TypeID == artifact.TaxonomyTypeID)
+                        .Select(i => new {
+                            i.Url,
+                            i.Name,
+                            i.ObjectID
+                        }).OrderBy(i => i.Name).ToList();
+
                         if (owningModels.Count > 0)
                         {
                             nodes = "";
                             owningModels.ForEach(i =>
                             {
-                                var displayName = (i.TargetName ?? string.Empty).ReplaceFirst($"{artifact.TaxonomyType.Name}/","");
+                                string displayName = (i.Name ?? string.Empty);
+                                displayName = displayName.ReplaceFirst($"{artifact.TaxonomyType.Name}/","");
                                 
-                                nodes += string.Format("<div><a data-context='Preview' data-type='Taxonomy' data-id='{2}' href='{0}'>{1}</a></div>", i.TargetUrl, displayName, i.TargetObjectID);
+                                nodes += string.Format("<div><a data-context='Preview' data-type='Taxonomy' data-id='{2}' href='{0}'>{1}</a></div>", i.Url, displayName, i.ObjectID);
                             });
                         }
 
@@ -5345,25 +5369,7 @@ where    A.PolicyTypeID = @id", columns, joins);
 
         #endregion
 
-
         #region Counts
-
-        public class CountModel
-        {
-            public string Name { get; set; }
-            public int? New { get; set; }
-            public int? Total { get; set; }
-            public string NewUri { get; set; }
-            public string TotalUri { get; set; }
-        }
-
-        public class CountTempModel
-        {
-            public int TypeID { get; set; }
-            public int Count { get; set; }
-        }
-
-
 
         [Route("CountItems/Activity/{artifactTypeId}/{days}")]
         public IQueryable GetAreaActivityItems(int artifactTypeId, int days)

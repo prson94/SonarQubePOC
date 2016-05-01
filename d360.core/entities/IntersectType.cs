@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -17,9 +18,30 @@ namespace d360.core.entities
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string Name { get; set; }
 
+        [DataMember]
+        public int? CreatedBy { get; set; }
+
+        [DataMember]
+        public DateTime? CreatedOn { get; set; }
+
         public DateTime? UpdatedOn { get; set; }
 
         public int? UpdatedBy { get; set; }
+
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
+        public string Subject { get; set; }
+
+        [DataMember]
+        public int SubjectID { get; set; }
+
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
+        public string Object { get; set; }
+
+        [DataMember]
+        public int ObjectID { get; set; }
+
+        //[DataMember]
+        //public MapType PredicateType { get; set; }
 
         [ForeignKey("IntersectTypeID")]
         public virtual ICollection<Intersect> Intersects { get; set; }

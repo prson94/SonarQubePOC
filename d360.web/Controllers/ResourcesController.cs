@@ -116,69 +116,69 @@ namespace d360.web.Controllers
             return Content(html, "text/html");
         }
 
-        [Route("{type}/{id:int}/tools")]
-        public ActionResult RenderToolsTooltip(SystemObjects type, int id, string templateAction)
-        {
-            var toolbar = new ContextToolbar { ToolbarSuffix = string.Format("{0}{1}", type.ToString(), id) };
+        //[Route("{type}/{id:int}/tools")]
+        //public ActionResult RenderToolsTooltip(SystemObjects type, int id, string templateAction)
+        //{
+        //    var toolbar = new ContextToolbar { ToolbarSuffix = string.Format("{0}{1}", type.ToString(), id) };
 
-            var common = new ContextToolbarItem { Title = "Common Actions" };
+        //    var common = new ContextToolbarItem { Title = "Common Actions" };
 
-            switch (type)
-            {
-                case SystemObjects.Intersect:
-                    if (Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
-                    {
-                        var intersect = Company.GetById<Intersect>(id, i => i.IntersectType);
-                        if (intersect != null)
-                        {
-                            //if (intersect.IntersectType.AllowSourcing)
-                            //{
-                            //    common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionResponsibility, Icon = "plus", Title = "Select source", Type = "local", Uri = "/form/AddSourcingResponsibility?type=Intersect&id=" + id });
-                            //}
+        //    switch (type)
+        //    {
+        //        case SystemObjects.Intersect:
+        //            if (Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
+        //            {
+        //                var intersect = Company.GetById<Intersect>(id, i => i.IntersectType);
+        //                if (intersect != null)
+        //                {
+        //                    //if (intersect.IntersectType.AllowSourcing)
+        //                    //{
+        //                    //    common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionResponsibility, Icon = "plus", Title = "Select source", Type = "local", Uri = "/form/AddSourcingResponsibility?type=Intersect&id=" + id });
+        //                    //}
 
-                            var add = new ContextToolbarItem { Context = "null", Icon = "", Title = "Associate Child Items", Type = "local", Uri = "#" };
-                            var types = Company.Query<AllowedIntersectionType>("GetAllowedIntersectionTypesByIntersect @intersectID", new { intersectID = id }).ToList();
-                            foreach (var t in types)
-                            {
-                                add.Items.Add(
-                                    new ContextToolbarItem
-                                    {
-                                        Context = ContextList.ActionRelate,
-                                        Icon = "plus",
-                                        Title = t.TargetName,
-                                        Type = "local",
-                                        Uri = "/Relations/AddRelationship?source=Intersect&sourceID=" + t.ParentIntersectID + "&intersectTypeID=" + t.IntersectTypeID + "&target=" + t.TargetType + "&targetID=" + t.TargetTypeID
-                                    });
-                            }
-                            if (add.Items.Count > 0)
-                            {
-                                toolbar.Items.Add(add);
-                            }
-                        }
-                        intersect = null;
-                    }
-                    if (Company.HasPermission(type, id, Claim.Update, ClaimObject.Relationship))
-                        common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionEditRelate, Icon = "pencil", Title = "Edit relationship", Type = "local", Uri = "/relations/EditRelationship?id=" + id });
-                    if (Company.HasPermission(type, id, Claim.Delete, ClaimObject.Relationship))
-                        common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionUnrelate, Icon = "trash-o", Method = "DELETE", Title = "Remove relationship", Type = "command", Uri = "/api/relationships/" + id });
-                    break;
-                case SystemObjects.Responsibility:
-                    if (Company.HasPermission(type, id, Claim.Update, ClaimObject.Governance))
-                        common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionResponsibility, Icon = "pencil", Title = "Edit responsibility", Type = "local", Uri = "/form/EditSourcingResponsibility?id=" + id });
-                    if (Company.HasPermission(type, id, Claim.Delete, ClaimObject.Governance))
-                        common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionResponsibility, Icon = "trash-o", Title = "Remove responsibility", Type = "local", Uri = "/form/DeleteResponsibility?&id=" + id });
-                    if (Company.HasPermission(type, id, Claim.Update, ClaimObject.Governance))
-                        common.Items.Add(new ContextToolbarItem { Context = ContextList.ResponsibilityTransformation, Icon = "plus", Title = "Add transformation", Type = "local", Uri = "/form/AddResponsibilityTransformation?responsibilityID=" + id });
-                        break;
-            }
+        //                    var add = new ContextToolbarItem { Context = "null", Icon = "", Title = "Associate Child Items", Type = "local", Uri = "#" };
+        //                    var types = Company.Query<AllowedIntersectionType>("GetAllowedIntersectionTypesByIntersect @intersectID", new { intersectID = id }).ToList();
+        //                    foreach (var t in types)
+        //                    {
+        //                        add.Items.Add(
+        //                            new ContextToolbarItem
+        //                            {
+        //                                Context = ContextList.ActionRelate,
+        //                                Icon = "plus",
+        //                                Title = t.TargetName,
+        //                                Type = "local",
+        //                                Uri = "/Relations/AddRelationship?source=Intersect&sourceID=" + t.ParentIntersectID + "&intersectTypeID=" + t.IntersectTypeID + "&target=" + t.TargetType + "&targetID=" + t.TargetTypeID
+        //                            });
+        //                    }
+        //                    if (add.Items.Count > 0)
+        //                    {
+        //                        toolbar.Items.Add(add);
+        //                    }
+        //                }
+        //                intersect = null;
+        //            }
+        //            if (Company.HasPermission(type, id, Claim.Update, ClaimObject.Relationship))
+        //                common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionEditRelate, Icon = "pencil", Title = "Edit relationship", Type = "local", Uri = "/relations/EditRelationship?id=" + id });
+        //            if (Company.HasPermission(type, id, Claim.Delete, ClaimObject.Relationship))
+        //                common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionUnrelate, Icon = "trash-o", Method = "DELETE", Title = "Remove relationship", Type = "command", Uri = "/api/relationships/" + id });
+        //            break;
+        //        case SystemObjects.Responsibility:
+        //            if (Company.HasPermission(type, id, Claim.Update, ClaimObject.Governance))
+        //                common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionResponsibility, Icon = "pencil", Title = "Edit responsibility", Type = "local", Uri = "/form/EditSourcingResponsibility?id=" + id });
+        //            if (Company.HasPermission(type, id, Claim.Delete, ClaimObject.Governance))
+        //                common.Items.Add(new ContextToolbarItem { Context = ContextList.ActionResponsibility, Icon = "trash-o", Title = "Remove responsibility", Type = "local", Uri = "/form/DeleteResponsibility?&id=" + id });
+        //            if (Company.HasPermission(type, id, Claim.Update, ClaimObject.Governance))
+        //                common.Items.Add(new ContextToolbarItem { Context = ContextList.ResponsibilityTransformation, Icon = "plus", Title = "Add transformation", Type = "local", Uri = "/form/AddResponsibilityTransformation?responsibilityID=" + id });
+        //                break;
+        //    }
 
-            if (common.Items.Count > 0)
-            {
-                toolbar.Items.Add(common);
-            }
+        //    if (common.Items.Count > 0)
+        //    {
+        //        toolbar.Items.Add(common);
+        //    }
 
-            return PartialView("RowCommandTooltip", toolbar); //Content(toolsHtml + html, "text/html");
-        }
+        //    return PartialView("RowCommandTooltip", toolbar); //Content(toolsHtml + html, "text/html");
+        //}
 
         [Route("{type}/{id:int}/templates/email/{templateAction}")]
         public ContentResult RenderEmail(SystemObjects type, int id, string templateAction)
