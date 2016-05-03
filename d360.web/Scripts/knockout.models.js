@@ -1844,11 +1844,11 @@ function HierarchySourceRuleModel(data, permissions) {
         if (self.Name().length < 1)
             self.ErrorMessages.push('Source rule requires a name.');
 
-        for (var i = 0; i < self.Items().length; i++) {
-            if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
-                self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
-            }
-        }
+        //for (var i = 0; i < self.Items().length; i++) {
+        //    if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
+        //        self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
+        //    }
+        //}
 
         if (self.ErrorMessages().length > 0) {
             self.IsSaving(false);

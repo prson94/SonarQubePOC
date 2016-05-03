@@ -13865,7 +13865,7 @@ order by	D.Name, I.Name";
         }
 
         [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("SourceRules/save")]
+        [HttpPost, Route("SourceRules/save"), ValidateInput(false)]
         public JsonNetResult SaveRule(SourceRule rule)
         {
 
