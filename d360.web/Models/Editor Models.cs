@@ -864,6 +864,7 @@ namespace d360.web.Models
 
     public class DomainItemXrefEditorModel : BaseEditorModel
     {
+        public int ID { get; set; }
         public int HouseDomainItemID { get; set; }
         public int DomainItemID { get; set; }
         public string HouseCode { get; set; }

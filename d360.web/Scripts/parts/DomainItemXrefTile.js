@@ -13,13 +13,11 @@
         url: '/services/domains/lists/xref/' + domainItemID,
         datafields:
         [
-            {name: 'ID' },
+            { name: 'ID' },
             { name: 'HouseDomainItemID' },
             { name: 'DomainItemID' },
             { name: 'HouseCode' },
             { name: 'Code' },
-            { name: 'SourceArtifactID' },
-            { name: 'SourceArtifactName' },
             { name: 'ListName' },
             { name: 'LanguageID' },
             { name: 'LanguageName' }
@@ -48,12 +46,11 @@
         source: adapterDomainXrefItemsGrid,
         theme: list_theme,
         columns: [
-            { text: 'House Code', datafield: 'HouseCode', width: 100 },
-            { text: 'Source', datafield: 'SourceArtifactName' },
+            { text: 'House Code', datafield: 'HouseCode', width: 100, editable: false },
             { text: 'List', datafield: 'ListName' },
             { text: 'Code', datafield: 'Code' },
             { text: 'Language', datafield: 'LanguageName', width: 80 }
-            ,{
+            , {
                 text: '',
                 dataField: 'ID',
                 width: 80,
@@ -64,7 +61,7 @@
                     var tools = [];
 
                     if (permissions.HasPermission("Root", "Update")) {
-                       // tools.push({ icon: 'pencil', urlprefix: '/form/EditDomainXrefItem?id={0}' });
+                        // tools.push({ icon: 'pencil', urlprefix: '/form/EditDomainXrefItem?id={0}' });
                         tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteDomainItemXref?id={0}' });
                     }
                     return renderToolsHtml(value, tools, contextList.DomainXrefItem);

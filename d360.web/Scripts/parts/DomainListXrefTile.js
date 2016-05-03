@@ -12,8 +12,7 @@
         url: '/services/domains/lists/domain/' + domainID,
         datafields: [
             { name: 'ID' },
-            { name: 'List' },
-            { name: 'Source' }
+            { name: 'List' }
         ]
     };
 
@@ -27,8 +26,7 @@
         source: domainAdapter,
         columnsResize: true,
         columns: [
-          { text: 'Source', dataField: 'Source' },
-          { text: 'List', dataField: 'List' },
+          { text: 'List', dataField: 'List' }
         ]
     });
 

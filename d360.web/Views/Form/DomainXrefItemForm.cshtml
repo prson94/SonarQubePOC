@@ -10,19 +10,15 @@
     </div>
     <div class="clear"></div>
     <div class="row">
-        <div class="col m3">
-            <div class="FieldNameRequired">Source Artifact</div>
-            <div id="xref_sourceDropDownList"></div>
-        </div>
-        <div class="col m3">
+        <div class="col m4">
             <div class="FieldNameRequired">List</div>
             <div id="xref_domainDropDownList"></div>
         </div>
-        <div class="col m3">
+        <div class="col m4">
             <div class="FieldNameRequired">Code</div>
             <div id="xref_codeDropDownList"></div>
         </div>
-        <div class="col m3">
+        <div class="col m4">
             <div class="FieldNameRequired">Language</div>
             <div id="xref_languageDropDownList"></div>
         </div>
@@ -43,7 +39,7 @@
 
     function DomainItemXrefModel(data) {
         var self = this;
-
+        self.ID = ko.observable(data.ID || 0);
         self.HouseDomainItemID = ko.observable(data.HouseDomainItemID || 0);
         self.DomainItemID = ko.observable(data.DomainItemID || 0);
         self.HouseCode = ko.observable(data.HouseCode || '');
@@ -106,7 +102,8 @@
     }
 
     $(function () {
-        var model = new DomainItemXrefModel({
+        var data = {
+            ID: '@(Model.ID)',
             HouseDomainItemID: '@(Model.HouseDomainItemID)',
             DomainItemID: '@(Model.DomainItemID)',
             HouseCode: '@(Model.HouseCode)',
@@ -115,21 +112,12 @@
             SourceArtifactName: '@(Model.SourceArtifactName)',
             DomainID: '@(Model.DomainID)',
             LanguageID: '@(Model.LanguageID)'
-        });
+        };
+
+        var model = new DomainItemXrefModel(data);
         ko.applyBindings(model, document.getElementById('domainFormWrapper'));
 
         $("html, body").animate({ scrollTop: 0 }, "slow");
-
-        var sources = {
-            datatype: 'json',
-            datafields: [
-                { name: 'id' },
-                { name: 'name' }
-            ],
-            url: 'services/domains/sources/used',
-            async: true
-        };
-        var sourceAdapter = new $.jqx.dataAdapter(sources);
 
         var domains = {
             datatype: 'json',
@@ -137,7 +125,7 @@
                 { name: 'ID' },
                 { name: 'Name' }
             ],
-            url: null,
+            url: '/services/domains/lists/domains',
             async: true
         };
         var domainAdapter = new $.jqx.dataAdapter(domains);
@@ -153,32 +141,7 @@
         };
         var codeAdapter = new $.jqx.dataAdapter(codes);
 
-        $('#xref_sourceDropDownList').jqxDropDownList({
-            theme: theme,
-            source: sourceAdapter,
-            valueMember: 'id',
-            displayMember: 'name',
-            filterable: true,
-            searchMode: 'containsignorecase',
-            width: field_width98
-        }).on('select', function (event) {
-            var args = event.args;
-            if (args) {
-                var index = args.index;
-                var item = args.item;
-                var value = item.value;
-                model.SourceArtifactID(value);
-                //console.log(value);
-                domains.url = 'services/domains/lists/' + value;
-                codes.url = null;
-                model.DomainItemID(-1);
-                var da = new $.jqx.dataAdapter(domains);
-                var ca = new $.jqx.dataAdapter(codes);
-                $('#xref_domainDropDownList').jqxDropDownList({ source: da });
-                $('#xref_codeDropDownList').jqxDropDownList({ source: ca });
 
-            }
-        });
 
         $('#xref_domainDropDownList').jqxDropDownList({
             theme: theme,
@@ -239,10 +202,10 @@
             searchMode: 'containsignorecase',
             width: field_width98
         }).on('bindingComplete', function (event) {
-            var langItem = $(this).jqxDropDownList('getItemByValue', '40');
-            if (!langItem)
+            var item = $(this).jqxDropDownList('getItemByValue', '40');
+            if (!item)
                 return;
-            $(this).jqxDropDownList('selectIndex', langItem.index);
+            $(this).jqxDropDownList('selectIndex', item.index);
         }).on('select', function (event) {
             var args = event.args;
             if (args) {
@@ -252,7 +215,6 @@
                 model.LanguageID(value);
             }
         });
-
     });
 
    
