@@ -1204,6 +1204,12 @@ order by Name");
             return Filter<SecurityDetail>(i => i.ObjectType == sType && i.ObjectID == id && i.ResponsibleObjectID == CurrentResourceID);
         }
 
+        public IQueryable<SecurityDetail> GetPermissions(SystemObjects type, int[] id)
+        {
+            var sType = type.ToString();
+            return Filter<SecurityDetail>(i => i.ObjectType == sType && id.Contains(i.ObjectID) && i.ResponsibleObjectID == CurrentResourceID);
+        }
+
         public bool HasPermission(SystemObjects type, int id, Claim claim, ClaimObject claimObject = ClaimObject.Root)
         {
             bool hasPermission = CurrentResourceIsAdmin;

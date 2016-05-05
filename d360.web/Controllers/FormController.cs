@@ -13147,9 +13147,7 @@ order by	D.Name, I.Name";
         public JsonResult Rule_AddFields()
         {
             var model = new Rule();
-            if (!Company.HasPermission(SystemObjects.Rule, 0, Claim.Create, ClaimObject.Root))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
+            
             var list = new List<EditableField>();
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
@@ -13167,7 +13165,9 @@ order by	D.Name, I.Name";
         /// <param name="id">RuleID</param>
         public JsonResult Rule_DeleteFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Delete))
+            var model = Company.GetById<Rule>(id);
+
+            if (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Delete))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
@@ -13179,11 +13179,12 @@ order by	D.Name, I.Name";
         /// <param name="id">RuleID</param>
         public JsonResult Rule_EditFields(int id)
         {
-            if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
             var list = new List<EditableField>();
             var model = Company.GetById<Rule>(id);
+
+            if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Update)))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            
             var anyEvents = Company.Any<Event>(i => i.EventGroup.RuleID == id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
@@ -13224,7 +13225,9 @@ order by	D.Name, I.Name";
         {
             try
             {
-                if (!Company.HasPermission(SystemObjects.Rule, 0, Claim.Create, ClaimObject.Root))
+                var ruleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"]);
+
+                if (!Company.HasPermission(SystemObjects.RuleType, (int)ruleType, Claim.Create, ClaimObject.Root))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("Rule");
@@ -13233,7 +13236,7 @@ order by	D.Name, I.Name";
                 {
                     Name = parseTextField(form, "Name", null, true),
                     Description = parseTextField(form, "Description"),
-                    RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"]),
+                    RuleType = ruleType,
                     RuleDimensionID = parseNullableIntField(form, "RuleDimensionID")
                 };
                 
@@ -13287,7 +13290,7 @@ order by	D.Name, I.Name";
                 var model = Company.GetById<Rule>(id);
                 if (model == null) throw new NotFoundException("Rule");
 
-                if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Delete))
+                if (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(model);
@@ -13339,7 +13342,7 @@ order by	D.Name, I.Name";
                 var model = Company.GetById<Rule>(id);
                 if (model == null) throw new NotFoundException("Rule");
 
-                if (!Company.HasPermission(SystemObjects.Rule, id, Claim.Update))
+                if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Update)))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Name = parseTextField(form, "Name", null, true);

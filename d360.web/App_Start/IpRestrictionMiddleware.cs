@@ -49,7 +49,7 @@ namespace d360.web
             _next = next;
         }
 
-        Dictionary<string, List<IpRange>> loadCache()
+        async Task<Dictionary<string, List<IpRange>>> loadCache()
         {
             var key = "CompanyIpRanges";
             Dictionary<string, List<IpRange>> dict = null;
@@ -64,12 +64,11 @@ namespace d360.web
             {
                 var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
                 cnn.Open();
-                dict = cnn.Query<CompanyIpSetting>(@"select	D.UrlPrefix,
+                dict = (await cnn.QueryAsync<CompanyIpSetting>(@"select	D.UrlPrefix,
 		coalesce(S.Value, '<ips />') as Value 
 from	Company C 
 		inner join CompanyDomainSetting D on D.CompanyID = C.ID
-		left join CompanySetting S on S.CompanyID = C.ID and S.SettingID = 4")
-                    .ToDictionary(k => k.UrlPrefix, v => v.Ranges);
+		left join CompanySetting S on S.CompanyID = C.ID and S.SettingID = 4")).ToDictionary(k => k.UrlPrefix, v => v.Ranges);
                 cnn.Close();
                 cnn.Dispose();
                 cache.SetItem(key, dict, true, 1);
@@ -91,7 +90,7 @@ from	Company C
             }
             Trace.TraceInformation("Host is : {0}", host);
 
-            var dict = loadCache();
+            var dict = await loadCache();
 
             if (dict.ContainsKey(host))
             {

@@ -42,7 +42,7 @@ namespace d360.web
             _next = next;
         }
 
-        List<user> loadCache()
+        async Task<List<user>> loadCache()
         {
             var key = "Users";
             var cache = new MemoryCachingProvider();// RedisCachingProvider();
@@ -52,8 +52,8 @@ namespace d360.web
             {
                 var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
                 cnn.Open();
-                users = cnn.Query<user>("select ID, lower(ltrim(rtrim(Username))) as Username, Password, APIPublicKey, APIPrivateKey, APIReadOnlyAccessToken from Resource").ToList();
-                var usercompanies = cnn.Query<CompanyResource>("select * from CompanyResource").ToList();
+                users = (await cnn.QueryAsync<user>("select ID, lower(ltrim(rtrim(Username))) as Username, Password, APIPublicKey, APIPrivateKey, APIReadOnlyAccessToken from Resource")).ToList();
+                var usercompanies = (await cnn.QueryAsync<CompanyResource>("select * from CompanyResource")).ToList();
                 cnn.Close();
                 cnn.Dispose();
 
@@ -78,7 +78,7 @@ namespace d360.web
         {
             IOwinContext context = new OwinContext(environment);
             
-            var users = loadCache();
+            var users = await loadCache();
             user u = null;
             usercompany uc = null;
 

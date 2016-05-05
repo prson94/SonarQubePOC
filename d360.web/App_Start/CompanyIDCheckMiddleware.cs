@@ -26,7 +26,7 @@ namespace d360.web
             _next = next;
         }
 
-        Dictionary<string, int> loadCache()
+        async Task<Dictionary<string, int>> loadCache()
         {
             var key = "CompanyPrefixes";
             var cache = new MemoryCachingProvider();//RedisCachingProvider();
@@ -36,8 +36,7 @@ namespace d360.web
             {
                 var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
                 cnn.Open();
-                dict = cnn.Query<cd>("select CompanyID, UrlPrefix from CompanyDomainSetting")
-                    .ToDictionary(k => k.UrlPrefix, v => v.CompanyID);
+                dict = (await cnn.QueryAsync<cd>("select CompanyID, UrlPrefix from CompanyDomainSetting")).ToDictionary(k => k.UrlPrefix, v => v.CompanyID);
                 cnn.Close();
                 cnn.Dispose();
                 cache.SetItem(key, dict, true, 5);
@@ -58,7 +57,7 @@ namespace d360.web
                 host = "demo.dev";
             }
 
-            var dict = loadCache();
+            var dict = await loadCache();
 
             if (dict.ContainsKey(host))
             {

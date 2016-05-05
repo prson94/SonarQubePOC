@@ -5,7 +5,7 @@
         context.title(pageViewModel.Title);
                 
         var permissions = new PermissionsModel();
-        var type = 'Rule';        
+        var type = 'RuleType';        
         pageViewModel.Title = 'Rules';
         pageViewModel.Directions = '';
 

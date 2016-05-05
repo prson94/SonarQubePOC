@@ -829,8 +829,17 @@ where   h.ID <> @t order by h.[Level] desc;
                     }
                 }
                 else
-                {                    
-                    permissions = Company.GetPermissions(type, id).ToList();
+                {
+                    switch (type)
+                    {
+                        case SystemObjects.RuleType:
+                            // rule types are all on same page so if you have permission to add any...
+                            permissions = Company.GetPermissions(type, new int[] { (int)RuleType.Informational, (int)RuleType.Metric, (int)RuleType.Profile, (int)RuleType.Quality }).ToList();
+                            break;                        
+                        default:
+                            permissions = Company.GetPermissions(type, id).ToList();
+                            break;
+                    }                    
                 }
             }
 
@@ -1426,7 +1435,16 @@ where   h.ID <> @t order by h.[Level] desc;
                     }
                     
                     break;
-                    #endregion
+                #endregion
+                case SystemObjects.RuleType:
+                    #region Actions
+
+                    if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
+                        list.Add(new PageActionItem { Context = ContextList.Rule, Icon = Resources.Actions.Add_Icon, Title = "Rule", Uri = "/form/AddRule" });
+                    
+                    break;
+                #endregion
+
                 case SystemObjects.StatisticType:
                     #region Actions
                     //if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
@@ -3067,6 +3085,26 @@ where    A.PolicyTypeID = @id", columns, joins);
         #endregion
 
         #region Rules
+        
+        [Route("ruletypes")]
+        public HttpResponseMessage GetRuleTypes()
+        {
+            List<dynamic> ruleTypes = new List<dynamic>();
+
+            var ruleTypesList = Enum.GetValues(typeof(RuleType)).Cast<RuleType>().ToList();
+
+            foreach (var ruleType in ruleTypesList)
+            {
+                ruleTypes.Add(new { Name = ruleType.GetRuleTypeDisplayName(), ID = (int)ruleType, Description = ruleType.GetRuleTypeDescription() });
+            }
+
+            ruleTypes = ruleTypes.OrderBy(x => x.Name).ToList();
+            
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                ruleTypes
+            });
+        }
 
         [Route("rules")]
         public IQueryable<Rule> GetRules()
@@ -5153,7 +5191,10 @@ where    A.PolicyTypeID = @id", columns, joins);
             }
             else 
             {
-                permissions = Company.GetPermissions(type, id).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
+                if(type == SystemObjects.RuleType)
+                    permissions = Company.GetPermissions(type, new int[] { (int)RuleType.Informational, (int)RuleType.Metric, (int)RuleType.Profile, (int)RuleType.Quality }).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
+                else
+                    permissions = Company.GetPermissions(type, id).ToList().Select(i => new PermissionModel { ClaimObject = i.ClaimObject.ToString(), Claim = i.Claim.ToString() }).ToList();
             }
 
             return permissions;
