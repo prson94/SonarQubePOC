@@ -36,7 +36,15 @@
         }
 
         function simpleSearch() {
-            searchCtrl.doSearch($("#home-search-text").val(), $('#search-exact-chk').is(':checked'));
+            var items = $("#SearchTypesDropdown").jqxDropDownList('getCheckedItems');
+            var searchTypes = '';
+
+            for (var i = 0; i < items.length; i++) {
+                if (searchTypes.length > 0) searchTypes += ",";
+                searchTypes += items[i].value;
+            }
+            if (searchTypes.length == 0) return;
+            searchCtrl.doSearch($("#home-search-text").val(), $('#search-exact-chk').is(':checked'), searchTypes);
             $("#SearchArea").show();
         }
 
@@ -128,6 +136,20 @@
                 $("#home-adv-btn").click(showAdvancedSearch);
 
                 $("#home-search-text").on("keypress", searchTextKeyPress);
+                
+                var source = [
+                    { val: "Attribute", display: "Attribute" },
+                    { val: "FusionAttributes", display: "Fusion" },
+                    { val: "FusionType", display: "Fusion Type" },
+                    { val: "Artifact", display: "Glossary" },
+                    { val: "Group", display: "Group" },
+                    { val: "Taxonomy", display: "Model" },
+                    { val: "Domain", display: "Reference" },
+                    { val: "User", display: "User" }
+                ];
+                // Create a jqxDropDownList
+                $("#SearchTypesDropdown").jqxDropDownList({ source: source, width: 200, height: 23, checkboxes: true, placeHolder: 'Search Types', displayMember: 'display', valueMember: 'val' });
+                $("#SearchTypesDropdown").jqxDropDownList('checkAll');
                 
                 $("#home-search-text").focus();
             });

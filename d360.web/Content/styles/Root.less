@@ -680,14 +680,14 @@ fieldset legend {
     width:100%;
 }
 
-.search-input-text-container{
-    padding-left: 0.75rem;    
+.search-input-text-container{        
     width:auto;
+    padding-left: 0.75rem;        
     display:table-cell;  
     box-sizing:border-box;
 }
 
-.search-input-adv-container, .search-input-button-container, .search-input-exact-container{
+.search-input-adv-container, .search-input-button-container, .search-input-exact-container, .search-input-types-container{
     display:table-cell;    
     box-sizing:border-box;
     vertical-align:top;
@@ -706,10 +706,14 @@ fieldset legend {
     width:120px;
 }
 
+.search-input-types-container{
+    width:200px;
+}
+
 .search-input-text{
     font-size: x-large;
     border:none;
-    padding:10px;
+    padding:10px;    
     border-radius:4px 0 0 4px;
     border:1px solid @d3s-gray-2;
     border-right:none;
@@ -741,6 +745,7 @@ fieldset legend {
     border:none;
     border-top: 1px solid @d3s-gray-2;
     border-bottom: 1px solid @d3s-gray-2;    
+    border-radius:0;
     background-color: white;    
     font-weight:bold;
     color:@d3s-gray-3;

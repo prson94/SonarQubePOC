@@ -4,6 +4,7 @@
     var searchVm;
     var self = this;
     var advSearchText;
+    var limitToTypes ='';
 
     mainCtrlId = 'SearchArea';
     categoriesCtrlId = 'CategoryResults';
@@ -73,9 +74,10 @@
     //#endregion
         
 
-    self.doSearch = function (val, isExact) {
+    self.doSearch = function (val, isExact, types) {
         phrase = (isExact === true) ? '"' + val + '"' : val;
         advSearchText = '';
+        limitToTypes = types !== undefined ? types : '';
 
         $(resultsctrl).show();
         self.loadCategories = true;
@@ -106,6 +108,7 @@
     self.doAdvancedSearch = function () {
         advSearchText = searchVm.advancedFilterJSON();
         phrase = '';
+        limitToTypes = '';
 
         $(resultsctrl).show();
         self.loadCategories = true;
@@ -162,6 +165,9 @@
     }
 
     function getSource(term, selGroup, selType, advCriteria) {
+        if (limitToTypes.length > 0 && selType.length == 0)
+            selType = limitToTypes;
+
         return {
             datatype: "json",
             pagesize: defaultItemsPerPage,
