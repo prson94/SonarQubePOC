@@ -35,8 +35,8 @@
             }
         }
 
-        function simpleSearch() {            
-            searchCtrl.doSearch($("#home-search-text").val())
+        function simpleSearch() {
+            searchCtrl.doSearch($("#home-search-text").val(), $('#search-exact-chk').is(':checked'));
             $("#SearchArea").show();
         }
 

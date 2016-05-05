@@ -39,6 +39,8 @@
 
     if (phrase.length > 0)
     {
+        phrase = '"' + phrase + '"';
+
         var searchSource = getSource(phrase, '', '');
 
         var dataAdapter = getDataAdapter(searchSource);
@@ -71,8 +73,8 @@
     //#endregion
         
 
-    self.doSearch = function (val) {
-        phrase = val;
+    self.doSearch = function (val, isExact) {
+        phrase = (isExact === true) ? '"' + val + '"' : val;
         advSearchText = '';
 
         $(resultsctrl).show();

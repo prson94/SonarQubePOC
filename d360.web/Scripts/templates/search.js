@@ -21,7 +21,7 @@
         }
 
         function simpleSearch() {
-            searchCtrl.doSearch($("#home-search-text").val());
+            searchCtrl.doSearch($("#home-search-text").val(), $('#search-exact-chk').is(':checked'));
             $("#SearchString").val('');
         }
 
