@@ -1154,7 +1154,7 @@ function CompanySettingsViewModel(data) {
         { title: "Group", value: "Group" },
         { title: "Model", value: "Taxonomy" },
         { title: "Reference", value: "Domain" },
-        { title: "User", value: "User" },
+        { title: "User", value: "Users" },
     ]);
 
     //Computed Properties
@@ -3436,7 +3436,7 @@ function SearchAdvancedFilter(selectedField, search, exact) {
         { title: "Group", value: "Group" },
         { title: "Model", value: "Taxonomy" },
         { title: "Reference", value: "Domain" },
-        { title: "User", value: "User" },
+        { title: "User", value: "Users" },
     ]);
     self.ShowConnectors = ko.observable(false);
     self.Connectors = ko.observableArray([
