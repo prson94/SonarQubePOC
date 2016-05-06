@@ -137,26 +137,7 @@
 
                 $("#home-search-text").on("keypress", searchTextKeyPress);
                 
-                var source = [
-                    { val: "Attribute", display: "Attribute" },
-                    { val: "FusionAttributes", display: "Fusion" },
-                    { val: "FusionType", display: "Fusion Type" },
-                    { val: "Artifact", display: "Glossary" },
-                    { val: "Group", display: "Group" },
-                    { val: "Taxonomy", display: "Model" },
-                    { val: "Domain", display: "Reference" },
-                    { val: "Users", display: "User" }
-                ];
-                // Create a jqxDropDownList
-                $("#SearchTypesDropdown").jqxDropDownList({ source: source, width: 200, height: 23, checkboxes: true, placeHolder: 'Search Types', displayMember: 'display', valueMember: 'val' });
-                
-                var searchTypes = CompanySettings.DefaultSearchTypes != null ? CompanySettings.DefaultSearchTypes.split(',') : null;
-
-                if (searchTypes.length) {
-                    for (var i = 0; i < searchTypes.length; i++) {
-                        $("#SearchTypesDropdown").jqxDropDownList('checkItem', searchTypes[i]);
-                    }
-                }
+                renderSearchTypesDropdown("SearchTypesDropdown");
                 
                 $("#home-search-text").focus();
             });

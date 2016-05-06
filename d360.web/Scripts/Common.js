@@ -614,3 +614,27 @@ function ClickGridTool(event) {
     var elem = $(event.currentTarget);
     amplify.publish("ToolAction", { uri: elem.data("uri"), context: elem.data("context"), requiresid: elem.data("requiresid"), tabindex: elem.data("tabindex"), customdata: elem.data()  });
 }
+
+// Dropdown that is shown on simple search on homepage / search page of types to search.
+function renderSearchTypesDropdown(controlID) {
+    var source = [
+                        { val: "Attribute", display: "Attribute" },
+                        { val: "FusionAttributes", display: "Fusion" },
+                        { val: "FusionType", display: "Fusion Type" },
+                        { val: "Artifact", display: "Glossary" },
+                        { val: "Group", display: "Group" },
+                        { val: "Taxonomy", display: "Model" },
+                        { val: "Domain", display: "Reference" },
+                        { val: "Users", display: "User" }
+    ];
+    // Create a jqxDropDownList
+    $("#" + controlID).jqxDropDownList({ source: source, width: 200, height: 23, checkboxes: true, placeHolder: 'Search Types', displayMember: 'display', valueMember: 'val' });
+
+    var searchTypes = CompanySettings.DefaultSearchTypes != null ? CompanySettings.DefaultSearchTypes.split(',') : null;
+
+    if (searchTypes.length) {
+        for (var i = 0; i < searchTypes.length; i++) {
+            $("#" + controlID).jqxDropDownList('checkItem', searchTypes[i]);
+        }
+    }
+}
