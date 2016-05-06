@@ -43892,6 +43892,17 @@ function CompanySettingsViewModel(data) {
     //List Properties
     self.IpRestrictions = ko.observableArray();
 
+    self.SearchTypes = ko.observableArray([
+        { title: "Attribute", value: "Attribute" },
+        { title: "Fusion", value: "FusionAttributes" },
+        { title: "Fusion Type", value: "FusionType" },
+        { title: "Glossary", value: "Artifact" },
+        { title: "Group", value: "Group" },
+        { title: "Model", value: "Taxonomy" },
+        { title: "Reference", value: "Domain" },
+        { title: "User", value: "Users" },
+    ]);
+
     //Computed Properties
     self.CurrentCompanyLogoPathPresent = ko.pureComputed(function () {
         return (self.CurrentCompanyLogoPath().length > 0 && !self.SetLogoToDefault());
@@ -43925,6 +43936,17 @@ function CompanySettingsViewModel(data) {
         self.IpRestrictions.remove(this);
     };
 
+    self.SelectedSearchTypes = function () {
+        var items = $("#searchDropDown").jqxDropDownList('getCheckedItems');
+        var searchTypes = '';
+
+        for (var i = 0; i < items.length; i++) {
+            if (searchTypes.length > 0) searchTypes += ",";
+            searchTypes += items[i].value;
+        }        
+        return searchTypes;
+    };
+
     self.loadCurrentSettings = function () {
         $.getJSON('/form/CompanySettings', function (relData) {
             self.CurrentCompanyIconPath(relData.CurrentCompanyIconPath);
@@ -43946,6 +43968,12 @@ function CompanySettingsViewModel(data) {
                     );
 
             });
+
+            //searchDropDown
+            var searchTypes=relData.DefaultSearchTypes.split(',');
+            for (var i = 0; i < searchTypes.length; i++) {                
+                $("#searchDropDown").jqxDropDownList('checkItem', searchTypes[i]);
+            }
         });
     };
 
@@ -43962,6 +43990,7 @@ function CompanySettingsViewModel(data) {
             CompanyIcon: self.CompanyIcon().dataURL(),
             ArtifactType_TaxonomyTypeID: self.ArtifactType_TaxonomyTypeID(),
             ArtifactType_TaxonomyTypeIDNodes: self.ArtifactType_TaxonomyTypeIDNodes(),
+            DefaultSearchTypes: self.SelectedSearchTypes(),
             IpRestrictions: []
         }
 
@@ -44590,11 +44619,11 @@ function HierarchySourceRuleModel(data, permissions) {
         if (self.Name().length < 1)
             self.ErrorMessages.push('Source rule requires a name.');
 
-        for (var i = 0; i < self.Items().length; i++) {
-            if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
-                self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
-            }
-        }
+        //for (var i = 0; i < self.Items().length; i++) {
+        //    if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
+        //        self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
+        //    }
+        //}
 
         if (self.ErrorMessages().length > 0) {
             self.IsSaving(false);
@@ -46153,7 +46182,7 @@ function SearchAdvancedFilter(selectedField, search, exact) {
         { title: "Group", value: "Group" },
         { title: "Model", value: "Taxonomy" },
         { title: "Reference", value: "Domain" },
-        { title: "User", value: "User" },
+        { title: "User", value: "Users" },
     ]);
     self.ShowConnectors = ko.observable(false);
     self.Connectors = ko.observableArray([
@@ -46200,6 +46229,8 @@ function SearchViewModel() {
                 val = self.advancedFilter()[i].TypeNames()[self.advancedFilter()[i].SelectedTypeIndex()].value;
             }
             var con = self.advancedFilter()[i].Connectors()[self.advancedFilter()[i].SelectedConnectorIndex()].value;
+
+            if (val == "") continue;
 
             filter[i] = { field: fieldName, value: val, exact: self.advancedFilter()[i].exactMatch(), connector: con };
         }
@@ -50512,13 +50543,11 @@ function DomainItemXrefTile(controlID, contextList, permissions, domainItemID) {
         url: '/services/domains/lists/xref/' + domainItemID,
         datafields:
         [
-            {name: 'ID' },
+            { name: 'ID' },
             { name: 'HouseDomainItemID' },
             { name: 'DomainItemID' },
             { name: 'HouseCode' },
             { name: 'Code' },
-            { name: 'SourceArtifactID' },
-            { name: 'SourceArtifactName' },
             { name: 'ListName' },
             { name: 'LanguageID' },
             { name: 'LanguageName' }
@@ -50547,12 +50576,11 @@ function DomainItemXrefTile(controlID, contextList, permissions, domainItemID) {
         source: adapterDomainXrefItemsGrid,
         theme: list_theme,
         columns: [
-            { text: 'House Code', datafield: 'HouseCode', width: 100 },
-            { text: 'Source', datafield: 'SourceArtifactName' },
+            { text: 'House Code', datafield: 'HouseCode', width: 100, editable: false },
             { text: 'List', datafield: 'ListName' },
             { text: 'Code', datafield: 'Code' },
             { text: 'Language', datafield: 'LanguageName', width: 80 }
-            ,{
+            , {
                 text: '',
                 dataField: 'ID',
                 width: 80,
@@ -50563,7 +50591,7 @@ function DomainItemXrefTile(controlID, contextList, permissions, domainItemID) {
                     var tools = [];
 
                     if (permissions.HasPermission("Root", "Update")) {
-                       // tools.push({ icon: 'pencil', urlprefix: '/form/EditDomainXrefItem?id={0}' });
+                        // tools.push({ icon: 'pencil', urlprefix: '/form/EditDomainXrefItem?id={0}' });
                         tools.push({ icon: 'trash-o', urlprefix: '/form/DeleteDomainItemXref?id={0}' });
                     }
                     return renderToolsHtml(value, tools, contextList.DomainXrefItem);
@@ -50617,8 +50645,7 @@ function DomainListXrefTile(controlID, contextList, permissions, domainID) {
         url: '/services/domains/lists/domain/' + domainID,
         datafields: [
             { name: 'ID' },
-            { name: 'List' },
-            { name: 'Source' }
+            { name: 'List' }
         ]
     };
 
@@ -50632,8 +50659,7 @@ function DomainListXrefTile(controlID, contextList, permissions, domainID) {
         source: domainAdapter,
         columnsResize: true,
         columns: [
-          { text: 'Source', dataField: 'Source' },
-          { text: 'List', dataField: 'List' },
+          { text: 'List', dataField: 'List' }
         ]
     });
 
@@ -56354,6 +56380,7 @@ function SearchResultsGrid(contextList, defaultItemsPerPage, initialPhrase) {
     var searchVm;
     var self = this;
     var advSearchText;
+    var limitToTypes ='';
 
     mainCtrlId = 'SearchArea';
     categoriesCtrlId = 'CategoryResults';
@@ -56372,44 +56399,6 @@ function SearchResultsGrid(contextList, defaultItemsPerPage, initialPhrase) {
     catch (e) {
         console.log(e);
     }
-        
-    //#region Event Registration
-
-
-    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
-    //#endregion
-
-    self.loadCategories = true;        
-
-    if ($("#SearchString").val().length == 0 && phrase !== undefined && phrase.length > 0)
-        $("#SearchString").val(phrase);
-
-    phrase = $("#SearchString").val();
-
-    if (phrase.length > 0)
-    {
-        var searchSource = getSource(phrase, '', '');
-
-        var dataAdapter = getDataAdapter(searchSource);
-
-        $(resultsctrl).jqxDataTable(
-        {
-            pageable: true,
-            pagerButtonsCount: 10,
-            serverProcessing: true,
-            pagerMode: 'default',
-            source: dataAdapter,
-            theme: 'transparent',
-            width: '98%',
-            enableHover: false,
-            showHeader: false,
-            columns: [
-                { text: ' ', dataField: 'Merged', width: '99%' }
-            ]
-        });
-    }
-        
 
     //region Event Handlers
 
@@ -56419,11 +56408,12 @@ function SearchResultsGrid(contextList, defaultItemsPerPage, initialPhrase) {
     }
 
     //#endregion
-        
 
-    self.doSearch = function (val) {
-        phrase = val;
+
+    self.doSearch = function (val, isExact, types) {
+        phrase = (isExact === true) ? '"' + val + '"' : val;
         advSearchText = '';
+        limitToTypes = types !== undefined ? types : CompanySettings.DefaultSearchTypes;
 
         $(resultsctrl).show();
         self.loadCategories = true;
@@ -56454,6 +56444,7 @@ function SearchResultsGrid(contextList, defaultItemsPerPage, initialPhrase) {
     self.doAdvancedSearch = function () {
         advSearchText = searchVm.advancedFilterJSON();
         phrase = '';
+        limitToTypes = '';
 
         $(resultsctrl).show();
         self.loadCategories = true;
@@ -56510,6 +56501,9 @@ function SearchResultsGrid(contextList, defaultItemsPerPage, initialPhrase) {
     }
 
     function getSource(term, selGroup, selType, advCriteria) {
+        if (limitToTypes.length > 0 && selType.length == 0)
+            selType = limitToTypes;
+
         return {
             datatype: "json",
             pagesize: defaultItemsPerPage,
@@ -56557,7 +56551,7 @@ function SearchResultsGrid(contextList, defaultItemsPerPage, initialPhrase) {
                                 searchVm.elapsedTime("No search results found for the specified search term.");
                             }
                         }
-                        
+
                         if (self.loadCategories) {
                             msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
                             searchVm.elapsedTime(msg);
@@ -56600,6 +56594,25 @@ function SearchResultsGrid(contextList, defaultItemsPerPage, initialPhrase) {
                 }
             );
     }
+        
+    //#region Event Registration
+    
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+
+    self.loadCategories = true;        
+
+    if ($("#SearchString").val().length == 0 && phrase !== undefined && phrase.length > 0)
+        $("#SearchString").val(phrase);
+
+    phrase = $("#SearchString").val();
+
+    if (phrase.length > 0)
+    {
+        self.doSearch(phrase, true, CompanySettings.DefaultSearchTypes);    
+    }
+    
 }
 function StatisticTypeAllocationGrid(controlID, contextList, permissions, id) {
 
@@ -61983,8 +61996,16 @@ function home(app, pageViewModel, templatePath, contextList, currentResourceID) 
             }
         }
 
-        function simpleSearch() {            
-            searchCtrl.doSearch($("#home-search-text").val())
+        function simpleSearch() {
+            var items = $("#SearchTypesDropdown").jqxDropDownList('getCheckedItems');
+            var searchTypes = '';
+
+            for (var i = 0; i < items.length; i++) {
+                if (searchTypes.length > 0) searchTypes += ",";
+                searchTypes += items[i].value;
+            }
+            if (searchTypes.length == 0) return;
+            searchCtrl.doSearch($("#home-search-text").val(), $('#search-exact-chk').is(':checked'), searchTypes);
             $("#SearchArea").show();
         }
 
@@ -62076,6 +62097,27 @@ function home(app, pageViewModel, templatePath, contextList, currentResourceID) 
                 $("#home-adv-btn").click(showAdvancedSearch);
 
                 $("#home-search-text").on("keypress", searchTextKeyPress);
+                
+                var source = [
+                    { val: "Attribute", display: "Attribute" },
+                    { val: "FusionAttributes", display: "Fusion" },
+                    { val: "FusionType", display: "Fusion Type" },
+                    { val: "Artifact", display: "Glossary" },
+                    { val: "Group", display: "Group" },
+                    { val: "Taxonomy", display: "Model" },
+                    { val: "Domain", display: "Reference" },
+                    { val: "Users", display: "User" }
+                ];
+                // Create a jqxDropDownList
+                $("#SearchTypesDropdown").jqxDropDownList({ source: source, width: 200, height: 23, checkboxes: true, placeHolder: 'Search Types', displayMember: 'display', valueMember: 'val' });
+                
+                var searchTypes = CompanySettings.DefaultSearchTypes != null ? CompanySettings.DefaultSearchTypes.split(',') : null;
+
+                if (searchTypes.length) {
+                    for (var i = 0; i < searchTypes.length; i++) {
+                        $("#SearchTypesDropdown").jqxDropDownList('checkItem', searchTypes[i]);
+                    }
+                }
                 
                 $("#home-search-text").focus();
             });
@@ -63871,7 +63913,9 @@ function rules_admin(app, pageViewModel, templatePath, contextList) {
         var toolsControlID = '#DimensionTools';
         var RuleTypeID = 0;
         var DimensionSource;
+        var RuleTypeSource;
         var DimensionAdapter;
+        var RuleTypeAdapter;
 
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: 'Administration' });
@@ -63881,8 +63925,32 @@ function rules_admin(app, pageViewModel, templatePath, contextList) {
         var permissions = new PermissionsModel();
                 
         //#region Event Handlers
-                
+        
+        function listBindingComplete(event) {
+            var rowCount = $('#List').jqxGrid('getdisplayrows').length;
+            if (rowCount > 0) {
+                $('#List').jqxGrid('selectrow', 0);
+            }
+        }
 
+        function listRowSelect(event) {
+            var args = event.args;
+            var row = args.rowindex;
+
+            var data = $('#List').jqxGrid('getrowdata', row);
+
+            if (data) {
+                amplify.publish(AmplifyActions.TileUnsubscribe, {});
+
+                RuleTypeID = data.ID;
+
+              
+                $('#ClaimsTile').load('/parts/ResponsibilityTypeObjectClaimGrid?type=' + type + '&id=' + RuleTypeID);
+                PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, RuleTypeID, 'Default Responsibilities', true);
+            }
+        }
+
+        
         function saveAction(data) {
             try {
                 switch (data.context) {
@@ -63897,11 +63965,68 @@ function rules_admin(app, pageViewModel, templatePath, contextList) {
             DimensionSource = null;
             DimensionAdapter = null;
             
+            $("#List").off("bindingcomplete", listBindingComplete);
+            $('#List').off('rowselect', listRowSelect);
             amplify.unsubscribe("SaveAction", saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);            
         }
 
         //#endregion
+
+        function renderDimensionsGrid() {
+            DimensionSource = {
+                datatype: 'json',
+                url: '/api/ruledimensions',
+                datafields: [
+                    { name: 'ID' },
+                    { name: 'Name' },
+                    { name: 'Description' }
+                ]
+            };
+
+            DimensionAdapter = new $.jqx.dataAdapter(DimensionSource);
+
+            $("#DimensionGrid").jqxGrid({
+                altrows: true,
+                width: grid_width,
+                pagesizeoptions: ['10', '20', '50'],
+                pagesize: 20,
+                autoheight: true,
+                sortable: true,
+                filterable: true,
+                showfilterrow: true,
+                pageable: true,
+                source: DimensionAdapter,
+                theme: list_theme,
+                columns: [
+                    { datafield: "Name", text: "Name" },
+                    { datafield: "Description", text: "Description" },
+                    {
+                        text: '',
+                        dataField: 'ID',
+                        width: 80,
+                        filterable: false,
+                        cellsrenderer: function (row, column, value) {
+                            var tools = [];
+                            if (permissions.HasPermission("Root", "Update")) {
+                                tools = [
+                                    { icon: 'pencil', urlprefix: '/form/EditRuleDimension?id={0}' },
+                                    { icon: 'trash-o', urlprefix: '/form/DeleteRuleDimension?id={0}' }
+                                ];
+                            }
+
+                            return renderToolsHtml(value, tools, contextList.PolicyType);
+                        }
+                    }
+                ]
+            });
+
+            if (permissions.HasPermission("Root", "Update")) {
+                TileTools(toolsControlID, [
+                    { icon: 'plus', uri: '/form/AddRuleDimension', context: contextList.RuleDimension, title: 'Add Dimension' }
+                ]);
+            }
+        }
 
         context
             .render(templatePath + 'rules.admin.html', pageViewModel)
@@ -63913,9 +64038,11 @@ function rules_admin(app, pageViewModel, templatePath, contextList) {
 
                 var loadAfterPermissionsRetrieved = function () {
 
-                    DimensionSource = {
+                    renderDimensionsGrid();
+
+                    RuleTypeSource = {
                         datatype: 'json',
-                        url: '/api/ruledimensions',
+                        url: '/api/ruletypes',
                         datafields: [
                             { name: 'ID' },
                             { name: 'Name' },
@@ -63923,51 +64050,27 @@ function rules_admin(app, pageViewModel, templatePath, contextList) {
                         ]
                     };
 
-                    DimensionAdapter = new $.jqx.dataAdapter(DimensionSource);
+                    RuleTypeAdapter = new $.jqx.dataAdapter(RuleTypeSource);
 
-                    $("#DimensionGrid").jqxGrid({
+                    $("#List").jqxGrid({
                         altrows: true,
-                        width: grid_width,
-                        pagesizeoptions: ['10', '20', '50'],
-                        pagesize: 20,
+                        width: grid_width,                        
                         autoheight: true,
-                        sortable: true,
-                        filterable: true,
-                        showfilterrow: true,
-                        pageable: true,
-                        source: DimensionAdapter,
+                        sortable: true,                                                
+                        source: RuleTypeAdapter,
                         theme: list_theme,
                         columns: [
-                            { datafield: "Name", text: "Name" },
-                            { datafield: "Description", text: "Description" },
-                            {
-                                text: '',
-                                dataField: 'ID',
-                                width: 80,
-                                filterable: false,
-                                cellsrenderer: function (row, column, value) {
-                                    var tools = [];
-                                    if (permissions.HasPermission("Root", "Update")) {
-                                        tools = [
-                                            { icon: 'pencil', urlprefix: '/form/EditRuleDimension?id={0}' },
-                                            { icon: 'trash-o', urlprefix: '/form/DeleteRuleDimension?id={0}' }
-                                        ];
-                                    }
-
-                                    return renderToolsHtml(value, tools, contextList.PolicyType);
-                                }
-                            }
+                            { datafield: "Name", text: "Name" }                            
                         ]
                     });
 
-                    if (permissions.HasPermission("Root", "Update")) {
-                        TileTools(toolsControlID, [
-                            { icon: 'plus', uri: '/form/AddRuleDimension', context: contextList.RuleDimension, title: 'Add Dimension' }
-                        ]);
-                    }
+                    //#endregion
+
+                    //PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, policyTypeID, 'Default Responsibilities', true);
 
                     //#region Event Subscriptions
-
+                    $("#List").on("bindingcomplete", listBindingComplete);
+                    $('#List').on('rowselect', listRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
@@ -64131,7 +64234,7 @@ function rules_list(app, pageViewModel, templatePath, contextList) {
         context.title(pageViewModel.Title);
                 
         var permissions = new PermissionsModel();
-        var type = 'Rule';        
+        var type = 'RuleType';        
         pageViewModel.Title = 'Rules';
         pageViewModel.Directions = '';
 
@@ -64315,7 +64418,15 @@ function search(app, pageViewModel, templatePath, contextList) {
         }
 
         function simpleSearch() {
-            searchCtrl.doSearch($("#home-search-text").val());
+            var items = $("#SearchTypesDropdown").jqxDropDownList('getCheckedItems');
+            var searchTypes = '';
+
+            for (var i = 0; i < items.length; i++) {
+                if (searchTypes.length > 0) searchTypes += ",";
+                searchTypes += items[i].value;
+            }
+            if (searchTypes.length == 0) return;
+            searchCtrl.doSearch($("#home-search-text").val(), $('#search-exact-chk').is(':checked'),searchTypes);
             $("#SearchString").val('');
         }
 
@@ -64390,6 +64501,27 @@ function search(app, pageViewModel, templatePath, contextList) {
 
                 $("#do-adv-search-btn").click(advancedSearch);
 
+                var source = [
+                    { val: "Attribute", display: "Attribute" },
+                    { val: "FusionAttributes", display: "Fusion" },
+                    { val: "FusionType", display: "Fusion Type" },
+                    { val: "Artifact", display: "Glossary" },
+                    { val: "Group", display: "Group" },
+                    { val: "Taxonomy", display: "Model" },
+                    { val: "Domain", display: "Reference" },
+                    { val: "Users", display: "User" }
+                ];
+                // Create a jqxDropDownList
+                $("#SearchTypesDropdown").jqxDropDownList({ source: source, width: 200, height: 23, checkboxes: true, placeHolder: 'Search Types', displayMember: 'display', valueMember: 'val' });
+                                
+                var searchTypes = CompanySettings.DefaultSearchTypes != null ? CompanySettings.DefaultSearchTypes.split(',') : null;
+
+                if (searchTypes.length) {
+                    for (var i = 0; i < searchTypes.length; i++) {
+                        $("#SearchTypesDropdown").jqxDropDownList('checkItem', searchTypes[i]);
+                    }
+                }
+                                
                 setInitialSearchMode();
 
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
