@@ -2186,6 +2186,8 @@ namespace d360.web.Controllers
             model.ArtifactType_TaxonomyTypeID = (settings.Any(i => i.SettingID == 7) ? settings.Single(i => i.SettingID == 7).Value : "");
             model.ArtifactType_TaxonomyTypeIDNodes = (settings.Any(i => i.SettingID == 8) ? settings.Single(i => i.SettingID == 8).Value : "");
 
+            model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
+
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -2428,6 +2430,22 @@ namespace d360.web.Controllers
                     {
                         Community.Delete<CompanySetting>(ipSetting);
                     }
+                }
+
+                #endregion
+
+                #region Search
+
+                var searchSetting = settings.FirstOrDefault(i => i.SettingID == 13);
+                if (searchSetting == null)
+                {
+                    searchSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 13, Value = formModel.DefaultSearchTypes.ToString() };
+                    Community.Add<CompanySetting>(searchSetting);
+                }
+                else
+                {
+                    searchSetting.Value = formModel.DefaultSearchTypes.ToString();
+                    Community.SaveChanges();
                 }
 
                 #endregion

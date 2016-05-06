@@ -23,46 +23,6 @@
     catch (e) {
         console.log(e);
     }
-        
-    //#region Event Registration
-
-
-    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
-    //#endregion
-
-    self.loadCategories = true;        
-
-    if ($("#SearchString").val().length == 0 && phrase !== undefined && phrase.length > 0)
-        $("#SearchString").val(phrase);
-
-    phrase = $("#SearchString").val();
-
-    if (phrase.length > 0)
-    {
-        phrase = '"' + phrase + '"';
-
-        var searchSource = getSource(phrase, '', '');
-
-        var dataAdapter = getDataAdapter(searchSource);
-
-        $(resultsctrl).jqxDataTable(
-        {
-            pageable: true,
-            pagerButtonsCount: 10,
-            serverProcessing: true,
-            pagerMode: 'default',
-            source: dataAdapter,
-            theme: 'transparent',
-            width: '98%',
-            enableHover: false,
-            showHeader: false,
-            columns: [
-                { text: ' ', dataField: 'Merged', width: '99%' }
-            ]
-        });
-    }
-        
 
     //region Event Handlers
 
@@ -72,12 +32,12 @@
     }
 
     //#endregion
-        
+
 
     self.doSearch = function (val, isExact, types) {
         phrase = (isExact === true) ? '"' + val + '"' : val;
         advSearchText = '';
-        limitToTypes = types !== undefined ? types : '';
+        limitToTypes = types !== undefined ? types : CompanySettings.DefaultSearchTypes;
 
         $(resultsctrl).show();
         self.loadCategories = true;
@@ -215,7 +175,7 @@
                                 searchVm.elapsedTime("No search results found for the specified search term.");
                             }
                         }
-                        
+
                         if (self.loadCategories) {
                             msg = 'Search found ' + data.Result.Matches.toLocaleString() + ' matches in (' + (data.Result.ElapsedMS / 1000) + ' seconds)' + (data.Result.Matches > 10000 ? '  results limited to first 10,000 items.' : '');
                             searchVm.elapsedTime(msg);
@@ -258,4 +218,23 @@
                 }
             );
     }
+        
+    //#region Event Registration
+    
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+
+    self.loadCategories = true;        
+
+    if ($("#SearchString").val().length == 0 && phrase !== undefined && phrase.length > 0)
+        $("#SearchString").val(phrase);
+
+    phrase = $("#SearchString").val();
+
+    if (phrase.length > 0)
+    {
+        self.doSearch(phrase, true, CompanySettings.DefaultSearchTypes);    
+    }
+    
 }

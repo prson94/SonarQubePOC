@@ -449,6 +449,16 @@
                 <div class="directions">This allows for the renaming of Subject Area Nodes field. The default is "Subject Area Nodes."  After changing this value, if you wish to use the default value, simply remove the value in the field below.</div>
                 <input data-bind="jqxInput: {width: '99%', height: 25, theme: theme, value: ArtifactType_TaxonomyTypeIDNodes}" />
             </div>
+            <div class="tile tile-detail">
+                <header>
+                    Search
+                    <div class="TileTools"></div>
+                </header>
+                <div class="directions">
+                    Specify the default value for the initially selected list of object types to search when a user performs a simple search from the Data3Sixty global search functionality.
+                </div>                
+                <div id="searchDropDown" data-bind="jqxDropDownList: {placeHolder: 'Specify Types:',source: SearchTypes, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,checkboxes:true}"></div>                
+            </div>
         </div>
         <div class="col s12 m12 l2">
             <a class="waves-effect waves-light btn" title="Save" data-bind="click:save, disabled:InProgress">Save Changes</a>

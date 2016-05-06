@@ -1146,6 +1146,17 @@ function CompanySettingsViewModel(data) {
     //List Properties
     self.IpRestrictions = ko.observableArray();
 
+    self.SearchTypes = ko.observableArray([
+        { title: "Attribute", value: "Attribute" },
+        { title: "Fusion", value: "FusionAttributes" },
+        { title: "Fusion Type", value: "FusionType" },
+        { title: "Glossary", value: "Artifact" },
+        { title: "Group", value: "Group" },
+        { title: "Model", value: "Taxonomy" },
+        { title: "Reference", value: "Domain" },
+        { title: "User", value: "User" },
+    ]);
+
     //Computed Properties
     self.CurrentCompanyLogoPathPresent = ko.pureComputed(function () {
         return (self.CurrentCompanyLogoPath().length > 0 && !self.SetLogoToDefault());
@@ -1179,6 +1190,17 @@ function CompanySettingsViewModel(data) {
         self.IpRestrictions.remove(this);
     };
 
+    self.SelectedSearchTypes = function () {
+        var items = $("#searchDropDown").jqxDropDownList('getCheckedItems');
+        var searchTypes = '';
+
+        for (var i = 0; i < items.length; i++) {
+            if (searchTypes.length > 0) searchTypes += ",";
+            searchTypes += items[i].value;
+        }        
+        return searchTypes;
+    };
+
     self.loadCurrentSettings = function () {
         $.getJSON('/form/CompanySettings', function (relData) {
             self.CurrentCompanyIconPath(relData.CurrentCompanyIconPath);
@@ -1200,6 +1222,12 @@ function CompanySettingsViewModel(data) {
                     );
 
             });
+
+            //searchDropDown
+            var searchTypes=relData.DefaultSearchTypes.split(',');
+            for (var i = 0; i < searchTypes.length; i++) {                
+                $("#searchDropDown").jqxDropDownList('checkItem', searchTypes[i]);
+            }
         });
     };
 
@@ -1216,6 +1244,7 @@ function CompanySettingsViewModel(data) {
             CompanyIcon: self.CompanyIcon().dataURL(),
             ArtifactType_TaxonomyTypeID: self.ArtifactType_TaxonomyTypeID(),
             ArtifactType_TaxonomyTypeIDNodes: self.ArtifactType_TaxonomyTypeIDNodes(),
+            DefaultSearchTypes: self.SelectedSearchTypes(),
             IpRestrictions: []
         }
 
@@ -3454,6 +3483,8 @@ function SearchViewModel() {
                 val = self.advancedFilter()[i].TypeNames()[self.advancedFilter()[i].SelectedTypeIndex()].value;
             }
             var con = self.advancedFilter()[i].Connectors()[self.advancedFilter()[i].SelectedConnectorIndex()].value;
+
+            if (val == "") continue;
 
             filter[i] = { field: fieldName, value: val, exact: self.advancedFilter()[i].exactMatch(), connector: con };
         }
