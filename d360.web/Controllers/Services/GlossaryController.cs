@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Web.Http;
 using d360.core.exceptions;
 using d360.core.enums;
+using System.Collections;
+using System.Text;
 
 namespace d360.web.Controllers.Services
 {
@@ -44,29 +46,123 @@ namespace d360.web.Controllers.Services
         /// </summary>
         /// <returns>A list of artifacts.</returns>
         [Route("artifacts/{id:int}")]
-        public IQueryable<dynamic> GetArtifactsByType(int id)
+        public HttpResponseMessage GetArtifactsByType(int id)
         {
             var joins = "";
             var columns = "";
-            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns);
 
-            var querySql = string.Format(@"select	A.ID,
+            var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "ArtifactType" && i.ObjectID == id).ToList();
+            var fieldTypeIDs = fields.Select(i => i.ID).ToList();
+            var relationDefinitions = Company.Filter<FieldTypeRelationLookupDefinition>(i => fieldTypeIDs.Contains(i.FieldTypeID), i => i.FieldTypeRelationLookupDisplayFields).ToList();
+
+            foreach (var f in fields)
+            {
+                var name = f.Name.Replace("'", "''").Replace("--", "");
+
+                switch (f.Type)
+                {
+                    case "FusionLookup":
+                        //columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
+                        //joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = 'Artifact' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID);
+                        break;
+                    case "RelationLookup":
+                        var rd = relationDefinitions.SingleOrDefault(i => i.FieldTypeID == f.ID);
+                        if (rd != null)
+                        {
+                            if (rd.FieldTypeRelationLookupDisplayFields != null)
+                            {
+                                if (rd.FieldTypeRelationLookupDisplayFields.Count > 0)
+                                {
+
+                                    var columnSql = new List<string>();
+                                    var joinSql = new List<string>();
+
+                                    foreach (var df in rd.FieldTypeRelationLookupDisplayFields)
+                                    {
+
+                                        if (df.FieldTypeID == 0)
+                                        {
+                                            columnSql.Add($"D_{rd.ID}.{df.FieldTypeName}");
+                                        }
+                                        else
+                                        {
+                                            columnSql.Add($"{name}_{df.FieldTypeID}_RF_{df.ID}.FormattedValue as [{df.FieldTypeName}]");
+
+                                            joinSql.Add($"inner join FieldType {name}_{df.FieldTypeID}_RFT_{df.ID} on {name}_{df.FieldTypeID}_RFT_{df.ID}.ID = {df.FieldTypeID}");
+                                            joinSql.Add($"left join Field {name}_{df.FieldTypeID}_RF_{df.ID} on {name}_{df.FieldTypeID}_RF_{df.ID}.FieldTypeID = {df.FieldTypeID} and {name}_{df.FieldTypeID}_RF_{df.ID}.ObjectType = D_{rd.ID}.Object and {name}_{df.FieldTypeID}_RF_{df.ID}.ObjectID = D_{rd.ID}.ObjectID");
+                                        }
+                                    }
+                                    columns += "(select distinct ";
+                                    columns += string.Join(", ", columnSql);
+                                    if (rd.ReferenceType == 1)
+                                    {
+                                        columns += $@" from [Intersect] I_{rd.ID} 
+ inner join [cache].[ObjectDetails] D_{rd.ID} on D_{rd.ID}.[Object] = case when I_{rd.ID}.Subject = 'Artifact' and I_{rd.ID}.SubjectID = A.ID then I_{rd.ID}.Object else I_{rd.ID}.Subject end 
+ and D_{rd.ID}.ObjectID = case when I_{rd.ID}.Subject = 'Artifact' and I_{rd.ID}.SubjectID = A.ID then I_{rd.ID}.ObjectID else I_{rd.ID}.SubjectID end ";
+
+                                        columns += string.Join(" ", joinSql);
+                                        columns += $" where I_{rd.ID}.IntersectTypeID = {rd.IntersectTypeID} and ( (I_{rd.ID}.Subject = 'Artifact' and I_{rd.ID}.SubjectID = A.ID) OR (I_{rd.ID}.Object = 'Artifact' and I_{rd.ID}.ObjectID = A.ID) )";
+                                    }
+                                    else
+                                    {
+                                        //child reference
+                                        columns += $@" from [Intersect] I_{rd.ID} inner join [Intersect] I_C_{rd.ID} on I_{rd.ID}.IntersectTypeID = {rd.IntersectTypeID} and 
+										( 
+											(I_{rd.ID}.Subject = 'Artifact' and I_{rd.ID}.SubjectID = A.ID) OR 
+											(I_{rd.ID}.Object = 'Artifact' and I_{rd.ID}.ObjectID = A.ID) 
+										) 
+                                        and I_C_{rd.ID}.IntersectTypeID = {rd.ChildIntersectTypeID} and 
+										( 
+										    (I_C_{rd.ID}.Subject = 'Intersect' and I_C_{rd.ID}.SubjectID = I_{rd.ID}.ID) OR (I_C_{rd.ID}.Object = 'Intersect' and I_C_{rd.ID}.ObjectID = I_{rd.ID}.ID)
+                                        ) 
+ inner join [cache].[ObjectDetails] D_{rd.ID} on D_{rd.ID}.[Object] = case when I_C_{rd.ID}.Subject = 'Artifact' and I_C_{rd.ID}.SubjectID = A.ID then I_C_{rd.ID}.Object else I_C_{rd.ID}.Subject end 
+ and D_{rd.ID}.ObjectID = case when I_C_{rd.ID}.Subject = 'Artifact' and I_C_{rd.ID}.SubjectID = A.ID then I_C_{rd.ID}.ObjectID else I_C_{rd.ID}.SubjectID end ";
+
+                                        columns += string.Join(" ", joinSql);
+                                    }
+
+                                    columns += $" for json path) as [{name}], ";
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        columns += $"{name}_T.FormattedValue as [{name}], ";
+                        joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = 'Artifact' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID}";
+                        break;
+                }
+            }
+
+            fields = null;
+
+
+            var querySql = $@"
+select	A.ID,
 		A.Name,
 		A.Description,
-        A.ParentID,
-		P.Name as Parent,
-        dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
+        --A.ParentID,
+		--P.Name as Parent,
+        --dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
 		A.Status,
         A.DateLastCertified,
-        {0}
+        {columns}
 		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
-left join Artifact P on P.ID = A.ParentID {1}
-where A.ArtifactTypeID = @id", columns, joins);
+        --left join Artifact P on P.ID = A.ParentID 
+        {joins}
+where   A.ArtifactTypeID = @id
+for json path";
 
-            var sql = string.Format(@"select * from ({0}) A", querySql);
+            var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();
 
-            return Company.Query<dynamic>(sql, new { id = id }).AsQueryable();
+            var jsonResult = new StringBuilder();
+            jsonResults.ForEach(j => {
+                jsonResult.Append(j);
+            });
+
+            var response = this.Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StringContent(jsonResult.ToString(), Encoding.UTF8, "application/json");
+            return response;
         }
 
         /// <summary>
