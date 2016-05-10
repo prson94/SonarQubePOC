@@ -107,5 +107,7 @@ public static class ContextList
         public const string ActionEditRelate = "editrelation";
         public const string ActionUnrelate = "deleterelation";
         public const string ActionGenericReport = "reportdefinitionform";
+
+        public const string Monitor = "monitor";
     }
 //}

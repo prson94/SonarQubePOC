@@ -192,6 +192,21 @@ from    Workflow W
         {0} 
 order by    A.ObjectTypeName, A.Name";
 
+        public static string CurrentUserWorkflow3TaskAllUsersItem = @"
+select		W.ID as WorkflowID,
+		    C.Body as Issue,
+			W.DateStarted,
+			W.DateCompleted        
+			,A.Name
+			,A.ObjectType
+from	    Workflow W
+		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')			
+			inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
+			left outer join cache.ObjectDetails A on A.[Object] = CR.ObjectType and A.ObjectID = CR.ObjectID
+            where  W.WorkflowType = 3
+order by    W.DateStarted
+";
+
         public static string CurrentUserWorkflow3TaskItem = @"
 select		W.ID as WorkflowID,
 		    C.Body as Issue,

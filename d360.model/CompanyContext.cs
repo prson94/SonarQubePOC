@@ -326,6 +326,8 @@ namespace d360.model
         public DbSet<TooltipTemplate> TooltipTemplates { get; set; }
 
         public DbSet<d360.workflow.entities.Workflow> Workflows { get; set; }
+
+        public DbSet<d360.workflow.entities.WorkflowIssue> WorkflowIssues { get; set; }
         public DbSet<d360.workflow.entities.WorkflowResource> WorkflowResources { get; set; }
         public DbSet<d360.workflow.entities.WorkflowStatus> WorkflowStatuses { get; set; }
         public DbSet<d360.workflow.entities.WorkflowTypeRelation> WorkflowTypeRelations { get; set; }

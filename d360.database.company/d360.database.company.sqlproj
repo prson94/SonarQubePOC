@@ -463,6 +463,7 @@
     <None Include="dbo\Tables\DomainSourceType.sql" />
     <None Include="dbo\Tables\DomainClassification.sql" />
     <None Include="dbo\Tables\Language.sql" />
+    <None Include="dbo\Views\WorkflowIssue.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

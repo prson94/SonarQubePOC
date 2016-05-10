@@ -1,0 +1,131 @@
+﻿function actionsmonitor_list(app, pageViewModel, templatePath, contextList) {
+        app.get('#/activitymonitor', function (context) {
+            context.app.swap('');
+
+            var permissions = new PermissionsModel();
+
+            pageViewModel.Title = 'Monitor';
+            pageViewModel.Directions = 'View all current and past issues.';
+
+            pageViewModel.breadcrumbs = [];
+            pageViewModel.breadcrumbs.push({ Name: 'Monitor', Active: true });
+            
+            context.title(pageViewModel.Title);
+
+            var WorkflowGridSource;
+            var WorkflowGridAdapter;
+            
+            //#region Event Handlers
+                        
+            function unsubscribe(data) {
+                WorkflowGridAdapter = null;
+                WorkflowGridSource = null;
+                        
+                amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            }
+
+            //#endregion
+
+            context
+                .render(templatePath + 'actionsmonitor.list.html', pageViewModel)
+                .appendTo(context.$element())
+                .then(function (content) {
+                    context.contentHeader(pageViewModel);
+
+                    $('#SideIcons').PageTools();
+                    $('#SideIcons').PageTools('clear');
+                                                            
+                    //#region Grid Logic
+
+                    WorkflowGridSource = {
+                        datatype: 'json',
+                        type: 'get',
+                        //url: "/services/workflow/tasks/all/issues?$orderby=DateStarted desc,Issue&$filter=substringof('aaa',Issue)",
+                        url: "/services/workflow/tasks/all/issues?$orderby=DateStarted desc,Issue",
+                        datafields:
+                        [
+                            { name: 'WorkflowID', type:'string' },
+                            { name: 'Issue', type: 'string' },
+                            { name: 'RaisedBy', type: 'string' },
+                            { name: 'DateStarted', type: 'date' },
+                            { name: 'DateCompleted', type: 'date' },
+                            { name: 'IsCompleted', type: 'bool' },
+                            { name: 'Name', type: 'string' },
+                            { name: 'Object', type: 'string' },
+                            { name: 'AllowAction', type: 'bool'},
+                            { name: 'ObjectID', type: 'number' },
+                            { name: 'RaisedByResourceID', type: 'number' },
+                            { name: 'Url', type: 'string' },
+                            { name: 'ActivityName', type: 'string' },
+                        ]
+                    };
+
+                    WorkflowGridAdapter = new $.jqx.dataAdapter(WorkflowGridSource);
+
+                    $("#IssuesGrid").jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        autoheight: true,
+                        autorowheight: true,
+                        sortable: true,
+                        filterable: true,
+                        showfilterrow: true,
+                        pageable: true,
+                        pagesizeoptions: ['5', '10', '20'],
+                        pagesize: 10,
+                        columnsresize: true,
+                        source: WorkflowGridAdapter,
+                        theme: list_theme,
+                        groupable: false,
+                        columns: [                            
+                            , { datafield: "Issue", text: 'Issue', width: '20%' }                            
+                            , {
+                                filtertype: 'checkedlist', datafield: "RaisedBy", text: "Created By", width: 150,
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    return previewLinkRenderer('Resource', data.RaisedByResourceID, '#/resources/' + data.RaisedByResourceID, data.RaisedBy);
+                                }
+                            }
+                            , { datafield: "DateStarted", text: 'Created On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }
+                            , { datafield: "DateCompleted", text: 'Closed On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }
+                            , {
+                                datafield: "Name", text: "Name",
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    return (data.ObjectID > 0 ? previewLinkRenderer(data.Object, data.ObjectID, data.Url, data.Name) : textrenderer("Removed Item"));
+                                }
+                            }
+                            , { datafield: "Object", text: 'Type', filtertype: 'checkedlist', width: 150 }
+                            , { datafield: "ActivityName", text: "Status", filtertype: 'checkedlist', width: 125,
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {                                                        
+                                    return '<div style="overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 15px;"' + (!data.AllowAction && !data.IsCompleted ? 'data-type="WorkflowTypeRelation" data-context="list" data-id="' + data.WorkflowID + '"' : '') + '>' + (!data.AllowAction && !data.IsCompleted ? '<i class="fa fa-question-circle-o" aria-hidden="true"></i> ' : '') + data.ActivityName + '</div>';
+                                }
+                            }
+                            , { datafield: "IsCompleted", text: 'Closed?', columntype: 'checkbox', filtertype: 'bool', width: 80 }
+                            , {
+                                datafield: "WorkflowID",
+                                text: "",
+                                sortable: false,
+                                filterable: false,
+                                width: '40px',
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                        var tools = [];
+
+                                        if (data.AllowAction)
+                                            tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay/true' });
+
+                                        return renderToolsHtml(value, tools, contextList.Monitor, data);
+                                    }
+                                }
+                            ]
+                    });
+
+                    //#endregion
+
+                    //#region Event Subscriptions
+                                        
+                    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+                    //#endregion
+                });
+
+        });
+    }

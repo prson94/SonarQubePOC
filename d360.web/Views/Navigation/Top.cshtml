@@ -109,6 +109,14 @@
                     </li>
                 }
 
+                navItem = Model.NavigationItems.Single(i => i.MenuID == "#Monitor");
+                if (navItem.ShouldDisplay)
+                {
+                    <li>
+                        <a href="#/activitymonitor">Monitor</a>                        
+                    </li>
+                }
+
                 navItem = Model.NavigationItems.Single(i => i.MenuID == "#Community");
                 if (navItem.ShouldDisplay)
                 {

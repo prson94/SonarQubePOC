@@ -1,7 +1,12 @@
 ﻿@{
     var id = ViewBag.WorkflowID;
+    var fullOverlay = ViewBag.IsFullOverlay;
 }
 
+@if (fullOverlay){
+    @:<div class="medium-overlay">
+        @:<div class="ui segment">
+}
         <div class="left form-header-info">
             <h4 id="FormTitle"></h4>
         </div>
@@ -50,98 +55,104 @@
             </div>
         </div>
 
+        @if (fullOverlay){
+            @:</div>
+                @:</div>
+        }
 
-<script type="text/javascript">
-    var workflowID = "@(id)";
 
-    $(function () {
-        $("html, body").animate({ scrollTop: 0 }, "slow");
 
-        $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+        <script type="text/javascript">
+            var workflowID = "@(id)";
 
-        $.getJSON('/services/workflow/tasks/' + workflowID, function (data) {
+            $(function () {
+                $("html, body").animate({ scrollTop: 0 }, "slow");
 
-            $('#progress').html('');
+                $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
 
-            if (data) {
-                var title = "";
-                var description = "";
+                $.getJSON('/services/workflow/tasks/' + workflowID, function (data) {
 
-                title = data.WorkflowName + ' : ' + data.ActivityName;
-                description = data.WorkflowDescription + '<br/>' + data.ActivityDescription;
+                    $('#progress').html('');
 
-                $('#FormTitle').text(title);
-                $('#FormDescription').html(description);
+                    if (data) {
+                        var title = "";
+                        var description = "";
 
-                $('#IssueValue').html(data.Issue);
-                $('#RequestorValue').html('<a data-context="Preview" data-type="Resource" data-id="' + data.ResourceID + '" href="' + data.ResourceUrl + '">' + data.ResourceName + '</a>');
-                $('#DateValue').html(moment.utc(data.DateStarted).local().format('dddd, MMMM Do YYYY, h:mm:ss a'));
+                        title = data.WorkflowName + ' : ' + data.ActivityName;
+                        description = data.WorkflowDescription + '<br/>' + data.ActivityDescription;
 
-                if (data.Activity == 3) {
-                    $('#Action2Wrapper').hide();
-                    $('#Action3Wrapper').hide();
-                    //$('#Action1').attr('checked', 'checked');
-                }
-                else {
-                    $('#Action1Wrapper').hide();
-                    $('#Action3').attr('checked', 'checked');
+                        $('#FormTitle').text(title);
+                        $('#FormDescription').html(description);
 
-                    var reassignSource = {
-                        datatype: "json",
-                        datafields: [
-                            { name: 'FullName' },
-                            { name: 'ResourceID' }
-                        ],
-                        url: '/api/resources/1'
-                    };
-                    var reassignAdapter = new $.jqx.dataAdapter(reassignSource);
-                    $('#ReassignTo').jqxDropDownList({
-                        enableBrowserBoundsDetection: true,
-                        filterable: true,
-                        searchMode: 'containsignorecase',
-                        displayMember: 'FullName',
-                        valueMember: 'ResourceID',
-                        width: '100%',
-                        source: reassignAdapter,
-                        theme: theme
-                    });
-                }
+                        $('#IssueValue').html(data.Issue);
+                        $('#RequestorValue').html('<a data-context="Preview" data-type="Resource" data-id="' + data.ResourceID + '" href="' + data.ResourceUrl + '">' + data.ResourceName + '</a>');
+                        $('#DateValue').html(moment.utc(data.DateStarted).local().format('dddd, MMMM Do YYYY, h:mm:ss a'));
 
-                $('#SaveButton').on('click', function () {
-                    $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+                        if (data.Activity == 3) {
+                            $('#Action2Wrapper').hide();
+                            $('#Action3Wrapper').hide();
+                            //$('#Action1').attr('checked', 'checked');
+                        }
+                        else {
+                            $('#Action1Wrapper').hide();
+                            $('#Action3').attr('checked', 'checked');
 
-                    $.ajax('/services/workflow/tasks/' + workflowID, {
-                        dataType: 'json',
-                        contentType: "application/json; charset=utf-8",
-                        type: 'POST',
-                        data: JSON.stringify({
-                            WorkflowAction: $('input[name=Action]:checked', '#ActionArea').val(),
-                            AssignTo: $('#ReassignTo').jqxDropDownList('val'),
-                            Comment: $('#Comment').val()
-                        })
-                    }).fail(function (xhr, status, error) {
-                        var response = {
-                            type: 'error',
-                            title: 'Error occured',
-                            message: error,
-                            context: 'Workflow'
-                        };
-                        OnFailed(response, status, xhr);
-                    })
-                      .done(function (data, status, xhr) {
-                          OnSuccess(data, status, xhr);
-                      }).always(function () {
-                          $('#progress').html('');
-                      });
+                            var reassignSource = {
+                                datatype: "json",
+                                datafields: [
+                                    { name: 'FullName' },
+                                    { name: 'ResourceID' }
+                                ],
+                                url: '/api/resources/1'
+                            };
+                            var reassignAdapter = new $.jqx.dataAdapter(reassignSource);
+                            $('#ReassignTo').jqxDropDownList({
+                                enableBrowserBoundsDetection: true,
+                                filterable: true,
+                                searchMode: 'containsignorecase',
+                                displayMember: 'FullName',
+                                valueMember: 'ResourceID',
+                                width: '100%',
+                                source: reassignAdapter,
+                                theme: theme
+                            });
+                        }
+
+                        $('#SaveButton').on('click', function () {
+                            $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
+
+                            $.ajax('/services/workflow/tasks/' + workflowID, {
+                                dataType: 'json',
+                                contentType: "application/json; charset=utf-8",
+                                type: 'POST',
+                                data: JSON.stringify({
+                                    WorkflowAction: $('input[name=Action]:checked', '#ActionArea').val(),
+                                    AssignTo: $('#ReassignTo').jqxDropDownList('val'),
+                                    Comment: $('#Comment').val()
+                                })
+                            }).fail(function (xhr, status, error) {
+                                var response = {
+                                    type: 'error',
+                                    title: 'Error occured',
+                                    message: error,
+                                    context: 'Workflow'
+                                };
+                                OnFailed(response, status, xhr);
+                            })
+                              .done(function (data, status, xhr) {
+                                  OnSuccess(data, status, xhr);
+                              }).always(function () {
+                                  $('#progress').html('');
+                              });
+                        });
+                    }
+                    else {
+                        $('#SaveButton').hide();
+
+                        $('#FormTitle').text('No permissions to this workflow');
+                        $('#FormDescription').text('You have either completed your required task or you do not have access to this workflow.');
+                        $('#RequestDetail').html('');
+                    }
                 });
-            }
-            else {
-                $('#SaveButton').hide();
-
-                $('#FormTitle').text('No permissions to this workflow');
-                $('#FormDescription').text('You have either completed your required task or you do not have access to this workflow.');
-                $('#RequestDetail').html('');
-            }
-        });
-    });
-</script>
+            });
+        </script>

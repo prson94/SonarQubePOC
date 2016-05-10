@@ -66,11 +66,12 @@ namespace d360.web.Controllers
 
         #region Partials
 
-        [Route("{id}/overlay")]
-        public ActionResult WorkflowActionOverlay(Guid id)
+        [Route("{id}/overlay/{full?}")]
+        public ActionResult WorkflowActionOverlay(Guid id, bool full = false)
         {
             var workflow = Company.GetById<Workflow>(id);
             ViewBag.WorkflowID = id;
+            ViewBag.IsFullOverlay = full;
             return PartialView(string.Format("WorkflowActionOverlay_{0}", (int)workflow.WorkflowType));
         }
 

@@ -118,6 +118,7 @@
     <Compile Include="activities\GetAdministrators.cs" />
     <Compile Include="activities\ReadCertification.cs" />
     <Compile Include="entities\ViewModels.cs" />
+    <Compile Include="entities\WorkflowIssue.cs" />
     <Compile Include="entities\WorkflowTypeRelation.cs" />
     <Compile Include="entities\WorkflowStatus.cs" />
     <Compile Include="entities\WorkflowResource.cs" />

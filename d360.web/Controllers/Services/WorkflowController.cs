@@ -14,6 +14,7 @@ using d360.workflow.models;
 using System.Net;
 using d360.workflow.entities;
 using d360.web.Models;
+using System.Web.Http.OData;
 
 namespace d360.web.Controllers.Services
 {
@@ -198,6 +199,39 @@ namespace d360.web.Controllers.Services
                 i.WorkflowTypeName = i.Workflow.GetWorkflowTypeDisplayName();
             });
             return items;
+        }
+
+        [Route("tasks/all/issues"), HttpGet]
+        public IQueryable GetIssuesForAllUsers()
+        {
+            
+            List<string> objectTypeList = new List<string> { "Resource", "Group" };
+
+                  var res = from workflows in Company.WorkflowIssues
+                              join comments in Company.Comments on workflows.CommentID equals comments.ID
+                              join commentRel in Company.CommentRelations on comments.ID equals commentRel.CommentID
+                              from resources in Company.WorkflowResources
+                               .Where(o => workflows.WorkflowID == o.WorkflowID && o.IsComplete == false && o.ResourceID == Company.CurrentResourceID)
+                               .DefaultIfEmpty()
+                            where !objectTypeList.Contains(commentRel.ObjectType)
+                            select new
+                              {
+                                  WorkflowID = workflows.WorkflowID,
+                                  Issue = comments.Body,
+                                  DateStarted = workflows.DateStarted,
+                                  DateCompleted = workflows.DateCompleted,
+                                  IsCompleted = workflows.IsCompleted,
+                                  Name = workflows.Name,
+                                  Object = workflows.Object,                                  
+                                  AllowAction = resources != null,
+                                  RaisedBy = workflows.RaisedBy,
+                                  ObjectID = workflows.ObjectID,
+                                  RaisedByResourceID = workflows.CreatingResourceID,
+                                  Url = workflows.Url,
+                                  ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)")
+                            };
+
+                  return res;                  
         }
 
         /// <summary>

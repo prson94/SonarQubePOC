@@ -185,6 +185,8 @@
             self.ActionEditRelate = "@(ContextList.ActionEditRelate)";
             self.ActionUnrelate = "@(ContextList.ActionUnrelate)";
 
+            self.Monitor = "@(ContextList.Monitor)";
+
             return self;
         }
 
@@ -254,6 +256,8 @@
             search(this, new PageViewModel("@(Resources.PageInfo.Search_Title)", "", [],'',0,true), templatePath, contextList);
             home(this, new PageViewModel("@(Resources.PageInfo.Home_Title)", "", [],'',0,true), templatePath, contextList,@(CurrentResourceID));
             community_home(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList, @(CurrentResourceID));
+
+            actionsmonitor_list(this, new PageViewModel("@(Resources.PageInfo.Community_Home_Title)", "@(Resources.PageInfo.Community_Home_Description)", []), templatePath, contextList);
 
             this.before(function(){
                 amplify.publish(AmplifyActions.Unsubscribe, { });

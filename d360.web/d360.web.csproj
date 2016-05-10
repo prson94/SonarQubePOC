@@ -475,6 +475,7 @@
     <Content Include="Content\styles\navigation.min.css">
       <DependentUpon>navigation.css</DependentUpon>
     </Content>
+    <Content Include="Content\templates\actionsmonitor.list.html" />
     <Content Include="Content\templates\artifacts.root.html" />
     <Content Include="Content\templates\parts\DetailTile.html" />
     <Content Include="Content\templates\parts\DetailTileSmall.html" />
@@ -821,6 +822,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
+    <Content Include="fonts\fontawesome-webfont.woff2" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - North Central.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - Central.pubxml" />
@@ -973,6 +975,7 @@
     <Content Include="Scripts\r.js" />
     <Content Include="Scripts\require.js" />
     <Content Include="Scripts\templates\artifacts.root.js" />
+    <Content Include="Scripts\templates\actionsmonitor.list.js" />
     <Content Include="Scripts\templates\rules.admin.js" />
     <Content Include="Scripts\templates\rules.item.js" />
     <Content Include="Scripts\templates\rules.list.js" />
