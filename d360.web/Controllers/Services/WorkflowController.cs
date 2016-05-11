@@ -201,13 +201,46 @@ namespace d360.web.Controllers.Services
             return items;
         }
 
-        [Route("tasks/all/issues"), HttpGet]
-        public IQueryable GetIssuesForAllUsers()
+        [Route("all/challenges"), HttpGet]
+        public IQueryable GetChallengesForAllUsers()
         {
-            
             List<string> objectTypeList = new List<string> { "Resource", "Group" };
 
-                  var res = from workflows in Company.WorkflowIssues
+            var res = from workflows in Company.WorkflowChallenges
+                      join comments in Company.Comments on workflows.CommentID equals comments.ID
+                      join commentRel in Company.CommentRelations on comments.ID equals commentRel.CommentID
+                      from resources in Company.WorkflowResources
+                       .Where(o => workflows.WorkflowID == o.WorkflowID && o.IsComplete == false && o.ResourceID == Company.CurrentResourceID)
+                       .DefaultIfEmpty()
+                      where !objectTypeList.Contains(commentRel.ObjectType)
+                      select new
+                      {
+                          WorkflowID = workflows.WorkflowID,
+                          Reason = comments.Body,
+                          DateStarted = workflows.DateStarted,
+                          DateCompleted = workflows.DateCompleted,
+                          IsCompleted = workflows.IsCompleted,
+                          Name = workflows.Name,                          
+                          AllowAction = resources != null,
+                          RaisedBy = workflows.RaisedBy,
+                          ArtifactID = workflows.ArtifactID,
+                          ArtifactTypeName = workflows.ArtifactTypeName,
+                          RaisedByResourceID = workflows.CreatingResourceID,
+                          Url = workflows.Url,
+                          IsApproved = workflows.Approved,
+                          Notes = workflows.ClosingNotes,
+                          ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)")
+                      };
+
+            return res;
+        }
+
+        [Route("all/issues"), HttpGet]
+        public IQueryable GetIssuesForAllUsers()
+        {            
+            List<string> objectTypeList = new List<string> { "Resource", "Group" };
+
+            var res = from workflows in Company.WorkflowIssues
                               join comments in Company.Comments on workflows.CommentID equals comments.ID
                               join commentRel in Company.CommentRelations on comments.ID equals commentRel.CommentID
                               from resources in Company.WorkflowResources
@@ -228,7 +261,8 @@ namespace d360.web.Controllers.Services
                                   ObjectID = workflows.ObjectID,
                                   RaisedByResourceID = workflows.CreatingResourceID,
                                   Url = workflows.Url,
-                                  ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)")
+                                  ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
+                                  Notes = workflows.Comments
                             };
 
                   return res;                  

@@ -5,21 +5,25 @@
             var permissions = new PermissionsModel();
 
             pageViewModel.Title = 'Monitor';
-            pageViewModel.Directions = 'View all current and past issues.';
+            pageViewModel.Directions = 'View all current and past issues and challenges.';
 
             pageViewModel.breadcrumbs = [];
             pageViewModel.breadcrumbs.push({ Name: 'Monitor', Active: true });
             
             context.title(pageViewModel.Title);
 
-            var WorkflowGridSource;
-            var WorkflowGridAdapter;
+            var IssueGridSource;
+            var IssueGridAdapter;
+            var ChallengeGridSource;
+            var ChallengeGridAdapter;
             
             //#region Event Handlers
                         
             function unsubscribe(data) {
-                WorkflowGridAdapter = null;
-                WorkflowGridSource = null;
+                IssueGridAdapter = null;
+                IssueGridSource = null;
+                ChallengeGridSource = null;
+                ChallengeGridAdapter = null;
                         
                 amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
             }
@@ -34,14 +38,14 @@
 
                     $('#SideIcons').PageTools();
                     $('#SideIcons').PageTools('clear');
-                                                            
+                                                                                
                     //#region Grid Logic
 
-                    WorkflowGridSource = {
+                    IssueGridSource = {
                         datatype: 'json',
                         type: 'get',
-                        //url: "/services/workflow/tasks/all/issues?$orderby=DateStarted desc,Issue&$filter=substringof('aaa',Issue)",
-                        url: "/services/workflow/tasks/all/issues?$orderby=DateStarted desc,Issue",
+                        //url: "/services/workflow/all/issues?$orderby=DateStarted desc,Issue&$filter=substringof('aaa',Issue)",
+                        url: "/services/workflow/all/issues?$orderby=DateStarted desc,Issue",
                         datafields:
                         [
                             { name: 'WorkflowID', type:'string' },
@@ -57,10 +61,11 @@
                             { name: 'RaisedByResourceID', type: 'number' },
                             { name: 'Url', type: 'string' },
                             { name: 'ActivityName', type: 'string' },
+                            { name: 'Notes', type: 'string' },
                         ]
                     };
 
-                    WorkflowGridAdapter = new $.jqx.dataAdapter(WorkflowGridSource);
+                    IssueGridAdapter = new $.jqx.dataAdapter(IssueGridSource);
 
                     $("#IssuesGrid").jqxGrid({
                         altrows: true,
@@ -71,12 +76,10 @@
                         filterable: true,
                         showfilterrow: true,
                         pageable: true,
-                        pagesizeoptions: ['5', '10', '20'],
-                        pagesize: 10,
+                        pagesizeoptions: ['5', '10', '20'],                        
                         columnsresize: true,
-                        source: WorkflowGridAdapter,
-                        theme: list_theme,
-                        groupable: false,
+                        source: IssueGridAdapter,
+                        theme: list_theme,                        
                         columns: [                            
                             , { datafield: "Issue", text: 'Issue', width: '20%' }                            
                             , {
@@ -99,7 +102,7 @@
                                     return '<div style="overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 15px;"' + (!data.AllowAction && !data.IsCompleted ? 'data-type="WorkflowTypeRelation" data-context="list" data-id="' + data.WorkflowID + '"' : '') + '>' + (!data.AllowAction && !data.IsCompleted ? '<i class="fa fa-question-circle-o" aria-hidden="true"></i> ' : '') + data.ActivityName + '</div>';
                                 }
                             }
-                            , { datafield: "IsCompleted", text: 'Closed?', columntype: 'checkbox', filtertype: 'bool', width: 80 }
+                            , { datafield: "Notes", text: 'Closing Notes' }
                             , {
                                 datafield: "WorkflowID",
                                 text: "",
@@ -118,6 +121,89 @@
                             ]
                     });
 
+
+
+                    ChallengeGridSource = {
+                        datatype: 'json',
+                        type: 'get',                        
+                        url: "/services/workflow/all/challenges?$orderby=DateStarted desc,Reason",
+                        datafields:
+                        [
+                            { name: 'WorkflowID', type: 'string' },
+                            { name: 'Reason', type: 'string' },
+                            { name: 'RaisedBy', type: 'string' },
+                            { name: 'DateStarted', type: 'date' },
+                            { name: 'DateCompleted', type: 'date' },
+                            { name: 'IsCompleted', type: 'bool' },
+                            { name: 'Name', type: 'string' },
+                            { name: 'ArtifactTypeName', type: 'string' },
+                            { name: 'AllowAction', type: 'bool' },
+                            { name: 'ArtifactID', type: 'number' },
+                            { name: 'RaisedByResourceID', type: 'number' },
+                            { name: 'Url', type: 'string' },
+                            { name: 'IsApproved', type: 'bool' },
+                            { name: 'Notes', type: 'string' },
+                            { name: 'ActivityName', type: 'string' },
+                        ]
+                    };
+
+                    ChallengeGridAdapter = new $.jqx.dataAdapter(ChallengeGridSource);
+
+                    $("#ChallengesGrid").jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        autoheight: true,
+                        autorowheight: true,
+                        sortable: true,
+                        filterable: true,
+                        showfilterrow: true,
+                        pageable: true,
+                        pagesizeoptions: ['5', '10', '20'],
+                        columnsresize: true,
+                        source: ChallengeGridAdapter,
+                        theme: list_theme,
+                        columns: [
+                            , { datafield: "Reason", text: 'Reason', width: '20%' }
+                            , {
+                                filtertype: 'checkedlist', datafield: "RaisedBy", text: "Created By", width: 150,
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    return previewLinkRenderer('Resource', data.RaisedByResourceID, '#/resources/' + data.RaisedByResourceID, data.RaisedBy);
+                                }
+                            }
+                            , { datafield: "DateStarted", text: 'Created On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }
+                            , { datafield: "DateCompleted", text: 'Closed On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }
+                            , {
+                                datafield: "Name", text: "Name",
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    return (data.ArtifactID > 0 ? previewLinkRenderer('Artifact', data.ArtifactID, data.Url, data.Name) : textrenderer("Removed Item"));
+                                }
+                            }
+                            , { datafield: "ArtifactTypeName", text: 'Artifact Type', filtertype: 'checkedlist', width: 150 }
+                            , {
+                                datafield: "ActivityName", text: "Status", filtertype: 'checkedlist', width: 125,
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    return '<div style="overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 15px;"' + (!data.AllowAction && !data.IsCompleted ? 'data-type="WorkflowTypeRelation" data-context="list" data-id="' + data.WorkflowID + '"' : '') + '>' + (!data.AllowAction && !data.IsCompleted ? '<i class="fa fa-question-circle-o" aria-hidden="true"></i> ' : '') + data.ActivityName + '</div>';
+                                }
+                            }                            
+                            , { datafield: "IsApproved", text: 'Approved?', columntype: 'checkbox', threestatecheckbox: true, filtertype: 'bool', width: 80 }
+                            , { datafield: "Notes", text: 'Closing Notes' }
+                            , {
+                                datafield: "WorkflowID",
+                                text: "",
+                                sortable: false,
+                                filterable: false,
+                                width: '40px',
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    var tools = [];
+
+                                    if (data.AllowAction)
+                                        tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay/true' });
+
+                                    return renderToolsHtml(value, tools, contextList.Monitor, data);
+                                }
+                            }
+                        ]
+                    });
                     //#endregion
 
                     //#region Event Subscriptions

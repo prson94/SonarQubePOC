@@ -12,7 +12,7 @@ using System.ComponentModel.DataAnnotations;
 namespace d360.workflow.entities
 {
     [DataContract(Namespace = constants.NAMESPACE)]
-    public class WorkflowIssue : BaseObject
+    public class WorkflowChallenge : BaseObject
     {
         [DataMember, Key]
         public Guid WorkflowID { get; set; }
@@ -34,20 +34,26 @@ namespace d360.workflow.entities
 
         [DataMember]
         public string Name { get; set; }
-
-        [DataMember]
-        public string Object { get; set; }
+        
 
         [DataMember]
         public string RaisedBy { get; set; }
 
         [DataMember]
-        public int? ObjectID{ get; set; }
+        public int? ArtifactID { get; set; }
 
+
+        [DataMember]
+        public string ArtifactTypeName { get; set; }
+        
         [DataMember]
         public string Url { get; set; }
 
         [DataMember]
-        public string Comments { get; set; }
+        public bool? Approved { get; set; }
+
+        [DataMember]
+        public string ClosingNotes { get; set; }
     }
 }
+

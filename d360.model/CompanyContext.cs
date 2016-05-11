@@ -327,6 +327,7 @@ namespace d360.model
 
         public DbSet<d360.workflow.entities.Workflow> Workflows { get; set; }
 
+        public DbSet<d360.workflow.entities.WorkflowChallenge> WorkflowChallenges { get; set; }
         public DbSet<d360.workflow.entities.WorkflowIssue> WorkflowIssues { get; set; }
         public DbSet<d360.workflow.entities.WorkflowResource> WorkflowResources { get; set; }
         public DbSet<d360.workflow.entities.WorkflowStatus> WorkflowStatuses { get; set; }
