@@ -140,6 +140,7 @@
                             })
                               .done(function (data, status, xhr) {
                                   OnSuccess(data, status, xhr);
+                                  $('#SaveButton').toggle();
                               }).always(function () {
                                   $('#progress').html('');
                               });

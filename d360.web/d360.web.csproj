@@ -1099,6 +1099,7 @@
     <Content Include="Views\Overlays\Issues.cshtml" />
     <Content Include="Views\Form\DomainXrefItemForm.cshtml" />
     <Content Include="Views\Form\DomainForm.cshtml" />
+    <Content Include="Views\Overlays\RaiseIssue.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

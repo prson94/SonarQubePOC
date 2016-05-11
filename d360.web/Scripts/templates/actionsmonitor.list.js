@@ -28,7 +28,24 @@
                 $('#issues-tab').off('click', toggleActiveTab);
                 $('#challenge-tab').off('click', toggleActiveTab);
 
+                amplify.unsubscribe("SaveAction", saveAction);
                 amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);                
+            }
+
+            function saveAction(data) {                
+                try {
+                    switch (data.context) {                        
+                        case 'issueform':
+                        case 'IssueWorkflow':
+                            $("#IssuesGrid").jqxGrid('updatebounddata');
+                            break;
+                        case 'OwnerApprovalWorkflow':
+                            $("#ChallengesGrid").jqxGrid('updatebounddata');
+                            break;
+                    }
+                } catch (e) {
+                    logError("actionsmonitor.list : SaveAction", e);
+                }
             }
 
             function toggleActiveTab() {
@@ -48,9 +65,8 @@
                 .then(function (content) {
                     context.contentHeader(pageViewModel);
 
-                    $('#SideIcons').PageTools();
-                    $('#SideIcons').PageTools('clear');
-                                                                                
+                    $('#SideIcons').PageTools({ type: 'Monitor', id: 0 });
+                                                                                                    
                     //#region Grid Logic
 
                     IssueGridSource = {
@@ -96,7 +112,7 @@
                             , {
                                 datafield: "Name", text: "Name",
                                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                                    return (data.ObjectID > 0 ? previewLinkRenderer(data.Object, data.ObjectID, data.Url, data.Name) : textrenderer("Removed Item"));
+                                    return (data.ObjectID > 0 ? previewLinkRenderer(data.Object, data.ObjectID, data.Url, data.Name) : textrenderer(""));
                                 }
                             }
                             , { datafield: "Object", text: 'Type', filtertype: 'checkedlist', width: 150 }
@@ -215,7 +231,7 @@
                                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                                     var tools = [];
 
-                                    if (data.AllowAction)
+                                    if (data.AllowAction && !data.IsCompleted)
                                         tools.push({ icon: 'check-circle-o', urlprefix: 'workflow/' + data.WorkflowID + '/overlay/true' });
 
                                     return renderToolsHtml(value, tools, contextList.Monitor, data);
@@ -231,6 +247,7 @@
 
                     $('#challenge-tab').click(toggleActiveTab);
                                         
+                    amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //#endregion

@@ -239,16 +239,12 @@ namespace d360.web.Controllers.Services
 
         [Route("all/issues"), HttpGet]
         public IQueryable GetIssuesForAllUsers()
-        {            
-            List<string> objectTypeList = new List<string> { "Resource", "Group" };
-
+        {               
             var res = from workflows in Company.WorkflowIssues
-                              join comments in Company.Comments on workflows.CommentID equals comments.ID
-                              join commentRel in Company.CommentRelations on comments.ID equals commentRel.CommentID
+                              join comments in Company.Comments on workflows.CommentID equals comments.ID                          
                               from resources in Company.WorkflowResources
                                .Where(o => workflows.WorkflowID == o.WorkflowID && o.IsComplete == false && o.ResourceID == Company.CurrentResourceID)
-                               .DefaultIfEmpty()
-                            where !objectTypeList.Contains(commentRel.ObjectType)
+                               .DefaultIfEmpty()                            
                             select new
                               {
                                   WorkflowID = workflows.WorkflowID,
@@ -267,7 +263,7 @@ namespace d360.web.Controllers.Services
                                   Notes = workflows.Comments
                             };
 
-                  return res;                  
+                  return res.Distinct();                  
         }
 
         /// <summary>

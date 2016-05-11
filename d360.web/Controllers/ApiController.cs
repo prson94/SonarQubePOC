@@ -807,7 +807,7 @@ where   h.ID <> @t order by h.[Level] desc;
             #region Determine permissions
 
             List<SecurityDetail> permissions = null;
-            if (type != SystemObjects.FusionAttributeType && type != SystemObjects.Resource)
+            if (type != SystemObjects.FusionAttributeType && type != SystemObjects.Resource && type != SystemObjects.Monitor)
             {
                 if (context == "root")
                 {
@@ -1616,6 +1616,17 @@ where   h.ID <> @t order by h.[Level] desc;
                     {
                         list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
                     }
+                    break;
+                #endregion
+                case SystemObjects.Monitor:
+                    #region Actions
+                                        
+                    var disable = "";
+
+                    Community.GetCompanySettings().TryGetValue("DisableIssuePosting", out disable);
+
+                    if (string.Compare(disable, bool.TrueString, true) != 0)
+                        list.Add(new PageActionItem { Context = "Issue", Icon = Resources.Actions.Issue_Icon, Title = Resources.Actions.Issue, Uri = $"/overlays/RaiseIssue" });
                     break;
                     #endregion
             }

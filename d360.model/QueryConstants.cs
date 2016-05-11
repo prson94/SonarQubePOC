@@ -204,7 +204,7 @@ from	    Workflow W
 			inner join CommentRelation CR on CR.CommentID = C.ID and CR.ObjectType not in ('Resource', 'Group')
 			left outer join cache.ObjectDetails A on A.[Object] = CR.ObjectType and A.ObjectID = CR.ObjectID
             where  W.WorkflowType = 3
-order by    W.DateStarted
+order by    W.DateStarted desc
 ";
 
         public static string CurrentUserWorkflow3TaskItem = @"
@@ -224,7 +224,7 @@ from	    Workflow W
 				and W.WorkflowType = 3
                 and WR.IsComplete = 0 
             {0} 
-order by    W.DateStarted";
+order by    W.DateStarted desc";
 
 
         public static string CurrentUserWorkflow3SpecificObjectTaskItem = @"
@@ -243,7 +243,7 @@ from	    Workflow W
                 and WR.ResourceID = @r												
                 and WR.IsComplete = 0 												                        
             where CR.ObjectType = @type and CR.ObjectId = @id and W.DateCompleted is null and W.WorkflowType = 3
-order by    W.DateStarted";
+order by    W.DateStarted desc";
 
         public static string CurrentUserWorkflow4TaskItem = @"
 select		W.ID as WorkflowID,
@@ -267,7 +267,7 @@ from	    Workflow W
 												and W.WorkflowType = 4
                                                 and WR.IsComplete = 0 
 {0} 
-order by    W.DateStarted";
+order by    W.DateStarted desc";
 
         public static string DomainSettingsItem = @"
 select	*

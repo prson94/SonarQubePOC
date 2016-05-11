@@ -129,6 +129,8 @@ namespace d360.core
         RelationType = 60,
         [Description("Rule Dimension"), AllowSurvey(false)]
         RuleDimension = 61,
+        [Description("Monitor"), AllowSurvey(false)]
+        Monitor = 61,
     }
 
     public class SystemObjectInfo

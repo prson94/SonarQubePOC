@@ -4155,5 +4155,160 @@ function ArtifactFiltersViewModel(columns) {
     return self;
 }
 
+var IssueViewModel = function () {
+    var self = this;
+    self.comments = ko.observableArray();
+    self.newMessage = ko.observable();
+    self.newMessageType = ko.observable();
+    self.newMessageVisibility = ko.observable();
+    self.error = ko.observable();      
+    self.ProcessingCount = ko.observable(0);
+    
+    self.IsProcessing = ko.computed(function () {
+        return (self.ProcessingCount() != 0);
+    });
+
+    self.tagIndex = -1;
+
+    self.setIndex = function (data, event) {
+       
+
+        if (event.keyCode == 13) { //enter key
+            if (self.tagSuggestions().length == 1) {
+                var t = self.tagSuggestions()[0];
+                t.addTag();                
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+                var t = self.tagSuggestions()[self.tagIndex];
+                t.addTag();                
+                self.tagSuggestions([]);
+                self.newTag('');
+                return false;
+            }
+        }
+        else if (event.keyCode == 40 || event.keyCode == 38) { //up & down arrows
+            if (!self.tagSuggestionsPresent()) {
+                return false;
+            }
+            if (self.tagIndex != -1) {
+
+                self.tagSuggestions()[self.tagIndex].IsSelected(false);
+
+                if (event.keyCode == 38 && self.tagIndex > 0) {
+                    self.tagIndex--;
+                }
+                else if (event.keyCode == 40 && self.tagIndex < self.tagSuggestions().length) {
+                    self.tagIndex++;
+                }
+
+            } else {
+                self.tagIndex = 0;
+            }
+
+            if (self.tagIndex != -1) {
+                self.tagSuggestions()[self.tagIndex].IsSelected(true);
+            }
+            return false;
+        }
+        else {
+            self.tagIndex = -1;
+            return true;
+        }
+    };
+
+    self.pageSize = 25;
+    self.startMatch = /@/ig; //new RegExp("@");
+    self.wordMatch = /@(\w+)/ig; //new RegExp("@(\w+)");
+
+    self.newComments = ko.observableArray();
+    self.commentCounts = ko.observableArray();
+
+    self.ShowAddCommentControls = ko.observable(CompanySettings.DisableCommunityPosting == 'false' || CompanySettings.DisableIssuePosting == 'false' || ComanySettings.DisableQuestionPosting);
+    
+    self.ObjectType = null;
+    self.ObjectID = null;
+    self.VisibilityID = null;
+
+    self.FilterObjectType = null;
+    self.FilterObjectID = null;
+
+    
+    var typeOps = [];
+
+    var discussion = { Text: 'Discussion', Value: 2 };
+    var issue = { Text: 'Issue', Value: 5 };
+
+    self.typeEntryOptions = ko.observableArray(typeOps);
+            
+    self.selectedTypeFilterOption = ko.observable();
+
+    self.tagSuggestions = ko.observableArray();
+    self.tagSuggestionsPresent = ko.computed(function () {
+        return (self.tagSuggestions().length > 0);
+    }, self);
+
+    self.newTag = ko.observable();
+    self.tags = ko.observableArray();
+    self.newTag.subscribe(function (value) {
+        if (value) {
+            $.getJSON('/api/tagsuggestions', { phrase: value }, function (suggestions) {
+                // Object, ObjectID, TextPath, Url, ObjectTypeName
+                var mappedSuggestions = $.map(suggestions, function (item) { return new CommentTagItem(item, self); });
+                self.tagSuggestions(mappedSuggestions);
+            });
+        }
+        else {
+            self.tagSuggestions([]);
+        }
+    });
+
+    self.addIssue = function () {
+        self.ProcessingCount(self.ProcessingCount() + 1);
+        self.error(null);
+        if (self.newMessage() != '') {
+
+            var commentModel = {
+                ObjectType: self.ObjectType,
+                ObjectID: self.ObjectID,
+                Tags: [],
+                Comment: {
+                    Body: self.newMessage(),
+                    CommentTypeID: 5,
+                    VisibilityID: self.newMessageVisibility()
+                }
+            };
+
+            self.tags().forEach(function (tag) {
+                commentModel.Tags.push({ Object: tag.Object(), ObjectID: tag.ObjectID() });
+            });
+
+            $.ajax({
+                data: commentModel,
+                dataType: 'json',
+                method: 'POST',
+                url: '/services/community/comment'
+            }).done(function (newCommentData, status, xhr) {                                
+                self.ProcessingCount(self.ProcessingCount() - 1);
+                amplify.publish("SaveAction", { context: 'issueform', action: "add", id: newCommentData.ID, custom: { CommentTypeID: self.newMessageType() } });                                
+            }).fail(function (xhr, status, error) {
+                self.ProcessingCount(self.ProcessingCount() - 1);
+                self.error(status);
+            });
+        }
+        else {
+            self.ProcessingCount(self.ProcessingCount() - 1);
+            self.error('Body may not be empty.');
+        }
+    };
+    
+    return self;
+}
+
 
 //#endregion

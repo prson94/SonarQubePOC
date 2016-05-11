@@ -1,0 +1,24 @@
+﻿@model d360.core.entities.ObjectModel
+<div class="medium-overlay">
+    <div class="ui segment">
+        <h4>Raise Issue</h4>
+        <div class="form-instructions"></div>
+        <div id="CommentsOverlay" data-bind="template: {name: 'issueTmpl' }"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var IssueOverlay;
+    function unsubscribe() {
+        IssueOverlay = null;
+    }
+
+    $(function () {
+        IssueOverlay = new IssueViewModel();
+        ko.applyBindings(IssueOverlay, document.getElementById('CommentsOverlay'));
+        
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

@@ -1283,3 +1283,44 @@
     </div>
     <!-- /ko -->
 </script>
+
+<script id="issueTmpl" type="text/html">
+    <div class="social">
+
+        <table class="CommentForm" style="background-color: #efefef; border-radius: 2px;width: 100%; word-wrap:break-word;table-layout: fixed;" data-bind="visible: ShowAddCommentControls">
+            <tr>
+                <td class="input-field" colspan="2" style="padding: 5px">
+                    <div style="width:100%;">
+                        <textarea placeholder="What are the details of the issue you would like to raise?" class="grey lighten-5" style="font-size: larger; border: 1px solid #999; " data-bind="htmlarea: newMessage"></textarea> @*, event: { keyup: checkForTags } class="htmlArea"*@
+                    </div>
+                </td>
+            </tr>            
+            
+            <tr>
+                <td colspan="2" style="position: relative; padding: 6px 3px 0 3px;">                    
+                    <div style="white-space: nowrap;">
+                        <div style="display:inline-block; position: relative; width:100%;">
+                            <input data-bind="value: newTag, valueUpdate: 'afterkeydown', event : { keyup: setIndex }" placeholder="What item has the issue?" style="border: none; border: 1px solid #adacac; width:100%; line-height:1.5; padding:2px;" />
+                            <i class="fa fa-tags" style="position:relative; z-index:1; left: -25px; top: 1px; color: rgba(80, 80, 80, 0.85); width: 0; font-size:larger"></i>
+                            <div class="tagSuggestionDisplay" data-bind="visible: tagSuggestionsPresent" style="position:absolute; z-index:100; border-left:solid 1px #dedede; border-right:solid 1px #dedede; border-bottom:solid 1px #dedede; overflow-y: scroll; background-color: #fff; max-height:250px; box-shadow: 5px 5px 3px grey; border-radius: 3px">
+                                <div style="padding:4px; border-top:solid 1px #dedede; font-size:12px; ">
+                                    <!-- ko template: {name: 'commentTagSuggestionTmpl', foreach: tagSuggestions } -->
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding:5px">
+                        <!-- ko template: {name: 'commentTagTmpl', foreach: tags } -->
+                        <!-- /ko -->
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button style="display:inline; float:right; width:140px; margin: 0 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: addIssue"><span data-bind="visible: !IsProcessing()">Raise Issue</span><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing()" style="text-align:center;"></i></button>
+                </td>                
+            </tr>
+        </table>
+    </div>
+</script>

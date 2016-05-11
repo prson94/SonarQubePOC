@@ -156,6 +156,12 @@ where A.AuditID = {0}", auditID);
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
 
+        [Route("raiseissue")]
+        public ActionResult RaiseIssue()
+        {
+            return PartialView();
+        }
+
         [Route("{type}/{id:int}/detail")]
         public ActionResult Detail(SystemObjects type, int id)
         {
