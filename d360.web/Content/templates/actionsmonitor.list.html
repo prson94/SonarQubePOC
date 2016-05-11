@@ -1,17 +1,20 @@
-﻿<div class="row">    
+﻿
+<div class="row">
     <div class="col s12">
-        <div id="IssueTile" class="tile tile-detail">
-            <header>Issue History</header>
+        <ul class="tabs">
+            <li class="tab col s2 active-monitor-tab"><a href="javascript:void(0);" id="issues-tab"><i class="fa fa-flag" aria-hidden="true"></i> Issues</a></li>
+            <li class="tab col s2 monitor-tab"><a href="javascript:void(0);" id="challenge-tab"><i class="fa fa-question" aria-hidden="true"></i> Challenges</a></li>            
+            <li class="tab col s8 monitor-tab"></li>            
+        </ul>
+    </div>    
+</div>
+<div class="row">
+    <div class="col s12">
+        <div class="monitor-tab-bottom">
             <div id="IssuesGrid"></div>
+            <div id="ChallengesGrid" style="display:none;"></div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col s12">
-        <div id="ChallengeTile" class="tile tile-detail">
-            <header>Challenge History</header>
-            <div id="ChallengesGrid"></div>
-        </div>
-    </div>
-</div>
+

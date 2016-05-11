@@ -24,8 +24,20 @@
                 IssueGridSource = null;
                 ChallengeGridSource = null;
                 ChallengeGridAdapter = null;
-                        
-                amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                
+                $('#issues-tab').off('click', toggleActiveTab);
+                $('#challenge-tab').off('click', toggleActiveTab);
+
+                amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);                
+            }
+
+            function toggleActiveTab() {
+                $('#IssuesGrid').toggle();
+                $('#issues-tab').parent().toggleClass('active-monitor-tab');
+                $('#issues-tab').parent().toggleClass('monitor-tab');
+                $('#ChallengesGrid').toggle();
+                $('#challenge-tab').parent().toggleClass('active-monitor-tab');
+                $('#challenge-tab').parent().toggleClass('monitor-tab');
             }
 
             //#endregion
@@ -76,20 +88,11 @@
                         filterable: true,
                         showfilterrow: true,
                         pageable: true,
-                        pagesizeoptions: ['5', '10', '20'],                        
-                        columnsresize: true,
+                        pagesizeoptions: ['5', '10', '20'],                                                
                         source: IssueGridAdapter,
                         theme: list_theme,                        
                         columns: [                            
-                            , { datafield: "Issue", text: 'Issue', width: '20%' }                            
-                            , {
-                                filtertype: 'checkedlist', datafield: "RaisedBy", text: "Created By", width: 150,
-                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                                    return previewLinkRenderer('Resource', data.RaisedByResourceID, '#/resources/' + data.RaisedByResourceID, data.RaisedBy);
-                                }
-                            }
-                            , { datafield: "DateStarted", text: 'Created On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }
-                            , { datafield: "DateCompleted", text: 'Closed On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }
+                            , { datafield: "Issue", text: 'Issue' }
                             , {
                                 datafield: "Name", text: "Name",
                                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
@@ -97,6 +100,14 @@
                                 }
                             }
                             , { datafield: "Object", text: 'Type', filtertype: 'checkedlist', width: 150 }
+                            , {
+                                filtertype: 'checkedlist', datafield: "RaisedBy", text: "Created By", width: 150,
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    return previewLinkRenderer('Resource', data.RaisedByResourceID, '#/resources/' + data.RaisedByResourceID, data.RaisedBy);
+                                }
+                            }
+                            , { datafield: "DateStarted", text: 'Created On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }
+                            , { datafield: "DateCompleted", text: 'Closed On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }                            
                             , { datafield: "ActivityName", text: "Status", filtertype: 'checkedlist', width: 125,
                                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {                                                        
                                     return '<div style="overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 15px;"' + (!data.AllowAction && !data.IsCompleted ? 'data-type="WorkflowTypeRelation" data-context="list" data-id="' + data.WorkflowID + '"' : '') + '>' + (!data.AllowAction && !data.IsCompleted ? '<i class="fa fa-question-circle-o" aria-hidden="true"></i> ' : '') + data.ActivityName + '</div>';
@@ -158,12 +169,18 @@
                         filterable: true,
                         showfilterrow: true,
                         pageable: true,
-                        pagesizeoptions: ['5', '10', '20'],
-                        columnsresize: true,
+                        pagesizeoptions: ['5', '10', '20'],                        
                         source: ChallengeGridAdapter,
                         theme: list_theme,
                         columns: [
-                            , { datafield: "Reason", text: 'Reason', width: '20%' }
+                            , { datafield: "Reason", text: 'Reason' }
+                            , {
+                                datafield: "Name", text: "Artifact",
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    return (data.ArtifactID > 0 ? previewLinkRenderer('Artifact', data.ArtifactID, data.Url, data.Name) : textrenderer("Removed Item"));
+                                }
+                            }
+                            , { datafield: "ArtifactTypeName", text: 'Artifact Type', filtertype: 'checkedlist', width: 150 }
                             , {
                                 filtertype: 'checkedlist', datafield: "RaisedBy", text: "Created By", width: 150,
                                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
@@ -171,14 +188,7 @@
                                 }
                             }
                             , { datafield: "DateStarted", text: 'Created On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }
-                            , { datafield: "DateCompleted", text: 'Closed On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }
-                            , {
-                                datafield: "Name", text: "Name",
-                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                                    return (data.ArtifactID > 0 ? previewLinkRenderer('Artifact', data.ArtifactID, data.Url, data.Name) : textrenderer("Removed Item"));
-                                }
-                            }
-                            , { datafield: "ArtifactTypeName", text: 'Artifact Type', filtertype: 'checkedlist', width: 150 }
+                            , { datafield: "DateCompleted", text: 'Closed On', cellsformat: 'MM/dd/yy h:mm:ss tt', filtertype: 'range', width: 150 }                            
                             , {
                                 datafield: "ActivityName", text: "Status", filtertype: 'checkedlist', width: 125,
                                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
@@ -207,6 +217,10 @@
                     //#endregion
 
                     //#region Event Subscriptions
+
+                    $('#issues-tab').click(toggleActiveTab);
+
+                    $('#challenge-tab').click(toggleActiveTab);
                                         
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 

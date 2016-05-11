@@ -1,51 +1,63 @@
 ﻿@{
     var id = ViewBag.WorkflowID;
+    var fullOverlay = ViewBag.IsFullOverlay;
 }
 
-        <div class="left form-header-info">
-            <h4 id="FormTitle"></h4>
-        </div>
-        <div class="right">
-            <button type="button" id="SaveButton" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="Workflow">Save</button>
-        </div>
-        <div class="clear"></div>
-        <div id="FormDescription" class="form-instructions"></div>
-        <div id="progress"></div>        
-        <div class="row" id="data">
-            <div class="col s12 m6 l6">
-                <div id="RequestDetail">
-                    <div class="FieldName">Item</div>
-                    <div id="ArtifactValue"></div>                    
-                    <div class="FieldName">Issue</div>
-                    <div id="IssueValue"></div>
-                    <div class="FieldName">Requestor</div>
-                    <div id="RequestorValue"></div>
-                    <div class="FieldName">Date</div>
-                    <div id="DateValue"></div>
-                </div>
-            </div>
-            <div class="col s12 m6 l6">
-                <div id="PoolMessage">
-                    Please select accept if you agree with the challenge to the item, or close otherwise.  Please provide a comment below.  As you are working on this issue,
-                    you may also comment on the issue where it is listed on your Board.
-                </div>
-                <div id="ActionArea" class="row">
-                    <div class="col s6" id="Action1Wrapper">
-                        <input type="radio" id="Action1" name="Action" value="accept" checked="checked" />
-                        <label for="Action1">Accept</label>
-                    </div>                    
-                    <div class="col s6" id="Action3Wrapper">
-                        <input type="radio" id="Action3" name="Action" value="close" />
-                        <label for="Action3">Close</label>
-                    </div>
-                </div>
-                <div id="CommentArea">
-                    <div class="FieldName">Comment</div>
-                    <textarea id="Comment"></textarea>
-                </div>
-            </div>
-        </div>
+@if (fullOverlay)
+{
+    @:<div class="medium-overlay">
+        @:<div class="ui segment">
+}
 
+<div class="left form-header-info">
+    <h4 id="FormTitle"></h4>
+</div>
+<div class="right">
+    <button type="button" id="SaveButton" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="Workflow">Save</button>
+</div>
+<div class="clear"></div>
+<div id="FormDescription" class="form-instructions"></div>
+<div id="progress"></div>
+<div class="row" id="data">
+    <div class="col s12 m6 l6">
+        <div id="RequestDetail">
+            <div class="FieldName">Item</div>
+            <div id="ArtifactValue"></div>
+            <div class="FieldName">Issue</div>
+            <div id="IssueValue"></div>
+            <div class="FieldName">Requestor</div>
+            <div id="RequestorValue"></div>
+            <div class="FieldName">Date</div>
+            <div id="DateValue"></div>
+        </div>
+    </div>
+    <div class="col s12 m6 l6">
+        <div id="PoolMessage">
+            Please select accept if you agree with the challenge to the item, or close otherwise.  Please provide a comment below.  As you are working on this issue,
+            you may also comment on the issue where it is listed on your Board.
+        </div>
+        <div id="ActionArea" class="row">
+            <div class="col s6" id="Action1Wrapper">
+                <input type="radio" id="Action1" name="Action" value="accept" checked="checked" />
+                <label for="Action1">Accept</label>
+            </div>
+            <div class="col s6" id="Action3Wrapper">
+                <input type="radio" id="Action3" name="Action" value="close" />
+                <label for="Action3">Close</label>
+            </div>
+        </div>
+        <div id="CommentArea">
+            <div class="FieldName">Comment</div>
+            <textarea id="Comment"></textarea>
+        </div>
+    </div>
+</div>
+
+@if (fullOverlay)
+{
+    @:</div>
+            @:</div>
+}
 
 <script type="text/javascript">
     var workflowID = "@(id)";
