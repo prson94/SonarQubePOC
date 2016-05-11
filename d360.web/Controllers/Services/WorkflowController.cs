@@ -229,7 +229,9 @@ namespace d360.web.Controllers.Services
                           Url = workflows.Url,
                           IsApproved = workflows.Approved,
                           Notes = workflows.ClosingNotes,
-                          ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)")
+                          ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
+                          ClosedBy = workflows.ClosedBy,
+                          ClosedByResourceID = workflows.ClosedByResourceID
                       };
 
             return res;

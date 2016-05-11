@@ -155,6 +155,8 @@
                             { name: 'IsApproved', type: 'bool' },
                             { name: 'Notes', type: 'string' },
                             { name: 'ActivityName', type: 'string' },
+                            { name: 'ClosedBy', type: 'string' },
+                            { name: 'ClosedByResourceID', type: 'string' },
                         ]
                     };
 
@@ -197,6 +199,13 @@
                             }                            
                             , { datafield: "IsApproved", text: 'Approved?', columntype: 'checkbox', threestatecheckbox: true, filtertype: 'bool', width: 80 }
                             , { datafield: "Notes", text: 'Closing Notes' }
+                            , {
+                                filtertype: 'checkedlist', datafield: "ClosedBy", text: "Closed By", width: 150,
+                                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                    if(data.ClosedByResourceID > 0)
+                                        return previewLinkRenderer('Resource', data.ClosedByResourceID, '#/resources/' + data.ClosedByResourceID, data.ClosedBy);
+                                }
+                            }
                             , {
                                 datafield: "WorkflowID",
                                 text: "",

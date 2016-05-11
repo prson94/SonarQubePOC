@@ -54,6 +54,12 @@ namespace d360.workflow.entities
 
         [DataMember]
         public string ClosingNotes { get; set; }
+
+        [DataMember]
+        public string ClosedBy { get; set; }
+
+        [DataMember]
+        public int? ClosedByResourceID { get; set; }
     }
 }
 
