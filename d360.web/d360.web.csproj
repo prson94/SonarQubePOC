@@ -475,6 +475,7 @@
     <Content Include="Content\styles\navigation.min.css">
       <DependentUpon>navigation.css</DependentUpon>
     </Content>
+    <None Include="Content\styles\typeahead.less" />
     <Content Include="Content\templates\actionsmonitor.list.html" />
     <Content Include="Content\templates\artifacts.root.html" />
     <Content Include="Content\templates\parts\DetailTile.html" />
@@ -964,6 +965,7 @@
     <Content Include="Scripts\parts\RelationshipTypeTreeTile.js" />
     <Content Include="Scripts\parts\Relationship_SimpleHierarchyTile.js" />
     <Content Include="Scripts\parts\ResourceStatisticsTile.js" />
+    <Content Include="Scripts\parts\SearchBarTypeahead.js" />
     <Content Include="Scripts\parts\SearchResultsGrid.js" />
     <Content Include="Scripts\parts\StatisticTypeAllocationGrid.js" />
     <Content Include="Scripts\parts\TaxonomyTypeLevelsGrid.js" />
@@ -982,6 +984,7 @@
     <Content Include="Scripts\templates\policies.list.js" />
     <Content Include="Scripts\templates\policies.admin.js" />
     <Content Include="Scripts\templates\taxonomies.root.js" />
+    <Content Include="Scripts\typeahead.bundle.js" />
     <Content Include="Scripts\version.json" />
     <None Include="Scripts\_references.js" />
     <Content Include="Web.config">

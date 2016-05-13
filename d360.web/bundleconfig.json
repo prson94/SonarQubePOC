@@ -32,7 +32,8 @@
       "Scripts/d3s.RandomSurveyQuestion.js",
       "Scripts/parts/*.js", 
       //"Scripts/parts/_Utils.js",
-      "Scripts/templates/*.js"
+      "Scripts/templates/*.js",
+      "Scripts/typeahead.bundle.js"
     ]
   },
   {
@@ -49,7 +50,7 @@
       "Content/styles/materialize.css",
       "Content/styles/Root.css",
       "Content/styles/ContentFormatting.css",
-      "Content/styles/navigation.css"
+      "Content/styles/navigation.css"      
     ]
   }
 ]

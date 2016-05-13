@@ -35,7 +35,7 @@
             }
         }
 
-        function simpleSearch() {
+        function searchTypeString() {
             var items = $("#SearchTypesDropdown").jqxDropDownList('getCheckedItems');
             var searchTypes = '';
 
@@ -43,6 +43,15 @@
                 if (searchTypes.length > 0) searchTypes += ",";
                 searchTypes += items[i].value;
             }
+
+            if (searchTypes.length == 0) searchTypes = CompanySettings.DefaultSearchTypes;
+            return searchTypes;
+        }
+
+        function simpleSearch(closeTypeahead) {
+            var searchTypes = searchTypeString();            
+            if(closeTypeahead === undefined || closeTypeahead) $('.tt-input').typeahead('close');
+                        
             if (searchTypes.length == 0) return;
             searchCtrl.doSearch($("#home-search-text").val(), $('#search-exact-chk').is(':checked'), searchTypes);
             $("#SearchArea").show();
@@ -140,6 +149,8 @@
                 renderSearchTypesDropdown("SearchTypesDropdown");
                 
                 $("#home-search-text").focus();
+                        
+                SearchBarTypeahead('home-search-text', simpleSearch, searchTypeString, 5);
             });
     });
 }

@@ -537,6 +537,54 @@ namespace d360.extensions.search
 
         }
 
+
+        public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, int size = 10, string type = "")
+        {            
+            var searchType = type != null ? type + "/" : null;
+
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/{searchType}_search", companyID);
+            
+            StringBuilder sb = new StringBuilder();
+
+            if (!string.IsNullOrEmpty(phrase))
+            {
+                phrase = EscapeSpecialCharacters(phrase);
+
+                sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+            }
+
+            sb.Append("}},\"from\":" + 0 + ",\"size\":" + size + ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }");
+
+            sb.Append(", \"highlight\": {\"fields\": {\"*\": { \"pre_tags\": [\"<em class='match'>\"],\"post_tags\": [\"</em>\"],\"number_of_fragments\" : 0 }},\"require_field_match\": false  }");
+
+            sb.Append("}");
+                     
+            loadMessageInRequestBody(webReq, sb.ToString());
+            var response = getJsonResponse(webReq);
+            if (response.Status != HttpStatusCode.OK)
+                throw new ApplicationException(response.StatusMessage);
+
+            var searchResults = response.Data.ToObject<SearchResultsModel>();
+
+            return searchResults.hits.hits.Select(h => new TypeaheadResult
+            {
+                Name = GetPropertyValue<string>(h._source, "Name"),
+                DisplayName = GetHighlightedPropertyValueIfExists(h, "Name"),
+                Desc = GetHighlightedPropertyValueIfExists(h, "Description"),
+                Type = GetTypeAheadDisplayType(h),//mapTypeToFriendlyName(h._type),
+                Url = GetPropertyValue<string>(h._source, "Url"),
+            });
+        }
+
+        private string GetTypeAheadDisplayType(SearchResultsHitModel h)
+        {
+            if((h._type ?? string.Empty).ToUpper() == "ARTIFACT")
+            {
+                return $"{mapTypeToFriendlyName(h._type)} - {GetPropertyValue<string>(h._source, "Type")}";
+            }
+            return mapTypeToFriendlyName(h._type);
+        }
+
         /// <summary>
         /// Gets the search results from elastic search and converts them to index results
         /// </summary>

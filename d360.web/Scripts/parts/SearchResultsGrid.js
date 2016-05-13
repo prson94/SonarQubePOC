@@ -58,6 +58,7 @@
             theme: 'transparent',
             width: '98%',
             enableHover: false,
+            autoShowLoadElement: false,
             showHeader: false,
             columns: [
                 { text: ' ', dataField: 'Merged', width: '99%' }
@@ -90,6 +91,7 @@
             width: '98%',
             enableHover: false,
             showHeader: false,
+            autoShowLoadElement: false,
             columns: [
                 { text: ' ', dataField: 'Merged', width: '99%' }
             ]

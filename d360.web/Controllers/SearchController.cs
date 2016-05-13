@@ -60,6 +60,20 @@ namespace d360.web.Controllers
             return Json(results, JsonRequestBehavior.AllowGet);
         }
 
+
+
+        [HttpGet]
+        public JsonResult Typeahead(string q, string t)
+        {
+            if (!string.IsNullOrEmpty(q))
+            {
+                IEnumerable<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, 100, t);
+
+                return Json(res, JsonRequestBehavior.AllowGet);
+            }
+
+            return Json(null, JsonRequestBehavior.AllowGet);
+        }
         #endregion
     }
 }

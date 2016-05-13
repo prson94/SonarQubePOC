@@ -43,6 +43,16 @@ namespace d360.extensions
         public int ElapsedMS { get; set; }
     }
 
+    public class TypeaheadResult
+    {
+        public string Name { get; set; }
+        public string DisplayName { get; set; }
+        public string Type { get; set; }
+        public string Url { get; set; }
+
+        public string Desc { get; set; }
+    }
+
     public class IndexResult
     {
         public string Name { get; set; }
@@ -137,7 +147,8 @@ namespace d360.extensions
         /// <exception cref="SearchResultsException"></exception>
         IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "", string advancedFilterJSON = "");
 
-
+        IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, int size = 10, string type = "");
+        
         IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "");
 
 
