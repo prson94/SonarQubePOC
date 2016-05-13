@@ -20,7 +20,7 @@
         <div class="profile hide-on-small-and-down">
             <a href="@(Model.ResourceUrl)" class="photo"><img src="/resources/image/@(Model.ResourceID)?size=25" height="30" width="30"></a><a class="hide-on-med-and-down" href="@(Model.ResourceUrl)">@(Model.ResourceName)</a>
             <div class="search">
-                <input type="text" id="SearchString" placeholder="Search Data3Sixty"/>
+                <input type="text" id="SearchString" placeholder="Search Data3Sixty" />
                 <button type="button" name="action" id="SearchStringBtn">
                     <i class="fa fa-search"></i>
                 </button>
@@ -192,6 +192,8 @@
         });
 
         //#endregion
+
+        GlobalTypeahead();
 
         resizeMenubar();
     });

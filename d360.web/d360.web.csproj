@@ -950,6 +950,7 @@
     <Content Include="Scripts\parts\FusionItemsGrid.js" />
     <Content Include="Scripts\parts\FusionRelationshipChartTile.js" />
     <Content Include="Scripts\parts\FusionTypesGrid.js" />
+    <Content Include="Scripts\parts\GlobalTypeahead.js" />
     <Content Include="Scripts\parts\GroupMembersGrid.js" />
     <Content Include="Scripts\parts\HierarchyTile.js" />
     <Content Include="Scripts\parts\IntersectTypeRolesGrid.js" />
