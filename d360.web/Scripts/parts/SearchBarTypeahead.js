@@ -6,7 +6,7 @@
         remote: {
             "url": '/search/typeahead?q=',
             prepare: function (query, settings) {
-                settings.url += encodeURIComponent(query) + '&t=' + encodeURIComponent(seachTypesCallback());
+                settings.url += encodeURIComponent(query) + '&t=' + encodeURIComponent(seachTypesCallback()) + '&num=' +numItems;
                 return settings;
             }
         },

@@ -63,11 +63,11 @@ namespace d360.web.Controllers
 
 
         [HttpGet]
-        public JsonResult Typeahead(string q, string t)
+        public JsonResult Typeahead(string q, string t, int? num)
         {
             if (!string.IsNullOrEmpty(q))
             {
-                IEnumerable<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, 20, t);
+                IEnumerable<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, num.GetValueOrDefault(7), t);
 
                 return Json(res, JsonRequestBehavior.AllowGet);
             }
