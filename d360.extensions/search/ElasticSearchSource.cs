@@ -544,13 +544,14 @@ namespace d360.extensions.search
 
             var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/{searchType}_search", companyID);
             
+
             StringBuilder sb = new StringBuilder();
 
             if (!string.IsNullOrEmpty(phrase))
             {
                 phrase = EscapeSpecialCharacters(phrase);
 
-                sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+                sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"*" + phrase + "*\"} }");
             }
 
             sb.Append("}},\"from\":" + 0 + ",\"size\":" + size + ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }");
@@ -558,7 +559,7 @@ namespace d360.extensions.search
             sb.Append(", \"highlight\": {\"fields\": {\"*\": { \"pre_tags\": [\"<em class='match'>\"],\"post_tags\": [\"</em>\"],\"number_of_fragments\" : 0 }},\"require_field_match\": false  }");
 
             sb.Append("}");
-                     
+
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)

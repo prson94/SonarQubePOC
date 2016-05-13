@@ -67,7 +67,7 @@ namespace d360.web.Controllers
         {
             if (!string.IsNullOrEmpty(q))
             {
-                IEnumerable<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, 100, t);
+                IEnumerable<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, 20, t);
 
                 return Json(res, JsonRequestBehavior.AllowGet);
             }
