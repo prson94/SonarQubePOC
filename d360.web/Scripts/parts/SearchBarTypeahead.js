@@ -24,7 +24,7 @@
         display: 'Name',
         limit: numItems,
         templates: {
-            suggestion: Handlebars.compile('<div><span class="type">{{Type}}:</span> {{{DisplayName}}} <p class="desc">{{{Desc}}}</p></div>'),
+            suggestion: Handlebars.compile('<div><span class="type">{{Type}}:</span> {{{DisplayName}}}{{#if Desc}} <p class="desc">{{{Desc}}}</p>{{/if}}</div>'),
             //        footer: Handlebars.compile("<div class='search'><span class='type'>Search:</span> '{{query}}'</div>")                        
             header: "<div class='header'>Select an item from the dropdown to go directly to it, or to see more search results type in the text you want to search by.</div>"
         }
