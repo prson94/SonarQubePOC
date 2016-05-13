@@ -117,7 +117,7 @@
                                 
                 setInitialSearchMode();
 
-                SearchBarTypeahead('home-search-text', simpleSearch, searchTypeString, 10);
+                SearchBarTypeahead('home-search-text', simpleSearch, searchTypeString, 6);
 
                 amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
             });

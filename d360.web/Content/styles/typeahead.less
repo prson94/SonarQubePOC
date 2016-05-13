@@ -185,6 +185,8 @@ fieldset[disabled] .twitter-typeahead .tt-input {
   color: @d3s-gray-1;
   background-color: #ffffff;
   border-bottom: 1px solid @d3s-gray-4;
+  overflow:hidden;
+  text-overflow: ellipsis;
 }
 .tt-dropdown-menu .tt-suggestion.tt-cursor,
 .tt-menu .tt-suggestion.tt-cursor,
@@ -212,9 +214,14 @@ fieldset[disabled] .twitter-typeahead .tt-input {
   color:@d3s-gray-6;
 }
 
-.tt-menu .tt-suggestion em.match {
+.tt-menu .tt-suggestion em.match,
+.tt-highlight {
     font-weight:bold;
     font-style: normal;
+}
+
+.tt-highlight {
+    background-color:@rgba-secondary-2-3;
 }
 
 .tt-menu .header {    
@@ -225,4 +232,11 @@ fieldset[disabled] .twitter-typeahead .tt-input {
 
 .tt-menu .tt-suggestion .desc {
     padding-top: 5px;
+    overflow: hidden;
+   text-overflow: ellipsis;
+   display: -webkit-box;
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 2; /* number of lines to show */
+   line-height: 25px;        /* fallback */
+   max-height: 50px;       /* fallback */
 }
