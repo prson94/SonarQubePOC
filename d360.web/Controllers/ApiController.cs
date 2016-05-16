@@ -562,12 +562,12 @@ where   h.ID <> @t order by h.[Level] desc;
 
                     #endregion
 
-                    var relations = Company.Query<dynamic>(@"SELECT distinct 'IntersectType' + cast(S.IntersectTypeID as varchar(10)) as Name, TD.Name as FriendlyName
-				FROM		IntersectTypeNode S
-							inner join IntersectTypeNode T ON T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and S.ObjectType = 'FusionAttributeType' and S.ObjectID = @id
-							inner join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID", new { id = id }).ToList();
+                    //                var relations = Company.Query<dynamic>(@"SELECT distinct 'IntersectType' + cast(S.IntersectTypeID as varchar(10)) as Name, TD.Name as FriendlyName
+                    //FROM		IntersectTypeNode S
+                    //			inner join IntersectTypeNode T ON T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and S.ObjectType = 'FusionAttributeType' and S.ObjectID = @id
+                    //			inner join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID", new { id = id }).ToList();
 
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count() + relations.Count);
+                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());// + relations.Count);
 
                     filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
                     filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
@@ -588,12 +588,12 @@ where   h.ID <> @t order by h.[Level] desc;
                         filterColumns.Add(col);
                     });
 
-                    relations.ForEach(i =>
-                    {
-                        columns.Add(new GridColumn { text = i.FriendlyName, datafield = i.Name, width = string.Format("{0}%", dynamicFieldWidth), filtertype = GridColumn.FILTER_TYPE_NUMBER, cellsformat = "n" });
-                        fields.Add(new GridField { name = i.Name, type = "number" });
-                        filterColumns.Add(new GridFilterColumn { text = i.FriendlyName, datafield = i.Name, width = "", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                    });
+                    //relations.ForEach(i =>
+                    //{
+                    //    columns.Add(new GridColumn { text = i.FriendlyName, datafield = i.Name, width = string.Format("{0}%", dynamicFieldWidth), filtertype = GridColumn.FILTER_TYPE_NUMBER, cellsformat = "n" });
+                    //    fields.Add(new GridField { name = i.Name, type = "number" });
+                    //    filterColumns.Add(new GridFilterColumn { text = i.FriendlyName, datafield = i.Name, width = "", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                    //});
 
                     break;
                     #endregion

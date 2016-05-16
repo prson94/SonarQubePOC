@@ -858,7 +858,7 @@ namespace d360.web.Controllers
 
                     if (fValue.EndsWith(".000")) fValue = fValue.Replace(".000", "");
 
-                    filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue,"flt");
+                    filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "");// "flt");
                     
                     if (!string.IsNullOrEmpty(filter))
                     {

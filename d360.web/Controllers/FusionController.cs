@@ -958,36 +958,36 @@ select * from h where ID <> @t order by h.[Level] desc;
 
             #region Intersects
 
-            var intersectSql = "";
-            var intersects = new List<int>();
+            //var intersectSql = "";
+            //var intersects = new List<int>();
 
-            intersectSql = string.Format(@"select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = 'FusionAttributeType' and SourceObjectID = {0}", fusionAttributeTypeID);
-            intersects = Company.Query<int>(intersectSql).Distinct().ToList();
+            //intersectSql = string.Format(@"select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = 'FusionAttributeType' and SourceObjectID = {0}", fusionAttributeTypeID);
+            //intersects = Company.Query<int>(intersectSql).Distinct().ToList();
 
-            var filterIntersectTypeIDText = "";
-            var intersectFilterColumnText = "";
-            var intersectFilterPivotText = "";
+            //var filterIntersectTypeIDText = "";
+            //var intersectFilterColumnText = "";
+            //var intersectFilterPivotText = "";
 
-            var intersectQueryColumnText = "";
-            var intersectQueryPivotText = "";
+            //var intersectQueryColumnText = "";
+            //var intersectQueryPivotText = "";
 
-            intersects.ForEach(i =>
-            {
-                intersectQueryColumnText += ((!string.IsNullOrEmpty(intersectQueryColumnText)) ? ", " : "") + $"P.[IntersectType{i}]";
-                intersectQueryPivotText += ((!string.IsNullOrEmpty(intersectQueryPivotText)) ? ", " : "")   + $"[IntersectType{i}]";
+            //intersects.ForEach(i =>
+            //{
+            //    intersectQueryColumnText += ((!string.IsNullOrEmpty(intersectQueryColumnText)) ? ", " : "") + $"P.[IntersectType{i}]";
+            //    intersectQueryPivotText += ((!string.IsNullOrEmpty(intersectQueryPivotText)) ? ", " : "")   + $"[IntersectType{i}]";
 
-                if (filterFields.Contains($"IntersectType{i}"))
-                {
-                    intersectFilterColumnText += ((!string.IsNullOrEmpty(intersectFilterColumnText)) ? ", " : "")   + $"P.[IntersectType{i}]";
-                    intersectFilterPivotText += ((!string.IsNullOrEmpty(intersectFilterPivotText)) ? ", " : "")     + $"[IntersectType{i}]";
-                    filterIntersectTypeIDText += ((!string.IsNullOrEmpty(filterIntersectTypeIDText)) ? ", " : "")   + $"{i}";
-                }
-            });
+            //    if (filterFields.Contains($"IntersectType{i}"))
+            //    {
+            //        intersectFilterColumnText += ((!string.IsNullOrEmpty(intersectFilterColumnText)) ? ", " : "")   + $"P.[IntersectType{i}]";
+            //        intersectFilterPivotText += ((!string.IsNullOrEmpty(intersectFilterPivotText)) ? ", " : "")     + $"[IntersectType{i}]";
+            //        filterIntersectTypeIDText += ((!string.IsNullOrEmpty(filterIntersectTypeIDText)) ? ", " : "")   + $"{i}";
+            //    }
+            //});
 
-            if (string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText = "P.[IntersectType0]";
-            if (string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText = "[IntersectType0]";
+            //if (string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText = "P.[IntersectType0]";
+            //if (string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText = "[IntersectType0]";
 
-            if (!string.IsNullOrEmpty(filterIntersectTypeIDText)) filterIntersectTypeIDText = $"and IntersectTypeID in ({filterIntersectTypeIDText})";
+            //if (!string.IsNullOrEmpty(filterIntersectTypeIDText)) filterIntersectTypeIDText = $"and IntersectTypeID in ({filterIntersectTypeIDText})";
 
             #endregion
 
@@ -1000,35 +1000,50 @@ select * from h where ID <> @t order by h.[Level] desc;
 
             #region Count SQL
 
-            var intersectsColumnReference = "";
-            var intersectsOuterApply = "";
+            //            var intersectsColumnReference = "";
+            //            var intersectsOuterApply = "";
 
-            if (!string.IsNullOrEmpty(intersectFilterColumnText) && !string.IsNullOrEmpty(intersectFilterPivotText) && !string.IsNullOrEmpty(filterIntersectTypeIDText))
-            {
-                intersectsColumnReference = " ,RT.*";
-                intersectsOuterApply = $@"
-outer apply (
-	select	{intersectQueryColumnText}
-	from	(
-			select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
-					count(R.IntersectTypeID) as [Count]
-			from	(
-					select	IntersectTypeID 
-					from	utility.RelationshipTypes 
-					where	SourceObjectType = 'FusionAttributeType'
-							and SourceObjectID = A.FusionAttributeTypeID
-                            {filterIntersectTypeIDText}
-					) RT
-					left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
-														and R.SourceObject = 'FusionAttribute'
-														and R.SourceObjectID = A.ID
-			group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
-			) as I
-	pivot	(
-			min([Count]) for [IntersectType] in ({intersectQueryPivotText})
-			) as P
-	) RT";
-            }
+            //            if (!string.IsNullOrEmpty(intersectFilterColumnText) && !string.IsNullOrEmpty(intersectFilterPivotText) && !string.IsNullOrEmpty(filterIntersectTypeIDText))
+            //            {
+            //                intersectsColumnReference = " ,RT.*";
+            //                intersectsOuterApply = $@"
+            //outer apply (
+            //	select	{intersectQueryColumnText}
+            //	from	(
+            //			select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
+            //					count(R.IntersectTypeID) as [Count]
+            //			from	(
+            //					select	IntersectTypeID 
+            //					from	utility.RelationshipTypes 
+            //					where	SourceObjectType = 'FusionAttributeType'
+            //							and SourceObjectID = A.FusionAttributeTypeID
+            //                            {filterIntersectTypeIDText}
+            //					) RT
+            //					left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
+            //														and R.SourceObject = 'FusionAttribute'
+            //														and R.SourceObjectID = A.ID
+            //			group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
+            //			) as I
+            //	pivot	(
+            //			min([Count]) for [IntersectType] in ({intersectQueryPivotText})
+            //			) as P
+            //	) RT";
+            //            }
+
+//            var countSql = $@"
+//select  A.ID, 
+//        A.Name, 
+//        A.FusionAttributeTypeID,
+//        'FusionAttribute' as [Type]
+//        {filtercolumns} 
+//        {parentFilterColumnText} 
+//        {intersectsColumnReference}
+//from	FusionAttribute A {parentFilterJoinText} {filterjoins}
+//        {intersectsOuterApply}
+//where   A.FusionID = @f 
+//        and A.FusionAttributeTypeID = @t 
+//        and A.Deleted = 0";
+
 
             var countSql = $@"
 select  A.ID, 
@@ -1037,9 +1052,7 @@ select  A.ID,
         'FusionAttribute' as [Type]
         {filtercolumns} 
         {parentFilterColumnText} 
-        {intersectsColumnReference}
 from	FusionAttribute A {parentFilterJoinText} {filterjoins}
-        {intersectsOuterApply}
 where   A.FusionID = @f 
         and A.FusionAttributeTypeID = @t 
         and A.Deleted = 0";
@@ -1052,6 +1065,37 @@ where   A.FusionID = @f
 
             #region Query
 
+            //            var sql = $@"
+            //select  A.ID 
+            //        , A.Name 
+            //        , A.FusionAttributeTypeID
+            //        , 'FusionAttribute' as [Type]
+            //        {columns} 
+            //        {parentQueryColumnText} 
+            //        , RT.*
+            //from	FusionAttribute A {parentQueryJoinText} {joins}
+            //outer apply (
+            //	select	{intersectQueryColumnText}
+            //	from	(
+            //			select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
+            //					count(R.IntersectTypeID) as [Count]
+            //			from	(
+            //					select	IntersectTypeID 
+            //					from	utility.RelationshipTypes 
+            //					where	SourceObjectType = 'FusionAttributeType'
+            //							and SourceObjectID = A.FusionAttributeTypeID
+            //					) RT
+            //					left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
+            //														and R.SourceObject = 'FusionAttribute'
+            //														and R.SourceObjectID = A.ID
+            //			group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
+            //			) as I
+            //	pivot	(
+            //			min([Count]) for [IntersectType] in ({intersectQueryPivotText})
+            //			) as P
+            //	) RT
+            //where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
+
             var sql = $@"
 select  A.ID 
         , A.Name 
@@ -1059,28 +1103,7 @@ select  A.ID
         , 'FusionAttribute' as [Type]
         {columns} 
         {parentQueryColumnText} 
-        , RT.*
 from	FusionAttribute A {parentQueryJoinText} {joins}
-outer apply (
-	select	{intersectQueryColumnText}
-	from	(
-			select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
-					count(R.IntersectTypeID) as [Count]
-			from	(
-					select	IntersectTypeID 
-					from	utility.RelationshipTypes 
-					where	SourceObjectType = 'FusionAttributeType'
-							and SourceObjectID = A.FusionAttributeTypeID
-					) RT
-					left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
-														and R.SourceObject = 'FusionAttribute'
-														and R.SourceObjectID = A.ID
-			group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
-			) as I
-	pivot	(
-			min([Count]) for [IntersectType] in ({intersectQueryPivotText})
-			) as P
-	) RT
 where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             sql = $@"select * from ({sql}) A";
