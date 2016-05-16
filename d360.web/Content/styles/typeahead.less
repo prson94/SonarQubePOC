@@ -182,7 +182,7 @@ fieldset[disabled] .twitter-typeahead .tt-input {
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;
-  color: @d3s-gray-1;
+  color: black;
   background-color: #ffffff;
   border-bottom: 1px solid @d3s-gray-4;
   overflow:hidden;
@@ -196,7 +196,11 @@ fieldset[disabled] .twitter-typeahead .tt-input {
   text-decoration: none;
   outline: 0;
   background-color: @rgba-primary-0;
-  color: #262626;
+  color: black;
+
+  .type {
+    color:white;
+  }
 }
 .tt-dropdown-menu .tt-suggestion.tt-cursor a,
 .tt-menu .tt-suggestion.tt-cursor a,
@@ -211,7 +215,7 @@ fieldset[disabled] .twitter-typeahead .tt-input {
 
 .tt-menu .tt-suggestion .type,
 .tt-menu .search .type {
-  color:@d3s-gray-6;
+  color:@d3s-gray-2;
 }
 
 .tt-menu .tt-suggestion em.match,
@@ -230,13 +234,14 @@ fieldset[disabled] .twitter-typeahead .tt-input {
     padding:5px;
 }
 
-.tt-menu .tt-suggestion .desc {
-    padding-top: 5px;
+.tt-menu .tt-suggestion .desc {    
+    padding: 5px 3px 0 3px;
     overflow: hidden;
-   text-overflow: ellipsis;
-   display: -webkit-box;
-   -webkit-box-orient: vertical;
-   -webkit-line-clamp: 2; /* number of lines to show */
-   line-height: 25px;        /* fallback */
-   max-height: 50px;       /* fallback */
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* number of lines to show */
+    line-height: 25px;        /* fallback */
+    max-height: 50px;       /* fallback */
+    font-size:12px;
 }
