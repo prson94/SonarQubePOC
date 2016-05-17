@@ -19,8 +19,8 @@ namespace d360.core.entities
         [DataMember]
         public MapType Type{ get; set; }
 
-        //[DataMember]
-        //public bool IsSystem { get; set; }
+        [DataMember]
+        public bool IsSystem { get; set; }
 
     }
 }

@@ -2,8 +2,11 @@
     [ID]                             INT IDENTITY (1, 1) NOT NULL,
     [FusionAttributePromotionRuleID] INT NOT NULL,
     [FusionAttributeID]              INT NULL,
-    CONSTRAINT [PK_FusionAttributePromotionRuleItem] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK_FusionAttributePromotionRuleItem] PRIMARY KEY NONCLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_FusionAttributePromotionRuleItem_FusionAttributePromotionRule] FOREIGN KEY ([FusionAttributePromotionRuleID]) REFERENCES [dbo].[FusionAttributePromotionRule] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 go
@@ -30,3 +33,6 @@ AS
 				inner join inserted F on F.FusionAttributePromotionRuleID = T.ID;
 	end;
 GO
+CREATE CLUSTERED INDEX [CIX_FusionAttributePromotionRuleItem]
+    ON [dbo].[FusionAttributePromotionRuleItem]([FusionAttributePromotionRuleID] ASC);
+

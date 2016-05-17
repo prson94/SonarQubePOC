@@ -219,7 +219,6 @@
     <Build Include="fusion\Views\AttributePromotion.sql" />
     <Build Include="fusion\Views\AttributeOwner.sql" />
     <Build Include="dbo\Views\ResponsibilityTypeObjectClaimDetail.sql" />
-    <Build Include="dbo\Views\LookupAllocation.sql" />
     <Build Include="dbo\Views\FieldWithRelation.sql" />
     <Build Include="dbo\Views\DomainAllocationDetail.sql" />
     <Build Include="dbo\Views\FieldTypeWithRelation.sql" />
@@ -251,7 +250,6 @@
     <Build Include="dbo\Functions\SurveyReportGeneratorWrapper.sql" />
     <Build Include="utility\Functions\GetResponsibilityContextHashWrapper.sql" />
     <Build Include="dbo\Functions\SurveyReportGenerator.sql" />
-    <Build Include="utility\Functions\GetRootEventTypeID.sql" />
     <Build Include="utility\Functions\GetObjectLevelWrapper.sql" />
     <Build Include="dbo\Functions\SpaceBeforeCapitalLetter.sql" />
     <Build Include="utility\Functions\GetBreadcrumbStringWrapper.sql" />
@@ -438,6 +436,13 @@
     <Build Include="dbo\Tables\BusinessTransformationRule.sql" />
     <Build Include="dbo\Functions\EventCountByObject.sql" />
     <Build Include="dbo\Functions\EventsByObject.sql" />
+    <Build Include="dbo\Tables\Language_1.sql" />
+    <Build Include="dbo\Tables\DomainSourceType_1.sql" />
+    <Build Include="dbo\Tables\DomainItemXref_1.sql" />
+    <Build Include="dbo\Tables\DomainClassification_1.sql" />
+    <Build Include="dbo\Views\WorkflowIssue_1.sql" />
+    <Build Include="dbo\Views\WorkflowChallenge_1.sql" />
+    <Build Include="dbo\Views\IntersectDetail.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

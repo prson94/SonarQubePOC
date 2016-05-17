@@ -1,4 +1,5 @@
-﻿CREATE procedure [dbo].[AddRelationships]
+﻿
+CREATE procedure [dbo].[AddRelationships]
 --declare
 	@ResourceID int,
 	@Date datetime,
@@ -66,7 +67,7 @@ begin
 		where	ID = @current
 
 		-- Relationship does not yet exist, so CREATE.
-		INSERT INTO [IntersectType] (UpdatedOn, UpdatedBy) VALUES (getutcdate(), 0)
+		INSERT INTO [IntersectType] (UpdatedOn, UpdatedBy, Subject, SubjectID, Object, ObjectID, IsSystem) VALUES (getutcdate(), 0, @StartType, @StartTypeID, @EndType, @EndTypeID, 0)
 
 		SELECT @IntersectTypeID = SCOPE_IDENTITY()
 
@@ -144,7 +145,20 @@ begin
 			-- Relationship does not yet exist, so CREATE.
 			if @IntersectID is null and @StartIntersectNodeTypeID is not null and @EndIntersectNodeTypeID is not null
 				begin
-					INSERT INTO [Intersect] (IntersectTypeID, Classification, [Description]) VALUES (@IntersectTypeID, @Classification, @Description)
+					INSERT INTO [Intersect] (
+						IntersectTypeID, 
+						Classification, 
+						[Description],
+						[Subject], SubjectID,
+						[Object], ObjectID 					
+					) 
+					VALUES (
+						@IntersectTypeID, 
+						@Classification, 
+						@Description,
+						@StartObject, @StartObjectID,
+						@EndObject, @EndObjectID
+					)
 
 					SELECT @IntersectID = SCOPE_IDENTITY()
 

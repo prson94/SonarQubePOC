@@ -103,7 +103,7 @@ begin
 									inner join ArtifactType PT on PT.ID = T.ParentID
 									inner join [LoadColumn] C on C.LoadID = L.ID and C.Name = 'Parent ' + PT.Name
 									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-									inner join Artifact P on P.ArtifactTypeID = PT.ID and P.[Name] = IC.Value
+									inner join Artifact P on P.ArtifactTypeID = PT.ID and (P.[TextPath] = IC.Value or P.[Name] = IC.Value)
 							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
 
 
@@ -815,7 +815,9 @@ begin
 					from	IntersectTypeNode S 
 							inner join IntersectTypeNode T on S.IntersectTypeID = T.IntersectTypeID and S.[Order] = 1 and T.[Order] = 2 and S.ID <> T.ID and S.IntersectTypeID = @ObjectID
 
-					insert into [Intersect] (IntersectTypeID, Classification) values (@ObjectID, 2)
+					insert into [Intersect] (IntersectTypeID, Classification, Subject, SubjectID, Object, ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) 
+					values		(@ObjectID, 2, @sourceObject, @sourceObjectID, @targetObject, @targetObjectID, 0, @date, 0, @date)
+
 					set @intersectID = SCOPE_IDENTITY()
 
 					insert into [IntersectNode] (IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 

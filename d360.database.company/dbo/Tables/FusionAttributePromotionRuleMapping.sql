@@ -5,10 +5,13 @@
     [SourceFieldTypeID]              INT            NOT NULL,
     [TargetFieldName]                NVARCHAR (250) NULL,
     [TargetFieldTypeID]              INT            NOT NULL,
-    [IsConstantValue]				 BIT NOT NULL DEFAULT 0, 
-    [ConstantValue]					 NVARCHAR(250) NULL, 
-    CONSTRAINT [PK_FusionAttributePromotionRuleMapping] PRIMARY KEY CLUSTERED ([ID] ASC)
+    [IsConstantValue]                BIT            DEFAULT ((0)) NOT NULL,
+    [ConstantValue]                  NVARCHAR (250) NULL,
+    CONSTRAINT [PK_FusionAttributePromotionRuleMapping] PRIMARY KEY NONCLUSTERED ([ID] ASC),
+    CONSTRAINT [FK_FusionAttributePromotionRuleMapping_FusionAttributePromotionRule] FOREIGN KEY ([FusionAttributePromotionRuleID]) REFERENCES [dbo].[FusionAttributePromotionRule] ([ID]) ON DELETE CASCADE
 );
+
+
 
 go
 
@@ -36,3 +39,6 @@ AS
 				inner join inserted F on F.FusionAttributePromotionRuleID = T.ID;
 	end;
 GO
+CREATE CLUSTERED INDEX [CIX_FusionAttributePromotionRuleMapping]
+    ON [dbo].[FusionAttributePromotionRuleMapping]([FusionAttributePromotionRuleID] ASC);
+

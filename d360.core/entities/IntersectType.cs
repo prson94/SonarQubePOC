@@ -41,6 +41,9 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
 
         [DataMember]
+        public bool? IsSystem { get; set; }
+
+        [DataMember]
         public int? PredicateID { get; set; }
 
         [ForeignKey("IntersectTypeID")]

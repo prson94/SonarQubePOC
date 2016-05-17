@@ -22,35 +22,54 @@ begin
 				MERGE
 							INTO    [Intersect] d
 							USING   (
-										select rel.IntersectTypeID as isectid, 2 as class, rel.ItemID as srID from @diagramRelations rel						
+										select	rel.IntersectTypeID, 
+												2 as Classification,
+												rel.SourceObject,
+												rel.SourceObjectID,
+												rel.TargetObject,
+												rel.TargetObjectID,
+												rel.ItemID as srID 
+										from	@diagramRelations rel						
 									) s
 							ON      (1 = 0)
 							WHEN NOT MATCHED THEN
-							INSERT  (IntersectTypeID, Classification, Description)
-							VALUES  (isectid, class, NULL)
+							INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
+							VALUES  (s.IntersectTypeID, s.Classification, NULL, s.SourceObject, s.SourceObjectID, s.TargetObject, s.TargetObjectID)
 							OUTPUT  INSERTED.ID, s.srID into @IDList;
 							
 				--insert start records into intersect node track the id that it gets 
 				MERGE
 							INTO    IntersectNode d
 							USING   (
-										select sr.SourceIntersectTypeNodeID as IsectTypeNodeID, il.IntersectID as IsectID, sr.SourceObject as objType,sr.SourceObjectID as objeID, sr.ItemID as itemID from @diagramRelations sr inner join @IDList il on (sr.ItemID = il.RelID)											
+										select	sr.SourceIntersectTypeNodeID, 
+												il.IntersectID, 
+												sr.SourceObject,
+												sr.SourceObjectID, 
+												sr.ItemID as itemID 
+										from	@diagramRelations sr 
+												inner join @IDList il on (sr.ItemID = il.RelID)											
 									) s
 							ON      (1 = 0)
 							WHEN NOT MATCHED THEN
 							INSERT  (IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-							VALUES  (IsectTypeNodeID, IsectID, objType, objeID)
+							VALUES  (s.SourceIntersectTypeNodeID, s.IntersectID, s.SourceObject, s.SourceObjectID)
 							OUTPUT  INSERTED.ID, s.itemID into @SourceIntersectNodeList;
 					
 				MERGE
 							INTO    IntersectNode d
 							USING   (
-										select sr.TargetIntersectTypeNodeID as IsectTypeNodeID, il.IntersectID as IsectID, sr.TargetObject as objType,sr.TargetObjectID as objeID, sr.ItemID as itemID from @diagramRelations sr inner join @IDList il on (sr.ItemID = il.RelID)											
+										select	sr.TargetIntersectTypeNodeID, 
+												il.IntersectID, 
+												sr.TargetObject,
+												sr.TargetObjectID, 
+												sr.ItemID as itemID 
+										from	@diagramRelations sr 
+												inner join @IDList il on (sr.ItemID = il.RelID)											
 									) s
 							ON      (1 = 0)
 							WHEN NOT MATCHED THEN
 							INSERT  (IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-							VALUES  (IsectTypeNodeID, IsectID, objType, objeID)
+							VALUES  (s.TargetIntersectTypeNodeID, s.IntersectID, s.TargetObject, s.TargetObjectID)
 							OUTPUT  INSERTED.ID, s.itemID into @TargetIntersectNodeList;
 					
 				--add record for each to intersectmap table

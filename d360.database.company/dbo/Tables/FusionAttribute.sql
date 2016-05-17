@@ -1,4 +1,4 @@
-CREATE TABLE [dbo].[FusionAttribute] (
+﻿CREATE TABLE [dbo].[FusionAttribute] (
     [ID]                    INT             IDENTITY (1, 1) NOT NULL,
     [ParentID]              INT             NULL,
     [Name]                  NVARCHAR (250)  NOT NULL,
@@ -8,10 +8,12 @@ CREATE TABLE [dbo].[FusionAttribute] (
     [Deleted]               BIT             CONSTRAINT [DF_FusionAttribute_Deleted] DEFAULT ((0)) NOT NULL,
     [Path]                  XML             NULL,
     [TextPath]              NVARCHAR (2500) NULL,
-    CONSTRAINT [PK_FusionAttribute] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [PK_FusionAttribute] PRIMARY KEY NONCLUSTERED ([ID] ASC),
     CONSTRAINT [FK_FusionAttribute_Fusion] FOREIGN KEY ([FusionID]) REFERENCES [dbo].[Fusion] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [FK_FusionAttribute_FusionAttributeType] FOREIGN KEY ([FusionAttributeTypeID]) REFERENCES [dbo].[FusionAttributeType] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 
@@ -27,8 +29,7 @@ CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID]
 
 
 GO
-CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID-FusionAttributeTypeID-ParentID]
-    ON [dbo].[FusionAttribute]([FusionID] ASC, [FusionAttributeTypeID] ASC, [ParentID] ASC);
+
 
 
 GO
@@ -47,4 +48,9 @@ GO
 GO
 CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID-SourceID]
     ON [dbo].[FusionAttribute]([FusionID] ASC, [SourceID] ASC);
+
+
+GO
+CREATE CLUSTERED INDEX [CIX_FusionAttribute]
+    ON [dbo].[FusionAttribute]([FusionID] ASC, [FusionAttributeTypeID] ASC, [ParentID] ASC);
 

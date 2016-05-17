@@ -45,14 +45,8 @@ namespace d360.core.entities
         [DataMember]
         public int ObjectID { get; set; }
 
-        [DataMember]
-        public int? PredicateID { get; set; }
-
         [IgnoreDataMember]
         public virtual IntersectType IntersectType { get; set; }
-
-        [IgnoreDataMember]
-        public virtual Predicate Predicate { get; set; }
 
         [IgnoreDataMember, ForeignKey("IntersectID")]
         public virtual ICollection<IntersectNode> Nodes { get; set; }

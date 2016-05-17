@@ -6861,7 +6861,8 @@ order by  D.TextPath
                     Subject = side1Info[0],
                     SubjectID = int.Parse(side1Info[1]),
                     Object = side2Info[0],
-                    ObjectID = int.Parse(side2Info[1])
+                    ObjectID = int.Parse(side2Info[1]),
+                    IsSystem = false
                 };
                 Company.Add<IntersectType>(model);
                 var id = model.ID;
@@ -9284,7 +9285,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 {
                     Name = parseTextField(form, "Name", null, true),
                     Inverse = parseTextField(form, "Inverse", null, true),
-                    Type = (MapType)Enum.Parse(typeof(MapType), form["Type"])
+                    Type = (MapType)Enum.Parse(typeof(MapType), form["Type"]),
+                    IsSystem = false
                 };
 
                 Company.Add<Predicate>(a);
@@ -14049,14 +14051,14 @@ order by	D.Name, I.Name";
 
             #endregion
 
-            var sql = @"select distinct r.id as RuleID, n.objectid as FusionID, a.textpath as name, 'source' as [type] from sourcetargetrule r
+            var sql = @"select distinct r.id as RuleID, n.objectid as FusionID, a.textpath, 'source' as [type] from sourcetargetrule r
                         join intersectmapsourcetargetrule st on st.ruleid = r.id
                         join intersectmap m on m.type = 2 and m.id = st.intersectmapid
                         join intersectnode n on n.id = m.subjectintersectnodeid
                         join fusionattribute a on a.id = n.objectid
                         where r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid
                         union all
-                        select distinct r.id as RuleID, n.objectid as FusionID, a.name, 'target' as [type] from sourcetargetrule r
+                        select distinct r.id as RuleID, n.objectid as FusionID, a.textpath, 'target' as [type] from sourcetargetrule r
                         join intersectmapsourcetargetrule st on st.ruleid = r.id
                         join intersectmap m on m.type = 2 and m.id = st.intersectmapid
                         join intersectnode n on n.id = m.objectintersectnodeid
@@ -14078,14 +14080,14 @@ order by	D.Name, I.Name";
                 {
                     var sourceItem = new SourceTargetItem();
                     sourceItem.FusionID = s.FusionID;
-                    sourceItem.Name = s.name;
+                    sourceItem.Name = s.textpath;
                     rule.Sources.Add(sourceItem);
                 }
                 foreach (dynamic t in targets)
                 {
                     var targetItem = new SourceTargetItem();
                     targetItem.FusionID = t.FusionID;
-                    targetItem.Name = t.name;
+                    targetItem.Name = t.textpath;
                     rule.Targets.Add(targetItem);
                 }
             }

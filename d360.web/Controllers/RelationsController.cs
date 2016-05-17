@@ -167,7 +167,7 @@ namespace d360.web.Controllers
 			T.ObjectID as TargetID,
 			TD.TextPath as TargetName
 from		IntersectType I
-			inner join IntersectTypeNode S on S.IntersectTypeID = I.ID and S.[Order] = 1
+			inner join IntersectTypeNode S on S.IntersectTypeID = I.ID and S.[Order] = 1 and I.IsSystem = 0
 			inner join IntersectTypeNode T on T.IntersectTypeID = I.ID and T.ID <> S.ID
 			left join cache.ObjectDetails SD on SD.[Object] = S.ObjectType and SD.ObjectID = S.ObjectID
 			left join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID

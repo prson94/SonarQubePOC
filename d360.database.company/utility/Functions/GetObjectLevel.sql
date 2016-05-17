@@ -68,26 +68,6 @@ BEGIN
 		SELECT @level =	MAX([level]) FROM H
 	END
 
-	IF (@Type = 'EventType')
-	BEGIN
-		WITH H (ParentID, ID, [level])
-		AS
-		(
-			SELECT	ParentID, 
-					ID, 
-					1
-			FROM	EventType
-			WHERE	ID = @ID		
-			UNION ALL
-			SELECT	P.ParentID, 
-					P.ID, 
-					C.[level] + 1
-			FROM	EventType	P
-					INNER JOIN H AS C ON C.ParentID = P.ID	
-		)
-		SELECT @level =	MAX([level]) FROM H
-	END
-
 	IF (@Type = 'FusionAttributeType')
 	BEGIN
 		WITH H (ParentID, ID, [level])

@@ -1,4 +1,5 @@
-﻿CREATE procedure [dbo].[AddSingleIntersect]
+﻿
+CREATE procedure [dbo].[AddSingleIntersect]
 	@ResourceID int,
 	@IntersectTypeID int,
 	@Subject varchar(50),			-- The start object type.
@@ -58,7 +59,20 @@ begin
 
 			if @SubjectIntersectTypeNodeID is not null and @ObjectIntersectTypeNodeID is not null
 				begin
-					INSERT INTO [Intersect] (IntersectTypeID, Classification, [Description]) VALUES (@IntersectTypeID, @Classification, @Description)
+					INSERT INTO [Intersect] (
+						IntersectTypeID, 
+						Classification, 
+						[Description],
+						[Subject], SubjectID,
+						[Object], ObjectID 					
+					) 
+					VALUES (
+						@IntersectTypeID, 
+						@Classification, 
+						@Description,
+						@Subject, @SubjectID,
+						@Object, @ObjectID
+					)
 
 					SELECT @IntersectID = SCOPE_IDENTITY()
 

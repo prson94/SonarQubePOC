@@ -315,13 +315,13 @@ from	#rules R
 									if (@testArtifactName <> @name) 
 										OR (@testArtifactDescription <> @description) 
 										OR (@testArtifactParentID <> @PromotionParentObjectID) 
-										OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
+										--OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
 									begin
 										update	Artifact
 										set		Name = @name,
 												Description = @description,
-												ParentID = @PromotionParentObjectID,
-												TaxonomyTypeID = @modelTypeID
+												ParentID = @PromotionParentObjectID--,
+												--TaxonomyTypeID = @modelTypeID
 										where	ID = @PromotedID
 									end
 								end
@@ -564,10 +564,10 @@ from	#rules R
 	end
 
 	-- Add new relations as needed
-	exec [utility].[PromoteFusionAttributesRelations] @NumberOfNewRelations output
+	--exec [utility].[PromoteFusionAttributesRelations] @NumberOfNewRelations output
 
 	-- Handle any fusionlookup fields
-	exec [utility].[PromoteFusionAttributeLookups]
+	--exec [utility].[PromoteFusionAttributeLookups]
 	
 		
 	--Log this run done

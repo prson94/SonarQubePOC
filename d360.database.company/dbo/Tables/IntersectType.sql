@@ -1,10 +1,20 @@
 ﻿CREATE TABLE [dbo].[IntersectType] (
-    [ID]        INT      IDENTITY (1, 1) NOT NULL,
-    [Name]      AS       ([utility].[DeriveIntersectTypeNameWrapper]([ID])),
-    [UpdatedOn] DATETIME NULL,
-    [UpdatedBy] INT      NULL,
+    [ID]          INT          IDENTITY (1, 1) NOT NULL,
+    [Name]        AS           ([utility].[DeriveIntersectTypeNameWrapper]([ID])),
+    [UpdatedOn]   DATETIME     NULL,
+    [UpdatedBy]   INT          NULL,
+    [Subject]     VARCHAR (50) NULL,
+    [SubjectID]   INT          NULL,
+    [Object]      VARCHAR (50) NULL,
+    [ObjectID]    INT          NULL,
+    [IsSystem]    BIT          NULL,
+    [CreatedBy]   INT          NULL,
+    [CreatedOn]   DATETIME     NULL,
+    [PredicateID] INT          NULL,
     CONSTRAINT [PK_IntersectType] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 
 
