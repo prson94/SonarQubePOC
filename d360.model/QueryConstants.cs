@@ -520,6 +520,21 @@ else
         order by	Name
 	end";
 
+        public static string FusionRuleItemList = @"
+select	I.ID,
+        I.RuleID,
+        I.FusionAttributeID,
+        case 
+			when F.FusionAttributeTypeID = FT.ID then F.TextPath
+			else coalesce(FT.Name + ' attributes under ' + F.TextPath, 'All ' + FT.Name + ' attributes') 
+		end as FusionAttributeName
+from	[fusion].[RuleItem] I
+		inner join [fusion].[Rule] R on R.ID = I.RuleID
+		inner join FusionAttributeType FT on FT.ID = R.ObjectID
+        left join FusionAttribute F on F.ID = I.FusionAttributeID
+where   I.RuleID = @id
+        ";
+
         public static string FusionPromotionRuleList = @"
 select	I.ID,
         I.FusionAttributePromotionRuleID,
@@ -545,6 +560,19 @@ from	FusionAttributePromotionRuleMapping I
 		left join FieldType SF on SF.ID = I.SourceFieldTypeID
 		left join FieldType TF on TF.ID = I.TargetFieldTypeID
 where   I.FusionAttributePromotionRuleID = @id";
+
+        public static string FusionRuleMappingList = @"
+select	I.ID,
+        RS.RuleID,
+        I.SourceFieldTypeID,
+        coalesce(I.SourceFieldName, SF.FriendlyName + ' (' + SF.Name + ')') as SourceFieldName,
+        I.TargetFieldTypeID,
+        coalesce(I.TargetFieldName, TF.FriendlyName + ' (' + TF.Name + ')') as TargetFieldName
+from	[fusion].[RuleStepMapping] I
+        inner join [fusion].[RuleStep] RS on (I.RuleStepID = RS.ID)
+		left join FieldType SF on SF.ID = I.SourceFieldTypeID
+		left join FieldType TF on TF.ID = I.TargetFieldTypeID
+where   I.RuleStepID = @id";
 
         public static string FusionStatisticsItem = @"select
 	(select count(1) from fusion.agenterror where [date] > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as AgentErrors,

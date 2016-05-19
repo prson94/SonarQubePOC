@@ -72,6 +72,13 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        public ActionResult FusionRules(int fusionTypeID, int fusionID)
+        {
+            ViewBag.FusionTypeID = fusionTypeID;
+            ViewBag.FusionID = fusionID;
+            return PartialView();
+        }
+
         [Route("{type}/{id:int}/audit")]
         public ActionResult Audit(SystemObjects type, int id)
         {

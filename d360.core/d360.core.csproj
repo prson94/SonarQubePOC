@@ -80,6 +80,11 @@
     <Compile Include="entities\BusinessTransformationRule.cs" />
     <Compile Include="entities\DomainItemXref.cs" />
     <Compile Include="entities\DomainSourceType.cs" />
+    <Compile Include="entities\FusionRule.cs" />
+    <Compile Include="entities\FusionRuleItem.cs" />
+    <Compile Include="entities\FusionRuleStep.cs" />
+    <Compile Include="entities\FusionRuleStepMapping.cs" />
+    <Compile Include="entities\FusionRuleStepSetting.cs" />
     <Compile Include="entities\Language.cs" />
     <Compile Include="entities\Relation.cs" />
     <Compile Include="entities\RelationType.cs" />
@@ -258,6 +263,7 @@
     <Compile Include="enums\AuthenticationType.cs" />
     <Compile Include="enums\CommentVisibility.cs" />
     <Compile Include="enums\FollowType.cs" />
+    <Compile Include="enums\FusionRuleType.cs" />
     <Compile Include="enums\MapType.cs" />
     <Compile Include="enums\HashAlgorithmType.cs" />
     <Compile Include="enums\Feature.cs" />

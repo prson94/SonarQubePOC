@@ -1,0 +1,46 @@
+﻿@model d360.web.Models.FusionRuleEditorModel
+@Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.FusionRule, Description = "By assigning a rule you are promoting any selected fusion objects to become a business-level item, allowing you to then associated attributes and establish other relationships to the promoted item.", Name = Model.FormName })
+<div class="small-overlay">
+    @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Model.FormUri, OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
+    {
+        <input type="hidden" id="FusionID" name="FusionID" value="@(Model.FusionID)" />
+        <input type="hidden" id="ID" name="ID" value="@(Model.Rule.ID)" />
+        <div>
+            @Html.Partial("FusionAttributeTypeFormTreeControl", new d360.web.Models.FusionAttributeTypeEditorControl { Title = "Promote", Types = Model.AttributeTypes, SelectedID = Model.Rule.ObjectID })
+        </div>
+
+        <div class="input-field">            
+            <div class="FieldNameRequired">Description</div>
+            <input type="text" id="Description" name="Description" value="@(Model.Rule.Description)" />
+        </div>
+
+        <div class="input-field">
+            <input type="checkbox" id="Enabled" name="Enabled" @(Model.Rule.Enabled ? "checked" : "") />
+            <label id='ItemsTip' for="Enabled">Enabled?</label>
+        </div>
+        <div class="container">&nbsp;</div>
+    }
+</div>
+
+<script type="text/javascript">    
+    $(function () {
+
+        $('#Description').jqxInput({ theme: theme, width: field_width, height: field_height });
+    
+        $('#EditableFormSaveButton').on('click', function () {
+            $('#progress').html(progressIndicatorHtml);
+            $('#form0').submit();
+        });
+
+        $('#EditableFormCancelButton').on('click', function () {
+            amplify.publish("CancelAction", { context: $('#EditableFormCancelButton').data('context') });
+        });
+
+        amplify.subscribe("ErrorOccurredAction", function (data) {
+            $('#EditableFormSaveButton').hide();
+        });
+               
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

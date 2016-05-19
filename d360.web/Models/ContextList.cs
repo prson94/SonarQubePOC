@@ -29,6 +29,8 @@ public static class ContextList
         public const string FusionPromotionRuleMapping = "fusionpromotionrulemappingform";
         public const string FusionAttribute = "fusionattributeform";
         public const string FusionAttributeType = "fusionattributetypeform";
+        public const string FusionRule = "fusionrule";
+        public const string FusionRuleStep = "fusionrulestep";
         public const string FusionType = "fusiontypeform";
         public const string Group = "groupform";
         public const string Hierarchy = "hierarchyform";

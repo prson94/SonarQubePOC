@@ -5693,6 +5693,8 @@ order by  D.TextPath
 
         #endregion
 
+        
+
         #endregion
 
         #region FusionPromotionRuleItem
@@ -6164,6 +6166,1002 @@ order by  D.TextPath
                 Company.Update<FusionAttributePromotionRuleMapping>(model);
 
                 return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), ContextList.FusionPromotionRuleMapping, "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region FusionRule
+
+
+        #region Form Get/Post
+        [Route("fusion/{typeID:int}/configurations/{fusionID:int}/rule/add")]
+        public ActionResult AddFusionRule(int typeID, int fusionID)
+        {
+            var model = new FusionRuleEditorModel
+            {
+                FusionID = fusionID,
+                FusionTypeID = typeID,
+                FormUri = "/Form/AddFusionRule",
+                FormMethod = "POST",
+                FormName = "Add Promotion Rule",
+                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).ToList(),
+                Rule = new FusionRule { FusionID = fusionID, Enabled = true }
+            };
+            return PartialView("FusionRuleEditForm", model);
+            
+        }
+                
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddFusionRule(FormCollection form)
+        {
+            try
+            {
+                var item = new FusionRule
+                {
+                    Enabled = parseBooleanField(form, "Enabled"),
+                    Description = parseTextField(form, "Description"),
+                    FusionID = parseIntField(form, "FusionID"),
+                    ObjectID = parseIntField(form, "FusionAttributeTypeID"),
+                    ObjectType = "FusionAttributeType",
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow                              
+                };
+
+                Company.Add<FusionRule>(item);
+
+                return jsonSuccess("Items marked for auto-promotion", "0", ContextList.FusionRule, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeleteFusionRule(int id)
+        {
+            var a = Company.GetById<FusionRule>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                FormSize = "small",
+                Context = ContextList.FusionRule,
+                FieldUri = string.Format("/form/FusionRule_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this promotion rule"),
+                FormUri = "/form/DeleteFusionRule",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("OverlayDeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteFusionRule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+                var id = parseIntField(form, "ID");
+                Company.Delete<FusionRule>(i => i.ID == id);
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult EditFusionRule(int id)
+        {
+            var a = Company.GetById<FusionRule>(id);
+            if (a == null) return HttpNotFound();
+                        
+            var model = new FusionRuleEditorModel
+            {
+                FusionID = a.Fusion.ID,
+                FusionTypeID = a.Fusion.FusionTypeID,
+                FormUri = "/Form/EditFusionRule",
+                FormMethod = "PUT",
+                FormName = "Edit Fusion Rule",
+                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).ToList(),
+                Rule = a
+            };
+            return PartialView("FusionRuleEditForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditFusionRule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("fusion rule");
+
+                var model = Company.GetById<FusionRule>(parseIntField(form, "ID"));
+                if (model == null) throw new NotFoundException("promotion rule");
+                                
+                model.Enabled = parseBooleanField(form, "Enabled");
+                model.Description = parseTextField(form, "Description");
+                model.FusionID = parseIntField(form, "FusionID");
+                model.ObjectID = parseIntField(form, "FusionAttributeTypeID");
+                model.ObjectType = "FusionAttributeType";
+
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+                
+                Company.Update<FusionRule>(model);
+
+                return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region Field Generation
+
+        /// <param name="id">FusionAttributePromotionRuleID</param>
+        public ActionResult FusionRule_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<FusionRule>(id);
+            if (a == null) return new HttpNotFoundResult();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+        
+        #endregion
+
+        #endregion
+
+        #region FusionRuleStep
+                
+        #region Form Get/Post
+        [Route("fusion/rule/{ruleID:int}/step/add")]
+        public ActionResult AddFusionRuleStep(int ruleID)
+        {
+            if (ruleID <= 0) return new HttpNotFoundResult();
+
+            var rule = Company.GetById<FusionRule>(ruleID);
+
+            if (rule == null) return new HttpNotFoundResult();
+
+            return PartialView("FusionRuleStepEditForm",
+                new FusionRuleStepEditorModel
+                {                    
+                    FormUri = "/form/AddFusionRuleStep",
+                    FormMethod = "POST",
+                    RuleStep = new FusionRuleStep { Action = "promote", Step = rule.FusionRuleSteps.Count +1, RuleID = ruleID},
+                    FormName = "Add Fusion Rule Step",
+                    FusionID = rule.FusionID,
+                    FusionTypeID = rule.Fusion.FusionTypeID
+                });
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public ActionResult AddFusionRuleStep(FormCollection form)
+        {
+            try
+            {
+                var ruleID = parseIntField(form, "RuleID");
+
+                if (ruleID <= 0) return new HttpNotFoundResult();
+                
+                var rule = Company.GetById<FusionRule>(ruleID);
+
+                var item = new FusionRuleStep
+                {
+                    Action = parseTextField(form,"Action"),
+                    Description = parseTextField(form, "Description"),
+                    Step = parseIntField(form, "Step"),
+                    RuleID = rule.ID
+                };
+
+                rule.FusionRuleSteps.Add(item);
+
+                AddPromotionStepSettings(item,form);
+
+                Company.SaveChanges();
+                
+                return jsonSuccess("New Fusion Rule Step Added", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private void AddPromotionStepSettings(FusionRuleStep item, FormCollection form)
+        {
+            var promoteTo = parseTextField(form, "PrOptionsDropdown"); // Pipe delimited Object | ObjectID
+
+            var promoteToInfo = promoteTo.Split('|');
+            var objectType = "";
+            var objectID = "";
+            var parentObjectType = "";
+
+            if (promoteToInfo.Length >= 2)
+            {
+                objectID = promoteToInfo[0];
+                objectType = promoteToInfo[1];
+            }
+
+            if (promoteToInfo.Length >= 3)
+            {
+                parentObjectType = promoteToInfo[2];
+            }
+
+            var parentSearchType = parseTextField(form, "PrOptionsParentSearchDropdown"); //ParentObjectSearch
+
+            item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "Object",
+                            Value = objectID
+                        });
+
+            item.FusionRuleStepSettings.Add(
+                new FusionRuleStepSetting
+                {
+                    RuleStepID = item.ID,
+                    Name = "ObjectID",
+                    Value = objectType
+                });
+
+            item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "ParentObjectSearch",
+                            Value = parentSearchType
+                        });
+
+            item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "ParentObjectTypeID",
+                            Value = parentObjectType
+                        });
+
+            if ((parentSearchType ?? "").ToUpper().Trim() == "DIRECT")
+            {
+
+                var parent = parseTextField(form, "PrOptionsParentDropdown"); // ParentObjectID
+
+                item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "ParentObjectID",
+                            Value = parent
+                        });
+
+                item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "ParentObject",
+                            Value = objectType
+                        });
+            }
+            else if ((parentSearchType ?? "").ToUpper().Trim() == "RESULTFROMSTEP")
+            {
+                var ruleStepID = parseTextField(form, "PrOptionsStepDropdown"); // ParentObjectID
+
+                item.FusionRuleStepSettings.Add(
+                new FusionRuleStepSetting
+                {
+                    RuleStepID = item.ID,
+                    Name = "ParentObject",
+                    Value = "Step"
+                });
+
+                item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "ParentObjectID",
+                            Value = ruleStepID
+                        });
+            }
+        }
+
+        [Route("fusion/rule/{ruleID:int}/step/edit/{ruleStepID:int}")]
+        public ActionResult EditFusionRuleStep(int ruleID, int ruleStepID)
+        {
+            var rule = Company.GetById<FusionRule>(ruleID);
+            if (rule == null) return new HttpNotFoundResult();
+
+            var step = rule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
+            if (step == null) return new HttpNotFoundResult();
+
+            return PartialView("FusionRuleStepEditForm",
+                new FusionRuleStepEditorModel
+                {                        
+                        FormUri = "/form/EditFusionRuleStep",
+                        FormMethod = "PUT",
+                        RuleStep = step,
+                        FormName = "Edit Fusion Rule Step",
+                        FusionID = rule.FusionID,
+                        FusionTypeID = rule.Fusion.FusionTypeID
+                });
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPut, ValidateInput(false)]
+        public ActionResult EditFusionRuleStep(FormCollection form)
+        {
+            try
+            {
+                var ruleID = parseIntField(form, "RuleID");
+                var ruleStepID = parseIntField(form, "RuleStepID");
+
+                if (ruleID <= 0 || ruleStepID <= 0) return new HttpNotFoundResult();
+
+                var rule = Company.GetById<FusionRule>(ruleID);
+
+                if (rule == null) return new HttpNotFoundResult();
+
+                var step = rule.FusionRuleSteps.First(x => x.ID == ruleStepID);
+
+                if (step == null) return new HttpNotFoundResult();
+
+                step.Description = parseTextField(form, "Description");
+                step.Step = parseIntField(form, "Step");
+                step.Action = parseTextField(form, "Action");
+
+                
+
+                rule.UpdatedBy = Company.CurrentResourceID;
+                rule.UpdatedOn = DateTime.UtcNow;
+
+                //remove old step settings                
+                for(int i = step.FusionRuleStepSettings.Count-1; i>= 0; i-- )
+                {
+                    Company.ObjectContext.DeleteObject(step.FusionRuleStepSettings.ElementAt(i));
+                }
+                
+                AddPromotionStepSettings(step, form);
+
+                Company.SaveChanges();                
+
+                return jsonSuccess("Step updated", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Accepted);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [Route("fusion/rule/{ruleID:int}/step/delete/{ruleStepID:int}")]
+        public ActionResult DeleteFusionRuleStep(int ruleID, int ruleStepID)
+        {
+            var rule = Company.GetById<FusionRule>(ruleID);
+            if (rule == null) return new HttpNotFoundResult();
+
+            var step = rule.FusionRuleSteps.FirstOrDefault(x => x.ID == ruleStepID);
+            if (step == null) return new HttpNotFoundResult();
+
+            return PartialView("OverlayDeleteForm",new EditableForm
+            {
+                FormSize = "small",
+                Context = ContextList.FusionRule,
+                FieldUri = $"/form/FusionRuleStep_DeleteFields?id={ruleID}&ruleStepID={ruleStepID}",
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this promotion rule step"),
+                FormUri = "/form/DeleteFusionRuleStep",
+                FormMethod = "DELETE"
+            });
+        }
+
+        [HttpDelete]
+        public ActionResult DeleteFusionRuleStep(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+                var id = parseIntField(form, "ID");
+                var ruleStepID = parseIntField(form, "RuleStepID");
+                var currentRule = Company.GetById<FusionRule>(id);
+                var itemToRemove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
+
+                if (itemToRemove == null) return new HttpNotFoundResult();
+
+                Company.ObjectContext.DeleteObject(itemToRemove);
+                
+                Company.SaveChanges();
+                
+                return jsonSuccess("Step successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+        
+
+
+        #endregion
+
+        #region Field Generation
+
+        /// <param name="id">FusionAttributePromotionRuleID</param>
+        public ActionResult FusionRuleStep_AddFields(int id)
+        {
+            var list = new List<EditableField>();
+            var currentRule = Company.GetById<FusionRule>(id);
+            if (currentRule == null) return new HttpNotFoundResult();
+            
+            list.Add(new EditableField { FieldName = "ruleID", FieldType = DataType.Hidden.ToString(), Value = currentRule.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Description", false, "", 1, 4000) });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Action", true, "", 1, 25) });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Step", Name = "Step", FieldType = DataType.Text.ToString()});
+            
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult FusionRuleStep_EditFields(int id, int ruleStepID)
+        {
+            var list = new List<EditableField>();
+            var currentRule = Company.GetById<FusionRule>(id);
+            if (currentRule == null) return new HttpNotFoundResult();
+
+            var step = currentRule.FusionRuleSteps.FirstOrDefault(x => x.ID == ruleStepID);
+
+            if (step == null) return new HttpNotFoundResult();
+
+            list.Add(new EditableField { FieldName = "ruleStepID", FieldType = DataType.Hidden.ToString(), Value = step.ID.ToString() });
+            list.Add(new EditableField { FieldName = "ruleID", FieldType = DataType.Hidden.ToString(), Value = currentRule.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Description", Name = "Description", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Description", false, "", 1, 4000), Value = step.Description });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Action", Name = "Action", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Action", true, "", 1, 25), Value = step.Action });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Step", Name = "Step", FieldType = DataType.Text.ToString(), Value = step.Step.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult FusionRuleStep_DeleteFields(int id, int ruleStepID)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<FusionRule>(id);
+            if (a == null) return new HttpNotFoundResult();
+
+            var step = a.FusionRuleSteps.First(x => x.ID == ruleStepID);
+            if (step == null) return new HttpNotFoundResult();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { FieldName = "RuleStepID", FieldType = DataType.Hidden.ToString(), Value = step.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+
+        #endregion
+
+        #endregion
+
+        #region FusionRuleStepMapping
+
+        #region Field Generation
+
+        public JsonResult FusionRuleStepMapping_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        List<SelectListItem> loadSourceItemOptions(FusionRuleStep ruleStep, FusionRuleStepMapping existingItem = null)
+        {
+            #region Process Source Field Logic
+
+            var sourceFieldIDs = ruleStep.FusionRuleStepMappings.Where(i => i.SourceFieldTypeID > 0).Select(i => i.SourceFieldTypeID).ToList();
+            var sourceFieldNames = ruleStep.FusionRuleStepMappings.Where(i => i.SourceFieldTypeID == 0).Select(i => i.SourceFieldName).ToList();
+
+            if (existingItem != null)
+            {
+                if (existingItem.SourceFieldTypeID > 0)
+                {
+                    sourceFieldIDs.Remove(existingItem.SourceFieldTypeID);
+                }
+                else
+                {
+                    sourceFieldNames.Remove(existingItem.SourceFieldName);
+                }
+            }
+
+            var sourceFields = Company.Filter<FieldType>(i => i.Object == ruleStep.FusionRule.ObjectType && i.ObjectID == ruleStep.FusionRule.ObjectID)
+                .OrderBy(i => i.FriendlyName)
+                .ToList()
+                //.Where(i => !sourceFieldIDs.Contains(i.ID))
+                .Select(i => new SelectListItem
+                {
+                    Text = string.Format("{0} ({1})", i.FriendlyName, i.Name),
+                    Value = string.Format("{0}|{1}", i.Name, i.ID)
+                })
+                .ToList();
+            //if (!sourceFieldNames.Contains("Name"))
+            sourceFields.Insert(0, new SelectListItem { Text = "Name", Value = "Name|0" });
+
+            #endregion
+
+            var selectedID = "";
+            if (existingItem != null)
+            {
+                if (existingItem.SourceFieldTypeID > 0)
+                {
+                    selectedID = existingItem.SourceFieldTypeID.ToString();
+                }
+                else
+                {
+                    selectedID = existingItem.SourceFieldName;
+                }
+            }
+
+            if (selectedID != null)
+            {
+                sourceFields.ForEach(i =>
+                {
+                    if (!string.IsNullOrEmpty(i.Value))
+                    {
+                        string[] parts = i.Value.Split('|');
+                        i.Selected = parts.Length > 1 && parts[0] == selectedID || parts[1] == selectedID;
+                    }
+                });
+            }
+
+            return sourceFields;
+        }
+
+        List<SelectListItem> loadTargetItemOptions(FusionRuleStep ruleStep, FusionRuleStepMapping existingItem = null)
+        {
+            var targetFields = new List<SelectListItem>();
+
+            #region Process Target Field Logic
+
+            var targetFieldIDs = ruleStep.FusionRuleStepMappings.Where(i => i.TargetFieldTypeID > 0).Select(i => i.TargetFieldTypeID).ToList();
+            var targetFieldNames = ruleStep.FusionRuleStepMappings.Where(i => i.TargetFieldTypeID == 0).Select(i => i.TargetFieldName).ToList();
+
+            if (existingItem != null)
+            {
+                if (existingItem.TargetFieldTypeID > 0)
+                {
+                    targetFieldIDs.Remove(existingItem.TargetFieldTypeID);
+                }
+                else
+                {
+                    targetFieldNames.Remove(existingItem.TargetFieldName);
+                }
+            }
+
+            //var promotionType = ruleStep.PromotionObjectType;
+            var promotionType = ruleStep.GetSettingValueByName("Object");
+            var promotionObjectType = ruleStep.GetSettingValueByName("PromotionParentObjectType");
+            var promotionObjectID = int.Parse(ruleStep.GetSettingValueByName("ObjectID"));
+
+            switch (promotionType)
+            {
+                case "DomainType":
+                    if (!targetFieldNames.Contains("Name"))
+                        targetFields.Add(new SelectListItem { Text = "Name", Value = "Name|0" });
+                    if (promotionObjectType == "Domain")
+                    {
+                        if (!targetFieldNames.Contains("Code"))
+                            targetFields.Add(new SelectListItem { Text = "Code", Value = "Code|0" });
+                    }
+                    if (!targetFieldNames.Contains("Description"))
+                        targetFields.Add(new SelectListItem { Text = "Description", Value = "Description|0" });
+                    break;
+                case "ArtifactType":
+                case "TaxonomyType":
+                    if (!targetFieldNames.Contains("Name"))
+                        targetFields.Add(new SelectListItem { Text = "Name", Value = "Name|0" });
+                    if (!targetFieldNames.Contains("Description"))
+                        targetFields.Add(new SelectListItem { Text = "Description", Value = "Description|0" });
+                    var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == promotionObjectID)
+                        .OrderBy(i => i.FriendlyName)
+                        .ToList()
+                        .Where(i => !targetFieldIDs.Contains(i.ID))
+                        .Select(i => new SelectListItem
+                        {
+                            Text = string.Format("{0} ({1})", i.FriendlyName, i.Name),
+                            Value = string.Format("{0}|{1}", i.Name, i.ID)
+                        })
+                        .ToList();
+                    targetFields.AddRange(targetDynamicFields);
+                    break;
+            }
+
+            #endregion
+
+            var selectedID = "";
+            if (existingItem != null)
+            {
+                if (existingItem.TargetFieldTypeID > 0)
+                {
+                    selectedID = existingItem.TargetFieldTypeID.ToString();
+                }
+                else
+                {
+                    selectedID = existingItem.TargetFieldName;
+                }
+            }
+
+            targetFields.ForEach(i =>
+            {
+                i.Selected = i.Value.Contains(selectedID);
+            });
+
+            return targetFields;
+        }
+
+        public ActionResult AddFusionRuleStepMapping(int id)
+        {
+            var ruleStep = Company.GetById<FusionRuleStep>(id);
+
+            if (ruleStep == null)
+                return jsonException("Rule step not found", HttpStatusCode.NotFound);
+
+            if (!Company.HasPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var editorModel = new FusionRuleStepMappingEditorModel
+            {
+                FormUri = "/Form/AddFusionRuleStepMapping",
+                FormMethod = "POST",
+                FormName = "Add Promotion Field Mapping",
+                Item = new FusionRuleStepMapping { RuleStepID = id, FusionRuleStep=ruleStep },
+                SourceFields = loadSourceItemOptions(ruleStep),
+                TargetFields = loadTargetItemOptions(ruleStep)
+            };
+            return PartialView("FusionRuleStepMappingEditForm", editorModel);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddFusionRuleStepMapping(FormCollection form)
+        {
+            try
+            {
+                var model = new FusionRuleStepMapping
+                {
+                    RuleStepID = parseIntField(form, "FusionAttributePromotionRuleID")
+                };
+
+                var source = form["Source"].Split('|');
+                var target = form["Target"].Split('|');
+                var constantValue = form["ConstantValue"];
+                var isConstantValue = form["isConstantValue"];
+
+                if (source[1] == "0")
+                {
+                    model.SourceFieldName = source[0];
+                    model.SourceFieldTypeID = 0;
+                }
+                else
+                    model.SourceFieldTypeID = int.Parse(source[1]);
+
+                if (target[1] == "0")
+                {
+                    model.TargetFieldName = target[0];
+                    model.TargetFieldTypeID = 0;
+                }
+                else
+                    model.TargetFieldTypeID = int.Parse(target[1]);
+
+
+                if (!string.IsNullOrEmpty(isConstantValue) && isConstantValue.Contains("true"))
+                {
+                    model.IsConstantValue = true;
+                    model.SourceFieldTypeID = 0;
+                    model.ConstantValue = constantValue;
+                    model.SourceFieldName = null;
+                }
+                else
+                {
+                    model.IsConstantValue = false;
+                    model.ConstantValue = string.Empty;
+                }
+
+                Company.Add<FusionRuleStepMapping>(model);
+
+                return jsonSuccess("Field mapping successfully created.", "0", ContextList.FusionPromotionRuleMapping, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeleteFusionRuleStepMapping(int id)
+        {
+            var a = Company.GetById<FusionRuleStepMapping>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                FormSize = "small",
+                Context = ContextList.FusionPromotionRuleMapping,
+                FieldUri = string.Format("/form/FusionRuleStepMapping_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this field mapping"),
+                FormUri = "/form/DeleteFusionRuleStepMapping",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("OverlayDeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteFusionRuleStepMapping(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+                var id = parseIntField(form, "ID");
+                Company.Delete<FusionRuleStepMapping>(i => i.ID == id);
+                return jsonSuccess("Mapping successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult EditFusionRuleStepMapping(int id)
+        {
+            var a = Company.GetById<FusionRuleStepMapping>(id);
+            if (a == null) return HttpNotFound();
+
+            var editorModel = new FusionRuleStepMappingEditorModel
+            {
+                FormUri = "/Form/EditFusionAttributePromotionRuleMapping",
+                FormMethod = "PUT",
+                FormName = "Update Promotion Field Mapping",
+                Item = a,
+                SourceFields = loadSourceItemOptions(a.FusionRuleStep, a),
+                TargetFields = loadTargetItemOptions(a.FusionRuleStep, a)
+            };
+
+            return PartialView("FusionRuleStepMappingEditForm", editorModel);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditFusionRuleStepMapping(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("field mapping");
+
+                var model = Company.GetById<FusionRuleStepMapping>(parseIntField(form, "ID"));
+                if (model == null) throw new NotFoundException("field mapping");
+
+                var source = form["Source"].Split('|');
+                var target = form["Target"].Split('|');
+                var constantValue = form["ConstantValue"];
+                var isConstantValue = form["isConstantValue"];
+
+                if (source[1] == "0")
+                {
+                    model.SourceFieldName = source[0];
+                    model.SourceFieldTypeID = 0;
+                }
+                else
+                    model.SourceFieldTypeID = int.Parse(source[1]);
+
+                if (target[1] == "0")
+                {
+                    model.TargetFieldName = target[0];
+                    model.TargetFieldTypeID = 0;
+                }
+                else
+                    model.TargetFieldTypeID = int.Parse(target[1]);
+
+                if (!string.IsNullOrEmpty(isConstantValue) && isConstantValue.Contains("true"))
+                {
+                    model.IsConstantValue = true;
+                    model.SourceFieldTypeID = 0;
+                    model.ConstantValue = constantValue;
+                }
+                else
+                {
+                    model.IsConstantValue = false;
+                    model.ConstantValue = null;
+                }
+
+                Company.Update<FusionRuleStepMapping>(model);
+
+                return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), ContextList.FusionPromotionRuleMapping, "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region FusionPromotionRuleItem
+
+        #region Field Generation
+
+        public JsonResult FusionRuleItem_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddFusionRuleItem(int id)
+        {
+            var rule = Company.GetById<FusionRule>(id);
+
+            if (rule == null)
+                return jsonException("Rule not found", HttpStatusCode.NotFound);
+
+            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var editorModel = new FusionRuleItemEditorModel
+            {
+                FormUri = "/Form/AddFusionRuleItem",
+                FormMethod = "POST",
+                FormName = "Add Promotion Target Item",
+                FusionID = rule.FusionID,
+                TargetFusionAttributeTypeID = rule.ObjectID,
+                Item = new FusionRuleItem { RuleID = id }
+            };
+            return PartialView("FusionRuleItemEditForm", editorModel);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddFusionRuleItem(FormCollection form)
+        {
+            try
+            {
+                var ruleID = parseIntField(form, "FusionAttributePromotionRuleID");
+                var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
+                if (fusionAttributeIDs.Count == 0)
+                {
+                    Company.Set<FusionRuleItem>().Add(
+                        new FusionRuleItem { RuleID = ruleID, FusionAttributeID = null }
+                        );
+                }
+                else
+                {
+                    fusionAttributeIDs.ForEach(fa =>
+                    {
+                        int? fusionAttributeID = null;
+                        if (!string.IsNullOrEmpty(fa))
+                        {
+                            fusionAttributeID = int.Parse(fa);
+                        }
+                        Company.Set<FusionRuleItem>().Add(
+                            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = fusionAttributeID }
+                            );
+                    });
+                }
+                Company.SaveChanges();
+
+                return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionPromotionRuleItem, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeleteFusionRuleItem(int id)
+        {
+            var a = Company.GetById<FusionRuleItem>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                FormSize = "small",
+                Context = ContextList.FusionPromotionRuleItem,
+                FieldUri = string.Format("/form/FusionRuleItem_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this target item"),
+                FormUri = "/form/DeleteFusionRuleItem",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("OverlayDeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteFusionRuleItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+                var id = parseIntField(form, "ID");
+                Company.Delete<FusionRuleItem>(i => i.ID == id);
+                return jsonSuccess("Target item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

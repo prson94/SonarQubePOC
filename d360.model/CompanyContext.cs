@@ -178,6 +178,10 @@ namespace d360.model
 
         public DbSet<FusionJobHistory> FusionJobHistories { get; set; }
 
+        public DbSet<FusionRule> FusionRules { get; set; }
+
+        public DbSet<FusionRuleItem> FusionRuleItem { get; set; }
+        
         public DbSet<FusionJobSchedule> FusionJobSchedules { get; set; }
 
         public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
@@ -2269,6 +2273,8 @@ order by Name", new { workflowType, type, id });
             //{
             //    i.MapLeftKey("IntersectFlowMappingID").MapRightKey("DomainItemID").ToTable("IntersectFlowMappingContextItem");
             //});
+
+            modelBuilder.Entity<FusionRuleStep>().HasRequired(t => t.FusionRule).WithMany(t => t.FusionRuleSteps).HasForeignKey(k => k.RuleID).WillCascadeOnDelete(true);
 
             base.OnModelCreating(modelBuilder);
         }

@@ -1119,7 +1119,12 @@ where   h.ID <> @t order by h.[Level] desc;
                             //list.Add(new PageActionItem { Context = "FusionConfigurationFilters", Icon = "filter", Title = "Filters", Uri = string.Format("/overlays/FusionConfigurationFilters?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "history", Title = "History", Uri = string.Format("/overlays/FusionConfigurationHistory?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "bolt", Title = "Ownership Rules", Uri = string.Format("/overlays/FusionConfigurationOwnershipRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
+
+                            //old promotion to be removed
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-up", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionConfigurationPromotionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
+
+                            //new promotion
+                         //   list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-left", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             if (fusion.Manual)
                             {
@@ -1977,6 +1982,62 @@ where   h.ID <> @t order by h.[Level] desc;
             return Company.Filter<IntersectType>(i => !i.Nodes.Any(n => n.ObjectType == "IntersectType")).OrderBy(i => i.Name).ToList();
         }
 
+        [Route("fusion/{fusionID:int}/rules")]
+        public HttpResponseMessage GetFusionRules(int fusionID)
+        {
+            //left join cache.ObjectDetails FA on FA.[Object] = R.ObjectType and FA.ObjectID = R.ObjectID
+            //      from s in Company.Filter<FusionRule>(i => i.FusionID == fusionID)
+            //    join r in Community.Table<Resource>() on s.ResourceID equals r.ID
+
+            var sql = @"select 
+                        r.id as ID,
+	                    r.[description] as Description,
+	                    r.[enabled] as Enabled,
+	                    r.fusionid as FusionID,
+	                    r.objecttype as ObjectType,
+	                    r.objectid as ObjectID,
+	                    od.textpath as ObjectName
+                    from[fusion].[Rule]
+                            r
+                       left outer join[cache].[objectdetails]
+                            od on(r.objecttype = od.[object] and r.objectid = od.objectid)
+                    where r.fusionid = @fid";
+
+
+          var dbArgs = new Dapper.DynamicParameters();
+
+            dbArgs.Add("fid", fusionID);            
+
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                Company.Query<dynamic>(sql, dbArgs)
+            );
+
+            //return Company.Filter<FusionRule>(x => x.FusionID == fusionID);
+        }
+
+        [Route("fusion/rules/{ruleID:int}/steps")]
+        public IEnumerable<FusionRuleStep> GetFusionRuleSteps(int ruleID)
+        {
+            var rule = Company.GetById<FusionRule>(ruleID);
+
+            if(rule == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
+            return rule.FusionRuleSteps;
+        }
+
+        [Route("fusion/rule/actions")]
+        public IEnumerable<dynamic> GetActions()
+        {
+            var types = new List<dynamic>();
+
+            types.Add(new { Name = FusionRuleType.Promote.ToString(), ID = FusionRuleType.Promote.ToString().ToLower() });
+            types.Add(new { Name = FusionRuleType.Find.ToString(), ID = FusionRuleType.Find.ToString().ToLower() });
+            types.Add(new { Name = FusionRuleType.Relate.ToString(), ID = FusionRuleType.Relate.ToString().ToLower() });
+
+            return types;
+        }
+
         #region Owner
 
         [Route("fusion/{typeID:int}/configurations/{fusionID:int}/ownership/options")]
@@ -1989,6 +2050,12 @@ where   h.ID <> @t order by h.[Level] desc;
         public IQueryable<FusionAttributeOwnerDetail> GetFusionAttributeOwnerDetails(int typeID, int fusionID)
         {
             return Company.Filter<FusionAttributeOwnerDetail>(i => i.FusionID == fusionID);
+        }
+
+        [Route("fusion/rule/{ruleID:int}/steps/{ruleStepID:int}")]
+        public IEnumerable<dynamic> GetRuleSteps(int ruleID, int ruleStepID)
+        {
+            return Company.Filter<FusionRuleStep>(x => x.RuleID == ruleID && x.ID != ruleStepID).Select(i => new { Step = i.Step, Description = i.Description, ID = i.ID }).AsEnumerable().Select(y => new { Description = $"{y.Step} - {y.Description}", ID = y.ID });            
         }
 
         #endregion
@@ -2025,12 +2092,30 @@ where   h.ID <> @t order by h.[Level] desc;
             );
         }
 
+        [Route("fusion/{id:int}/FusionRuleItems")]
+        public HttpResponseMessage GetFusionRuleItems(int id)
+        {
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                Company.Query<dynamic>(QueryConstants.FusionRuleItemList, new { id })
+            );
+        }
+
         [Route("fusion/{id:int}/PromotionRuleMappings")]
         public HttpResponseMessage GetFusionAttributePromotionRuleMappings(int id)
         {
             return Request.CreateResponse(
                 HttpStatusCode.OK,
                 Company.Query<dynamic>(QueryConstants.FusionPromotionRuleMappingList, new { id })
+            );
+        }
+
+        [Route("fusion/{id:int}/FusionRuleStepMappings")]
+        public HttpResponseMessage GetFusionRuleMappings(int id)
+        {
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                Company.Query<dynamic>(QueryConstants.FusionRuleMappingList, new { id })
             );
         }
 

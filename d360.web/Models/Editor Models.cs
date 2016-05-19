@@ -603,6 +603,23 @@ namespace d360.web.Models
         public int? ParentObjectID { get; set; }
     }
 
+    public class FusionRuleEditorModel
+    {
+        public int FusionTypeID { get; set; }
+
+        public int FusionID { get; set; }
+
+        public string FormUri { get; set; }
+
+        public string FormMethod { get; set; }
+
+        public string FormName { get; set; }
+
+        public FusionRule Rule { get; set; }
+
+        public List<FusionAttributeType> AttributeTypes { get; set; }        
+    }
+
     public class FusionPromotionRuleEditorModel
     {
         public int FusionTypeID { get; set; }
@@ -635,6 +652,51 @@ namespace d360.web.Models
         public int TargetFusionAttributeTypeID { get; set; }
 
         public FusionAttributePromotionRuleItem Item { get; set; }
+    }
+
+    public class FusionRuleItemEditorModel
+    {
+        public string FormUri { get; set; }
+
+        public string FormMethod { get; set; }
+
+        public string FormName { get; set; }
+
+        public int FusionID { get; set; }
+
+        public int TargetFusionAttributeTypeID { get; set; }
+
+        public FusionRuleItem Item { get; set; }
+    }
+
+    public class FusionRuleStepEditorModel
+    {
+        public string FormUri { get; set; }
+
+        public string FormMethod { get; set; }
+
+        public string FormName { get; set; }
+        
+        public FusionRuleStep RuleStep { get; set; }
+
+        public int FusionID { get; set; }
+
+        public int FusionTypeID { get; set; }        
+    }
+
+    public class FusionRuleStepMappingEditorModel
+    {
+        public string FormUri { get; set; }
+
+        public string FormMethod { get; set; }
+
+        public string FormName { get; set; }
+
+        public List<SelectListItem> SourceFields { get; set; }
+
+        public List<SelectListItem> TargetFields { get; set; }
+
+        public FusionRuleStepMapping Item { get; set; }
     }
 
     public class FusionPromotionRuleMappingEditorModel
