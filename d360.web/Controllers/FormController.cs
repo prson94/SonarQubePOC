@@ -6412,98 +6412,160 @@ order by  D.TextPath
 
         private void AddPromotionStepSettings(FusionRuleStep item, FormCollection form)
         {
-            var promoteTo = parseTextField(form, "PrOptionsDropdown"); // Pipe delimited Object | ObjectID
+            var action = (parseTextField(form, "Action") ?? "").ToUpper();
 
-            var promoteToInfo = promoteTo.Split('|');
-            var objectType = "";
-            var objectID = "";
-            var parentObjectType = "";
-
-            if (promoteToInfo.Length >= 2)
+            if (action == "PROMOTE")
             {
-                objectID = promoteToInfo[0];
-                objectType = promoteToInfo[1];
-            }
+                var promoteTo = parseTextField(form, "PrOptionsDropdown"); // Pipe delimited Object | ObjectID
 
-            if (promoteToInfo.Length >= 3)
-            {
-                parentObjectType = promoteToInfo[2];
-            }
+                var promoteToInfo = promoteTo.Split('|');
+                var objectType = "";
+                var objectID = "";
+                var parentObjectType = "";
 
-            var parentSearchType = parseTextField(form, "PrOptionsParentSearchDropdown"); //ParentObjectSearch
-
-            item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "Object",
-                            Value = objectID
-                        });
-
-            item.FusionRuleStepSettings.Add(
-                new FusionRuleStepSetting
+                if (promoteToInfo.Length >= 2)
                 {
-                    RuleStepID = item.ID,
-                    Name = "ObjectID",
-                    Value = objectType
-                });
+                    objectID = promoteToInfo[0];
+                    objectType = promoteToInfo[1];
+                }
 
-            item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "ParentObjectSearch",
-                            Value = parentSearchType
-                        });
-
-            item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "ParentObjectTypeID",
-                            Value = parentObjectType
-                        });
-
-            if ((parentSearchType ?? "").ToUpper().Trim() == "DIRECT")
-            {
-
-                var parent = parseTextField(form, "PrOptionsParentDropdown"); // ParentObjectID
-
-                item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "ParentObjectID",
-                            Value = parent
-                        });
-
-                item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "ParentObject",
-                            Value = objectType
-                        });
-            }
-            else if ((parentSearchType ?? "").ToUpper().Trim() == "RESULTFROMSTEP")
-            {
-                var ruleStepID = parseTextField(form, "PrOptionsStepDropdown"); // ParentObjectID
-
-                item.FusionRuleStepSettings.Add(
-                new FusionRuleStepSetting
+                if (promoteToInfo.Length >= 3)
                 {
-                    RuleStepID = item.ID,
-                    Name = "ParentObject",
-                    Value = "Step"
-                });
+                    parentObjectType = promoteToInfo[2];
+                }
+
+                var parentSearchType = parseTextField(form, "PrOptionsParentSearchDropdown"); //ParentObjectSearch
 
                 item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "ParentObjectID",
-                            Value = ruleStepID
-                        });
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "Object",
+                                Value = objectID
+                            });
+
+                item.FusionRuleStepSettings.Add(
+                    new FusionRuleStepSetting
+                    {
+                        RuleStepID = item.ID,
+                        Name = "ObjectID",
+                        Value = objectType
+                    });
+
+                item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "ParentObjectSearch",
+                                Value = parentSearchType
+                            });
+
+                item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "ParentObjectTypeID",
+                                Value = parentObjectType
+                            });
+
+                if ((parentSearchType ?? "").ToUpper().Trim() == "DIRECT")
+                {                    
+                    item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "ParentObjectID",
+                                Value = parseTextField(form, "PrOptionsParentDropdown") // ParentObjectID
+                    });
+
+                    item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "ParentObject",
+                                Value = objectType
+                            });
+                }
+                else if ((parentSearchType ?? "").ToUpper().Trim() == "RESULTFROMSTEP")
+                {                    
+                    item.FusionRuleStepSettings.Add(
+                    new FusionRuleStepSetting
+                    {
+                        RuleStepID = item.ID,
+                        Name = "ParentObject",
+                        Value = "Step"
+                    });
+
+                    item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "ParentObjectID",
+                                Value = parseTextField(form, "PrOptionsStepDropdown")
+                            });
+                }
+            }
+            else if(action == "FIND")
+            {
+                var findSearchType = parseTextField(form, "FindSearchType"); //ObjectSearch
+
+                item.FusionRuleStepSettings.Add(
+                    new FusionRuleStepSetting
+                    {
+                        RuleStepID = item.ID,
+                        Name = "ObjectSearch",
+                        Value = findSearchType
+                    });
+
+                //if the search type is result from step the object is step and the object id is the step id
+                var findType = (findSearchType ?? "").ToUpper();
+                switch (findType)
+                {
+                    case "RESULTFROMSTEP":
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "Object",
+                                Value = "Step"
+                            });
+
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "ObjectID",
+                                Value = parseTextField(form, "FindStep")
+                            });
+                        break;
+                    case "GLOSSARY":
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "Object",
+                                Value = parseTextField(form, "FindTypeName")
+                            });
+
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "ObjectID",
+                                Value = parseTextField(form, "FindTypeID")
+                            });
+
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "FilterField",
+                                Value = parseTextField(form, "FindSearchField")
+                            });
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -6614,6 +6676,16 @@ order by  D.TextPath
 
                 Company.ObjectContext.DeleteObject(itemToRemove);
                 
+                Company.SaveChanges();
+
+                //update the step numbers 
+                var steps = currentRule.FusionRuleSteps.OrderBy(x => x.Step);
+
+                for (int i = 0; i < steps.Count(); i++)
+                {
+                    steps.ElementAt(i).Step = (i + 1);
+                }
+
                 Company.SaveChanges();
                 
                 return jsonSuccess("Step successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);

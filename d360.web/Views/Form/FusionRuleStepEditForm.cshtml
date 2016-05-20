@@ -1,10 +1,13 @@
 ﻿@model d360.web.Models.FusionRuleStepEditorModel
 @{    
-    var promoteToObjectType = Model.RuleStep.GetSettingValueByName("Object");
-    var promoteToObjectID = Model.RuleStep.GetSettingValueByName("ObjectID");
+    var objectType = Model.RuleStep.GetSettingValueByName("Object");
+    var objectID = Model.RuleStep.GetSettingValueByName("ObjectID");
     var promoteParentTypeID = Model.RuleStep.GetSettingValueByName("ParentObjectTypeID");
     var promoteParentSearch = Model.RuleStep.GetSettingValueByName("ParentObjectSearch");
-    var promoteParentObjectID = Model.RuleStep.GetSettingValueByName("ParentObjectID");    
+    var promoteParentObjectID = Model.RuleStep.GetSettingValueByName("ParentObjectID");
+
+    var objectSearch = Model.RuleStep.GetSettingValueByName("ObjectSearch");
+    var filterField = Model.RuleStep.GetSettingValueByName("FilterField");
 }
 @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.FusionRuleStep, Description = "Configure the actions for this step of your fusion rule.", Name = Model.FormName })
 <div class="large-overlay">
@@ -15,37 +18,8 @@
         <input type="hidden" id="Step" name="Step" value="@(Model.RuleStep.Step)" />
 
         <div class="row">
-            <div class="col s6 offset-s3">
-                <div class="row">
-                    <div>
-                        <div class="FieldNameRequired">Description</div>
-                        <input type="text" id="Description" name="Description" value="@(Model.RuleStep.Description)" />
-                    </div>
-
-                    <div>
-                        <div class="FieldNameRequired">Action</div>
-                        <div id="Action" name="Action"></div>
-                    </div>
-                </div>
-
-                <div class="row" id="promote">
-                    <div id="PromoteTo" style="display:none">
-                        <div id='PromotionTip' class="FieldNameRequired">Promote To</div>
-                        <div id="PrOptionsDropdown" name="PrOptionsDropdown"></div>
-                    </div>
-                    <div id="PromotionParentSearch" style="display:none">
-                        <div id='PromotionParentSearchTip' class="FieldName">Parent Search</div>
-                        <div id="PrOptionsParentSearchDropdown" name="PrOptionsParentSearchDropdown"></div>
-                    </div>
-                    <div id="PromotionParent" style="display:none">
-                        <div id='PromotionParentTip' class="FieldName">Promote Under</div>
-                        <div id="PrOptionsParentDropdown" name="PrOptionsParentDropdown"></div>
-                    </div>                    
-                    <div id="PromotionResultStep" style="display:none">
-                        <div id='PromotionResultStepTip' class="FieldName">Result from step</div>
-                        <div id="PrOptionsStepDropdown" name="PrOptionsStepDropdown"></div>
-                    </div>
-                </div>
+            <div class="col s6 offset-s3">              
+                <div class="row" id="stepAction" data-bind="template: {name: 'promotionStepActionTmpl' }"></div>                
             </div>            
         </div>        
     }
@@ -55,32 +29,32 @@
     var prErrorLogCategory = "Promotion";
     var prUri = "@(Model.FormUri)";
     var prMethod = "@(Model.FormMethod)";
-    var RuleActionSource;
-    var RuleActionAdapter;
-    var PrOptionsSource;
-    var PrOptionsAdapter;
-    var PrOptionsParentSource;
-    var PrOptionsParentAdapter;
-    var RulesStepsSource;
-    var RulesStepsAdapter;
+
+    var ruleStepViewModel;
 
     function unsubscribe() {
-        RuleActionSource = null;
-        RuleActionAdapter = null;
-        PrOptionsSource = null;
-        PrOptionsAdapter = null;
-        PrOptionsParentSource = null;
-        PrOptionsParentAdapter = null;
-        RulesStepsSource = null;
-        RulesStepsAdapter = null;
+        ruleStepViewModel = null;
 
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
     }
 
     $(function () {
-        $('#Description').jqxInput({ theme: theme, width: field_width, height: field_height });
 
+        ruleStepViewModel = new promotionStepActionViewModel(@(Model.FusionID), @(Model.FusionTypeID), @(Model.RuleStep.RuleID), @(Model.RuleStep.ID));
+        ruleStepViewModel.description = "@(Model.RuleStep.Description)";
+        ruleStepViewModel.SetSelectedAction("@(Model.RuleStep.Action)");
+
+        if("@(Model.RuleStep.Action)".toUpperCase() == "PROMOTE")
+        {
+            ruleStepViewModel.SetPromotionValues('@(string.Format("{0}|{1}|{2}", objectType, objectID, ((!string.IsNullOrEmpty(promoteParentTypeID)) ? promoteParentTypeID : "null")))', '@(promoteParentSearch)', "@(promoteParentObjectID)");
+        }
+        else if("@(Model.RuleStep.Action)".toUpperCase() == "FIND")
+        {
+            ruleStepViewModel.SetFindValues('@(objectSearch)', '@(objectType)', '@(objectID)', '@(filterField)');
+        }
+
+        ko.applyBindings(ruleStepViewModel, document.getElementById('stepAction'));
 
         //#region tooltips
         tipCss = 'qtip-blue qtip-shadow';
@@ -109,7 +83,7 @@
                 classes: tipCss
             }
         });
-                
+
 
         $('#PromotionParentSearchTip').qtip({
             content: {
@@ -122,208 +96,6 @@
 
         //#endregion
 
-        RuleActionSource = {
-            datatype: 'json',
-            url: '/api/fusion/rule/actions',
-            datafields: [
-                { name: "ID", type: "string" },
-                { name: "Name", type: "string" }
-            ]
-        };
-        RuleActionAdapter = new $.jqx.dataAdapter(RuleActionSource);
-        $("#Action").jqxDropDownList({ theme: theme, source: RuleActionAdapter, displayMember: 'Name', valueMember: 'ID', width: field_width, height: field_height});
-
-
-        $("#Action").on('bindingComplete', function (event) {
-            var items = $("#Action").jqxDropDownList('getItems');
-            if (items) {
-                $.each(items, function () {
-                    if (this.value == "@(Model.RuleStep.Action)") {
-                        $("#Action").jqxDropDownList('selectItem', this);
-                    }
-                });
-            }
-        });
-
-        $("#Action").on('change', function (event) {
-            var sel = $("#Action").jqxDropDownList('getSelectedItem');
-
-            switch (sel.value) {
-                case 'promote':
-                    $('#PromoteTo').show();
-                    break;
-                case 'find':
-                case 'relate':
-                    $('#PromoteTo').hide();
-                    break;
-            }
-        });
-
-
-        //#region Rule Steps
-
-        RulesStepsSource = {
-            datatype: 'json',
-            url: '/api/fusion/rule/@(Model.RuleStep.RuleID)/steps/@(Model.RuleStep.ID)',
-            datafields: [
-                { name: "ID", type: "string" },
-                { name: "Description", type: "string" }
-            ]
-        };
-        RulesStepsAdapter = new $.jqx.dataAdapter(RulesStepsSource);
-        $("#PrOptionsStepDropdown").jqxDropDownList({ theme: theme, source: RulesStepsAdapter, displayMember: 'Description', valueMember: 'ID', width: field_width, height: field_height });
-
-        //#endregion
-
-        //#region Options
-
-        PrOptionsSource = {
-            datatype: 'json',
-            url: '/api/fusion/@(Model.FusionTypeID)/configurations/@(Model.FusionID)/promotion/options',
-            datafields: [
-                { name: "PromotionObjectType", type: "string" },
-                { name: "PromotionObjectID", type: "number" },
-                { name: "Name", type: "string" },
-                { name: "ParentObjectTypeID", type: "number" }
-            ]
-        };
-        PrOptionsAdapter = new $.jqx.dataAdapter(PrOptionsSource, {
-            beforeLoadComplete: function (records) {
-                var data = new Array();
-                for (var i = 0; i < records.length; i++) {
-                    var r = records[i];
-                    r.FormattedID = r.PromotionObjectType + '|' + r.PromotionObjectID + '|' + r.ParentObjectTypeID;
-                    data.push(r);
-                }
-                return data;
-            }
-        });
-        $("#PrOptionsDropdown").jqxDropDownList({ theme: theme, source: PrOptionsAdapter, displayMember: 'Name', valueMember: 'FormattedID', width: field_width, height: field_height });
-
-        $("#PrOptionsDropdown").on('change', function (event) {
-            var args = event.args;
-            if (args) {
-                var index = args.index;
-                var item = args.item;
-                var value = item.value;
-                var values = value.split('|');
-                if (values[2] > 0) {
-                    $('#PromotionParentSearch').show();
-                    var ot = values[0];
-                    if (ot == 'ArtifactType') ot = 'Artifact';
-                    PrOptionsParentSource.url = '/api/' + ot + '/' + values[2] + '/fieldlookup';
-                    PrOptionsParentAdapter.dataBind();
-                }
-                else {
-                    $('#PromotionParent').hide();
-                    $('#PromotionParentSearch').hide();
-                    $('#PromotionResultStep').hide();
-                    PrOptionsParentSource.url = null;
-                    PrOptionsParentAdapter.dataBind();
-                }
-            }
-        });
-
-        //#endregion
-
-
-        //#region Options Parent
-
-        PrOptionsParentSource = {
-            datatype: 'json',
-            url: null,
-            datafields: [
-                { name: "ID", type: "number" },
-                { name: "Name", type: "string" }
-            ]
-        };
-        PrOptionsParentAdapter = new $.jqx.dataAdapter(PrOptionsParentSource);
-        $("#PrOptionsParentDropdown").jqxDropDownList({ theme: theme, source: PrOptionsParentAdapter, displayMember: 'Name', valueMember: 'ID', width: field_width, height: field_height });
-
-        //#endregion
-
-        //#region Parent Search Types
-
-        var searches = [
-                { ID: "Direct", Title: "Direct" },
-                { ID: "ResultFromStep", Title: "Result From Step" }
-        ];
-
-        var PrParentSearchSource = {
-            datatype: 'array',
-            localdata: searches,
-            datafields: [
-                { name: "ID", type: "string" },
-                { name: "Title", type: "string" }
-            ]
-        };
-        var PrParentSearchAdapter = new $.jqx.dataAdapter(PrParentSearchSource);
-        $("#PrOptionsParentSearchDropdown").jqxDropDownList({ theme: theme, source: PrParentSearchAdapter, displayMember: 'Title', valueMember: 'ID', width: field_width, height: field_height });
-
-        $("#PrOptionsParentSearchDropdown").on('change', function (event) {
-            var args = event.args;
-            if (args) {
-                var index = args.index;
-                var item = args.item;
-                var value = item.value;
-                switch(value)
-                {
-                    case "Direct":
-                        $('#PromotionParent').show();
-                        $('#PromotionResultStep').hide();
-                        break;
-                    case "ResultFromStep":
-                        $('#PromotionResultStep').show();
-                        $('#PromotionParent').hide();
-                        break;
-                }
-            }
-        });
-
-        //#endregion
-
-        // populate selected promote to value
-        $("#PrOptionsDropdown").on('bindingComplete', function (event) {
-            var items = $("#PrOptionsDropdown").jqxDropDownList('getItems');
-            if (items) {
-                $.each(items, function () {
-                    if (this.value == "@(string.Format("{0}|{1}|{2}", promoteToObjectType, promoteToObjectID, ((!string.IsNullOrEmpty(promoteParentTypeID)) ? promoteParentTypeID : "null")))") {
-                        $("#PrOptionsDropdown").jqxDropDownList('selectItem', this);
-                    }
-                });
-            }
-        });
-
-        // populate parent search value
-        $("#PrOptionsParentSearchDropdown").jqxDropDownList('val', '@(promoteParentSearch)');
-
-
-
-        // populate parent value
-        $("#PrOptionsParentDropdown").on('bindingComplete', function (event) {
-            var items = $("#PrOptionsParentDropdown").jqxDropDownList('getItems');
-            if (items) {
-                $.each(items, function () {
-                    if (this.value == "@(promoteParentObjectID)") {
-                        $("#PrOptionsParentDropdown").jqxDropDownList('selectItem', this);
-                    }
-                });
-            }
-        });
-
-        // populate the step value if needed
-        $("#PrOptionsStepDropdown").on('bindingComplete', function (event) {
-            var items = $("#PrOptionsStepDropdown").jqxDropDownList('getItems');
-            if (items && "@(promoteParentSearch)".toUpperCase() == "RESULTFROMSTEP") {
-                $.each(items, function () {
-                    if (this.value == "@(promoteParentObjectID)") {
-                        $("#PrOptionsStepDropdown").jqxDropDownList('selectItem', this);
-                    }
-                });
-            }
-        });
-
-
         //#region validation
 
         $('#form0').jqxValidator({
@@ -335,7 +107,7 @@
                 //    action: 'blur',
                 //    message: 'Name is required.'
                 //},
-                {
+           /*     {
                     input: '#Description', message: 'A description for this step is required.', action: 'blur',
                     rule: function () {
                         return $('#Description').val() != '';
@@ -346,20 +118,20 @@
                     rule: function () {
                         return $('#Action').val() != '';
                     }
-                },
-                {
+                },*/
+            /*    {
                     input: '#PrOptionsDropdown', message: 'Promote to location is required.', action: 'blur',
                     rule: function () {
                         return $('#PrOptionsDropdown').val() != '';
                     }
-                }                
+                }*/
             ]
         });
 
 
         //#endregion
 
-        $('#form0').on('validationSuccess', function (event) {        
+        $('#form0').on('validationSuccess', function (event) {
             $('#form0').submit();
         });
         $('#EditableFormSaveButton').on('click', function () {

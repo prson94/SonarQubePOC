@@ -1124,7 +1124,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-up", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionConfigurationPromotionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             //new promotion
-                         //   list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-left", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
+                       //     list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-left", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             if (fusion.Manual)
                             {
@@ -1716,6 +1716,13 @@ where   h.ID <> @t order by h.[Level] desc;
             var artifactType = Company.GetById<ArtifactType>(typeID);
             if (artifactType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
             return artifactType;
+        }
+
+
+        [Route("artifacttypes")]
+        public IQueryable<ArtifactType> GetArtifactTypes()
+        {
+            return Company.ArtifactTypes;
         }
 
         [Route("artifacts/{id}/{take?}")]
