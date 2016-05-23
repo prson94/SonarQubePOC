@@ -175,7 +175,7 @@ namespace d360.web.Controllers
 
         #region Private Methods
 
-        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true)
+        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true)
         {
             columns = "";
             joins = "";
@@ -193,9 +193,19 @@ namespace d360.web.Controllers
             foreach (var f in fields)
             {
                 var name = f.Name.Replace("'", "''").Replace("--", "");
-                if (includeIdColumn) columns += string.Format("{0}_T.Value as [{0}ID], ", name);
-                columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
-                joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = '{2}' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID, type);
+                if (!useFieldName)
+                {
+                    var fieldName = $"Field{f.ID}";
+                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    columns += $"{name}_T.FormattedValue as [{fieldName}], ";
+                    joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
+                }
+                else
+                {
+                    if (includeIdColumn) columns += string.Format("{0}_T.Value as [{0}ID], ", name);
+                    columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
+                    joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = '{2}' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID, type);
+                }
             }
 
             fields = null;

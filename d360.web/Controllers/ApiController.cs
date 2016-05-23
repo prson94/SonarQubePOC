@@ -2701,7 +2701,7 @@ from    IntersectNode S
             var joins = "";
             var columns = "";
             //var whereClause = "";
-            getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns);
+            getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns, true, false);
 
             var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
             foreach (var f in attributesTypes)
