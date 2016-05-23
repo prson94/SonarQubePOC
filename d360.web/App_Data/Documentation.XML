@@ -2632,6 +2632,12 @@
         <member name="M:d360.web.Controllers.FormController.FusionPromotionRule_DeleteFields(System.Int32)">
             <param name="id">FusionAttributePromotionRuleID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.FusionRule_DeleteFields(System.Int32)">
+            <param name="id">FusionAttributePromotionRuleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FusionRuleStep_AddFields(System.Int32)">
+            <param name="id">FusionAttributePromotionRuleID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.FusionType_DeleteFields(System.Int32)">
             <param name="id">FusionTypeID</param>
         </member>

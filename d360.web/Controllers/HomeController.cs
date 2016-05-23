@@ -24,6 +24,14 @@ namespace d360.web.Controllers
             return View("SPA");
         }
 
+        public ActionResult App()
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            ViewData.Add("ResourceID", Company.CurrentResourceID);
+            ViewData.Add("Settings", Community.GetCompanySettings());
+            return View("App");
+        }
+
         public ActionResult Main()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);

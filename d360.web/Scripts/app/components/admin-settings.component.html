@@ -1,0 +1,147 @@
+﻿<div class="row">
+    <div class="col s12">
+        <div class="row">
+            <div class="col s12 m12 l7">
+                <div class="tile tile-detail">
+                    <header>
+                        Custom Images
+                        <div class="TileTools"></div>
+                    </header>
+                    <div class="row">
+                        <div class="col s6"><div class="FieldName">Company Logo</div></div>
+                        <div class="col s6"><div class="FieldName">Company Web Icon</div></div>
+                    </div>
+                    <div class="row">
+                        <div class="col s6">
+                            <div class="directions">
+                                You may upload a custom logo for your company.  The following formats are accepted: .GIF, .JPG, .PNG.  The dimensions should be 150px (W) X 75px (H).
+                            </div>
+                        </div>
+                        <div class="col s6">
+                            <div class="directions">
+                                You may upload a custom web icon (.ICO file) for your company.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s6">
+                            <div *ngIf="currentLogoPath">
+                                Current Logo: <br />
+                                <img [src]="currentLogoPath" />
+                            </div>
+                            &nbsp;
+                        </div>
+                        <div class="col s6">
+                            <div *ngIf="currentIconPath">
+                                Current Icon: <br />
+                                <img [src]="currentIconPath" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" *ngIf="currentIconPath || currentLogoPath">
+                        <div class="col s6">
+                            <input type="checkbox" [(ngModel)]="setLogoDefault" /> Reset to default
+                        </div>
+                        <div class="col s6">
+                            <input type="checkbox" [(ngModel)]="setIconDefault" /> Reset to default
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s6">
+                            <input #logoUpload type="file" (change)="onLogoFileChange($event)" accept="image/gif,image/jpeg,image/png" />
+                            <span *ngIf="companyLogo.isLoading"><i class="fa fa-spinner fa-spin"></i></span>
+                            <a *ngIf="logoUpload.files.length > 0" (click)="logoUpload.value = null; onLogoFileChange(null);" class="remove" ><i class="fa fa-remove"></i></a>
+                        </div>
+                        <div class="col s6">
+                            <input #iconUpload type="file" (change)="onIconFileChange($event)" accept="image/vnd.microsoft.icon,image/x-icon" />
+                            <span *ngIf="companyIcon.isLoading"><i class="fa fa-spinner fa-spin"></i></span>
+                            <a *ngIf="iconUpload.files.length > 0" (click)="iconUpload.value = null; onIconFileChange(null);" class="remove" ><i class="fa fa-remove"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="tile tile-detail">
+                    <header>
+                        IP Restrictions
+                        <div class="TileTools">
+                            <a class="btn btn-floating waves-effect waves-light brown lighten-1" title="Add IP restriction" (click)="addIpRestriction()"><i class="fa fa-plus"></i></a>
+                        </div>
+                    </header>
+                    <div class="directions">
+                        Restrictions will only apply if there are entries present.  If no entries are present, then users will be allowed to access this environment from any IP.
+                    </div>
+                    <div>
+                        <table class="responsive-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Start Range</th>
+                                    <th>End Range</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let ipRestriction of ipRestrictions;let i=index" style="margin-bottom: 10px" class="fadeIn">
+                                    <td style="vertical-align: middle">
+                                        <input [(ngModel)]="ipRestrictions[i].name" type="text" />
+                                    </td>
+                                    <td style="vertical-align: middle">
+                                        <input [(ngModel)]="ipRestrictions[i].start" type="text" />
+                                    </td>
+                                    <td style="vertical-align: middle">
+                                        <input [(ngModel)]="ipRestrictions[i].end" type="text" />
+                                    </td>
+                                    <td style="width: 20px; text-align: right; vertical-align: top">
+                                        <a style="padding: 0 .5rem;" class="btn waves-effect waves-red btn-flat" title="Remove this restriction" (click)="removeIpRestriction(i)"><i class="fa fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m12 l3">
+                <div class="tile tile-detail">
+                    <header>
+                        Community
+                        <div class="TileTools"></div>
+                    </header>
+                    <div class="directions">
+                        Disable the ability for users to post new comments or replies to the boards of other users and assets.  Users will still be able to see any system-generated comments.
+                    </div>
+                    <input type="checkbox" [(ngModel)]="disableDiscussionPosting" /> Disable Discussion Posts<br />
+                    <input type="checkbox" [(ngModel)]="disableIssuePosting" /> Disable Issue Posts
+                </div>
+                <div class="tile tile-detail">
+                    <header>Global Fields</header>
+                    <div class="directions">
+                        Disable the ability for users to post new comments or replies to the boards of other users and assets.  Users will still be able to see any system-generated comments.
+                    </div>
+                    <div class="FieldName">Subject Area Friendly Name</div>
+                    <div class="directions">This allows for the renaming of the Subject Area field for all artifact types. The default is "Subject Area."  After changing this value, if you wish to use the default value, simply remove the value in the field below.</div>
+                    <input [(ngModel)]="subjectAreaName" type="text" /> <br />
+                    <div class="FieldName">Subject Area Nodes Friendly Name</div>
+                    <div class="directions">This allows for the renaming of Subject Area Nodes field. The default is "Subject Area Nodes."  After changing this value, if you wish to use the default value, simply remove the value in the field below.</div>
+                    <input [(ngModel)]="subjectAreaNodeName" type="text" />
+                </div>
+                <div class="tile tile-detail">
+                    <header>
+                        Search
+                        <div class="TileTools"></div>
+                    </header>
+                    <div class="directions">
+                        Specify the default value for the initially selected list of object types to search when a user performs a simple search from the Data3Sixty global search functionality.
+                    </div>
+                    <ul>
+                        <li *ngFor="let searchType of searchTypes;let i=index">
+                            <input type="checkbox" [(ngModel)]="searchTypes[i].selected" />{{searchType.title}}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col s12 m12 l2">
+                <button class="btn waves-effect waves-light" (click)="save()">Save Changes</button>
+                <div [hidden]="!isLoading" [class]="isLoading ? 'fadeIn spinner' : 'fadeOut spinner'"><i class="fa fa-spinner fa-spin fa-4x"></i></div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -824,6 +824,7 @@
     </Content>
     <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
     <Content Include="fonts\fontawesome-webfont.woff2" />
+    <Content Include="package.json" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - North Central.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - Central.pubxml" />
@@ -860,6 +861,11 @@
     <Content Include="Scripts\Apps.min.js">
       <DependentUpon>Apps.js</DependentUpon>
     </Content>
+    <Content Include="Scripts\app\app.component.html" />
+    <Content Include="Scripts\app\components\admin-settings.component.css" />
+    <Content Include="Scripts\app\components\admin-settings.component.html" />
+    <Content Include="Scripts\app\components\home.component.html" />
+    <Content Include="Scripts\app\tsconfig.json" />
     <Content Include="Scripts\errors.json" />
     <None Include="Content\styles\_Variables.less" />
     <Content Include="Scripts\GoJS\GoJS-1-5-18-debug.js" />
@@ -1104,6 +1110,7 @@
     <Content Include="Views\Form\DomainXrefItemForm.cshtml" />
     <Content Include="Views\Form\DomainForm.cshtml" />
     <Content Include="Views\Overlays\RaiseIssue.cshtml" />
+    <Content Include="Views\Shared\App.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1193,6 +1200,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Scripts\app\components\admin-settings.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\app.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\home.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\main.ts" />
+    <TypeScriptCompile Include="Scripts\app\page-header.service.ts" />
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
   </ItemGroup>
   <ItemGroup>
