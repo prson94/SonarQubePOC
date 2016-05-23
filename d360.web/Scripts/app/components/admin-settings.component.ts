@@ -1,13 +1,11 @@
 ///<reference path="../es6-shim.d.ts"/>
 import {Component, NgZone} from 'angular2/core';
 import {Http, HTTP_PROVIDERS, Headers} from 'angular2/http';
-import {MultiselectDropdown, IMultiSelectOption, IMultiSelectSettings, IMultiSelectTexts} from '../multiselect-dropdown';
 import {PageHeader} from '../page-header.service'
 
 @Component({
     selector: 'admin-settings',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [MultiselectDropdown],
     templateUrl: 'scripts/app/components/admin-settings.component.html',
     styleUrls: ['scripts/app/components/admin-settings.component.css']
 })
