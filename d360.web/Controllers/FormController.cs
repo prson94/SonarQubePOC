@@ -5454,7 +5454,7 @@ order by  D.TextPath
 
         public ActionResult DeleteFusionAttributeOwnerRuleItem(int id)
         {
-            var a = Company.GetById<FusionAttributePromotionRuleItem>(id);
+            var a = Company.GetById<FusionAttributeOwnerRuleItem>(id);
             if (a == null) return HttpNotFound();
             var model = new EditableForm
             {
@@ -6567,7 +6567,80 @@ order by  D.TextPath
                         break;
                 }
             }
+            else if(action == "RELATE")
+            {
+                var intersectType = parseTextField(form, "RelateIntersectType");
+
+                item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "IntersectType",
+                            Value = intersectType
+                        });
+
+                var subjectSearch = parseTextField(form, "RelateSubjectSearchType");
+
+                item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "SubjectSearch",
+                                    Value = subjectSearch
+                                });
+
+
+                if ((subjectSearch ?? "").ToUpper() == "RESULTFROMSTEP")
+                {
+                    item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "Subject",
+                                    Value = "Step"
+                                });
+
+                    item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "SubjectID",
+                            Value = parseTextField(form, "RelateSubjectStep")
+                        });
+                }
+
+                var objectSearch = parseTextField(form, "RelateObjectSearchType");
+
+                item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "ObjectSearch",
+                                    Value = objectSearch
+                                });
+
+
+                if ((subjectSearch ?? "").ToUpper() == "RESULTFROMSTEP")
+                {
+                    item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "Object",
+                                    Value = "Step"
+                                });
+
+                    item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "ObjectID",
+                            Value = parseTextField(form, "RelateSubjectStep")
+                        });
+                }
+            }
         }
+
 
         [Route("fusion/rule/{ruleID:int}/step/edit/{ruleStepID:int}")]
         public ActionResult EditFusionRuleStep(int ruleID, int ruleStepID)
