@@ -1,4 +1,4 @@
-﻿create PROCEDURE [fusion].[Rules]
+﻿CREATE PROCEDURE [fusion].[Rules]
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -279,7 +279,7 @@ from	#rules R
 			--Load settings were are working with for this loop instance.
 			insert into @settings
 				select Name, Value from [fusion].[RuleStepSetting] RSS inner join [fusion].[RuleStep] RS on (RSS.RuleStepID = RS.ID) where RS.RuleID = @RuleID and RS.ID = @RuleStepID
-
+				
 			--BEGIN: Promote action
 			if @Action = 'Promote'
 			begin
@@ -508,16 +508,17 @@ from	#rules R
 						@FindSearchObject varchar(50) = null,
 						@FindSearchObjectID int = null,
 						@FindFilterField int = null,
-						@FindFilterFieldValue nvarchar(250) = null
+						@FindFilterFieldValue nvarchar(250) = null,
+						@FindTargetField int = null
 
 				select	@FindSearchType			= Value from @settings where Name = 'ObjectSearch'
 				select	@FindSearchObject		= Value from @settings where Name = 'Object'
 				select	@FindSearchObjectID		= Value from @settings where Name = 'ObjectID'
 				select	@FindFilterField		= Value from @settings where Name = 'FilterField'
-
+				select	@FindTargetField		= Value from @settings where Name = 'TargetField'
+																
 				if @FindSearchType = 'Fusion'
-				begin
-					
+				begin					
 					if @FindFilterField > 0
 					begin
 						select	@FindFilterFieldValue = Value
@@ -530,8 +531,7 @@ from	#rules R
 						from	@fields
 						where	SourceFieldName = 'Name'
 					end
-
-
+					
 					if @FindFilterFieldValue is not null
 					begin
 						select	top 1
@@ -556,9 +556,8 @@ from	#rules R
 							and ID = @FindSearchObjectID
 				end
 
-				if @FindSearchType = 'Glossary'
-				begin
-					
+				if @FindSearchType = 'Glossary'					
+				begin									
 					if @FindFilterField > 0
 					begin
 						select	@FindFilterFieldValue = Value
@@ -569,19 +568,33 @@ from	#rules R
 					begin
 						select	@FindFilterFieldValue = Value
 						from	@fields
-						where	SourceFieldName = 'Name'
+						where	SourceFieldName = 'Name'	
+						
+											
 					end
+									
 
 					if @FindFilterFieldValue is not null
 					begin
-						if @FindSearchObject = 'ArtifactType'
-						begin
+						if @FindSearchObject = 'ArtifactType' and  ( @FindTargetField is null or @FindTargetField <= 0)
+						begin							
 							select	top 1
 									@ResultObject = 'Artifact',
 									@ResultObjectID = ID
 							from	Artifact
 							where	ArtifactTypeID = @FindSearchObjectID
 									and (TextPath = @FindFilterFieldValue or Name = @FindFilterFieldValue)
+						end
+
+						if @FindSearchObject = 'ArtifactType' and @FindTargetField > 0
+						begin							
+							select	top 1
+									@ResultObject = 'Artifact',
+									@ResultObjectID = a.ID
+							from	Artifact a
+									inner join field f on(a.ID = f.ObjectID and f.Objecttype = 'Artifact' and f.fieldtypeid = @FindTargetField)
+							where	a.ArtifactTypeID = @FindSearchObjectID									
+									and (f.FormattedValue = @FindFilterFieldValue)
 						end
 
 						if @FindSearchObject = 'TaxonomyType'
@@ -765,18 +778,22 @@ from	#rules R
 				--BEGIN: Relate Subject to Object
 				--Check to see if we have all the required data to create the relationship.
 				if @IntersectTypeID is not null and @subject is not null and @SubjectID is not null and @Object is not null and @ObjectID is not null
-				begin
+				begin					
 					-- Validate that intersect type exists.
 					if exists(select 1 from IntersectType where ID = @IntersectTypeID)
 					begin
 --select @Subject, @SubjectID, @Object, @ObjectID
-						select	@IntersectID = ID
-						from	[Intersect]
+						select	@IntersectID = isect.ID,
+								@SubjectIntersectNodeID = inode2.ID,
+								@ObjectIntersectNodeID = inode1.ID
+						from	[Intersect] isect
+								inner join [intersectnode] inode1 on(isect.id = inode1.intersectid and inode1.objecttype = isect.object and inode1.objectid = isect.objectid)
+								inner join [intersectnode] inode2 on(isect.id = inode2.intersectid and inode2.objecttype = isect.subject and inode2.objectid = isect.subjectid)
 						where	Subject = @Subject 
-								and SubjectID = @SubjectID 
-								and Object = @Object 
-								and ObjectID = @ObjectID
-								and IntersectTypeID = @IntersectTypeID
+								and isect.SubjectID = @SubjectID 
+								and isect.Object = @Object 
+								and isect.ObjectID = @ObjectID
+								and isect.IntersectTypeID = @IntersectTypeID							
 --select @IntersectID
 						if @IntersectID is null
 						begin
@@ -847,7 +864,7 @@ from	#rules R
 
 				--BEGIN: Add IntersectMap
 				if @SubjectIntersectNodeID is not null and @ObjectIntersectNodeID is not null
-				begin
+				begin					
 					select @PredicateType = Type from Predicate where ID = @PredicateID
 					if @PredicateType is not null
 					begin
@@ -1067,7 +1084,7 @@ from	#rules R
 						end
 						else
 						begin
-							set @ResultObjectID = @IntersectID
+							set @ResultObjectID = @R_IntersectID
 						end
 					end
 				end
@@ -1239,5 +1256,3 @@ from	#rules R
 END
 
 GO
-
-
