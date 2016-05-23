@@ -47056,6 +47056,330 @@ var IssueViewModel = function () {
     return self;
 }
 
+var promotionStepActionFindViewModel = function () {
+    self.findTypes = ko.observableArray([
+        { text: 'Fusion', value: 'Fusion' },
+        { text: 'FusionOwner', value: 'FusionOwner' },
+        { text: 'Glossary', value: 'Glossary' },
+        { text: 'ResultFromStep', value: 'ResultFromStep' }
+    ]);
+}
+
+var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, ruleStepID) {
+    var self = this;    
+    self.description = ko.observable();
+    self.IsLoading = ko.observable(false);
+
+    self.fusionID = fusionID;
+    self.fusionTypeID = fusionTypeID;
+
+    self.ruleID = ruleID;
+    self.ruleStepID = ruleStepID;
+    
+    self.actionTypes = ko.observableArray([
+        { text: 'Promote', value: 'Promote' },
+        { text: 'Find', value: 'Find' },
+        { text: 'Lineage', value: 'Lineage' },
+        { text: 'Relate', value: 'Relate' }
+    ]);
+
+    self.promoteSearchTypes = ko.observableArray([
+                { value: "Direct", text: "Direct" },
+                { value: "ResultFromStep", text: "Result From Step" }
+    ]);
+
+    self.findSearchTypes = ko.observableArray([
+        { value: "Glossary", text: "Glossary" },
+        { value: "ResultFromStep", text: "Result From Step" }
+    ]);
+
+    self.findObjectTypes = ko.observableArray([
+        { value: "ArtifactType", text: "Artifact" },
+        { value: "TaxonomyType", text: "Model"}
+    ]);
+
+    self.promoteToItems = ko.observableArray();
+    self.promoteToParents = ko.observableArray();
+    self.findObjects = ko.observableArray();
+    self.findSearchField = ko.observableArray();
+    self.promotionParentType = ko.observable(0);
+    self.promoteToParentsObjectType = ko.observable("");
+        
+    self.promoteToSteps = ko.observableArray();
+    self.findSteps = ko.observableArray();
+
+
+    self.selectedPromotionSearchTypeIndex = ko.observable(-1);
+    self.selectedPromoteToIndex = ko.observable(-1);
+    self.selectedPromoteParentIndex = ko.observable(-1);
+    self.selectedPromoteStepIndex = ko.observable(-1);
+
+    self.selectedFindSearchTypeIndex = ko.observable(-1);
+    self.selectedFindObjectTypeIndex = ko.observable(-1);
+    self.selectedFindObjectIndex = ko.observable(-1);
+    self.selectedFindFieldIndex = ko.observable(-1);
+    self.selectedFindStepIndex = ko.observable(-1);
+
+    //initial values
+    self.initialPromoteToValue = ko.observable("");    
+    self.initialPromoteParentDirectValue = ko.observable("");
+    self.initialPromoteParentStepValue = ko.observable("");
+    self.initialFindStepValue = ko.observable("");
+    self.initialFindObject = "";
+    self.initialFindField = "";
+
+    self.selectedActionIndex = ko.observable(-1);
+
+    self.SetSelectedAction = function (val) {
+        self.actionTypes().forEach(function (el, index) {            
+            if (el.value.toUpperCase() == val.toUpperCase()){                
+                self.selectedActionIndex(index);
+                return;
+            }
+        });
+    }
+
+    self.SetPromotionValues = function (promoteTo, searchType, searchTypeValue) {
+        self.initialPromoteToValue = promoteTo;
+        
+        if (searchType.toUpperCase() == "DIRECT") {
+            self.selectedPromotionSearchTypeIndex(0);            
+            self.initialPromoteParentDirectValue = searchTypeValue;
+          //  self.LoadPromoteToParents();            
+        }
+        else if (searchType.toUpperCase() == "RESULTFROMSTEP") {
+            self.selectedPromotionSearchTypeIndex(1);
+            self.LoadPromoteToSteps();            
+            self.initialPromoteParentStepValue = searchTypeValue;
+        }
+    }
+
+    self.SetFindValues = function (searchType, objectType, objectID, filterField){
+        if (searchType.toUpperCase() == "GLOSSARY") {
+            self.selectedFindSearchTypeIndex(0);
+            self.initialFindObject = objectID;
+            self.initialFindField = filterField;
+            if (objectType.toUpperCase() == "ARTIFACTTYPE") {
+                self.selectedFindObjectTypeIndex(0);                
+                self.LoadFindArtifactTypes();
+            }
+            else if (objectType.toUpperCase() == "TAXONOMYTYPE") {
+                self.selectedFindObjectTypeIndex(1);
+                self.LoadFindModels();
+            }            
+        }
+        else if (searchType.toUpperCase() == "RESULTFROMSTEP") {
+            self.selectedFindSearchTypeIndex(1);
+            self.LoadFindSteps();            
+            self.initialFindStepValue = objectID;
+        }
+    }
+
+    // step actions promote / lineage / relate / find
+    self.selectedActionIndex.subscribe(function () {
+        if (self.selectedActionIndex() == -1)
+            return;
+        
+        if (self.selectedActionIndex() == 0) { //promote
+            console.log('loading promotion options');
+            self.LoadPromoteToItems();
+        }
+    })
+
+    // search type selection changed direct / result of step
+    self.selectedPromotionSearchTypeIndex.subscribe(function () {
+        if (self.selectedPromotionSearchTypeIndex() == -1) {                        
+            return 
+        }
+        
+        if (self.selectedPromotionSearchTypeIndex() == 0) { //direct            
+         //   self.LoadPromoteToParents();
+        }
+        else if (self.selectedPromotionSearchTypeIndex() == 1) { //result of step            
+            self.LoadPromoteToSteps();
+        }
+    })
+
+    // selected promote to option changed
+    self.selectedPromoteToIndex.subscribe(function () {
+        if (self.selectedPromoteToIndex() == -1) {            
+            return;
+        }
+           
+        //check the data in the promote to box to see if the value has a parent
+        var item = self.promoteToItems()[self.selectedPromoteToIndex()];
+        console.log(item);
+        if (item != null) {
+            var vals = item.value.split('|');
+
+            self.promoteToParentsObjectType(vals[0]);
+
+            if (vals.length >= 2) {
+                self.promotionParentType(vals[2]);                
+            }
+            else {
+                self.promotionParentType(0);
+            }
+        }
+    })
+
+    self.promotionParentType.subscribe(function () {
+        if (self.promotionParentType() > 0) {
+            self.LoadPromoteToParents();
+        }
+    })
+
+    self.selectedFindSearchTypeIndex.subscribe(function () {
+        if (self.selectedFindSearchTypeIndex() == -1) {
+            return;
+        }
+        else if (self.selectedFindSearchTypeIndex() == 1) { //result of step
+            self.LoadFindSteps();
+        }
+    })
+
+    self.selectedFindObjectTypeIndex.subscribe(function () {
+        if (self.selectedFindObjectTypeIndex() == -1) {
+            return;
+        }
+        else if (self.selectedFindObjectTypeIndex() == 0) {
+            self.LoadFindArtifactTypes();
+            //load artifacts
+        }
+        else if (self.selectedFindObjectTypeIndex() == 1) {
+            //load models
+            self.LoadFindModels();
+        }
+        //populate item array based on selection
+    })
+
+    self.selectedFindObjectIndex.subscribe(function () {
+        if (self.selectedFindObjectIndex() == -1) {
+            return;
+        }
+        var type = self.findObjectTypes()[self.selectedFindObjectTypeIndex()];
+        var item = self.findObjects()[self.selectedFindObjectIndex()];
+        self.LoadFindFields(type.value, item.value);
+    })
+
+    self.LoadFindFields = function (objectType, objectID) {        
+        $.ajax({
+            url: '/fields/'+objectType + '/' + objectID + '.json',
+            async: true
+        }).done(function (data) {
+            self.findSearchField([]);
+            self.findSearchField.push({ value: '0', text: 'Name' });
+            if ('0' == self.initialFindField) self.selectedFindFieldIndex(0);
+            $.each(data, function (idx, val) {
+                self.findSearchField.push({ value: val.ID, text: val.FriendlyName });
+                if (val.ID == self.initialFindField) self.selectedFindFieldIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadFindModels = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/catalogs',
+            async: true
+        }).done(function (data) {
+            self.findObjects([]);
+            $.each(data, function (idx, val) {
+                self.findObjects.push({ value: val.ID, text: val.Name });
+                if (val.ID == self.initialFindObject) self.selectedFindObjectIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+    
+    self.LoadFindArtifactTypes = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/artifacttypes?$orderby=Name',
+            async: true
+        }).done(function (data) {
+            self.findObjects([]);
+            $.each(data, function (idx, val) {
+                self.findObjects.push({ value: val.ID, text: val.Name });                
+                if (val.ID == self.initialFindObject) self.selectedFindObjectIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadFindSteps = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/' + self.ruleID + '/steps/' + self.ruleStepID,
+            async: true
+        }).done(function (data) {
+            self.findSteps([]);
+            $.each(data, function (idx, val) {
+                self.findSteps.push({ value: val.ID, text: val.Description });
+                if (self.initialFindStepValue == val.ID) self.selectedFindStepIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadPromoteToSteps = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/' + self.ruleID + '/steps/' + self.ruleStepID,
+            async: true
+        }).done(function (data) {
+            self.promoteToSteps([]);
+            $.each(data, function (idx, val) {                
+                self.promoteToSteps.push({ value: val.ID, text: val.Description });
+                if (self.initialPromoteParentStepValue == val.ID) self.selectedPromoteStepIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    };
+
+    self.LoadPromoteToItems = function () {
+        self.IsLoading(true);        
+        $.ajax({
+            url: '/api/fusion/' + self.fusionTypeID + '/configurations/' + self.fusionID + '/promotion/options',            
+            async: true
+        }).done(function (data) {
+            self.promoteToItems([]);
+            $.each(data, function (idx, val) {                
+                var id = val.PromotionObjectType + '|' + val.PromotionObjectID + '|' + val.ParentObjectTypeID;                
+                self.promoteToItems.push({ value: id, text: val.Name });
+                if (id == self.initialPromoteToValue) self.selectedPromoteToIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);            
+        });
+    };
+
+    self.LoadPromoteToParents = function () {
+        if (self.promotionParentType() == 0) return;
+        self.IsLoading(true);
+        
+        var ot = self.promoteToParentsObjectType() == 'ArtifactType' ? 'Artifact' : self.promoteToParentsObjectType();
+        $.ajax({            
+            url: '/api/' + ot + '/' + self.promotionParentType() + '/fieldlookup',
+            async: true
+        }).done(function (data) {
+            self.promoteToParents([]);
+            $.each(data, function (idx, val) {                
+                self.promoteToParents.push({ value: val.ID, text: val.Name });                
+                if (self.initialPromoteParentDirectValue == val.ID) self.selectedPromoteParentIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    };
+}
+
 
 //#endregion
 var theme = 'd3s'; //metro

@@ -317,10 +317,13 @@
                     datatype: 'json',
                     url: '/api/Taxonomy/' + data.key + '/relations',
                     datafields: [
-                        { name: 'IntersectID' },
-                        { name: 'TargetTypeName' },
-                        { name: 'TargetName' },
-                        { name: 'TargetUrl' }
+                        { name: 'ID' },
+                        { name: 'IntersectTypeID' },
+                        { name: 'Object' },
+                        { name: 'ObjectID' },
+                        { name: 'TypeName' },
+                        { name: 'Name' },
+                        { name: 'Url' }
                     ]
                 };
                 var relAdapter = new $.jqx.dataAdapter(relSource);
@@ -340,8 +343,8 @@
                     sortable: true,
                     pageable: true,
                     columns: [
-                        { text: 'Type', datafield: 'TargetTypeName', width: '50%', filtertype: 'checkedlist' },
-                        { text: 'Name', width: '49%', datafield: 'TargetName' }
+                        { text: 'Type', datafield: 'TypeName', width: '50%', filtertype: 'checkedlist' },
+                        { text: 'Name', width: '49%', datafield: 'Name' }
                     ]
                 });
 

@@ -359,7 +359,7 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
             try
             {
-                var companies = GetActiveCompanyIDs();//.Where(i => i == 4).ToList();
+                var companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
 
                 companies.ForEach(companyID =>
                 {
