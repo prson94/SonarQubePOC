@@ -6589,8 +6589,8 @@ order by  D.TextPath
                                     Value = subjectSearch
                                 });
 
-
-                if ((subjectSearch ?? "").ToUpper() == "RESULTFROMSTEP")
+                var subjectSearchUpper = (subjectSearch ?? "").ToUpper();
+                if (subjectSearchUpper == "RESULTFROMSTEP")
                 {
                     item.FusionRuleStepSettings.Add(
                                 new FusionRuleStepSetting
@@ -6608,6 +6608,47 @@ order by  D.TextPath
                             Value = parseTextField(form, "RelateSubjectStep")
                         });
                 }
+                else if(subjectSearchUpper == "SELF")
+                {
+                    item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "Subject",
+                                    Value = "Self"
+                                });
+
+                    item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "SubjectID",
+                            Value = "0"
+                        });
+                }
+                else if(subjectSearchUpper == "DIRECT")
+                {
+                    var subjectObject = parseTextField(form, "RelateSubjectItem","").Split('|');
+
+                    if (subjectObject.Length >= 2)
+                    {
+                        item.FusionRuleStepSettings.Add(
+                                    new FusionRuleStepSetting
+                                    {
+                                        RuleStepID = item.ID,
+                                        Name = "Subject",
+                                        Value = subjectObject[0]
+                                    });
+
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "SubjectID",
+                                Value = subjectObject[1]
+                            });
+                    }
+                }
 
                 var objectSearch = parseTextField(form, "RelateObjectSearchType");
 
@@ -6619,8 +6660,8 @@ order by  D.TextPath
                                     Value = objectSearch
                                 });
 
-
-                if ((subjectSearch ?? "").ToUpper() == "RESULTFROMSTEP")
+                var objectSearchUpper = (objectSearch ?? "").ToUpper();
+                if (objectSearchUpper == "RESULTFROMSTEP")
                 {
                     item.FusionRuleStepSettings.Add(
                                 new FusionRuleStepSetting
@@ -6635,8 +6676,49 @@ order by  D.TextPath
                         {
                             RuleStepID = item.ID,
                             Name = "ObjectID",
-                            Value = parseTextField(form, "RelateSubjectStep")
+                            Value = parseTextField(form, "RelateObjectStep")
                         });
+                }
+                else if (objectSearchUpper == "SELF")
+                {
+                    item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "Object",
+                                    Value = "Self"
+                                });
+
+                    item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "ObjectID",
+                            Value = "0"
+                        });
+                }
+                else if (objectSearchUpper == "DIRECT")
+                {
+                    var objectObject = parseTextField(form, "RelateObjectItem", "").Split('|');
+
+                    if (objectObject.Length >= 2)
+                    {
+                        item.FusionRuleStepSettings.Add(
+                                    new FusionRuleStepSetting
+                                    {
+                                        RuleStepID = item.ID,
+                                        Name = "Object",
+                                        Value = objectObject[0]
+                                    });
+
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "ObjectID",
+                                Value = objectObject[1]
+                            });
+                    }
                 }
             }
         }

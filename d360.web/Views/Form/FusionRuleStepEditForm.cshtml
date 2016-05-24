@@ -1,13 +1,17 @@
 ﻿@model d360.web.Models.FusionRuleStepEditorModel
 @{    
     var objectType = Model.RuleStep.GetSettingValueByName("Object");
+    var subjectType = Model.RuleStep.GetSettingValueByName("Subject");
     var objectID = Model.RuleStep.GetSettingValueByName("ObjectID");
+    var subjectID = Model.RuleStep.GetSettingValueByName("SubjectID");
     var promoteParentTypeID = Model.RuleStep.GetSettingValueByName("ParentObjectTypeID");
     var promoteParentSearch = Model.RuleStep.GetSettingValueByName("ParentObjectSearch");
     var promoteParentObjectID = Model.RuleStep.GetSettingValueByName("ParentObjectID");
 
     var objectSearch = Model.RuleStep.GetSettingValueByName("ObjectSearch");
+    var subjectSearch = Model.RuleStep.GetSettingValueByName("SubjectSearch");
     var filterField = Model.RuleStep.GetSettingValueByName("FilterField");
+    var intersectTypeID = Model.RuleStep.GetSettingValueByName("IntersectType");
 }
 @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.FusionRuleStep, Description = "Configure the actions for this step of your fusion rule.", Name = Model.FormName })
 <div class="large-overlay">
@@ -45,13 +49,17 @@
         ruleStepViewModel.description = "@(Model.RuleStep.Description)";
         ruleStepViewModel.SetSelectedAction("@(Model.RuleStep.Action)");
 
-        if("@(Model.RuleStep.Action)".toUpperCase() == "PROMOTE")
+        if("@((Model.RuleStep.Action ?? "").ToUpper())" == "PROMOTE")
         {
             ruleStepViewModel.SetPromotionValues('@(string.Format("{0}|{1}|{2}", objectType, objectID, ((!string.IsNullOrEmpty(promoteParentTypeID)) ? promoteParentTypeID : "null")))', '@(promoteParentSearch)', "@(promoteParentObjectID)");
         }
-        else if("@(Model.RuleStep.Action)".toUpperCase() == "FIND")
+        else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "FIND")
         {
             ruleStepViewModel.SetFindValues('@(objectSearch)', '@(objectType)', '@(objectID)', '@(filterField)');
+        }
+        else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "RELATE")
+        {
+            ruleStepViewModel.SetRelateValues('@(subjectSearch)', '@(subjectType)', '@(subjectID)', '@(objectSearch)', '@(objectType)', '@(objectID)', '@(intersectTypeID)');
         }
 
         ko.applyBindings(ruleStepViewModel, document.getElementById('stepAction'));
