@@ -336,6 +336,8 @@ from	#rules R
 					end
 					--END: Find parent based on search type
 
+					print @ParentObject
+					print @ParentObjectID
 
 					--BEGIN: Determine object type to promote as
 					if @ObjectTypeToPromoteTo = 'ArtifactType'
@@ -888,6 +890,7 @@ from	#rules R
 					
 						set @ResultObject = 'IntersectMap'
 						select top 1 @ResultObjectID = ID from @intersectMap
+						delete from @intersectMap				
 					end
 				end
 				--END: Add IntersectMap
@@ -1254,5 +1257,3 @@ from	#rules R
 	--	[RelationshipsAdded] = @NumberOfNewRelations
 	--where ID = @ExecutionID;
 END
-
-GO
