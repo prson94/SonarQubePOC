@@ -1115,6 +1115,11 @@
     <Content Include="Views\Form\DomainForm.cshtml" />
     <Content Include="Views\Overlays\RaiseIssue.cshtml" />
     <Content Include="Views\Shared\App.cshtml" />
+    <Content Include="Views\Overlays\FusionRules.cshtml" />
+    <Content Include="Views\Form\FusionRuleEditForm.cshtml" />
+    <Content Include="Views\Form\FusionRuleStepEditForm.cshtml" />
+    <Content Include="Views\Form\FusionRuleItemEditForm.cshtml" />
+    <Content Include="Views\Form\FusionRuleStepMappingEditForm.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

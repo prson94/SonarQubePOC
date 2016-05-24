@@ -1124,7 +1124,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-up", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionConfigurationPromotionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             //new promotion
-                       //     list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-left", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
+                      //      list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-left", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             if (fusion.Manual)
                             {
@@ -2043,6 +2043,35 @@ where   h.ID <> @t order by h.[Level] desc;
             types.Add(new { Name = FusionRuleType.Relate.ToString(), ID = FusionRuleType.Relate.ToString().ToLower() });
 
             return types;
+        }
+
+        [Route("fusion/rule/relate/intersectTypes")]
+        public IQueryable GetIntersectTypes()
+        {            
+            return Company.Filter<IntersectType>(x=>x.SubjectID > 0 && x.ObjectID > 0 && !string.IsNullOrEmpty(x.Subject) && !string.IsNullOrEmpty(x.Object)).Select(x=>new { Name = x.Name, ID = x.ID, Subject = x.Subject, SubjectID = x.SubjectID, Object = x.Object, ObjectID = x.ObjectID }).OrderBy(x=>x.Name);
+        }
+
+        [Route("fusion/rule/relate/objectTypes")]
+        public IEnumerable<dynamic> GetDirectObjectRelateTypes()
+        {
+            return Company.GetIntersectTypeOptions()
+                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });            
+        }
+
+        [Route("fusion/rule/directitems/{type}/{id:int}")]
+        public IEnumerable<dynamic> GetFusionRuleDirectOptions(SystemObjects type, int id)
+        {
+            switch (type)
+            {
+                case SystemObjects.ArtifactType:
+                    return Company.Filter<Artifact>(x => x.ArtifactTypeID == id).Select(x => new { Name = x.Name, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });                                                   
+                case SystemObjects.FusionAttributeType:
+                    return Company.Filter<FusionAttribute>(x => x.FusionAttributeTypeID == id).Select(x => new { Name = x.Name, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });
+               case SystemObjects.TaxonomyType:
+                    return Company.Filter<Taxonomy>(x => x.TaxonomyTypeID == id).Select(x => new { Name = x.Name, ID = x.ID }).AsEnumerable().Select(y => new { Name = y.Name, ID = $"{type}|{y.ID}" });                    
+                default:
+                    return null;
+            }
         }
 
         #region Owner

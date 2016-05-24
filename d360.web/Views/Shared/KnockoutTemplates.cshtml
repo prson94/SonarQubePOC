@@ -1346,6 +1346,37 @@
     </div>
 </script>
 
+<script id="promotionStepRelateActionTmpl" type="text/html">
+    <div>
+        <div class="FieldNameRequired">Intersect Type</div>
+        <div name="RelateIntersectType" id="RelateIntersectType" data-bind="jqxDropDownList: {placeHolder: 'Choose a intersect type:',source: intersectTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedIntersectTypeIndex}"></div>
+    </div>
+    <div>
+        <div class="FieldNameRequired">Subject Search Type</div>
+        <div name="RelateSubjectSearchType" id="RelateSubjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectSearchTypeIndex}"></div>
+    </div>    
+    <div data-bind="visible: showSubjectStepSearch()">
+        <div class="FieldNameRequired">Subject Step</div>
+        <div name="RelateSubjectStep" id="RelateSubjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectStepIndex}"></div>
+    </div>        
+    <div data-bind="visible: showSubjectDirectSearch() && selectedIntersectTypeIndex() >= 0">
+        <div class="FieldNameRequired">Subject</div>
+        <div name="RelateSubjectItem" id="RelateSubjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a subject:',source: subjectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectItemIndex}"></div>
+    </div>    
+    <div>
+        <div class="FieldNameRequired">Object Search Type</div>
+        <div name="RelateObjectSearchType" id="RelateObjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectSearchTypeIndex}"></div>
+    </div>
+    <div data-bind="visible: showObjectStepSearch()">
+        <div class="FieldNameRequired">Object Step</div>
+        <div name="RelateObjectStep" id="RelateObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectStepIndex}"></div>
+    </div>    
+    <div data-bind="visible: showObjectDirectSearch() && selectedIntersectTypeIndex() >= 0">
+        <div class="FieldNameRequired">Object</div>
+        <div name="RelateObjectItem" id="RelateObjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a object:',source: objectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectItemIndex}"></div>
+    </div>        
+</script>
+
 <script id="promotionStepActionTmpl" type="text/html">
     <div class="row">
         <div>
@@ -1400,5 +1431,9 @@
             <div name="FindStep" id="FindStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: findSteps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>
         </div>
     </div>
+
+    <!--ko if: showRelateAction-->
+        <div class="row" data-bind="template: {name: 'promotionStepRelateActionTmpl', data: actionRelateSettings }"></div>                
+    <!-- /ko-->
 </script>
 

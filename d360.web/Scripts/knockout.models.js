@@ -4319,6 +4319,189 @@ var promotionStepActionFindViewModel = function () {
     ]);
 }
 
+var promotionStepRelateActionViewModel = function (ruleID, ruleStepID) {
+    var self = this;
+
+    self.ruleID = ruleID;
+    self.ruleStepID = ruleStepID;
+
+    self.IsLoading = ko.observable(false);
+
+    // indexes
+    self.selectedSubjectSearchTypeIndex = ko.observable(-1);
+    self.selectedSubjectStepIndex = ko.observable(-1);
+
+    self.selectedObjectSearchTypeIndex = ko.observable(-1);
+    self.selectedObjectStepIndex = ko.observable(-1);
+
+    self.selectedIntersectTypeIndex = ko.observable(-1);
+    
+    self.selectedObjectItemIndex = ko.observable(-1);
+    self.selectedSubjectItemIndex = ko.observable(-1);
+
+    // data types for intersects
+    self.selectedSubjectType = ko.observable('');
+    self.selectedSubjectTypeID = ko.observable(-1);
+    self.selectedObjectType = ko.observable('');
+    self.selectedObjectTypeID = ko.observable(-1);
+
+    self.initialIntersectID = null;
+    self.initialSubjectStep = null;
+    self.initialObjectStep = null;
+    self.initialSubjectItem = null;
+    self.initialObjectItem = null;
+
+    // arrays
+    self.searchTypes = ko.observableArray([
+            { value: "Direct", text: "Direct" },
+            { value: "ResultFromStep", text: "Result From Step" },
+            { value: "Self", text: "Self" }
+    ]);
+
+    self.intersectTypes = ko.observableArray();
+    self.steps = ko.observableArray();
+    self.subjectObjects = ko.observableArray();
+    self.objectObjects = ko.observableArray();
+
+    // computed
+    self.showSubjectStepSearch = ko.computed(function () {
+        return (self.selectedSubjectSearchTypeIndex() == 1);
+    });
+
+    self.showSubjectDirectSearch = ko.computed(function () {
+        return (self.selectedSubjectSearchTypeIndex() == 0);
+    });
+
+    self.showObjectStepSearch = ko.computed(function () {
+        return (self.selectedObjectSearchTypeIndex() == 1);
+    });
+
+    self.showObjectDirectSearch = ko.computed(function () {
+        return (self.selectedObjectSearchTypeIndex() == 0);
+    });
+
+    // subscriptions
+    self.selectedIntersectTypeIndex.subscribe(function () {
+        //look at the source / target types use them if needed for direct
+        if (self.selectedIntersectTypeIndex() <= 0) {
+            self.selectedSubjectType('');
+            self.selectedSubjectTypeID(-1);
+            self.selectedObjectType('');
+            self.selectedObjectTypeID(-1);
+            return;
+        }
+
+        self.selectedSubjectType(self.intersectTypes()[self.selectedIntersectTypeIndex()].subject);
+        self.selectedSubjectTypeID(self.intersectTypes()[self.selectedIntersectTypeIndex()].subjectID);
+        self.selectedObjectType(self.intersectTypes()[self.selectedIntersectTypeIndex()].object);
+        self.selectedObjectTypeID(self.intersectTypes()[self.selectedIntersectTypeIndex()].objectID);
+    });
+
+    self.selectedObjectTypeID.subscribe(function () {
+        //if the object type is direct load the object drop down 
+        if (self.selectedObjectTypeID() > 0) {
+            self.LoadItems(self.selectedObjectTypeID(), self.selectedObjectType(), self.objectObjects, self.initialObjectItem, self.selectedObjectItemIndex);
+        }
+    })
+
+    self.selectedSubjectTypeID.subscribe(function () {
+        if (self.selectedSubjectTypeID() > 0) {
+            self.LoadItems(self.selectedSubjectTypeID(), self.selectedSubjectType(), self.subjectObjects, self.initialSubjectItem, self.selectedSubjectItemIndex);
+        }
+    })
+
+    // methods
+    self.Load = function () {
+        self.LoadSteps();
+        self.LoadIntersectTypes();
+    }
+
+    self.LoadItems = function (id, type, array, initialItem, initialIndex) {
+        console.log('id' + id + ' type ' + type + ' initialItem ' + initialItem);
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/directitems/' + type + '/' +id,
+            async: true
+        }).done(function (data) {
+            array([]);
+            $.each(data, function (idx, val) {
+                array.push({ value: val.ID, text: val.Name });
+                console.log(type + '|' + initialItem + '   ' + val.ID);
+                if (type + '|' + initialItem == val.ID) {
+                    initialItem='';
+                    initialIndex(idx);
+                }
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadSteps = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/' + self.ruleID + '/steps/' + self.ruleStepID,
+            async: true
+        }).done(function (data) {
+            self.steps([]);
+            $.each(data, function (idx, val) {
+                self.steps.push({ value: val.ID, text: val.Description });                
+                if(self.initialObjectStep == val.ID){
+                    self.initialObjectStep = '';
+                    self.selectedObjectStepIndex(idx);
+                }
+                if (self.initialSubjectStep == val.ID) {
+                    self.initialSubjectStep = '';
+                    self.selectedSubjectStepIndex(idx);
+                }
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadIntersectTypes = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/relate/intersectTypes',
+            async: true
+        }).done(function (data) {
+            self.intersectTypes([]);
+            $.each(data, function (idx, val) {
+                //object subject
+                self.intersectTypes.push({ value: val.ID, text: val.Name, subject:val.Subject, subjectID:val.SubjectID, object:val.Object, objectID:val.ObjectID });
+                if (self.initialIntersectID == val.ID) {
+                    self.initialIntersectID = null;
+                    self.selectedIntersectTypeIndex(idx);
+                }
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.SelectedSearchType = function (name){
+        for (var i = 0 ; i < self.searchTypes().length; i++) {
+            if (self.searchTypes()[i].value.toUpperCase() == name.toUpperCase()) return i;
+        }
+        return -1;
+    }
+
+    self.SetInitialValues = function (subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID) {
+        self.selectedObjectSearchTypeIndex(self.SelectedSearchType(objectSearch));
+        self.selectedSubjectSearchTypeIndex(self.SelectedSearchType(subjectSearch));
+        self.initialIntersectID = intersectTypeID;
+        if (objectSearch.toUpperCase() == 'RESULTFROMSTEP')
+            self.initialObjectStep = objectID;
+        else if (objectSearch.toUpperCase() == 'DIRECT')
+            self.initialObjectItem = objectID;
+        if (subjectSearch.toUpperCase() == 'RESULTFROMSTEP')
+            self.initialSubjectStep = subjectID;
+        else if (subjectSearch.toUpperCase() == 'DIRECT')
+            self.initialSubjectItem = subjectID;        
+    }
+}
+
 var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, ruleStepID) {
     var self = this;    
     self.description = ko.observable();
@@ -4351,7 +4534,7 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         { value: "ArtifactType", text: "Artifact" },
         { value: "TaxonomyType", text: "Model"}
     ]);
-
+    
     self.promoteToItems = ko.observableArray();
     self.promoteToParents = ko.observableArray();
     self.findObjects = ko.observableArray();
@@ -4361,6 +4544,7 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         
     self.promoteToSteps = ko.observableArray();
     self.findSteps = ko.observableArray();
+    self.relateSteps = ko.observableArray();
 
 
     self.selectedPromotionSearchTypeIndex = ko.observable(-1);
@@ -4382,7 +4566,15 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
     self.initialFindObject = "";
     self.initialFindField = "";
 
+    //settings for various actions
+    self.actionRelateSettings = ko.observable(new promotionStepRelateActionViewModel(self.ruleID, self.ruleStepID));
+
     self.selectedActionIndex = ko.observable(-1);
+
+    //computed show values
+    self.showRelateAction = ko.computed(function () {
+        return (self.selectedActionIndex() == 3);
+    });
 
     self.SetSelectedAction = function (val) {
         self.actionTypes().forEach(function (el, index) {            
@@ -4429,15 +4621,21 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         }
     }
 
+    self.SetRelateValues = function (subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID) {
+        self.actionRelateSettings().SetInitialValues(subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID);
+    }
+
     // step actions promote / lineage / relate / find
     self.selectedActionIndex.subscribe(function () {
         if (self.selectedActionIndex() == -1)
             return;
         
-        if (self.selectedActionIndex() == 0) { //promote
-            console.log('loading promotion options');
+        if (self.selectedActionIndex() == 0) { //promote            
             self.LoadPromoteToItems();
         }
+        else if (self.selectedActionIndex() == 3) { //relate
+            self.actionRelateSettings().Load();
+        }    
     })
 
     // search type selection changed direct / result of step
