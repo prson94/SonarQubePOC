@@ -1,9 +1,9 @@
 ///<reference path="./es6-shim.d.ts"/>
-import {bootstrap}  from  'angular2/platform/browser'
-import {provide, PLATFORM_DIRECTIVES} from 'angular2/core'
+import {bootstrap}  from  '@angular/platform-browser-dynamic'
+import {provide, PLATFORM_DIRECTIVES} from '@angular/core'
 import {AppComponent} from './app.component'
-import {ROUTER_PROVIDERS} from 'angular2/router'
-import {HTTP_PROVIDERS} from 'angular2/http'
+import {ROUTER_PROVIDERS} from '@angular/router-deprecated'
+import {HTTP_PROVIDERS} from '@angular/http'
 import 'rxjs/Rx'
 
 bootstrap(AppComponent, [ROUTER_PROVIDERS, HTTP_PROVIDERS]);

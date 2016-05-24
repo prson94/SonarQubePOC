@@ -861,10 +861,13 @@
     <Content Include="Scripts\Apps.min.js">
       <DependentUpon>Apps.js</DependentUpon>
     </Content>
-    <Content Include="Scripts\app\app.component.html" />
-    <Content Include="Scripts\app\components\admin-settings.component.css" />
-    <Content Include="Scripts\app\components\admin-settings.component.html" />
-    <Content Include="Scripts\app\components\home.component.html" />
+    <Content Include="Scripts\app\parts\object-detail.part.html" />
+    <Content Include="Scripts\app\templates\admin-groups.component.html" />
+    <Content Include="Scripts\app\templates\app.component.html" />
+    <Content Include="Scripts\app\templates\admin-domain.component.html" />
+    <Content Include="Scripts\app\styles\admin-settings.component.css" />
+    <Content Include="Scripts\app\templates\admin-settings.component.html" />
+    <Content Include="Scripts\app\templates\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
     <Content Include="Scripts\errors.json" />
     <None Include="Content\styles\_Variables.less" />
@@ -994,6 +997,7 @@
     <Content Include="Scripts\typeahead.bundle.js" />
     <Content Include="Scripts\version.json" />
     <None Include="Scripts\_references.js" />
+    <Content Include="system.config.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -1200,11 +1204,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Scripts\app\components\admin-domain.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin-groups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\index.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\page-header.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\parts\object-detail.part.ts" />
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
   </ItemGroup>
   <ItemGroup>

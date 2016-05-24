@@ -71,34 +71,19 @@
 
     <script src="../../node_modules/es6-shim/es6-shim.min.js"></script>
     <script src="../../node_modules/systemjs/dist/system-polyfills.js"></script>
-    <script src="../../node_modules/angular2/es6/dev/src/testing/shims_for_IE.js"></script>
 
-    <script src="../../node_modules/angular2/bundles/angular2-polyfills.js"></script>
     <script src="../../node_modules/systemjs/dist/system.src.js"></script>
     <script src="../../node_modules/rxjs/bundles/Rx.js"></script>
-    <script src="../../node_modules/angular2/bundles/angular2.dev.js"></script>
-    <script src="../../node_modules/angular2/bundles/router.dev.js"></script>
-    <script src="../../node_modules/angular2/bundles/http.dev.js"></script>
-    @*<script src="../../node_modules/ng2-uploader/bundles/ng2-uploader.js"></script>*@
+
+    <script src="../../node_modules/zone.js/dist/zone.js"></script>
+    <script src="../../node_modules/reflect-metadata/Reflect.js"></script>
+
+    <script src="../../node_modules/ng2-table/bundles/ng2-table.js"></script> 
+
+    <script src="../../system.config.js" ></script>
     <script>
-        System.config({
-            packages: {
-                'scripts/app': {
-                    format: 'register',
-                    defaultExtension: 'js'
-                },
-                //'node_modules/ng2-uploader': {
-                //    format: 'register',
-                //    defaultExtension: 'js'
-                //},
-            },
-            paths : [
-                { 'angular2': '../../../node_modules/angular2' },
-            ]
-        });
-    System.import('scripts/app/main').then(null, console.error.bind(console));
+        System.import('scripts/app/main').then(null, console.error.bind(console));
     </script>
-    @*<script type="text/javascript" src="/scripts/angular.js"></script>*@
 </head>
 <body>
     <div style="position: fixed; left: 0px; top: 0px; width: 50px; height: 100%; z-index: 0" class="grey darken-2"></div>
@@ -109,7 +94,7 @@
                 <div id="SideIcons"></div>
             </td>
             <td class="d3s-contentarea">
-                <d3s-app></d3s-app>
+                <d3s-app><div style="width:100%;height:100%;text-align:center;vertical-align:middle;padding: 50px;"><i class="fa fa-spinner fa-4x fa-spin"></i></div></d3s-app>
             </td>
         </tr>
     </table>
