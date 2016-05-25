@@ -272,10 +272,12 @@ from	#rules R
 					inner join #attributes A on A.RuleID = R.RuleID and A.ID = @currentID
 					left join [Fusion].RulePromotion P on P.FusionAttributeID = A.FusionAttributeID and P.RuleID = R.RuleID and P.RuleStepID = A.RuleStepID
 
+			delete from @fields -- clear out previous fields
 			--Load fields were are working with for this loop instance.
 			insert into @fields
 				select SourceFieldName, SourceFieldTypeID, TargetFieldName, TargetFieldTypeID, Value from #fields where ID = @currentID and RuleStepID = @RuleStepID
 
+			delete from @settings -- clear out previous settings
 			--Load settings were are working with for this loop instance.
 			insert into @settings
 				select Name, Value from [fusion].[RuleStepSetting] RSS inner join [fusion].[RuleStep] RS on (RSS.RuleStepID = RS.ID) where RS.RuleID = @RuleID and RS.ID = @RuleStepID
