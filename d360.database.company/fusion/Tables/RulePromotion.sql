@@ -15,7 +15,5 @@
 		ON DELETE CASCADE,
 	CONSTRAINT [FK_FusionRulePromotion_FusionRule] FOREIGN KEY([RuleID])
 		REFERENCES [fusion].[Rule] ([ID])
-		ON DELETE CASCADE,
-	CONSTRAINT [FK_FusionRulePromotion_FusionRuleStep] FOREIGN KEY([RuleStepID])
-		REFERENCES [fusion].[RuleStep] ([ID])		
+		ON DELETE CASCADE	
 )
