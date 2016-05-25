@@ -6865,7 +6865,25 @@ order by  D.TextPath
                         });
                 }
             }
+            else if(searchUpper == "FUSIONOWNER")
+            {
+                fusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = id,
+                                Name = target,
+                                Value = "Owner"
+                            });
 
+                fusionRuleStepSettings.Add(
+                    new FusionRuleStepSetting
+                    {
+                        RuleStepID = id,
+                        Name = $"{target}ID",
+                        Value = parseTextField(form, $"Lineage{target}OwnerRule")
+                    });
+                
+            }
         }
 
         [Route("fusion/rule/{ruleID:int}/step/edit/{ruleStepID:int}")]

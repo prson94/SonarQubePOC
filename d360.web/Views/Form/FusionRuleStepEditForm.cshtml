@@ -16,6 +16,7 @@
     var focalSearch = Model.RuleStep.GetSettingValueByName("FocalSearch");
 
     var filterField = Model.RuleStep.GetSettingValueByName("FilterField");
+    var targetField = Model.RuleStep.GetSettingValueByName("TargetField");
     var intersectTypeID = Model.RuleStep.GetSettingValueByName("IntersectType");
     var RuleObjectID = Model.RuleStep.FusionRule.ObjectID;
     var RuleObjectType = Model.RuleStep.FusionRule.ObjectType;
@@ -64,7 +65,7 @@
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "FIND")
         {
-            ruleStepViewModel.SetFindValues('@(objectSearch)', '@(objectType)', '@(objectID)', '@(filterField)');
+            ruleStepViewModel.SetFindValues('@(objectSearch)', '@(objectType)', '@(objectID)', '@(filterField)','@(targetField)');
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "RELATE")
         {

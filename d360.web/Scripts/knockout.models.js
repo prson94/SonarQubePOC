@@ -4494,11 +4494,13 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID) {
     }
 }
 
-var promotionStepLineageActionViewModel = function (ruleID, ruleStepID) {
+var promotionStepLineageActionViewModel = function (ruleID, ruleStepID, fusionID) {
     var self = this;
 
     self.ruleID = ruleID;
     self.ruleStepID = ruleStepID;
+    
+    self.fusionID = fusionID;
 
     self.IsLoading = ko.observable(false);
 
@@ -4513,16 +4515,22 @@ var promotionStepLineageActionViewModel = function (ruleID, ruleStepID) {
     self.selectedFocalStepIndex = ko.observable(-1);
     self.selectedPredicateIndex = ko.observable(-1);
 
+    self.selectedFocalFusionOwnerRuleIndex = ko.observable(-1);
+    self.selectedSubjectFusionOwnerRuleIndex = ko.observable(-1);
+    self.selectedObjectFusionOwnerRuleIndex = ko.observable(-1);
+
     //arrays
     self.intersectTypes = ko.observableArray();
 
     self.searchTypes = ko.observableArray([        
             { value: "ResultFromStep", text: "Result From Step" },
-            { value: "Self", text: "Self" }
+            { value: "Self", text: "Self" },
+            { value: "FusionOwner", text: "Fusion Owner Rule" }
     ]);
 
     self.steps = ko.observableArray();
     self.predicates = ko.observableArray();
+    self.fusionOwnerRules = ko.observableArray();
 
     //initial values
     self.initialIntersectID = '';
@@ -4530,19 +4538,25 @@ var promotionStepLineageActionViewModel = function (ruleID, ruleStepID) {
     self.initialSubjectStep = '';
     self.initialObjectStep = '';
     self.initialPredicate = '';
+    self.initialSubjectOwnerRule = '';
+    self.initialObjectOwnerRule = '';
+    self.initialFocalOwnerRule = '';
 
     // subscriptions
 
     self.selectedFocalSearchTypeIndex.subscribe(function () {
         if (self.selectedFocalSearchTypeIndex() == 0 && self.steps().length == 0) self.LoadSteps();
+        else if (self.selectedFocalSearchTypeIndex() == 2 && self.fusionOwnerRules().length == 0) self.LoadFusionOwnerRules();
     });
 
     self.selectedObjectSearchTypeIndex.subscribe(function () {
         if (self.selectedObjectSearchTypeIndex() == 0 && self.steps().length == 0) self.LoadSteps();
+        else if (self.selectedObjectSearchTypeIndex() == 2 && self.fusionOwnerRules().length == 0) self.LoadFusionOwnerRules();
     });
 
     self.selectedSubjectSearchTypeIndex.subscribe(function () {
         if (self.selectedSubjectSearchTypeIndex() == 0 && self.steps().length == 0) self.LoadSteps();
+        else if (self.selectedSubjectSearchTypeIndex() == 2 && self.fusionOwnerRules().length == 0) self.LoadFusionOwnerRules();
     });
 
     self.LoadIntersectTypes = function () {
@@ -4611,6 +4625,33 @@ var promotionStepLineageActionViewModel = function (ruleID, ruleStepID) {
         });
     }
 
+    self.LoadFusionOwnerRules = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/fusionOwnerRules/' + self.fusionID,
+            async: true
+        }).done(function (data) {
+            self.fusionOwnerRules([]);
+            $.each(data, function (idx, val) {
+                self.fusionOwnerRules.push({ value: val.ID, text: val.FusionAttributeName + ' Owned By:' + val.OwnerObject });                
+                if (val.ID == self.initialSubjectOwnerRule) {                    
+                    self.initialSubjectOwnerRule = '';
+                    self.selectedSubjectFusionOwnerRuleIndex(idx);
+                }
+                if (val.ID == self.initialObjectOwnerRule) {
+                    self.initialObjectOwnerRule = '';
+                    self.selectedObjectFusionOwnerRuleIndex(idx);
+                }
+                if (val.ID == self.initialFocalOwnerRule) {
+                    self.initialFocalOwnerRule = '';
+                    self.selectedFocalFusionOwnerRuleIndex(idx);
+                }
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
     self.Load = function () {
         self.LoadIntersectTypes();
         self.LoadPredicates();
@@ -4633,14 +4674,20 @@ var promotionStepLineageActionViewModel = function (ruleID, ruleStepID) {
             self.initialObjectStep = objectID;
         else if (objectSearch.toUpperCase() == 'DIRECT')
             self.initialObjectItem = objectID;
+        else if (objectSearch.toUpperCase() == 'FUSIONOWNER')
+            self.initialObjectItem = objectID;
         if (subjectSearch.toUpperCase() == 'RESULTFROMSTEP')
             self.initialSubjectStep = subjectID;
         else if (subjectSearch.toUpperCase() == 'DIRECT')
             self.initialSubjectItem = subjectID;
+        else if (subjectSearch.toUpperCase() == 'FUSIONOWNER')
+            self.initialSubjectOwnerRule = subjectID;
         if (focalSearch.toUpperCase() == 'RESULTFROMSTEP')
             self.initialFocalStep = focalID;
         else if (focalSearch.toUpperCase() == 'DIRECT')
             self.initialFocalItem = focalID;
+        else if (focalSearch.toUpperCase() == 'FUSIONOWNER')
+            self.initialFocalOwnerRule = focalID;        
     }
 }
 
@@ -4701,7 +4748,7 @@ var promotionStepPromoteActionViewModel = function (fusionID, fusionTypeID, rule
 
         //check the data in the promote to box to see if the value has a parent
         var item = self.promoteToItems()[self.selectedPromoteToIndex()];
-        console.log(item);
+        
         if (item != null) {
             var vals = item.value.split('|');
 
@@ -4831,13 +4878,15 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
     self.initialFindStepValue = ko.observable("");
     self.initialFindObject = "";
     self.initialFindField = "";
+    self.initialTargetField = "";
     self.initialOwnerRule = "";
     
-    self.SetInitialValues = function (searchType, objectType, objectID, filterField) {
+    self.SetInitialValues = function (searchType, objectType, objectID, filterField,targetField) {
         if (searchType.toUpperCase() == "GLOSSARY") {
             self.selectedFindSearchTypeIndex(0);
             self.initialFindObject = objectID;
             self.initialFindField = filterField;
+            self.initialTargetField = targetField;
             if (objectType.toUpperCase() == "ARTIFACTTYPE") {
                 self.selectedFindObjectTypeIndex(0);
                 self.LoadFindArtifactTypes();
@@ -4901,11 +4950,13 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
             async: true
         }).done(function (data) {
             self.sourceFields([]);
-            self.sourceFields.push({ value: '0', text: 'Name' });
-            if ('0' == self.initialFindField) self.selectedFindFieldIndex(0);
+            self.sourceFields.push({ value: '0', text: 'Name' });            
+            if ('0' == self.initialFindField || self.initialFindField == '') self.selectedFindFieldIndex(0);
             $.each(data, function (idx, val) {
-                self.sourceFields.push({ value: val.ID, text: val.FriendlyName });
-                if (val.ID == self.initialFindField) self.selectedFindFieldIndex(idx);
+                self.sourceFields.push({ value: val.ID, text: val.FriendlyName });                
+                if (val.ID == self.initialFindField) {                    
+                    self.selectedFindFieldIndex(idx+1);
+                }
             })
         }).always(function () {
             self.IsLoading(false);
@@ -4920,10 +4971,8 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
         }).done(function (data) {
             self.fusionOwnerRules([]);            
             $.each(data, function (idx, val) {
-                self.fusionOwnerRules.push({ value: val.ID, text: val.FusionAttributeName + ' Owned By:' + val.OwnerObject });
-                console.log(val.ID + ' ' + self.initialOwnerRule);
-                if (val.ID == self.initialOwnerRule) {
-                    console.log('match')
+                self.fusionOwnerRules.push({ value: val.ID, text: val.FusionAttributeName + ' Owned By:' + val.OwnerObject });                
+                if (val.ID == self.initialOwnerRule) {                    
                     self.initialOwnerRule = '';
                     self.selectedFusionOwnerRuleIndex(idx);
                 }
@@ -4941,10 +4990,10 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
         }).done(function (data) {
             self.targetFields([]);
             self.targetFields.push({ value: '0', text: 'Name' });
-            if ('0' == self.initialFindField) self.selectedFindFieldIndex(0);
+            if ('0' == self.initialTargetField || self.initialTargetField == '') self.selectedTargetFieldIndex(0);
             $.each(data, function (idx, val) {
                 self.targetFields.push({ value: val.ID, text: val.FriendlyName });
-                if (val.ID == self.initialFindField) self.selectedFindFieldIndex(idx);
+                if (val.ID == self.initialTargetField) self.selectedTargetFieldIndex(idx+1);
             })
         }).always(function () {
             self.IsLoading(false);
@@ -5029,7 +5078,7 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
     self.actionRelateSettings = ko.observable(new promotionStepRelateActionViewModel(self.ruleID, self.ruleStepID));
     self.actionPromoteSettings = ko.observable(new promotionStepPromoteActionViewModel(self.fusionID, self.fusionTypeID, self.ruleID, self.ruleStepID));
     self.actionFindSettings = ko.observable(new promotionStepFindActionViewModel(self.ruleID, self.ruleStepID, self.ruleObjectID, self.ruleObjectType, self.fusionID));
-    self.actionLineageSettings = ko.observable(new promotionStepLineageActionViewModel(self.ruleID, self.ruleStepID));
+    self.actionLineageSettings = ko.observable(new promotionStepLineageActionViewModel(self.ruleID, self.ruleStepID, self.fusionID));
     
 
     self.selectedActionIndex = ko.observable(-1);
@@ -5069,8 +5118,8 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         self.actionRelateSettings().SetInitialValues(subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID);
     }
 
-    self.SetFindValues = function (searchType, objectType, objectID, filterField) {
-        self.actionFindSettings().SetInitialValues(searchType, objectType, objectID, filterField);        
+    self.SetFindValues = function (searchType, objectType, objectID, filterField, targetField) {
+        self.actionFindSettings().SetInitialValues(searchType, objectType, objectID, filterField, targetField);        
     }
 
     self.SetLineageValues = function (focalSearch, focal, focalID, subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID, predicate) {
