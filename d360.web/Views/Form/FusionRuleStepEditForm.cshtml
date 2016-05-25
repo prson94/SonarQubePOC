@@ -12,6 +12,8 @@
     var subjectSearch = Model.RuleStep.GetSettingValueByName("SubjectSearch");
     var filterField = Model.RuleStep.GetSettingValueByName("FilterField");
     var intersectTypeID = Model.RuleStep.GetSettingValueByName("IntersectType");
+    var RuleObjectID = Model.RuleStep.FusionRule.ObjectID;
+    var RuleObjectType = Model.RuleStep.FusionRule.ObjectType;
 }
 @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.FusionRuleStep, Description = "Configure the actions for this step of your fusion rule.", Name = Model.FormName })
 <div class="large-overlay">
@@ -45,7 +47,7 @@
 
     $(function () {
 
-        ruleStepViewModel = new promotionStepActionViewModel(@(Model.FusionID), @(Model.FusionTypeID), @(Model.RuleStep.RuleID), @(Model.RuleStep.ID));
+        ruleStepViewModel = new promotionStepActionViewModel(@(Model.FusionID), @(Model.FusionTypeID), @(Model.RuleStep.RuleID), @(Model.RuleStep.ID), @(RuleObjectID), '@(RuleObjectType)');
         ruleStepViewModel.description = "@(Model.RuleStep.Description)";
         ruleStepViewModel.SetSelectedAction("@(Model.RuleStep.Action)");
 

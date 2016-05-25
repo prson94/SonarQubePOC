@@ -1346,6 +1346,61 @@
     </div>
 </script>
 
+<script id="promotionStepLineageActionTmpl" type="text/html">
+
+</script>
+
+
+<script id="promotionStepFindActionTmpl" type="text/html">
+    <div>
+        <div class="FieldNameRequired">Source Matching Field</div>
+        <div name="FindSearchField" id="FindSearchField" data-bind="jqxDropDownList: {placeHolder: 'Choose a field:',source: sourceFields, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindFieldIndex}"></div>
+    </div>
+    <div>
+        <div class="FieldNameRequired">Search Type</div>
+        <div name="FindSearchType" id="FindSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindSearchTypeIndex}"></div>
+    </div>
+    <div data-bind="visible: selectedFindSearchTypeIndex() == 0">
+        <div class="FieldNameRequired">Type</div>
+        <div name="FindTypeName" id="FindTypeName" data-bind="jqxDropDownList: {placeHolder: 'Choose an object type:',source: findObjectTypes, autoDropDownHeight: true, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindObjectTypeIndex}"></div>
+    </div>
+    <div data-bind="visible: selectedFindObjectTypeIndex() >= 0 && selectedFindSearchTypeIndex() == 0">
+        <div class="FieldNameRequired">Item</div>
+        <div name="FindTypeID" id="FindTypeID" data-bind="jqxDropDownList: {placeHolder: 'Choose an object:',source: findObjects,  height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindObjectIndex}"></div>
+    </div>
+    <div data-bind="visible: selectedFindObjectIndex() > 0 && selectedFindSearchTypeIndex() == 0">
+        <div class="FieldNameRequired">Target Matching Field</div>
+        <div name="TargetSearchField" id="TargetSearchField" data-bind="jqxDropDownList: {placeHolder: 'Choose a target field:',source: targetFields, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedTargetFieldIndex}"></div>
+    </div>
+    <div data-bind="visible: selectedFindSearchTypeIndex() == 1">
+        <div class="FieldNameRequired">Result from Step</div>
+        <div name="FindStep" id="FindStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>
+    </div>
+    <div data-bind="visible: selectedFindSearchTypeIndex() == 2">
+        <div class="FieldNameRequired">Fusion Owner Rule</div>
+        <div name="FindFusionOwnerRule" id="FindFusionOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFusionOwnerRuleIndex}"></div>
+    </div>
+</script>
+
+<script id="promotionStepPromoteActionTmpl" type="text/html">
+    <div id="PromoteTo">
+        <div id='PromotionTip' class="FieldNameRequired">Promote To</div>
+        <div id="PrOptionsDropdown" name="PrOptionsDropdown" data-bind="jqxDropDownList: { placeHolder: 'Promote to', theme: theme, source: promoteToItems, displayMember: 'text', valueMember: 'value', width: field_width, height: field_height, selectedIndex: selectedPromoteToIndex }"></div>
+    </div>
+    <div id="PromotionParentSearch" data-bind="visible: promotionParentType() > 0">
+        <div id='PromotionParentSearchTip' class="FieldName">Parent Search</div>
+        <div id="PrOptionsParentSearchDropdown" name="PrOptionsParentSearchDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose an search type:',source: promoteSearchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPromotionSearchTypeIndex}"></div>
+    </div>
+    <div id="PromotionParent" data-bind="visible: promotionParentType() > 0 && selectedPromotionSearchTypeIndex() == 0">
+        <div id='PromotionParentTip' class="FieldName">Promote Under</div>
+        <div id="PrOptionsParentDropdown" name="PrOptionsParentDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose a parent:',source: promoteToParents, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPromoteParentIndex}"></div>
+    </div>
+    <div id="PromotionResultStep" data-bind="visible: selectedPromotionSearchTypeIndex() == 1 && promotionParentType() > 0">
+        <div id='PromotionResultStepTip' class="FieldName">Result from step</div>
+        <div id="PrOptionsStepDropdown" name="PrOptionsStepDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: promoteToSteps,  height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPromoteStepIndex}"></div>
+    </div>
+</script>
+
 <script id="promotionStepRelateActionTmpl" type="text/html">
     <div>
         <div class="FieldNameRequired">Intersect Type</div>
@@ -1390,48 +1445,18 @@
         </div>
     </div>
     
-    <div class="row" id="promote" data-bind="visible:selectedActionIndex() == 0">
-        <div id="PromoteTo">
-            <div id='PromotionTip' class="FieldNameRequired">Promote To</div>
-            <div id="PrOptionsDropdown" name="PrOptionsDropdown" data-bind="jqxDropDownList: { placeHolder: 'Promote to', theme: theme, source: promoteToItems, displayMember: 'text', valueMember: 'value', width: field_width, height: field_height, selectedIndex: selectedPromoteToIndex }"></div>
-        </div>
-        <div id="PromotionParentSearch" data-bind="visible: promotionParentType() > 0">
-            <div id='PromotionParentSearchTip' class="FieldName">Parent Search</div>
-            <div id="PrOptionsParentSearchDropdown" name="PrOptionsParentSearchDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose an search type:',source: promoteSearchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPromotionSearchTypeIndex}"></div>
-        </div>
-        <div id="PromotionParent" data-bind="visible: promotionParentType() > 0 && selectedPromotionSearchTypeIndex() == 0">
-            <div id='PromotionParentTip' class="FieldName">Promote Under</div>
-            <div id="PrOptionsParentDropdown" name="PrOptionsParentDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose a parent:',source: promoteToParents, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPromoteParentIndex}"></div>
-        </div>
-        <div id="PromotionResultStep" data-bind="visible: selectedPromotionSearchTypeIndex() == 1 && promotionParentType() > 0">
-            <div id='PromotionResultStepTip' class="FieldName">Result from step</div>
-            <div id="PrOptionsStepDropdown" name="PrOptionsStepDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: promoteToSteps,  height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPromoteStepIndex}"></div>
-        </div>
-    </div>
+    <!--ko if: showPromoteAction-->
+    <div class="row" data-bind="template: {name: 'promotionStepPromoteActionTmpl', data: actionPromoteSettings }"></div>
+    <!-- /ko-->
 
-    <div class="row" id="find" data-bind="visible:selectedActionIndex() == 1">
-        <div>
-            <div class="FieldNameRequired">Search Type</div>
-            <div name="FindSearchType" id="FindSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: findSearchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindSearchTypeIndex}"></div>
-        </div>
-        <div data-bind="visible: selectedFindSearchTypeIndex() == 0">
-            <div class="FieldNameRequired">Type</div>
-            <div name="FindTypeName" id="FindTypeName" data-bind="jqxDropDownList: {placeHolder: 'Choose an object type:',source: findObjectTypes, autoDropDownHeight: true, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindObjectTypeIndex}"></div>
-        </div>
-        <div data-bind="visible: selectedFindObjectTypeIndex() >= 0 && selectedFindSearchTypeIndex() == 0">
-            <div class="FieldNameRequired">Item</div>
-            <div name="FindTypeID" id="FindTypeID" data-bind="jqxDropDownList: {placeHolder: 'Choose an object:',source: findObjects,  height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindObjectIndex}"></div>
-        </div>
-        <div data-bind="visible: selectedFindObjectIndex() > 0 && selectedFindSearchTypeIndex() == 0">
-            <div class="FieldNameRequired">Field</div>
-            <div name="FindSearchField" id="FindSearchField" data-bind="jqxDropDownList: {placeHolder: 'Choose a field:',source: findSearchField, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindFieldIndex}"></div>
-        </div>
-        <div data-bind="visible: selectedFindSearchTypeIndex() == 1">
-            <div class="FieldNameRequired">Result from Step</div>
-            <div name="FindStep" id="FindStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: findSteps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>
-        </div>
-    </div>
+    <!--ko if: showFindAction-->
+    <div class="row" data-bind="template: {name: 'promotionStepFindActionTmpl', data: actionFindSettings }"></div>
+    <!-- /ko-->
 
+    <!--ko if: showLineageAction-->
+    <div class="row" data-bind="template: {name: 'promotionStepLineageActionTmpl', data: actionLineageSettings }"></div>
+    <!-- /ko-->
+    
     <!--ko if: showRelateAction-->
         <div class="row" data-bind="template: {name: 'promotionStepRelateActionTmpl', data: actionRelateSettings }"></div>                
     <!-- /ko-->

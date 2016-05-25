@@ -4310,17 +4310,9 @@ var IssueViewModel = function () {
     return self;
 }
 
-var promotionStepActionFindViewModel = function () {
-    self.findTypes = ko.observableArray([
-        { text: 'Fusion', value: 'Fusion' },
-        { text: 'FusionOwner', value: 'FusionOwner' },
-        { text: 'Glossary', value: 'Glossary' },
-        { text: 'ResultFromStep', value: 'ResultFromStep' }
-    ]);
-}
-
 var promotionStepRelateActionViewModel = function (ruleID, ruleStepID) {
     var self = this;
+    self.IsLoading = ko.observable(false);
 
     self.ruleID = ruleID;
     self.ruleStepID = ruleStepID;
@@ -4502,162 +4494,65 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID) {
     }
 }
 
-var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, ruleStepID) {
-    var self = this;    
-    self.description = ko.observable();
-    self.IsLoading = ko.observable(false);
+var promotionStepLineageActionViewModel = function () {
+    var self = this;
+}
+
+
+var promotionStepPromoteActionViewModel = function (fusionID, fusionTypeID, ruleID, ruleStepID) {
+    var self = this;
 
     self.fusionID = fusionID;
     self.fusionTypeID = fusionTypeID;
 
     self.ruleID = ruleID;
     self.ruleStepID = ruleStepID;
-    
-    self.actionTypes = ko.observableArray([
-        { text: 'Promote', value: 'Promote' },
-        { text: 'Find', value: 'Find' },
-        { text: 'Lineage', value: 'Lineage' },
-        { text: 'Relate', value: 'Relate' }
-    ]);
+
+    self.IsLoading = ko.observable(false);
 
     self.promoteSearchTypes = ko.observableArray([
                 { value: "Direct", text: "Direct" },
                 { value: "ResultFromStep", text: "Result From Step" }
     ]);
 
-    self.findSearchTypes = ko.observableArray([
-        { value: "Glossary", text: "Glossary" },
-        { value: "ResultFromStep", text: "Result From Step" }
-    ]);
-
-    self.findObjectTypes = ko.observableArray([
-        { value: "ArtifactType", text: "Artifact" },
-        { value: "TaxonomyType", text: "Model"}
-    ]);
-    
     self.promoteToItems = ko.observableArray();
     self.promoteToParents = ko.observableArray();
-    self.findObjects = ko.observableArray();
-    self.findSearchField = ko.observableArray();
+
     self.promotionParentType = ko.observable(0);
     self.promoteToParentsObjectType = ko.observable("");
-        
-    self.promoteToSteps = ko.observableArray();
-    self.findSteps = ko.observableArray();
-    self.relateSteps = ko.observableArray();
 
+    self.promoteToSteps = ko.observableArray();
 
     self.selectedPromotionSearchTypeIndex = ko.observable(-1);
     self.selectedPromoteToIndex = ko.observable(-1);
     self.selectedPromoteParentIndex = ko.observable(-1);
     self.selectedPromoteStepIndex = ko.observable(-1);
 
-    self.selectedFindSearchTypeIndex = ko.observable(-1);
-    self.selectedFindObjectTypeIndex = ko.observable(-1);
-    self.selectedFindObjectIndex = ko.observable(-1);
-    self.selectedFindFieldIndex = ko.observable(-1);
-    self.selectedFindStepIndex = ko.observable(-1);
-
-    //initial values
-    self.initialPromoteToValue = ko.observable("");    
+    self.initialPromoteToValue = ko.observable("");
     self.initialPromoteParentDirectValue = ko.observable("");
     self.initialPromoteParentStepValue = ko.observable("");
-    self.initialFindStepValue = ko.observable("");
-    self.initialFindObject = "";
-    self.initialFindField = "";
 
-    //settings for various actions
-    self.actionRelateSettings = ko.observable(new promotionStepRelateActionViewModel(self.ruleID, self.ruleStepID));
-
-    self.selectedActionIndex = ko.observable(-1);
-
-    //computed show values
-    self.showRelateAction = ko.computed(function () {
-        return (self.selectedActionIndex() == 3);
-    });
-
-    self.SetSelectedAction = function (val) {
-        self.actionTypes().forEach(function (el, index) {            
-            if (el.value.toUpperCase() == val.toUpperCase()){                
-                self.selectedActionIndex(index);
-                return;
-            }
-        });
-    }
-
-    self.SetPromotionValues = function (promoteTo, searchType, searchTypeValue) {
+    self.SetInitialValues = function (promoteTo, searchType, searchTypeValue) {
         self.initialPromoteToValue = promoteTo;
-        
+
         if (searchType.toUpperCase() == "DIRECT") {
-            self.selectedPromotionSearchTypeIndex(0);            
+            self.selectedPromotionSearchTypeIndex(0);
             self.initialPromoteParentDirectValue = searchTypeValue;
-          //  self.LoadPromoteToParents();            
+            //  self.LoadPromoteToParents();            
         }
         else if (searchType.toUpperCase() == "RESULTFROMSTEP") {
             self.selectedPromotionSearchTypeIndex(1);
-            self.LoadPromoteToSteps();            
+            self.LoadPromoteToSteps();
             self.initialPromoteParentStepValue = searchTypeValue;
         }
     }
 
-    self.SetFindValues = function (searchType, objectType, objectID, filterField){
-        if (searchType.toUpperCase() == "GLOSSARY") {
-            self.selectedFindSearchTypeIndex(0);
-            self.initialFindObject = objectID;
-            self.initialFindField = filterField;
-            if (objectType.toUpperCase() == "ARTIFACTTYPE") {
-                self.selectedFindObjectTypeIndex(0);                
-                self.LoadFindArtifactTypes();
-            }
-            else if (objectType.toUpperCase() == "TAXONOMYTYPE") {
-                self.selectedFindObjectTypeIndex(1);
-                self.LoadFindModels();
-            }            
-        }
-        else if (searchType.toUpperCase() == "RESULTFROMSTEP") {
-            self.selectedFindSearchTypeIndex(1);
-            self.LoadFindSteps();            
-            self.initialFindStepValue = objectID;
-        }
-    }
-
-    self.SetRelateValues = function (subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID) {
-        self.actionRelateSettings().SetInitialValues(subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID);
-    }
-
-    // step actions promote / lineage / relate / find
-    self.selectedActionIndex.subscribe(function () {
-        if (self.selectedActionIndex() == -1)
-            return;
-        
-        if (self.selectedActionIndex() == 0) { //promote            
-            self.LoadPromoteToItems();
-        }
-        else if (self.selectedActionIndex() == 3) { //relate
-            self.actionRelateSettings().Load();
-        }    
-    })
-
-    // search type selection changed direct / result of step
-    self.selectedPromotionSearchTypeIndex.subscribe(function () {
-        if (self.selectedPromotionSearchTypeIndex() == -1) {                        
-            return 
-        }
-        
-        if (self.selectedPromotionSearchTypeIndex() == 0) { //direct            
-         //   self.LoadPromoteToParents();
-        }
-        else if (self.selectedPromotionSearchTypeIndex() == 1) { //result of step            
-            self.LoadPromoteToSteps();
-        }
-    })
-
     // selected promote to option changed
     self.selectedPromoteToIndex.subscribe(function () {
-        if (self.selectedPromoteToIndex() == -1) {            
+        if (self.selectedPromoteToIndex() == -1) {
             return;
         }
-           
+
         //check the data in the promote to box to see if the value has a parent
         var item = self.promoteToItems()[self.selectedPromoteToIndex()];
         console.log(item);
@@ -4667,7 +4562,7 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
             self.promoteToParentsObjectType(vals[0]);
 
             if (vals.length >= 2) {
-                self.promotionParentType(vals[2]);                
+                self.promotionParentType(vals[2]);
             }
             else {
                 self.promotionParentType(0);
@@ -4681,12 +4576,151 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         }
     })
 
+    // search type selection changed direct / result of step
+    self.selectedPromotionSearchTypeIndex.subscribe(function () {
+        if (self.selectedPromotionSearchTypeIndex() == -1) {
+            return
+        }
+
+        if (self.selectedPromotionSearchTypeIndex() == 0) { //direct            
+            //   self.LoadPromoteToParents();
+        }
+        else if (self.selectedPromotionSearchTypeIndex() == 1) { //result of step            
+            self.LoadPromoteToSteps();
+        }
+    })
+
+    self.LoadPromoteToSteps = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/' + self.ruleID + '/steps/' + self.ruleStepID,
+            async: true
+        }).done(function (data) {
+            self.promoteToSteps([]);
+            $.each(data, function (idx, val) {
+                self.promoteToSteps.push({ value: val.ID, text: val.Description });
+                if (self.initialPromoteParentStepValue == val.ID) self.selectedPromoteStepIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    };
+
+    self.Load = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/' + self.fusionTypeID + '/configurations/' + self.fusionID + '/promotion/options',
+            async: true
+        }).done(function (data) {
+            self.promoteToItems([]);
+            $.each(data, function (idx, val) {
+                var id = val.PromotionObjectType + '|' + val.PromotionObjectID + '|' + val.ParentObjectTypeID;
+                self.promoteToItems.push({ value: id, text: val.Name });
+                if (id == self.initialPromoteToValue) self.selectedPromoteToIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    };
+
+    self.LoadPromoteToParents = function () {
+        if (self.promotionParentType() == 0) return;
+        self.IsLoading(true);
+
+        var ot = self.promoteToParentsObjectType() == 'ArtifactType' ? 'Artifact' : self.promoteToParentsObjectType();
+        $.ajax({
+            url: '/api/' + ot + '/' + self.promotionParentType() + '/fieldlookup',
+            async: true
+        }).done(function (data) {
+            self.promoteToParents([]);
+            $.each(data, function (idx, val) {
+                self.promoteToParents.push({ value: val.ID, text: val.Name });
+                if (self.initialPromoteParentDirectValue == val.ID) self.selectedPromoteParentIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    };
+}
+
+var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectID, ruleObjectType, fusionID) {
+    var self = this;
+    self.IsLoading = ko.observable(false);
+
+    self.ruleID = ruleID;
+    self.ruleStepID = ruleStepID;
+    
+    self.ruleObjectID = ruleObjectID;
+    self.ruleObjectType = ruleObjectType;
+
+    self.fusionID = fusionID;
+
+    self.searchTypes = ko.observableArray([
+        { value: "Glossary", text: "Glossary" },
+        { value: "ResultFromStep", text: "Result From Step" },
+        { value: "FusionOwner", text: "Fusion Owner" }
+    ]);
+
+    self.findObjectTypes = ko.observableArray([
+        { value: "ArtifactType", text: "Artifact" },
+        { value: "TaxonomyType", text: "Model" }
+    ]);
+
+
+    self.findObjects = ko.observableArray();
+    self.targetFields = ko.observableArray();
+    self.sourceFields = ko.observableArray();
+    self.fusionOwnerRules = ko.observableArray();
+    self.steps = ko.observableArray();
+    
+    self.selectedFindSearchTypeIndex = ko.observable(-1);
+    self.selectedFindObjectTypeIndex = ko.observable(-1);
+    self.selectedFindObjectIndex = ko.observable(-1);
+    self.selectedFindFieldIndex = ko.observable(-1);
+    self.selectedFindStepIndex = ko.observable(-1);
+    self.selectedTargetFieldIndex = ko.observable(-1);
+    self.selectedFusionOwnerRuleIndex = ko.observable(-1);
+
+    //initial values    
+    self.initialFindStepValue = ko.observable("");
+    self.initialFindObject = "";
+    self.initialFindField = "";
+    self.initialOwnerRule = "";
+    
+    self.SetInitialValues = function (searchType, objectType, objectID, filterField) {
+        if (searchType.toUpperCase() == "GLOSSARY") {
+            self.selectedFindSearchTypeIndex(0);
+            self.initialFindObject = objectID;
+            self.initialFindField = filterField;
+            if (objectType.toUpperCase() == "ARTIFACTTYPE") {
+                self.selectedFindObjectTypeIndex(0);
+                self.LoadFindArtifactTypes();
+            }
+            else if (objectType.toUpperCase() == "TAXONOMYTYPE") {
+                self.selectedFindObjectTypeIndex(1);
+                self.LoadFindModels();
+            }
+        }
+        else if (searchType.toUpperCase() == "RESULTFROMSTEP") {
+            self.selectedFindSearchTypeIndex(1);
+            self.LoadFindSteps();
+            self.initialFindStepValue = objectID;
+        }
+        else if (searchType.toUpperCase() == 'FUSIONOWNER') {
+            self.selectedFindSearchTypeIndex(2);            
+            self.initialOwnerRule = objectID;
+        }
+    }
+
     self.selectedFindSearchTypeIndex.subscribe(function () {
         if (self.selectedFindSearchTypeIndex() == -1) {
             return;
         }
         else if (self.selectedFindSearchTypeIndex() == 1) { //result of step
             self.LoadFindSteps();
+        }
+        else if (self.selectedFindSearchTypeIndex() == 2) { // fusionOwnerRules
+            self.LoadFusionOwnerRules();
         }
     })
 
@@ -4711,19 +4745,59 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         }
         var type = self.findObjectTypes()[self.selectedFindObjectTypeIndex()];
         var item = self.findObjects()[self.selectedFindObjectIndex()];
-        self.LoadFindFields(type.value, item.value);
+        self.LoadTargetFields(type.value, item.value);
     })
 
-    self.LoadFindFields = function (objectType, objectID) {        
+    self.LoadSourceFields = function () {
+        self.IsLoading(true);
         $.ajax({
-            url: '/fields/'+objectType + '/' + objectID + '.json',
+            url: '/fields/' + self.ruleObjectType + '/' + self.ruleObjectID + '.json',
             async: true
         }).done(function (data) {
-            self.findSearchField([]);
-            self.findSearchField.push({ value: '0', text: 'Name' });
+            self.sourceFields([]);
+            self.sourceFields.push({ value: '0', text: 'Name' });
             if ('0' == self.initialFindField) self.selectedFindFieldIndex(0);
             $.each(data, function (idx, val) {
-                self.findSearchField.push({ value: val.ID, text: val.FriendlyName });
+                self.sourceFields.push({ value: val.ID, text: val.FriendlyName });
+                if (val.ID == self.initialFindField) self.selectedFindFieldIndex(idx);
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadFusionOwnerRules = function () {        
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/fusionOwnerRules/' + self.fusionID,
+            async: true
+        }).done(function (data) {
+            self.fusionOwnerRules([]);            
+            $.each(data, function (idx, val) {
+                self.fusionOwnerRules.push({ value: val.ID, text: val.FusionAttributeName + ' Owned By:' + val.OwnerObject });
+                console.log(val.ID + ' ' + self.initialOwnerRule);
+                if (val.ID == self.initialOwnerRule) {
+                    console.log('match')
+                    self.initialOwnerRule = '';
+                    self.selectedFusionOwnerRuleIndex(idx);
+                }
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadTargetFields = function (objectType, objectID) {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/fields/' + objectType + '/' + objectID + '.json',
+            async: true
+        }).done(function (data) {
+            self.targetFields([]);
+            self.targetFields.push({ value: '0', text: 'Name' });
+            if ('0' == self.initialFindField) self.selectedFindFieldIndex(0);
+            $.each(data, function (idx, val) {
+                self.targetFields.push({ value: val.ID, text: val.FriendlyName });
                 if (val.ID == self.initialFindField) self.selectedFindFieldIndex(idx);
             })
         }).always(function () {
@@ -4746,7 +4820,7 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
             self.IsLoading(false);
         });
     }
-    
+
     self.LoadFindArtifactTypes = function () {
         self.IsLoading(true);
         $.ajax({
@@ -4755,7 +4829,7 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         }).done(function (data) {
             self.findObjects([]);
             $.each(data, function (idx, val) {
-                self.findObjects.push({ value: val.ID, text: val.Name });                
+                self.findObjects.push({ value: val.ID, text: val.Name });
                 if (val.ID == self.initialFindObject) self.selectedFindObjectIndex(idx);
             })
         }).always(function () {
@@ -4769,9 +4843,9 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
             url: '/api/fusion/rule/' + self.ruleID + '/steps/' + self.ruleStepID,
             async: true
         }).done(function (data) {
-            self.findSteps([]);
+            self.steps([]);
             $.each(data, function (idx, val) {
-                self.findSteps.push({ value: val.ID, text: val.Description });
+                self.steps.push({ value: val.ID, text: val.Description });
                 if (self.initialFindStepValue == val.ID) self.selectedFindStepIndex(idx);
             })
         }).always(function () {
@@ -4779,57 +4853,95 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         });
     }
 
-    self.LoadPromoteToSteps = function () {
-        self.IsLoading(true);
-        $.ajax({
-            url: '/api/fusion/rule/' + self.ruleID + '/steps/' + self.ruleStepID,
-            async: true
-        }).done(function (data) {
-            self.promoteToSteps([]);
-            $.each(data, function (idx, val) {                
-                self.promoteToSteps.push({ value: val.ID, text: val.Description });
-                if (self.initialPromoteParentStepValue == val.ID) self.selectedPromoteStepIndex(idx);
-            })
-        }).always(function () {
-            self.IsLoading(false);
-        });
-    };
+    self.Load = function () {
+        self.LoadSourceFields();
+    }
+}
 
-    self.LoadPromoteToItems = function () {
-        self.IsLoading(true);        
-        $.ajax({
-            url: '/api/fusion/' + self.fusionTypeID + '/configurations/' + self.fusionID + '/promotion/options',            
-            async: true
-        }).done(function (data) {
-            self.promoteToItems([]);
-            $.each(data, function (idx, val) {                
-                var id = val.PromotionObjectType + '|' + val.PromotionObjectID + '|' + val.ParentObjectTypeID;                
-                self.promoteToItems.push({ value: id, text: val.Name });
-                if (id == self.initialPromoteToValue) self.selectedPromoteToIndex(idx);
-            })
-        }).always(function () {
-            self.IsLoading(false);            
-        });
-    };
+var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, ruleStepID, ruleObjectID, ruleObjectType) {
+    var self = this;    
+    self.description = ko.observable();
+    self.IsLoading = ko.observable(false);
 
-    self.LoadPromoteToParents = function () {
-        if (self.promotionParentType() == 0) return;
-        self.IsLoading(true);
+    self.fusionID = fusionID;
+    self.fusionTypeID = fusionTypeID;
+
+    self.ruleID = ruleID;
+    self.ruleStepID = ruleStepID;
+
+    self.ruleObjectID = ruleObjectID;
+    self.ruleObjectType = ruleObjectType;
+    
+    self.actionTypes = ko.observableArray([
+        { text: 'Promote', value: 'Promote' },
+        { text: 'Find', value: 'Find' },
+        { text: 'Lineage', value: 'Lineage' },
+        { text: 'Relate', value: 'Relate' }
+    ]);
+
+    //settings for various actions
+    self.actionRelateSettings = ko.observable(new promotionStepRelateActionViewModel(self.ruleID, self.ruleStepID));
+    self.actionPromoteSettings = ko.observable(new promotionStepPromoteActionViewModel(self.fusionID, self.fusionTypeID, self.ruleID, self.ruleStepID));
+    self.actionFindSettings = ko.observable(new promotionStepFindActionViewModel(self.ruleID, self.ruleStepID, self.ruleObjectID, self.ruleObjectType, self.fusionID));
+    self.actionLineageSettings = ko.observable(new promotionStepLineageActionViewModel(self.ruleID, self.ruleStepID));
+    
+
+    self.selectedActionIndex = ko.observable(-1);
+
+    //computed show values
+    self.showRelateAction = ko.computed(function () {
+        return (self.selectedActionIndex() == 3);
+    });
+
+    self.showPromoteAction = ko.computed(function () {
+        return (self.selectedActionIndex() == 0);
+    });
+
+    self.showFindAction = ko.computed(function () {
+        return (self.selectedActionIndex() == 1);
+    });
+
+    self.showLineageAction = ko.computed(function () {
+        return (self.selectedActionIndex() == 2);
+    });
+
+    self.SetSelectedAction = function (val) {
+        self.actionTypes().forEach(function (el, index) {            
+            if (el.value.toUpperCase() == val.toUpperCase()){                
+                self.selectedActionIndex(index);
+                return;
+            }
+        });
+    }
+
+    // initialization
+    self.SetPromotionValues = function (promoteTo, searchType, searchTypeValue) {
+        self.actionPromoteSettings().SetInitialValues(promoteTo, searchType, searchTypeValue);
+    }
+
+    self.SetRelateValues = function (subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID) {
+        self.actionRelateSettings().SetInitialValues(subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID);
+    }
+
+    self.SetFindValues = function (searchType, objectType, objectID, filterField) {
+        self.actionFindSettings().SetInitialValues(searchType, objectType, objectID, filterField);        
+    }
+    
+    // step actions promote / lineage / relate / find
+    self.selectedActionIndex.subscribe(function () {
+        if (self.selectedActionIndex() == -1)
+            return;
         
-        var ot = self.promoteToParentsObjectType() == 'ArtifactType' ? 'Artifact' : self.promoteToParentsObjectType();
-        $.ajax({            
-            url: '/api/' + ot + '/' + self.promotionParentType() + '/fieldlookup',
-            async: true
-        }).done(function (data) {
-            self.promoteToParents([]);
-            $.each(data, function (idx, val) {                
-                self.promoteToParents.push({ value: val.ID, text: val.Name });                
-                if (self.initialPromoteParentDirectValue == val.ID) self.selectedPromoteParentIndex(idx);
-            })
-        }).always(function () {
-            self.IsLoading(false);
-        });
-    };
+        if (self.selectedActionIndex() == 0) { //promote            
+            self.actionPromoteSettings().Load();
+        }
+        else if (self.selectedActionIndex() == 3) { //relate
+            self.actionRelateSettings().Load();
+        }
+        else if (self.selectedActionIndex() == 1) { //find
+            self.actionFindSettings().Load();
+        }
+    })    
 }
 
 

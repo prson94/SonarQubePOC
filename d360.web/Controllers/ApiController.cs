@@ -1124,7 +1124,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-up", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionConfigurationPromotionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             //new promotion
-                      //      list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-left", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
+                            list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "map", Title = "Fusion Rules", Uri = string.Format("/overlays/FusionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             if (fusion.Manual)
                             {
@@ -2043,6 +2043,21 @@ where   h.ID <> @t order by h.[Level] desc;
             types.Add(new { Name = FusionRuleType.Relate.ToString(), ID = FusionRuleType.Relate.ToString().ToLower() });
 
             return types;
+        }
+
+        [Route("fusion/rule/fusionOwnerRules/{fusionID:int}")]
+        public IEnumerable<dynamic> GetRuleFusionOwnerRules(int fusionID)
+        {
+            var sql = @"select r.id as ID, 
+		                    f.name as FusionAttributeName,
+		                    r.relationshipownerobjecttype as OwnerObject,
+		                    c.name as OwnerName		
+                        from fusionattributeownerrule r
+                            left outer join [cache].objectdetails c on(c.[object] = r.relationshipownerobjecttype and c.[objectid] = r.relationshipownerobjectid)
+                            left outer join fusionattributetype f on(f.id = r.objectid)
+                        where r.fusionid = @fusion";
+
+            return Company.Query<dynamic>(sql, new { fusion = fusionID } );            
         }
 
         [Route("fusion/rule/relate/intersectTypes")]

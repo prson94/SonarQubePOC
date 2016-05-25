@@ -6364,9 +6364,9 @@ order by  D.TextPath
                 {                    
                     FormUri = "/form/AddFusionRuleStep",
                     FormMethod = "POST",
-                    RuleStep = new FusionRuleStep { Action = "promote", Step = rule.FusionRuleSteps.Count +1, RuleID = ruleID},
+                    RuleStep = new FusionRuleStep { Action = "promote", Step = rule.FusionRuleSteps.Count +1, RuleID = ruleID, FusionRule = rule},
                     FormName = "Add Fusion Rule Step",
-                    FusionID = rule.FusionID,
+                    FusionID = rule.FusionID,                    
                     FusionTypeID = rule.Fusion.FusionTypeID
                 });
         }
@@ -6521,6 +6521,23 @@ order by  D.TextPath
                 var findType = (findSearchType ?? "").ToUpper();
                 switch (findType)
                 {
+                    case "FUSIONOWNER":
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "Object",
+                                Value = "Owner"
+                            });
+
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "ObjectID",
+                                Value = parseTextField(form, "FindFusionOwnerRule")
+                            });
+                        break;
                     case "RESULTFROMSTEP":
                         item.FusionRuleStepSettings.Add(
                             new FusionRuleStepSetting
@@ -6562,6 +6579,14 @@ order by  D.TextPath
                                 Name = "FilterField",
                                 Value = parseTextField(form, "FindSearchField")
                             });
+
+                        item.FusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = item.ID,
+                                Name = "TargetField",
+                                Value = parseTextField(form, "TargetSearchField")
+                            });                        
                         break;
                     default:
                         break;
