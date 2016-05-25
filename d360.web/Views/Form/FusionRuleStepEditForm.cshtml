@@ -2,18 +2,25 @@
 @{    
     var objectType = Model.RuleStep.GetSettingValueByName("Object");
     var subjectType = Model.RuleStep.GetSettingValueByName("Subject");
+    var focalType = Model.RuleStep.GetSettingValueByName("Focal");
     var objectID = Model.RuleStep.GetSettingValueByName("ObjectID");
     var subjectID = Model.RuleStep.GetSettingValueByName("SubjectID");
+    var focalID = Model.RuleStep.GetSettingValueByName("FocalID");
+
     var promoteParentTypeID = Model.RuleStep.GetSettingValueByName("ParentObjectTypeID");
     var promoteParentSearch = Model.RuleStep.GetSettingValueByName("ParentObjectSearch");
     var promoteParentObjectID = Model.RuleStep.GetSettingValueByName("ParentObjectID");
 
     var objectSearch = Model.RuleStep.GetSettingValueByName("ObjectSearch");
     var subjectSearch = Model.RuleStep.GetSettingValueByName("SubjectSearch");
+    var focalSearch = Model.RuleStep.GetSettingValueByName("FocalSearch");
+
     var filterField = Model.RuleStep.GetSettingValueByName("FilterField");
     var intersectTypeID = Model.RuleStep.GetSettingValueByName("IntersectType");
     var RuleObjectID = Model.RuleStep.FusionRule.ObjectID;
     var RuleObjectType = Model.RuleStep.FusionRule.ObjectType;
+    var predicate = Model.RuleStep.GetSettingValueByName("Predicate");
+
 }
 @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.FusionRuleStep, Description = "Configure the actions for this step of your fusion rule.", Name = Model.FormName })
 <div class="large-overlay">
@@ -62,6 +69,10 @@
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "RELATE")
         {
             ruleStepViewModel.SetRelateValues('@(subjectSearch)', '@(subjectType)', '@(subjectID)', '@(objectSearch)', '@(objectType)', '@(objectID)', '@(intersectTypeID)');
+        }
+        else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "LINEAGE")
+        {
+            ruleStepViewModel.SetLineageValues('@(focalSearch)', '@(focalType)', '@(focalID)', '@(subjectSearch)', '@(subjectType)', '@(subjectID)', '@(objectSearch)', '@(objectType)', '@(objectID)', '@(intersectTypeID)', '@(predicate)');
         }
 
         ko.applyBindings(ruleStepViewModel, document.getElementById('stepAction'));

@@ -1347,7 +1347,38 @@
 </script>
 
 <script id="promotionStepLineageActionTmpl" type="text/html">
-
+    <div>
+        <div class="FieldNameRequired">Intersect Type</div>
+        <div name="LineageIntersectType" id="LineageIntersectType" data-bind="jqxDropDownList: {placeHolder: 'Choose a intersect type:',source: intersectTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedIntersectTypeIndex}"></div>
+    </div>
+    <div>
+        <div class="FieldNameRequired">Predicate</div>
+        <div name="LineagePredicate" id="LineagePredicate" data-bind="jqxDropDownList: {placeHolder: 'Choose a predicate:',source: predicates, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPredicateIndex}"></div>
+    </div>    
+    <div>
+        <div class="FieldNameRequired">Subject Search Type</div>
+        <div name="LineageSubjectSearchType" id="LineageSubjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectSearchTypeIndex}"></div>
+    </div>
+    <div data-bind="visible: selectedSubjectSearchTypeIndex() == 0">
+        <div class="FieldNameRequired">Subject From Step</div>
+        <div name="LineageSubjectStep" id="LineageSubjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectStepIndex}"></div>
+    </div>
+    <div>
+        <div class="FieldNameRequired">Object Search Type</div>
+        <div name="LineageObjectSearchType" id="LineageObjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectSearchTypeIndex}"></div>
+    </div>
+    <div data-bind="visible: selectedObjectSearchTypeIndex() == 0">
+        <div class="FieldNameRequired">Object From Step</div>
+        <div name="LineageObjectStep" id="LineageObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectStepIndex}"></div>
+    </div>
+    <div>
+        <div class="FieldNameRequired">Focal Point Search Type</div>
+        <div name="LineageFocalSearchType" id="LineageFocalSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFocalSearchTypeIndex}"></div>
+    </div>
+    <div data-bind="visible: selectedFocalSearchTypeIndex() == 0">
+        <div class="FieldNameRequired">Focal Point From Step</div>
+        <div name="LineageFocalStep" id="LineageFocalStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFocalStepIndex}"></div>
+    </div>
 </script>
 
 

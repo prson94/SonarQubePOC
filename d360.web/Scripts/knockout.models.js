@@ -4494,8 +4494,154 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID) {
     }
 }
 
-var promotionStepLineageActionViewModel = function () {
+var promotionStepLineageActionViewModel = function (ruleID, ruleStepID) {
     var self = this;
+
+    self.ruleID = ruleID;
+    self.ruleStepID = ruleStepID;
+
+    self.IsLoading = ko.observable(false);
+
+    //indexes
+    self.selectedIntersectTypeIndex = ko.observable(-1);
+    self.selectedSubjectSearchTypeIndex = ko.observable(-1);
+    self.selectedObjectSearchTypeIndex = ko.observable(-1);
+    self.selectedFocalSearchTypeIndex = ko.observable(-1);
+
+    self.selectedSubjectStepIndex = ko.observable(-1);
+    self.selectedObjectStepIndex = ko.observable(-1);
+    self.selectedFocalStepIndex = ko.observable(-1);
+    self.selectedPredicateIndex = ko.observable(-1);
+
+    //arrays
+    self.intersectTypes = ko.observableArray();
+
+    self.searchTypes = ko.observableArray([        
+            { value: "ResultFromStep", text: "Result From Step" },
+            { value: "Self", text: "Self" }
+    ]);
+
+    self.steps = ko.observableArray();
+    self.predicates = ko.observableArray();
+
+    //initial values
+    self.initialIntersectID = '';
+    self.initialFocalStep = '';
+    self.initialSubjectStep = '';
+    self.initialObjectStep = '';
+    self.initialPredicate = '';
+
+    // subscriptions
+
+    self.selectedFocalSearchTypeIndex.subscribe(function () {
+        if (self.selectedFocalSearchTypeIndex() == 0 && self.steps().length == 0) self.LoadSteps();
+    });
+
+    self.selectedObjectSearchTypeIndex.subscribe(function () {
+        if (self.selectedObjectSearchTypeIndex() == 0 && self.steps().length == 0) self.LoadSteps();
+    });
+
+    self.selectedSubjectSearchTypeIndex.subscribe(function () {
+        if (self.selectedSubjectSearchTypeIndex() == 0 && self.steps().length == 0) self.LoadSteps();
+    });
+
+    self.LoadIntersectTypes = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/relate/intersectTypes',
+            async: true
+        }).done(function (data) {
+            self.intersectTypes([]);
+            $.each(data, function (idx, val) {
+                //object subject
+                self.intersectTypes.push({ value: val.ID, text: val.Name, subject: val.Subject, subjectID: val.SubjectID, object: val.Object, objectID: val.ObjectID });
+                if (self.initialIntersectID == val.ID) {
+                    self.initialIntersectID = null;
+                    self.selectedIntersectTypeIndex(idx);
+                }
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadSteps = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/' + self.ruleID + '/steps/' + self.ruleStepID,
+            async: true
+        }).done(function (data) {
+            self.steps([]);
+            $.each(data, function (idx, val) {
+                self.steps.push({ value: val.ID, text: val.Description });
+                if (self.initialObjectStep == val.ID) {
+                    self.initialObjectStep = '';
+                    self.selectedObjectStepIndex(idx);
+                }
+                if (self.initialSubjectStep == val.ID) {
+                    self.initialSubjectStep = '';
+                    self.selectedSubjectStepIndex(idx);
+                }
+                if (self.initialFocalStep == val.ID) {
+                    self.initialFocalStep = '';
+                    self.selectedFocalStepIndex(idx);
+                }
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadPredicates = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/api/fusion/rule/lineage/predicates',
+            async: true
+        }).done(function (data) {
+            self.predicates([]);
+            $.each(data, function (idx, val) {
+                self.predicates.push({ value: val.ID, text: val.Name });
+                if (self.initialPredicate == val.ID) {
+                    self.initialPredicate = '';
+                    self.selectedPredicateIndex(idx);
+                }                
+            })
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.Load = function () {
+        self.LoadIntersectTypes();
+        self.LoadPredicates();
+    }
+
+    self.SelectedSearchType = function (name) {
+        for (var i = 0 ; i < self.searchTypes().length; i++) {
+            if (self.searchTypes()[i].value.toUpperCase() == name.toUpperCase()) return i;
+        }
+        return -1;
+    }
+
+    self.SetInitialValues = function (focalSearch, focal, focalID, subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID, predicate) {
+        self.selectedObjectSearchTypeIndex(self.SelectedSearchType(objectSearch));
+        self.selectedSubjectSearchTypeIndex(self.SelectedSearchType(subjectSearch));
+        self.selectedFocalSearchTypeIndex(self.SelectedSearchType(focalSearch));
+        self.initialIntersectID = intersectTypeID;
+        self.initialPredicate = predicate;
+        if (objectSearch.toUpperCase() == 'RESULTFROMSTEP')
+            self.initialObjectStep = objectID;
+        else if (objectSearch.toUpperCase() == 'DIRECT')
+            self.initialObjectItem = objectID;
+        if (subjectSearch.toUpperCase() == 'RESULTFROMSTEP')
+            self.initialSubjectStep = subjectID;
+        else if (subjectSearch.toUpperCase() == 'DIRECT')
+            self.initialSubjectItem = subjectID;
+        if (focalSearch.toUpperCase() == 'RESULTFROMSTEP')
+            self.initialFocalStep = focalID;
+        else if (focalSearch.toUpperCase() == 'DIRECT')
+            self.initialFocalItem = focalID;
+    }
 }
 
 
@@ -4926,6 +5072,10 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
     self.SetFindValues = function (searchType, objectType, objectID, filterField) {
         self.actionFindSettings().SetInitialValues(searchType, objectType, objectID, filterField);        
     }
+
+    self.SetLineageValues = function (focalSearch, focal, focalID, subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID, predicate) {
+        self.actionLineageSettings().SetInitialValues(focalSearch, focal, focalID, subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID, predicate);
+    }
     
     // step actions promote / lineage / relate / find
     self.selectedActionIndex.subscribe(function () {
@@ -4940,6 +5090,9 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         }
         else if (self.selectedActionIndex() == 1) { //find
             self.actionFindSettings().Load();
+        }
+        else if (self.selectedActionIndex() == 2) { //lineage
+            self.actionLineageSettings().Load();
         }
     })    
 }

@@ -6469,14 +6469,14 @@ order by  D.TextPath
                             });
 
                 if ((parentSearchType ?? "").ToUpper().Trim() == "DIRECT")
-                {                    
+                {
                     item.FusionRuleStepSettings.Add(
                             new FusionRuleStepSetting
                             {
                                 RuleStepID = item.ID,
                                 Name = "ParentObjectID",
                                 Value = parseTextField(form, "PrOptionsParentDropdown") // ParentObjectID
-                    });
+                            });
 
                     item.FusionRuleStepSettings.Add(
                             new FusionRuleStepSetting
@@ -6487,7 +6487,7 @@ order by  D.TextPath
                             });
                 }
                 else if ((parentSearchType ?? "").ToUpper().Trim() == "RESULTFROMSTEP")
-                {                    
+                {
                     item.FusionRuleStepSettings.Add(
                     new FusionRuleStepSetting
                     {
@@ -6505,7 +6505,7 @@ order by  D.TextPath
                             });
                 }
             }
-            else if(action == "FIND")
+            else if (action == "FIND")
             {
                 var findSearchType = parseTextField(form, "FindSearchType"); //ObjectSearch
 
@@ -6586,13 +6586,13 @@ order by  D.TextPath
                                 RuleStepID = item.ID,
                                 Name = "TargetField",
                                 Value = parseTextField(form, "TargetSearchField")
-                            });                        
+                            });
                         break;
                     default:
                         break;
                 }
             }
-            else if(action == "RELATE")
+            else if (action == "RELATE")
             {
                 var intersectType = parseTextField(form, "RelateIntersectType");
 
@@ -6633,7 +6633,7 @@ order by  D.TextPath
                             Value = parseTextField(form, "RelateSubjectStep")
                         });
                 }
-                else if(subjectSearchUpper == "SELF")
+                else if (subjectSearchUpper == "SELF")
                 {
                     item.FusionRuleStepSettings.Add(
                                 new FusionRuleStepSetting
@@ -6651,9 +6651,9 @@ order by  D.TextPath
                             Value = "0"
                         });
                 }
-                else if(subjectSearchUpper == "DIRECT")
+                else if (subjectSearchUpper == "DIRECT")
                 {
-                    var subjectObject = parseTextField(form, "RelateSubjectItem","").Split('|');
+                    var subjectObject = parseTextField(form, "RelateSubjectItem", "").Split('|');
 
                     if (subjectObject.Length >= 2)
                     {
@@ -6746,8 +6746,127 @@ order by  D.TextPath
                     }
                 }
             }
+            else if (action == "LINEAGE")
+            {
+                var intersectType = parseTextField(form, "LineageIntersectType");
+
+                item.FusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = "IntersectType",
+                            Value = intersectType
+                        });
+
+                var subjectSearch = parseTextField(form, "LineageSubjectSearchType");
+
+                item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "SubjectSearch",
+                                    Value = subjectSearch
+                                });
+
+                handleLineageSearchParameters("Subject", item.FusionRuleStepSettings, subjectSearch, item.ID, form);
+                
+                var objectSearch = parseTextField(form, "LineageObjectSearchType");
+
+                item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "ObjectSearch",
+                                    Value = objectSearch
+                                });
+                handleLineageSearchParameters("Object", item.FusionRuleStepSettings, objectSearch, item.ID, form);
+
+                var focalSearch = parseTextField(form, "LineageFocalSearchType");
+
+                item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "FocalSearch",
+                                    Value = focalSearch
+                                });
+                handleLineageSearchParameters("Focal", item.FusionRuleStepSettings, focalSearch, item.ID, form);
+
+                item.FusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = item.ID,
+                                    Name = "Predicate",
+                                    Value = parseTextField(form, "LineagePredicate")
+                 });
+
+            }            
         }
 
+        private void handleLineageSearchParameters(string target, ICollection<FusionRuleStepSetting> fusionRuleStepSettings, string searchType, int id, FormCollection form)
+        {
+            var searchUpper = (searchType ?? "").ToUpper();
+            if (searchUpper == "RESULTFROMSTEP")
+            {
+                fusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = id,
+                                Name = target,
+                                Value = "Step"
+                            });
+
+                fusionRuleStepSettings.Add(
+                    new FusionRuleStepSetting
+                    {
+                        RuleStepID = id,
+                        Name = $"{target}ID",
+                        Value = parseTextField(form, $"Lineage{target}Step")
+                    });
+            }
+            else if (searchUpper == "SELF")
+            {
+                fusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = id,
+                                Name = target,
+                                Value = "Self"
+                            });
+
+                fusionRuleStepSettings.Add(
+                    new FusionRuleStepSetting
+                    {
+                        RuleStepID = id,
+                        Name = $"{target}ID",
+                        Value = "0"
+                    });
+            }
+            else if (searchUpper == "DIRECT")
+            {
+                var subjectObject = parseTextField(form, $"Lineage{target}Item", "").Split('|');
+
+                if (subjectObject.Length >= 2)
+                {
+                    fusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = id,
+                                    Name = target,
+                                    Value = subjectObject[0]
+                                });
+
+                    fusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = id,
+                            Name = $"{target}ID",
+                            Value = subjectObject[1]
+                        });
+                }
+            }
+
+        }
 
         [Route("fusion/rule/{ruleID:int}/step/edit/{ruleStepID:int}")]
         public ActionResult EditFusionRuleStep(int ruleID, int ruleStepID)

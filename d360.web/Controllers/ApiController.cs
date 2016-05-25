@@ -2066,6 +2066,12 @@ where   h.ID <> @t order by h.[Level] desc;
             return Company.Filter<IntersectType>(x=>x.SubjectID > 0 && x.ObjectID > 0 && !string.IsNullOrEmpty(x.Subject) && !string.IsNullOrEmpty(x.Object)).Select(x=>new { Name = x.Name, ID = x.ID, Subject = x.Subject, SubjectID = x.SubjectID, Object = x.Object, ObjectID = x.ObjectID }).OrderBy(x=>x.Name);
         }
 
+        [Route("fusion/rule/lineage/predicates")]
+        public IQueryable<Predicate> GetPredicateTypes()
+        {
+            return Company.Predicates;            
+        }
+
         [Route("fusion/rule/relate/objectTypes")]
         public IEnumerable<dynamic> GetDirectObjectRelateTypes()
         {
