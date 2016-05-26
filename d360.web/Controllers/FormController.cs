@@ -6436,374 +6436,106 @@ order by  D.TextPath
 
                 var parentSearchType = parseTextField(form, "PrOptionsParentSearchDropdown"); //ParentObjectSearch
 
-                item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "Object",
-                                Value = objectID
-                            });
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting{RuleStepID = item.ID,Name = "Object",Value = objectID});
 
-                item.FusionRuleStepSettings.Add(
-                    new FusionRuleStepSetting
-                    {
-                        RuleStepID = item.ID,
-                        Name = "ObjectID",
-                        Value = objectType
-                    });
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting{ RuleStepID = item.ID,Name = "ObjectID",Value = objectType });
 
-                item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "ParentObjectSearch",
-                                Value = parentSearchType
-                            });
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting{ RuleStepID = item.ID,Name = "ParentObjectSearch",Value = parentSearchType});
 
-                item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "ParentObjectTypeID",
-                                Value = parentObjectType
-                            });
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting{ RuleStepID = item.ID, Name = "ParentObjectTypeID", Value = parentObjectType});
 
                 if ((parentSearchType ?? "").ToUpper().Trim() == "DIRECT")
                 {
-                    item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "ParentObjectID",
-                                Value = parseTextField(form, "PrOptionsParentDropdown") // ParentObjectID
-                            });
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting{ RuleStepID = item.ID,Name = "ParentObjectID",Value = parseTextField(form, "PrOptionsParentDropdown")});
 
-                    item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "ParentObject",
-                                Value = objectType
-                            });
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting{RuleStepID = item.ID,Name = "ParentObject",Value = objectType});
                 }
                 else if ((parentSearchType ?? "").ToUpper().Trim() == "RESULTFROMSTEP")
                 {
-                    item.FusionRuleStepSettings.Add(
-                    new FusionRuleStepSetting
-                    {
-                        RuleStepID = item.ID,
-                        Name = "ParentObject",
-                        Value = "Step"
-                    });
+                    item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject",Value = "Step"});
 
-                    item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "ParentObjectID",
-                                Value = parseTextField(form, "PrOptionsStepDropdown")
-                            });
+                    item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parseTextField(form, "PromotionParentStep") });
+                }
+                else if ((parentSearchType ?? "").ToUpper().Trim() == "FUSIONOWNER")
+                {
+                    item.FusionRuleStepSettings.Add(  new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject",Value = "Owner" });
+
+                    item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parseTextField(form, "PromotionParentOwnerRule")});
                 }
             }
             else if (action == "FIND")
             {
                 var findSearchType = parseTextField(form, "FindSearchType"); //ObjectSearch
 
-                item.FusionRuleStepSettings.Add(
-                    new FusionRuleStepSetting
-                    {
-                        RuleStepID = item.ID,
-                        Name = "ObjectSearch",
-                        Value = findSearchType
-                    });
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = findSearchType });
 
                 //if the search type is result from step the object is step and the object id is the step id
                 var findType = (findSearchType ?? "").ToUpper();
-                switch (findType)
+
+                if(findType == "GLOSSARY")
                 {
-                    case "FUSIONOWNER":
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "Object",
-                                Value = "Owner"
-                            });
+                    item.FusionRuleStepSettings.Add( new FusionRuleStepSetting{ RuleStepID = item.ID,  Name = "Object", Value = parseTextField(form, "FindTypeName")});
 
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "ObjectID",
-                                Value = parseTextField(form, "FindFusionOwnerRule")
-                            });
-                        break;
-                    case "RESULTFROMSTEP":
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "Object",
-                                Value = "Step"
-                            });
+                    item.FusionRuleStepSettings.Add( new FusionRuleStepSetting{ RuleStepID = item.ID, Name = "ObjectID", Value = parseTextField(form, "FindTypeID")});
 
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "ObjectID",
-                                Value = parseTextField(form, "FindStep")
-                            });
-                        break;
-                    case "GLOSSARY":
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "Object",
-                                Value = parseTextField(form, "FindTypeName")
-                            });
+                    item.FusionRuleStepSettings.Add( new FusionRuleStepSetting{ RuleStepID = item.ID, Name = "FilterField", Value = parseTextField(form, "FindSearchField")});
 
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "ObjectID",
-                                Value = parseTextField(form, "FindTypeID")
-                            });
-
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "FilterField",
-                                Value = parseTextField(form, "FindSearchField")
-                            });
-
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "TargetField",
-                                Value = parseTextField(form, "TargetSearchField")
-                            });
-                        break;
-                    default:
-                        break;
+                    item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TargetField", Value = parseTextField(form, "TargetSearchField")});
                 }
+                else
+                {
+                    handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, form);
+                }                
             }
             else if (action == "RELATE")
             {
                 var intersectType = parseTextField(form, "RelateIntersectType");
 
-                item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "IntersectType",
-                            Value = intersectType
-                        });
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType});
 
+                //subject settings
                 var subjectSearch = parseTextField(form, "RelateSubjectSearchType");
 
-                item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "SubjectSearch",
-                                    Value = subjectSearch
-                                });
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting{ RuleStepID = item.ID, Name = "SubjectSearch", Value = subjectSearch});
 
-                var subjectSearchUpper = (subjectSearch ?? "").ToUpper();
-                if (subjectSearchUpper == "RESULTFROMSTEP")
-                {
-                    item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "Subject",
-                                    Value = "Step"
-                                });
-
-                    item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "SubjectID",
-                            Value = parseTextField(form, "RelateSubjectStep")
-                        });
-                }
-                else if (subjectSearchUpper == "SELF")
-                {
-                    item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "Subject",
-                                    Value = "Self"
-                                });
-
-                    item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "SubjectID",
-                            Value = "0"
-                        });
-                }
-                else if (subjectSearchUpper == "DIRECT")
-                {
-                    var subjectObject = parseTextField(form, "RelateSubjectItem", "").Split('|');
-
-                    if (subjectObject.Length >= 2)
-                    {
-                        item.FusionRuleStepSettings.Add(
-                                    new FusionRuleStepSetting
-                                    {
-                                        RuleStepID = item.ID,
-                                        Name = "Subject",
-                                        Value = subjectObject[0]
-                                    });
-
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "SubjectID",
-                                Value = subjectObject[1]
-                            });
-                    }
-                }
-
+                handleSearchParameters("Relate", "Subject", item.FusionRuleStepSettings, subjectSearch, item.ID, form);
+                
+                // object settings
                 var objectSearch = parseTextField(form, "RelateObjectSearchType");
 
-                item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "ObjectSearch",
-                                    Value = objectSearch
-                                });
+                handleSearchParameters("Relate", "Object", item.FusionRuleStepSettings, objectSearch, item.ID, form);
 
-                var objectSearchUpper = (objectSearch ?? "").ToUpper();
-                if (objectSearchUpper == "RESULTFROMSTEP")
-                {
-                    item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "Object",
-                                    Value = "Step"
-                                });
-
-                    item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "ObjectID",
-                            Value = parseTextField(form, "RelateObjectStep")
-                        });
-                }
-                else if (objectSearchUpper == "SELF")
-                {
-                    item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "Object",
-                                    Value = "Self"
-                                });
-
-                    item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "ObjectID",
-                            Value = "0"
-                        });
-                }
-                else if (objectSearchUpper == "DIRECT")
-                {
-                    var objectObject = parseTextField(form, "RelateObjectItem", "").Split('|');
-
-                    if (objectObject.Length >= 2)
-                    {
-                        item.FusionRuleStepSettings.Add(
-                                    new FusionRuleStepSetting
-                                    {
-                                        RuleStepID = item.ID,
-                                        Name = "Object",
-                                        Value = objectObject[0]
-                                    });
-
-                        item.FusionRuleStepSettings.Add(
-                            new FusionRuleStepSetting
-                            {
-                                RuleStepID = item.ID,
-                                Name = "ObjectID",
-                                Value = objectObject[1]
-                            });
-                    }
-                }
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = objectSearch });                
             }
             else if (action == "LINEAGE")
             {
                 var intersectType = parseTextField(form, "LineageIntersectType");
 
-                item.FusionRuleStepSettings.Add(
-                        new FusionRuleStepSetting
-                        {
-                            RuleStepID = item.ID,
-                            Name = "IntersectType",
-                            Value = intersectType
-                        });
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
 
                 var subjectSearch = parseTextField(form, "LineageSubjectSearchType");
 
-                item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "SubjectSearch",
-                                    Value = subjectSearch
-                                });
+                item.FusionRuleStepSettings.Add(  new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch",Value = subjectSearch });
 
-                handleLineageSearchParameters("Subject", item.FusionRuleStepSettings, subjectSearch, item.ID, form);
+                handleSearchParameters("Lineage", "Subject", item.FusionRuleStepSettings, subjectSearch, item.ID, form);
                 
                 var objectSearch = parseTextField(form, "LineageObjectSearchType");
 
-                item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "ObjectSearch",
-                                    Value = objectSearch
-                                });
-                handleLineageSearchParameters("Object", item.FusionRuleStepSettings, objectSearch, item.ID, form);
+                item.FusionRuleStepSettings.Add(  new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = objectSearch});
+
+                handleSearchParameters("Lineage", "Object", item.FusionRuleStepSettings, objectSearch, item.ID, form);
 
                 var focalSearch = parseTextField(form, "LineageFocalSearchType");
 
-                item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "FocalSearch",
-                                    Value = focalSearch
-                                });
-                handleLineageSearchParameters("Focal", item.FusionRuleStepSettings, focalSearch, item.ID, form);
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "FocalSearch", Value = focalSearch });
 
-                item.FusionRuleStepSettings.Add(
-                                new FusionRuleStepSetting
-                                {
-                                    RuleStepID = item.ID,
-                                    Name = "Predicate",
-                                    Value = parseTextField(form, "LineagePredicate")
-                 });
+                handleSearchParameters("Lineage", "Focal", item.FusionRuleStepSettings, focalSearch, item.ID, form);
 
+                item.FusionRuleStepSettings.Add( new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Predicate", Value = parseTextField(form, "LineagePredicate")});
             }            
         }
 
-        private void handleLineageSearchParameters(string target, ICollection<FusionRuleStepSetting> fusionRuleStepSettings, string searchType, int id, FormCollection form)
+        private void handleSearchParameters(string area, string target, ICollection<FusionRuleStepSetting> fusionRuleStepSettings, string searchType, int id, FormCollection form)
         {
             var searchUpper = (searchType ?? "").ToUpper();
             if (searchUpper == "RESULTFROMSTEP")
@@ -6821,7 +6553,7 @@ order by  D.TextPath
                     {
                         RuleStepID = id,
                         Name = $"{target}ID",
-                        Value = parseTextField(form, $"Lineage{target}Step")
+                        Value = parseTextField(form, $"{area}{target}Step")
                     });
             }
             else if (searchUpper == "SELF")
@@ -6844,7 +6576,7 @@ order by  D.TextPath
             }
             else if (searchUpper == "DIRECT")
             {
-                var subjectObject = parseTextField(form, $"Lineage{target}Item", "").Split('|');
+                var subjectObject = parseTextField(form, $"{area}{target}Item", "").Split('|');
 
                 if (subjectObject.Length >= 2)
                 {
@@ -6880,9 +6612,25 @@ order by  D.TextPath
                     {
                         RuleStepID = id,
                         Name = $"{target}ID",
-                        Value = parseTextField(form, $"Lineage{target}OwnerRule")
+                        Value = parseTextField(form, $"{area}{target}OwnerRule")
                     });
                 
+            }
+            else if(searchUpper == "FUSION")
+            {
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = $"{target}",
+                    Value = "FusionAttributeType"
+                });
+
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = $"{target}ID",
+                    Value = parseTextField(form, $"{area}{target}FusionAttribute")
+                });                
             }
         }
 

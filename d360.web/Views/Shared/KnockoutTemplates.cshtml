@@ -1325,27 +1325,6 @@
     </div>
 </script>
 
-<script id="promotionStepActionFindTmpl" type="text/html">
-    <div class="row" id="find">
-        <div id="FindSearchType">
-            <div id='FindSearchTypeTip' class="FieldNameRequired">Search Type</div>
-            <div id="FindSearchTypeDropdown" name="FindSearchTypeDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: findTypes, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'text', valueMember: 'id',theme: theme}"></div>
-        </div>
-        <div id="FindObjectType">
-            <div id='FindObjectTypeTip' class="FieldNameRequired">Object Type</div>
-            <div id="FindObjectTypeDropdown" name="FindObjectTypeDropdown"></div>
-        </div>
-        <div id="FindObject">
-            <div id='FindObjectTip' class="FieldNameRequired">Object</div>
-            <div id="FindObjectDropdown" name="FindObjectDropdown"></div>
-        </div>
-        <div id="FindField">
-            <div id='FindFieldTip' class="FieldNameRequired">Field</div>
-            <div id="FindFieldDropdown" name="FindFieldDropdown"></div>
-        </div>
-    </div>
-</script>
-
 <script id="promotionStepLineageActionTmpl" type="text/html">
     <div>
         <div class="FieldNameRequired">Intersect Type</div>
@@ -1367,6 +1346,10 @@
         <div class="FieldNameRequired">Subject Fusion Owner Rule</div>
         <div name="LineageSubjectOwnerRule" id="LineageSubjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectFusionOwnerRuleIndex}"></div>
     </div>
+    <div data-bind="visible: selectedSubjectSearchTypeIndex() == 3">
+        <div class="FieldNameRequired">Subject</div>
+        <div name="LineageSubjectItem" id="LineageSubjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a subject:',source: subjectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectItemIndex}"></div>
+    </div>    
     <div>
         <div class="FieldNameRequired">Object Search Type</div>
         <div name="LineageObjectSearchType" id="LineageObjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectSearchTypeIndex}"></div>
@@ -1379,6 +1362,10 @@
         <div class="FieldNameRequired">Object Fusion Owner Rule</div>
         <div name="LineageObjectOwnerRule" id="LineageObjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectFusionOwnerRuleIndex}"></div>
     </div>
+    <div data-bind="visible: selectedObjectSearchTypeIndex() == 3">
+        <div class="FieldNameRequired">Object</div>
+        <div name="LineageObjectItem" id="LineageObjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a subject:',source: objectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectItemIndex}"></div>
+    </div>    
     <div>
         <div class="FieldNameRequired">Focal Point Search Type</div>
         <div name="LineageFocalSearchType" id="LineageFocalSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFocalSearchTypeIndex}"></div>
@@ -1390,7 +1377,7 @@
     <div data-bind="visible: selectedFocalSearchTypeIndex() == 2">
         <div class="FieldNameRequired">Focal Fusion Owner Rule</div>
         <div name="LineageFocalOwnerRule" id="LineageFocalOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFocalFusionOwnerRuleIndex}"></div>
-    </div>
+    </div>    
 </script>
 
 
@@ -1407,21 +1394,25 @@
         <div class="FieldNameRequired">Type</div>
         <div name="FindTypeName" id="FindTypeName" data-bind="jqxDropDownList: {placeHolder: 'Choose an object type:',source: findObjectTypes, autoDropDownHeight: true, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindObjectTypeIndex}"></div>
     </div>
-    <div data-bind="visible: selectedFindObjectTypeIndex() >= 0 && selectedFindSearchTypeIndex() == 0">
+    <div data-bind="visible: selectedFindObjectTypeIndex() >= 0 && showResultDirect()">
         <div class="FieldNameRequired">Item</div>
         <div name="FindTypeID" id="FindTypeID" data-bind="jqxDropDownList: {placeHolder: 'Choose an object:',source: findObjects,  height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindObjectIndex}"></div>
     </div>
-    <div data-bind="visible: selectedFindObjectIndex() > 0 && selectedFindSearchTypeIndex() == 0">
+    <div data-bind="visible: selectedFindObjectIndex() > 0 && showResultDirect()">
         <div class="FieldNameRequired">Target Matching Field</div>
         <div name="TargetSearchField" id="TargetSearchField" data-bind="jqxDropDownList: {placeHolder: 'Choose a target field:',source: targetFields, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedTargetFieldIndex}"></div>
     </div>
-    <div data-bind="visible: selectedFindSearchTypeIndex() == 1">
+    <div data-bind="visible: showResultFromStepSearch()">
         <div class="FieldNameRequired">Result from Step</div>
-        <div name="FindStep" id="FindStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>
+        <div name="FindObjectStep" id="FindObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>
     </div>
-    <div data-bind="visible: selectedFindSearchTypeIndex() == 2">
+    <div data-bind="visible: showFusionOwnerSearch()">
         <div class="FieldNameRequired">Fusion Owner Rule</div>
-        <div name="FindFusionOwnerRule" id="FindFusionOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFusionOwnerRuleIndex}"></div>
+        <div name="FindObjectOwnerRule" id="FindObjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFusionOwnerRuleIndex}"></div>
+    </div>
+    <div data-bind="visible: showFusionAttributeSearch()">
+        <div class="FieldNameRequired">Fusion Attribute</div>
+        <div name="FindObjectFusionAttribute" id="FindObjectFusionAttribute" data-bind="jqxDropDownList: {placeHolder: 'Choose a attribute:',source: fusionAttributes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFusionAttributeIndex}"></div>
     </div>
 </script>
 
@@ -1432,15 +1423,19 @@
     </div>
     <div id="PromotionParentSearch" data-bind="visible: promotionParentType() > 0">
         <div id='PromotionParentSearchTip' class="FieldName">Parent Search</div>
-        <div id="PrOptionsParentSearchDropdown" name="PrOptionsParentSearchDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose an search type:',source: promoteSearchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPromotionSearchTypeIndex}"></div>
+        <div id="PrOptionsParentSearchDropdown" name="PrOptionsParentSearchDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose an search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSearchTypeIndex}"></div>
     </div>
-    <div id="PromotionParent" data-bind="visible: promotionParentType() > 0 && selectedPromotionSearchTypeIndex() == 0">
+    <div id="PromotionParent" data-bind="visible: promotionParentType() > 0 && selectedSearchTypeIndex() == 0">
         <div id='PromotionParentTip' class="FieldName">Promote Under</div>
         <div id="PrOptionsParentDropdown" name="PrOptionsParentDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose a parent:',source: promoteToParents, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPromoteParentIndex}"></div>
     </div>
-    <div id="PromotionResultStep" data-bind="visible: selectedPromotionSearchTypeIndex() == 1 && promotionParentType() > 0">
+    <div id="PromotionResultStep" data-bind="visible: selectedSearchTypeIndex() == 1 && promotionParentType() > 0">
         <div id='PromotionResultStepTip' class="FieldName">Result from step</div>
-        <div id="PrOptionsStepDropdown" name="PrOptionsStepDropdown" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: promoteToSteps,  height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPromoteStepIndex}"></div>
+        <div id="PromotionParentStep" name="PromotionParentStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps,  height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedStepIndex}"></div>
+    </div>
+    <div id="PromotionResultStep" data-bind="visible: selectedSearchTypeIndex() == 2 && promotionParentType() > 0">
+        <div class="FieldName">Fusion Owner</div>
+        <div id="PromotionParentOwnerRule" name="PromotionParentOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a fusion owner rule:',source: fusionOwnerRules,  height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFusionOwnerIndex}"></div>
     </div>
 </script>
 
@@ -1461,6 +1456,10 @@
         <div class="FieldNameRequired">Subject</div>
         <div name="RelateSubjectItem" id="RelateSubjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a subject:',source: subjectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectItemIndex}"></div>
     </div>    
+    <div data-bind="visible: showSubjectFusionOwnerSearch()">
+        <div class="FieldNameRequired">Subject Fusion Owner Rule</div>
+        <div name="RelateSubjectOwnerRule" id="RelateSubjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectFusionOwnerRuleIndex}"></div>
+    </div>
     <div>
         <div class="FieldNameRequired">Object Search Type</div>
         <div name="RelateObjectSearchType" id="RelateObjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectSearchTypeIndex}"></div>
@@ -1473,6 +1472,10 @@
         <div class="FieldNameRequired">Object</div>
         <div name="RelateObjectItem" id="RelateObjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a object:',source: objectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectItemIndex}"></div>
     </div>        
+    <div data-bind="visible: showObjectFusionOwnerSearch()">
+        <div class="FieldNameRequired">Object Fusion Owner Rule</div>
+        <div name="RelateObjectOwnerRule" id="RelateObjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectFusionOwnerRuleIndex}"></div>
+    </div>
 </script>
 
 <script id="promotionStepActionTmpl" type="text/html">

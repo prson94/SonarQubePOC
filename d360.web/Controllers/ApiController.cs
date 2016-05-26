@@ -2044,7 +2044,12 @@ where   h.ID <> @t order by h.[Level] desc;
 
             return types;
         }
-                
+        
+        [Route("fusion/rule/fusionattributetypes")]
+        public IQueryable GetFusionAttributeTypes()
+        {
+            return Company.FusionAttributeTypes.OrderBy(x => x.Name).Select(x=>new { Name = x.Name, ID = x.ID });            
+        }
 
         [Route("fusion/rule/fusionOwnerRules/{fusionID:int}")]
         public IEnumerable<dynamic> GetRuleFusionOwnerRules(int fusionID)
