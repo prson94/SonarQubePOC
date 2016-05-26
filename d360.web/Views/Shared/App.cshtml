@@ -80,9 +80,21 @@
 
     <script src="../../node_modules/ng2-table/bundles/ng2-table.js"></script> 
 
-    <script src="../../system.config.js" ></script>
+    <script src="../../scripts/app/app.js"></script>
     <script>
-        System.import('scripts/app/main').then(null, console.error.bind(console));
+        System.config({
+            transpiler: 'typescript',
+            typescriptOptions: { emitDecoratorMetadata: true },
+            packages: {
+                'scripts/app': {
+                    main: 'app.js',
+                    format: 'register',
+                    defaultExtension: 'js'
+                }
+            }});
+
+
+        System.import('scripts/app/app').then(null, console.error.bind(console));
     </script>
 </head>
 <body>

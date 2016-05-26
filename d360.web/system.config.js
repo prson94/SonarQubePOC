@@ -2,9 +2,9 @@
     transpiler: 'typescript',
     typescriptOptions: { emitDecoratorMetadata: true },
     map: {
-        'rxjs': '../../../node_modules/rxjs',
-        '@angular': '../../../node_modules/@angular',
-        'ng2-table': '../../node_modules/ng2-table',
+        'rxjs': './node_modules/rxjs',
+        '@angular': './node_modules/@angular',
+        'ng2-table': './node_modules/ng2-table',
     },
     packages: {
         'scripts/app': {
