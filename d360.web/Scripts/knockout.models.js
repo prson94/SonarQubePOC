@@ -4675,7 +4675,7 @@ var promotionStepLineageActionViewModel = function (ruleID, ruleStepID, fusionID
         else if (objectSearch.toUpperCase() == 'DIRECT')
             self.initialObjectItem = objectID;
         else if (objectSearch.toUpperCase() == 'FUSIONOWNER')
-            self.initialObjectItem = objectID;
+            self.initialObjectOwnerRule = objectID;
         if (subjectSearch.toUpperCase() == 'RESULTFROMSTEP')
             self.initialSubjectStep = subjectID;
         else if (subjectSearch.toUpperCase() == 'DIRECT')
