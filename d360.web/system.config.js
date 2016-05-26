@@ -4,15 +4,17 @@
     map: {
         'rxjs': './node_modules/rxjs',
         '@angular': './node_modules/@angular',
-        'ng2-table': './node_modules/ng2-table',
+        'angular2-datatable/datatable': './node_modules/angular2-datatable',
+        'lodash': './node_modules/lodash'
     },
     packages: {
         'scripts/app': {
             format: 'register',
             defaultExtension: 'js'
         },
+        'lodash' : { main: 'lodash.js' },
         'rxjs': { main: 'index.js' },
-        'ng2-table': { main: 'ng2-table.js' },
+        'angular2-datatable/datatable': { main: 'datatable.js'},
         '@angular/core': { main: 'index.js' },
         '@angular/http': { main: 'index.js' },
         '@angular/router-deprecated': { main: 'index.js' },

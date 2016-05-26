@@ -2,9 +2,35 @@
     <div class="col l4 m6 s12">
 
         <div>
-            <ng-table [config]="config.sorting"
-                      [rows]="domainTypes" [columns]="columns">
-            </ng-table>
+            <table class="table" [mfData]="domainTypes" #mf="mfDataTable" [mfRowsOnPage]="10">
+                <thead>
+                    <tr>
+                        <th style="width: 70%">
+                            <mfDefaultSorter by="Name">Name</mfDefaultSorter>
+                        </th>
+                        <th style="width: 30%">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of mf.data; let i=index;" (click)="selectRow(item.ID);" [class.selected]="selectedRow?.ID == item.ID">
+                        <td>{{item.Name}}</td>
+                        <!-- TODO: replace href on info, fix edit/delete -->
+                        <td class="RowTools">
+                            <a href="/#/domains/{{item.ID}}"><i class="fa fa-info"></i></a>
+                            <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/edit'"><i class="fa fa-pencil"></i></a>
+                            <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/delete'"><i class="fa fa-trash-o"></i></a>
+                        </td>
+                    </tr>
+                </tbody>
+                <!--<tfoot>
+                    <tr>
+                        <td colspan="4">
+                            <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
+                        </td>
+                    </tr>
+                </tfoot>-->
+            </table>
         </div>
         <div id="List"></div>
     </div>
@@ -12,7 +38,7 @@
         <div class="row">
             <div class="col s12">
                 <div id="DetailTile" class="tile tile-detail">
-                    <object-detail [objectType]="objectType" [objectId]="objectId"></object-detail>
+                    <object-detail [objectType]="objectType" [objectID]="selectedRow?.ID"></object-detail>
                 </div>
             </div>
             <div class="col s12">

@@ -3,33 +3,29 @@ import { Component, NgZone } from '@angular/core';
 import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { PageHeader } from '../page-header.service';
 import { ObjectDetail } from '../parts/object-detail.part';
-import { NgTableComponent, NG_TABLE_DIRECTIVES } from 'ng2-table';
+import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
 
 @Component({
     selector: 'admin-domain',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [ObjectDetail, NG_TABLE_DIRECTIVES],
-    templateUrl: 'scripts/app/templates/admin-domain.component.html'
+    directives: [ObjectDetail, DataTableDirectives],
+    templateUrl: 'scripts/app/templates/admin-domain.component.html',
+    styles: [`
+        .selected {
+        background-color: #86ccf9;        
+        }
+        tbody tr:not(.selected):hover {
+        background-color: #ddd;
+        }
+    `]
 })
 
 export class AdminDomainComponent {
     http: Http;
     pageHeader: PageHeader;
-
     domainTypes = new Array<DomainType>();
-    objectType = 'DomainType';
-    objectId = 0;
-
-    public columns: Array<any> = [
-        { title: 'ID', name: 'id' },
-        { title: 'Name', name: 'name' },
-        { title: 'Description', name: 'description' },
-    ];
-
-    public config: any = {
-        paging: true,
-        sorting: { columns: this.columns }
-    };
+    objectType = 'Domain';
+    selectedRow: DomainType;
 
     constructor(http: Http, pageHeader: PageHeader) {
         this.http = http;
@@ -41,31 +37,31 @@ export class AdminDomainComponent {
     }
 
     load() {
+
         this.http.get('/services/domains')
             .map(data => data.json())
             .subscribe(data => {
                 //console.log(data);
 
-                data.forEach(r => {
-                    var d = new DomainType();
-                    d.id = r.ID;
-                    d.name = r.Name;
-                    d.description = r.Description;
-                    this.domainTypes.push(d);
-                });
-            });
+                data.push({ ID: 9, Name: 'test', Description: '<p>hello <strong>world</strong></p>' });
+                data.push({ ID: 10, Name: 'test 2', Description: '<p>hello <strong>world</strong></p>' });
 
-        this.domainTypes.push({ id: 2, name: 'Test 1', description: 'Description 1' });
-        this.domainTypes.push({ id: 3, name: 'Hello World', description: 'Description 2' });
-        this.domainTypes.push({ id: 4, name: 'lorem ipsum', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum' });
-        this.domainTypes.push({ id: 5, name: 'Test 2', description: 'blah blah blah' });
-        this.domainTypes.push({ id: 6, name: 'Last', description: 'Description Last' });
+                //NOTE: array.push does not work with angular2-datatable, known issue. Need to set array directly
+                this.domainTypes = data;
+                this.selectedRow = this.domainTypes[0];
+            });
+       
+    }
+
+
+    selectRow(id: number): void {
+        this.selectedRow = this.domainTypes[this.domainTypes.findIndex(d => d.ID == id)];
     }
 }
 
 
 class DomainType {
-    id: number;
-    name: string;
-    description: string;
+    ID: number;
+    Name: string;
+    Description: string;
 }

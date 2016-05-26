@@ -1,5 +1,5 @@
 ﻿///<reference path="../es6-shim.d.ts"/>
-import {Input, Output, Component, OnInit } from '@angular/core';
+import {Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
 
 @Component({
@@ -8,9 +8,11 @@ import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
     viewProviders: [HTTP_PROVIDERS]
 })
 
-export class ObjectDetail implements OnInit {
+export class ObjectDetail implements OnChanges {
     @Input() objectType: string;
-    @Input() objectId: string;
+    @Input() objectID: string;
+
+    private isLoading = false;
 
     rows = new Array<DetailRow>();
     columns: number;
@@ -20,14 +22,36 @@ export class ObjectDetail implements OnInit {
         this.http = http;
     }
 
-    ngOnInit() {
-        this.http.get('/api/' + this.objectType + '/' + this.objectId + '/detail').map(data => data.json()).subscribe(data => {
-            this.columns = data.columns;
-            data.rows.forEach(r => this.rows.push(r));
-            //console.log(this.rows);
-        });
-        
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        var changed = false;
+        for (let p in changes) {
+            if (p == 'objectType') {
+                this.objectType = changes['objectType'].currentValue;
+            }
+            if (p == 'objectID') {
+                this.objectID = changes['objectID'].currentValue;
+            }
+        }
+
+        this.loadDetail();
     }
+
+    private loadDetail(): void {
+        this.isLoading = true;
+
+        if (this.objectType && this.objectID)
+            this.http.get('/api/' + this.objectType + '/' + this.objectID + '/detail').map(data => data.json()).subscribe(data => {
+                this.rows = [];
+
+                this.columns = data.columns;
+                data.rows.forEach(r => this.rows.push(r));
+
+                this.isLoading = false;
+            });
+    }
+
+
+
 }
 
 class DetailRow {

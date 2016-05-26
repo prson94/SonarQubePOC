@@ -1,44 +1,50 @@
-﻿<div style="line-height:10px">&nbsp;</div>
-<div *ngFor="let row of rows" >
-    <div class="row" style="margin-bottom: 10px" attr.data-category="{{row.Category}}">
-        <div *ngIf="columns == 1">
-            <div class="col l2 m3 s12">
-                <div *ngFor="let field of row.FirstColumnFields">
-                    <div class="FieldName FieldDisplayName">{{field.Name}}</div>
+﻿<div *ngIf="objectType && objectID">
+    <div *ngIf="isLoading" style="width:100%; text-align:center;">
+        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+    </div>
+    <div *ngIf="!isLoading">
+        <div style="line-height:10px">&nbsp;</div>
+        <div *ngFor="let row of rows">
+            <div class="row" style="margin-bottom: 10px" attr.data-category="{{row.Category}}">
+                <div *ngIf="columns == 1">
+                    <div class="col l2 m3 s12">
+                        <div *ngFor="let field of row.FirstColumnFields">
+                            <div class="FieldName FieldDisplayName">{{field.Name}}</div>
+                        </div>
+                    </div>
+                    <div class="col l10 m9 s12">
+                        <div *ngFor="let field of row.FirstColumnFields">
+                            <div class="FieldDisplayContent"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="col l10 m9 s12">
-                <div *ngFor="let field of row.FirstColumnFields">
-                    <div class="FieldDisplayContent"></div>
-                </div>
-            </div>
-        </div>
-        <div *ngIf="columns != 1">
-            <div class="col l2 m3 s12">
-                <div *ngFor="let field of row.FirstColumnFields">
-                    <div class="FieldName FieldDisplayName">{{field.Name}}</div>
-                </div>
-            </div>
-            <div class="col l4 m3 s12">
-                <div *ngFor="let field of row.FirstColumnFields">
-                    <div class="FieldDisplayContent"></div>
-                </div>
-            </div>
-            <div class="col l2 m3 s12">
-                <div *ngFor="let field of row.SecondColumnFields">
-                    <div class="FieldName FieldDisplayName">{{field.Name}}</div>
-                </div>
-            </div>
-            <div class="col l4 m3 s12">
-                <div *ngFor="let field of row.SecondColumnFields">
-                    <div class="FieldDisplayContent"></div>
+                <div *ngIf="columns != 1">
+                    <div class="col l2 m3 s12">
+                        <div *ngFor="let field of row.FirstColumnFields">
+                            <div class="FieldName FieldDisplayName">{{field.Name}}</div>
+                        </div>
+                    </div>
+                    <div class="col l4 m3 s12">
+                        <div *ngFor="let field of row.FirstColumnFields">
+                            <div class="FieldDisplayContent"></div>
+                        </div>
+                    </div>
+                    <div class="col l2 m3 s12">
+                        <div *ngFor="let field of row.SecondColumnFields">
+                            <div class="FieldName FieldDisplayName">{{field.Name}}</div>
+                        </div>
+                    </div>
+                    <div class="col l4 m3 s12">
+                        <div *ngFor="let field of row.SecondColumnFields">
+                            <div class="FieldDisplayContent"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-
+    
 <!--<div style="line-height:10px">&nbsp;</div>
 {{#each rows}}
 <div class="row" style="margin-bottom: 10px" data-category="{{Category}}">

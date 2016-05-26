@@ -22,7 +22,7 @@ export class AppComponent {
     pageHeader: PageHeader;
 
     constructor(pageHeader: PageHeader) {
-        console.clear();
+        //console.clear();
         this.pageHeader = pageHeader;
     }
 }
