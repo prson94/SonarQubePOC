@@ -92,7 +92,7 @@ begin
 				from	Comment C
 						inner join CommentRelation CR on CR.CommentID = C.ID and C.ID = @fields.value('(fields/CommentID)[1]', 'int') and CR.ObjectType not in ('Resource', 'Group')
 						inner join ResponsibilityDetail RD on RD.ObjectType = CR.ObjectType and RD.ObjectID = CR.ObjectID 
-						inner join WorkflowTypeRelation WTR		on WTR.[Object] = RD.ObjectType +'Type' and WTR.ObjectID = RD.ObjectID 
+						inner join WorkflowTypeRelation WTR		on WTR.[Object] = RD.ObjectType +'Type' and WTR.ObjectID = RD.ObjectTypeID 
 																and WTR.WorkflowType = @workflowType 
 																and WTR.ResponsibilityTypeID = RD.ResponsibilityTypeID
 																and WTR.[Enabled] = 1
@@ -174,4 +174,5 @@ begin
 
 	select * from @tbl
 end
-go
+
+GO
