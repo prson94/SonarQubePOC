@@ -6195,7 +6195,7 @@ order by  D.TextPath
                 FusionTypeID = typeID,
                 FormUri = "/Form/AddFusionRule",
                 FormMethod = "POST",
-                FormName = "Add Promotion Rule",
+                FormName = "Add Fusion Rule",
                 AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).ToList(),
                 Rule = new FusionRule { FusionID = fusionID, Enabled = true }
             };
@@ -7017,8 +7017,69 @@ order by  D.TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-        
 
+        [Route("fusion/rule/{ruleID:int}/step/move/{direction}/{ruleStepID:int}")]
+        public ActionResult MoveFusionRuleStep(int ruleID, string direction, int ruleStepID)
+        {
+            var rule = Company.GetById<FusionRule>(ruleID);
+            if (rule == null) return new HttpNotFoundResult();
+
+            var step = rule.FusionRuleSteps.FirstOrDefault(x => x.ID == ruleStepID);
+            if (step == null) return new HttpNotFoundResult();
+
+            return PartialView("OverlayEditableForm", new EditableForm
+            {
+                FormSize = "small",
+                Context = ContextList.FusionRule,
+                FieldUri = $"/form/FusionRuleStep_MoveFields?id={ruleID}&ruleStepID={ruleStepID}&direction={direction}",
+                FormTitle = string.Format("Move this promotion rule step " + direction),
+                FormUri = "/form/MoveFusionRuleStep",
+                FormMethod = "POST"
+            });
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]        
+        public ActionResult MoveFusionRuleStep(FormCollection form)
+        {
+            var ruleID = parseIntField(form, "ID");
+            var ruleStepID = parseIntField(form, "RuleStepID");
+            var direction = parseTextField(form, "Direction");
+            var currentRule = Company.GetById<FusionRule>(ruleID);
+            var itemToMove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
+            int currentStepNumber = itemToMove.Step;
+
+            if (string.Compare(direction, "UP",true) == 0)
+            {
+                //swap item to move and the item above it                
+                var itemBeforeSelected = currentRule.FusionRuleSteps.OrderBy(x=>x.Step).TakeWhile(x => x.ID != ruleStepID).LastOrDefault();
+
+                if (itemBeforeSelected != null)
+                {
+                    itemToMove.Step = itemBeforeSelected.Step;
+                    itemBeforeSelected.Step = currentStepNumber;
+                    Company.Entry(itemToMove).Property(u => u.Step).IsModified = true;
+                    Company.Entry(itemBeforeSelected).Property(u => u.Step).IsModified = true;
+                    Company.SaveChanges();
+                }
+            }
+            else if (string.Compare(direction, "DOWN", true) == 0)
+            {
+                var itemAfterSelected = currentRule.FusionRuleSteps.OrderBy(x=>x.Step).SkipWhile(p => p.ID != ruleStepID)
+                                  .ElementAt(1); //Zero-indexed, means second
+
+                if (itemAfterSelected != null)
+                {
+                    itemToMove.Step = itemAfterSelected.Step;
+                    itemAfterSelected.Step = currentStepNumber;
+                    Company.Entry(itemToMove).Property(u => u.Step).IsModified = true;
+                    Company.Entry(itemAfterSelected).Property(u => u.Step).IsModified = true;
+                    Company.SaveChanges();
+                }                
+            }
+
+            return jsonSuccess("Step successfully moved", ruleID.ToString(), ContextList.FusionRuleStep, "move",HttpStatusCode.OK);
+        }
 
         #endregion
 
@@ -7069,6 +7130,22 @@ order by  D.TextPath
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { FieldName = "RuleStepID", FieldType = DataType.Hidden.ToString(), Value = step.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult FusionRuleStep_MoveFields(int id, int ruleStepID, string direction)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<FusionRule>(id);
+            if (a == null) return new HttpNotFoundResult();
+
+            var step = a.FusionRuleSteps.First(x => x.ID == ruleStepID);
+            if (step == null) return new HttpNotFoundResult();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { FieldName = "RuleStepID", FieldType = DataType.Hidden.ToString(), Value = step.ID.ToString() });
+            list.Add(new EditableField { FieldName = "Direction", FieldType = DataType.Hidden.ToString(), Value = direction });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

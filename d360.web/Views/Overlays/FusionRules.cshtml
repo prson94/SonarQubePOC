@@ -259,7 +259,7 @@
                         dataField: 'ID',
                         width: '80px',
                         cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                            var tools = [
+                            var tools = [                                
                                 { icon: 'pencil', urlprefix: '/form/EditFusionRule?id=' + data.ID },
                                 { icon: 'trash-o', urlprefix: '/form/DeleteFusionRule?id=' + data.ID }
                             ];
@@ -331,7 +331,7 @@
             };
 
             FusionRuleStepGridAdapter = new $.jqx.dataAdapter(FusionRuleStepGridSource);
-
+            var rowscount = 0;
             $('#RuleStepGrid').jqxGrid({
                 altrows: true,
                 source: FusionRuleStepGridAdapter,
@@ -350,12 +350,22 @@
                      {
                          text: '',
                          dataField: 'ID',
-                         width: '80px',
+                         width: '150px',
                          cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                             var tools = [
+                             var tools = [                                 
                                  { icon: 'pencil', urlprefix: '/form/fusion/rule/' + data.RuleID + '/step/edit/' + data.ID },
                                  { icon: 'trash-o', urlprefix: '/form/fusion/rule/' + data.RuleID + '/step/delete/' + data.ID }
                              ];
+                             if(index > 0) tools.push({ icon: 'caret-square-o-up', urlprefix: '/form/fusion/rule/' + data.RuleID + '/step/move/up/' + data.ID });
+
+                             if(index == 0){
+                                 var datainformations = $('#RuleStepGrid').jqxGrid('getdatainformation');
+                                 rowscount = datainformations == null ? 0 : datainformations.rowscount;
+                             }
+
+                             if(rowscount != (index +1))
+                                tools.push({ icon: 'caret-square-o-down', urlprefix: '/form/fusion/rule/' + data.RuleID + '/step/move/down/' + data.ID });
+
                              return renderToolsHtml(value, tools, _overlayContext, data);
                          }
                      }

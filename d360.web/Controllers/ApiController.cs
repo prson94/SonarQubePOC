@@ -2030,7 +2030,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
             if(rule == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
-            return rule.FusionRuleSteps;
+            return rule.FusionRuleSteps.OrderBy(x=>x.Step);
         }
 
         [Route("fusion/rule/actions")]
@@ -2044,6 +2044,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
             return types;
         }
+                
 
         [Route("fusion/rule/fusionOwnerRules/{fusionID:int}")]
         public IEnumerable<dynamic> GetRuleFusionOwnerRules(int fusionID)
