@@ -1,6 +1,5 @@
 <div class="row">
     <div class="col l4 m6 s12">
-
         <div>
             <table class="table" [mfData]="domainTypes" #mf="mfDataTable" [mfRowsOnPage]="10">
                 <thead>
@@ -14,7 +13,7 @@
                 </thead>
                 <tbody>
                     <tr *ngFor="let item of mf.data; let i=index;" (click)="selectRow(item.ID);" [class.selected]="selectedRow?.ID == item.ID">
-                        <td>{{item.Name}}</td>
+                        <td> {{item.Name}}</td>
                         <!-- TODO: replace href on info, fix edit/delete -->
                         <td class="RowTools">
                             <a href="/#/domains/{{item.ID}}"><i class="fa fa-info"></i></a>
@@ -22,14 +21,17 @@
                             <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/delete'"><i class="fa fa-trash-o"></i></a>
                         </td>
                     </tr>
+                    <tr>
+
+                    </tr>
                 </tbody>
-                <!--<tfoot>
+                <tfoot>
                     <tr>
                         <td colspan="4">
                             <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
                         </td>
                     </tr>
-                </tfoot>-->
+                </tfoot>
             </table>
         </div>
         <div id="List"></div>
@@ -42,10 +44,14 @@
                 </div>
             </div>
             <div class="col s12">
-                <div id="FieldsTile" class="tile tile-detail"></div>
+                <div id="FieldsTile" class="tile tile-detail">
+                    <fields-grid [objectType]="objectType" [objectID]="selectedRow?.ID" [title]="'Field Definition'"></fields-grid>
+                </div>
             </div>
             <div class="col s12">
-                <div id="GovernanceTile" class="tile tile-detail"></div>
+                <div id="GovernanceTile" class="tile tile-detail">
+                    <people-responsibilities [objectType]="objectType" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'" [showHidden]="true"></people-responsibilities>
+                </div>
             </div>
         </div>
     </div>

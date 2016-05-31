@@ -14,7 +14,7 @@
                     </div>
                     <div class="col l10 m9 s12">
                         <div *ngFor="let field of row.FirstColumnFields">
-                            <div class="FieldDisplayContent"></div>
+                            <div class="FieldDisplayContent" [innerHtml]="field.Value"></div>
                         </div>
                     </div>
                 </div>
@@ -26,7 +26,7 @@
                     </div>
                     <div class="col l4 m3 s12">
                         <div *ngFor="let field of row.FirstColumnFields">
-                            <div class="FieldDisplayContent"></div>
+                            <div class="FieldDisplayContent" [innerHtml]="field.Value"></div>
                         </div>
                     </div>
                     <div class="col l2 m3 s12">
@@ -36,7 +36,7 @@
                     </div>
                     <div class="col l4 m3 s12">
                         <div *ngFor="let field of row.SecondColumnFields">
-                            <div class="FieldDisplayContent"></div>
+                            <div class="FieldDisplayContent" [innerHtml]="field.Value"></div>
                         </div>
                     </div>
                 </div>
@@ -85,7 +85,6 @@
         <div id="{{valueID}}" class="FieldDisplayContent"></div>
         {{/each}}
     </div>
-
 
     {{/if}}
 </div>

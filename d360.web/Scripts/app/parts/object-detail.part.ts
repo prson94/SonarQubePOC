@@ -23,7 +23,6 @@ export class ObjectDetail implements OnChanges {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        var changed = false;
         for (let p in changes) {
             if (p == 'objectType') {
                 this.objectType = changes['objectType'].currentValue;
@@ -33,15 +32,17 @@ export class ObjectDetail implements OnChanges {
             }
         }
 
-        this.loadDetail();
+        this.load();
     }
 
-    private loadDetail(): void {
+    private load(): void {
         this.isLoading = true;
 
         if (this.objectType && this.objectID)
             this.http.get('/api/' + this.objectType + '/' + this.objectID + '/detail').map(data => data.json()).subscribe(data => {
                 this.rows = [];
+
+                console.log(data);
 
                 this.columns = data.columns;
                 data.rows.forEach(r => this.rows.push(r));

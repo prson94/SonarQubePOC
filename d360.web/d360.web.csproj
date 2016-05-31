@@ -869,7 +869,9 @@
       <DependentUpon>Apps.js</DependentUpon>
     </Content>
     <Content Include="Scripts\app\app.js" />
+    <Content Include="Scripts\app\parts\fields-grid.part.html" />
     <Content Include="Scripts\app\parts\object-detail.part.html" />
+    <Content Include="Scripts\app\parts\people-responsibilities.part.html" />
     <Content Include="Scripts\app\templates\admin-groups.component.html" />
     <Content Include="Scripts\app\templates\app.component.html" />
     <Content Include="Scripts\app\templates\admin-domain.component.html" />
@@ -1225,7 +1227,9 @@
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\page-header.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\parts\fields-grid.part.ts" />
     <TypeScriptCompile Include="Scripts\app\parts\object-detail.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\parts\people-responsibilities.part.ts" />
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
   </ItemGroup>
   <ItemGroup>

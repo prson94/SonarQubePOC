@@ -1,4 +1,5 @@
-﻿'use strict';
+﻿/// <binding AfterBuild='default' />
+'use strict';
 
 var gulp = require('gulp');
 
@@ -13,8 +14,8 @@ gulp.task('default', function (done) {
     builder.loadConfig('system.config.js').then(function () {
         return builder.buildStatic('scripts/app/main.js', bundleFilename, {
             normalize: true,
-            minify: true,
-            mangle: true,
+            minify: false,
+            mangle: false,
             runtime: false
         });
     }).then(function () {

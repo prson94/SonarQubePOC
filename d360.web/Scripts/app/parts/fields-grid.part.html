@@ -1,0 +1,59 @@
+﻿<div *ngIf="objectType && objectID">
+    <div>
+        <header>
+            {{title}}
+            <div id="FieldsTile_tools" class="TileTools">
+                <a class="btn btn-floating waves-effect waves-light brown lighten-1">
+                    <i class="fa fa-plus" title="Add definition attribute"></i>
+                </a>
+            </div>
+        </header>
+    </div>
+    <div *ngIf="isLoading" style="width:100%; text-align:center;">
+        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+    </div>
+    <div *ngIf="!isLoading">
+        <table class="table" [mfData]="fieldDefinitions" #mf="mfDataTable" [mfRowsOnPage]="10">
+            <thead>
+                <tr>
+                    <th style="width: 60%">
+                        <mfDefaultSorter by="FriendlyName">Field</mfDefaultSorter>
+                    </th>
+                    <th style="width: 10%">
+                        <mfDefaultSorter by="Category">Category</mfDefaultSorter>
+                    </th>
+                    <th style="width: 10%">
+                        <mfDefaultSorter by="IsRequired">Required?</mfDefaultSorter>
+                    </th>
+                    <th style="width: 10%">
+                        <mfDefaultSorter by="IsListable">Listable?</mfDefaultSorter>
+                    </th>
+                    <th style="width: 10%">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of mf.data; let i=index;" (click)="selectRow(item.ID);" [class.selected]="selectedRow?.ID == item.ID">
+                    <td> {{item.FriendlyName}}</td>
+                    <td> {{item.Category}}</td>
+                    <td> <input type="checkbox" [(ngModel)]="fieldDefinitions[i].IsRequired" disabled /></td>
+                    <td> <input type="checkbox" [(ngModel)]="fieldDefinitions[i].IsListable" disabled /></td>
+                    <!-- TODO: replace href on info, fix edit/delete -->
+                    <td class="RowTools">
+                        <a href="/#/domains/{{item.ID}}"><i class="fa fa-info"></i></a>
+                        <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/edit'"><i class="fa fa-pencil"></i></a>
+                        <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/delete'"><i class="fa fa-trash-o"></i></a>
+                    </td>
+                </tr>
+                <tr></tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">
+                        <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

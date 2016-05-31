@@ -3,12 +3,14 @@ import { Component, NgZone } from '@angular/core';
 import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { PageHeader } from '../page-header.service';
 import { ObjectDetail } from '../parts/object-detail.part';
+import { FieldsGridPart } from '../parts/fields-grid.part';
+import { PeopleResponsibilitiesPart } from '../parts/people-responsibilities.part';
 import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
 
 @Component({
     selector: 'admin-domain',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [ObjectDetail, DataTableDirectives],
+    directives: [ObjectDetail, DataTableDirectives, FieldsGridPart, PeopleResponsibilitiesPart],
     templateUrl: 'scripts/app/templates/admin-domain.component.html',
     styles: [`
         .selected {
@@ -17,6 +19,9 @@ import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
         tbody tr:not(.selected):hover {
         background-color: #ddd;
         }
+        td {
+            padding-left:3px;
+        }
     `]
 })
 
@@ -24,7 +29,7 @@ export class AdminDomainComponent {
     http: Http;
     pageHeader: PageHeader;
     domainTypes = new Array<DomainType>();
-    objectType = 'Domain';
+    objectType = 'DomainType';
     selectedRow: DomainType;
 
     constructor(http: Http, pageHeader: PageHeader) {
