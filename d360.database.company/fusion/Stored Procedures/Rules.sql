@@ -513,13 +513,15 @@ from	#rules R
 						@FindSearchObjectID int = null,
 						@FindFilterField int = null,
 						@FindFilterFieldValue nvarchar(250) = null,
-						@FindTargetField int = null
+						@FindTargetField int = null,
+						@FindParent int = null
 
 				select	@FindSearchType			= Value from @settings where Name = 'ObjectSearch'
 				select	@FindSearchObject		= Value from @settings where Name = 'Object'
 				select	@FindSearchObjectID		= Value from @settings where Name = 'ObjectID'
 				select	@FindFilterField		= Value from @settings where Name = 'FilterField'
 				select	@FindTargetField		= Value from @settings where Name = 'TargetField'
+				select	@FindParent		= Value from @settings where Name = 'FindParent'
 																
 				if @FindSearchType = 'Fusion'
 				begin					
@@ -615,7 +617,19 @@ from	#rules R
 --select @ResultObjectID
 				end
 
-				if @FindSearchType = 'ResultFromStep'
+				if @FindSearchType = 'ResultFromStep' and @FindParent is not null
+				begin
+					select	@ResultObject = co.parent,
+							@ResultObjectID = co.parentid
+					from	[fusion].[RulePromotion] rp
+						inner join [cache].[objectdetails] co on(co.[object] = rp.objecttype and co.objectid = rp.objectid)
+					where	@FindSearchObject = 'Step'
+							and rp.RuleID = @RuleID
+							and rp.RuleStepID = @FindSearchObjectID
+							and rp.FusionAttributeID = @FusionAttributeID
+				end
+
+				if @FindSearchType = 'ResultFromStep' and @FindParent is null
 				begin
 					select	@ResultObject = ObjectType,
 							@ResultObjectID = ObjectID
