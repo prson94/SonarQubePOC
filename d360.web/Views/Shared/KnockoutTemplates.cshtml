@@ -1451,11 +1451,7 @@
     <div data-bind="visible: showSubjectStepSearch()">
         <div class="FieldNameRequired">Subject Step</div>
         <div name="RelateSubjectStep" id="RelateSubjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectStepIndex}"></div>
-    </div>        
-    <div data-bind="visible: showSubjectDirectSearch() && selectedIntersectTypeIndex() >= 0">
-        <div class="FieldNameRequired">Subject</div>
-        <div name="RelateSubjectItem" id="RelateSubjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a subject:',source: subjectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectItemIndex}"></div>
-    </div>    
+    </div>            
     <div data-bind="visible: showSubjectFusionOwnerSearch()">
         <div class="FieldNameRequired">Subject Fusion Owner Rule</div>
         <div name="RelateSubjectOwnerRule" id="RelateSubjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectFusionOwnerRuleIndex}"></div>
@@ -1467,10 +1463,6 @@
     <div data-bind="visible: showObjectStepSearch()">
         <div class="FieldNameRequired">Object Step</div>
         <div name="RelateObjectStep" id="RelateObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectStepIndex}"></div>
-    </div>    
-    <div data-bind="visible: showObjectDirectSearch() && selectedIntersectTypeIndex() >= 0">
-        <div class="FieldNameRequired">Object</div>
-        <div name="RelateObjectItem" id="RelateObjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a object:',source: objectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectItemIndex}"></div>
     </div>        
     <div data-bind="visible: showObjectFusionOwnerSearch()">
         <div class="FieldNameRequired">Object Fusion Owner Rule</div>

@@ -4334,12 +4334,7 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID, fusionID)
     self.selectedSubjectFusionOwnerRuleIndex = ko.observable(-1);
     self.selectedObjectFusionOwnerRuleIndex = ko.observable(-1);
 
-    // data types for intersects
-    self.selectedSubjectType = ko.observable('');
-    self.selectedSubjectTypeID = ko.observable(-1);
-    self.selectedObjectType = ko.observable('');
-    self.selectedObjectTypeID = ko.observable(-1);
-    
+        
     self.initialIntersectID = null;
     self.initialSubjectStep = null;
     self.initialObjectStep = null;
@@ -4349,8 +4344,7 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID, fusionID)
     self.initialSubjectOwnerRule = null;
 
     // arrays
-    self.searchTypes = ko.observableArray([
-            { value: "Direct", text: "Direct" },
+    self.searchTypes = ko.observableArray([            
             { value: "ResultFromStep", text: "Result From Step" },
             { value: "Self", text: "Self" },
             { value: "FusionOwner", text: "Fusion Owner Rule" },
@@ -4364,45 +4358,22 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID, fusionID)
 
     // computed
     self.showSubjectStepSearch = ko.computed(function () {
-        return (self.selectedSubjectSearchTypeIndex() == 1);
-    });
-
-    self.showSubjectDirectSearch = ko.computed(function () {
         return (self.selectedSubjectSearchTypeIndex() == 0);
     });
-
+    
     self.showSubjectFusionOwnerSearch = ko.computed(function () {
-        return (self.selectedSubjectSearchTypeIndex() == 3);
+        return (self.selectedSubjectSearchTypeIndex() == 2);
     });
 
     self.showObjectStepSearch = ko.computed(function () {
-        return (self.selectedObjectSearchTypeIndex() == 1);
-    });
-
-    self.showObjectDirectSearch = ko.computed(function () {
         return (self.selectedObjectSearchTypeIndex() == 0);
     });
 
     self.showObjectFusionOwnerSearch = ko.computed(function () {
-        return (self.selectedObjectSearchTypeIndex() == 3);
+        return (self.selectedObjectSearchTypeIndex() == 2);
     });
 
     // subscriptions
-    self.selectedIntersectTypeIndex.subscribe(function () {
-        //look at the source / target types use them if needed for direct
-        if (self.selectedIntersectTypeIndex() <= 0) {
-            self.selectedSubjectType('');
-            self.selectedSubjectTypeID(-1);
-            self.selectedObjectType('');
-            self.selectedObjectTypeID(-1);
-            return;
-        }
-
-        self.selectedSubjectType(self.intersectTypes()[self.selectedIntersectTypeIndex()].subject);
-        self.selectedSubjectTypeID(self.intersectTypes()[self.selectedIntersectTypeIndex()].subjectID);
-        self.selectedObjectType(self.intersectTypes()[self.selectedIntersectTypeIndex()].object);
-        self.selectedObjectTypeID(self.intersectTypes()[self.selectedIntersectTypeIndex()].objectID);
-    });
 
     self.selectedSubjectSearchTypeIndex.subscribe(function () {
         if (self.showSubjectStepSearch() && self.steps().length == 0) self.LoadSteps();
@@ -4413,19 +4384,6 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID, fusionID)
         if (self.showObjectStepSearch() && self.steps().length == 0) self.LoadSteps();
         if (self.showObjectFusionOwnerSearch() && self.fusionOwnerRules().length == 0) self.LoadFusionOwnerRules();
     });
-
-    self.selectedObjectTypeID.subscribe(function () {
-        //if the object type is direct load the object drop down 
-        if (self.selectedObjectTypeID() > 0) {
-            self.LoadItems(self.selectedObjectTypeID(), self.selectedObjectType(), self.objectObjects, self.initialObjectItem, self.selectedObjectItemIndex);
-        }        
-    })
-
-    self.selectedSubjectTypeID.subscribe(function () {
-        if (self.selectedSubjectTypeID() > 0) {
-            self.LoadItems(self.selectedSubjectTypeID(), self.selectedSubjectType(), self.subjectObjects, self.initialSubjectItem, self.selectedSubjectItemIndex);
-        }        
-    })
 
     // methods
     self.Load = function () {        
@@ -4449,26 +4407,6 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID, fusionID)
                     self.initialObjectOwnerRule = '';
                     self.selectedObjectFusionOwnerRuleIndex(idx);
                 }                
-            })
-        }).always(function () {
-            self.IsLoading(false);
-        });
-    }
-
-    self.LoadItems = function (id, type, array, initialItem, initialIndex) {
-        var initialItemCombo = initialItem != '' ? (type + '|' + initialItem) : '';
-        self.IsLoading(true);
-        $.ajax({
-            url: '/api/fusion/rule/directitems/' + type + '/' +id,
-            async: true
-        }).done(function (data) {
-            array([]);
-            $.each(data, function (idx, val) {
-                array.push({ value: val.ID, text: val.Name });                
-                if (initialItemCombo == val.ID) {
-                    initialItem='';
-                    initialIndex(idx);
-                }
             })
         }).always(function () {
             self.IsLoading(false);
@@ -4530,15 +4468,11 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID, fusionID)
         self.selectedSubjectSearchTypeIndex(self.SelectedSearchType(subjectSearch));
         self.initialIntersectID = intersectTypeID;
         if (objectSearch.toUpperCase() == 'RESULTFROMSTEP')
-            self.initialObjectStep = objectID;
-        else if (objectSearch.toUpperCase() == 'DIRECT')
-            self.initialObjectItem = objectID;
+            self.initialObjectStep = objectID;        
         else if (objectSearch.toUpperCase() == 'FUSIONOWNER')
             self.initialObjectOwnerRule = objectID;
         if (subjectSearch.toUpperCase() == 'RESULTFROMSTEP')
-            self.initialSubjectStep = subjectID;
-        else if (subjectSearch.toUpperCase() == 'DIRECT')
-            self.initialSubjectItem = subjectID;
+            self.initialSubjectStep = subjectID;        
         else if (subjectSearch.toUpperCase() == 'FUSIONOWNER')
             self.initialSubjectOwnerRule = subjectID;
     }
