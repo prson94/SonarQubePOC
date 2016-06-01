@@ -6555,6 +6555,23 @@ order by  D.TextPath
                         Name = $"{target}ID",
                         Value = parseTextField(form, $"{area}{target}Step")
                     });
+
+                //special find parent option
+                if(string.Compare(area,"FIND",true) == 0)
+                {
+                    var findParent =  parseBooleanField(form, "FindParent");
+
+                    if(findParent)
+                    {
+                        fusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = id,
+                                Name = "FindParent",
+                                Value = "1"
+                            });
+                    }
+                }
             }
             else if (searchUpper == "SELF")
             {

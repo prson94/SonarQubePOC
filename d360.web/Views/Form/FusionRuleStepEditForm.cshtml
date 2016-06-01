@@ -21,6 +21,7 @@
     var RuleObjectID = Model.RuleStep.FusionRule.ObjectID;
     var RuleObjectType = Model.RuleStep.FusionRule.ObjectType;
     var predicate = Model.RuleStep.GetSettingValueByName("Predicate");
+    var findParent = Model.RuleStep.GetSettingValueByName("FindParent");
 
 }
 @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.FusionRuleStep, Description = "Configure the actions for this step of your fusion rule.", Name = Model.FormName })
@@ -61,19 +62,19 @@
 
         if("@((Model.RuleStep.Action ?? "").ToUpper())" == "PROMOTE")
         {
-            ruleStepViewModel.SetPromotionValues('@(string.Format("{0}|{1}|{2}", objectType, objectID, ((!string.IsNullOrEmpty(promoteParentTypeID)) ? promoteParentTypeID : "null")))', '@(promoteParentSearch)', "@(promoteParentObjectID)");
+            ruleStepViewModel.actionPromoteSettings().SetInitialValues('@(string.Format("{0}|{1}|{2}", objectType, objectID, ((!string.IsNullOrEmpty(promoteParentTypeID)) ? promoteParentTypeID : "null")))', '@(promoteParentSearch)', "@(promoteParentObjectID)");
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "FIND")
         {
-            ruleStepViewModel.SetFindValues('@(objectSearch)', '@(objectType)', '@(objectID)', '@(filterField)','@(targetField)');
+            ruleStepViewModel.actionFindSettings().SetInitialValues('@(objectSearch)', '@(objectType)', '@(objectID)', '@(filterField)','@(targetField)','@(findParent)');
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "RELATE")
         {
-            ruleStepViewModel.SetRelateValues('@(subjectSearch)', '@(subjectType)', '@(subjectID)', '@(objectSearch)', '@(objectType)', '@(objectID)', '@(intersectTypeID)');
+            ruleStepViewModel.actionRelateSettings().SetInitialValues('@(subjectSearch)', '@(subjectType)', '@(subjectID)', '@(objectSearch)', '@(objectType)', '@(objectID)', '@(intersectTypeID)');
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "LINEAGE")
         {
-            ruleStepViewModel.SetLineageValues('@(focalSearch)', '@(focalType)', '@(focalID)', '@(subjectSearch)', '@(subjectType)', '@(subjectID)', '@(objectSearch)', '@(objectType)', '@(objectID)', '@(intersectTypeID)', '@(predicate)');
+            ruleStepViewModel.actionLineageSettings().SetInitialValues('@(focalSearch)', '@(focalType)', '@(focalID)', '@(subjectSearch)', '@(subjectType)', '@(subjectID)', '@(objectSearch)', '@(objectType)', '@(objectID)', '@(intersectTypeID)', '@(predicate)');
         }
 
         ko.applyBindings(ruleStepViewModel, document.getElementById('stepAction'));

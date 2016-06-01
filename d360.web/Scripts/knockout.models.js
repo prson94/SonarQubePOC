@@ -4952,6 +4952,8 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
     self.selectedTargetFieldIndex = ko.observable(-1);
     self.selectedFusionOwnerRuleIndex = ko.observable(-1);
     self.selectedFusionAttributeIndex = ko.observable(-1);
+        
+    self.resultFromStepParent = ko.observable(false);
 
     //initial values    
     self.initialFindStepValue = ko.observable("");
@@ -4982,12 +4984,12 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
         return (self.selectedFindSearchTypeIndex() == 0);
     });
 
-    self.SetInitialValues = function (searchType, objectType, objectID, filterField,targetField) {
+    self.SetInitialValues = function (searchType, objectType, objectID, filterField,targetField,findParent) {
         if (searchType.toUpperCase() == "GLOSSARY") {
             self.selectedFindSearchTypeIndex(0);
             self.initialFindObject = objectID;
             self.initialFindField = filterField;
-            self.initialTargetField = targetField;
+            self.initialTargetField = targetField;            
             if (objectType.toUpperCase() == "ARTIFACTTYPE") {
                 self.selectedFindObjectTypeIndex(0);
                 self.LoadFindArtifactTypes();
@@ -5000,7 +5002,8 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
         else if (searchType.toUpperCase() == "RESULTFROMSTEP") {
             self.selectedFindSearchTypeIndex(1);
             self.LoadFindSteps();
-            self.initialFindStepValue = objectID;
+            self.initialFindStepValue = objectID;            
+            self.resultFromStepParent(findParent=='1');
         }
         else if (searchType.toUpperCase() == 'FUSIONOWNER') {
             self.selectedFindSearchTypeIndex(2);            
@@ -5228,23 +5231,6 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         });
     }
 
-    // initialization
-    self.SetPromotionValues = function (promoteTo, searchType, searchTypeValue) {
-        self.actionPromoteSettings().SetInitialValues(promoteTo, searchType, searchTypeValue);
-    }
-
-    self.SetRelateValues = function (subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID) {
-        self.actionRelateSettings().SetInitialValues(subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID);
-    }
-
-    self.SetFindValues = function (searchType, objectType, objectID, filterField, targetField) {
-        self.actionFindSettings().SetInitialValues(searchType, objectType, objectID, filterField, targetField);        
-    }
-
-    self.SetLineageValues = function (focalSearch, focal, focalID, subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID, predicate) {
-        self.actionLineageSettings().SetInitialValues(focalSearch, focal, focalID, subjectSearch, subject, subjectID, objectSearch, object, objectID, intersectTypeID, predicate);
-    }
-    
     // step actions promote / lineage / relate / find
     self.selectedActionIndex.subscribe(function () {
         if (self.selectedActionIndex() == -1)

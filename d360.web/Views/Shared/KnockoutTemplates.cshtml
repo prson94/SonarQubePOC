@@ -1404,7 +1404,11 @@
     </div>
     <div data-bind="visible: showResultFromStepSearch()">
         <div class="FieldNameRequired">Result from Step</div>
-        <div name="FindObjectStep" id="FindObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>
+        <div name="FindObjectStep" id="FindObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>        
+    </div>
+    <div data-bind="visible: showResultFromStepSearch()">
+        <div class="FieldNameRequired">Find items parent</div>        
+        <div name="FindParent" id="FindParent" data-bind="jqxCheckBox: {checked: resultFromStepParent, theme: theme,width: field_width, height: field_height}">Enabled</div>
     </div>
     <div data-bind="visible: showFusionOwnerSearch()">
         <div class="FieldNameRequired">Fusion Owner Rule</div>
