@@ -549,23 +549,36 @@ namespace d360.extensions.search
 
             if (!string.IsNullOrEmpty(phrase))
             {
-                phrase = EscapeSpecialCharacters(phrase);
+                phrase = phrase.Replace("\"", "");
 
-                sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"*" + phrase + "*\"} }");
+                phrase = EscapeSpecialCharacters(phrase).ToLower();
+                                
+                // works seams case sensitive
+                //sb.Append("{\"query\":{\"match_phrase_prefix\": {\"Name\": \"" + phrase + "\"} }, \"size\":" + size + "} ");
+
+                //split on spaces
+                var parts = phrase.Split(' ');
+                sb.Append("{\"query\": {\"bool\": {\"must\": [ ");
+                int indx = 0;
+
+                foreach (var word in parts)
+                {
+                    if (indx > 0) sb.Append(',');
+                    sb.Append("{\"prefix\": {\"Name\": {\"value\": \"" + word + "\"}}}");
+
+                    indx++;
+                }
+
+                sb.Append("]}}, \"size\":" + size + "}");
             }
-
-            sb.Append("}},\"from\":" + 0 + ",\"size\":" + size + ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }");
-
-            sb.Append(", \"highlight\": {\"fields\": {\"*\": { \"pre_tags\": [\"<em class='match'>\"],\"post_tags\": [\"</em>\"],\"number_of_fragments\" : 0 }},\"require_field_match\": false  }");
-
-            sb.Append("}");
+            
 
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
                 throw new ApplicationException(response.StatusMessage);
 
-            var searchResults = response.Data.ToObject<SearchResultsModel>();
+           var searchResults = response.Data.ToObject<SearchResultsModel>();
 
             return searchResults.hits.hits.Select(h => new TypeaheadResult
             {
