@@ -1,0 +1,12 @@
+﻿<div>
+    <div class="row">
+        <div *ngIf="isLoading" style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+        <div *ngIf="!isLoading">{{prompt}}</div>
+    </div>
+    <div class="row">
+        <div class="col m6">
+            <form-message [message]="message"></form-message>
+            <button (click)="cancel()">Cancel</button><button (click)="delete()" [disabled]="isLoading">Delete</button><span *ngIf="isLoading"><i class="fa fa-spinner fa-spin"></i></span>
+        </div>
+    </div>
+</div>

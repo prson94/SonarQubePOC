@@ -3,7 +3,7 @@
         <header>
             {{title}}
             <div id="FieldsTile_tools" class="TileTools">
-                <a class="btn btn-floating waves-effect waves-light brown lighten-1">
+                <a class="btn btn-floating waves-effect waves-light brown lighten-1" (click)="addRow();">
                     <i class="fa fa-plus" title="Add responsibility"></i>
                 </a>
             </div>
@@ -32,24 +32,48 @@
                     </th>
                 </tr>
             </thead>
-            <tbody>
-                <tr *ngFor="let item of mf.data; let i=index;" (click)="selectRow(item.ResponsibilityID);" [class.selected]="selectedRow?.ResponsibilityID == item.ResponsibilityID">
+            <tbody *ngFor="let item of mf.data; let i=index;">
+                <tr *ngIf="!item.isEditing && !item.isDeleting" (click)="selectRow(item.ResponsibilityID);" [class.selected]="selectedRow?.ResponsibilityID == item.ResponsibilityID">
                     <td>{{item.Role}}</td>
                     <td><a [href]="item.ResponsibleObjectUrl">{{item.ResponsibleObjectName}}</a></td>
                     <td>{{item.PrimaryOwnerResourceName}}</td>
                     <td>{{item.ContextItems}}</td>
                     <!-- TODO: replace href on info, fix edit/delete -->
                     <td class="RowTools">
-                        <a href="/#/domains/{{item.ID}}"><i class="fa fa-info"></i></a>
-                        <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/edit'"><i class="fa fa-pencil"></i></a>
-                        <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/delete'"><i class="fa fa-trash-o"></i></a>
+                        <a (click)="editRow(item.ResponsibilityID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        <a (click)="deleteRow(item.ResponsibilityID)" style="cursor:pointer;"><i class="fa fa-trash"></i></a>
                     </td>
                 </tr>
-                <tr></tr>
+                <tr *ngIf="item.isEditing" class="inline-edit">
+                    <td colspan="5">
+                        <responsibility-item-editor [item]="item" (onSaveComplete)="updateRow($event)" (onCancel)="item.isEditing=false;"></responsibility-item-editor>
+                    </td>
+                </tr>
+                <tr *ngIf="item.isDeleting" class="inline-edit">
+                    <td colspan="5">
+                        <delete-generic
+                            [uri]="'/form/DeleteResponsibilityByID?id=' + item.ResponsibilityID"
+                            [method]="'delete'"
+                            [prompt]="'Are you sure you want to delete this owner?'"
+                            (onDeleteSuccess)="confirmDeleteRow(item.ResponsibilityID)"
+                            (onCancel)="item.isDeleting=false;">
+                        </delete-generic>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody *ngIf="addingRow">
+                <tr class="inline-edit">
+                    <td colspan="5">
+                        <responsibility-item-editor 
+                            [item]="addingRow" (onSaveComplete)="confirmAddRow($event)" 
+                            (onCancel)="addingRow=null;">
+                        </responsibility-item-editor>
+                    </td>
+                </tr>
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="4">
+                    <td colspan="5">
                         <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
                     </td>
                 </tr>

@@ -1,6 +1,9 @@
 <div class="row">
     <div class="col l4 m6 s12">
-        <div>
+        <div *ngIf="isLoading">
+            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+        </div>
+        <div *ngIf="!isLoading">
             <table class="table" [mfData]="domainTypes" #mf="mfDataTable" [mfRowsOnPage]="10">
                 <thead>
                     <tr>
@@ -21,20 +24,17 @@
                             <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/delete'"><i class="fa fa-trash-o"></i></a>
                         </td>
                     </tr>
-                    <tr>
-
-                    </tr>
+                    <tr></tr>
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="4">
+                        <td colspan="2">
                             <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
                         </td>
                     </tr>
                 </tfoot>
             </table>
         </div>
-        <div id="List"></div>
     </div>
     <div class="col l8 m6 s12">
         <div class="row">

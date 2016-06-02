@@ -1,0 +1,37 @@
+﻿<div *ngIf="isLoading">
+    <div style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+</div>
+<div *ngIf="!isLoading">
+    <div class="row">
+        <div class="col s6">
+            <label id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</label>
+            <select style="height:1.8em;line-height:1.8em; padding:0;" [(ngModel)]="item.ResponsibilityTypeID">
+                <option *ngFor="let responsibility of responsibilityTypes" [value]="responsibility.Value">{{responsibility.Text}}</option>
+            </select>
+        </div>
+        <div class="col s6">
+            <label id='ResponsibleObjectTip' class="FieldNameRequired">Resource</label>
+            <select style="height:1.8em;line-height:1.8em; padding:0;" [(ngModel)]="responsibleObjectValue">
+                <option *ngFor="let resource of resources" [value]="resource.Value">{{resource.Text}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div id='ContextTip' class="FieldName">Contexts</div>
+            <div id="Context" name="Context"></div>
+            <select style="height:1.8em;line-height:1.8em; padding:0;"></select>
+        </div>
+    </div>
+    <div *ngIf="item.ObjectType.endsWith('Type')" class="row">
+        <div class="col s12">
+            <input type="checkbox" [(ngModel)]="item.Visible" />
+            <label id='IsVisibleTip' for="IsVisible">Visible?</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <button (click)="cancel()">Cancel</button> <button [disabled]="isSaving" (click)="save()">Save</button> <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span> &nbsp; <form-message [message]="message" [inline]="true"></form-message>
+        </div>
+    </div>
+</div>

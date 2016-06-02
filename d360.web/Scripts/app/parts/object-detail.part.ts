@@ -42,7 +42,7 @@ export class ObjectDetail implements OnChanges {
             this.http.get('/api/' + this.objectType + '/' + this.objectID + '/detail').map(data => data.json()).subscribe(data => {
                 this.rows = [];
 
-                console.log(data);
+                //console.log(data);
 
                 this.columns = data.columns;
                 data.rows.forEach(r => this.rows.push(r));

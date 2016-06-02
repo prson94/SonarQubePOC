@@ -1,0 +1,57 @@
+﻿<div class="row">
+    <div class="col l5 m5">
+        <div *ngIf="isLoading">
+            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+        </div>
+        <div *ngIf="!isLoading">
+            <table class="table" [mfData]="workflowItems" #mf="mfDataTable" [mfRowsOnPage]="25">
+                <thead>
+                    <tr>
+                        <th style="width: 30%">
+                            <mfDefaultSorter by="WorkflowTypeDisplayName">Workflow</mfDefaultSorter>
+                        </th>
+                        <th style="width: 25%">
+                            <mfDefaultSorter by="ObjectName">Type</mfDefaultSorter>
+                        </th>
+                        <th style="width: 30%">
+                            <mfDefaultSorter by="ParentName">Subject Area</mfDefaultSorter>
+                        </th>
+                        <th style="width: 15%">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody *ngFor="let item of mf.data; let i=index;">
+                    <tr (click)="selectRow(item.ID);" [class.selected]="selectedRow?.ID == item.ID">
+                        <td> {{item.WorkflowTypeDisplayName}}</td>
+                        <td> {{item.ObjectName}}</td>
+                        <td> {{item.ParentName}}</td>
+                        <!-- TODO: replace href on info, fix edit/delete -->
+                        <td class="RowTools">
+                            <a (click)="editRow(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/delete'"><i class="fa fa-trash-o"></i></a>
+                        </td>
+                    </tr>
+                    <tr *ngIf="item.isEditing" class="inline-edit">
+                        <td colspan="4">
+                            <div>
+                                <workflow-item-editor [workflowItem]="item"></workflow-item-editor>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <!--<tfoot>
+                    <tr>
+                        <td colspan="4">
+                            <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
+                        </td>
+                    </tr>
+                </tfoot>-->
+            </table>
+        </div>
+    </div>
+    <div class="col l7 m7">
+        <div id="DetailTile" class="tile tile-detail">
+            <object-detail [objectType]="'WorkflowTypeRelation'" [objectID]="selectedRow?.ID"></object-detail>
+        </div>
+    </div>
+</div>

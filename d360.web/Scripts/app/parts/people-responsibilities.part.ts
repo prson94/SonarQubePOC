@@ -2,17 +2,21 @@
 import {Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
 import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
+import { ResponsibilityItem } from '../models/responsibility.model';
+import { ResponsibilityItemEditor } from '../editors/responsibility-item.editor';
+import { FormMessage } from '../models/form.model';
+import { DeleteGeneric } from '../editors/delete-generic.editor';
 
 @Component({
     selector: 'people-responsibilities',
-    directives: [DataTableDirectives],
+    directives: [DataTableDirectives, ResponsibilityItemEditor, DeleteGeneric],//, DeleteGeneric],
     templateUrl: 'scripts/app/parts/people-responsibilities.part.html',
     viewProviders: [HTTP_PROVIDERS],
     styles: [`
     .selected {
         background-color: #86ccf9;        
     }
-    tbody tr:not(.selected):hover {
+    tbody tr:not(.selected):not(.inline-edit):hover {
         background-color: #ddd;
     }
     td {
@@ -27,9 +31,12 @@ export class PeopleResponsibilitiesPart implements OnChanges {
     @Input() title: string;
     @Input() showHidden: boolean = false;
 
-    private responsibilities = new Array<Responsibility>();
-    private selectedRow = new Responsibility();
+    private responsibilities = new Array<ResponsibilityRowItem>();
+    private selectedRow = new ResponsibilityRowItem();
+    private addingRow = null;
     private isLoading = false;
+
+    private deleteIsLoading = false;
 
     http: Http;
 
@@ -67,29 +74,101 @@ export class PeopleResponsibilitiesPart implements OnChanges {
 
     }
 
-    selectRow(id: string): void {
+    selectRow(id: number): void {
         this.selectedRow = this.responsibilities[this.responsibilities.findIndex(d => d.ResponsibilityID == id)];
     }
+
+    editRow(id: number): void {
+        var row = this.responsibilities.find(w => w.ResponsibilityID == id);
+
+        this.responsibilities.forEach(w => {
+            w.isDeleting = false;
+            if (w.ResponsibilityID == id)
+                w.isEditing = true;
+            else
+                w.isEditing = false;
+        });
+
+    }
+
+    deleteRow(id: number): void {
+        var row = this.responsibilities.find(w => w.ResponsibilityID == id);
+
+        this.responsibilities.forEach(w => {
+            w.isEditing = false;
+            if (w.ResponsibilityID == id)
+                w.isDeleting = true;
+            else
+                w.isDeleting = false;
+        });
+    }
+
+    confirmDeleteRow(id: number): void {
+
+        this.load();
+        //var row = this.responsibilities.find(r => r.ResponsibilityID == id);
+        //if (!row)
+        //    return;
+        //this.load();
+
+        //this.deleteIsLoading = true;
+        //var headers = new Headers();
+        //headers.append('Content-Type', 'application/json');
+
+        //this.http.delete('/form/DeleteResponsibilityByID?id=' + id)
+        //    .map(data => data.json())
+        //    .subscribe(
+        //    s => {
+        //        //console.log(s);
+        //        this.deleteIsLoading = false;
+        //        row.isDeleting = false;
+        //        //responsibilities.remove(row) instead if success?
+        //        this.load();
+        //    }
+        //);
+    }
+
+    updateRow(event: any): void {
+        console.log(event);
+        var message = event.message;
+        var item = event.item;
+        var initialItem = event.initialItem;
+
+        if (message.isSuccess)
+            item.isEditing = false;
+
+    }
+
+    addRow(): void {
+        if (this.addingRow)
+            return;
+        this.addingRow = new ResponsibilityRowItem();
+        this.addingRow.ResponsibilityID = -1;
+        this.addingRow.ObjectID = 1;
+        this.addingRow.Visible = true;
+        this.addingRow.ObjectType = "DomainType";
+        this.addingRow.isEditing = true;
+    }
+
+    confirmAddRow(event) {
+        //console.log(event);
+        var message = event.message;
+
+        if (message.isSuccess) {
+            this.addingRow = null;
+            this.load();
+        }
+    }
+
+}
+
+
+class ResponsibilityRowItem extends ResponsibilityItem {
+    isEditing = false;
+    isDeleting = false;
 }
 
 
 
 
 
-
-class Responsibility {
-    ResponsibilityID: string;
-    AssigningItemType: string;
-    AssigningItemID: string;
-    ResponsibleObjectType: string;
-    ResponsibleObjectID: string;
-    ResponsibleObjectName: string;
-    PrimaryOwnerResourceID: string;
-    PrimaryOwnerResourceName: string;
-    PrimaryOwnerResourceUrl: string;
-    ObjectType: string;
-    ObjectID: string;
-    Role: string;
-    ResponsibleObjectUrl: string;
-    ContextItems: string;
-}

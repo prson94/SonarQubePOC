@@ -32,6 +32,8 @@ export class AdminDomainComponent {
     objectType = 'DomainType';
     selectedRow: DomainType;
 
+    isLoading = false;
+
     constructor(http: Http, pageHeader: PageHeader) {
         this.http = http;
         this.pageHeader = pageHeader;
@@ -43,17 +45,19 @@ export class AdminDomainComponent {
 
     load() {
 
+        this.isLoading = true;
         this.http.get('/services/domains')
             .map(data => data.json())
             .subscribe(data => {
                 //console.log(data);
 
-                data.push({ ID: 9, Name: 'test', Description: '<p>hello <strong>world</strong></p>' });
-                data.push({ ID: 10, Name: 'test 2', Description: '<p>hello <strong>world</strong></p>' });
+                //test record
+                //data.push({ ID: 9, Name: 'test', Description: '<p>hello <strong>world</strong></p>' });
 
                 //NOTE: array.push does not work with angular2-datatable, known issue. Need to set array directly
                 this.domainTypes = data;
                 this.selectedRow = this.domainTypes[0];
+                this.isLoading = false;
             });
        
     }

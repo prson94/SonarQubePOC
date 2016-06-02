@@ -12263,6 +12263,13 @@ order by	D.Name, I.Name";
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteResponsibilityByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteResponsibility(form);
+        }
 
         public ActionResult EditResponsibility(int id)
         {
@@ -12283,6 +12290,42 @@ order by	D.Name, I.Name";
 
             return PartialView("ResponsibilityEditForm", model);
         }
+
+        [HttpGet]
+        public JsonNetResult ResponsibilityItemEditor(int id, SystemObjects? type = null)
+        {
+            List<SelectListItem> contexts;
+            List<SelectListItem> resources;
+            List<SelectListItem> responsibilityTypes;
+            Responsibility responsibility;
+            if (type != null)
+            {
+                contexts = getContextSelectList();
+                resources = getResponsibilityResources();
+                responsibilityTypes = getResponsibilityTypeSelectList((SystemObjects)type, id, ResponsibilityTypeGroup.People);
+                responsibility = new Responsibility { ObjectType = type.ToString(), ObjectID = id, Visible = true };
+            }
+            else
+            {
+                responsibility = Company.GetById<Responsibility>(id, i => i.ResponsibilityType, i => i.ResponsibilityContextItems);
+                contexts = getContextSelectList(responsibility.ResponsibilityContextItems.Select(i => i.ObjectID).ToList());
+                resources = getResponsibilityResources(string.Format("{0}|{1}", responsibility.ResponsibleObjectType, responsibility.ResponsibleObjectID));
+                responsibilityTypes = getResponsibilityTypeSelectList((SystemObjects)Enum.Parse(typeof(SystemObjects), responsibility.ObjectType), responsibility.ObjectID, ResponsibilityTypeGroup.People, responsibility.ResponsibilityTypeID);
+            }
+
+            return new JsonNetResult
+            {
+                Data =
+                new {
+                    resources,
+                    contexts,
+                    responsibilityTypes,
+                    responsibility
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
 
         [HttpPut]
         public JsonResult EditResponsibility(FormCollection form)
@@ -12339,6 +12382,123 @@ order by	D.Name, I.Name";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
+        [HttpPost]
+        public JsonResult EditResponsibilityItemEditor(Responsibility r)
+        {
+            Responsibility model; // = new Responsibility();
+
+            if (r.ID == -1)
+            {
+                try
+                {
+                    //if (!form.HasKeys()) throw new NoFormDataException("responsibility");
+
+                    var objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), r.ObjectType);
+                    //var responsibleParty = form["ResponsibleObject"].Split('|');
+                    model = new Responsibility
+                    {
+                        ResponsibilityTypeID = r.ResponsibilityTypeID, //parseIntField(form, "ResponsibilityType"),
+                        ObjectType = objectType.ToString(),
+                        ObjectID = r.ObjectID, //parseIntField(form, "ObjectID"),
+                        ResponsibleObjectType = r.ResponsibleObjectType, //responsibleParty[0],
+                        ResponsibleObjectID = r.ResponsibleObjectID, //int.Parse(responsibleParty[1]),
+                        Visible = r.Visible, //parseBooleanField(form, "IsVisible", true)
+                    };
+
+                    #region Existence check
+
+                    var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == model.ResponsibilityTypeID && i.ObjectType == model.ObjectType && i.ObjectID == model.ObjectID, i => i.ResponsibilityContextItems).FirstOrDefault();
+                    if (existing != null)
+                    {
+                        //var newContexts = getContextFormFieldForResponsibility(0, form);
+                        var existingContexts = existing.ResponsibilityContextItems.ToList();
+                        //var matchingCount = 0;
+                        //existingContexts.ForEach(ec =>
+                        //{
+                        //    if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
+                        //    {
+                        //        matchingCount++;
+                        //    }
+                        //});
+                        //if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
+                        //{
+                        //    throw new ArgumentException("A responsibility with these settings already exists for the item.");
+                        //}
+                    }
+
+                    #endregion
+
+                    Company.Add(model);
+
+                    //processContextFormFieldForResponsibility(o.ID, form);
+                }
+                catch (BaseException ex)
+                {
+                    return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+                }
+                catch (Exception ex)
+                {
+                    SendException(ex);
+                    return jsonException(ex, HttpStatusCode.InternalServerError);
+                }
+            }
+            else
+            {
+                try
+                {
+                    // if (!form.HasKeys()) throw new NoFormDataException("responsibility");
+
+                    // var id = parseIntField(form, "ID");
+                    model = Company.GetById<Responsibility>(r.ID);
+                    if (model == null) throw new NotFoundException("responsibility");
+                    //var responsibleParty = form["ResponsibleObject"].Split('|');
+
+                    model.ResponsibleObjectType = r.ResponsibleObjectType; // responsibleParty[0];
+                    model.ResponsibleObjectID = r.ResponsibleObjectID;// int.Parse(responsibleParty[1]);
+                    model.ResponsibilityTypeID = r.ResponsibilityTypeID; // parseIntField(form, "ResponsibilityType");
+                    model.Visible = r.Visible; // parseBooleanField(form, "IsVisible", true);
+
+                    #region Existence check
+
+                    var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == model.ResponsibilityTypeID && i.ObjectType == model.ObjectType && i.ObjectID == model.ObjectID && i.ID != model.ID, i => i.ResponsibilityContextItems).FirstOrDefault();
+                    if (existing != null)
+                    {
+                        //var newContexts = getContextFormFieldForResponsibility(0, form);
+                        //var existingContexts = existing.ResponsibilityContextItems.ToList();
+                        //var matchingCount = 0;
+                        //existingContexts.ForEach(ec =>
+                        //{
+                        //    if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
+                        //    {
+                        //        matchingCount++;
+                        //    }
+                        //});
+                        //if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
+                        //{
+                        //    throw new ArgumentException("A responsibility with these settings already exists for the item.");
+                        //}
+                    }
+                    #endregion
+
+                }
+                catch (BaseException ex)
+                {
+                    return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+                }
+                catch (Exception ex)
+                {
+                    SendException(ex);
+                    return jsonException(ex, HttpStatusCode.InternalServerError);
+                }
+
+            }
+            //processContextFormFieldForResponsibility(id, form, false);
+            Company.Update(model);  //Do this after context so the trigger will properly re-cache with the contextxs.
+
+            return jsonSuccess("Item successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
+        }
+
 
         #endregion
 
