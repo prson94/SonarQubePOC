@@ -20,7 +20,8 @@
         <div class="col s12">
             <div id='ContextTip' class="FieldName">Contexts</div>
             <div id="Context" name="Context"></div>
-            <select style="height:1.8em;line-height:1.8em; padding:0;"></select>
+            <!--<select style="height:1.8em;line-height:1.8em; padding:0;"></select>-->
+            <multi-select [data]="contexts"></multi-select>
         </div>
     </div>
     <div *ngIf="item.ObjectType.endsWith('Type')" class="row">

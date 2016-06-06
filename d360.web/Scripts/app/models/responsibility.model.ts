@@ -21,4 +21,12 @@ export class ResponsibilityItem {
     ResponsibleObjectUrl: string;
     Role: string;
     Visible: boolean;
+    ResponsibilityContextItems: ResponsibilityContextItem[]; 
+}
+
+export class ResponsibilityContextItem
+{
+    ResponsibiltyID: number; 
+    ObjectType: string;
+    ObjectID: number;
 }

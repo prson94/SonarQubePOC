@@ -696,12 +696,6 @@
     </Content>
     <Content Include="Content\templates\reporting.admin.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
-    <Content Include="gulpfile.es5.js">
-      <DependentUpon>gulpfile.js</DependentUpon>
-    </Content>
-    <Content Include="gulpfile.es5.min.js">
-      <DependentUpon>gulpfile.es5.js</DependentUpon>
-    </Content>
     <Content Include="gulpfile.js" />
     <Content Include="images\loader-small.gif" />
     <Content Include="images\gritter.png">
@@ -1232,6 +1226,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
     <TypeScriptCompile Include="Scripts\app\forms\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\forms\workflow-item.form.ts" />
@@ -1239,6 +1234,7 @@
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\parts\multiselect.part.ts" />
     <TypeScriptCompile Include="Scripts\app\services\page-header.service.ts" />
     <TypeScriptCompile Include="Scripts\app\tiles\fields-grid.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\parts\form-message.part.ts" />

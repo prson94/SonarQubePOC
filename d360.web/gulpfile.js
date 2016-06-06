@@ -1,11 +1,12 @@
-﻿/// <binding AfterBuild='default' Clean='clean' />
+/// <binding Clean='clean' ProjectOpened='watch' />
+'use strict';
+
 var ts = require('gulp-typescript');
 var gulp = require('gulp');
 var del = require('del');
 
 var tsproj = ts.createProject('scripts/app/tsconfig.json', { typescript: require('typescript') });
 var app = 'scripts/app';
-
 
 
 gulp.task('clean', function (done) {
@@ -71,4 +72,8 @@ gulp.task('bundle-release', ['compile'], function (done) {
 
 gulp.task('default', ['bundle'], function (done) {
     done();
+});
+
+gulp.task('watch', function () {
+    gulp.watch(`${app}/**/*.ts`, ['default']);
 });

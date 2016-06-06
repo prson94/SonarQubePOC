@@ -1,32 +1,33 @@
-﻿[
+[
   {
     "outputFile": "Content/styles/ContentFormatting.css",
     "inputFile": "Content/styles/ContentFormatting.less",
     "minify": {
       "enabled": true
-    }
+    },
+    "sourceMap": false
   },
   {
     "outputFile": "Content/styles/Root.css",
     "inputFile": "Content/styles/Root.less",
     "minify": {
       "enabled": true
-    }
+    },
+    "sourceMap": false
   },
   {
     "outputFile": "Content/styles/d3s.social.css",
-    "inputFile": "Content/styles/d3s.social.less"
+    "inputFile": "Content/styles/d3s.social.less",
+    "sourceMap": false
   },
   {
     "outputFile": "Content/styles/jqx.metro.css",
-    "inputFile": "Content/styles/jqx.metro.less"
+    "inputFile": "Content/styles/jqx.metro.less",
+    "sourceMap": false
   },
   {
     "outputFile": "Content/styles/navigation.css",
-    "inputFile": "Content/styles/navigation.less"
-  },
-  {
-    "outputFile": "gulpfile.es5.js",
-    "inputFile": "gulpfile.js"
+    "inputFile": "Content/styles/navigation.less",
+    "sourceMap": false
   }
 ]

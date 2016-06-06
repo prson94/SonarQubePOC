@@ -1,15 +1,16 @@
 ﻿///<reference path="../es6-shim.d.ts"/>
 import {Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
-import { ResponsibilityItem } from '../models/responsibility.model';
+import { ResponsibilityItem, ResponsibilityContextItem } from '../models/responsibility.model';
 import { SelectItem, FormMessage } from '../models/form.model';
 import { FormMessagePart } from '../parts/form-message.part';
+import { MultiSelect } from '../parts/multiselect.part';
 
 @Component({
     selector: 'responsibility-item-form',
     templateUrl: 'scripts/app/forms/responsibility-item.form.html',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [FormMessagePart]
+    directives: [FormMessagePart, MultiSelect]
 })
 
 export class ResponsibilityItemForm implements OnInit {
@@ -27,6 +28,8 @@ export class ResponsibilityItemForm implements OnInit {
     private responsibilityTypes = new Array<SelectItem>();
     private message: FormMessage = new FormMessage();
     private initialItem = new ResponsibilityItem();
+    private contexts: any[];
+
 
     private http: Http;
 
@@ -74,10 +77,12 @@ export class ResponsibilityItemForm implements OnInit {
                     this.item.ObjectID = data.responsibility.ObjectID;
                     this.item.ObjectType = data.responsibility.ObjectType;
                 }
-                 
+
+                this.contexts = data.contexts;
 
                 this.onLoadComplete.emit({ item: this.item });
-                //console.log(data);
+                
+                console.log(data);
                 //console.log(this.item);
             });
     }
@@ -108,6 +113,18 @@ export class ResponsibilityItemForm implements OnInit {
         if (role)
             this.item.Role = role.Text;
 
+        var contexts = this.contexts.filter(c => c.Selected).map(c => c.Value);
+        var contextItems = new Array<ResponsibilityContextItem>();
+        contexts.forEach(c => {
+            contextItems.push({
+                ResponsibiltyID: 0,
+                ObjectID: c.Value,
+                ObjectType: "DomainType"
+            });
+        });
+
+        this.item.ResponsibilityContextItems = contextItems;
+        this.item.ContextItems = contexts.filter(c => c.Selected).map(c => c.Text).join('; ');
 
         var model = {
             ID: this.item.ResponsibilityID,
@@ -119,7 +136,8 @@ export class ResponsibilityItemForm implements OnInit {
             Visible: this.item.Visible,
             ContextItems: null,
             ObjectType: this.item.ObjectType,
-            ObjectID: this.item.ObjectID
+            ObjectID: this.item.ObjectID,
+            ResponsibilityContextItems: contextItems
         };
 
 
