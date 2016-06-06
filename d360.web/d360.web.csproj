@@ -877,7 +877,7 @@
     <Content Include="Scripts\app\parts\people-responsibilities.part.html" />
     <Content Include="Scripts\app\templates\admin-groups.component.html" />
     <Content Include="Scripts\app\templates\admin-workflow.component.html" />
-    <Content Include="Scripts\app\templates\app.component.html" />
+    <Content Include="Scripts\app\templates\admin.component.html" />
     <Content Include="Scripts\app\templates\admin-domain.component.html" />
     <Content Include="Scripts\app\styles\admin-settings.component.css" />
     <Content Include="Scripts\app\templates\admin-settings.component.html" />
@@ -1228,6 +1228,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin-workflow.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />
     <TypeScriptCompile Include="Scripts\app\editors\delete-generic.editor.ts" />

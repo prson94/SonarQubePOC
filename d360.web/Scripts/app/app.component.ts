@@ -1,30 +1,18 @@
 ///<reference path="./es6-shim.d.ts"/>
 import { Component } from '@angular/core';
 import { RouteConfig, ROUTER_DIRECTIVES, AsyncRoute } from '@angular/router-deprecated';
-import { HomeComponent, AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent } from './components/index'
-import { PageHeader } from './page-header.service';
+import { HomeComponent, AdminComponent } from './components/index'
 import 'rxjs/Rx';
 
 @Component({
     selector: 'd3s-app',
-    templateUrl: 'scripts/app/templates/app.component.html',
-    directives: [ROUTER_DIRECTIVES],
-    providers: [PageHeader]
+    template: `<router-outlet></router-outlet>`,
+    directives: [ROUTER_DIRECTIVES]
 })
 
 @RouteConfig([
-        { path: '/a', name: 'Home', component: HomeComponent, useAsDefault: true },
-        { path: '/a/settings', name: 'Settings', component: AdminSettingsComponent },
-        { path: '/a/admin/domain', name: 'Domain', component: AdminDomainComponent },
-        { path: '/a/admin/groups', name: 'Groups', component: AdminGroupsComponent },
-        { path: '/a/admin/workflow', name: 'Workflow', component: AdminWorkflowComponent },
+    { path: '/a/admin/...', name: 'Admin', component: AdminComponent },
+    { path: '/a', name: 'Home', component: HomeComponent, useAsDefault: true },
 ])
-export class AppComponent {
-    pageHeader: PageHeader;
-
-    constructor(pageHeader: PageHeader) {
-        //console.clear();
-        this.pageHeader = pageHeader;
-    }
-}
+export class AppComponent { }
 
