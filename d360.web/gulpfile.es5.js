@@ -1,4 +1,4 @@
-﻿/// <binding AfterBuild='default' />
+﻿/// <binding AfterBuild='default' Clean='clean' />
 'use strict';
 
 var ts = require('gulp-typescript');
@@ -28,6 +28,28 @@ gulp.task('bundle', ['compile'], function (done) {
             normalize: true,
             minify: false,
             mangle: false,
+            runtime: false
+        });
+    }).then(function () {
+        done();
+    })['catch'](function (err) {
+        console.log('error', err);
+        console.log('app.js bundle failed.');
+        process.exit(1);
+    });
+});
+
+gulp.task('bundle-release', ['compile'], function (done) {
+
+    var bundleFilename = app + '/app.js';
+    var Builder = require('systemjs-builder');
+    var builder = new Builder();
+
+    builder.loadConfig('system.config.js').then(function () {
+        return builder.buildStatic(app + '/main.js', bundleFilename, {
+            normalize: true,
+            minify: true,
+            mangle: true,
             runtime: false
         });
     }).then(function () {
