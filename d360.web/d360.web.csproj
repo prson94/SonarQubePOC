@@ -1180,9 +1180,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Scripts\app\editors\" />
-    <Folder Include="Scripts\app\styles\" />
-    <Folder Include="Scripts\app\templates\" />
     <Folder Include="Views\Queries\" />
     <Folder Include="Views\Tiles\" />
   </ItemGroup>
