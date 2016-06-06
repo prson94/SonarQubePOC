@@ -5,13 +5,13 @@ import { FormMessage, JsonResult } from '../models/form.model';
 import { FormMessagePart } from '../parts/form-message.part';
 
 @Component({
-    selector: 'delete-generic',
-    templateUrl: 'scripts/app/editors/delete-generic.editor.html',
+    selector: 'delete-form',
+    templateUrl: 'scripts/app/forms/delete.form.html',
     viewProviders: [HTTP_PROVIDERS],
     directives: [FormMessagePart],
 })
 
-export class DeleteGeneric {
+export class DeleteForm {
     @Input() model: any;
     @Input() uri: string;
     @Input() method: string = 'post';

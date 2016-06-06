@@ -869,19 +869,19 @@
       <DependentUpon>Apps.js</DependentUpon>
     </Content>
     <Content Include="Scripts\app\app.js" />
-    <Content Include="Scripts\app\editors\delete-generic.editor.html" />
-    <Content Include="Scripts\app\editors\responsibility-item.editor.html" />
-    <Content Include="Scripts\app\editors\workflow-item.editor.html" />
-    <Content Include="Scripts\app\parts\fields-grid.part.html" />
-    <Content Include="Scripts\app\parts\object-detail.part.html" />
-    <Content Include="Scripts\app\parts\people-responsibilities.part.html" />
-    <Content Include="Scripts\app\templates\admin-groups.component.html" />
-    <Content Include="Scripts\app\templates\admin-workflow.component.html" />
-    <Content Include="Scripts\app\templates\admin.component.html" />
-    <Content Include="Scripts\app\templates\admin-domain.component.html" />
-    <Content Include="Scripts\app\styles\admin-settings.component.css" />
-    <Content Include="Scripts\app\templates\admin-settings.component.html" />
-    <Content Include="Scripts\app\templates\home.component.html" />
+    <Content Include="Scripts\app\forms\delete.form.html" />
+    <Content Include="Scripts\app\forms\responsibility-item.form.html" />
+    <Content Include="Scripts\app\forms\workflow-item.form.html" />
+    <Content Include="Scripts\app\tiles\fields-grid.tile.html" />
+    <Content Include="Scripts\app\tiles\object-detail.tile.html" />
+    <Content Include="Scripts\app\tiles\people-responsibilities.tile.html" />
+    <Content Include="Scripts\app\components\admin\admin-groups.component.html" />
+    <Content Include="Scripts\app\components\admin\admin-workflow.component.html" />
+    <Content Include="Scripts\app\components\admin\admin.component.html" />
+    <Content Include="Scripts\app\components\admin\admin-domain.component.html" />
+    <Content Include="Scripts\app\components\admin\admin-settings.component.css" />
+    <Content Include="Scripts\app\components\admin\admin-settings.component.html" />
+    <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
     <Content Include="Scripts\errors.json" />
     <None Include="Content\styles\_Variables.less" />
@@ -1180,6 +1180,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Scripts\app\editors\" />
+    <Folder Include="Scripts\app\styles\" />
+    <Folder Include="Scripts\app\templates\" />
     <Folder Include="Views\Queries\" />
     <Folder Include="Views\Tiles\" />
   </ItemGroup>
@@ -1223,26 +1226,27 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Scripts\app\components\admin-domain.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin-groups.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin-settings.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin-workflow.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\home.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />
-    <TypeScriptCompile Include="Scripts\app\editors\delete-generic.editor.ts" />
-    <TypeScriptCompile Include="Scripts\app\editors\responsibility-item.editor.ts" />
-    <TypeScriptCompile Include="Scripts\app\editors\workflow-item.editor.ts" />
+    <TypeScriptCompile Include="Scripts\app\forms\delete.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\forms\responsibility-item.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\page-header.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\parts\fields-grid.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\page-header.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\tiles\fields-grid.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\parts\form-message.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\parts\object-detail.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\parts\people-responsibilities.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\tiles\object-detail.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\tiles\people-responsibilities.tile.ts" />
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
   </ItemGroup>
   <ItemGroup>

@@ -1,17 +1,17 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, NgZone } from '@angular/core';
 import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
-import { PageHeader } from '../page-header.service';
-import { ObjectDetail } from '../parts/object-detail.part';
-import { FieldsGridPart } from '../parts/fields-grid.part';
-import { PeopleResponsibilitiesPart } from '../parts/people-responsibilities.part';
+import { PageHeader } from '../../services/page-header.service';
+import { ObjectDetailTile } from '../../tiles/object-detail.tile';
+import { FieldsGridTile } from '../../tiles/fields-grid.tile';
+import { PeopleResponsibilitiesTile } from '../../tiles/people-responsibilities.tile';
 import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
 
 @Component({
     selector: 'admin-domain',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [ObjectDetail, DataTableDirectives, FieldsGridPart, PeopleResponsibilitiesPart],
-    templateUrl: 'scripts/app/templates/admin-domain.component.html',
+    directives: [ObjectDetailTile, DataTableDirectives, FieldsGridTile, PeopleResponsibilitiesTile],
+    templateUrl: 'scripts/app/components/admin/admin-domain.component.html',
     styles: [`
         .selected {
         background-color: #86ccf9;        

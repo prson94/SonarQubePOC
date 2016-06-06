@@ -45,12 +45,12 @@
             </div>
             <div class="col s12">
                 <div id="FieldsTile" class="tile tile-detail">
-                    <fields-grid [objectType]="objectType" [objectID]="selectedRow?.ID" [title]="'Field Definition'"></fields-grid>
+                    <fields-grid-tile [objectType]="objectType" [objectID]="selectedRow?.ID" [title]="'Field Definition'"></fields-grid-tile>
                 </div>
             </div>
             <div class="col s12">
                 <div id="GovernanceTile" class="tile tile-detail">
-                    <people-responsibilities [objectType]="objectType" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'" [showHidden]="true"></people-responsibilities>
+                    <people-responsibilities-tile [objectType]="objectType" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'" [showHidden]="true"></people-responsibilities-tile>
                 </div>
             </div>
         </div>

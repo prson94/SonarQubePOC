@@ -1,13 +1,13 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component } from '@angular/core';
 import { RouteConfig, ROUTER_DIRECTIVES, AsyncRoute } from '@angular/router-deprecated';
-import { AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent } from '../components/index'
-import { PageHeader } from '../page-header.service';
+import { AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent } from './index'
+import { PageHeader } from '../../services/page-header.service';
 import 'rxjs/Rx';
 
 @Component({
     selector: 'd3s-app',
-    templateUrl: 'scripts/app/templates/admin.component.html',
+    templateUrl: 'scripts/app/components/admin/admin.component.html',
     directives: [ROUTER_DIRECTIVES],
     providers: [PageHeader]
 })

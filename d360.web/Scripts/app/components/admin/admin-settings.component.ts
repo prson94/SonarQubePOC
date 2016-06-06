@@ -1,13 +1,13 @@
-///<reference path="../es6-shim.d.ts"/>
+///<reference path="../../es6-shim.d.ts"/>
 import {Component, NgZone} from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
-import {PageHeader} from '../page-header.service'
+import {PageHeader} from '../../services/page-header.service'
 
 @Component({
     selector: 'admin-settings',
     viewProviders: [HTTP_PROVIDERS],
-    templateUrl: 'scripts/app/templates/admin-settings.component.html',
-    styleUrls: ['scripts/app/styles/admin-settings.component.css']
+    templateUrl: 'scripts/app/components/admin/admin-settings.component.html',
+    styleUrls: ['scripts/app/components/admin/admin-settings.component.css']
 })
 
 export class AdminSettingsComponent {

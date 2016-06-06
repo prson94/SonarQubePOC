@@ -4,11 +4,11 @@ import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
 
 @Component({
     selector: 'object-detail',
-    templateUrl: 'scripts/app/parts/object-detail.part.html',
+    templateUrl: 'scripts/app/tiles/object-detail.tile.html',
     viewProviders: [HTTP_PROVIDERS]
 })
 
-export class ObjectDetail implements OnChanges {
+export class ObjectDetailTile implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: string;
 

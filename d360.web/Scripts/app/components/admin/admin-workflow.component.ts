@@ -1,19 +1,19 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, NgZone } from '@angular/core';
 import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
-import { PageHeader } from '../page-header.service';
-import { ObjectDetail } from '../parts/object-detail.part';
-import { FieldsGridPart } from '../parts/fields-grid.part';
-import { PeopleResponsibilitiesPart } from '../parts/people-responsibilities.part';
+import { PageHeader } from '../../services/page-header.service';
+import { ObjectDetailTile } from '../../tiles/object-detail.tile';
+import { FieldsGridTile } from '../../tiles/fields-grid.tile';
+import { PeopleResponsibilitiesTile } from '../../tiles/people-responsibilities.tile';
 import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
-import { WorkflowItem } from '../models/workflow.model';
-import { WorkflowItemEditor } from '../editors/workflow-item.editor';
+import { WorkflowItem } from '../../models/workflow.model';
+import { WorkflowItemForm } from '../../forms/workflow-item.form';
 
 @Component({
     selector: 'admin-workflow',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [ObjectDetail, DataTableDirectives, WorkflowItemEditor],
-    templateUrl: 'scripts/app/templates/admin-workflow.component.html',
+    directives: [ObjectDetailTile, DataTableDirectives, WorkflowItemForm],
+    templateUrl: 'scripts/app/components/admin/admin-workflow.component.html',
     styles: [`
         .selected {
         background-color: #86ccf9;        
@@ -51,7 +51,7 @@ export class AdminWorkflowComponent {
             .map(data => data.json())
             .subscribe(data => {
                 this.workflowItems = data;
-                console.log(this.workflowItems);
+                //console.log(this.workflowItems);
                 this.selectedRow = this.workflowItems[0];
                 this.isLoading = false;
             });

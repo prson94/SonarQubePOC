@@ -46,28 +46,28 @@
                 </tr>
                 <tr *ngIf="item.isEditing" class="inline-edit">
                     <td colspan="5">
-                        <responsibility-item-editor [item]="item" (onSaveComplete)="updateRow($event)" (onCancel)="item.isEditing=false;"></responsibility-item-editor>
+                        <responsibility-item-form [item]="item" (onSaveComplete)="updateRow($event)" (onCancel)="item.isEditing=false;"></responsibility-item-form>
                     </td>
                 </tr>
                 <tr *ngIf="item.isDeleting" class="inline-edit">
                     <td colspan="5">
-                        <delete-generic
+                        <delete-form
                             [uri]="'/form/DeleteResponsibilityByID?id=' + item.ResponsibilityID"
                             [method]="'delete'"
                             [prompt]="'Are you sure you want to delete this owner?'"
                             (onDeleteSuccess)="confirmDeleteRow(item.ResponsibilityID)"
                             (onCancel)="item.isDeleting=false;">
-                        </delete-generic>
+                        </delete-form>
                     </td>
                 </tr>
             </tbody>
             <tbody *ngIf="addingRow">
                 <tr class="inline-edit">
                     <td colspan="5">
-                        <responsibility-item-editor 
+                        <responsibility-item-form 
                             [item]="addingRow" (onSaveComplete)="confirmAddRow($event)" 
                             (onCancel)="addingRow=null;">
-                        </responsibility-item-editor>
+                        </responsibility-item-form>
                     </td>
                 </tr>
             </tbody>

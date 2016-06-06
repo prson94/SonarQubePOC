@@ -3,14 +3,14 @@ import {Input, Output, Component, OnChanges, SimpleChange } from '@angular/core'
 import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
 import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
 import { ResponsibilityItem } from '../models/responsibility.model';
-import { ResponsibilityItemEditor } from '../editors/responsibility-item.editor';
+import { ResponsibilityItemForm } from '../forms/responsibility-item.form';
 import { FormMessage } from '../models/form.model';
-import { DeleteGeneric } from '../editors/delete-generic.editor';
+import { DeleteForm } from '../forms/delete.form';
 
 @Component({
-    selector: 'people-responsibilities',
-    directives: [DataTableDirectives, ResponsibilityItemEditor, DeleteGeneric],//, DeleteGeneric],
-    templateUrl: 'scripts/app/parts/people-responsibilities.part.html',
+    selector: 'people-responsibilities-tile',
+    directives: [DataTableDirectives, ResponsibilityItemForm, DeleteForm ],//, DeleteGeneric],
+    templateUrl: 'scripts/app/tiles/people-responsibilities.tile.html',
     viewProviders: [HTTP_PROVIDERS],
     styles: [`
     .selected {
@@ -25,7 +25,7 @@ import { DeleteGeneric } from '../editors/delete-generic.editor';
     `]
 })
 
-export class PeopleResponsibilitiesPart implements OnChanges {
+export class PeopleResponsibilitiesTile implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: string;
     @Input() title: string;

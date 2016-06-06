@@ -4,12 +4,12 @@ import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
 import { WorkflowItem } from '../models/workflow.model';
 
 @Component({
-    selector: 'workflow-item-editor',
-    templateUrl: 'scripts/app/editors/workflow-item.editor.html',
+    selector: 'workflow-item-form',
+    templateUrl: 'scripts/app/forms/workflow-item.form.html',
     viewProviders: [HTTP_PROVIDERS]
 })
 
-export class WorkflowItemEditor implements OnInit {
+export class WorkflowItemForm implements OnInit {
     @Input() workflowItem: WorkflowItem;
 
     private isLoading = false;

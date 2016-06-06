@@ -6,13 +6,13 @@ import { SelectItem, FormMessage } from '../models/form.model';
 import { FormMessagePart } from '../parts/form-message.part';
 
 @Component({
-    selector: 'responsibility-item-editor',
-    templateUrl: 'scripts/app/editors/responsibility-item.editor.html',
+    selector: 'responsibility-item-form',
+    templateUrl: 'scripts/app/forms/responsibility-item.form.html',
     viewProviders: [HTTP_PROVIDERS],
     directives: [FormMessagePart]
 })
 
-export class ResponsibilityItemEditor implements OnInit {
+export class ResponsibilityItemForm implements OnInit {
     @Input() item: ResponsibilityItem;
     @Output() onSaveComplete = new EventEmitter();
     @Output() onLoadComplete = new EventEmitter();

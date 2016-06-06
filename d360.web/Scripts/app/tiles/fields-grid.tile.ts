@@ -5,9 +5,9 @@ import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
 
 
 @Component({
-    selector: 'fields-grid',
+    selector: 'fields-grid-tile',
     directives: [DataTableDirectives],
-    templateUrl: 'scripts/app/parts/fields-grid.part.html',
+    templateUrl: 'scripts/app/tiles/fields-grid.tile.html',
     viewProviders: [HTTP_PROVIDERS],
     styles: [`
     .selected {
@@ -22,7 +22,7 @@ import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
     `]
 })
 
-export class FieldsGridPart implements OnChanges {
+export class FieldsGridTile implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: string;
     @Input() title: string;
