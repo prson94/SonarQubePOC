@@ -16417,6 +16417,177 @@ where	RT.SourceObjectType = @type
 
         #endregion
 
+        #region Synonym
+
+        #region Field Generation
+
+        public JsonResult Synonym_AddFields(string type, int id)
+        {
+            //if (!Company.HasPermission(SystemObjects.TaxonomyType, t, Claim.Create))
+            //    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
+            var typeIsSubject = true;
+            if (items.Count > 0)
+            {
+                typeIsSubject = (bool)items[0].TargetingSubject;
+            }
+            list.Add(new EditableField { FieldName = "TypeIsSubject", FieldType = DataType.Hidden.ToString(), Value = typeIsSubject.ToString() });
+            list.Add(new EditableField { FieldName = "Type", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Synonym", Name = "Synonym", FieldType = DataType.Lookup.ToString(), Items = items.Select(i => new SelectListItem { Text = i.Name, Value = i.ID }).ToList() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="type">Object's Type</param>
+        /// <param name="id">Object's ID</param>
+        /// <param name="intersectMapID">IntersectMapID</param>
+        public JsonResult Synonym_DeleteFields(SystemObjects type, int id, int intersectMapID)
+        {
+            if (!Company.HasPermission(type, id, Claim.Delete, ClaimObject.Relationship))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "Object", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
+            list.Add(new EditableField { FieldName = "ObjectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { FieldName = "IntersectMapID", FieldType = DataType.Hidden.ToString(), Value = intersectMapID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddSynonym(SystemObjects type, int id)
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.Synonym,
+                FieldUri = $"/form/Synonym_AddFields?type={type.ToString()}&id={id}",
+                FormTitle = "Add Synonym",
+                FormUri = "/form/AddSynonym",
+                FormMethod = "POST",
+                FormSize = "small"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost]
+        public JsonResult AddSynonym(SynonymEditModel model)
+        {
+            try
+            {
+                if (!Company.HasPermission(model.Type, model.ID, Claim.Create, ClaimObject.Relationship))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                var synonymSegments = model.Synonym.Split('|');
+                var subject = model.TypeIsSubject ? model.Type : (SystemObjects)Enum.Parse(typeof(SystemObjects), synonymSegments[0]);
+                var subjectID = model.TypeIsSubject ? model.ID : int.Parse(synonymSegments[1]);
+                var @object = !model.TypeIsSubject ? model.Type : (SystemObjects)Enum.Parse(typeof(SystemObjects), synonymSegments[0]);
+                var objectID = !model.TypeIsSubject ? model.ID : int.Parse(synonymSegments[1]);
+                var predicateID = int.Parse(synonymSegments[2]);
+
+                var intersect = Company.AddIntersect(subject, subjectID, @object, objectID, IntersectClassification.Normal, predicateID, null);
+
+                if (intersect == null)
+                    throw new ApplicationException("Failed to create synonym relationship.");
+
+                var im = new IntersectMap {
+                    PredicateID = predicateID,
+                    SubjectIntersectNodeID = intersect.Nodes.First().ID,
+                    ObjectIntersectNodeID = intersect.Nodes.Last().ID,
+                    Type = MapType.Synonym
+                };
+                Company.Add<IntersectMap>(im);
+
+                dynamic custom = new
+                {
+                    Name = intersect.Name,
+                    Context = ContextList.Synonym
+                };
+
+                return jsonSuccess(intersect.Name + " successfully created.", intersect.ID.ToString(), ContextList.Synonym, "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult DeleteSynonym(SystemObjects type, int id, int intersectMapID)
+        {
+            var a = Company.GetById<IntersectMap>(intersectMapID);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.Synonym,
+                FieldUri = $"/form/Synonym_DeleteFields?type={type.ToString()}&id={id}&intersectMapID={intersectMapID}",
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Synonym"),
+                FormUri = "/form/DeleteSynonym",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteSynonym(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("synonym");
+                var type = (SystemObjects)Enum.Parse(typeof(SystemObjects), form["Object"]);
+                var id = parseIntField(form, "ObjectID");
+                var intersectMapID = parseIntField(form, "IntersectMapID");
+
+                if (!Company.HasPermission(type, id, Claim.Delete, ClaimObject.Relationship))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+
+                var model = Company.GetById<IntersectMap>(intersectMapID);
+                if (model == null) throw new NotFoundException("synonym");
+
+                var intersect = Company.Intersects.FirstOrDefault(i => i.Nodes.Any(n => n.ID == model.SubjectIntersectNodeID));
+
+                if (intersect != null)
+                {
+                    Company.Delete(model);
+                    Company.Delete(intersect);
+                }
+
+                dynamic custom = new
+                {
+                    Name = "Synonym",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess("Synonym successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
         #region Taxonomy
 
         #region Field Generation

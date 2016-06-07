@@ -31,7 +31,7 @@ namespace d360.web
             builder.RegisterType<d360.extensions.queue.AzureQueueSource>().As<IQueueSource>().InstancePerRequest();
             builder.RegisterType<d360.extensions.storage.AzureStorageProvider>().As<IStorageProvider>().InstancePerRequest();
             #endregion
-
+            
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
                 .InstancePerRequest()
                 .OnActivating(i => {
@@ -79,6 +79,7 @@ namespace d360.web
     {
         protected void Application_Start()
         {
+            Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey = System.Web.Configuration.WebConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
             #region Autofac
 
             Trace.WriteLine("Begin - Dependency Injection With Autofac");

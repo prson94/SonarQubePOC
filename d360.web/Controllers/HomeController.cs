@@ -20,6 +20,7 @@ namespace d360.web.Controllers
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("ResourceID", Company.CurrentResourceID);
+            ViewData.Add("Company", Company.CurrentCompanyDomain);
             ViewData.Add("Settings", Community.GetCompanySettings());
             return View("SPA");
         }

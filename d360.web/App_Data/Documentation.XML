@@ -2801,6 +2801,11 @@
         <member name="M:d360.web.Controllers.FormController.SurveyType_EditFields(System.Int32)">
             <param name="id">SurveyTypeID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.Synonym_DeleteFields(d360.core.SystemObjects,System.Int32,System.Int32)">
+            <param name="type">Object's Type</param>
+            <param name="id">Object's ID</param>
+            <param name="intersectMapID">IntersectMapID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Taxonomy_AddFields(System.Int32,System.Int32)">
             <param name="t">TaxonomyTypeID</param>
             <param name="p">ParentID</param>

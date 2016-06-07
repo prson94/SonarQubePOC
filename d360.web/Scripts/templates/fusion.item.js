@@ -111,29 +111,23 @@
                         filterVM.setColumns(definition.FilterColumns, "ID", fusionAttributeID);
                     }
                     else {
-                        //try {
-                            filterVM.setColumns(definition.FilterColumns);
-
-                        //} catch (e) {
-
-                        //}
+                        filterVM.setColumns(definition.FilterColumns);
                     }
                     
-
                     definition.Columns.forEach(function (item) {
 
-                        try {
-                            if (item.filteritems) {
-                                if (item.filteritems.length == 0)
-                                    delete item.filteritems;
-                            }
-                        } catch (e) {
-
+                    try {
+                        if (item.filteritems) {
+                            if (item.filteritems.length == 0)
+                                delete item.filteritems;
                         }
+                    } catch (e) {
 
-                        //modify type column
-                        if (item.datafield && item.datafield.toUpperCase() === 'TYPE') item.datafield = '_type';
-                    });
+                    }
+
+                    //modify type column
+                    if (item.datafield && item.datafield.toUpperCase() === 'TYPE') item.datafield = '_type';
+                });
 
                     definition.Fields.forEach(function (item) {
                         if (item.name && item.name.toUpperCase() === 'TYPE') item.name = '_type';
@@ -145,6 +139,11 @@
                     FusionAttributeSource.datafields = definition.Fields;
                     FusionAttributeSource.url = '/fusion/ItemsByAttributeType?fusionID=' + id + '&fusionAttributeTypeID=' + row.ID;
 
+                    $('#ItemsTile').jqxGrid('destroy');
+
+                    $('#ItemsTileWrapper').html('<div id="ItemsTile"></div>');
+
+                    //$('#ItemsTile').jqxGrid('removesort');
 
                     $('#ItemsTile').one('bindingcomplete', function (event) {
                         try {
@@ -161,8 +160,32 @@
                         }
                     });
 
-                    $('#ItemsTile').jqxGrid({ columns: definition.Columns });
-                    $('#ItemsTile').jqxGrid('updatebounddata');
+                    $('#ItemsTile').jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        autoheight: true,
+                        sortable: true,
+                        filterable: false,
+                        showfilterrow: false,
+                        showfiltermenuitems: false,
+                        showsortmenuitems: false,
+                        pagesizeoptions: ['10', '20', '50'],
+                        pagesize: 20,
+                        pageable: true,
+                        virtualmode: true,
+                        rendergridrows: function () {
+                            return FusionAttributeAdapter.records;
+                        },
+                        columnsresize: true,
+                        source: FusionAttributeAdapter,
+                        theme: theme,
+                        columns: definition.Columns
+                    });
+
+
+
+                    //$('#ItemsTile').jqxGrid({ columns: definition.Columns });
+                    //$('#ItemsTile').jqxGrid('updatebounddata');
                 });
             }
 

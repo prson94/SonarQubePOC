@@ -9,7 +9,7 @@ using System;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Intersect, "Intersect")]
-    public class Intersect : BaseIntObject, IIntObject, IUpdatedMetadata
+    public class Intersect : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
         public int IntersectTypeID { get; set; }
@@ -44,6 +44,8 @@ namespace d360.core.entities
 
         [DataMember]
         public int ObjectID { get; set; }
+
+        public bool? Deleted { get; set; }
 
         [IgnoreDataMember]
         public virtual IntersectType IntersectType { get; set; }

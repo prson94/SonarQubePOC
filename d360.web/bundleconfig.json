@@ -2,7 +2,7 @@
   {
     "outputFileName": "scripts/all.js",
     "inputFiles": [
-      "Scripts/jquery-2.2.1.js",
+      "Scripts/jquery-2.2.3.js",
       "Scripts/handlebars.js",
       "Scripts/sammy-0.7.5.js",
       "Scripts/sammy.title.js",
@@ -32,14 +32,14 @@
       "Scripts/d3s.RandomSurveyQuestion.js",
       "Scripts/parts/*.js", 
       //"Scripts/parts/_Utils.js",
-      "Scripts/templates/*.js",
+      "Scripts/templates/*.js", 
       "Scripts/typeahead.bundle.js"
     ]
   },
   {
     "outputFileName": "scripts/apps.js",
     "inputFiles": [
-      "Scripts/jquery-2.2.1.js",
+      "Scripts/jquery-2.2.3.js",
       "scripts/knockout-3.4.0.debug.js"
     ]
   },

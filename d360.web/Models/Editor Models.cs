@@ -129,6 +129,17 @@ namespace d360.web.Models
 
     }
 
+    public class SynonymEditModel
+    {
+        public SystemObjects Type { get; set; }
+
+        public int ID { get; set; }
+
+        public string Synonym { get; set; }
+
+        public bool TypeIsSubject { get; set; }
+    }
+
     public class ArtifactTypeEditorModel : BaseEditorModel
     {
         public ArtifactType ArtifactType { get; set; }

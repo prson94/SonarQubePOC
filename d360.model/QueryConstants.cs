@@ -79,13 +79,10 @@ from	(
 								else cast(0 as bit) 
 							end as AllowSynonyms
 					from	(
-								select	*
-								from	AttributeTypeRelation
-								where	ObjectType = 'ArtifactType' and ObjectID = @id and AttributeTypeID = 1
-								union
-								select	ATR.*
-								from	AttributeTypeRelation ATR
-										inner join [utility].[RelationshipTypes] RT on RT.SourceObjectType = 'ArtifactType' and RT.SourceObjectID = @id and ATR.ObjectType = 'IntersectType' and ATR.ObjectID = RT.IntersectTypeID and ATR.AttributeTypeID = 1
+								select	IT.ID
+								from	IntersectType IT
+										inner join IntersectTypePredicate ITP on ITP.IntersectTypeID = IT.ID and ITP.PredicateType = 6 -- Synonym
+								where	(IT.Subject = 'ArtifactType' and IT.SubjectID = @id) OR (IT.Object = 'ArtifactType' and IT.ObjectID = @id)
 							) O
 					) S on 1=1
 		inner join	(
@@ -835,39 +832,70 @@ from	StatisticType S
 		inner join cache.ObjectDetails D on D.Object = S.Object and D.ObjectID = S.ObjectID 
 order by D.Name, S.Name";
 
-        public static string SynonymsByObjectList = @"
-with A as	(
-			select	D.Name as [Source],
-					A.ID
-			from	Attribute A
-					inner join cache.ObjectDetails D on D.[Object] = A.ObjectType and D.ObjectID = A.ObjectID
-			where	A.AttributeTypeID = 1
-					and A.ObjectType = @type
-					and A.ObjectID = @id
-			union
-			select	R.TargetObjectName as [Source],
-					A.ID
-			from	Attribute A
-					inner join [cache].[Relationships] R on A.ObjectType = 'Intersect' and R.IntersectID = A.ObjectID and R.SourceObject = @type and R.SourceObjectID = @id
-                    inner join IntersectTypeNode N on N.ID = R.[SourceIntersectTypeNodeID] --and N.[Order] = 2
-			where	A.AttributeTypeID = 1
-			)
+        public static string SynonymOptions = @"
+declare	@ot varchar(50),
+		@otid int
 
-select	A.[Source],
-		A.ID,
-		FN.Name,
-		FD.Description
-from	A
-		cross apply (
-					select	F.Value as Name
-					from	Field F
-							inner join FieldType FT on FT.ID = F.FieldTypeID and F.ObjectType = 'Attribute' and F.ObjectID = A.ID and FT.Name = 'Name'
-					) FN
-		outer apply (
-					select	F.Value as Description 
-					from	Field F
-							inner join FieldType FT on FT.ID = F.FieldTypeID and F.ObjectType = 'Attribute' and F.ObjectID = A.ID and FT.Name = 'Description'					
-					) FD";
+select	@ot = ObjectType,
+		@otid = ObjectTypeID
+from	cache.Object 
+where	Object = @type 
+        and ObjectID = @id
+
+select		D.Object + '|' + cast(D.ObjectID as varchar) + '|' + cast(P.ID as varchar) as ID,
+			D.ObjectTypeName + ' :: ' + D.TextPath as Name,
+            O.TargetingSubject
+from		cache.ObjectDetails D
+			inner join (
+						select	case 
+									when IT.Subject = @ot and IT.SubjectID = @otid then IT.Object
+									else IT.Subject
+								end as Object,
+								case 
+									when IT.Subject = @ot and IT.SubjectID = @otid then IT.ObjectID
+									else IT.SubjectID
+								end as ObjectID,
+								case 
+									when IT.Subject = @ot and IT.SubjectID = @otid then cast(0 as bit)
+									else cast(1 as bit)
+								end as TargetingSubject
+						from	IntersectType IT
+								inner join IntersectTypePredicate ITP on ITP.IntersectTypeID = IT.ID 
+																		 and ITP.PredicateType = 6
+																		 and (
+																				(IT.Subject = @ot and IT.SubjectID = @otid) OR
+																				(IT.Object = @ot and IT.ObjectID = @otid)
+																			 )
+						) O on O.Object = D.ObjectType and O.ObjectID = D.ObjectTypeID and D.ObjectTypeName is not null and D.Object + '|' + cast(D.ObjectID as varchar) <> @type + '|' + cast(@id as varchar)
+            inner join [Predicate] P on P.Type = 6
+order by	D.ObjectTypeName,
+			D.TextPath";
+
+        public static string SynonymsByObjectList = @"
+select	I.IntersectID,
+		IM.ID as IntersectMapID,
+		D.Object,
+		D.ObjectID,
+		D.TextPath as Name,
+        D.ObjectTypeName,
+		D.Description,
+		D.Url
+from	cache.Relationship I
+		inner join IntersectMap IM on 
+								    (
+										( IM.SubjectIntersectNodeID = I.SourceIntersectNodeID and IM.ObjectIntersectNodeID = I.TargetIntersectNodeID )
+										OR ( IM.SubjectIntersectNodeID = I.TargetIntersectNodeID and IM.ObjectIntersectNodeID = I.SourceIntersectNodeID )
+									)
+                                    and IM.Type = 6
+		inner join cache.ObjectDetails D on D.Object = case 
+															when I.SourceObject = @type and I.SourceObjectID = @id then I.TargetObject 
+															else I.SourceObject 
+														end
+											and D.ObjectID = case 
+																when I.SourceObject = @type and I.SourceObjectID = @id then I.TargetObjectID 
+																else I.SourceObjectID 
+															 end
+where	I.SourceObject = @type and I.SourceObjectID = @id";
 
         public static string TaxonomySettingsItem = @"
 select	*
@@ -886,13 +914,10 @@ from	TaxonomyType T
 								else cast(0 as bit) 
 							end as AllowSynonyms
 					from	(
-								select	*
-								from	AttributeTypeRelation
-								where	ObjectType = 'TaxonomyType' and ObjectID = T.ID and AttributeTypeID = 1
-								union
-								select	ATR.*
-								from	AttributeTypeRelation ATR
-										inner join [utility].[RelationshipTypes] RT on RT.SourceObjectType = 'TaxonomyType' and RT.SourceObjectID = T.ID and ATR.ObjectType = 'IntersectType' and ATR.ObjectID = RT.IntersectTypeID and ATR.AttributeTypeID = 1
+								select	IT.ID
+								from	IntersectType IT
+										inner join IntersectTypePredicate ITP on ITP.IntersectTypeID = IT.ID and ITP.PredicateType = 6 -- Synonym
+								where	(IT.Subject = 'TaxonomyType' and IT.SubjectID = @id) OR (IT.Object = 'TaxonomyType' and IT.ObjectID = @id)
 							) O
 					) S
 where	T.ID = @id";

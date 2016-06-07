@@ -55,6 +55,33 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Nightly|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Nightly\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Client Development|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Client Development\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Production|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Production\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Dapper, Version=1.40.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.42\lib\net45\Dapper.dll</HintPath>
@@ -78,6 +105,7 @@
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
     <Compile Include="entities\BusinessTransformationRule.cs" />
+    <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
     <Compile Include="entities\DomainItemXref.cs" />
     <Compile Include="entities\DomainSourceType.cs" />
     <Compile Include="entities\FusionRule.cs" />
@@ -127,6 +155,8 @@
     <Compile Include="entities\SourceToTargetMapping.cs" />
     <Compile Include="entities\TaxonomyTypeClass.cs" />
     <Compile Include="entities\PolicyTypeLevel.cs" />
+    <Compile Include="entities\Transitive\CacheObject.cs" />
+    <Compile Include="entities\Transitive\CacheRelationship.cs" />
     <Compile Include="entities\Transitive\FusionProcessingData.cs" />
     <Compile Include="entities\Views\FusionExecutionResultDetail.cs" />
     <Compile Include="entities\CompanyDomainSetting.cs" />
@@ -365,13 +395,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\d360.utils\d360.utils.csproj">
       <Project>{9775b4df-0ac8-4524-ba10-4a43bf9cb61e}</Project>
       <Name>d360.utils</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -85,7 +85,7 @@ public static class ContextList
         public const string StatisticType = "statistictypeform";
         public const string StatisticTypeRelation = "statistictyperelationform";
         public const string SurveyType = "surveytypeform";
-
+        public const string Synonym = "synonymform";
         public const string Taxonomy = "taxonomyform";
         public const string TaxonomyType = "taxonomytypeform";
         public const string TaxonomyTypeClass = "taxonomytypeclassform";

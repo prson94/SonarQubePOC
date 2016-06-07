@@ -66,6 +66,9 @@
                         case 'IssueWorkflow':
                             ObjectStatisticsTile('MicroWidget1', type, id);
                             break;
+                        case contextList.Synonym:
+                            RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
+                            break;
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                             PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');

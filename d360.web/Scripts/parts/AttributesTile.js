@@ -22,10 +22,10 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
     html += '<div id="' + _detailControlID + '"></div>';
     html += '</div>';
     html += '<div id="' + editorControlID + '"></div>';
-    html += '</div>';
+    html += '</div>'; 
     html += '</div>';
 
-    //#endregion
+    //#endregion 
 
     //#region Set proper jquery prefix on controls
 

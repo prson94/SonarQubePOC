@@ -1,5 +1,6 @@
 ﻿@{
     Layout = null;
+    var CurrentCompany = ViewData["Company"].ToString();
     var CurrentResourceID = ViewData["ResourceID"].ToString();
     var VersionNumber = ViewData["VersionNumber"].ToString();
     var settings = (Dictionary<string, string>)ViewData["Settings"];
@@ -12,6 +13,7 @@
     var companyLogo = settings["CompanyLogo"];
     var companyIcon = settings["CompanyIcon"];
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
+    var instrumentKey = System.Configuration.ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
 }
 @functions{
     public string GetAntiForgeryToken()
@@ -52,21 +54,24 @@
     }
     </style>
     <script type="text/javascript">
-        //var appInsights=window.appInsights||function(config){
-        //    function s(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},r=document,f=window,e="script",o=r.createElement(e),i,u;for(o.src=config.url||"//az416426.vo.msecnd.net/scripts/a/ai.0.js",r.getElementsByTagName(e)[0].parentNode.appendChild(o),t.cookie=r.cookie,t.queue=[],i=["Event","Exception","Metric","PageView","Trace"];i.length;)s("track"+i.pop());return config.disableExceptionTracking||(i="onerror",s("_"+i),u=f[i],f[i]=function(config,r,f,e,o){var s=u&&u(config,r,f,e,o);return s!==!0&&t["_"+i](config,r,f,e,o),s}),t
-        //}({
-        //    instrumentationKey:"f73a9469-9371-4409-8bd5-2ee7f1a7c667"
-        //});
+        var appInsights=window.appInsights||function(config){
+            function r(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},u=document,e=window,o="script",s=u.createElement(o),i,f;for(s.src=config.url||"//az416426.vo.msecnd.net/scripts/a/ai.0.js",u.getElementsByTagName(o)[0].parentNode.appendChild(s),t.cookie=u.cookie,t.queue=[],i=["Event","Exception","Metric","PageView","Trace"];i.length;)r("track"+i.pop());return r("setAuthenticatedUserContext"),r("clearAuthenticatedUserContext"),config.disableExceptionTracking||(i="onerror",r("_"+i),f=e[i],e[i]=function(config,r,u,e,o){var s=f&&f(config,r,u,e,o);return s!==!0&&t["_"+i](config,r,u,e,o),s}),t
+        }({
+            instrumentationKey:"@(instrumentKey)",
+            appUserId: "@(CurrentResourceID)",
+            accountId: "@(CurrentCompany)",
+            maxAjaxCallsPerView: 10
+        });
 
-        //window.appInsights=appInsights;
-        //appInsights.trackPageView();
+        window.appInsights=appInsights;
+        appInsights.trackPageView();
+
         var CompanySettings = @(Html.Raw(settingsJson));
     </script>
     @Html.Partial("KnockoutTemplates")
     <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
     <script type="text/javascript" src="/Scripts/GoJS/GoJS-1-5-18.js"></script>
     <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
-    @*<script type="text/javascript" src="/scripts/angular.js"></script>*@
 </head>
 <body>
     <div style="position: fixed; left: 0px; top: 0px; width: 50px; height: 100%; z-index: 0" class="grey darken-2"></div>
@@ -160,6 +165,7 @@
             self.StatisticType = "@(ContextList.StatisticType)";
             self.StatisticTypeRelation = "@(ContextList.StatisticTypeRelation)";
             self.SurveyType = "@(ContextList.SurveyType)";
+            self.Synonym = "@(ContextList.Synonym)";
 
             self.Taxonomy = "@(ContextList.Taxonomy)";
             self.TaxonomyType = "@(ContextList.TaxonomyType)";
@@ -268,6 +274,7 @@
             this.after(function () {
                 amplify.publish("OverlayRemoved");
                 amplify.publish("RelationOverlayRemoved");
+                appInsights.trackPageView();
             });
 
             //this.error(function (message, ex) {

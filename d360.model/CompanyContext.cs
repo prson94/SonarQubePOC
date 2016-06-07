@@ -94,6 +94,10 @@ namespace d360.model
 
         public DbSet<BusinessTransformationRule> BusinessTransformationRules { get; set; }
 
+        public DbSet<CacheObject> CacheObjects { get; set; }
+
+        public DbSet<CacheRelationship> CacheRelationships { get; set; }
+
         public DbSet<Comment> Comments { get; set; }
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
@@ -1233,6 +1237,59 @@ order by Name");
 
         #region Relationships
 
+        public Intersect AddIntersect(SystemObjects subject, int subjectID, SystemObjects @object, int objectID, IntersectClassification classification, int predicateID, string description)
+        {
+            Intersect intersect = null;
+
+            var sSubject = subject.ToString();
+            var sObject = @object.ToString();
+
+            var subjectDetail = GetObjectDetail(subject, subjectID);
+            var objectDetail = GetObjectDetail(@object, objectID);
+
+            if (subjectDetail == null)
+                throw new NotFoundException("Subject");
+
+            if (objectDetail == null)
+                throw new NotFoundException("Object");
+
+            var intersectType = Filter<IntersectType>(i => (
+                    (i.Subject == subjectDetail.Type && i.SubjectID == subjectDetail.TypeID && i.Object == objectDetail.Type && i.ObjectID == objectDetail.TypeID) ||
+                    (i.Object == subjectDetail.Type && i.ObjectID == subjectDetail.TypeID && i.Subject == objectDetail.Type && i.SubjectID == objectDetail.TypeID)
+                ) &&
+                i.IntersectTypePredicates.Any(p => p.PredicateType == MapType.Synonym), 
+                i => i.Nodes
+            ).FirstOrDefault();
+
+            if (intersectType == null)
+                throw new NotFoundException("Intersect Type");
+
+            intersect = Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && (
+                    (i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID) ||
+                    (i.Object == sSubject && i.ObjectID == subjectID && i.Subject == sObject && i.SubjectID == objectID)
+                ), i => i.Nodes
+            ).SingleOrDefault();
+
+            if (intersect == null)
+            {
+                var nodes = intersectType.Nodes.OrderBy(i => i.Order).ToList();
+                intersect = new Intersect { IntersectTypeID = intersectType.ID, Classification = classification, Description = description, Subject = sSubject, SubjectID = subjectID, Object = sObject, ObjectID = objectID };
+                intersect.Nodes = new List<IntersectNode>();
+                intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = sSubject, ObjectID = subjectID });
+                intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = sObject, ObjectID = objectID });
+                Intersects.Add(intersect);
+                SaveChanges();
+            }
+            else
+            {
+                intersect.Classification = classification;
+                intersect.Description = description;
+                SaveChanges();
+            }
+
+            return intersect;
+        }
+
         public void AddRelationship(SystemObjects type, int id, SystemObjects targetType, int targetID, IntersectClassification classification, int? roleID, string description)
         {
             AddRelationship(type.ToString(), id, targetType.ToString(), targetID, classification, roleID, description);
@@ -2313,6 +2370,18 @@ order by Name", new { workflowType, type, id });
         public override int SaveChanges()
         {
             int returnValue = 0;
+
+            foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(System.Data.Entity.EntityState.Added))
+            {
+                #region Business logic : ICreatedMetadata
+                if (entry.Entity is ICreatedMetadata)
+                {
+                    var o = entry.Entity as ICreatedMetadata;
+                    o.CreatedBy = CurrentResourceID;
+                    o.CreatedOn = DateTime.UtcNow;
+                }
+                #endregion
+            }
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(System.Data.Entity.EntityState.Added | System.Data.Entity.EntityState.Unchanged | System.Data.Entity.EntityState.Modified | System.Data.Entity.EntityState.Deleted))
             {
