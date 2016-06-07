@@ -8,6 +8,7 @@ using d360.core;
 using Dapper;
 using d360.core.entities;
 using System.Data.SqlClient;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace d360.jobs.ReIndex
 {
@@ -38,6 +39,8 @@ namespace d360.jobs.ReIndex
                       {
 
                           Console.WriteLine("Starting to rebuild search index [company id: {0}]", companyID);
+
+                          context.OpenWithRetry(RetryPolicy.DefaultFixed);
 
                           Console.WriteLine("reseting search index [company id: {0}]", companyID);
 

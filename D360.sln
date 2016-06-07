@@ -1054,10 +1054,13 @@ Global
 		{854E5857-8BF1-4A14-A3CF-4404E406305C} = {308C42E3-824D-4028-8C69-60FAD6754839}
 		{E08D277F-9E95-4842-84D0-511076BA356D} = {308C42E3-824D-4028-8C69-60FAD6754839}
 	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
+	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 31
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://data3sixty.visualstudio.com/
+		SccTeamFoundationServer = https://data3sixty.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = d360.core\\d360.core.csproj
 		SccProjectTopLevelParentUniqueName1 = D360.sln
