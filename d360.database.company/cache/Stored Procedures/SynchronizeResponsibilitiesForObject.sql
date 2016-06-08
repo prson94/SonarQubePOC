@@ -1,4 +1,4 @@
-﻿CREATE procedure [cache].[SynchronizeResponsibilitiesForObject]
+﻿create procedure [cache].[SynchronizeResponsibilitiesForObject]
 --declare
 	@Object varchar(50),
 	@ObjectID int
@@ -46,7 +46,7 @@ begin
 	FROM	cache.ResponsibilityItem T
 			INNER JOIN #Responsibilities S ON S.[Object] = T.[Object] 
 											and S.[ObjectID] = T.[ObjectID] 
-											and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+											--and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
 											and S.ContextHash = T.ContextHash;
 
 	declare @current int = 1,

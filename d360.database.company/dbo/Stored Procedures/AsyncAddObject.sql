@@ -1,4 +1,4 @@
-﻿CREATE procedure [dbo].[AsyncAddObject]
+﻿create procedure [dbo].[AsyncAddObject]
 	@Object varchar(50),
 	@ObjectID int,
 	@ParentObject varchar(50),
@@ -40,6 +40,11 @@ begin
 		if @Object = 'Responsibility'
 		begin
 			exec cache.SynchronizeResponsibilitiesForObject @ParentObject, @ParentObjectID 
+		end
+
+		if @Object = 'Artifact'
+		begin
+			exec cache.SynchronizeResponsibilitiesForObject @Object, @ObjectID 
 		end
 
 		commit transaction @trans
