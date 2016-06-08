@@ -154,6 +154,27 @@ BEGIN
 														)
 														or (@ObjectID is null)
 													);
+
+
+			if @Object = 'TaxonomyType'
+			begin
+				insert into @tbl
+					select	'Taxonomy Vertical' as [Source],
+								R.Visible,
+								R.ID,
+								R.ResponsibilityTypeID,
+								'TaxonomyType' as AssigningItemType,
+								T.ID as AssigningItemID,
+								'Artifact' as ObjectType,
+								A.ID as ObjectID,
+								utility.GetResponsibilityContextHash(R.ID),
+								@Priority as [Priority]
+						from	TaxonomyType T 
+								inner join Responsibility R on R.ObjectType = 'TaxonomyType' and R.ObjectID = T.ID
+								inner join Artifact A on A.TaxonomyTypeID = T.ID and (@Object = 'TaxonomyType' and A.TaxonomyTypeID = @ObjectID)
+								inner join ResponsibilityTypeRelation RTR on RTR.ResponsibilityTypeID = R.ResponsibilityTypeID and RTR.ObjectType = 'ArtifactType' and RTR.ObjectID = A.ArtifactTypeID;
+					
+			end
 		end
 	RETURN 
 END

@@ -41,12 +41,12 @@ begin
 
 --select * from #Responsibilities
 	--delete #Responsibilities where [Object] + cast(ObjectID as varchar) <> @Object + cast(@ObjectID as varchar)
-	--delete cache.ResponsibilityItem where [Object] = @Object and ObjectID = @ObjectID
+	delete cache.ResponsibilityItem where [Object] = @Object and ObjectID = @ObjectID
 	DELETE	T
 	FROM	cache.ResponsibilityItem T
 			INNER JOIN #Responsibilities S ON S.[Object] = T.[Object] 
 											and S.[ObjectID] = T.[ObjectID] 
-											--and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+											and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
 											and S.ContextHash = T.ContextHash;
 
 	declare @current int = 1,
