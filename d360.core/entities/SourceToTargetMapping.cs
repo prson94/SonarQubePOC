@@ -28,6 +28,7 @@ namespace d360.core.entities
         public int SourceID { get; set; }
         public string Target { get; set; }
         public int TargetID { get; set; }
+
         public List<SourceTargetRule> Rules { get; set; }
     }
 
@@ -45,6 +46,8 @@ namespace d360.core.entities
         public int TargetObjectID { get; set; }
         [DataMember, Column(TypeName = "varchar"), StringLength(150)]
         public string TargetObject { get; set; }
+        [DataMember]
+        public int Sequence { get; set; }
 
         [NotMapped, DataMember]
         public List<SourceTargetItem> Sources { get; set; }

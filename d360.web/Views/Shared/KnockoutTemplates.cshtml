@@ -6,7 +6,7 @@
                 <tr>
                     <th style="background-color: #666; color: #fff; width: 35%">&nbsp;Source (<span style="font-weight: 400" data-bind="text: SourceName"></span>)</th>
                     <th style="background-color: #ebebeb; color: #666; width: 35%">&nbsp;Target (<span style="font-weight: 400" data-bind="text: TargetName"></span>)</th>
-                    
+
                 </tr>
             </thead>
             <tbody>
@@ -63,6 +63,8 @@
                     <th style="background-color: #ebebeb; color: #666; width: 35%">&nbsp;Target (<span style="font-weight: 400" data-bind="text: TargetName"></span>)</th>
                     <th style="min-width: 20px">&nbsp;</th>
                     <th>Transformation</th>
+                    <th style="min-width: 20px">&nbsp;</th>
+                    <th>Sequence</th>
                 </tr>
             </thead>
             <tbody data-bind="foreach: SourceRules">
@@ -90,31 +92,10 @@
         <div data-bind="visible: (NoFusionAvailable() && !IsLoading())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
             There are no fusion attributes defined for the source or target selected.
         </div>
-        @*<table>
-            <tbody>
-                <tr data-bind="visible: (CanAdd() && !NoFusionAvailable())">
-                    <td colspan="3" style="text-align:right; padding-top:5px;">
-                        <div data-bind="jqxButton: {theme: theme }, click: AddSourceRule" style="text-align:center;cursor:pointer;display:inline-block;"><i class="fa fa-plus"></i> Add Source Mapping Rule</div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="3" style="text-align:right">
-                        <!--<span data-bind="jqxButton: { theme: theme, width: 100 }">Cancel</span>-->
-                        <span data-bind="html: SaveMessage"></span>
-                        <span data-bind="visible: IsLoading"><i class="fa fa-spinner fa-spin"></i></span>
-                        <div data-bind="jqxButton: { theme: theme, disabled: (IsLoading && !(CanAdd() || CanUpdate()))}, click: SaveRules" style="cursor:pointer;display:inline-block;"><i class="fa fa-floppy-o"></i> Save</div>
-                    </td>
-                </tr>
-                <tr></tr>
-            </tbody>
-        </table>*@
     </div>
 </script>
 <script id="sourceMappingItemTmpl" type="text/html">
-    @*<td colspan="5" data-bind="visible: IsLoading" style="height:100px; text-align:center">
-        <i class="fa fa-spinner fa-3x fa-spin"></i>
-    </td>*@
-    <td data-bind="visible: !IsLoading()" style="width:40%; vertical-align:top;">
+    <td data-bind="visible: !IsLoading()" style="width:35%; vertical-align:top;">
         <table>
             <tbody>
                 <!-- ko foreach: Sources -->
@@ -148,7 +129,7 @@
         </table>
     </td>
     <td style="min-width: 20px">&nbsp;</td>
-    <td data-bind="visible: !IsLoading()" style="width:40%;vertical-align:top;">
+    <td data-bind="visible: !IsLoading()" style="width:35%;vertical-align:top;">
         <table>
             <tbody>
                 <!-- ko foreach: Targets -->
@@ -184,6 +165,10 @@
     <td style="min-width: 20px">&nbsp;</td>
     <td data-bind="visible: !IsLoading()" style="width:20%; vertical-align:top; padding-top: 2px">
         <textarea data-bind="value: Transformation, disable: !CanUpdate()" placeholder="Enter transformation rule..." style="background-color:white; min-height: 50px; height: 100%"></textarea>
+    </td>
+    <td style="min-width: 20px">&nbsp;</td>
+    <td data-bind="visible: !IsLoading()" style="width:10%; vertical-align:top; padding-top: 2px">
+        <input type="text" data-bind="value: Sequence, disable: !CanUpdate()" placeholder="Enter sequence..." style="background-color:white; min-height: 30px; height: 30px" />
     </td>
 </script>
 <script id="hierarchyRuleItemEditTmpl" type="text/html">
@@ -223,7 +208,7 @@
             </div>
         </div>
         @*<div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioAddChecked, disabled: (Sources().length < 1 || !CanAdd()) }"> Add Source Rules</div>
-    <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioEditChecked, disabled: (SourceRules().length < 1) }"> Edit Source Rules</div>*@
+            <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioEditChecked, disabled: (SourceRules().length < 1) }"> Edit Source Rules</div>*@
         <div data-bind="fadeVisible: Mode() != 'template'">
             <div style="padding-left: 20px" data-bind="fadeVisible: (SourceRules().length > 1)">
                 <div class="FieldName">Source Rules</div>
@@ -456,8 +441,8 @@
                 </header>
                 <div class="directions">
                     Specify the default value for the initially selected list of object types to search when a user performs a simple search from the Data3Sixty global search functionality.
-                </div>                
-                <div id="searchDropDown" data-bind="jqxDropDownList: {placeHolder: 'Specify Types:',source: SearchTypes, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,checkboxes:true}"></div>                
+                </div>
+                <div id="searchDropDown" data-bind="jqxDropDownList: {placeHolder: 'Specify Types:',source: SearchTypes, autoDropDownHeight: true, height: field_height, width: field_width98, displayMember: 'title', valueMember: 'value',theme: theme,checkboxes:true}"></div>
             </div>
         </div>
         <div class="col s12 m12 l2">
@@ -544,7 +529,7 @@
                 {{#if IssueUrl}}
                 <div class="tile-clickable StatisticValue EventStatisticValue" data-tile data-uri="{{IssueUrl}}" data-context="TileOverlay">{{IssueCount}}</div>
                 <div class="StatisticName EventStatisticName">issues</div>
-                {{/if}}     
+                {{/if}}
             </td>
         </tr>
         <tr>
@@ -740,25 +725,25 @@
     <div title="Get more info">
         <div data-bind="template: {name: 'scoreMicroTileItemTmpl', foreach: statistics }"></div>
         @*<div class="clear">
-            <div class="left tile-stat-name">Governance</div>
-            <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
-            <div class="right tile-stat-value tile-stat-value-green">84%</div>
-        </div>
-        <div class="clear">
-            <div class="left tile-stat-name">Steward</div>
-            <div class="right tile-stat-value tile-stat-value-red"><i class="fa fa-arrow-down"></i></div>
-            <div class="right tile-stat-value tile-stat-value-yellow">72%</div>
-        </div>
-        <div class="clear">
-            <div class="left tile-stat-name">Owner</div>
-            <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
-            <div class="right tile-stat-value tile-stat-value-yellow">77%</div>
-        </div>
-        <div class="clear">
-            <div class="left tile-stat-name">Consumers</div>
-            <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
-            <div class="right tile-stat-value tile-stat-value-red">49%</div>
-        </div>*@
+                <div class="left tile-stat-name">Governance</div>
+                <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+                <div class="right tile-stat-value tile-stat-value-green">84%</div>
+            </div>
+            <div class="clear">
+                <div class="left tile-stat-name">Steward</div>
+                <div class="right tile-stat-value tile-stat-value-red"><i class="fa fa-arrow-down"></i></div>
+                <div class="right tile-stat-value tile-stat-value-yellow">72%</div>
+            </div>
+            <div class="clear">
+                <div class="left tile-stat-name">Owner</div>
+                <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+                <div class="right tile-stat-value tile-stat-value-yellow">77%</div>
+            </div>
+            <div class="clear">
+                <div class="left tile-stat-name">Consumers</div>
+                <div class="right tile-stat-value tile-stat-value-green"><i class="fa fa-arrow-up"></i></div>
+                <div class="right tile-stat-value tile-stat-value-red">49%</div>
+            </div>*@
     </div>
 </script>
 <script id="scoreMicroTileItemTmpl" type="text/html">
@@ -1294,10 +1279,10 @@
                         <textarea placeholder="What are the details of the issue you would like to raise?" class="grey lighten-5" style="font-size: larger; border: 1px solid #999; " data-bind="htmlarea: newMessage"></textarea> @*, event: { keyup: checkForTags } class="htmlArea"*@
                     </div>
                 </td>
-            </tr>            
-            
+            </tr>
+
             <tr>
-                <td colspan="2" style="position: relative; padding: 6px 3px 0 3px;">                    
+                <td colspan="2" style="position: relative; padding: 6px 3px 0 3px;">
                     <div style="white-space: nowrap;">
                         <div style="display:inline-block; position: relative; width:100%;">
                             <input data-bind="value: newTag, valueUpdate: 'afterkeydown', event : { keyup: setIndex }" placeholder="What item has the issue?" style="border: none; border: 1px solid #adacac; width:100%; line-height:1.5; padding:2px;" />
@@ -1319,7 +1304,7 @@
             <tr>
                 <td colspan="2">
                     <button style="display:inline; float:right; width:140px; margin: 0 5px 5px 0; padding:0 6px;" class="btn waves-effect white-text blue" type="button" data-bind="click: addIssue"><span data-bind="visible: !IsProcessing()">Raise Issue</span><i class="fa fa-spinner fa-spin" data-bind="visible: IsProcessing()" style="text-align:center;"></i></button>
-                </td>                
+                </td>
             </tr>
         </table>
     </div>
@@ -1333,7 +1318,7 @@
     <div>
         <div class="FieldNameRequired">Predicate</div>
         <div name="LineagePredicate" id="LineagePredicate" data-bind="jqxDropDownList: {placeHolder: 'Choose a predicate:',source: predicates, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPredicateIndex}"></div>
-    </div>    
+    </div>
     <div>
         <div class="FieldNameRequired">Subject Search Type</div>
         <div name="LineageSubjectSearchType" id="LineageSubjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectSearchTypeIndex}"></div>
@@ -1349,7 +1334,7 @@
     <div data-bind="visible: selectedSubjectSearchTypeIndex() == 3">
         <div class="FieldNameRequired">Subject</div>
         <div name="LineageSubjectItem" id="LineageSubjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a subject:',source: subjectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectItemIndex}"></div>
-    </div>    
+    </div>
     <div>
         <div class="FieldNameRequired">Object Search Type</div>
         <div name="LineageObjectSearchType" id="LineageObjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectSearchTypeIndex}"></div>
@@ -1365,7 +1350,7 @@
     <div data-bind="visible: selectedObjectSearchTypeIndex() == 3">
         <div class="FieldNameRequired">Object</div>
         <div name="LineageObjectItem" id="LineageObjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a subject:',source: objectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectItemIndex}"></div>
-    </div>    
+    </div>
     <div>
         <div class="FieldNameRequired">Focal Point Search Type</div>
         <div name="LineageFocalSearchType" id="LineageFocalSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFocalSearchTypeIndex}"></div>
@@ -1377,7 +1362,7 @@
     <div data-bind="visible: selectedFocalSearchTypeIndex() == 2">
         <div class="FieldNameRequired">Focal Fusion Owner Rule</div>
         <div name="LineageFocalOwnerRule" id="LineageFocalOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFocalFusionOwnerRuleIndex}"></div>
-    </div>    
+    </div>
 </script>
 
 
@@ -1404,10 +1389,10 @@
     </div>
     <div data-bind="visible: showResultFromStepSearch()">
         <div class="FieldNameRequired">Result from Step</div>
-        <div name="FindObjectStep" id="FindObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>        
+        <div name="FindObjectStep" id="FindObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>
     </div>
     <div data-bind="visible: showResultFromStepSearch()">
-        <div class="FieldNameRequired">Find items parent</div>        
+        <div class="FieldNameRequired">Find items parent</div>
         <div name="FindParent" id="FindParent" data-bind="jqxCheckBox: {checked: resultFromStepParent, theme: theme,width: field_width, height: field_height}">Enabled</div>
     </div>
     <div data-bind="visible: showFusionOwnerSearch()">
@@ -1451,11 +1436,11 @@
     <div>
         <div class="FieldNameRequired">Subject Search Type</div>
         <div name="RelateSubjectSearchType" id="RelateSubjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectSearchTypeIndex}"></div>
-    </div>    
+    </div>
     <div data-bind="visible: showSubjectStepSearch()">
         <div class="FieldNameRequired">Subject Step</div>
         <div name="RelateSubjectStep" id="RelateSubjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectStepIndex}"></div>
-    </div>            
+    </div>
     <div data-bind="visible: showSubjectFusionOwnerSearch()">
         <div class="FieldNameRequired">Subject Fusion Owner Rule</div>
         <div name="RelateSubjectOwnerRule" id="RelateSubjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectFusionOwnerRuleIndex}"></div>
@@ -1467,7 +1452,7 @@
     <div data-bind="visible: showObjectStepSearch()">
         <div class="FieldNameRequired">Object Step</div>
         <div name="RelateObjectStep" id="RelateObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectStepIndex}"></div>
-    </div>        
+    </div>
     <div data-bind="visible: showObjectFusionOwnerSearch()">
         <div class="FieldNameRequired">Object Fusion Owner Rule</div>
         <div name="RelateObjectOwnerRule" id="RelateObjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectFusionOwnerRuleIndex}"></div>
@@ -1486,21 +1471,18 @@
             <div id="Action" name="Action" data-bind="jqxDropDownList: {placeHolder: 'Choose an action:',source: actionTypes, autoDropDownHeight: true, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedActionIndex}"></div>
         </div>
     </div>
-    
+
     <!--ko if: showPromoteAction-->
     <div class="row" data-bind="template: {name: 'promotionStepPromoteActionTmpl', data: actionPromoteSettings }"></div>
     <!-- /ko-->
-
     <!--ko if: showFindAction-->
     <div class="row" data-bind="template: {name: 'promotionStepFindActionTmpl', data: actionFindSettings }"></div>
     <!-- /ko-->
-
     <!--ko if: showLineageAction-->
     <div class="row" data-bind="template: {name: 'promotionStepLineageActionTmpl', data: actionLineageSettings }"></div>
     <!-- /ko-->
-    
     <!--ko if: showRelateAction-->
-        <div class="row" data-bind="template: {name: 'promotionStepRelateActionTmpl', data: actionRelateSettings }"></div>                
+    <div class="row" data-bind="template: {name: 'promotionStepRelateActionTmpl', data: actionRelateSettings }"></div>
     <!-- /ko-->
 </script>
 

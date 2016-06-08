@@ -1383,14 +1383,14 @@ function SourceToTargetMappingModel(data, permissions) {
             self.CanDelete(true);
     }
 
-
     self.LoadRules = function () {
         self.IsLoading(true);
         $.ajax({
             url: 'form/sourcetarget/load/' + self.Object() + '/' + self.ObjectID() + '/' + self.Source() + '/' + self.SourceID() + '/' + self.Target() + '/' + self.TargetID()
         }).done(function (data) {
+
             self.SourceRules([]);
-            //console.log(data);
+
             if (data == null) {
                 data = {
                     items: [],
@@ -1398,6 +1398,7 @@ function SourceToTargetMappingModel(data, permissions) {
                     targetCount: 0
                 };
             }
+
             if (data.items.length == 0) {
                 data.Object = self.ObjectID();
                 data.ObjectID = self.ObjectID();
@@ -1410,7 +1411,8 @@ function SourceToTargetMappingModel(data, permissions) {
                     self.NoFusionAvailable(true);
                     amplify.publish("NoFusionAvailable");
                 }
-            } else {
+            }
+            else {
                 data = data.items;
 
                 for (var i = 0; i < data.length; i++) {
@@ -1420,9 +1422,11 @@ function SourceToTargetMappingModel(data, permissions) {
                     data[i].SourceID = data[i].SourceObjectID;
                     data[i].Target = data[i].TargetObject;
                     data[i].TargetID = data[i].TargetObjectID;
+
                     self.SourceRules.push(new SourceToTargetMappingItem(data[i], self, permissions));
                 }
             }
+
         }).always(function () {
             self.IsLoading(false);
         });
@@ -1431,6 +1435,7 @@ function SourceToTargetMappingModel(data, permissions) {
     self.LoadRules();
 
     self.AddSourceRule = function () {
+        data.Sequence = self.SourceRules().length + 1;
         self.SourceRules.push(new SourceToTargetMappingItem(data, self, permissions));
     }
 
@@ -1499,7 +1504,8 @@ function SourceToTargetMappingModel(data, permissions) {
                 ID: rule.ID(),
                 sources: sources,
                 targets: targets,
-                transformation: rule.Transformation()
+                Transformation: rule.Transformation(),
+                Sequence: rule.Sequence()
             });
         }
 
@@ -1556,6 +1562,7 @@ function SourceToTargetMappingItem(data, parent, permissions) {
     self.Sources = ko.observableArray([]);
     self.Targets = ko.observableArray([]);
     self.Transformation = ko.observable(data.Transformation || '');
+    self.Sequence = ko.observable(data.Sequence || 1);
     self.Keywords = ko.observableArray([]);
     self.ErrorMessages = ko.observableArray([]);
 
@@ -1622,7 +1629,6 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
     self.SelectedFusionIndex = ko.observable(-1);
     self.SelectedFusionName = ko.observable('');
     self.ErrorMessages = ko.observableArray([]);
-
     self.IsLoading = ko.observable(false);
 
     self.RemoveItem = function () {
@@ -1645,6 +1651,8 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
     self.AppliedSearch.subscribe(function () {
         if (self.AppliedSearch() == '')
             return;
+
+        console.log(self.AppliedSearch());
         self.LoadFusionItems();
 
     });
@@ -1657,6 +1665,7 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
         self.IsLoading(true);
         var obj = (isSource ? parent.Source() : parent.Target());
         var objid = (isSource ? parent.SourceID() : parent.TargetID());
+
         $.ajax({
             url: 'form/sourcetarget/fusion',
             data : {
@@ -1697,6 +1706,7 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
         self.IsLoading(true);
         var obj = (isSource ? parent.Source() : parent.Target());
         var objid = (isSource ? parent.SourceID() : parent.TargetID());
+
         $.ajax({
             url: 'form/sourcetarget/fusion',
             data: {

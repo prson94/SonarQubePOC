@@ -15418,34 +15418,11 @@ order by	D.Name, I.Name";
             var sourceObj = Company.GetObjectDetail(source, sourceid);
             var targetObj = Company.GetObjectDetail(target, targetid);
 
-            items = Company.Filter<SourceTargetRule>(r => r.FocalObject == focal && r.FocalObjectID == focalid
-            && r.SourceObject == source && r.SourceObjectID == sourceid
-            && r.TargetObject == target && r.TargetObjectID == targetid).ToList();
-
-
-            #region Old Sql
-
-
-            //var sql = @"select distinct r.id as RuleID, n4.ObjectType + '|' + cast(n4.ObjectID as varchar(50)) as ID, n2.ObjectType + '|' + cast(n2.ObjectID as varchar(50)) as FusionID, 'source' as type from sourcetargetrule r
-            //            join intersectmapsourcetargetrule st on st.ruleid = r.id
-            //            join intersectmap m on m.type = 2 and m.id = st.intersectmapid
-            //            join intersectnode n on n.id = m.subjectintersectnodeid
-            //            join intersectnode n2 on n2.intersectid = n.intersectid and n2.objecttype != 'Intersect'
-            //            join intersectnode n3 on n3.intersectid = n.intersectid and n3.objecttype = 'Intersect'
-            //            join intersectnode n4 on n4.intersectid = n3.objectid and (n4.objecttype + '|' + cast(n4.objectid as varchar(50))) !=  @source + '|' + cast(@sourceid as varchar(50))
-            //            where  r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid
-            //            union all
-            //            select distinct r.id as RuleID, n4.ObjectType + '|' + cast(n4.ObjectID as varchar(50)) as ID, n2.ObjectType + '|' + cast(n2.ObjectID as varchar(50)) as FusionID, 'target' as type from sourcetargetrule r
-            //            join intersectmapsourcetargetrule st on st.ruleid = r.id
-            //            join intersectmap m on m.type = 2 and m.id = st.intersectmapid
-            //            join intersectnode n on n.id = m.objectintersectnodeid
-            //            join intersectnode n2 on n2.intersectid = n.intersectid and n2.objecttype != 'Intersect'
-            //            join intersectnode n3 on n3.intersectid = n.intersectid and n3.objecttype = 'Intersect'
-            //            join intersectnode n4 on n4.intersectid = n3.objectid and (n4.objecttype + '|' + cast(n4.objectid as varchar(50))) !=  @target + '|' + cast(@targetid as varchar(50))
-            //            where  r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid";
-
-
-            #endregion
+            items = Company.Filter<SourceTargetRule>(r => 
+                    r.FocalObject == focal && r.FocalObjectID == focalid && 
+                    r.SourceObject == source && r.SourceObjectID == sourceid && 
+                    r.TargetObject == target && r.TargetObjectID == targetid)
+                .OrderBy(i => i.Sequence).ToList();
 
             var sql = @"select distinct r.id as RuleID, n.objectid as FusionID, a.textpath, 'source' as [type] from sourcetargetrule r
                         join intersectmapsourcetargetrule st on st.ruleid = r.id
@@ -15557,8 +15534,7 @@ order by	D.Name, I.Name";
             return null;
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("sourcetarget/save")]
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("sourcetarget/save")]
         public JsonNetResult Save(SourceToTargetSaveModel model)
         {
             if (model.Rules == null)
@@ -15706,6 +15682,8 @@ order by	D.Name, I.Name";
                     }
                 }
 
+                #region Join Records
+
                 foreach (IntersectMapSourceTargetRule mapRule in Company.Filter<IntersectMapSourceTargetRule>(r => r.RuleID == rule.ID).ToList())
                 {
                     if (intersectMaps.Count(m => m.ID == mapRule.IntersectMapID) != 0)
@@ -15733,6 +15711,11 @@ order by	D.Name, I.Name";
                     }
 
                 }
+
+                #endregion
+
+                #region SAVE
+
                 try
                 {
                     Company.SaveChanges();
@@ -15744,6 +15727,8 @@ order by	D.Name, I.Name";
                     message += $"[{DateTime.Now}] An error occurred while saving rule changes: {ex.Message}\n{ex.StackTrace}\n\n";
                     continue;
                 }
+
+                #endregion
 
             }
 
@@ -15761,8 +15746,6 @@ order by	D.Name, I.Name";
                 if (canDelete)
                     intersectMapSourceTargetRules.ForEach(r =>
                 {
-
-
                     try
                     {
                         Company.Delete(r);

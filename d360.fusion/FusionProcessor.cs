@@ -451,12 +451,15 @@ namespace d360.fusion
 			            MERGE
 				            INTO    [Intersect] d
 				            USING   (
-						            SELECT sr.IntersectTypeID isectid , 2 as class,sr.ID as srID
-							            FROM #tempResolvedRel sr							            
+						            SELECT  sr.IntersectTypeID isectid, 
+                                            2 as class, 
+                                            sr.ID as srID,
+                                            
+							        FROM    #tempResolvedRel sr							            
 						            ) s
 				            ON      (1 = 0)
 				            WHEN NOT MATCHED THEN
-				            INSERT  (IntersectTypeID, Classification, Description)
+				            INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID, CreatedBy, CreatedOn, UdatedBy, UpdatedOn)
 				            VALUES  (isectid, class, NULL)
 				            OUTPUT  INSERTED.ID, s.srID into @IDList;
 
