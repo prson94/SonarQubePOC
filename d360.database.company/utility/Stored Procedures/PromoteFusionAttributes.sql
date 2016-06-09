@@ -110,7 +110,6 @@ BEGIN
 		from	FusionAttributePromotionRule R
 				inner join FusionAttributePromotionRuleItem I on I.FusionAttributePromotionRuleID = R.ID and R.[Enabled] = 1
 				left join FusionAttribute A on A.ID = I.FusionAttributeID
-
 	
 	declare	@currentID int,
 			@maxID int
@@ -198,7 +197,7 @@ BEGIN
 				case 
 					when M.SourceFieldName = 'Name' then FA.Name					
 					when M.IsConstantValue = 1 then M.ConstantValue
-				end				
+				end
 		from	FusionAttributePromotionRuleMapping M
 				inner join #attributes A on A.RuleID = M.FusionAttributePromotionRuleID
 				inner join FusionAttribute FA on FA.ID = A.FusionAttributeID 
@@ -231,6 +230,8 @@ from	#rules R
 		inner join #attributes A on A.RuleID = R.RuleID
 */
 --END: TESTING ------------------------------------------
+
+
 	set		@currentID = 1
 	select	@maxID = MAX(ID) from #attributes
 
@@ -268,26 +269,38 @@ from	#rules R
 				begin
 					declare @code nvarchar(50) = null,
 							@name nvarchar(250) = null,
-							@description nvarchar(4000) = null
+							@description nvarchar(4000) = null,
+							@taxonomyTypeName nvarchar(250) = null,
+							@modelTypeID int = null
 
 					select @code = Value from @fields where TargetFieldName = 'Code'
 					select @name = Value from @fields where TargetFieldName = 'Name'
 					select @description = coalesce(Value, '') from @fields where TargetFieldName = 'Description'
+					select @taxonomyTypeName = Value from @fields where TargetFieldName = 'TaxonomyTypeID'
 
 					if @PromotionObjectType = 'ArtifactType'
 						begin
 							set @PromotedType = 'Artifact'
+
+							if @taxonomyTypeName is not null
+							begin
+								select @modelTypeID = ID from TaxonomyType where Name = @taxonomyTypeName
+							end
+
+							if @modelTypeID is null
+							begin
+								select @modelTypeID = min(ID) from TaxonomyType
+							end
 
 							if @PromotedID is null
 								begin
 									select	@PromotedID = ID
 									from	Artifact
 									where	ArtifactTypeID = @PromotionObjectID
+											and ParentID = @PromotionParentObjectID
+											and TaxonomyTypeID = @modelTypeID
 											and lower(Name) = lower(@name)
 								end
-
-							declare @modelTypeID int
-							select @modelTypeID = min(ID) from TaxonomyType
 
 							if @PromotedID is null
 								begin
@@ -539,9 +552,9 @@ from	#rules R
 	end
 
 
-	-- write the field values from the temp table to the field table
-	-- the field table has a trigger doing this once outside the loop causes the trigger to only fire this one time.
-		
+	--write the field values from the temp table to the field table
+	--the field table has a trigger doing this once outside the loop causes the trigger to only fire this one time.
+
 	If EXISTS (SELECT 1 FROM #fieldValues)		
 	begin
 		--debug shows values 
@@ -559,7 +572,7 @@ from	#rules R
 				when	matched then
 					update set T.Value = S.Value
 				when	not matched then
-					insert (ObjectTYpe, OBjectID, FieldTypeID, Value)
+					insert (ObjectType, OBjectID, FieldTypeID, Value)
 					values (S.ObjectType, S.ObjectID, S.FieldTypeID, S.Value);
 	end
 
@@ -567,7 +580,7 @@ from	#rules R
 	--exec [utility].[PromoteFusionAttributesRelations] @NumberOfNewRelations output
 
 	-- Handle any fusionlookup fields
-	--exec [utility].[PromoteFusionAttributeLookups]
+	exec [utility].[PromoteFusionAttributeLookups]
 	
 		
 	--Log this run done

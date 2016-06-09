@@ -152,9 +152,9 @@ BEGIN
 		-- log the relations into the fusionattributepromotion table so  they dont get readded and we know we added them
 
 		--start fusion id
-		insert into dbo.fusionattributepromotion select r.StartFusionAttributeID as FusionAttributeID, 'Intersect', il.IntersectID,null,-1  from #relations r inner join @IDLIst il on (r.ID = il.RelID)
+		insert into dbo.fusionattributepromotion select r.StartFusionAttributeID as FusionAttributeID, 'Intersect', il.IntersectID,null,0,-1  from #relations r inner join @IDLIst il on (r.ID = il.RelID)
 		-- end fusion id
-		insert into dbo.fusionattributepromotion select r.EndFusionAttributeID as FusionAttributeID, 'Intersect', il.IntersectID,null,-1  from #relations r inner join @IDLIst il on (r.ID = il.RelID)
+		insert into dbo.fusionattributepromotion select r.EndFusionAttributeID as FusionAttributeID, 'Intersect', il.IntersectID,null,0,-1  from #relations r inner join @IDLIst il on (r.ID = il.RelID)
 	end
 
 

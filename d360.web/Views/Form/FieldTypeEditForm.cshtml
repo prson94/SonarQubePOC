@@ -135,7 +135,7 @@
     <div class="row" data-bind="visible: ValidationEnabled">
         <div class="col s12">
             <div id='ValidationDescriptionTip' class="FieldName">@(Resources.FieldInfo.ValidationDescription_Name)</div>
-            <textarea class="htmlArea" data-bind="value: ValidationDescription"></textarea>
+            <textarea data-bind="htmlarea: ValidationDescription"></textarea>
         </div>
     </div>
 
@@ -272,11 +272,11 @@
     <div class="row">
         <div class="col s6">
             <div id='DisplayDescriptionTip' class="FieldName">@(Resources.FieldInfo.DisplayDescription_Name)</div>
-            <textarea class="htmlArea" data-bind="value: DisplayDescription"></textarea>
+            <textarea data-bind="htmlarea: DisplayDescription"></textarea>
         </div>
         <div class="col s6">
             <div id='FormDescriptionTip' class="FieldName">@(Resources.FieldInfo.FormDescription_Name)</div>
-            <textarea class="htmlArea" data-bind="value: FormDescription"></textarea>
+            <textarea data-bind="htmlarea: FormDescription"></textarea>
         </div>
     </div>
 </script>

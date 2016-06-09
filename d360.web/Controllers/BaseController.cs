@@ -491,10 +491,20 @@ namespace d360.web.Controllers
                         fld.FieldType = DataType.Lookup.ToString();
                         try
                         {
-                            fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
-                                .OrderBy(o => o.Text)
-                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                .ToList();
+                            //if (f.LookupObjectType == "Predicate")
+                            //{
+                            //    fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                            //        .OrderBy(o => o.Text)
+                            //        .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                            //        .ToList();
+                            //}
+                            //else
+                            //{
+                                fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                                    .OrderBy(o => o.Text)
+                                    .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+                                    .ToList();
+                            //}
                             if (!f.IsRequired) fld.Items.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
                         }
                         catch

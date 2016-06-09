@@ -879,6 +879,8 @@
     <Content Include="Scripts\app\components\admin\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
+    <Content Include="Scripts\d3s.Synonyms.js" />
+    <Content Include="Scripts\d3s.Attributes.js" />
     <Content Include="Scripts\errors.json" />
     <None Include="Content\styles\_Variables.less" />
     <Content Include="Scripts\GoJS\GoJS-1-5-18-debug.js" />
@@ -949,13 +951,10 @@
     <Content Include="Scripts\moment.js" />
     <Content Include="Scripts\moment.min.js" />
     <Content Include="Scripts\packery.pkgd.js" />
-    <Content Include="Scripts\parts\AttributesTile.js" />
     <Content Include="Scripts\parts\AttributeTypeAllocationGrid.js" />
     <Content Include="Scripts\parts\CertificationNotificationTile.js" />
     <Content Include="Scripts\parts\ChallengeNotificationTile.js" />
-    <Content Include="Scripts\parts\CollapsibleAttributesTile.js" />
     <Content Include="Scripts\parts\CollapsibleConversationTile.js" />
-    <Content Include="Scripts\parts\CollapsibleSynonymsTile.js" />
     <Content Include="Scripts\parts\CollapsibleTypeHierarchyTile.js" />
     <Content Include="Scripts\parts\CriticalRelationshipsTile.js" />
     <Content Include="Scripts\parts\DomainAllocationsTile.js" />

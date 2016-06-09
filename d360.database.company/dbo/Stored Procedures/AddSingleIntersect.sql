@@ -1,5 +1,4 @@
-﻿
-CREATE procedure [dbo].[AddSingleIntersect]
+﻿CREATE procedure [dbo].[AddSingleIntersect]
 	@ResourceID int,
 	@IntersectTypeID int,
 	@Subject varchar(50),			-- The start object type.
@@ -36,7 +35,7 @@ begin
 					Description = @Description
 			where	ID = @IntersectID
 
-			exec utility.AddAuditEntry 'Intersect', @IntersectID, @ResourceID, @Date, 'Updated', 'Intersect', @IntersectID
+			--exec utility.AddAuditEntry 'Intersect', @IntersectID, @ResourceID, @Date, 'Updated', 'Intersect', @IntersectID
 		end
 	else
 		begin
@@ -64,14 +63,18 @@ begin
 						Classification, 
 						[Description],
 						[Subject], SubjectID,
-						[Object], ObjectID 					
+						[Object], ObjectID,
+						CreatedBy, CreatedOn,
+						UpdatedBy, UpdatedOn				
 					) 
 					VALUES (
 						@IntersectTypeID, 
 						@Classification, 
 						@Description,
 						@Subject, @SubjectID,
-						@Object, @ObjectID
+						@Object, @ObjectID,
+						@ResourceID, @Date,
+						@ResourceID, @Date
 					)
 
 					SELECT @IntersectID = SCOPE_IDENTITY()
@@ -86,13 +89,13 @@ begin
 
 					SELECT @ObjectIntersectNodeID = SCOPE_IDENTITY()
 
-					insert into cache.[Object] ( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
-					values	( 'Intersect', @IntersectID, 'IntersectType', @IntersectTypeID );
+					--insert into cache.[Object] ( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
+					--values	( 'Intersect', @IntersectID, 'IntersectType', @IntersectTypeID );
 
-					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-					values	( @IntersectID, @SubjectIntersectTypeNodeID, @SubjectIntersectNodeID, @Subject, @SubjectID, @ObjectIntersectTypeNodeID, @ObjectIntersectNodeID, @Object, @ObjectID );
-					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-					values	( @IntersectID, @ObjectIntersectTypeNodeID, @ObjectIntersectNodeID, @Object, @ObjectID, @SubjectIntersectTypeNodeID, @SubjectIntersectNodeID, @Subject, @SubjectID );
+					--insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
+					--values	( @IntersectID, @SubjectIntersectTypeNodeID, @SubjectIntersectNodeID, @Subject, @SubjectID, @ObjectIntersectTypeNodeID, @ObjectIntersectNodeID, @Object, @ObjectID );
+					--insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
+					--values	( @IntersectID, @ObjectIntersectTypeNodeID, @ObjectIntersectNodeID, @Object, @ObjectID, @SubjectIntersectTypeNodeID, @SubjectIntersectNodeID, @Subject, @SubjectID );
 
 					--Update the responsibilities of the object that should inherit form the other (Taxonomy can push relationships down to artifact)
 					if ( (@Subject = 'Taxonomy' and @Object = 'Artifact') OR (@Subject = 'Artifact' and @Object = 'Taxonomy') )
@@ -107,8 +110,8 @@ begin
 							end
 						end
 
-					exec utility.AddAuditEntry @Subject, @SubjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
-					exec utility.AddAuditEntry @Object, @ObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
+					--exec utility.AddAuditEntry @Subject, @SubjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
+					--exec utility.AddAuditEntry @Object, @ObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
 				end
 		end
 

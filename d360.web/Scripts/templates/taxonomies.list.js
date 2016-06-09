@@ -119,30 +119,27 @@
                 var parentid = row.ParentID;//node.data("p");
                 var ctx = contextList.Taxonomy;//node.data("c");
 
-                if (selectedID > 0) {
+                if (selectedID > 0) { 
                     $('#SideIcons').PageTools("reload", type, selectedID, ctx);
 
                     if (ctx == contextList.Taxonomy) {
 
-                        //$.getJSON('/api/Taxonomy/' + selectedID + '/flags', function (flagdata) {
-                            //pageViewModel.RedFlagged = flagdata.RedFlagged;
-                            context.contentHeader(pageViewModel);
-                        //});
-
+                        context.contentHeader(pageViewModel);
                         ObjectDetail('DetailTile', type, selectedID);
 
                         var loadPermissionsDependentTiles = function () {
                             amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
+
                             if (json.AllowAttributes) {
-                                CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, selectedID);
+                                $('#AttributesTile').Attributes('reload', type, selectedID, permissions.HasPermission("Attributes", "Update"));
                             }
                             else {
                                 $('#AttributesTile').hide();
                             }
 
                             if (json.AllowSynonyms) {
-                                CollapsibleSynonymsTile('SynonymsTile', contextList, permissions, type, selectedID);
+                                $('#SynonymsTile').Synonyms('reload', type, selectedID, permissions.HasPermission("Relationship", "Update"), permissions.HasPermission("Relationship", "Delete"));
                             }
                             else {
                                 $('#SynonymsTile').hide();
@@ -159,6 +156,7 @@
             }
 
             function unsubscribe(data) {
+                $('#AttributesTile').Attributes('destroy');
                 $('#Tree').off('bindingComplete', bindingComplete);
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
@@ -177,6 +175,9 @@
                     context.contentHeader(pageViewModel);
 
                     $('#SideIcons').PageTools({ type: 'Taxonomy', id: typeID, context: 'root' });
+
+                    $('#AttributesTile').Attributes({ object: 'Taxonomy', objectID: typeID, readOnly: false });
+                    $('#SynonymsTile').Synonyms({ object: 'Taxonomy', objectID: 0 });
 
                     var updateNodeTitleIndicators = function (name) {
                         var dropDownContent = '<div style="position: relative; margin-left: 3px; margin-top: 5px;">' + name + '</div>';
@@ -239,6 +240,8 @@
                           }
                         ]
                     });
+
+
 
                     //#endregion
                 });

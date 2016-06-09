@@ -46,6 +46,14 @@
             
             //#region Event Handlers
 
+            function oneBindingComplete() {
+                try {
+                    $('#ItemsTile').jqxGrid('pincolumn', 'Name');
+                    $('#ItemsTile').jqxGrid('autoresizecolumns');
+                } catch (e) {
+                }
+            }
+
             function exportFusionAttributes() {
                 var selectedFusionAttributeTypeID = 0;
 
@@ -153,8 +161,7 @@
                                         $('#ItemsTile').jqxGrid('pincolumn', this.datafield);
                                     }
                                 });
-                                $('#ItemsTile').jqxGrid('pincolumn', 'Name');
-                                $('#ItemsTile').jqxGrid('autoresizecolumns');
+                                oneBindingComplete();
                             }
                         } catch (e) {
                         }
@@ -222,11 +229,17 @@
 
             function clearFilter() {
                 filterVM.clearFilters();
+                $('#ItemsTile').one('bindingcomplete', function (event) {
+                    oneBindingComplete();
+                });
                 $('#ItemsTile').jqxGrid('updatebounddata');
             }
 
             function runFilter() {
                 $('#ItemsTile').jqxGrid('gotopage', 0); //if user is paging around send them back to begining in case search results change number of pages.
+                $('#ItemsTile').one('bindingcomplete', function (event) {
+                    oneBindingComplete();
+                });
                 $('#ItemsTile').jqxGrid('updatebounddata');
             }
 
@@ -411,6 +424,12 @@
                     amplify.subscribe("ToolAction", toolAction);
                     //amplify.subscribe("PageResized", pageResized);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+                    //$("#ItemsTile").on("sort", function (event) {
+                    //    $('#ItemsTile').one('bindingcomplete', function (event) {
+                    //        oneBindingComplete();
+                    //    });
+                    //});
 
                     //#endregion
 

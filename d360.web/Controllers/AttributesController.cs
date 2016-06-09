@@ -94,7 +94,7 @@ namespace d360.web.Controllers
         /// <param name="ownerID">The ID of the object that owns this attribute.</param>
         /// <param name="attributeID">The current or new parent attribute ID.</param>
         /// <returns>A list of available actions as JSON.</returns>
-        public JsonResult AttributeActions(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID)
+        public JsonResult AttributeActions(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID = null)
         {
             Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
 
@@ -127,7 +127,13 @@ namespace d360.web.Controllers
                 {
                     var detail = Company.GetObjectDetail(type, id);
                     var sType = type.ToString();
-                    var _id = sType.EndsWith("Type") ? detail.ID : detail.TypeID;
+                    int _id = id;
+
+                    if (detail != null)
+                    {
+                        _id = sType.EndsWith("Type") ? detail.ID : detail.TypeID;
+                    }
+
 
                     var usedIDs = Company.Filter<core.entities.Attribute>(i => i.ObjectType == sType && i.ObjectID == id).Select(i => i.AttributeTypeID).ToList();
 

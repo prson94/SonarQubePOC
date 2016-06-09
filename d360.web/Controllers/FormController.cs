@@ -4066,6 +4066,10 @@ order by  D.TextPath
                     list.Add("Description", "Description");
                     list.Add("TextPath", "TextPath");
                     break;
+                //case SystemObjects.Predicate:
+                //    list.Add("Name", "Name");
+                //    list.Add("TextPath", "TextPath");
+                //    break;
                 case SystemObjects.Resource:
                 case SystemObjects.ResourceType:
                     list.Add("First Name", "FirstName");
@@ -4103,7 +4107,20 @@ from    utility.RelationshipTypes RT
 order by  D.TextPath
 ", new { type, id });
             var fusionAttributeTypes = Company.Table<FusionAttributeType>().OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
-            var lookups = Company.GetFieldTypeLookupOptions().Select(i => new { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" });
+            var lookups = Company.GetFieldTypeLookupOptions().Select(i => new KnockoutListItem { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" }).ToList();
+
+//            lookups.AddRange(Company.Query<KnockoutListItem>(@"
+//select		distinct
+//			'Predicate Relationship :: ' + P.Name as title,
+//            'Predicate|' + cast(P.ID as varchar) as value
+//from		utility.RelationshipTypes T
+//			inner join IntersectTypePredicate J on J.IntersectTypeID = T.IntersectTypeID and T.SourceObjectType = @type and T.SourceObjectID = @id
+//			inner join Predicate P on P.Type = J.PredicateType
+//order by	P.Name
+//", new { type, id }));
+
+            //lookups = lookups.OrderBy(i => i.title).ToList();
+
             var patterns = new Dictionary<string, string>() {
                 { "Choose sample...", "" },
                 { "Email", @"\b([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
@@ -7965,7 +7982,7 @@ order by  D.TextPath
 
         public JsonNetResult IntersectType_PredicateOptions()
         {
-            var models = MapType.Lineage.GetAsList().Select(i => new { title = i.Name, value = (int)i.ID }).OrderBy(i => i.title); //Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
+            var models = PredicateType.Lineage.GetAsList().Select(i => new { title = i.Name, value = (int)i.ID }).OrderBy(i => i.title); //Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
             //var models = Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -8098,7 +8115,7 @@ order by  D.TextPath
 
                 if (!string.IsNullOrEmpty(form["Predicates[]"]))
                 {
-                    var predicates = form["Predicates[]"].Split(',').Select(i => (MapType)Enum.Parse(typeof(MapType), i)).ToList();
+                    var predicates = form["Predicates[]"].Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
 
                     predicates.ForEach(p => {
                         Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
@@ -8236,10 +8253,10 @@ order by  D.TextPath
                 Company.Update<IntersectTypeNode>(existingSide1Node);
                 Company.Update<IntersectTypeNode>(existingSide2Node);
 
-                List<MapType> predicates = null;
+                List<PredicateType> predicates = null;
                 if (!string.IsNullOrEmpty(form["Predicates[]"]))
                 {
-                    predicates = form["Predicates[]"].Split(',').Select(i => (MapType)Enum.Parse(typeof(MapType), i)).ToList();
+                    predicates = form["Predicates[]"].Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
                 }
 
                 var invalidPredicates = model.IntersectTypePredicates.Select(i => i.PredicateType).Except(predicates).ToList();
@@ -8776,6 +8793,16 @@ order by  D.TextPath
                     fieldTypeNames.Add("Target object");
                     fieldTypeNames.Add("Predicate");
                     break;
+                case "Synonym":
+                    fieldTypeNames.Add("Source object type");
+                    fieldTypeNames.Add("Source object type name");
+                    fieldTypeNames.Add("Source object subject area");
+                    fieldTypeNames.Add("Source object");
+                    fieldTypeNames.Add("Target object type");
+                    fieldTypeNames.Add("Target object type name");
+                    fieldTypeNames.Add("Target object subject area");
+                    fieldTypeNames.Add("Target object");
+                    break;
             }
 
             return fieldTypeNames;
@@ -8787,7 +8814,7 @@ order by  D.TextPath
 
             var sql = "";
             switch (act) {
-                case "P": // Promotion
+                case "P":   // Promotion
                     #region
                     sql = @"
 select * from (
@@ -8803,14 +8830,17 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 ) O order by title";
                     break;
                     #endregion
-                case "R": // Relation
-                case "U": // Unrelation
+                case "R":   // Relation
+                case "U":   // Unrelation
                     #region
                     sql = @"select 'IntersectType|' + cast(ID as varchar(10)) as value, Name as title from IntersectType order by Name";
                     break;
                     #endregion
-                case "L":
+                case "L":   // Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
+                    break;
+                case "S":   // Synonym
+                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "Synonym|-1" } };
                     break;
             }
 
@@ -8893,7 +8923,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 }
                 else if (type == "Lineage" && lowerColName == "predicate")
                 {
-                    var items = Company.Filter<Predicate>(x => x.Type == MapType.Lineage).OrderBy(x => x.Name).Select(x => x.Name);
+                    var items = Company.Filter<Predicate>(x => x.Type == PredicateType.Lineage).OrderBy(x => x.Name).Select(x => x.Name);
 
                     if (items.Any())
                     {
@@ -8904,7 +8934,10 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                         document.AddDataValidation(dv);
                     }
                 }                
-                else if (type == "Lineage" && (lowerColName == "focal point object type" || lowerColName == "source object type" || lowerColName == "target object type"))
+                else if (
+                    (type == "Lineage" && (lowerColName == "focal point object type" || lowerColName == "source object type" || lowerColName == "target object type")) ||
+                    (type == "Synonym" && (lowerColName == "source object type" || lowerColName == "target object type"))
+                    )
                 {
                     var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
                     var typesList = new List<string> { "Artifact", "Domain", "Policy","Rule","Taxonomy"};
@@ -8913,7 +8946,10 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                     document.AddDataValidation(dv);
                 }
-                else if (type == "Lineage" && (lowerColName == "focal point subject area" || lowerColName == "source object subject area" || lowerColName == "target object subject area") )
+                else if (
+                    (type == "Lineage" && (lowerColName == "focal point subject area" || lowerColName == "source object subject area" || lowerColName == "target object subject area") ) ||
+                    (type == "Synonym" && (lowerColName == "source object subject area" || lowerColName == "target object subject area"))
+                    )
                 {
                     var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
 
@@ -10444,7 +10480,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Predicate Type", FieldType = DataType.Lookup.ToString(), Items = MapType.Lineage.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Predicate Type", FieldType = DataType.Lookup.ToString(), Items = PredicateType.Lineage.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -10476,7 +10512,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Value = a.Inverse, Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
             if (!any)
             {
-                list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Predicate Type", FieldType = DataType.Lookup.ToString(), Value = ((int)a.Type).ToString(), Items = MapType.Lineage.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList() });
+                list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Predicate Type", FieldType = DataType.Lookup.ToString(), Value = ((int)a.Type).ToString(), Items = PredicateType.Lineage.GetAsList().Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name }).ToList() });
             }
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -10514,7 +10550,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 {
                     Name = parseTextField(form, "Name", null, true),
                     Inverse = parseTextField(form, "Inverse", null, true),
-                    Type = (MapType)Enum.Parse(typeof(MapType), form["Type"]),
+                    Type = (PredicateType)Enum.Parse(typeof(PredicateType), form["Type"]),
                     IsSystem = false
                 };
 
@@ -15635,14 +15671,14 @@ order by	D.Name, I.Name";
 
                         var intersectNodeSub = Company.Filter<IntersectNode>(i => i.IntersectID == intersectId && i.ObjectID == source.FusionID).FirstOrDefault();
                         var intersectNodeObj = Company.Filter<IntersectNode>(i => i.IntersectID == intersectId && i.ObjectID == target.FusionID).FirstOrDefault();
-                        var intersectMap = Company.Filter<IntersectMap>(m => m.SubjectIntersectNodeID == intersectNodeSub.ID && m.ObjectIntersectNodeID == intersectNodeObj.ID && m.Type == MapType.SourceToTarget).FirstOrDefault();
+                        var intersectMap = Company.Filter<IntersectMap>(m => m.SubjectIntersectNodeID == intersectNodeSub.ID && m.ObjectIntersectNodeID == intersectNodeObj.ID && m.Type == PredicateType.SourceToTarget).FirstOrDefault();
 
                         if (intersectMap == null || intersectMap.ID < 1)
                         {
                             var newMap = new IntersectMap();
                             newMap.SubjectIntersectNodeID = intersectNodeSub.ID;
                             newMap.ObjectIntersectNodeID = intersectNodeObj.ID;
-                            newMap.Type = MapType.SourceToTarget;
+                            newMap.Type = PredicateType.SourceToTarget;
                             newMap.PredicateID = 1;
                             Company.Set<IntersectMap>().Add(newMap);
                             intersectMap = newMap;
@@ -16484,7 +16520,7 @@ where	RT.SourceObjectType = @type
                     PredicateID = predicateID,
                     SubjectIntersectNodeID = intersect.Nodes.First().ID,
                     ObjectIntersectNodeID = intersect.Nodes.Last().ID,
-                    Type = MapType.Synonym
+                    Type = PredicateType.Synonym
                 };
                 Company.Add<IntersectMap>(im);
 

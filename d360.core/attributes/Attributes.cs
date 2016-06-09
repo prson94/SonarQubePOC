@@ -14,6 +14,36 @@ namespace d360.core
         }
     }
 
+    public class AllowMultiplePredicatesAttribute : Attribute
+    {
+        private bool _allowed = true;
+        public bool Allowed { get { return _allowed; } }
+        public AllowMultiplePredicatesAttribute(bool allowed)
+        {
+            _allowed = allowed;
+        }
+    }
+
+    public class AllowDifferentSubjectObjectAttribute : Attribute
+    {
+        private bool _allowed = true;
+        public bool Allowed { get { return _allowed; } }
+        public AllowDifferentSubjectObjectAttribute(bool allowed)
+        {
+            _allowed = allowed;
+        }
+    }
+
+    public class ForceDifferentSubjectObjectAttribute : Attribute
+    {
+        private bool _allowed = true;
+        public bool Allowed { get { return _allowed; } }
+        public ForceDifferentSubjectObjectAttribute(bool allowed)
+        {
+            _allowed = allowed;
+        }
+    }
+
     public class AllowSurveyAttribute : Attribute
     {
         private bool _allowed = true;

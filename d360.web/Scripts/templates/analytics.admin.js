@@ -4,12 +4,12 @@
 
         var type = 'StatisticType';
         var id = null;
-
-        context.title(pageViewModel.Title);
+         
+        context.title(pageViewModel.Title); 
 
         pageViewModel.breadcrumbs = [];
         pageViewModel.breadcrumbs.push({ Name: 'Administration' });
-        pageViewModel.breadcrumbs.push({ Name: 'Type Management' });
+        pageViewModel.breadcrumbs.push({ Name: 'Type Management' }); 
         pageViewModel.breadcrumbs.push({ Name: pageViewModel.Title, Active: true });
 
         var permissions = new PermissionsModel();
@@ -20,7 +20,7 @@
         //#region Event Handlers
 
         function listBindingComplete(event) {
-            if (id && id > 0) {
+            if (id && id > 0) { 
                 var ix = $('#List').jqxGrid('getrowboundindexbyid', id);
                 $('#List').jqxGrid('ensurerowvisible', ix);
                 $('#List').jqxGrid('selectrow', ix);

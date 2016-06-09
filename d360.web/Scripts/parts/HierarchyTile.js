@@ -11,12 +11,8 @@
 
     controlID = '#' + controlID;
     var controlID_hierarchy = controlID + '_hierarchy';
-    //var controlID_title = controlID + '_title';
-    //$(controlID_title).text(title);
 
-    //$(controlID).css('padding-bottom', '0px');
-
-    var getAdapter = function (mapType, selector) {
+    var getAdapter = function (selector) {
         return {
 
             dataType: "json",
@@ -55,7 +51,7 @@
             }
         };
     }
-    var getTreeGrid = function (mapType, adapter, selector, ctrlID) {
+    var getTreeGrid = function (adapter, selector, ctrlID) {
         return {
             width: '100%',
             source: adapter,
@@ -478,71 +474,13 @@
                         rowData.ObjectID = originalItem.ObjectID;
                         return originalItem.Name;
                     }
-                }//,
-                //{
-                //    text: "Predicate", dataField: 'PredicatePhrase', width: '20%', align: "center", columnType: "custom",
-                //    createEditor: function (row, cellvalue, editor, cellText, width, height) {
-
-                //        //console.log(isAddingParent);
-                //        var rowData = $(selector).jqxTreeGrid('getRow', row);
-                //        var intersectMapId = 0;
-                //        //console.log(rowData);
-                //        var parentRow = rowData.parent;
-                //        if (parentRow != null)
-                //            intersectMapId = parent.ID;
-
-
-                //        var url = '/diagrams/GetPredicateInfo';
-
-                //        if (intersectMapId > 0)
-                //            url += 'ByAllocation?id=' + intersectMapId;
-                //        else {
-                //            rowData = $(selector).jqxTreeGrid('getRows')[0];
-                //            url += 'ByTypes?type1=' + rowData.ObjectType + '&type2=' + rowData.ObjectType + '&id1=' + rowData.ObjectTypeID + '&id2=' + rowData.ObjectTypeID + '&mapType=' + mapType;
-                //        }
-
-                //        var hierarchyPredicateSource = {
-                //            datafields: [
-                //                { name: 'id' },
-                //                { name: 'name' }
-                //            ],
-                //            datatype: "json",
-                //            url: url
-                //        }
-
-                //        var hierarchyPredicateAdapter = new $.jqx.dataAdapter(hierarchyPredicateSource);
-
-                //        editor.jqxDropDownList({
-                //            theme: theme,
-                //            source: hierarchyPredicateAdapter,
-                //            width: field_width,
-                //            height: field_height,
-                //            valueMember: 'id',
-                //            displayMember: 'name',
-                //            filterable: true,
-                //            dropDownWidth: 100,
-                //            searchMode: 'containsignorecase'
-                //        });
-                //    },
-                //    getEditorValue: function (row, cellvalue, editor) {
-                //        var rowData = $(selector).jqxTreeGrid('getRow', row);
-                //        var selectedItem = editor.jqxDropDownList('getSelectedItem');
-                //        if (selectedItem == null)
-                //            return "";
-                //        if (selectedItem.originalItem == null)
-                //            return "";
-                //        var originalItem = selectedItem.originalItem;
-
-                //        rowData.PredicateID = originalItem.id;
-                //        return selectedItem.name;
-                //    }
-                //}
+                }
             ]
         }
     }
 
-    function initTreeGrid(selector, mapType, ctrlID) {
-        $(selector).jqxTreeGrid(getTreeGrid(mapType, new $.jqx.dataAdapter(getAdapter(mapType)), selector, ctrlID));
+    function initTreeGrid(selector, ctrlID) {
+        $(selector).jqxTreeGrid(getTreeGrid(new $.jqx.dataAdapter(getAdapter()), selector, ctrlID));
     }
 
     function getRowDataItem(data) {
@@ -561,7 +499,7 @@
     }
 
     var c = controlID.substring(1);
-    initTreeGrid(controlID_hierarchy, mapType, c);
+    initTreeGrid(controlID_hierarchy, c);
 
     function showFocalRow(treeGrid, event) {
         if (event == null || event.args == null)

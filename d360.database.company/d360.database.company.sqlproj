@@ -423,7 +423,6 @@
     <Build Include="dbo\Stored Procedures\AsyncUpdateObject.sql" />
     <Build Include="dbo\Stored Procedures\AsyncDeleteObject.sql" />
     <Build Include="dbo\Stored Procedures\AsyncAddObject.sql" />
-    <Build Include="dbo\Stored Procedures\AddMapRelationship_1.sql" />
     <Build Include="cache\Stored Procedures\SynchronizeResponsibilitiesForObject.sql" />
     <Build Include="dbo\Tables\FusionAttributePromotionLogSummary.sql" />
     <Build Include="utility\Stored Procedures\PromoteFusionAttributesRelations.sql" />
@@ -479,6 +478,17 @@
     <Build Include="fusion\Tables\RuleItem.sql" />
     <Build Include="fusion\Tables\RuleStepMapping.sql" />
     <Build Include="fusion\Tables\RulePromotion.sql" />
+    <Build Include="dbo\Tables\MapSequenceContext.sql" />
+    <Build Include="dbo\Tables\MapSequence.sql" />
+    <Build Include="dbo\Tables\MapRuleMap.sql" />
+    <Build Include="dbo\Tables\MapRuleItem.sql" />
+    <Build Include="dbo\Tables\MapRule.sql" />
+    <Build Include="dbo\Tables\MapItem.sql" />
+    <Build Include="dbo\Tables\Map.sql" />
+    <Build Include="dbo\Tables\IntersectRole.sql" />
+    <Build Include="dbo\Tables\IntersectGroup.sql" />
+    <Build Include="fusion\Stored Procedures\Rules_1.sql" />
+    <Build Include="dbo\Stored Procedures\GetTypeHierarchyByObject.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

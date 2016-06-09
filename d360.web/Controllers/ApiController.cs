@@ -2244,8 +2244,8 @@ where   h.ID <> @t order by h.[Level] desc;
 
             var availableTypes = new List<int>();
 
-            availableTypes.Add((int)MapType.Lineage);
-            availableTypes.Add((int)MapType.ParentChildHierarchy);
+            availableTypes.Add((int)PredicateType.Lineage);
+            availableTypes.Add((int)PredicateType.ParentChildHierarchy);
 
             var intersectType = Company.GetById<IntersectType>(id);
             if (intersectType == null)
@@ -2258,8 +2258,8 @@ where   h.ID <> @t order by h.[Level] desc;
             {
                 if (nodes[0].ObjectType == nodes[1].ObjectType && nodes[0].ObjectID == nodes[1].ObjectID)
                 {
-                    availableTypes.Add((int)MapType.TypeHierarchy);
-                    availableTypes.Add((int)MapType.GroupHierarchy);
+                    availableTypes.Add((int)PredicateType.TypeHierarchy);
+                    availableTypes.Add((int)PredicateType.GroupHierarchy);
                 }
             }
 

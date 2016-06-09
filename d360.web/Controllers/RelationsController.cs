@@ -60,6 +60,22 @@ namespace d360.web.Controllers
             public int LinkTransformationCount { get; set; }
         }
 
+        /// <summary>
+        /// This is the new model that corresponds to GetHierarchyByPredicateType stored procedure.
+        /// </summary>
+        public class HierarchyViewModel
+        {
+            public string Object { get; set; }
+            public int ObjectID { get; set; }
+            public string ObjectType { get; set; }
+            public int ObjectTypeID { get; set; }
+            public string Name { get; set; }
+            public string Url { get; set; }
+            public string ObjectTypeName { get; set; }
+            public int Level { get; set; }
+            public int GroupNumber { get; set; }
+        }
+
         public class HierarchyModel
         {
             public int ID { get; set; }
@@ -77,7 +93,7 @@ namespace d360.web.Controllers
             public int Level { get; set; }
             public int PredicateID { get; set; }
             public string PredicatePhrase { get; set; }
-            public MapType Type { get; set; }
+            public PredicateType Type { get; set; }
             public int GroupNumber { get; set; }
             public string UID { get; set; }
 
@@ -86,7 +102,7 @@ namespace d360.web.Controllers
         public class HierarchyArtifactsModel
         {
             public int IntersectMapID { get; set; }
-            public MapType MapType { get; set; }
+            public PredicateType MapType { get; set; }
             public SystemObjects Type { get; set; }
             public int ID { get; set; }
             public int GroupNumber { get; set; }
@@ -302,93 +318,6 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             return new JsonNetResult { Data = jsonItems, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-//        public JsonNetResult PossibleRelationshipsBySource(string source, int id, string targetType, int targetTypeID)
-//        {
-//            var sql = "";
-
-//            if (targetType == "FusionAttributeType")
-//            {
-//                sql = @"
-//select	'FusionAttribute' as [Object], 
-//        FA.ID as ObjectID, 
-//        F.Name + '.' + FA.TextPath as Name
-//        --, D.Url
-//from	FusionAttribute FA with(nolock)
-//		inner join Fusion F with(nolock) on FA.FusionAttributeTypeID = @targetTypeID and F.ID = FA.FusionID
-//where	not exists  (
-//					select	1 
-//					from	[IntersectDetail] R 
-//					where	(
-//							 ( (O.Subject = @source and O.SubjectID = @id) AND (O.ObjectType = @targetType and O.ObjectTypeID = @targetTypeID) ) OR
-//							 ( (O.SubjectType = @targetType and O.SubjectTypeID = @targetTypeID) AND (O.Object = @source and O.ObjectID = @id) )
-//							)
-//					)
-//order by F.Name, FA.TextPath";
-//            }
-//            else if (targetType == "Group" || targetType == "GroupType")
-//            {
-//                sql = @"
-//select	'Group' as [Object], 
-//        D.ID as ObjectID, 
-//        D.Name
-//        --, D.Url
-//from	[Group] D with(nolock)
-//where	not exists  (
-//					select	1 
-//					from	[IntersectDetail] R 
-//					where	(
-//							 ( (O.Subject = @source and O.SubjectID = @id) AND (O.ObjectType = 'Group' and O.ObjectTypeID = 1) ) OR
-//							 ( (O.SubjectType = 'Group' and O.SubjectTypeID = 1) AND (O.Object = @source and O.ObjectID = @id) )
-//							)
-//					)
-//order by D.Name";
-//            }
-//            else if (targetType == "Resource" || targetType == "ResourceType")
-//            {
-//                sql = @"
-//select	'Resource' as [Object], 
-//        D.ResourceID as ObjectID, 
-//        D.LastName + ', ' + D.FirstName as Name
-//        --, D.Url
-//from	reporting.Global_Resource D with(nolock)
-//where   not exists  (
-//					select	1 
-//					from	[IntersectDetail]
-//					where	(
-//							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ResourceType' and ObjectTypeID = 1) ) OR
-//							 ( (SubjectType = 'ResourceType' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
-//							)
-//					)
-//order by D.LastName, D.FirstName";
-//            }
-//            else
-//            {
-//                sql = @"
-//select	D.[Object], 
-//        D.ObjectID, 
-//        D.TextPath as Name--, 
-//--        D.Url
-//from	cache.ObjectDetails D with(nolock)
-//where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
-//        and D.ObjectTypeID <> D.ObjectID 
-//        and D.ObjectTypeID <> 0
-//        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
-//		and not exists (
-//						select	1 
-//						from	[cache].[Relationship] R 
-//						where	R.SourceObject = @source 
-//								and R.SourceObjectID = @id
-//								and R.TargetObject = D.[Object] 
-//								and R.TargetObjectID = D.ObjectID
-//						)
-//order by D.TextPath";
-//            }
-
-//            var items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source, id }).ToList();
-
-//            return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
-//        }
-
         public JsonResult RelationshipTypes(string type, int typeID)
         {
             var types = Company.GetAllowedIntersectionTypes(type, typeID);
@@ -451,13 +380,13 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             }
 
             Predicate predicate = null; //Company.GetById<Predicate>(model.PredicateID);
-            if (model.HierarchyType == MapType.GroupHierarchy)
+            if (model.HierarchyType == PredicateType.GroupHierarchy)
             {
-                predicate = Company.Filter<Predicate>(i => i.Type == MapType.GroupHierarchy).FirstOrDefault();
+                predicate = Company.Filter<Predicate>(i => i.Type == PredicateType.GroupHierarchy).FirstOrDefault();
             }
             else
             {
-                predicate = Company.Filter<Predicate>(i => i.Type == MapType.TypeHierarchy).FirstOrDefault();
+                predicate = Company.Filter<Predicate>(i => i.Type == PredicateType.TypeHierarchy).FirstOrDefault();
             }
 
             if (predicate == null)
@@ -517,7 +446,7 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
                                 }
                                 
 
-                                if (model.HierarchyType == MapType.GroupHierarchy && message == "")
+                                if (model.HierarchyType == PredicateType.GroupHierarchy && message == "")
                                 {
                                     var intersectMapGroup = new IntersectMapGroup();
                                     intersectMapGroup.IntersectMapID = intersectMap.ID;
@@ -550,7 +479,7 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
                             message = ex.Message;
                         }
 
-                        if (model.HierarchyType == MapType.GroupHierarchy && model.GroupNumber > -1 && message == "")
+                        if (model.HierarchyType == PredicateType.GroupHierarchy && model.GroupNumber > -1 && message == "")
                         {
                             try
                             {
@@ -615,7 +544,7 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
                                 message = ex.Message;
                             }
 
-                            if (model.HierarchyType == MapType.GroupHierarchy && message == "")
+                            if (model.HierarchyType == PredicateType.GroupHierarchy && message == "")
                             {
                                 try
                                 {
@@ -703,11 +632,11 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
         }
 
         [HttpGet, Route("hierarchy/{mapType}/{type}/{id:int}")]
-        public JsonNetResult GetHierarchy(SystemObjects type, int id, MapType mapType)
+        public JsonNetResult GetHierarchy(SystemObjects type, int id, PredicateType mapType)
         {
             var sql = "EXEC GetHierarchyByMapType @type, @id, @mapType";
 
-            if (mapType == MapType.GroupHierarchy)
+            if (mapType == PredicateType.GroupHierarchy)
                 sql = "EXEC GetGroupHierarchy @type, @id";
 
             var results = Company.Query<HierarchyModel>(sql, new { type = type.ToString(), id = id, mapType = (int)mapType });
@@ -744,10 +673,10 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
 
             switch(model.MapType)
             {
-                case MapType.TypeHierarchy:
+                case PredicateType.TypeHierarchy:
                     sql = string.Format(sql, nodeId, "", " and ObjectType = @type and ObjectTypeID = @id order by Name");
                     break;
-                case MapType.GroupHierarchy:
+                case PredicateType.GroupHierarchy:
                     sql = string.Format(sql, nodeId, "join intersectmapgroup g on g.intersectmapid = m.id and g.groupnumber = @groupNumber", " and ObjectType = @type and ObjectTypeID = @id order by Name");
                     break;
                 default:
@@ -765,7 +694,7 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             if (intersectMap != null)
             {
                 var intersectNode = Company.GetById<IntersectNode>(intersectMap.SubjectIntersectNodeID);
-                if (model.MapType == MapType.GroupHierarchy)
+                if (model.MapType == PredicateType.GroupHierarchy)
                     hierarchy = Company.Query<HierarchyModel>("EXEC GetGroupHierarchy @type, @id", new { type = model.Type.ToString(), id = model.ID }).ToList();
                 else
                     hierarchy = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = model.Type.ToString(), id = model.ID, mapType = model.MapType }).ToList();
@@ -779,15 +708,15 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             {
                 switch(model.MapType)
                 {
-                    case MapType.TypeHierarchy:
-                    case MapType.ParentChildHierarchy:
+                    case PredicateType.TypeHierarchy:
+                    case PredicateType.ParentChildHierarchy:
                         var t = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID).FirstOrDefault();
                         var t2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID).FirstOrDefault();
 
                         if (t != null || t2 != null)
                             itemList.Remove(d);
                         break;
-                    case MapType.GroupHierarchy:
+                    case PredicateType.GroupHierarchy:
                         if (d.Object == model.Type.ToString() && d.ObjectID == model.ID)
                             itemList.Remove(d);
                         var g = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID && r.GroupNumber == model.GroupNumber).FirstOrDefault();
@@ -834,7 +763,7 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
                 message = $"A source may not map to itself directly.";
             }
 
-            var predicate = Company.Filter<Predicate>(i => i.Type == MapType.Synonym).FirstOrDefault();
+            var predicate = Company.Filter<Predicate>(i => i.Type == PredicateType.Synonym).FirstOrDefault();
 
             if (predicate == null)
             {
@@ -873,7 +802,7 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
                             ObjectIntersectNodeID = intersect.ObjectNodeID,
                             PredicateID = predicate.ID,
                             SubjectIntersectNodeID = intersect.SubjectNodeID,
-                            Type = MapType.Synonym
+                            Type = PredicateType.Synonym
                         };
                         try
                         {
@@ -1357,7 +1286,7 @@ for		    xml path('relationship'), root('item')
                             {
                                 var predicate = Company.GetById<Predicate>(model.PredicateID);
 
-                                if (predicate.Type == MapType.Lineage)
+                                if (predicate.Type == PredicateType.Lineage)
                                 {
                                     if ($"{model.Focal}{model.FocalID}" != $"{model.Subject}{model.SubjectID}")
                                         Company.AddRelationship(model.Focal, model.FocalID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
@@ -1394,7 +1323,7 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
                                             ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
                                             PredicateID = model.PredicateID,
                                             SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                            Type = MapType.Lineage
+                                            Type = PredicateType.Lineage
                                         };
                                         Company.Add<IntersectMap>(intersectMap);
                                     }

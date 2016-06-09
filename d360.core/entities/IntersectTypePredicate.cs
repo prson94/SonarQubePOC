@@ -10,7 +10,7 @@ namespace d360.core.entities
         public int IntersectTypeID { get; set; }
 
         [DataMember]
-        public MapType PredicateType { get; set; }
+        public PredicateType PredicateType { get; set; }
 
         //[DataMember]
         //public int PredicateID { get; set; }

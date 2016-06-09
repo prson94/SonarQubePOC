@@ -76,7 +76,7 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public JsonNetResult GetPredicateInfo(MapType type = MapType.Lineage)
+        public JsonNetResult GetPredicateInfo(PredicateType type = PredicateType.Lineage)
         {
             var items = Company.Query<dynamic>(QueryConstants.PredicateInfoByTypeList, new { type = type});
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
@@ -91,7 +91,7 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = items, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        public JsonNetResult GetPredicateInfoByTypes(string type1, string type2, int id1, int id2, MapType mapType)
+        public JsonNetResult GetPredicateInfoByTypes(string type1, string type2, int id1, int id2, PredicateType mapType)
         {
             var intersectTypeID = Company.Query<int>("select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = @s and SourceObjectID = @si and TargetObjectType = @t and TargetObjectID = @ti", new { s = new Dapper.DbString { IsAnsi = true, Value = type1 }, si = id1, t = new Dapper.DbString { IsAnsi = true, Value = type2 }, ti = id2 }).FirstOrDefault();
 

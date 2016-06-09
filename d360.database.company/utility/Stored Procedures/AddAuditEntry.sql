@@ -1,5 +1,4 @@
-﻿
-CREATE procedure [utility].[AddAuditEntry]
+﻿CREATE procedure [utility].[AddAuditEntry]
 --declare
 	@Object varchar(50),
 	@ObjectID int,
@@ -625,7 +624,7 @@ begin
 	begin
 		set @actionDescription = @actionDescription + '.'
 
-		insert into [reporting].[Global_Audit] values (@Object, @ObjectID, @objectName, @ResourceID, @Date, @Action, @ActionObject, @ActionObjectID, @actionObjectTypeName, @actionObjectName, @actionDescription)
+		insert into [reporting].[Global_Audit] values (@Object, @ObjectID, @objectName, coalesce(@ResourceID, 0), @Date, @Action, @ActionObject, @ActionObjectID, @actionObjectTypeName, @actionObjectName, @actionDescription)
 		select @auditID = SCOPE_IDENTITY()
 
 		set @current = 1

@@ -210,7 +210,11 @@ namespace d360.model
 
         public DbSet<IntersectDetail> IntersectDetails { get; set; }      /* VIEW */
 
+        public DbSet<IntersectGroup> IntersectGroups { get; set; }
+
         public DbSet<IntersectNode> IntersectNodes { get; set; }
+
+        public DbSet<IntersectRole> IntersectRoles { get; set; }
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
@@ -231,6 +235,18 @@ namespace d360.model
         public DbSet<Lookup> Lookups { get; set; }
 
         public DbSet<LookupType> LookupTypes { get; set; }
+
+        public DbSet<Map> Maps { get; set; }
+
+        public DbSet<MapItem> MapItems { get; set; }
+
+        public DbSet<MapRule> MapRules { get; set; }
+
+        public DbSet<MapRuleItem> MapRuleItems { get; set; }
+
+        public DbSet<MapSequence> MapSequences { get; set; }
+
+        public DbSet<MapSequenceContext> MapSequenceContexts { get; set; }
 
         public DbSet<ObjectSecurity> ObjectSecurities { get; set; }                                         /* CACHED TABLE LOADED BY JOB */
 
@@ -735,7 +751,7 @@ from	DomainType
         string LoadDetailBaseSql = @"select	L.ID,
 		L.[Object],
 		L.ObjectID,
-		D.TextPath as ObjectName,
+		coalesce(D.TextPath, 'Default') as ObjectName,
 		L.Notes,
 		'MyFile.' + L.Extension as FilePath,
 		L.DateStarted,
@@ -745,6 +761,7 @@ from	DomainType
 			when 'R' then 'Relation'
 			when 'U' then 'Unrelation'
             when 'L' then 'Lineage'
+            when 'S' then 'Synonyms'
 		end as [Action],
         S.C as Success,
         E.C as Error,
@@ -1257,7 +1274,7 @@ order by Name");
                     (i.Subject == subjectDetail.Type && i.SubjectID == subjectDetail.TypeID && i.Object == objectDetail.Type && i.ObjectID == objectDetail.TypeID) ||
                     (i.Object == subjectDetail.Type && i.ObjectID == subjectDetail.TypeID && i.Subject == objectDetail.Type && i.SubjectID == objectDetail.TypeID)
                 ) &&
-                i.IntersectTypePredicates.Any(p => p.PredicateType == MapType.Synonym), 
+                i.IntersectTypePredicates.Any(p => p.PredicateType == PredicateType.Synonym), 
                 i => i.Nodes
             ).FirstOrDefault();
 
@@ -2326,10 +2343,10 @@ order by Name", new { workflowType, type, id });
             modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.IntersectMap).WithMany(t => t.IntersectMapSourceRules).HasForeignKey(k => k.IntersectMapID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectMapSourceRuleContext>().HasRequired(t => t.IntersectMapSourceRule).WithMany(t => t.Contexts).HasForeignKey(k => k.IntersectMapSourceRuleID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.SourceRule).WithMany(t => t.Items).HasForeignKey(k => k.SourceRuleID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<IntersectFlowMapping>().HasMany<DomainItem>(i => i.Contexts).WithMany(i => i.Mappings).Map(i =>
-            //{
-            //    i.MapLeftKey("IntersectFlowMappingID").MapRightKey("DomainItemID").ToTable("IntersectFlowMappingContextItem");
-            //});
+            modelBuilder.Entity<MapRule>().HasMany<Map>(i => i.Maps).WithMany(i => i.MapRules).Map(i =>
+            {
+                i.MapLeftKey("MapRuleID").MapRightKey("MapID").ToTable("MapRuleMap");
+            });
 
             modelBuilder.Entity<FusionRuleStep>().HasRequired(t => t.FusionRule).WithMany(t => t.FusionRuleSteps).HasForeignKey(k => k.RuleID).WillCascadeOnDelete(true);
 

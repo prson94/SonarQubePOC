@@ -64,6 +64,7 @@
             function unsubscribe(data) {
                 statisticsTileVm = null;
 
+                $('#AttributesTile').Attributes('destroy');
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe('EventHeaderSelected', eventHeaderSelected);
                 $('#EventBreakdownTimeScale').off('change', timeScaleChanged);
@@ -101,7 +102,8 @@
                     ObjectDetail('DetailTile', type, ruleID);
 
                     var loadPermissionsDependentTiles = function () {
-                        CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, ruleID);
+                        $('#AttributesTile').Attributes({ object: type, objectID: ruleID, readOnly: permissions.HasPermission("Attributes", "Update") });
+
                         statisticsTileVm.ChangeObject(type, ruleID);
                         statisticsTileVm.GetStatistics();
 

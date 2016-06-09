@@ -484,7 +484,8 @@ begin
 	-- now merge the Statistics table
 	MERGE	Statistic AS T
 	USING	(
-			select	S.*,
+			select	distinct
+					S.*,
 					MS.DateStart
 			from	#Statistics S
 					outer apply (

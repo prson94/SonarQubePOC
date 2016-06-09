@@ -64,7 +64,7 @@
             .then(function (content) {
                 context.contentHeader(pageViewModel);
 
-                $('#SideIcons').PageTools({ type: type, id: 0 });
+                $('#SideIcons').PageTools({ type: type, id: 0 }); 
                 
 
                 var loadAfterPermissionsRetrieved = function () {

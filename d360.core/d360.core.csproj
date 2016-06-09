@@ -113,6 +113,14 @@
     <Compile Include="entities\FusionRuleStep.cs" />
     <Compile Include="entities\FusionRuleStepMapping.cs" />
     <Compile Include="entities\FusionRuleStepSetting.cs" />
+    <Compile Include="entities\IntersectGroup.cs" />
+    <Compile Include="entities\IntersectRole.cs" />
+    <Compile Include="entities\MapRule.cs" />
+    <Compile Include="entities\MapRuleItem.cs" />
+    <Compile Include="entities\MapItem.cs" />
+    <Compile Include="entities\MapSequenceContext.cs" />
+    <Compile Include="entities\MapSequence.cs" />
+    <Compile Include="entities\Map.cs" />
     <Compile Include="entities\Language.cs" />
     <Compile Include="entities\Relation.cs" />
     <Compile Include="entities\RelationType.cs" />
@@ -294,7 +302,7 @@
     <Compile Include="enums\CommentVisibility.cs" />
     <Compile Include="enums\FollowType.cs" />
     <Compile Include="enums\FusionRuleType.cs" />
-    <Compile Include="enums\MapType.cs" />
+    <Compile Include="enums\PredicateType.cs" />
     <Compile Include="enums\HashAlgorithmType.cs" />
     <Compile Include="enums\Feature.cs" />
     <Compile Include="enums\Claim.cs" />

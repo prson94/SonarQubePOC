@@ -25,6 +25,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Artifact_ArtifactTypeID]
     ON [dbo].[Artifact]([ArtifactTypeID] ASC)
@@ -47,56 +49,44 @@ CREATE NONCLUSTERED INDEX [IX_Artifact_TaxonomyTypeID]
 
 
 GO
-CREATE TRIGGER [dbo].[Artifact_AfterInsert]
-   ON  [dbo].[Artifact] 
-   AFTER INSERT
-AS 
-	SET NOCOUNT ON;
-	declare @ot varchar(50) = 'Artifact'
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Add', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted
-	
-	update	T
-	set		T.TextPath = utility.GetBreadcrumbStringWrapper(@ot, S.ID, '/'),
-			T.[Path] = utility.GetBreadcrumbWrapper(@ot, S.ID)
-	from	Artifact T
-			inner join inserted S on S.ID = T.ID
 
-	merge	[cache].[Object] as T
-	using	(
-			select	'Artifact' as [Object],
-					ID as ObjectID,
-					--Name as Name,
-					--TextPath as TextPath,
-					'ArtifactType' as ObjectType,
-					ArtifactTypeID as ObjectTypeID--,
-					--[dbo].[GenerateObjectUrl]('Artifact', ArtifactTypeID, ID) as Url
-			from	inserted
-			) as S
-	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
-	when	matched then
-			update set	T.[ObjectType] = S.[ObjectType],
-						T.[ObjectTypeID] = S.[ObjectTypeID]--,
-						--T.[Name] = S.[Name],
-						--T.[TextPath] = S.[TextPath]
-	when	not matched then
-			insert	(
-					[Object], [ObjectID], [ObjectType], [ObjectTypeID]--, [Name], [TextPath], [Url]
-					)
-			values	(
-					S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID]--, S.[Name], S.[TextPath], S.[Url]
-					);
 
 GO
-CREATE TRIGGER [dbo].[Artifact_AfterUpdate]
+
+
+GO
+CREATE TRIGGER [dbo].[Artifact_AfterDelete]
+	ON [dbo].[Artifact]
+	AFTER DELETE
+AS
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Delete', [queue].WriteIndexXml('Removed', 'ArtifactType', ArtifactTypeID, coalesce(UpdatedBy, 0)), 'Artifact', ID from deleted;
+
+	insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+		select 'Artifact', O.ID, O.TextPath, O.UpdatedBy, O.UpdatedOn, 'Deleted', 'Artifact', O.ID, T.Name, O.TextPath, 'This artifact has been removed.' from deleted O inner join ArtifactType T on T.ID = O.ArtifactTypeID;
+
+
+
+GO
+CREATE TRIGGER [dbo].[Artifact_AfterUpsert]
    ON  [dbo].[Artifact] 
-   AFTER UPDATE
+   AFTER INSERT, UPDATE
 AS 
 	SET NOCOUNT ON;
 	declare @ot varchar(50) = 'Artifact'
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Update', [queue].WriteIndexXml('', @ot, ID, coalesce(UpdatedBy, 0)), @ot, ID from inserted;
 
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select	case 
+					when D.ID is not null then 'Update'
+					else 'Add'
+				end, 
+				[queue].WriteIndexXml('', @ot, I.ID, coalesce(I.UpdatedBy, 0)), 
+				@ot, 
+				I.ID 
+		from	inserted I
+				left join deleted D on D.ID = I.ID;
+	
 	with S as	(
 				select	ID,
 						ParentID
@@ -108,46 +98,22 @@ AS
 						inner join S on S.ID = A.ParentID
 				)
 	update	T
-	set		T.TextPath = utility.GetBreadcrumbString('Artifact', S.ID, '/')
+	set		T.TextPath = utility.GetBreadcrumbString(@ot, S.ID, '/')
 	from	Artifact T
-			inner join S on S.ID = T.ID
-
+			inner join S on S.ID = T.ID;
 
 	merge	[cache].[Object] as T
 	using	(
-			select	'Artifact' as [Object],
+			select	@ot as [Object],
 					ID as ObjectID,
-					--Name as Name,
-					--TextPath as TextPath,
 					'ArtifactType' as ObjectType,
-					ArtifactTypeID as ObjectTypeID--,
-					--[dbo].[GenerateObjectUrl]('Artifact', ArtifactTypeID, ID) as Url
+					ArtifactTypeID as ObjectTypeID
 			from	inserted
 			) as S
 	on		T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
 	when	matched then
 			update set	T.[ObjectType] = S.[ObjectType],
-						T.[ObjectTypeID] = S.[ObjectTypeID]--,
-						--T.[Name] = S.[Name],
-						--T.[TextPath] = S.[TextPath]
+						T.[ObjectTypeID] = S.[ObjectTypeID]
 	when	not matched then
-			insert	(
-					[Object],[ObjectID], --[Name], [TextPath], 
-					[ObjectType], [ObjectTypeID]--, [Url]
-					)
-			values	(
-					S.[Object], S.[ObjectID], --S.[Name], S.[TextPath], 
-					S.[ObjectType], S.[ObjectTypeID]--, S.[Url]
-					);
-
-GO
-
-CREATE TRIGGER [dbo].[Artifact_AfterDelete]
-	ON [dbo].[Artifact]
-	AFTER DELETE
-AS
-	SET NOCOUNT ON;
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Delete', [queue].WriteIndexXml('Removed', 'ArtifactType', ArtifactTypeID, coalesce(UpdatedBy, 0)), 'Artifact', ID from deleted
-
-
+			insert	( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
+			values	( S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID] );

@@ -17,7 +17,7 @@ namespace d360.core.entities
         public string Inverse { get; set; }
 
         [DataMember]
-        public MapType Type{ get; set; }
+        public PredicateType Type{ get; set; }
 
         [DataMember]
         public bool IsSystem { get; set; }

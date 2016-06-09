@@ -55,7 +55,7 @@ begin
 							select	ID, 
 									ParentID
 							from	Artifact
-							where	ID = @ObjectID
+							where	ArtifactTypeID = @ObjectID
 							union all
 							select	C.ID,
 									C.ParentID

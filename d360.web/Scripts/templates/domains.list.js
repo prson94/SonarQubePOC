@@ -69,7 +69,7 @@
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTile', 'Domain', selectedID, permissions);
                             break;
-                    }
+                    } 
                 }
                 catch (e) {
                 }
@@ -84,8 +84,6 @@
 
                 if (load) {
                     var loadPermissionsDependentTiles = function () {
-                        //$('#AllocationsTile').fadeIn(fadoutTime);
-                        //DomainAllocationsTile('AllocationsTile', contextList, permissions, typeID, id);
                         $('#ItemsTile').fadeIn(fadoutTime);
                         $('#XrefTile').fadeIn(fadoutTime);
                         $('#XrefListTile').fadeIn(fadoutTime);
@@ -100,8 +98,8 @@
                         LineageDiagram('SourcingTile', selectedType, id, true);
 
                         if (json.AllowAttributes) {
-                            $('#AttributesTile').fadeIn(fadoutTime);
-                            CollapsibleAttributesTile('AttributesTile', contextList, permissions, selectedType, id);
+                            $('#AttributesTile').show();
+                            $('#AttributesTile').Attributes('reload', selectedType, id, permissions.HasPermission("Attributes", "Update"));
                         }
                         else {
                             $('#AttributesTile').hide();
@@ -145,6 +143,7 @@
             }
 
             function unsubscribe(data) {
+                $('#AttributesTile').Attributes('destroy');
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
                 amplify.unsubscribe("SaveAction", saveAction);
@@ -160,6 +159,7 @@
                 .then(function (content) {
                     context.contentHeader(pageViewModel);
 
+                    $('#AttributesTile').Attributes({ object: type, objectID: typeID, readOnly: false });
                     $('#SideIcons').PageTools({ type: type, id: typeID, context: 'root' });
 
                     var DomainTreeGridSource =

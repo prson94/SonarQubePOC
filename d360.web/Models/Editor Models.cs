@@ -750,7 +750,7 @@ namespace d360.web.Models
 
         public string Object { get; set; }
 
-        public MapType PredicateType { get; set; }
+        public PredicateType PredicateType { get; set; }
 
         /// <summary>
         /// Should certain fields be made read-only based on whether any 
@@ -793,7 +793,7 @@ namespace d360.web.Models
         }
 
         public int IntersectMapID { get; set; }
-        public MapType HierarchyType { get; set; }
+        public PredicateType HierarchyType { get; set; }
         public int PredicateID { get; set; }
         public bool IsAddingParent { get; set; }
 

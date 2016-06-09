@@ -1,4 +1,6 @@
-﻿CREATE procedure [dbo].[DeleteObject]
+﻿
+
+CREATE procedure [dbo].[DeleteObject]
 	@Obj varchar(50),
 	@ObjectID int,
 	@ResourceID int
@@ -53,7 +55,7 @@ begin
 							select	ID, 
 									ParentID
 							from	Artifact
-							where	ID = @ObjectID
+							where	ArtifactTypeID = @ObjectID
 							union all
 							select	C.ID,
 									C.ParentID

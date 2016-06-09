@@ -13,7 +13,7 @@ namespace d360.core
         Date,
         [Description("Date With Time")]
         DateTime,
-        [Description("File")]
+        [Description("File"), ReadOnly(true)]
         File,
         [Description("Hidden"), ReadOnly(true)]
         Hidden,
@@ -31,7 +31,7 @@ namespace d360.core
         Password,
         [Description("Link")]
         Link,
-        [Description("UNC/File Link")]
+        [Description("UNC/File Link"), ReadOnly(true)]
         UncLink,
         [Description("Color Picker")]
         Color,

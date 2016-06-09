@@ -221,6 +221,11 @@ begin
 					values (S.ArtifactTypeID, S.TaxonomyTypeID, S.ParentID, S.Name, S.[Description], 'Draft', getutcdate(), @UpdatedBy)
 			output	'Artifact', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
 
+			--update	T
+			--set		T.Name = T.Name
+			--from	Artifact T
+			--		inner join @ResolvedObjects S on S.ObjectID = T.ID and S.[Action] = 'INSERT';
+
 			if @RequiresParent = 1
 			begin
 				-- Update the LoadItem table with the IDs we recieved in the merge statements above.
@@ -528,23 +533,26 @@ begin
 
 		declare @Intersects IDTable
 
+		declare @sourceObjectTypeName nvarchar(1000),
+				@sourceSubject nvarchar(500),
+				@sourceName nvarchar(500),
+					
+				@targetObjectTypeName nvarchar(1000),
+				@targetSubject nvarchar(500),
+				@targetName nvarchar(500),
+				
+				@predicateID int,
+				@rundate datetime = CURRENT_TIMESTAMP
+
 		if @Action = 'L' -- LINEAGE (create lineage from input spreadsheet)
 		begin
 			declare @focalObject varchar(50),
 					@focalObjectID int,
 					@focalObjectTypeName nvarchar(1000),
 					@focalName nvarchar(500),
-					@sourceObjectTypeName nvarchar(1000),
-					@sourceName nvarchar(500),
-					@targetObjectTypeName nvarchar(1000),
-					@targetName nvarchar(500),
 					@intersectPredicate varchar(50),
-					@predicateID int,
 					@focalIntersectID int,
-					@rundate datetime = CURRENT_TIMESTAMP,
 					@focalSubject nvarchar(500),
-					@sourceSubject nvarchar(500),
-					@targetSubject nvarchar(500),
 					@lineageErrorDetailMessage varchar(200)
 			
 			select	@current = min(I.RowIndex),
@@ -566,20 +574,19 @@ begin
 			while @current <= @max
 			begin
 				--load the objects / id's for the focal, source, and target objects
-				select	
-					@focalObject = FT.Value,
-					@focalObjectTypeName = FTN.Value,
-					@focalName = F.Value,
-					@focalSubject = FS.Value,
-					@sourceObject = ST.Value,
-					@sourceObjectTypeName = STN.Value,
-					@sourceName = S.Value,
-					@sourceSubject = SS.Value,
-					@targetObject = TT.Value,
-					@targetObjectTypeName = TTN.Value,
-					@targetName = T.Value,
-					@targetSubject = TS.Value,
-					@intersectPredicate = P.Value
+				select	@focalObject = FT.Value,
+						@focalObjectTypeName = FTN.Value,
+						@focalName = F.Value,
+						@focalSubject = FS.Value,
+						@sourceObject = ST.Value,
+						@sourceObjectTypeName = STN.Value,
+						@sourceName = S.Value,
+						@sourceSubject = SS.Value,
+						@targetObject = TT.Value,
+						@targetObjectTypeName = TTN.Value,
+						@targetName = T.Value,
+						@targetSubject = TS.Value,
+						@intersectPredicate = P.Value
 				from	LoadItem I
 						inner join LoadItemColumn FT on FT.LoadID = I.LoadID and FT.RowIndex = I.RowIndex and FT.ColumnIndex = 1  --focal point object type
 						inner join LoadItemColumn FTN on FTN.LoadID = I.LoadID and FTN.RowIndex = I.RowIndex and FTN.ColumnIndex = 2  --focal point object type name
@@ -729,6 +736,152 @@ begin
 						update	LoadItem
 						set		[Status] = 0,
 								StatusMessage = 'Failed to add item to lineage.' + @lineageErrorDetailMessage + ' [focal id:' + convert(varchar(10), @focalObjectID) + ' type:' + @focalObject + '] [source id:' + convert(varchar(10),@sourceObjectID) + ' type:' + @sourceObject +'] [target id:' + convert(varchar(10), @targetObjectID) + ' type:' + @targetObject + ']'
+						where	LoadID = @LoadID
+								and RowIndex = @current
+					end -- else not valid
+				
+				set @current = @current + 1
+			end
+
+		end
+
+		if @Action = 'S' -- SYNONYM (create synonyms from input spreadsheet)
+		begin
+			declare @synonymErrorDetailMessage varchar(200)
+			
+			select	@current = min(I.RowIndex),
+					@max = max(I.RowIndex)
+			from	LoadItem I
+					inner join LoadItemColumn ST on ST.LoadID = I.LoadID and ST.RowIndex = I.RowIndex and St.ColumnIndex = 1			-- source object type
+					inner join LoadItemColumn STN on STN.LoadID = I.LoadID and STN.RowIndex = I.RowIndex and StN.ColumnIndex = 2		-- source object type name
+					inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 4				-- source object name
+					inner join LoadItemColumn TT on TT.LoadID = I.LoadID and TT.RowIndex = I.RowIndex and TT.ColumnIndex = 5			-- target object type
+					inner join LoadItemColumn TTN on TTN.LoadID = I.LoadID and TTN.RowIndex = I.RowIndex and TTN.ColumnIndex = 6		-- target object type name
+					inner join LoadItemColumn T on T.LoadID = I.LoadID and T.RowIndex = I.RowIndex and T.ColumnIndex = 8				-- target object name
+			where	I.LoadID = @LoadID
+			
+			-- go row by row
+			while @current <= @max
+			begin
+				--load the objects / id's for the focal, source, and target objects
+				select	@sourceObject = ST.Value,
+						@sourceObjectTypeName = STN.Value,
+						@sourceName = S.Value,
+						@sourceSubject = SS.Value,
+						
+						@targetObject = TT.Value,
+						@targetObjectTypeName = TTN.Value,
+						@targetName = T.Value,
+						@targetSubject = TS.Value
+				from	LoadItem I
+						inner join LoadItemColumn ST on ST.LoadID = I.LoadID and ST.RowIndex = I.RowIndex and St.ColumnIndex = 1		-- source object type
+						inner join LoadItemColumn STN on STN.LoadID = I.LoadID and STN.RowIndex = I.RowIndex and StN.ColumnIndex = 2	-- source object type name
+						inner join LoadItemColumn SS on SS.LoadID = I.LoadID and SS.RowIndex = I.RowIndex and SS.ColumnIndex = 3		-- source object subject
+						inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 4			-- source object name
+						inner join LoadItemColumn TT on TT.LoadID = I.LoadID and TT.RowIndex = I.RowIndex and TT.ColumnIndex = 5		-- target object type
+						inner join LoadItemColumn TTN on TTN.LoadID = I.LoadID and TTN.RowIndex = I.RowIndex and TTN.ColumnIndex = 6	-- target object type name
+						inner join LoadItemColumn TS on TS.LoadID = I.LoadID and TS.RowIndex = I.RowIndex and TS.ColumnIndex = 7		-- target object subject
+						inner join LoadItemColumn T on T.LoadID = I.LoadID and T.RowIndex = I.RowIndex and T.ColumnIndex = 8			-- target object name
+				where	I.LoadID = @LoadID and I.RowIndex = @current
+
+				select @sourceObjectID = 0, @targetObjectID = 0, @predicateID = 0;
+
+				select @predicateID = min(ID) from [Predicate] where [Type] = 6;				
+
+				if @sourceObject = 'Artifact'
+				begin
+					select	top 1
+							@sourceObjectID = cod.objectid										
+					from	[cache].objectdetails cod
+							inner join artifact a on (cod.objectid = a.id)
+							inner join taxonomytype t on (a.taxonomytypeid = t.id)
+					where	cod.[object] = @sourceObject and cod.textpath = @sourceName and cod.objecttypename = @sourceObjectTypeName and t.Name = @sourceSubject
+				end
+				else
+				begin
+					-- load source object
+					select	top 1
+							@sourceObjectID = cod.objectid						
+					from	[cache].objectdetails cod
+					where	cod.[object] = @sourceObject and cod.textpath = @sourceName and cod.objecttypename = @sourceObjectTypeName
+				end
+
+				if @targetObject = 'Artifact'
+				begin
+					-- load target object
+					select	top 1
+							@targetObjectID = cod.objectid												
+					from	[cache].objectdetails cod
+							inner join artifact a on (cod.objectid = a.id)
+							inner join taxonomytype t on (a.taxonomytypeid = t.id)
+					where	cod.[object] = @targetObject and cod.textpath = @targetName and cod.objecttypename = @targetObjectTypeName and t.Name = @targetSubject
+				end
+				else
+				begin
+					-- load target object
+					select	top 1
+							@targetObjectID = cod.objectid												
+					from	[cache].objectdetails cod
+					where	cod.[object] = @targetObject and cod.textpath = @targetName and cod.objecttypename = @targetObjectTypeName
+				end
+
+				--debug 
+				--select @sourceObjectID, @sourceObject, @targetObjectID, @targetObject, @predicateID
+
+				--if all are provided we are good otherwise error
+				if @sourceObjectID > 0 and @targetObjectID > 0 and @predicateID > 0
+					begin
+
+					-- add intersect between source / target if one doesnt exist
+					exec [dbo].[AddRelationship] @UpdatedBy, @rundate, @sourceObject, @sourceObjectID, 2, null, null, @targetObject, @targetObjectID;
+
+					-- add intersect map between source / target if one doesnt exist for source to target intersect
+					if not exists (
+							select	1 
+							from	intersectmap map
+									inner join intersectnode node1 on ( map.subjectintersectnodeid = node1.id and node1.objectid = @sourceObjectID and node1.objecttype = @sourceObject)
+									inner join intersectnode node2 on ( map.objectintersectnodeid = node2.id and node2.objectid = @targetObjectID and node2.objecttype = @targetObject)
+						where map.[type] = 6)
+						begin							
+							insert into intersectmap
+								select 
+									node1.ID as SubjectIntersectNode,
+									node2.ID as ObjectIntersectNode,
+									@predicateID as PredicateID,
+									6 as [Type]
+								from						
+									intersectnode node1 
+									inner join intersectnode node2 on (node1.objectid = @sourceObjectID and node1.objecttype =@sourceObject and node2.objectid = @targetObjectID and node2.objecttype = @targetObject and node1.intersectid = node2.intersectid);
+						end
+
+						update	LoadItem
+						set		[Status] = 1,
+								StatusMessage = 'Successfully added synonym'
+						where	LoadID = @LoadID
+								and RowIndex = @current
+					end -- if valid
+				else
+					begin
+						set @synonymErrorDetailMessage = '';
+
+						if @sourceObjectID = 0
+						begin
+							set @synonymErrorDetailMessage = @synonymErrorDetailMessage + '  Source object is invalid.';
+						end
+
+						if @targetObjectID = 0
+						begin
+							set @synonymErrorDetailMessage = @synonymErrorDetailMessage + '  Target object is invalid.';
+						end
+
+						if @predicateID = 0
+						begin
+							set @synonymErrorDetailMessage = @synonymErrorDetailMessage + '  No predicate of type synonym.';
+						end
+
+						update	LoadItem
+						set		[Status] = 0,
+								StatusMessage = 'Failed to add synonym. ' + @synonymErrorDetailMessage + ' [source id:' + convert(varchar(10),@sourceObjectID) + ' type:' + @sourceObject +'] [target id:' + convert(varchar(10), @targetObjectID) + ' type:' + @targetObject + ']'
 						where	LoadID = @LoadID
 								and RowIndex = @current
 					end -- else not valid

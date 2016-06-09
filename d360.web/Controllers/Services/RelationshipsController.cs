@@ -206,7 +206,7 @@ from	FusionAttribute FA
         [Route("types"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
         public IEnumerable<dynamic> GetRelationTypes()
         {
-            var predicateTypes = MapType.Lineage.GetAsList();
+            var predicateTypes = PredicateType.Lineage.GetAsList();
             var models = from r in Company.Query<dynamic>(QueryConstants.RelationshipTypeList)
                          join p in predicateTypes on r.PredicateType equals (int)p.ID
                          select new

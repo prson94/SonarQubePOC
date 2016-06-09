@@ -18,7 +18,7 @@ namespace d360.core.entities
         public int PredicateID { get; set; }
 
         [DataMember]
-        public MapType Type { get; set; }
+        public PredicateType Type { get; set; }
 
         [DataMember]
         public virtual ICollection<IntersectMapSourceRule> IntersectMapSourceRules { get; set; }

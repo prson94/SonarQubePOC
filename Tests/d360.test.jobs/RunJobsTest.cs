@@ -115,12 +115,12 @@ END
         [TestMethod]
         public void SaveCertificate_Success()
         {
-            var companyID = 31;
+            var companyID = 23;
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("Macquarie.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Macquarie Certificate", File = bytes };
+            var bytes = File.ReadAllBytes("NM-DEV.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Northwestern Mutual Certificate", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

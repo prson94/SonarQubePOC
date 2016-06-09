@@ -104,6 +104,7 @@
             }
 
             function unsubscribe(data) {
+                $('#AttributesTile').Attributes('destroy');
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
                 amplify.unsubscribe("SaveAction", saveAction);
@@ -139,14 +140,19 @@
                         }
 
                         if (json.AllowAttributes) {
-                            CollapsibleAttributesTile('AttributesTile', contextList, permissions, type, id);
+                            $('#AttributesTile').Attributes({ object: type, objectID: id, readOnly: permissions.HasPermission("Attributes", "Update") });
                         }
                         else {
                             $('#AttributesTile').hide();
                         }
 
                         if (json.AllowSynonyms) {
-                            CollapsibleSynonymsTile('SynonymsTile', contextList, permissions, type, id);
+                            $('#SynonymsTile').Synonyms({
+                                object: type,
+                                objectID: id,
+                                canEdit: permissions.HasPermission("Relationship", "Update"),
+                                canDelete: permissions.HasPermission("Relationship", "Delete")
+                            });
                         }
                         else {
                             $('#SynonymsTile').hide();

@@ -35,6 +35,6 @@ namespace d360.core.entities
         public DateTime? UpdatedOn { get; set; }
 
         [DataMember]
-        public MapType PredicateType { get; set; }
+        public PredicateType PredicateType { get; set; }
     }
 }

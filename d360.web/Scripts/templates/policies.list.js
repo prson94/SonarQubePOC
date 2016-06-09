@@ -61,7 +61,8 @@
                     var loadPermissionsDependentTiles = function () {
 
                         if (json.AllowAttributes) {
-                            CollapsibleAttributesTile('AttributesTile', contextList, permissions, iType, iID);
+                            $('#AttributesTile').show();
+                            $('#AttributesTile').Attributes('reload', iType, iID, permissions.HasPermission("Attributes", "Update"));
                         }
                         else {
                             $('#AttributesTile').hide();
@@ -118,6 +119,8 @@
                 PolicyGridSource = null;
                 statisticsTileVm = null;
 
+
+                $('#AttributesTile').Attributes('destroy');
                 $("#PolicyGrid").off("rowSelect", policyGridRowSelect);
                 amplify.unsubscribe("SaveAction", saveAction);
                 amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
@@ -133,6 +136,8 @@
                     context.contentHeader(pageViewModel);
 
                     $('#SideIcons').PageTools({ type: 'PolicyType', id: policyTypeID, context: 'root' });
+                    $('#AttributesTile').Attributes({ object: 'Policy', objectID: 0, readOnly: false });
+
                     statisticsTileVm = new PolicyRuleStatisticsTileModel(type, 0);
                     ko.applyBindings(statisticsTileVm, document.getElementById('StatisticsTile'));
 
