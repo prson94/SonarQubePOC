@@ -261,7 +261,6 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
         amplify.publish("AttributeCount", { count: count });
     }
 
-
     function treeControlRowSelect(evt) {
         try {
             // event args.
@@ -319,6 +318,10 @@ function AttributesTile(controlID, contextList, permissions, type, id, headerTit
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         $(treeControlID).off('bindingComplete', treeControlBindingComplete);
         $(treeControlID).off('rowSelect', treeControlRowSelect);
+
+        //try { $(treeControlID).jqxTreeGrid('destroy'); } catch (e) { }
+        //try { $(editorControlID).Editor('destroy'); } catch (e) { }
+        //$(controlID).html('');
     }
 
     amplify.subscribe("CancelAction", cancelAction);

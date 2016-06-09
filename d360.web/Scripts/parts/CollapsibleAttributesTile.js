@@ -16,7 +16,7 @@
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe("AttributeCount", attributeCountNotice);
-        $('#' + controlID).off('expanded', expanded);
+        //$('#' + controlID).off('expanded', expanded);
     }
 
     //#endregion
@@ -34,17 +34,21 @@
 
     //#endregion
 
+
+    function initAttributes(){
+        AttributesTile(controlID_sub, contextList, permissions, type, id, '', false);
+    }
     if (!exists) {
         $('#' + controlID).css('margin', '10px');
         $('#' + controlID).html('<div>Attributes<span id="' + controlID_count + '"></span></div><div style="min-height: 150px"><div id="' + controlID_sub + '"></div></div>');
-        $('#' + controlID).jqxExpander({ theme: theme, expanded: false });
+        $('#' + controlID).jqxExpander({ theme: theme, expanded: false, initContent: initAttributes });
     }
-    AttributesTile(controlID_sub, contextList, permissions, type, id, '', false);
+    //AttributesTile(controlID_sub, contextList, permissions, type, id, '', false);
 
     //#region Register Events
 
     amplify.subscribe("AttributeCount", attributeCountNotice);
-    $('#' + controlID).on('expanded', expanded);
+    //$('#' + controlID).on('expanded', expanded);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
 
