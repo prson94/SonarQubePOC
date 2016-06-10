@@ -1239,6 +1239,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
@@ -1255,6 +1256,8 @@
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\parts\multiselect.part.ts" />
     <TypeScriptCompile Include="Scripts\app\services\page-header.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\template.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\templates.service.ts" />
     <TypeScriptCompile Include="Scripts\app\tiles\fields-grid.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\parts\form-message.part.ts" />
     <TypeScriptCompile Include="Scripts\app\tiles\object-detail.tile.ts" />

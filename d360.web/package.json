@@ -30,7 +30,7 @@
     "zone.js": "^0.6.12",
     "angular2-datatable": "^0.4.2",
     "primeng": "^1.0.0-beta.8",
-    "primeui" : "^4.1.11"
+    "primeui" : "^4.1.12"
   },
   "devDependencies": {
     "typescript": "^1.8.7",
