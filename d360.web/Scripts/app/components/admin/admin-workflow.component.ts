@@ -5,14 +5,15 @@ import { PageHeader } from '../../services/page-header.service';
 import { ObjectDetailTile } from '../../tiles/object-detail.tile';
 import { FieldsGridTile } from '../../tiles/fields-grid.tile';
 import { PeopleResponsibilitiesTile } from '../../tiles/people-responsibilities.tile';
-import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
 import { WorkflowItem } from '../../models/workflow.model';
 import { WorkflowItemForm } from '../../forms/workflow-item.form';
+import { DeleteForm } from '../../forms/delete.form';
+import {DataTable, Column } from 'primeng/primeng';
 
 @Component({
     selector: 'admin-workflow',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [ObjectDetailTile, DataTableDirectives, WorkflowItemForm],
+    directives: [ObjectDetailTile, WorkflowItemForm, DeleteForm, DataTable, Column ],
     templateUrl: 'scripts/app/components/admin/admin-workflow.component.html',
     styles: [`
         .selected {
@@ -59,29 +60,54 @@ export class AdminWorkflowComponent {
     }
 
 
-    selectRow(id: string): void {
+    selectRow(id: number): void {
         this.selectedRow = this.workflowItems[this.workflowItems.findIndex(d => d.ID == id)];
     }
 
-    editRow(id: string): void {
 
+    editRow(id: number): void {
         var row = this.workflowItems.find(w => w.ID == id);
 
-        if (row && row.isEditing) {
-            row.isEditing = false;
-            return;
-        }
-
         this.workflowItems.forEach(w => {
+            w.isDeleting = false;
             if (w.ID == id)
                 w.isEditing = true;
             else
                 w.isEditing = false;
         });
+
     }
+
+    deleteRow(id: number): void {
+        var row = this.workflowItems.find(w => w.ID == id);
+
+        this.workflowItems.forEach(w => {
+            w.isEditing = false;
+            if (w.ID == id)
+                w.isDeleting = true;
+            else
+                w.isDeleting = false;
+        });
+    }
+
+    confirmDeleteRow(id: number): void {
+        this.load();
+    }
+
+    updateRow(event: any): void {
+        console.log(event);
+        var message = event.message;
+        var item = event.item;
+        var initialItem = event.initialItem;
+
+        if (message.isSuccess)
+            item.isEditing = false;
+    }
+
 
 }
 
 class WorkflowRowItem extends WorkflowItem {
     isEditing = false;
+    isDeleting = false;
 }

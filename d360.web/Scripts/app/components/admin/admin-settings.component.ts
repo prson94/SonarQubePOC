@@ -1,7 +1,7 @@
 ///<reference path="../../es6-shim.d.ts"/>
-import {Component, NgZone} from '@angular/core';
-import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
-import {PageHeader} from '../../services/page-header.service'
+import { Component, NgZone } from '@angular/core';
+import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
+import { PageHeader } from '../../services/page-header.service'
 
 @Component({
     selector: 'admin-settings',
@@ -14,6 +14,9 @@ export class AdminSettingsComponent {
     isLoading = false;
     http: Http;
     pageHeader: PageHeader;
+
+    //TODO: rewrite to use newly created CompanySettings model
+    //private settings: CompanySettings;
 
     disableCommunityPosting: boolean;
     disableIssuePosting: boolean;
@@ -88,6 +91,7 @@ export class AdminSettingsComponent {
             .map(data => data.json())
             .subscribe(settings => { 
                 //console.log(settings);
+
                 this.disableCommunityPosting = settings.DisableCommunityPosting;
                 this.disableIssuePosting = settings.DisableIssuePosting;
                 this.subjectAreaName = settings.ArtifactType_TaxonomyTypeID;

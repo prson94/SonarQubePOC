@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component } from '@angular/core';
 import { RouteConfig, ROUTER_DIRECTIVES, AsyncRoute } from '@angular/router-deprecated';
-import { AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent } from './index'
+import { AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent } from './index'
 import { PageHeader } from '../../services/page-header.service';
 import 'rxjs/Rx';
 
@@ -17,6 +17,7 @@ import 'rxjs/Rx';
     { path: '/domain', name: 'Domain', component: AdminDomainComponent },
     { path: '/groups', name: 'Groups', component: AdminGroupsComponent },
     { path: '/workflow', name: 'Workflow', component: AdminWorkflowComponent },
+    { path: '/governance', name: 'Responsibilities', component: AdminGovernanceComponent },
 ])
 export class AdminComponent {
     pageHeader: PageHeader;

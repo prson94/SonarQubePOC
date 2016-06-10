@@ -1,50 +1,55 @@
-﻿<div>
-    <!--<input type="hidden" id="_context" name="_context" value="@(ContextList.WorkflowTypeRelation)" />-->
-    <input type="hidden" id="ID" name="ID" [value]="workflowItem.WorkflowTypeRelationID"  />
-    <input type="hidden" id="WorkflowType" name="WorkflowType" [value]="workflowItem.WorkflowType" />
+﻿<div *ngIf="isLoading">
+    <div style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+</div>
+<div *ngIf="!isLoading">
     <div class="row tile">
         <div class="col s6">
             <div id='ObjectTypeTip' class="FieldNameRequired">Type</div>
-            <select style="height:1.4rem;"></select>
-            <!--@Html.DropDownList("ObjectType", Model.ObjectTypes, "Select type...", new { @class = "browser-default" })-->
+            <select style="height:1.8em;line-height:1.8em; padding:0; width:80%; display:block;" [(ngModel)]="ObjectType" (change)="objectTypeChange($event.target.value)">
+                <option *ngFor="let objectType of ObjectTypes" [value]="objectType.Value">{{objectType.Text}}</option>
+            </select>
         </div>
         <div class="col s6">
-            <div id='ParentTypeTip' class="FieldNameRequired"></div>
-            <select style="height:1.4rem;"></select>
-            <!--@Html.DropDownList("ParentType", Model.ParentTypes, "Select " + Resources.FieldInfo.TaxonomyType_Name + "...", new { @class = "browser-default" })-->
+            <div id='ParentTypeTip' class="FieldNameRequired">{{taxonomyName}}</div>
+            <select style="height:1.8em;line-height:1.8em; padding:0; width:80%; display:block;" [(ngModel)]="ParentType">
+                <option *ngFor="let parentType of ParentTypes" [value]="parentType.Value">{{parentType.Text}}</option>
+            </select>
         </div>
     </div>
     <div class="row tile">
         <div class="col s6">
             <div id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</div>
-            <select style="height:1.4rem;"></select>
-            <!--@Html.DropDownList("ResponsibilityType", Model.ResponsibilityTypes, "Select responsibility...", new { @class = "browser-default" })-->
+            <select style="height:1.8em;line-height:1.8em; padding:0; width:80%; display:inline-block;" [(ngModel)]="item.ResponsibilityTypeID" [disabled]="isLoadingResponsibility" >
+                <option *ngFor="let responsibilityType of ResponsibilityTypes" [value]="responsibilityType.Value">{{responsibilityType.Text}}</option>
+            </select>
+            <span *ngIf="isLoadingResponsibility"><i class="fa fa-spinner fa-spin"></i></span>
         </div>
         <div class="col s6 input-field">
-            <input type="checkbox"  [(ngModel)]="workflowItem.Enabled" />
-            <!--<input type="checkbox" id="Enabled" name="Enabled" @(Model.Enabled ? "checked='checked'""" ) />-->
+            <input type="checkbox"  [(ngModel)]="item.Enabled" />
             <label id='EnabledTip' for="Enabled">Enabled?</label>
         </div>
     </div>
-    <div class="row tile Workflow-2">
+    <div class="row tile Workflow-2" *ngIf="item.WorkflowType == workflowType.CertifyArtifact">
         <div class="col s6">
             <div id='DateForScheduleCalculationTip' class="FieldName">Date For Schedule Calculation</div>
             <div id="DateForScheduleCalculation" name="DateForScheduleCalculation"></div>
+            <input type="date" [(ngModel)]="dateScheduleCalculation" />
             
         </div>
         <div class="col s6">
             <div id='MonthsUntilCertificationTip' class="FieldName"># Months Until Certification</div>
             <div id="MonthsUntilCertification" name="MonthsUntilCertification" value=""></div>
+            <input type="number" [(ngModel)]="numMonths" />
         </div>
     </div>
-    <div class="row tile Workflow-2">
+    <div class="row tile Workflow-2" *ngIf="item.WorkflowType == workflowType.CertifyArtifact">
         <div class="col s6 offset-s6">
             <div id='DaysGivenToCompleteCertificationTip' class="FieldName"># Days Given To Complete Certification</div>
             <div id="DaysGivenToCompleteCertification" name="DaysGivenToCompleteCertification"></div>
-            <input type="number" [(ngModel)]="workflowItem."
+            <input type="number" [(ngModel)]="numDays" />
         </div>
     </div>
     <div class="row">
-        <div class="pull-right"><button class="btn btn-flat teal white-text">Save</button></div>
+        <button (click)="save();" [disabled]="isSaving">Save</button><button (click)="cancel();">Cancel</button><span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span><form-message [message]="message" [inline]="true"></form-message>
     </div>
 </div>

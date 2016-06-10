@@ -4,7 +4,12 @@
             <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
         </div>
         <div *ngIf="!isLoading">
-            <table class="table" [mfData]="workflowItems" #mf="mfDataTable" [mfRowsOnPage]="25">
+            <p-dataTable [value]="workflowItems" selectionMode="single" [(selection)]="selectedRow" [rows]="10" [paginator]="true">
+                <p-column field="WorkflowTypeDisplayName" header="Workflow" sortable="true" [filter]="true" filterMatchMode="contains"></p-column>
+                <p-column field="ObjectName" header="Type" sortable="true" [filter]="true" filterMatchMode="contains"></p-column>
+                <p-column field="ParentName" header="Subject Area" sortable="true" [filter]="true" filterMatchMode="contains"></p-column>
+            </p-dataTable>
+            <!--<table class="table" [mfData]="workflowItems" #mf="mfDataTable" [mfRowsOnPage]="25">
                 <thead>
                     <tr>
                         <th style="width: 30%">
@@ -21,32 +26,32 @@
                     </tr>
                 </thead>
                 <tbody *ngFor="let item of mf.data; let i=index;">
-                    <tr (click)="selectRow(item.ID);" [class.selected]="selectedRow?.ID == item.ID">
+                    <tr (click)="selectRow(item.ID);" [class.selected]="selectedRow?.ID == item.ID" *ngIf="!item.isEditing && !item.isDeleting">
                         <td> {{item.WorkflowTypeDisplayName}}</td>
                         <td> {{item.ObjectName}}</td>
                         <td> {{item.ParentName}}</td>
-                        <!-- TODO: replace href on info, fix edit/delete -->
                         <td class="RowTools">
                             <a (click)="editRow(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                            <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/delete'"><i class="fa fa-trash-o"></i></a>
+                            <a (click)="deleteRow(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </td>
                     </tr>
                     <tr *ngIf="item.isEditing" class="inline-edit">
                         <td colspan="4">
-                            <div>
-                                <workflow-item-form [workflowItem]="item"></workflow-item-form>
-                            </div>
+                            <workflow-item-form [item]="item" (onCancel)="item.isEditing=false;" (onSaveComplete)="item.isEditing=false;"></workflow-item-form>
+                        </td>
+                    </tr>
+                    <tr *ngIf="item.isDeleting" class="inline-edit">
+                        <td colspan="4">
+                            <delete-form [uri]="'/form/DeleteWorkflowAllocationByID?id=' + item.ID"
+                                         [method]="'delete'"
+                                         [prompt]="'Are you sure you want to de-allocate this workflow?'"
+                                         (onDeleteSuccess)="confirmDeleteRow(item.ID)"
+                                         (onCancel)="item.isDeleting=false;">
+                            </delete-form>
                         </td>
                     </tr>
                 </tbody>
-                <!--<tfoot>
-                    <tr>
-                        <td colspan="4">
-                            <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
-                        </td>
-                    </tr>
-                </tfoot>-->
-            </table>
+            </table>-->
         </div>
     </div>
     <div class="col l7 m7">

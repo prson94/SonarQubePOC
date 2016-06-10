@@ -5,7 +5,8 @@
         'rxjs': './node_modules/rxjs',
         '@angular': './node_modules/@angular',
         'angular2-datatable/datatable': './node_modules/angular2-datatable',
-        'lodash': './node_modules/lodash'
+        'lodash': './node_modules/lodash',
+        'primeng': './node_modules/primeng'
     },
     packages: {
         'scripts/app': {
@@ -24,5 +25,6 @@
         '@angular/router': { main: 'index.js' },
         '@angular/platform-browser': { main: 'index.js' },
         '@angular/platform-browser-dynamic': { main: 'index.js' },
-    }
+        'primeng': { defaultExtension: 'js' }
+    },
 });

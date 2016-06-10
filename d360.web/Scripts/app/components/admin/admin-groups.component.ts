@@ -2,12 +2,11 @@
 import { Component, NgZone } from '@angular/core';
 import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { PageHeader } from '../../services/page-header.service';
-//import { NgTableComponent, NG_TABLE_DIRECTIVES } from 'ng2-table';
+
 
 @Component({
     selector: 'admin-groups',
     viewProviders: [HTTP_PROVIDERS],
-   // directives: [NG_TABLE_DIRECTIVES],
     templateUrl: 'scripts/app/components/admin/admin-groups.component.html'
 })
 

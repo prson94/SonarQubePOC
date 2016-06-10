@@ -1,17 +1,25 @@
 ﻿///<reference path="../es6-shim.d.ts"/>
 
 export class WorkflowItem {
-    ID: string;
+    ID: number;
     Object: string;
-    ObjectID: string;
+    ObjectID: number;
     Parent: string;
-    ParentID: string;
+    ParentID: number;
     ParentName: string;
-    WorkflowType: string;
+    WorkflowType: WorkflowType;
     Enabled: boolean;
-    ResponsibilityTypeID: string;
+    ResponsibilityTypeID: number;
     ResponsibilityType: string;
     WorkflowTypeName: string;
     WorkflowTypeDisplayName: string;
     Properties: string;
+    Fields: string;
+}
+
+export enum WorkflowType {
+    SuggestNewArtifact = 1,
+    CertifyArtifact = 2,
+    WorkIssue = 3,
+    ChallengeArtifact = 4,
 }

@@ -82,7 +82,7 @@ export class ResponsibilityItemForm implements OnInit {
 
                 this.onLoadComplete.emit({ item: this.item });
                 
-                console.log(data);
+                //console.log(data);
                 //console.log(this.item);
             });
     }

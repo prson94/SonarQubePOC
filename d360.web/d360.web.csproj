@@ -865,6 +865,7 @@
       <DependentUpon>Apps.js</DependentUpon>
     </Content>
     <Content Include="Scripts\app\app.js" />
+    <Content Include="Scripts\app\components\admin\admin-governance.component.html" />
     <Content Include="Scripts\app\forms\delete.form.html" />
     <Content Include="Scripts\app\forms\responsibility-item.form.html" />
     <Content Include="Scripts\app\forms\workflow-item.form.html" />
@@ -1234,6 +1235,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
@@ -1247,6 +1249,7 @@
     <TypeScriptCompile Include="Scripts\app\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\company-settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
