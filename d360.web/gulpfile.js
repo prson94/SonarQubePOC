@@ -1,5 +1,4 @@
 /// <binding Clean='clean' ProjectOpened='watch' />
-'use strict';
 
 var ts = require('gulp-typescript');
 var gulp = require('gulp');
