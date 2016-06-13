@@ -17695,6 +17695,15 @@ order by TextPath
 
             return PartialView("DeleteForm", model);
         }
+                
+        [Route("templates/tooltip/{templateId:int}")]
+        public ActionResult DeleteTooltipTemplateById(int templateId)
+        {
+            var form = new FormCollection();
+            form.Add("ID", templateId.ToString());
+            return DeleteTooltipTemplate(form);
+        }
+
 
         [HttpDelete]
         public JsonResult DeleteTooltipTemplate(FormCollection form)

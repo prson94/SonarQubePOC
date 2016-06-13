@@ -17,6 +17,8 @@ export class DeleteForm {
     @Input() uri: string;
     @Input() method: string = 'post';
     @Input() prompt: string;
+    @Input() callback: Function;
+    @Input() itemId: number;
     @Output() onDeleteComplete = new EventEmitter();
     @Output() onDeleteSuccess = new EventEmitter();
     @Output() onDeleteFail = new EventEmitter();
@@ -39,6 +41,10 @@ export class DeleteForm {
 
         this.isLoading = true;
         switch (this.method.toLowerCase()) {
+            case 'callback':
+                this.callback(this.itemId);
+                this.isLoading = false;
+                break;
             case 'post':
                 this.http.post(this.uri, JSON.stringify(this.model), { headers: headers })
                     .map(data => data.json())

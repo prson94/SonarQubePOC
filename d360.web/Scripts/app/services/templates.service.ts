@@ -9,7 +9,7 @@ import 'rxjs/add/operator/toPromise';
 @Injectable()
 export class TemplatesService {
     private templatesUrl = 'api/templates/tooltip';
-
+    
     constructor(private http: Http) { }
 
     getTemplates(): Promise<Template[]> {
@@ -24,11 +24,11 @@ export class TemplatesService {
             .then(templates => templates.filter(template => template.ID === id)[0]);
     }
 
-    deleteTemplate(template: Template) {
+    deleteTemplateById(id: Number) {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
-
-        let url = `${this.templatesUrl}/${template.ID}`;
+        
+        let url = `form/templates/tooltip/${id}`;
 
         return this.http
             .delete(url, headers)
