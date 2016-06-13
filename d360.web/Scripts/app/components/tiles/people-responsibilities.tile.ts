@@ -8,7 +8,7 @@ import { FormMessage } from '../../models/form.model';
 import { DeleteForm } from '../forms/delete.form';
 
 @Component({
-    selector: 'people-responsibilities-tile',
+    selector: 'd3s-people-responsibilities-tile',
     directives: [DataTableDirectives, ResponsibilityItemForm, DeleteForm ],//, DeleteGeneric],
     templateUrl: 'scripts/app/components/tiles/people-responsibilities.tile.html',
     viewProviders: [HTTP_PROVIDERS],
@@ -161,7 +161,6 @@ export class PeopleResponsibilitiesTile implements OnChanges {
     }
 
 }
-
 
 class ResponsibilityRowItem extends ResponsibilityItem {
     isEditing = false;

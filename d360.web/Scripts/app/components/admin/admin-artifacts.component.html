@@ -2,15 +2,33 @@
     <div class="col s12 m5 l4">
         <div class="root-tile">
             <header><div id="TreeTools"></div></header>
-            <div id="Tree"></div>
+            <p-treeTable [value]="ArtifactTypes" selectionMode="single" [(selection)]="selectedRow">
+                <!--<header style="text-align:left;">
+                    <div>
+                       <input pInput type="text" /><span style="position:relative;top:0;left:-16px;opacity:0.5;"><i class="fa fa-search"></i></span>
+                    </div>
+                </header>-->
+                <p-column field="Name" header="Name" [style]="{ 'width': '75%' }"></p-column>
+                <p-column>
+                    <template let-col let-item="rowData">
+                        <div class="RowTools">
+                            <a style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                            <a style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            <a style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                        </div>
+                    </template>
+                </p-column>
+            </p-treeTable>
         </div>
     </div>
     <div class="col s12 m7 l8">
         <div id="FieldsTile" class="tile tile-detail"></div>
-        <div id="SecurityTile" class="tile tile-detail"></div>
         <div class="tile tile-detail">
-            <header>Permissions</header>
-            <div id="ClaimsTile"></div>
+            <d3s-people-responsibilities-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" [title]="'Default Responsibilities'" [showHidden]="true"></d3s-people-responsibilities-tile>
+        </div>
+        <div class="tile tile-detail">
+            <d3s-claims-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" readonly="false"></d3s-claims-tile>
         </div>
         <!--<div id="RelationshipTypeTreeTile" class="tile tile-detail"></div>-->
     </div>

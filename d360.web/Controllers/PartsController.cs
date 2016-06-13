@@ -36,6 +36,26 @@ namespace d360.web.Controllers
             return PartialView(model);
         }
 
+        [HttpGet]
+        public JsonNetResult ClaimsMatrix(SystemObjects type, int id, int responsibilityTypeID)
+        {
+            var sType = type.ToString();
+            var model = new ClaimsMatrixDisplayModel
+            {
+                ResponsibilityTypeID = responsibilityTypeID,
+                Items = Company.Filter<ResponsibilityTypeObjectClaim>(i => i.ObjectID == id && i.ObjectType == sType && i.ResponsibilityTypeID == responsibilityTypeID)
+                .Select(i => new ClaimsMatrixEditorItemModel { Claim = i.Claim, ClaimObject = i.ClaimObject, ID = i.ID })
+                .ToList()
+            };
+
+            return new JsonNetResult
+            {
+                Data = model,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+
         [Route("resources/{id:int}/ownership")]
         public ActionResult Ownership(int id)
         {

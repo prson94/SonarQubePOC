@@ -8,7 +8,7 @@ import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.til
 import { WorkflowItem } from '../../models/workflow.model';
 import { WorkflowItemForm } from '../forms/workflow-item.form';
 import { DeleteForm } from '../forms/delete.form';
-import {DataTable, Column, Growl } from 'primeng/primeng';
+import { DataTable, Column, Growl } from 'primeng/primeng';
 
 @Component({
     selector: 'admin-workflow',
@@ -34,9 +34,12 @@ export class AdminWorkflowComponent {
     isLoading = false;
     messages = new Array<any>();
 
+    isEditing = false;
+    isDeleting = false;
 
-    workflowItems = new Array<WorkflowRowItem>();
-    selectedRow = new WorkflowRowItem();
+    workflowItems = new Array<WorkflowItem>();
+    selectedRow = new WorkflowItem();
+    lastSelectedRow = null;
 
     constructor(http: Http, pageHeader: PageHeader) {
         this.http = http;
@@ -48,7 +51,6 @@ export class AdminWorkflowComponent {
     }
 
     load() {
-
         this.isLoading = true;
         this.http.get('/api/workflows/relations')
             .map(data => data.json())
@@ -62,60 +64,16 @@ export class AdminWorkflowComponent {
     }
 
 
-    selectRow(id: number): void {
-        this.selectedRow = this.workflowItems[this.workflowItems.findIndex(d => d.ID == id)];
-    }
-
-
-    editRow(id: number): void {
-        var row = this.workflowItems.find(w => w.ID == id);
-
-        this.workflowItems.forEach(w => {
-            w.isDeleting = false;
-            if (w.ID == id)
-                w.isEditing = true;
-            else
-                w.isEditing = false;
-        });
-
+    selectRow(): void {
+        if (this.lastSelectedRow != this.selectedRow) {
+            this.isEditing = false;
+            this.isDeleting = false;
+        }
+        this.lastSelectedRow = this.selectedRow
     }
 
     deleteRow(id: number): void {
-        var row = this.workflowItems.find(w => w.ID == id);
-
-        this.workflowItems.forEach(w => {
-            w.isEditing = false;
-            if (w.ID == id)
-                w.isDeleting = true;
-            else
-                w.isDeleting = false;
-        });
-    }
-
-    confirmDeleteRow(id: number): void {
         this.messages.push({ severity: 'info', summary: 'Workflow allocation deleted successfully', detail: '' });
         this.load();
     }
-
-    updateRow(event: any): void {
-        console.log(event);
-        var message = event.message;
-        var item = event.item;
-        var initialItem = event.initialItem;
-
-        if (message.isSuccess) {
-            this.messages.push({ severity: 'info', summary: 'Workflow allocation updated', detail: '' });
-            item.isEditing = false;
-        } else {
-            this.messages.push({ severity: 'error', summary: 'An error occurred while updating the workflow allocation', detail: '' });
-        }
-            
-    }
-
-
-}
-
-class WorkflowRowItem extends WorkflowItem {
-    isEditing = false;
-    isDeleting = false;
 }
