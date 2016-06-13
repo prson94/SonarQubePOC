@@ -1,4 +1,4 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿///<reference path="../../es6-shim.d.ts"/>
 import {Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
 import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
@@ -7,7 +7,7 @@ import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
 @Component({
     selector: 'fields-grid-tile',
     directives: [DataTableDirectives],
-    templateUrl: 'scripts/app/tiles/fields-grid.tile.html',
+    templateUrl: 'scripts/app/components/tiles/fields-grid.tile.html',
     viewProviders: [HTTP_PROVIDERS],
     styles: [`
     .selected {

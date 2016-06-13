@@ -1,14 +1,14 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿///<reference path="../../es6-shim.d.ts"/>
 import {Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
-import { ResponsibilityItem, ResponsibilityContextItem } from '../models/responsibility.model';
-import { SelectItem, FormMessage } from '../models/form.model';
+import { ResponsibilityItem, ResponsibilityContextItem } from '../../models/responsibility.model';
+import { SelectItem, FormMessage } from '../../models/form.model';
 import { FormMessagePart } from '../parts/form-message.part';
 import { MultiSelect } from '../parts/multiselect.part';
 
 @Component({
     selector: 'responsibility-item-form',
-    templateUrl: 'scripts/app/forms/responsibility-item.form.html',
+    templateUrl: 'scripts/app/components/forms/responsibility-item.form.html',
     viewProviders: [HTTP_PROVIDERS],
     directives: [FormMessagePart, MultiSelect]
 })

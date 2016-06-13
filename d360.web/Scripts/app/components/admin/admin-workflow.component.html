@@ -4,10 +4,18 @@
             <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
         </div>
         <div *ngIf="!isLoading">
-            <p-dataTable [value]="workflowItems" selectionMode="single" [(selection)]="selectedRow" [rows]="10" [paginator]="true">
+            <p-dataTable [value]="workflowItems" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" >
                 <p-column field="WorkflowTypeDisplayName" header="Workflow" sortable="true" [filter]="true" filterMatchMode="contains"></p-column>
                 <p-column field="ObjectName" header="Type" sortable="true" [filter]="true" filterMatchMode="contains"></p-column>
                 <p-column field="ParentName" header="Subject Area" sortable="true" [filter]="true" filterMatchMode="contains"></p-column>
+                <p-column>
+                    <template let-col let-item="rowData">
+                        <div class="RowTools">
+                            <a (click)="editRow(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="deleteRow(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </template>
+                </p-column>
             </p-dataTable>
             <!--<table class="table" [mfData]="workflowItems" #mf="mfDataTable" [mfRowsOnPage]="25">
                 <thead>
@@ -59,4 +67,20 @@
             <object-detail [objectType]="'WorkflowTypeRelation'" [objectID]="selectedRow?.ID"></object-detail>
         </div>
     </div>
+    <div class="col l7 m7" *ngIf="selectedRow.isEditing">
+        <div class="tile tile-detail">
+            <workflow-item-form [item]="selectedRow" (onCancel)="selectedRow.isEditing = false;"></workflow-item-form>
+        </div>
+    </div>
+    <div  class="col l7 m7" *ngIf="selectedRow.isDeleting">
+        <div class="title title-detail">
+            <delete-form [uri]="'/form/DeleteWorkflowAllocationByID?id=' + selectedRow.ID"
+                         [method]="'delete'"
+                         [prompt]="'Are you sure you want to de-allocate this workflow?'"
+                         (onDeleteSuccess)="confirmDeleteRow(selectedRow.ID)"
+                         (onCancel)="selectedRow.isDeleting=false;">
+            </delete-form>
+        </div>
+    </div>
 </div>
+<p-growl [value]="messages"></p-growl>

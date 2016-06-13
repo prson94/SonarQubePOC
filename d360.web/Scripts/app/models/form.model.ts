@@ -4,7 +4,10 @@
     Selected: boolean;
     Text: string;
     Value: string;
+    label: string;
+    value: string;
 }
+
 
 export enum MessageType {
     Error,

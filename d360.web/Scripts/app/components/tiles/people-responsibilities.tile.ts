@@ -1,16 +1,16 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿///<reference path="../../es6-shim.d.ts"/>
 import {Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
 import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
-import { ResponsibilityItem } from '../models/responsibility.model';
+import { ResponsibilityItem } from '../../models/responsibility.model';
 import { ResponsibilityItemForm } from '../forms/responsibility-item.form';
-import { FormMessage } from '../models/form.model';
+import { FormMessage } from '../../models/form.model';
 import { DeleteForm } from '../forms/delete.form';
 
 @Component({
     selector: 'people-responsibilities-tile',
     directives: [DataTableDirectives, ResponsibilityItemForm, DeleteForm ],//, DeleteGeneric],
-    templateUrl: 'scripts/app/tiles/people-responsibilities.tile.html',
+    templateUrl: 'scripts/app/components/tiles/people-responsibilities.tile.html',
     viewProviders: [HTTP_PROVIDERS],
     styles: [`
     .selected {

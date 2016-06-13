@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col m6">
             <form-message [message]="message"></form-message>
-            <button (click)="cancel()">Cancel</button><button (click)="delete()" [disabled]="isLoading">Delete</button><span *ngIf="isLoading"><i class="fa fa-spinner fa-spin"></i></span>
+            <button pButton (click)="delete()" label="Delete" [disabled]="isLoading"></button><button pButton (click)="cancel()" label="Cancel"></button><span *ngIf="isLoading"><i class="fa fa-spinner fa-spin"></i></span>
         </div>
     </div>
 </div>

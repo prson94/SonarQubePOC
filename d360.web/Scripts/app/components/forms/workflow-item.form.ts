@@ -1,10 +1,12 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿///<reference path="../../es6-shim.d.ts"/>
 import {Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers } from '@angular/http';
-import { WorkflowItem, WorkflowType } from '../models/workflow.model';
-import { SelectItem, FormMessage } from '../models/form.model';
+import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
+import { SelectItem, FormMessage } from '../../models/form.model';
 import { FormMessagePart } from '../parts/form-message.part';
-import { CompanySettings as cs } from '../models/company-settings.model';
+import { CompanySettings as cs } from '../../models/company-settings.model';
+import { Dropdown, Calendar, Checkbox, Button } from 'primeng/primeng';
+
 
 //will use CompanySettings js object globally declared on page
 //not sure if this will cause collisions in other components yet
@@ -12,9 +14,9 @@ declare var CompanySettings: cs;
 
 @Component({
     selector: 'workflow-item-form',
-    templateUrl: 'scripts/app/forms/workflow-item.form.html',
+    templateUrl: 'scripts/app/components/forms/workflow-item.form.html',
     viewProviders: [ HTTP_PROVIDERS ],
-    directives: [ FormMessagePart ]
+    directives: [FormMessagePart, Dropdown, Calendar, Checkbox, Button ]
 })
 
 export class WorkflowItemForm implements OnInit {
@@ -44,7 +46,7 @@ export class WorkflowItemForm implements OnInit {
 
     private numDays: number = 14;
     private numMonths: number = 12;
-    private dateScheduleCalculation: string = new Date().toISOString().slice(0, 16);
+    private dateScheduleCalculation: string; // = new Date().toISOString().slice(0, 16);
 
     private isLoading = false;
     private isSaving = false;
@@ -59,7 +61,9 @@ export class WorkflowItemForm implements OnInit {
     ngOnInit() {
         this.load();
         this.initialItem = JSON.parse(JSON.stringify(this.item));
-        console.log(this.dateScheduleCalculation);
+        //console.log(this.dateScheduleCalculation);
+        //console.log($.isArray([]));
+        //$.datepicker
     }
 
     private load(): void {
@@ -76,15 +80,18 @@ export class WorkflowItemForm implements OnInit {
             .subscribe(data => {
 
                 this.ObjectTypes = data.ObjectTypes;
+                this.ObjectTypes.map(o => { o.label = o.Text; o.value = o.Value });
                 this.ParentTypes = data.ParentTypes;
+                this.ParentTypes.map(o => { o.label = o.Text; o.value = o.Value });
                 this.ResponsibilityTypes = data.ResponsibilityTypes
+                this.ResponsibilityTypes.map(o => { o.label = o.Text; o.value = o.Value });
 
                 this.numDays = data.WorkflowTypeRelation.Fields.DaysGivenToCompleteCertification || this.numDays;
                 this.numMonths = data.WorkflowTypeRelation.Fields.MonthsUntilCertification || this.numMonths;
                 this.dateScheduleCalculation = data.WorkflowTypeRelation.Fields.DateForScheduleCalculation || this.dateScheduleCalculation;
 
-                console.log(this.item);
-                console.log(data);
+                //console.log(this.item);
+                //console.log(data);
 
                 this.isLoading = false;
                 this.onLoadComplete.emit({ item: this.item });
@@ -124,8 +131,10 @@ export class WorkflowItemForm implements OnInit {
         this.onCancel.emit(null);
     }
 
-    private objectTypeChange(val: string) {
+    private objectTypeChange(val: any) {
         this.isLoadingResponsibility = true;
+
+        val = val.value;
 
         var obj;
         var id;
@@ -141,8 +150,10 @@ export class WorkflowItemForm implements OnInit {
         this.http.get(`/workflow/WorkflowResponsibilityTypeOptions?type=${obj}&id=${id}`)
             .map(data => data.json())
             .subscribe(data => {
-                console.log(data);
+                //console.log(data);
+                this.ResponsibilityType = null;
                 this.ResponsibilityTypes = data;
+                this.ResponsibilityTypes.map(r => { r.label = r.Text; r.value = r.Value }); 
                 this.isLoadingResponsibility = false; 
         });
     }

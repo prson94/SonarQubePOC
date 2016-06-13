@@ -2,9 +2,9 @@
 import { Component, NgZone } from '@angular/core';
 import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { PageHeader } from '../../services/page-header.service';
-import { ObjectDetailTile } from '../../tiles/object-detail.tile';
-import { FieldsGridTile } from '../../tiles/fields-grid.tile';
-import { PeopleResponsibilitiesTile } from '../../tiles/people-responsibilities.tile';
+import { ObjectDetailTile } from '../tiles/object-detail.tile';
+import { FieldsGridTile } from '../tiles/fields-grid.tile';
+import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
 
 @Component({

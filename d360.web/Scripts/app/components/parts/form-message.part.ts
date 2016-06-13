@@ -1,6 +1,6 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿///<reference path="../../es6-shim.d.ts"/>
 import {Input, Component, OnInit } from '@angular/core';
-import { FormMessage, MessageType } from '../models/form.model';
+import { FormMessage, MessageType } from '../../models/form.model';
 
 
 @Component({

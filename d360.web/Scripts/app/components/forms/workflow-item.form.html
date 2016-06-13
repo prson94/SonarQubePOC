@@ -5,27 +5,31 @@
     <div class="row tile">
         <div class="col s6">
             <div id='ObjectTypeTip' class="FieldNameRequired">Type</div>
-            <select style="height:1.8em;line-height:1.8em; padding:0; width:80%; display:block;" [(ngModel)]="ObjectType" (change)="objectTypeChange($event.target.value)">
+            <p-dropdown [options]="ObjectTypes" [(ngModel)]="ObjectType" [style]="{'width':'80%', 'display':'block'}" (onChange)="objectTypeChange($event)"></p-dropdown>
+            <!--<select style="height:1.8em;line-height:1.8em; padding:0; width:80%; display:block;" [(ngModel)]="ObjectType" (change)="objectTypeChange($event.target.value)">
                 <option *ngFor="let objectType of ObjectTypes" [value]="objectType.Value">{{objectType.Text}}</option>
-            </select>
+            </select>-->
         </div>
         <div class="col s6">
             <div id='ParentTypeTip' class="FieldNameRequired">{{taxonomyName}}</div>
-            <select style="height:1.8em;line-height:1.8em; padding:0; width:80%; display:block;" [(ngModel)]="ParentType">
+            <p-dropdown [options]="ParentTypes" [(ngModel)]="ParentType" [style]="{'width':'80%', 'display':'block'}"></p-dropdown>
+            <!--<select style="height:1.8em;line-height:1.8em; padding:0; width:80%; display:block;" [(ngModel)]="ParentType">
                 <option *ngFor="let parentType of ParentTypes" [value]="parentType.Value">{{parentType.Text}}</option>
-            </select>
+            </select>-->
         </div>
     </div>
     <div class="row tile">
         <div class="col s6">
             <div id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</div>
-            <select style="height:1.8em;line-height:1.8em; padding:0; width:80%; display:inline-block;" [(ngModel)]="item.ResponsibilityTypeID" [disabled]="isLoadingResponsibility" >
+            <p-dropdown [options]="ResponsibilityTypes" [(ngModel)]="item.ResponsibilityTypeID" [style]="{'width':'80%', 'display':'block'}"></p-dropdown>
+            <!--<select style="height:1.8em;line-height:1.8em; padding:0; width:80%; display:inline-block;" [(ngModel)]="item.ResponsibilityTypeID" [disabled]="isLoadingResponsibility" >
                 <option *ngFor="let responsibilityType of ResponsibilityTypes" [value]="responsibilityType.Value">{{responsibilityType.Text}}</option>
-            </select>
+            </select>-->
             <span *ngIf="isLoadingResponsibility"><i class="fa fa-spinner fa-spin"></i></span>
         </div>
         <div class="col s6 input-field">
-            <input type="checkbox"  [(ngModel)]="item.Enabled" />
+            <p-checkbox [(ngModel)]="Enabled"></p-checkbox>
+            <!--<input type="checkbox"  [(ngModel)]="item.Enabled" />-->
             <label id='EnabledTip' for="Enabled">Enabled?</label>
         </div>
     </div>
@@ -33,7 +37,8 @@
         <div class="col s6">
             <div id='DateForScheduleCalculationTip' class="FieldName">Date For Schedule Calculation</div>
             <div id="DateForScheduleCalculation" name="DateForScheduleCalculation"></div>
-            <input type="date" [(ngModel)]="dateScheduleCalculation" />
+            <p-calendar [(ngModel)]="dateScheduleCalculation"></p-calendar>
+            <!--<input type="date" [(ngModel)]="dateScheduleCalculation" />-->
             
         </div>
         <div class="col s6">
@@ -50,6 +55,6 @@
         </div>
     </div>
     <div class="row">
-        <button (click)="save();" [disabled]="isSaving">Save</button><button (click)="cancel();">Cancel</button><span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span><form-message [message]="message" [inline]="true"></form-message>
+        <button pButton type="button" (click)="save()" label="Save"></button> <button pButton type="button" (click)="cancel()" label="Cancel"></button><span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span><form-message [message]="message" [inline]="true"></form-message>
     </div>
 </div>

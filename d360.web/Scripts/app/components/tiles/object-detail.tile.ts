@@ -1,10 +1,10 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿///<reference path="../../es6-shim.d.ts"/>
 import {Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
 
 @Component({
     selector: 'object-detail',
-    templateUrl: 'scripts/app/tiles/object-detail.tile.html',
+    templateUrl: 'scripts/app/components/tiles/object-detail.tile.html',
     viewProviders: [HTTP_PROVIDERS]
 })
 

@@ -2,18 +2,18 @@
 import { Component, NgZone } from '@angular/core';
 import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { PageHeader } from '../../services/page-header.service';
-import { ObjectDetailTile } from '../../tiles/object-detail.tile';
-import { FieldsGridTile } from '../../tiles/fields-grid.tile';
-import { PeopleResponsibilitiesTile } from '../../tiles/people-responsibilities.tile';
+import { ObjectDetailTile } from '../tiles/object-detail.tile';
+import { FieldsGridTile } from '../tiles/fields-grid.tile';
+import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { WorkflowItem } from '../../models/workflow.model';
-import { WorkflowItemForm } from '../../forms/workflow-item.form';
-import { DeleteForm } from '../../forms/delete.form';
-import {DataTable, Column } from 'primeng/primeng';
+import { WorkflowItemForm } from '../forms/workflow-item.form';
+import { DeleteForm } from '../forms/delete.form';
+import {DataTable, Column, Growl } from 'primeng/primeng';
 
 @Component({
     selector: 'admin-workflow',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [ObjectDetailTile, WorkflowItemForm, DeleteForm, DataTable, Column ],
+    directives: [ObjectDetailTile, WorkflowItemForm, DeleteForm, DataTable, Column, Growl ],
     templateUrl: 'scripts/app/components/admin/admin-workflow.component.html',
     styles: [`
         .selected {
@@ -32,6 +32,8 @@ export class AdminWorkflowComponent {
     http: Http;
     pageHeader: PageHeader;
     isLoading = false;
+    messages = new Array<any>();
+
 
     workflowItems = new Array<WorkflowRowItem>();
     selectedRow = new WorkflowRowItem();
@@ -91,6 +93,7 @@ export class AdminWorkflowComponent {
     }
 
     confirmDeleteRow(id: number): void {
+        this.messages.push({ severity: 'info', summary: 'Workflow allocation deleted successfully', detail: '' });
         this.load();
     }
 
@@ -100,8 +103,13 @@ export class AdminWorkflowComponent {
         var item = event.item;
         var initialItem = event.initialItem;
 
-        if (message.isSuccess)
+        if (message.isSuccess) {
+            this.messages.push({ severity: 'info', summary: 'Workflow allocation updated', detail: '' });
             item.isEditing = false;
+        } else {
+            this.messages.push({ severity: 'error', summary: 'An error occurred while updating the workflow allocation', detail: '' });
+        }
+            
     }
 
 
