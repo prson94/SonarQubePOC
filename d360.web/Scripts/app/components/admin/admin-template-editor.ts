@@ -1,4 +1,4 @@
-﻿///<reference path="../../../../node_modules/typings/modules/lodash/index.d.ts"/>  
+﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
 
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { TemplatesService } from '../../services/templates.service';
