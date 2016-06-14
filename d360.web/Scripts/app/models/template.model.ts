@@ -3,5 +3,5 @@
     Name: string;
     Description: string;
     Action: string;
-    TemplateBody: string;
+    TemplateBody: string;      
 }

@@ -1,8 +1,9 @@
-/// <binding Clean='clean' ProjectOpened='watch' />
+/// <binding Clean='clean' ProjectOpened='watch, installTypings' />
 
 var ts = require('gulp-typescript');
 var gulp = require('gulp');
 var del = require('del');
+var gulpTypings = require("gulp-typings");
 
 var tsproj = ts.createProject('scripts/app/tsconfig.json', { typescript: require('typescript') });
 var app = 'scripts/app';
@@ -75,4 +76,10 @@ gulp.task('default', ['bundle'], function (done) {
 
 gulp.task('watch', function () {
     gulp.watch(`${app}/**/*.ts`, ['default']);
+});
+
+gulp.task("installTypings", function () {
+    var stream = gulp.src("./typings.json")
+        .pipe(gulpTypings()); //will install all typingsfiles in pipeline. 
+    return stream; // by returning stream gulp can listen to events from the stream and knows when it is finished. 
 });

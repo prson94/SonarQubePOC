@@ -7,7 +7,7 @@
         'angular2-datatable/datatable': './node_modules/angular2-datatable',
         'lodash': './node_modules/lodash',
         'primeng': './node_modules/primeng'
-    },
+    },    
     packages: {
         'scripts/app': {
             format: 'register',

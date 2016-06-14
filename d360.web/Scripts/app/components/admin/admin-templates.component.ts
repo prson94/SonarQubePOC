@@ -2,8 +2,9 @@
 import { PageHeader } from '../../services/page-header.service';
 import { TemplatesService } from '../../services/templates.service';
 import { Template } from '../../models/template.model';
-import {DataTable, Column, Button, Dialog} from 'primeng/primeng';
+import {DataTable, Column, Button, Editor, InputText, Dropdown} from 'primeng/primeng';
 import {DeleteForm} from '../forms/delete.form';
+import {AdminTemplateEditorComponent} from './admin-template-editor';
 
 
 @Component({
@@ -20,7 +21,12 @@ import {DeleteForm} from '../forms/delete.form';
                                          [method]="'callback'"
                                          [prompt]="'Are you sure you want to delete this template?'"                                         
                                 ></delete-form>
-                                <div *ngIf="!isDeleting">other stuff</div>
+                                <d3s-admin-template-editor *ngIf="isEditing" 
+                                            [template]="template"
+                                            (updateClick)="updateTemplate($event)"
+                                            (closeClick)="isEditing=false;"
+                                        >
+                                </d3s-admin-template-editor>
                             </template>                              
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>
                             <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{width : '100px' }"></p-column>
@@ -28,7 +34,7 @@ import {DeleteForm} from '../forms/delete.form';
                             <p-column expander="true" [style]="{width:'120px'}">
                                 <template let-template="rowData">
                                     <button pButton type="text" (click)="showDelete(template)" icon="fa fa-trash-o"></button>
-                                    <button pButton type="text" (click)="editTemplate(template)" icon="fa fa-pencil"></button>
+                                    <button pButton type="text" (click)="isEditing=true;" icon="fa fa-pencil"></button>
                                 </template>
                             </p-column>                            
                         </p-dataTable>
@@ -37,7 +43,7 @@ import {DeleteForm} from '../forms/delete.form';
                </div>               
                 `,
     providers: [TemplatesService],
-    directives: [DataTable, Column, Button, Dialog, DeleteForm]
+    directives: [DataTable, Column, Button, DeleteForm, Editor, InputText, Dropdown, AdminTemplateEditorComponent]
 })
 
 export class AdminTemplatesComponent {
@@ -47,6 +53,7 @@ export class AdminTemplatesComponent {
     selectedTemplate: Template; 
     error: any;
     isDeleting: boolean = false;
+    isEditing: boolean = false;
     public theDeleteCallback: Function;
     
     constructor(pageHeader: PageHeader, templateService: TemplatesService) {
@@ -88,7 +95,11 @@ export class AdminTemplatesComponent {
         this.isDeleting = true;
     }
 
-    editTemplate(template: Template) {
-        this.templateService.putTemplate(template);
+    updateTemplate(event) {        
+        this.templateService.putTemplate(event.template);
+        var index = this.findTemplateIndex(event.template.ID);
+
+        if (index >= 0)
+            this.templates[index] = event.template;
     }
 };
