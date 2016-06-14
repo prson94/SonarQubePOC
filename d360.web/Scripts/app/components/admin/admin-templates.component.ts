@@ -29,12 +29,18 @@ import {AdminTemplateEditorComponent} from './admin-template-editor';
                                 </d3s-admin-template-editor>
                             </template>                              
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>
-                            <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{width : '100px' }"></p-column>
-                            <p-column field="Description" header="Description" [sortable]="true" [filter]="true"></p-column>                                                
+                            <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{width : '100px' }"></p-column>                            
+                            <p-column header="Description" sortable="true" filter="true">
+                                <template let-col let-template="rowData">
+                                    <div [innerHtml]="template?.Description"></div>
+                                </template>
+                            </p-column>                             
                             <p-column expander="true" [style]="{width:'120px'}">
                                 <template let-template="rowData">
-                                    <button pButton type="text" (click)="showDelete(template)" icon="fa fa-trash-o"></button>
-                                    <button pButton type="text" (click)="isEditing=true;" icon="fa fa-pencil"></button>
+                                    <div class="RowTools">
+                                        <a (click)="isEditing=true;" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                                        <a (click)="showDelete(template)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                                    
+                                    </div>
                                 </template>
                             </p-column>                            
                         </p-dataTable>

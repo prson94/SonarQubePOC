@@ -17746,6 +17746,30 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
+        public class TemplateModel
+        {
+            public string ID { get; set; }
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public string Action { get; set; }
+            public string TemplateBody { get; set; }
+        }
+
+        [HttpPut, ValidateInput(false)]        
+        public JsonResult EditTooltipTemplateRaw(TemplateModel template)        
+        {            
+                        
+            var form = new FormCollection();
+            form.Add("ID", template.ID);
+            form.Add("Name", template.Name);
+            form.Add("Description", template.Description);
+            form.Add("TemplateBody", template.TemplateBody);
+            form.Add("Action", template.Action);
+
+            return EditTooltipTemplate(form);
+        }
+
+
         [HttpPut, ValidateInput(false)]
         public JsonResult EditTooltipTemplate(FormCollection form)
         {

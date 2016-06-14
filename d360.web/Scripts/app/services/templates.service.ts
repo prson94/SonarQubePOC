@@ -40,7 +40,7 @@ export class TemplatesService {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
-        let url = `${this.templatesUrl}/${template.ID}`;
+        let url = `form/EditTooltipTemplateRaw`;
 
         return this.http
             .put(url, JSON.stringify(template), { headers: headers })
