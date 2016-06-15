@@ -22940,6 +22940,12 @@ ul.hierarchy :last-child {
 .main-nav ul li a {
   color: #fff;
 }
+/* Main Secondary color (1) */
+/* Main Secondary color (2) */
+/* Main Complement color */
+body {
+  background-color: #F8F3EF;
+}
 nav.top,
 .side-nav {
   -webkit-box-shadow: none;
@@ -22950,17 +22956,97 @@ nav.top,
   background-color: #383127;
   width: 200px;
 }
-.side-nav.fixed a {
-  color: white;
+.side-nav li {
+  padding: 0;
 }
 .side-nav li,
 .side-nav a {
   height: 35px;
   line-height: 35px;
 }
-.side-nav li {
-  padding: 0;
+.side-nav.fixed a {
+  color: white;
 }
-body {
-  background-color: #F8F3EF;
+.tile {
+  position: relative;
+  margin-bottom: 25px;
+  width: 100%;
+  padding: 0 5px;
+}
+.tile .header,
+.tile header {
+  font-family: "Roboto", Tahoma !important;
+  padding: 3px 0px 5px 5px !important;
+  font-size: 16px !important;
+  text-transform: uppercase;
+  color: #5c5e60 !important;
+  background-color: transparent !important;
+  border: none !important;
+  position: relative;
+}
+.tile .header .TileTools,
+.tile header .TileTools {
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  z-index: 900;
+  color: #5c5e60;
+  font-size: 15px;
+  line-height: 16px;
+}
+.tile footer {
+  position: relative;
+}
+.tile footer .TileTools {
+  position: absolute;
+  right: -5px;
+  bottom: 10px;
+  z-index: 900;
+  color: #5c5e60;
+  font-size: 15px;
+  line-height: 16px;
+}
+.tile .tiletools {
+  width: 100%;
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  text-align: right;
+}
+.tile .tiletools button {
+  color: #b0b2b6;
+  font-size: 16px !important;
+  border: none;
+  background-color: transparent;
+}
+.tile .tiletools button :hover {
+  color: #818385;
+}
+.tile .form-instructions {
+  margin-left: 10px;
+}
+.tile .directions {
+  padding: 3px 0px 5px 5px !important;
+  color: #818385;
+  font-size: .8em;
+}
+.tile .tile-tabs {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  width: 98%;
+}
+.tile .footnote {
+  position: absolute;
+  bottom: 5px;
+  width: 100%;
+  color: #9affff;
+}
+.tile a:hover {
+  text-decoration: underline;
+}
+.tile-detail {
+  background-color: #fff;
+  border: 0;
+  border-radius: 0;
+  padding-bottom: 10px;
 }

@@ -1,22 +1,116 @@
-﻿nav.top, .side-nav {
-      -webkit-box-shadow: none;
-      -moz-box-shadow: none;
-       box-shadow: none;
-      }
-    .side-nav{
-        background-color:#383127;
-        width:200px;
-        }
-    .side-nav.fixed a{
-        color:white;
+﻿@import "_VariablesAng";
+
+body{
+    background-color:@secondary-nav;
+}
+
+
+nav.top, .side-nav {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+
+.side-nav{
+    background-color:@primary-nav;
+    width:200px;
+    li{
+        padding:0;
     }
-    .side-nav li, .side-nav a{
+    li, a{
         height:35px;
         line-height:35px;
     }
-    .side-nav li{
-        padding:0;
-     }
-    body{
-        background-color:#F8F3EF;
-     }
+}
+
+.side-nav.fixed a{
+    color:white;
+}
+    
+
+.tile {
+    position: relative;
+    margin-bottom: 25px;
+    width: 100%;
+    padding: 0 5px;    
+    .header,
+    header {
+        font-family: @headings-font-family !important;
+        padding: 3px 0px 5px 5px !important;
+        font-size: @font-size-h4 !important;
+        //font-weight: 600 !important;
+        text-transform:uppercase;
+        color: @d3s-gray-1 !important;
+        background-color: transparent !important;
+        border: none !important;
+        position: relative;
+        .TileTools {
+            position: absolute;
+            right: -5px;
+            top: -5px;
+            z-index: 900;
+            color: @d3s-gray-1;
+            font-size: 15px;
+            line-height: 16px;            
+        }
+    }
+    footer {
+        position: relative;
+        .TileTools {
+            position: absolute;
+            right: -5px;
+            bottom: 10px;
+            z-index: 900;
+            color: @d3s-gray-1;
+            font-size: 15px;
+            line-height: 16px;
+        }
+    }
+    .tiletools {
+        width: 100%;
+        position: absolute;
+        top: 3px;
+        right: 5px;
+        text-align: right;
+        button {
+            color: @d3s-gray-3;
+            font-size: @font-size-h4 !important;
+            border: none;
+            background-color: transparent;
+            :hover {
+                       color: @d3s-gray-2;
+                   }
+        }
+    }
+    .form-instructions {
+        margin-left: 10px;
+    }
+    .directions {
+        padding: 3px 0px 5px 5px !important;
+        color: @d3s-gray-2;
+        font-size: .8em;
+    }
+    .tile-tabs {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        width: 98%;
+    }
+    .content {
+    }
+    .footnote {
+        position: absolute;
+        bottom: 5px;
+        width: 100%;
+        color: @d3s-blue-4;
+    }
+    a:hover {
+        text-decoration: underline;
+    }    
+}
+
+.tile-detail {
+        background-color: #fff;
+        border: 0;
+        border-radius: 0;
+        padding-bottom: 10px;
+    }

@@ -843,6 +843,7 @@
     <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
     <Content Include="fonts\fontawesome-webfont.woff2" />
     <Content Include="package.json" />
+    <Content Include="Content\styles\_VariablesAng.less" />
     <None Include="Properties\PublishProfiles\d3s-ui-central-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />
