@@ -53,7 +53,19 @@
       "Content/styles/materialize.css",
       "Content/styles/Root.css",
       "Content/styles/ContentFormatting.css",
-      "Content/styles/navigation.css"      
+      "Content/styles/navigation.css"
+    ]
+  },
+
+  {
+    "outputFileName": "content/styles/ang.css",
+    "inputFiles": [
+      "content/font-awesome.css",
+      "Content/styles/materialize.css",
+      "Content/styles/Root.css",
+      "Content/styles/ContentFormatting.css",
+      "Content/styles/navigation.css",
+      "Content/styles/angular.css"
     ]
   }
 ]

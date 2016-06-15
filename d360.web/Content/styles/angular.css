@@ -1,0 +1,24 @@
+﻿nav.top,
+.side-nav {
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+.side-nav {
+  background-color: #383127;
+  width: 200px;
+}
+.side-nav.fixed a {
+  color: white;
+}
+.side-nav li,
+.side-nav a {
+  height: 35px;
+  line-height: 35px;
+}
+.side-nav li {
+  padding: 0;
+}
+body {
+  background-color: #F8F3EF;
+}

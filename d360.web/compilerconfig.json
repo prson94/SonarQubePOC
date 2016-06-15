@@ -29,5 +29,10 @@
     "outputFile": "Content/styles/navigation.css",
     "inputFile": "Content/styles/navigation.less",
     "sourceMap": false
+  },
+  {
+    "outputFile": "Content/styles/angular.css",
+    "inputFile": "Content/styles/angular.less",
+    "sourceMap": false
   }
 ]

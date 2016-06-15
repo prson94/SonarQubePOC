@@ -463,6 +463,16 @@
     <Content Include="Areas\HelpPage\HelpPage.css" />
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\logo.new.png" />
+    <Content Include="Content\styles\ang.css" />
+    <Content Include="Content\styles\ang.min.css">
+      <DependentUpon>ang.css</DependentUpon>
+    </Content>
+    <Content Include="Content\styles\angular.css">
+      <DependentUpon>angular.less</DependentUpon>
+    </Content>
+    <Content Include="Content\styles\angular.min.css">
+      <DependentUpon>angular.css</DependentUpon>
+    </Content>
     <Content Include="Content\styles\materialize.css" />
     <Content Include="Content\styles\apps.css" />
     <Content Include="Content\styles\apps.min.css">
@@ -480,6 +490,7 @@
     <Content Include="Content\styles\navigation.min.css">
       <DependentUpon>navigation.css</DependentUpon>
     </Content>
+    <Content Include="Content\styles\angular.less" />
     <None Include="Content\styles\typeahead.less" />
     <Content Include="Content\templates\actionsmonitor.list.html" />
     <Content Include="Content\templates\artifacts.root.html" />
