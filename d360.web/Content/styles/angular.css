@@ -4,6 +4,21 @@
 body {
   background-color: #F8F3EF;
 }
+nav.top {
+  line-height: 40px;
+  height: 40px;
+  background-color: #fff;
+}
+nav.top ul a {
+  color: black;
+}
+nav.top a.photo img {
+  vertical-align: middle;
+  border-radius: 20px;
+}
+nav.top a.help {
+  color: #D32F2F;
+}
 nav.top,
 .side-nav {
   -webkit-box-shadow: none;
@@ -17,7 +32,7 @@ nav.top,
 .side-nav li {
   padding: 0;
 }
-.side-nav li,
+.side-nav ul,
 .side-nav a {
   height: 35px;
   line-height: 35px;

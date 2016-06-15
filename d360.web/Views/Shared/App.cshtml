@@ -53,25 +53,20 @@
             color: @(settings["HeaderProfileLinkColor"]);
         }
         .side-nav .logo {
-        background-color: @(settings["HeaderBackgroundColor"]);
-        background-image: url(@(companyLogo));
-        background-repeat: no-repeat;
-        background-position: left top;
-        background-size: auto 40px;
-        height: 40px;
-        width:100%;
-        margin-bottom:20px;
-    }
-
-    side-nav .logo:hover{
-        background-color: @(settings["HeaderBackgroundColor"]);
+            background-color: @(settings["HeaderBackgroundColor"]);
+            background-image: url(@(companyLogo));
+            background-repeat: no-repeat;
+            background-position: left top;
+            background-size: auto 40px;
+            height: 40px;
+            width:100%;
+            margin-bottom:20px;
         }
-        nav.top{
-            height:40px;
-            background-color:white;
-            border-bottom: 1px solid @(settings["HeaderBackgroundColor"]);
-            box-shadow:clear;
-            -webkit-box-shadow:;
+        side-nav .logo:hover{
+            background-color: @(settings["HeaderBackgroundColor"]);
+        }
+        nav.top{            
+            border-bottom: 1px solid @(settings["HeaderBackgroundColor"]);            
         }    
     </style>
     <script type="text/javascript" src="/Scripts/GoJS/GoJS-1-5-18.js"></script>

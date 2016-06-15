@@ -9,12 +9,10 @@ import {AdminTemplateEditorComponent} from './admin-template-editor';
 
 @Component({
     selector: 'd3s-admin-templates',
-    template: ` <div class="row">
-                    <div class="col s12"><a (click)="addTemplate()" style="cursor:pointer;"><i class="fa fa-gear"></i></a></div>
-                </div>
+    template: ` 
                 <div class="row">
                 <div class="col s12">                    
-                    <div class="tile tile-detail">
+                   <div class="tile tile-detail">
                         <header>Tooltip Templates</header>
                         <p-dataTable [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" >                            
                             <template let-template>                                

@@ -1151,6 +1151,7 @@
     <Content Include="Views\Form\FusionRuleStepMappingEditForm.cshtml" />
     <Content Include="Service References\Application Insights\ConnectedService.json" />
     <Content Include="typings.json" />
+    <Content Include="Views\Navigation\HeaderActions.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1260,6 +1261,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\header\header.actions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\header\header.breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />

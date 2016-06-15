@@ -4,6 +4,24 @@ body{
     background-color:@secondary-nav;
 }
 
+nav.top{
+    line-height:40px;
+    height:40px;
+    background-color:#fff;
+
+    ul a{
+        color:black;
+    }   
+    
+    a.photo img{
+        vertical-align:middle;
+        border-radius:20px;
+    } 
+
+    a.help{
+        color:@d3s-red-1;
+    }
+}
 
 nav.top, .side-nav {
     -webkit-box-shadow: none;
@@ -17,7 +35,7 @@ nav.top, .side-nav {
     li{
         padding:0;
     }
-    li, a{
+    ul, a{
         height:35px;
         line-height:35px;
     }
@@ -37,8 +55,7 @@ nav.top, .side-nav {
     header {
         font-family: @headings-font-family !important;
         padding: 3px 0px 5px 5px !important;
-        font-size: @font-size-h4 !important;
-        //font-weight: 600 !important;
+        font-size: @font-size-h4 !important;        
         text-transform:uppercase;
         color: @d3s-gray-1 !important;
         background-color: transparent !important;
