@@ -2,7 +2,7 @@
 import { PageHeader } from '../../services/page-header.service';
 import { TemplatesService } from '../../services/templates.service';
 import { Template } from '../../models/template.model';
-import {DataTable, Column, Button, Editor, InputText, Dropdown} from 'primeng/primeng';
+import {DataTable, Column, Editor, InputText, Dropdown} from 'primeng/primeng';
 import {DeleteForm} from '../forms/delete.form';
 import {AdminTemplateEditorComponent} from './admin-template-editor';
 
@@ -10,6 +10,9 @@ import {AdminTemplateEditorComponent} from './admin-template-editor';
 @Component({
     selector: 'd3s-admin-templates',
     template: ` <div class="row">
+                    <div class="col s12"><a (click)="addTemplate()" style="cursor:pointer;"><i class="fa fa-gear"></i></a></div>
+                </div>
+                <div class="row">
                 <div class="col s12">                    
                     <div class="tile tile-detail">
                         <header>Tooltip Templates</header>
@@ -49,7 +52,7 @@ import {AdminTemplateEditorComponent} from './admin-template-editor';
                </div>               
                 `,
     providers: [TemplatesService],
-    directives: [DataTable, Column, Button, DeleteForm, Editor, InputText, Dropdown, AdminTemplateEditorComponent]
+    directives: [DataTable, Column, DeleteForm, Editor, InputText, Dropdown, AdminTemplateEditorComponent]
 })
 
 export class AdminTemplatesComponent {
@@ -107,5 +110,9 @@ export class AdminTemplatesComponent {
 
         if (index >= 0)
             this.templates[index] = event.template;
+    }
+
+    addTemplate() {
+        //show the add template dialog
     }
 };

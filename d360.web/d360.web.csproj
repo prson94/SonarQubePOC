@@ -1248,8 +1248,10 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />

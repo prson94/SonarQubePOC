@@ -33,26 +33,7 @@
     <meta name="description" content="Data3Sixty: Data Collaboration Suite" />
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
     <link rel="Shortcut Icon" href="@(companyIcon)" />
-    <style type="text/css">
-        #nav {
-            background: @(settings["HeaderBackgroundColor"]);
-        }
-        .nav-top .profile a {
-            color: @(settings["HeaderProfileLinkColor"]);
-        }
-        .nav-top .logo {
-        position: absolute;
-        top: 3px;
-        left: 5px;
-        background-image: url(@(companyLogo));
-        background-repeat: no-repeat;
-        background-position: left top;
-        background-size: auto 44px;
-        height: 44px;
-        width: 400px;
-        z-index: 1001;
-    }
-    </style>
+    
     <script type="text/javascript">
         //var appInsights=window.appInsights||function(config){
         //    function s(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},r=document,f=window,e="script",o=r.createElement(e),i,u;for(o.src=config.url||"//az416426.vo.msecnd.net/scripts/a/ai.0.js",r.getElementsByTagName(e)[0].parentNode.appendChild(o),t.cookie=r.cookie,t.queue=[],i=["Event","Exception","Metric","PageView","Trace"];i.length;)s("track"+i.pop());return config.disableExceptionTracking||(i="onerror",s("_"+i),u=f[i],f[i]=function(config,r,f,e,o){var s=u&&u(config,r,f,e,o);return s!==!0&&t["_"+i](config,r,f,e,o),s}),t
@@ -66,6 +47,52 @@
     </script>
     @Html.Partial("KnockoutTemplates")
     <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
+    <style type="text/css">
+
+        .nav-top .profile a {
+            color: @(settings["HeaderProfileLinkColor"]);
+        }
+        .side-nav .logo {
+        background-color: @(settings["HeaderBackgroundColor"]);
+        background-image: url(@(companyLogo));
+        background-repeat: no-repeat;
+        background-position: left top;
+        background-size: auto 40px;
+        height: 40px;
+        width:100%;
+        margin-bottom:20px;
+    }
+
+    side-nav .logo:hover{
+        background-color: @(settings["HeaderBackgroundColor"]);
+        }
+        nav.top{
+            height:40px;
+            background-color:white;
+            border-bottom: 1px solid @(settings["HeaderBackgroundColor"]);
+            box-shadow:clear;
+            -webkit-box-shadow:;
+        }
+    nav.top, .side-nav {
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+       box-shadow: none;
+      }
+    .side-nav{
+        background-color:#383127;
+        width:210px;
+        }
+    .side-nav.fixed a{
+        color:white;
+    }
+    .side-nav li, .side-nav a{
+        height:35px;
+        line-height:35px;
+    }
+    .side-nav li{
+        padding:0;
+     }
+    </style>
     <script type="text/javascript" src="/Scripts/GoJS/GoJS-1-5-18.js"></script>
     <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
 
@@ -88,8 +115,6 @@
     <link rel="stylesheet" type="text/css" href="../../node_modules/primeui/themes/omega/theme.css" />
     <link rel="stylesheet" type="text/css" href="../../node_modules/primeui/primeui-ng-all.min.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.quilljs.com/1.0.0-beta.3/quill.snow.css">
-
-
     <script>
         System.config({
             transpiler: 'typescript',
@@ -102,19 +127,8 @@
         System.import('scripts/app/app').then(null, console.error.bind(console));
     </script>
 </head>
-<body>
-    <div style="position: fixed; left: 0; top: 0; width: 50px; height: 100%; z-index: 0" class="grey darken-2"></div>
-    <div id="TopNav">@Html.Action("Top", "Navigation", new { area = string.Empty })</div>
-    <table class="d3s-page">
-        <tr>
-            <td class="d3s-sidebar">
-                <div id="SideIcons"></div>
-            </td>
-            <td class="d3s-contentarea">
-                <d3s-app><div style="width:100%;height:100%;text-align:center;vertical-align:middle;padding: 50px;"><i class="fa fa-spinner fa-4x fa-spin"></i></div></d3s-app>
-            </td>
-        </tr>
-    </table>
+<body>    
+    <d3s-app><div style="width:100%;height:100%;text-align:center;vertical-align:middle;padding: 50px;"><i class="fa fa-spinner fa-4x fa-spin"></i></div></d3s-app>    
     <script type="text/javascript" title="Context List">
         var getContextList = function () {
             var self = this;
@@ -224,437 +238,7 @@
         }
 
         var contextList = getContextList();
-    </script>
-    <script type="text/javascript">
-        @*var currentUserName = "@(User.Identity.Name)";
-
-        //#region Settings and global variables for shared models
-
-        var logError = function (location, e) {
-            console.log(location + ": " + e.message);
-        }
-
-        $.ajaxSetup({
-            "error": function (jqXHR, textStatus, errorThrown) {
-                console.log("error " + textStatus);
-                console.log("incoming Text " + jqXHR.responseText);
-            }
-        });
-
-        $(document).ajaxSend(function (event, jqxhr, settings) {
-            if (settings.type == "POST") {
-                jqxhr.setRequestHeader('@d360.web.Filters.ValidateHttpAntiForgeryTokenAttribute.RequestVerificationTokenName',
-                                       $("#antiForgeryToken").val());
-            }
-        });
-
-        $(document).ajaxError(function (xhr, props) {
-            if (props.status === 401) {
-                console.log("ajaxError raised status = 401 reloading page.");
-                setTimeout(function () {
-                    location.reload()
-                }, 100);
-            }
-        });
-
-        //$.connection.hub.logging = false;
-        //var SocialHub = $.connection.socialHub;
-
-        //#endregion
-
-        var setupPage = function() {
-            $('.htmlArea').redactor({ minHeight: 200, convertVideoLinks: true });
-            $('.simpleHtmlArea').redactor({ minHeight: 200, convertVideoLinks: true, buttons: ['bold', 'italic', 'unorderedlist', 'orderedlist'] });
-            $('.replyHtmlArea').redactor({ minHeight: 50, convertVideoLinks: true, buttons: ['bold', 'italic', 'unorderedlist', 'orderedlist'] });
-
-            //#region Click Handlers
-
-            $('body').on('click', '*[data-command]', function (event) {
-                var tool = $(this);
-                $.ajax({
-                    type: tool.data('method') || 'POST',
-                    url: tool.data('uri'),
-                    error: function(xhr, status, error){
-                        amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.statusText, type: 'error' });
-                    },
-                    success: function(data, status, xhr){
-                        amplify.publish("ShowMessage", { title: "Success!", message: xhr.statusText, type: 'confirm' });
-                        amplify.publish("CommandExecuted", { context: tool.data('context'), customdata: data });
-                    }
-                });
-            });
-
-            $('body').on('click', '*[data-local]', function (event) {
-                var tool = $(this);
-                amplify.publish("LocalAction", { context: tool.data('context'), uri: tool.data('uri') });
-            });
-
-            $('body').on('click', '*[data-overlay]', function (event) {
-                var tool = $(this);
-                var overlaybg = $('<div id="OverlayBackground" style="display:none"></div>');
-                var overlay = $('<div id="Overlay" style="padding-top: 50px; display:none;"></div>');
-                overlay.load(tool.data('uri'));
-                $('body').append(overlaybg);
-                $('body').append(overlay);
-                overlaybg.fadeIn(100);
-                overlay.fadeIn(300);
-            });
-
-            $('body').on('click', '*[data-sidebaroverlay]', function (event) {
-                var tool = $(this);
-
-            });
-
-            $('body').on('click', '*[data-tile]', function (event) {
-                if(event.originalEvent == null) // this happens when you click on the kpi ring, it sends two events one with a missing original event causing 2x the overlays missing all data
-                {
-                    console.log('click - *[data-title] handler encountered null originalEvent, ignoring event:');
-                    console.log(event);
-                    return;
-                }
-                var tile = $(this);
-                openTileOverlay(tile.data("uri"));
-            });
-
-            //#endregion
-
-            //#region MouseEnter Handlers
-
-            $('body').on('mouseenter', '*[data-flags]', function (event) {
-                $(this).qtip({
-                    content: {
-                        text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
-                        ajax: {
-                            url: "/resources/" + $(this).data("t") + "/" + $(this).data("i") + "/flags"
-                        }
-                    },
-                    position: {
-                        at: 'left center',
-                        my: 'right center',
-                        viewport: $(window), // Keep the tooltip on-screen at all times
-                        effect: false // Disable positioning animation
-                    },
-                    overwrite: false,
-                    show: {
-                        event: event.type,  // show using same event as above.
-                        solo: false,         // Only show one tooltip at a time
-                        ready: true
-                    },
-                    hide: {
-                        fixed: true,
-                        delay: 250,
-                    },
-                    //hide: 'mouseout',
-                    style: {
-                        classes: 'qtip-blue qtip-rounded'
-                    }
-                    //addTooltip(this);
-                });
-            });
-
-            $('body').on('mouseenter', '*[data-tools]', function (event) {
-                $(this).qtip({
-                    content: {
-                        text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
-                        ajax: {
-                            url: "/resources/" + $(this).data("t") + "/" + $(this).data("i") + "/tools"
-                        }
-                    },
-                    position: {
-                        at: 'left center',
-                        my: 'right center',
-                        viewport: $(window), // Keep the tooltip on-screen at all times
-                        effect: false // Disable positioning animation
-                    },
-                    overwrite: false,
-                    show: {
-                        event: event.type,  // show using same event as above.
-                        solo: false,         // Only show one tooltip at a time
-                        ready: true
-                    },
-                    hide: {
-                        fixed: true,
-                        delay: 250,
-                    },
-                    //hide: 'mouseout',
-                    style: {
-                        classes: 'qtip-blue qtip-rounded'
-                    }
-                    //addTooltip(this);
-                });
-            });
-
-            $('body').on('mouseenter', '*[data-type]', function (event) {
-                $(this).qtip({
-                    content: {
-                        title: $(this).data('title'),
-                        // Set the text to an image HTML string with the correct src URL to the loading image you want to use
-                        text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
-                        ajax: {
-                            url: "/resources/" + $(this).data("type") + "/" + $(this).data("id") + "/templates/tooltip/" + $(this).data("context"),
-                            once: ($(this).attr('data-cache') ? $(this).data('cache') : true),  // do we want to fetch the tooltip just once or recall each time?
-                            success: function(data) {
-                                if (!data || !data.length) {
-                                    this.destroy();
-                                }
-                                else {
-                                    this.set('content.text', data);
-                                }
-                            }
-                        }
-                    },
-                    position: {
-                        at: 'bottom center', // Position the tooltip above the link
-                        my: 'top center',
-                        viewport: $(window), // Keep the tooltip on-screen at all times
-                        effect: false // Disable positioning animation
-                    },
-                    overwrite: false,
-                    show: {
-                        event: event.type,  // show using same event as above.
-                        solo: false,         // Only show one tooltip at a time
-                        ready: true
-                    },
-                    hide: {
-                        fixed: true,
-                        delay: 250,
-                    },
-                    //hide: 'mouseout',
-                    style: {
-                        classes: 'qtip-blue qtip-rounded'
-                    }
-                    //addTooltip(this);
-                });
-            });
-
-            //#endregion
-
-            //#region Event Subscription
-
-            amplify.subscribe("RefreshNavigation", function (data) {
-                $('#TopNav').load('/Navigation/Top');
-            });
-
-            amplify.subscribe("CommandAction", function (data) {
-                var method = "POST";
-                if (data.customdata.method) {
-                    method = data.customdata.method;
-                }
-                if (data.context != "nullform") {
-                    $.ajax({
-                        type: method,
-                        url: data.uri
-                    }).always(function (msg) {
-                        amplify.publish("ShowMessage", msg);
-
-                        amplify.publish("RefreshActionMenu", msg);
-
-                        if (data.customdata.commandname) {
-                            amplify.publish("CommandExecuted", data.customdata.commandname);
-                        }
-                    });
-                }
-            });
-
-            amplify.subscribe("CancelAction", function (data) {
-                try {
-                    switch (data.context) {
-                        case contextList.Attribute:
-                        case contextList.Attribute_Embedded:
-                        case contextList.Comment:
-                        case contextList.FusionExecution:
-                        case contextList.FusionFilter:
-                        case contextList.FusionOwnerRule:
-                        case contextList.FusionOwnerRuleItem:
-                        case contextList.FusionPromotionRule:
-                        case contextList.FusionPromotionRuleItem:
-                        case contextList.FusionPromotionRuleMapping:
-                        case contextList.Intersect:
-                        case contextList.ActionEditRelate:
-                        case contextList.ActionResponsibility:
-                        case contextList.IntersectSourcingResponsibility:
-                        case contextList.PolicyTypeClass:
-                        case contextList.ResponsibilityTransformation:
-                        case contextList.AttributeTypeCategory:
-                        case contextList.ResponsibilityTypeHierarchy:
-                        case contextList.SourceToTarget:
-                        case contextList.TaxonomyTypeClass:
-                            break;
-                        default:
-                            removeOverlay();
-                            break;
-                    }
-                } catch (e) {
-                    logError("SPA : CancelAction", e);
-                }
-            });
-
-            amplify.subscribe("SaveAction", function (data) {
-                try {
-                    switch (data.context) {
-                        case contextList.Attribute:
-                        case contextList.Attribute_Embedded:
-                        case contextList.Comment:
-                        case contextList.FusionExecution:
-                        case contextList.FusionFilter:
-                        case contextList.FusionOwnerRule:
-                        case contextList.FusionOwnerRuleItem:
-                        case contextList.FusionPromotionRule:
-                        case contextList.FusionPromotionRuleItem:
-                        case contextList.FusionPromotionRuleMapping:
-                        case contextList.Intersect:
-                        case contextList.ActionResponsibility:
-                        case contextList.IntersectSourcingResponsibility:
-                        case contextList.ResponsibilityTransformation:
-                        case contextList.AttributeTypeCategory:
-                        case contextList.PolicyTypeClass:
-                        case contextList.ResponsibilityTypeHierarchy:
-                        case contextList.SourceToTarget:
-                        case contextList.TaxonomyTypeClass:
-                            break;
-                        default:
-                            removeOverlay();
-                    }
-                } catch (e) {
-                    logError("SPA : SaveAction", e);
-                }
-            });
-
-            amplify.subscribe("OverlayOpening", function (data) {
-                switch(data.name) {
-                    case 'Board':
-                        break;
-                    default:
-                        var target = $('#Board');
-                        if (target.data('visible') == true) {
-                            target.fadeOut(500);
-                            target.data('visible', false);
-                        }
-                        break;
-                }
-            });
-
-            amplify.subscribe("ToolAction", function (data) {
-                if (data.context != "nullform") {
-                    try {
-                        switch (data.context) {
-                            case contextList.ActionBoard:
-                                var target = $('#Board');
-                                if (target.data('visible') == true) {
-                                    target.fadeOut(500);
-                                    target.data('visible', false);
-                                }
-                                else {
-                                    target.fadeIn(500);
-                                    target.data('visible', true);
-                                }
-                                break;
-                            case contextList.ActionCommand:
-                            case contextList.ActionGeneric:
-                                var method = "POST";
-                                if (data.customdata.method) {
-                                    method = data.customdata.method;
-                                }
-
-                                $.ajax({
-                                    type: method,
-                                    url: data.uri,
-                                    error: function (xhr, textStatus, error) {
-                                        amplify.publish("ShowMessage", { title: 'Error Attempting Action', message: xhr.statusText, type: 'error' }); // + xhr.responseText
-                                    },
-                                    success: function (data, statusText, xhr) {
-                                        amplify.publish("ShowMessage", { title: "Success!", message: data.message, type: 'confirm' });
-                                        amplify.publish("RefreshActionMenu", data);
-                                        if (data.custom.commandname) {
-                                            amplify.publish("CommandExecuted", data.custom.commandname);
-                                        }
-                                    }
-                                });
-                                break;
-                            case contextList.ActionExport:
-                            case contextList.ActionFilter:
-                            case contextList.ActionFollow:
-                            case contextList.ActionLink:
-                            case contextList.ActionEditRelate:
-                            case contextList.ActionResponsibility:
-                            case contextList.ActionUnrelate:
-                            case contextList.Attribute:
-                            case contextList.Attribute_Embedded:
-                            case contextList.AttributeTypeCategory:
-                            case contextList.Comment:
-                            case contextList.FusionExecution:
-                            case contextList.FusionFilter:
-                            case contextList.FusionOwnerRule:
-                            case contextList.FusionOwnerRuleItem:
-                            case contextList.FusionPromotionRule:
-                            case contextList.FusionPromotionRuleItem:
-                            case contextList.FusionPromotionRuleMapping:
-                            case contextList.Responsibility_Embedded:
-                            case contextList.IntersectSourcingResponsibility:
-                            case contextList.PolicyTypeClass:
-                            case contextList.ResponsibilityTransformation:
-                            case contextList.ResponsibilityTypeHierarchy:
-                            case contextList.SourceToTarget:
-                            case contextList.TaxonomyTypeClass:
-                            case contextList.Workflow:
-                                break;
-                            default:
-                                var overlaybg = $('<div id="OverlayBackground" style="display:none"></div>');
-                                var overlay = $('<div id="Overlay" style="padding-top: 50px; display:none;"></div>');
-                                var ocenter = $('<div style="width: 90%; margin: auto; padding-bottom: 30px; position: relative;"></div>');
-                                var oclose = $('<button class="overlay-close"><i class="fa fa-times fa-4x"></i></button>');
-                                ocenter.load(data.uri);
-
-                                oclose.on('click', function () {
-                                    removeOverlay();
-                                });
-
-                                overlay.append(oclose);
-                                overlay.append(ocenter);
-
-                                $('body').append(overlaybg);
-                                $('body').append(overlay);
-                                overlaybg.fadeIn(750);
-                                overlay.fadeIn(750);
-                                break;
-                        }
-                    } catch (e) {
-                        logError("SPA : ToolAction", e);
-                    }
-                }
-            });
-
-            amplify.subscribe("ShowMessage", function (data) {
-                //{ title, message, type }
-                var stickTime = '';
-                if (data.type == 'error') stickTime = '15000';
-                var message = ((data.message) ? data.message : data.text) + "";
-                $.gritter.add({
-                    type: data.type, title: data.title, text: message, sticky: false, time: stickTime
-                });
-            });
-
-            //#endregion
-
-            //app.run('#/');
-        }
-
-        $(function () {
-            setupPage();
-            //$('select').material_select();
-        });
-
-        $(document).ajaxComplete(function () {
-            $('.htmlArea').redactor({ minHeight: 200, convertVideoLinks: true });
-            $('.simpleHtmlArea').redactor({ minHeight: 200, convertVideoLinks: true, buttons: ['bold', 'italic', 'unorderedlist', 'orderedlist'] });
-            $('.replyHtmlArea').redactor({ minHeight: 50, convertVideoLinks: true, buttons: ['bold', 'italic', 'unorderedlist', 'orderedlist'] });
-            //$('select').material_select();
-        });
-
-        $(window).resize(function () {
-            amplify.publish("PageResized");
-        });
-    *@</script>
+    </script>    
     <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
 </body>
 </html>
