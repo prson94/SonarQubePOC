@@ -58,6 +58,25 @@ namespace d360.web.Models
 
     #endregion
 
+    public class AddItemsToDiagramModel
+    {
+        public List<AddItemsToDiagramItem> Items { get; set; }
+    }
+
+    public class AddItemsToDiagramItem
+    {
+        public int Position { get; set; }
+        public int IntersectTypeID { get; set; }
+        public SystemObjects Subject { get; set; }
+        public int SubjectID { get; set; }
+        public SystemObjects Object { get; set; }
+        public int ObjectID { get; set; }
+        public int IntersectID { get; set; }
+        public string ErrorMessage { get; set; }
+
+        public IntersectDetail Intersect { get; set; }
+    }
+
     [DataContract(Namespace = constants.NAMESPACE)]
     public class AddRelationshipsModel
     {
@@ -335,6 +354,9 @@ namespace d360.web.Models
     {
         public int FieldTypeID { get; set; }
         public string FieldTypeName { get; set; }
+        public bool Show { get; set; }
+        public int? SortOrder { get; set; }
+        public string FilterValue { get; set; }
     }
 
     public class FieldValidity

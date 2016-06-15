@@ -746,7 +746,8 @@ select * from h where ID <> @t order by h.[Level] desc;
             #region Intersects
 
             var intersectSql = $@"
-select  T.ID,
+select  distinct
+        T.ID,
         T.Name  
 from    utility.RelationshipTypes V 
         inner join IntersectType T on T.ID = V.IntersectTypeID and V.SourceObjectType = '{type}' and V.SourceObjectID = {fusionAttributeTypeID}

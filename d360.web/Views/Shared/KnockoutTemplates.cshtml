@@ -126,7 +126,7 @@
                     </td>
                 </tr>
             </tbody>
-        </table> 
+        </table>
     </td>
     <td style="min-width: 20px">&nbsp;</td>
     <td data-bind="visible: !IsLoading()" style="width:30%;vertical-align:top;">
@@ -306,6 +306,76 @@
         </div>
     </div>
 </script>
+
+
+<script id="lineageEditTmpl" type="text/html">
+    <div style="min-height: 250px; height: 250px">
+        <div class="row">
+            <div class="col l4 m4 s12">
+                <div class="form-instructions">
+                    Please choose a type of relationship to work with, then click the <i class="blue-text fa fa-plus"></i> button on the
+                    table to the right to add items.  You can switch the type of relationship if you want to add items of various types.
+                    Once you have chosen all your relationships, click the add button on the toolbar above.
+                </div>
+                <div data-bind="intersectTypeFilteredDropdown, jqxDropDownList: {
+                            theme: theme,
+                            source: IntersectTypeOptions,
+                            dropDownHeight: 250,
+                            height: field_height,
+                            width: field_width98,
+                            displayMember: 'title',
+                            valueMember: 'value',
+                            enableBrowserBoundsDetection: true
+                    }"></div>
+            </div>
+            <div class="col l8 m8 s12">
+                <table cellpadding="0" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th colspan="3" style="text-align: right">
+                                <a class='btn-flat waves-effect blue-text' data-bind="click: AddItem"><i class='fa fa-plus' title='Add'></i></a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: Items">
+                        <tr>
+                            <td style="width: 47%">
+                                <div data-bind="subjectFilteredDropdown, jqxDropDownList: {
+                                        theme: theme,
+                                        source: SubjectOptions,
+                                        disabled: SubjectsLoading,
+                                        dropDownHeight: 250,
+                                        height: field_height,
+                                        width: field_width98,
+                                        displayMember: 'title',
+                                        valueMember: 'value',
+                                        enableBrowserBoundsDetection: true
+                                }"></div>
+                            </td>
+                            <td style="padding-right:9px; width: 47%">
+                                <div data-bind="objectFilteredDropdown, jqxDropDownList: {
+                                        theme: theme,
+                                        source: ObjectOptions,
+                                        disabled: ObjectsLoading,
+                                        dropDownHeight: 250,
+                                        height: field_height,
+                                        width: field_width98,
+                                        displayMember: 'title',
+                                        valueMember: 'value',
+                                        enableBrowserBoundsDetection: true
+                                }"></div>
+                            </td>
+                            <td style="width: 6%">
+                                <a class='btn-flat waves-effect red-text' data-bind="click: $parent.RemoveItem"><i class='fa fa-trash' title='Remove'></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</script>
+
 <script id="companySettingsIpRestictionTmpl" type="text/html">
     <tr style="margin-bottom: 10px">
         <td style="vertical-align: top">

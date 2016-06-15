@@ -208,7 +208,9 @@ namespace d360.model
 
         public DbSet<Intersect> Intersects { get; set; }
 
-        public DbSet<IntersectDetail> IntersectDetails { get; set; }      /* VIEW */
+        public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */
+
+        public DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }        /* VIEW */
 
         public DbSet<IntersectGroup> IntersectGroups { get; set; }
 
@@ -1305,6 +1307,60 @@ order by Name");
             }
 
             return intersect;
+        }
+
+        public IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID)
+        {
+            Intersect intersect = null;
+            IntersectDetail dtl = null;
+
+            var sSubject = subject.ToString();
+            var sObject = @object.ToString();
+
+            var subjectDetail = GetObjectDetail(subject, subjectID);
+            var objectDetail = GetObjectDetail(@object, objectID);
+
+            if (subjectDetail == null)
+                throw new NotFoundException("Subject");
+
+            if (objectDetail == null)
+                throw new NotFoundException("Object");
+
+            var intersectType = GetById<IntersectType>(intersectTypeID);
+
+            if (intersectType == null)
+                throw new NotFoundException("Intersect Type");
+
+            if (
+                intersectType.Subject == subjectDetail.Type && intersectType.SubjectID == subjectDetail.TypeID &&
+                intersectType.Object == objectDetail.Type && intersectType.ObjectID == objectDetail.TypeID
+                )
+            {
+                dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (
+                        (i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID) ||
+                        (i.Object == sSubject && i.ObjectID == subjectID && i.Subject == sObject && i.SubjectID == objectID)
+                    )
+                ).SingleOrDefault();
+
+                if (dtl == null)
+                {
+                    var nodes = intersectType.Nodes.OrderBy(i => i.Order).ToList();
+                    intersect = new Intersect { IntersectTypeID = intersectType.ID, Subject = sSubject, SubjectID = subjectID, Object = sObject, ObjectID = objectID };
+                    intersect.Nodes = new List<IntersectNode>();
+                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = sSubject, ObjectID = subjectID });
+                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = sObject, ObjectID = objectID });
+                    Intersects.Add(intersect);
+                    SaveChanges();
+
+                    dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
+                }
+
+                return dtl;
+            }
+            else
+            {
+                throw new NotFoundException("Intersect Type");
+            }
         }
 
         public void AddRelationship(SystemObjects type, int id, SystemObjects targetType, int targetID, IntersectClassification classification, int? roleID, string description)

@@ -37,7 +37,6 @@
         <div>
             <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_add').hide(200); return false;"><i class="fa fa-remove"></i></a></div>
             <div style="padding:10px">
-                <div class="FieldName">Type</div>
                 <select data-bind="value: NodeType" class="select-dropdown browser-default" id="{{control}}_add_artifact_type" style="height:100%"></select><br />
                 <input id="{{control}}_add_search_text" type="text" style="width:80%;margin-top:10px;line-height:1.5em" />
                 <div id="{{control}}_add_search" style="display:inline-block;">Search</div>
@@ -52,10 +51,6 @@
         <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcerule_editor').hide(200);"><i class="fa fa-remove"></i></a></div>
         <div id="{{control}}_popover_sourcerule_editor_body" data-bind="template: {name: 'hierarchyRuleEditTmpl' }"></div>
     </div>
-    <!--<div id="{{control}}_popover_sourcemapping_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:1000px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px;">
-        <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcemapping_editor').hide(200); return false;"><i class="fa fa-remove"></i></a></div>
-        <div id="{{control}}_popover_sourcemapping_editor_body" data-bind="template: {name: 'sourceMappingEditTmpl' }"></div>
-    </div>-->
 
     <div id="{{control}}_ribbon_expander" style="width:100%;">
         <div style="font-size:1.1em;">
@@ -89,6 +84,9 @@
                                 <td colspan="2" style="padding-left:5px;" class="diagramcommands">
                                     Rules
                                 </td>
+                                <!--<td colspan="2" style="padding-left:5px;" class="lineage">
+                                    Business Lineage
+                                </td>-->
                                 <td colspan="2" style="padding-left:5px;" class="sourcemapping">
                                     Mappings
                                 </td>
@@ -147,6 +145,12 @@
                                     <button id="{{control}}_ribbon_transformation" style="vertical-align: top;"><i class="fa fa-2x fa-random"></i><br />Transformation Rules</button>
                                 </td>
 
+
+                                <!--<td style="width:1px;border-left:1px solid #ccc;" class="lineage"></td>
+                                <td style="padding:5px;vertical-align:top;" class="lineage">
+                                    <button id="{{control}}_ribbon_lineage_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
+                                    <button id="{{control}}_ribbon_lineage_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Place on Diagram</button>
+                                </td>-->
                                 <td style="width:1px;border-left:1px solid #ccc;" class="sourcemapping"></td>
                                 <td style="padding:5px;vertical-align:top;" class="sourcemapping">
                                     <button id="{{control}}_ribbon_sourcemapping_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Rule</button>
@@ -169,6 +173,10 @@
         <tbody>
             <tr style="vertical-align:top;height:520px">
                 <td style="vertical-align:top">
+                    <div id="{{control}}_popover_lineage_editor" style="display:none">
+                        <!--<header>Add Lineage</header>-->
+                        <div id="{{control}}_popover_lineage_editor_body" data-bind="template: {name: 'lineageEditTmpl' }"></div>
+                    </div>
                     <div id="{{control}}_popover_sourcemapping_editor" style="display:none">
                         <header>Manage Mappings</header>
                         <div id="{{control}}_popover_sourcemapping_editor_body" data-bind="template: {name: 'sourceMappingEditTmpl' }"></div>

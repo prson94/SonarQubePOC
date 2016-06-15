@@ -22,6 +22,9 @@ using d360.core.enums;
 using System.Reflection;
 using System.Diagnostics;
 using System.Web;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using System.Configuration;
 
 namespace d360.web.Controllers
 {
@@ -30,9 +33,15 @@ namespace d360.web.Controllers
     {
         #region DI
 
+        TelemetryClient Telemetry;
+
         public AuthenticationController(CommunityContext community, CompanyContext company)
             : base(community, company) 
-        { }
+        {
+            Telemetry = new TelemetryClient();
+            Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
+            Telemetry.Context.Properties["CompanyID"] = company.CurrentCompanyID.ToString();
+        }
 
         #endregion
 
@@ -54,35 +63,40 @@ namespace d360.web.Controllers
             // Don't sign if using HTTP redirect as the generated query string is too long for most browsers.        
             //if (Configuration.SingleSignOnServiceBinding != SAMLIdentifiers.Binding.HTTPRedirect)
             //{
-                // Sign the authentication request.
+            // Sign the authentication request.
             //var x509Certificate = LoadCertificate(Path.Combine(System.Web.HttpRuntime.AppDomainAppPath, "sp.pfx"), "password");
             //SAMLMessageSignature.Generate(authnRequestXml, x509Certificate.PrivateKey, x509Certificate);
             //}
 
-            Trace.TraceInformation("createAuthnRequest => Idp Endpoint: {0}", Community.CurrentCompanySsoModel.IdpSsoEndpoint);
+            Telemetry.TrackTrace(new TraceTelemetry { Message = $"createAuthnRequest => Idp Endpoint: {Community.CurrentCompanySsoModel.IdpSsoEndpoint}", SeverityLevel = SeverityLevel.Verbose });
+            //Trace.TraceInformation("createAuthnRequest => Idp Endpoint: {0}", Community.CurrentCompanySsoModel.IdpSsoEndpoint);
 
             return authnRequestXml;
         }
 
         private void verifySignature(XmlElement assertionXml)
         {
+            var telemetry = new TelemetryClient();
+
             try
             {
                 if (SAMLAssertionSignature.IsSigned(assertionXml))
                 {
-                    Trace.TraceInformation("AssertionConsumerService => Response SAML is signed.  Verifying now...");
+                    Telemetry.TrackTrace(new TraceTelemetry { Message = "AssertionConsumerService => Response SAML is signed.  Verifying now...", SeverityLevel = SeverityLevel.Information });
+                    //Trace.TraceInformation("AssertionConsumerService => Response SAML is signed.  Verifying now...");
                     if (Community.CurrentCompanySsoModel.IdpCertificateFile != null)
                     {
                         var x509Certificate = new X509Certificate2(Community.CurrentCompanySsoModel.IdpCertificateFile);
                         if (SAMLAssertionSignature.Verify(assertionXml, x509Certificate))
-                            Trace.TraceInformation("AssertionConsumerService => Response SAML is signed AND verified.");
+                            Telemetry.TrackTrace(new TraceTelemetry { Message = "AssertionConsumerService => Response SAML is signed AND verified.", SeverityLevel = SeverityLevel.Information }); //Trace.TraceInformation("AssertionConsumerService => Response SAML is signed AND verified.");
                         else
                             throw new ApplicationException("AssertionConsumerService => Failed to Verify Signature where an IDP-supplied CER file was stored");
                     }
                     else
                     {
                         if (SAMLAssertionSignature.Verify(assertionXml))
-                            Trace.TraceInformation("AssertionConsumerService => Response SAML is signed AND verified.");
+                            Telemetry.TrackTrace(new TraceTelemetry { Message = "AssertionConsumerService => Response SAML is signed AND verified.", SeverityLevel = SeverityLevel.Information });
+                        //Trace.TraceInformation("AssertionConsumerService => Response SAML is signed AND verified.");
                         else
                             throw new ApplicationException("AssertionConsumerService => Failed to Verify Signature where no IDP-supplied CER file was stored");
                     }
@@ -90,8 +104,10 @@ namespace d360.web.Controllers
             }
             catch (Exception ex)
             {
-                Trace.TraceError(ex.Message + ((ex.InnerException != null) ? ex.InnerException.Message : ""));
-            }        
+                Telemetry.TrackTrace(new TraceTelemetry { Message = ex.Message + ((ex.InnerException != null) ? ex.InnerException.Message : ""), SeverityLevel = SeverityLevel.Error });
+                //Trace.TraceError(ex.Message + ((ex.InnerException != null) ? ex.InnerException.Message : ""));
+            }
+            //telemetry = null;
         }
 
         [AllowAnonymous, Route("sso")]
@@ -100,6 +116,7 @@ namespace d360.web.Controllers
             switch (Community.CurrentCompanySsoModel.AuthenticationType)
             { 
                 case AuthenticationType.SSO:
+                    var telemetry = new TelemetryClient();
                     var authnRequestXml = createAuthnRequest();
                     
                     string returnUrl = Request.QueryString["ReturnUrl"];
@@ -107,9 +124,10 @@ namespace d360.web.Controllers
                     string relayState = null;
                     if (!string.IsNullOrWhiteSpace(returnUrl))
                         relayState = RelayStateCache.Add(new RelayState(returnUrl, null));
-                    
 
-                    Trace.TraceInformation("Login => relayState: {0}", relayState);
+
+                    Telemetry.TrackTrace(new TraceTelemetry { Message = $"Login => relayState: {relayState}", SeverityLevel = SeverityLevel.Information });
+                    //Trace.TraceInformation("Login => relayState: {0}", relayState);
 
                     //X509Certificate2 x509Certificate = null;
 
@@ -145,6 +163,8 @@ namespace d360.web.Controllers
 
                     #endregion
 
+                    telemetry = null;
+
                     ServiceProvider.SendAuthnRequestByHTTPRedirect(Response, Community.CurrentCompanySsoModel.IdpSsoEndpoint, authnRequestXml, relayState, null, hashString);
                                 
                     return new EmptyResult();
@@ -159,6 +179,7 @@ namespace d360.web.Controllers
         {
             // Extract the asserted identity from the SAML response.
             // The SAML assertion may be signed or encrypted and signed.
+            var telemetry = new TelemetryClient();
 
             SAMLResponse samlResponse = null;
             string relayState = null;
@@ -166,23 +187,31 @@ namespace d360.web.Controllers
             XmlElement samlResponseXml = null;
 
             ServiceProvider.ReceiveSAMLResponseByHTTPPost(Request, out samlResponseXml, out relayState);
-                        
-            Trace.TraceInformation("AssertionConsumerService => samlResponseXml: {0}", samlResponseXml.InnerXml);
+
+            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => samlResponseXml: {samlResponseXml.InnerXml}", SeverityLevel = SeverityLevel.Information });
+            //Trace.TraceInformation("AssertionConsumerService => samlResponseXml: {0}", samlResponseXml.InnerXml);
 
             // Deserialize the XML.
             samlResponse = new SAMLResponse(samlResponseXml);
 
-            Trace.TraceInformation("AssertionConsumerService => IsSuccessful: {0}", samlResponse.IsSuccess() ? "Yes" : "No");
+            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => IsSuccessful: {(samlResponse.IsSuccess() ? "Yes" : "No")}", SeverityLevel = SeverityLevel.Information });
+            //Trace.TraceInformation("AssertionConsumerService => IsSuccessful: {0}", samlResponse.IsSuccess() ? "Yes" : "No");
 
             // Check whether the SAML response indicates success or an error and process accordingly.
             if (samlResponse.IsSuccess())
             {              
                 SAMLAssertion samlAssertion = null;
 
-                Trace.TraceInformation("AssertionConsumerService => Assertion Count: {0}, Signed Assertion Count: {1}, Encrypted Assertion Count: {2}", 
-                    samlResponse.GetAssertions().Count, 
-                    samlResponse.GetSignedAssertions().Count,
-                    samlResponse.GetEncryptedAssertions().Count);
+                Telemetry.TrackTrace(
+                    new TraceTelemetry
+                    {
+                        Message = $"AssertionConsumerService => Assertion Count: {samlResponse.GetAssertions().Count}, Signed Assertion Count: {samlResponse.GetSignedAssertions().Count}, Encrypted Assertion Count: {samlResponse.GetEncryptedAssertions().Count}",
+                        SeverityLevel = SeverityLevel.Information
+                    });
+                //Trace.TraceInformation("AssertionConsumerService => Assertion Count: {0}, Signed Assertion Count: {1}, Encrypted Assertion Count: {2}", 
+                //    samlResponse.GetAssertions().Count, 
+                //    samlResponse.GetSignedAssertions().Count,
+                //    samlResponse.GetEncryptedAssertions().Count);
 
 
                 if (samlResponse.GetAssertions().Count > 0)
@@ -230,7 +259,8 @@ namespace d360.web.Controllers
 
                 foreach (SAMLAttribute a in attributes)
                 {
-                    Trace.TraceInformation("SAML Attribute is {0}", a.Name);
+                    Telemetry.TrackTrace(new TraceTelemetry { Message = $"SAML Attribute is {a.Name}", SeverityLevel = SeverityLevel.Information });
+                    //Trace.TraceInformation("SAML Attribute is {0}", a.Name);
 
                     switch (a.Name.ToLower())
                     {
@@ -260,7 +290,8 @@ namespace d360.web.Controllers
                     }
                 }
 
-                Trace.TraceInformation("AssertionConsumerService => Username: {0}, FirstName: {1}, LastName: {2}", userName, firstName, lastName);
+                Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel = SeverityLevel.Information });
+                //Trace.TraceInformation("AssertionConsumerService => Username: {0}, FirstName: {1}, LastName: {2}", userName, firstName, lastName);
 
                 //if (samlAssertion.Subject.NameID != null) userName = samlAssertion.Subject.NameID.NameIdentifier;
                 //if (string.IsNullOrEmpty(userName)) throw new ArgumentException("The SAML assertion doesn't contain a subject name.");
@@ -273,10 +304,12 @@ namespace d360.web.Controllers
                     resource = Community.Filter<Resource>(i => i.Username.ToLower() == userName).SingleOrDefault();
                     if (resource == null)
                     {
-                        Trace.TraceInformation("AssertionConsumerService => Did not find resource account for Username: {0}.", userName);
+                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Did not find resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
+                        //Trace.TraceInformation("AssertionConsumerService => Did not find resource account for Username: {0}.", userName);
                         if (Community.CurrentCompanySsoModel.AllowNewUserLogin && !string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
                         {
-                            Trace.TraceInformation("AssertionConsumerService => Now creating resource account for Username: {0}.", userName);
+                            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Now creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
+                            //Trace.TraceInformation("AssertionConsumerService => Now creating resource account for Username: {0}.", userName);
 
                             if (string.IsNullOrEmpty(firstName)) firstName = "Unknown";
                             if (string.IsNullOrEmpty(lastName)) lastName = "Unknown";
@@ -294,8 +327,9 @@ namespace d360.web.Controllers
                             };
                             Community.Add<Resource>(resource);
                             Community.Add<CompanyResource>(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, ResourceID = resource.ID });
-                            
-                            Trace.TraceInformation("AssertionConsumerService => Finished creating resource account for Username: {0}.", userName);
+
+                            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
+                            //Trace.TraceInformation("AssertionConsumerService => Finished creating resource account for Username: {0}.", userName);
                         }
                     }
                     else 
@@ -327,7 +361,8 @@ namespace d360.web.Controllers
 
                 if (resource != null)
                 {
-                    Trace.TraceInformation("AssertionConsumerService => Resource account exists for Username: {0}. Now authorizing with cookie.", userName);
+                    Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Resource account exists for Username: {userName}. Now authorizing with cookie.", SeverityLevel = SeverityLevel.Information });
+                    //Trace.TraceInformation("AssertionConsumerService => Resource account exists for Username: {0}. Now authorizing with cookie.", userName);
 
                     if (resource.ID > 0)
                     {
@@ -362,9 +397,7 @@ namespace d360.web.Controllers
                         if (cachedRelayState != null)
                         {
                             var sendToUrl = cachedRelayState.ResourceURL;
-
                             if (sendToUrl.Contains("?hashPath=")) sendToUrl = Server.UrlDecode(sendToUrl.Replace("?hashPath=", "#"));
-
                             redirectURL = sendToUrl;
                         }
 
@@ -373,7 +406,13 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        Trace.TraceError("AssertionConsumerService => Referencing resource: {0}. Should not authorize with the system account.  The username is: {1}", resource.ID, userName);
+                        telemetry.TrackTrace(
+                            new TraceTelemetry
+                            {
+                                Message = $"AssertionConsumerService => Referencing resource: {resource.ID}. Should not authorize with the system account.  The username is: {userName}",
+                                SeverityLevel = SeverityLevel.Error
+                            });
+                        //Trace.TraceError("AssertionConsumerService => Referencing resource: {0}. Should not authorize with the system account.  The username is: {1}", resource.ID, userName);
                     }
                 }
                 
@@ -388,8 +427,8 @@ namespace d360.web.Controllers
                 {
                     errorMessage = samlResponse.Status.StatusMessage.Message;
                 }
-
-                Trace.TraceError("AssertionConsumerService => Unsuccessful: {0}", errorMessage);
+                Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Unsuccessful: {errorMessage}", SeverityLevel = SeverityLevel.Error });
+                //Trace.TraceError("AssertionConsumerService => Unsuccessful: {0}", errorMessage);
 
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }

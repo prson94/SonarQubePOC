@@ -957,7 +957,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             {
                                 var responsibilityIDs = wtr.Select(i => i.ResponsibilityTypeID).ToList();
                                 var any = Company.Filter<ResponsibilityDetail>(i => i.ObjectType == "ArtifactType" && i.ObjectID == id && responsibilityIDs.Contains(i.ResponsibilityTypeID)).Any();
-                                var suggestAction = new PageActionItem { Context = ContextList.Artifact, Icon = Resources.Actions.Add_Icon, Title = "Suggest new item", Uri = string.Format("/form/SuggestNewArtifact?typeID={0}&parentID=0", id) };
+                                var suggestAction = new PageActionItem { Context = ContextList.Artifact, Icon = Resources.Actions.Add_Icon, Title = "Suggest new item", Uri = $"/form/SuggestNewArtifact?typeID={id}&parentID=0" };
                                 if (!any)
                                 {
                                     suggestAction.Context = "nullform";
@@ -972,12 +972,12 @@ where   h.ID <> @t order by h.[Level] desc;
                             {
                                 if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
                                 {
-                                    list.Add(new PageActionItem { Context = ContextList.Artifact, Icon = Resources.Actions.Add_Icon, Title = "Add", Uri = string.Format("/form/artifacts/{0}/add", id) });
+                                    list.Add(new PageActionItem { Context = ContextList.Artifact, Icon = Resources.Actions.Add_Icon, Title = "Add", Uri = $"/form/artifacts/{id}/add" });
                                 }
                             }
 
                             if (hasPermission(permissions, Claim.Update, ClaimObject.Root) && wtr.Count > 0)
-                                list.Add(new PageActionItem { Context = ContextList.Workflow, Icon = "code-fork", Title = "Workflow Status", Uri = string.Format("/workflow/ArtifactTypeWorkflowStatusOverlay?id={0}", id) });
+                                list.Add(new PageActionItem { Context = ContextList.Workflow, Icon = "code-fork", Title = "Workflow Status", Uri = $"/workflow/ArtifactTypeWorkflowStatusOverlay?id={id}" });
 
                             var exportActionMenu = new PageActionItem { Context = ContextList.ActionExport, Icon = Resources.Actions.ExportToExcel_Icon, Title = Resources.Actions.ExportToExcel_Text, CustomData = { new PageActionItemData { Name = "ExportType", Value = "xls" } } };
                             list.Add(exportActionMenu);
@@ -985,14 +985,14 @@ where   h.ID <> @t order by h.[Level] desc;
                             reportNode = appendReportMenu(type, id, SystemObjects.ArtifactType, id);
                             if (reportNode != null) list.Add(reportNode);
 
-                            list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
+                            list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}" });
                             list.Add(
                                 new PageActionItem
                                 {
                                     Context = ContextList.ActionGenericReport,
                                     Icon = "line-chart",
                                     Title = "Metrics",
-                                    Uri = string.Format("/overlays/ArtifactListMetricsDashboard?id={0}", id)
+                                    Uri = $"/overlays/ArtifactListMetricsDashboard?id={id}"
                                 }
                             );
 
@@ -1001,7 +1001,7 @@ where   h.ID <> @t order by h.[Level] desc;
                         else
                         {
                             #region Admin sidebar
-                            list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                            list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                             #endregion
                         }
                     }
@@ -1016,7 +1016,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     #region Actions
                     list.Add(new PageActionItem { Context = "AttributeTypeCategories", Icon = "tags", Title = "Categories", Uri = "/overlays/AttributeTypeCategories" });
                     if (id > 0) {
-                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     }
                     break;
                     #endregion
@@ -1025,14 +1025,14 @@ where   h.ID <> @t order by h.[Level] desc;
                     var Domain = Company.GetById<Domain>(id, i => i.DomainType, i => i.DomainGroup);
                     following = Company.IsUserFollowing(type, id, null);
                     list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.DomainGroup:
                     #region Actions
                     following = Company.IsUserFollowing(type, id, null);
                     list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}" });
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.DomainType:
@@ -1056,7 +1056,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     following = Company.IsUserFollowing(type, id, null);
                     list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}" });
 
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.EmailTemplate:
@@ -1138,7 +1138,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             }
                         }
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.FusionAttribute:
@@ -1174,7 +1174,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             list.Add(new PageActionItem { Context = ContextList.FusionAttributeType, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/fusion/{1}/attributes/{0}/delete", id, fusionAttributeType.FusionTypeID) });
                         fusionAttributeType = null;
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.FusionType:
@@ -1186,7 +1186,7 @@ where   h.ID <> @t order by h.[Level] desc;
                         //if (hasPermission(permissions, Claim.Delete, ClaimObject.Root))
                         //    list.Add(new PageActionItem { Context = ContextList.FusionType, Icon = Resources.Actions.Delete_Icon, Title = Resources.Actions.Delete, Uri = string.Format("/form/DeleteFusionType?id={0}", id) });
 
-                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     }
                     break;
                     #endregion
@@ -1195,7 +1195,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     if (id > 0)
                     {
                         //list.Add(new PageActionItem { Context = "Allocation", Icon = Resources.Actions.Allocation_Icon, Title = "Allocate Predicates", Uri = string.Format("/form/IntersectTypePredicateEditForm?id={0}", id) });
-                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     }
                     break;
                     #endregion
@@ -1206,7 +1206,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     //    list.Add(new PageActionItem { Context = ContextList.LookupType, Icon = Resources.Actions.Add_Icon, Uri = "/form/AddLookupType" });
                     //}
                     list.Add(new PageActionItem { Context = "Usage", Icon = Resources.Actions.Usage_Icon, Title = Resources.Actions.Usage, Uri = string.Format("/overlays/LookupTypeUsage?id={0}", id) });
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.Event:
@@ -1295,7 +1295,7 @@ where   h.ID <> @t order by h.[Level] desc;
                         if (reportNode != null) list.Add(reportNode);
                         list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}&includeChildren=true" });
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                 #endregion
                 case SystemObjects.PolicyType:
@@ -1320,7 +1320,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     reportNode = appendReportMenu(type, id, SystemObjects.PolicyType, id);
                     if (reportNode != null) list.Add(reportNode);
                     list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}" });
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                 #endregion
                 case SystemObjects.Report:
@@ -1349,14 +1349,14 @@ where   h.ID <> @t order by h.[Level] desc;
                     //        list.Add(addItem);
                     //    }
                     //}
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.Responsibility:
                     break;
                 case SystemObjects.ResponsibilityType:
                     #region Actions
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.ResponsibilityTypeClaim:
@@ -1431,7 +1431,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
                         following = Company.IsUserFollowing(type, id, null);
                         list.Add(new PageActionItem { Context = ContextList.ActionCommand, CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = string.Format("/resources/UpdateFollowStatus?type={0}&id={1}", type, id) });
-                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     }
                     else
                     {
@@ -1456,7 +1456,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     //{
                     //    list.Add(new PageActionItem { Context = ContextList.StatisticType, Icon = Resources.Actions.Add_Icon, Uri = "/form/AddStatisticType" });
                     //}
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.SurveyType:
@@ -1471,7 +1471,7 @@ where   h.ID <> @t order by h.[Level] desc;
                         }
                         list.Add(addItem);
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.Taxonomy:
@@ -1512,9 +1512,9 @@ where   h.ID <> @t order by h.[Level] desc;
                                 if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
                                 { 
                                     if (levels.Count > taxonomy.Level)
-                                        addItem.Items.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = "sitemap", Title = string.Format("{0}", nextLevelName), Uri = string.Format("/form/taxonomy/{0}/{1}/add", taxonomy.TaxonomyTypeID, id) });
+                                        addItem.Items.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = "sitemap", Title = $"{nextLevelName}", Uri = $"/form/taxonomy/{taxonomy.TaxonomyTypeID}/{id}/add" });
 
-                                    addItem.Items.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = "sitemap", Title = string.Format("{0}", rootLevelName), Uri = string.Format("/form/taxonomy/{0}/0/add", taxonomy.TaxonomyTypeID) });
+                                    addItem.Items.Add(new PageActionItem { Context = ContextList.Taxonomy, Icon = "sitemap", Title = $"{rootLevelName}", Uri = $"/form/taxonomy/{taxonomy.TaxonomyTypeID}/0/add" });
                                 }                                  
                                 list.Add(addItem);
                             }
@@ -1525,7 +1525,7 @@ where   h.ID <> @t order by h.[Level] desc;
                                     Context = ContextList.ActionGenericReport,
                                     Icon = Resources.Actions.Diagram_Icon,
                                     Title = "Diagram",
-                                    Uri = string.Format("/overlays/TaxonomyType/{0}/diagrams/catalog", taxonomy.TaxonomyTypeID)
+                                    Uri = $"/overlays/TaxonomyType/{taxonomy.TaxonomyTypeID}/diagrams/catalog"
                                 }
                             );
                         }
@@ -1562,7 +1562,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
 
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.TaxonomyType:
@@ -1598,7 +1598,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             list.Add(new PageActionItem { Context = "TaxonomyTypeClasses", Icon = "tags", Title = "Classifications", Uri = "/overlays/TaxonomyTypeClasses" });
                         }
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
                 case SystemObjects.WorkflowTypeRelation:
@@ -1619,7 +1619,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     }
                     if (id > 0)
                     {
-                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = string.Format("/overlays/{0}/{1}/audit", type.ToString(), id) });
+                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     }
                     break;
                 #endregion
@@ -2582,15 +2582,17 @@ from    IntersectNode S
 
                 var sqlColumns = new List<string>();
                 var sqlJoins = new List<string>();
+                var sqlWhere = "";
+                var sqlOrderBy = "";
 
                 #region Load Columns/Fields
 
-                if (displayFields.Any(i => i.FieldTypeName == "Name"))
+                if (displayFields.Any(i => i.FieldTypeName == "Name" && i.Show))
                 {
                     gridFields.Add(new GridField { name = "Name", type = "string" });
                     columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "auto" });
                 }
-                if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
+                if (displayFields.Any(i => i.FieldTypeName == "TextPath" && i.Show))
                 {
                     gridFields.Add(new GridField { name = "TextPath", type = "string" });
                     columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
@@ -2600,11 +2602,31 @@ from    IntersectNode S
                     var fieldTypeInfo = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
                     foreach (var fieldType in fieldTypeInfo)
                     {
-                        gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
-                        columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
-                        sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
+                        var displayField = displayFields.Single(i => i.FieldTypeID == fieldType.ID);
+                        if (displayField.Show)
+                        {
+                            var gridfieldType = "string";
+                            switch (fieldType.Type)
+                            {
+                                case "Boolean":
+                                    gridfieldType = "bool";
+                                    break;
+                                case "Date":
+                                case "DateTime":
+                                    gridfieldType = "date";
+                                    break;
+                                case "Decimal":
+                                case "Number":
+                                    gridfieldType = "number";
+                                    break;
+                            }
 
-                        if (displayFields.First(i => i.FieldTypeID == fieldType.ID).FieldTypeName.Contains("Relation."))
+                            gridFields.Add(new GridField { name = fieldType.Name, type = gridfieldType });
+                            columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
+                            sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
+                        }
+
+                        if (displayField.FieldTypeName.Contains("Relation."))
                         {
                             sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = R.IntersectID");
                         }
@@ -2614,9 +2636,12 @@ from    IntersectNode S
                         }
                     }
                 }
+
                 gridFields.Add(new GridField { name = "Object", type = "string" });
                 gridFields.Add(new GridField { name = "Url", type = "string" });
                 gridFields.Add(new GridField { name = "ID", type = "number" });
+
+                
 
                 #endregion
 
@@ -2643,6 +2668,33 @@ from    IntersectNode S
 		    inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
 		    inner join [cache].[ObjectDetails] D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID
             {sqlJoinString}";
+
+                        foreach (var df in displayFields.Where(i => !string.IsNullOrEmpty(i.FilterValue)))
+                        {
+                            sqlWhere += (string.IsNullOrEmpty(sqlOrderBy) ? "" : "AND ");
+                            if (df.FieldTypeID > 0)
+                            {
+                                sqlWhere += $" F{df.FieldTypeID}.FormattedValue like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                            }
+                            else
+                            {
+                                sqlWhere += $" D.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                            }
+                        }
+
+                        foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
+                        {
+                            sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ");
+                            if (df.FieldTypeID > 0)
+                            {
+                                sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
+                            }
+                            else
+                            {
+                                sqlOrderBy += $" D.{df.FieldTypeName} asc";
+                            }
+                        }
+
                         break;
                     default: //Child Reference
                         sql = $@"
@@ -2661,10 +2713,49 @@ from    IntersectNode S
 		    inner join [Intersect] I2 on I2.ID = R.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
 		    inner join [cache].[ObjectDetails] D2 on D2.[Object] = R.TargetObject and D2.ObjectID = R.TargetObjectID
             {sqlJoinString}";
+
+                        foreach (var df in displayFields.Where(i => !string.IsNullOrEmpty(i.FilterValue)))
+                        {
+                            sqlWhere += (string.IsNullOrEmpty(sqlOrderBy) ? "" : "AND ");
+                            if (df.FieldTypeID > 0)
+                            {
+                                sqlWhere += $" F{df.FieldTypeID}.FormattedValue like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                            }
+                            else
+                            {
+                                sqlWhere += $" D2.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                            }
+                        }
+
+                        foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
+                        {
+                            sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ");
+                            if (df.FieldTypeID > 0)
+                            {
+                                sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
+                            }
+                            else
+                            {
+                                sqlOrderBy += $" D2.{df.FieldTypeName} asc";
+                            }
+                        }
+
                         break;
                 }
 
                 #endregion
+
+                if (!string.IsNullOrEmpty(sqlWhere))
+                {
+                    sqlWhere = " where " + sqlWhere;
+                }
+                sql += sqlWhere;
+
+                if (!string.IsNullOrEmpty(sqlOrderBy))
+                {
+                    sqlOrderBy = " order by " + sqlOrderBy;
+                }
+                sql += sqlOrderBy;
 
                 results = Company.Query<dynamic>(sql);
             }

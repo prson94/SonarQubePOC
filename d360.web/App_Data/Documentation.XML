@@ -2663,6 +2663,33 @@
         <member name="M:d360.web.Controllers.FormController.Group_EditFields(System.Int32)">
             <param name="id">GroupID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.Lineage_IntersectTypes">
+            <summary>
+            Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
+            </summary>
+            <returns>A list of relevant fusion attribute types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Lineage_MapSubjects(System.Int32)">
+            <summary>
+            Gets a list of subjects based on the given intersect type.
+            </summary>
+            <param name="id">The Intersect Type's ID</param>
+            <returns>A list of name/value pairs.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Lineage_MapObjects(System.Int32)">
+            <summary>
+            Gets a list of objects based on the given intersect type.
+            </summary>
+            <param name="id">The Intersect Type's ID</param>
+            <returns>A list of name/value pairs.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Lineage_AddItemsToDiagram(d360.web.Models.AddItemsToDiagramModel)">
+            <summary>
+            Creates relationships for the various objects the user is adding to the diagram.
+            </summary>
+            <param name="model">An array of items to add relationships for.</param>
+            <returns>A list of name/value pairs.</returns>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Lookup_AddFields(System.Int32)">
             <param name="id">LookupTypeID</param>
         </member>
@@ -2859,7 +2886,7 @@
             </summary>
             <param name="filterContext"></param>
         </member>
-        <member name="T:d360.web.Models.AddRelationshipsModel">
+        <member name="T:d360.web.Models.AddItemsToDiagramModel">
             <summary>
             Serves as the base editor model for all forms.
             </summary>

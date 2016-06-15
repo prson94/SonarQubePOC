@@ -836,7 +836,38 @@
     <Content Include="Content\templates\artifacts.admin.html" />
     <Content Include="Content\templates\_content.header.html" />
     <Content Include="images\logo.png" />
+    <Content Include="Scripts\parts\NewLineageDiagram.js" />
+    <Content Include="ui.html" />
     <Content Include="node-test.html" />
+    <Content Include="node_modules\es6-shim\es6-sham.js" />
+    <Content Include="node_modules\es6-shim\es6-sham.min.js" />
+    <Content Include="node_modules\es6-shim\es6-shim.js" />
+    <Content Include="node_modules\es6-shim\es6-shim.min.js" />
+    <Content Include="node_modules\reflect-metadata\Reflect.js" />
+    <Content Include="node_modules\rxjs\bundles\Rx.js" />
+    <Content Include="node_modules\rxjs\bundles\Rx.min.js" />
+    <Content Include="node_modules\rxjs\bundles\Rx.umd.js" />
+    <Content Include="node_modules\rxjs\bundles\Rx.umd.min.js" />
+    <Content Include="node_modules\systemjs\dist\system-csp-production.js" />
+    <Content Include="node_modules\systemjs\dist\system-csp-production.src.js" />
+    <Content Include="node_modules\systemjs\dist\system-polyfills.js" />
+    <Content Include="node_modules\systemjs\dist\system-polyfills.src.js" />
+    <Content Include="node_modules\systemjs\dist\system-register-only.js" />
+    <Content Include="node_modules\systemjs\dist\system-register-only.src.js" />
+    <Content Include="node_modules\systemjs\dist\system.js" />
+    <Content Include="node_modules\systemjs\dist\system.src.js" />
+    <Content Include="node_modules\zone.js\dist\async-test.js" />
+    <Content Include="node_modules\zone.js\dist\fake-async-test.js" />
+    <Content Include="node_modules\zone.js\dist\jasmine-patch.js" />
+    <Content Include="node_modules\zone.js\dist\jasmine-patch.min.js" />
+    <Content Include="node_modules\zone.js\dist\long-stack-trace-zone.js" />
+    <Content Include="node_modules\zone.js\dist\long-stack-trace-zone.min.js" />
+    <Content Include="node_modules\zone.js\dist\sync-test.js" />
+    <Content Include="node_modules\zone.js\dist\wtf.js" />
+    <Content Include="node_modules\zone.js\dist\wtf.min.js" />
+    <Content Include="node_modules\zone.js\dist\zone-node.js" />
+    <Content Include="node_modules\zone.js\dist\zone.js" />
+    <Content Include="node_modules\zone.js\dist\zone.min.js" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
@@ -844,6 +875,10 @@
     <Content Include="fonts\fontawesome-webfont.woff2" />
     <Content Include="package.json" />
     <Content Include="Content\styles\_VariablesAng.less" />
+    <Content Include="node_modules\systemjs\dist\system-csp-production.js.map" />
+    <Content Include="node_modules\systemjs\dist\system-polyfills.js.map" />
+    <Content Include="node_modules\systemjs\dist\system-register-only.js.map" />
+    <Content Include="node_modules\systemjs\dist\system.js.map" />
     <None Include="Properties\PublishProfiles\d3s-ui-central-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />
@@ -1087,7 +1122,6 @@
     <Content Include="Views\Form\ReportTileEditForm.cshtml" />
     <Content Include="Views\Reports\PreviewOverlay.cshtml" />
     <Content Include="Views\Reports\Overlay.cshtml" />
-    <Content Include="Views\Diagrams\Lineage.cshtml" />
     <Content Include="Views\Form\AttributeEditForm.cshtml" />
     <Content Include="Views\Form\AttributeDeleteForm.cshtml" />
     <Content Include="Views\Form\Upsert.cshtml" />
@@ -1125,8 +1159,6 @@
     <Content Include="Views\Workflow\WorkflowActionOverlay_3.cshtml" />
     <Content Include="Views\Workflow\WorkflowActionOverlay_2.cshtml" />
     <Content Include="Views\Apps\Search.cshtml" />
-    <Content Include="Views\Diagrams\LineageTest.cshtml" />
-    <Content Include="Views\Diagrams\Map.cshtml" />
     <Content Include="Views\Form\IntersectTypePredicateEditForm.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsAgentOverlay.cshtml" />
     <Content Include="Views\Fusion\FusionErrorsProcessOverlay.cshtml" />
@@ -1155,16 +1187,10 @@
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
-    <None Include="Web.Debug.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </None>
     <None Include="Web.Nightly.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <None Include="Web.Production.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </None>
-    <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
@@ -1207,7 +1233,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Views\Queries\" />
     <Folder Include="Views\Tiles\" />
   </ItemGroup>
   <ItemGroup>
@@ -1251,6 +1276,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-artifacts.component.ts" />
+    <TypeScriptCompile Include="node_modules\zone.js\dist\zone.js.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />

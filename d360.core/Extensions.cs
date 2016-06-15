@@ -44,6 +44,18 @@ namespace d360.core
             return list;
         }
 
+        public static string CleanForSql(this string text)
+        {
+            try
+            {
+                text = Regex.Replace(text, "'", "''");
+            }
+            catch
+            { }
+
+            return text;
+        }
+
         public static string StripFormatting(this string text, int? length)
         {
             try

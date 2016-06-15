@@ -3995,6 +3995,103 @@ namespace d360.web.Controllers
             }
         }
 
+//        public JsonNetResult FieldType_RelationLookup_IntersectTypes(SystemObjects type, int id)
+//        {
+//            #region
+//            var sql = @"
+//declare @tbl table(ID int, ParentID int, ObjectType varchar(50), ObjectTypeID int, Name nvarchar(250), Inferred bit)
+
+//insert into @tbl
+//	select	T.ID,
+//			NULL,
+//			case 
+//				when (T.Subject = @type and T.SubjectID = @id) then T.Object
+//				else T.Subject 
+//			end,
+//			case 
+//				when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
+//				else T.SubjectID
+//			end,
+//			D.TextPath,
+//			0
+//	from	IntersectType T
+//			inner join cache.ObjectDetails D on 
+//												D.Object = case 
+//																when (T.Subject = @type and T.SubjectID = @id) then T.Object
+//																else T.Subject 
+//															end 
+//											and D.ObjectID = case 
+//																when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
+//																else T.SubjectID
+//															end
+//	where	(T.Subject = @type and T.SubjectID = @id) OR (T.Object = @type and T.ObjectID = @id)
+
+//-- Get inferred relationship types
+//insert into @tbl
+//	select	T.ID,
+//			P.ID,
+//			case 
+//				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
+//				else T.Subject 
+//			end,
+//			case 
+//				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
+//				else T.SubjectID
+//			end,
+//			'Inferred :: ' + D.TextPath,
+//			1
+//	from	@tbl P
+//			inner join IntersectType T on (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) OR (T.Object = P.ObjectType and T.ObjectID = P.ObjectTypeID)
+//			inner join cache.ObjectDetails D on 
+//												D.Object = case 
+//																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
+//																else T.Subject 
+//															end 
+//											and D.ObjectID = case 
+//																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
+//																else T.SubjectID
+//															end
+
+//-- Get child relationship types
+//insert into @tbl
+//	select	T.ID,
+//			P.ID,
+//			case 
+//				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
+//				else T.Subject 
+//			end,
+//			case 
+//				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
+//				else T.SubjectID
+//			end,
+//			'Child :: ' + D.TextPath,
+//			0
+//	from	@tbl P
+//			inner join IntersectType T on (T.Subject = 'IntersectType' and T.SubjectID = P.ID) OR (T.Object = 'IntersectType' and T.ObjectID = P.ID) and P.Inferred = 0
+//			inner join cache.ObjectDetails D on 
+//												D.Object = case 
+//																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
+//																else T.Subject 
+//															end 
+//											and D.ObjectID = case 
+//																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
+//																else T.SubjectID
+//															end
+
+
+
+//select * from @tbl";
+//            #endregion
+
+//            var intersectTypes = Company.Query<dynamic>(sql, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
+
+//            return new JsonNetResult
+//            {
+//                Data = intersectTypes,
+//                Formatting = Newtonsoft.Json.Formatting.None
+//            };
+//        }
+
         public JsonNetResult FieldType_RelationLookup_ChildIntersectTypes(int id)
         {
             var intersectTypes = Company.Query<dynamic>(@"
@@ -4098,14 +4195,103 @@ order by  D.TextPath
             #region Load static lists
 
             var intersectTypes = Company.Query<dynamic>(@"
-select  distinct 
-        cast(RT.IntersectTypeID as varchar) + '|' + RT.TargetObjectType + '|' + cast(RT.TargetObjectID as varchar) as value, 
-        D.TextPath as title
-from    utility.RelationshipTypes RT
-        inner join cache.ObjectDetails D on D.[Object] = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
-        and RT.SourceObjectType = @type and RT.SourceObjectID = @id
-order by  D.TextPath
-", new { type, id });
+            select  distinct 
+                    cast(RT.IntersectTypeID as varchar) + '|' + RT.TargetObjectType + '|' + cast(RT.TargetObjectID as varchar) as value, 
+                    D.TextPath as title
+            from    utility.RelationshipTypes RT
+                    inner join cache.ObjectDetails D on D.[Object] = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
+                    and RT.SourceObjectType = @type and RT.SourceObjectID = @id
+            order by  D.TextPath
+            ", new { type, id });
+
+            //#region
+            //var sql = @"
+            //declare @tbl table(ID int, ParentID int, ObjectType varchar(50), ObjectTypeID int, Name nvarchar(250), Inferred bit)
+
+            //insert into @tbl
+            //	select	T.ID,
+            //			NULL,
+            //			case 
+            //				when (T.Subject = @type and T.SubjectID = @id) then T.Object
+            //				else T.Subject 
+            //			end,
+            //			case 
+            //				when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
+            //				else T.SubjectID
+            //			end,
+            //			D.TextPath,
+            //			0
+            //	from	IntersectType T
+            //			inner join cache.ObjectDetails D on 
+            //												D.Object = case 
+            //																when (T.Subject = @type and T.SubjectID = @id) then T.Object
+            //																else T.Subject 
+            //															end 
+            //											and D.ObjectID = case 
+            //																when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
+            //																else T.SubjectID
+            //															end
+            //	where	(T.Subject = @type and T.SubjectID = @id) OR (T.Object = @type and T.ObjectID = @id)
+
+            //-- Get inferred relationship types
+            //insert into @tbl
+            //	select	T.ID,
+            //			P.ID,
+            //			case 
+            //				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
+            //				else T.Subject 
+            //			end,
+            //			case 
+            //				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
+            //				else T.SubjectID
+            //			end,
+            //			'Inferred :: ' + D.TextPath,
+            //			1
+            //	from	@tbl P
+            //			inner join IntersectType T on (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) OR (T.Object = P.ObjectType and T.ObjectID = P.ObjectTypeID)
+            //			inner join cache.ObjectDetails D on 
+            //												D.Object = case 
+            //																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
+            //																else T.Subject 
+            //															end 
+            //											and D.ObjectID = case 
+            //																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
+            //																else T.SubjectID
+            //															end
+
+            //-- Get child relationship types
+            //insert into @tbl
+            //	select	T.ID,
+            //			P.ID,
+            //			case 
+            //				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
+            //				else T.Subject 
+            //			end,
+            //			case 
+            //				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
+            //				else T.SubjectID
+            //			end,
+            //			'Child :: ' + D.TextPath,
+            //			0
+            //	from	@tbl P
+            //			inner join IntersectType T on (T.Subject = 'IntersectType' and T.SubjectID = P.ID) OR (T.Object = 'IntersectType' and T.ObjectID = P.ID) and P.Inferred = 0
+            //			inner join cache.ObjectDetails D on 
+            //												D.Object = case 
+            //																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
+            //																else T.Subject 
+            //															end 
+            //											and D.ObjectID = case 
+            //																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
+            //																else T.SubjectID
+            //															end
+
+
+
+            //select * from @tbl order by ParentID, Name";
+            //#endregion
+
+            //var intersectTypes = Company.Query<dynamic>(sql, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
+
             var fusionAttributeTypes = Company.Table<FusionAttributeType>().OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
             var lookups = Company.GetFieldTypeLookupOptions().Select(i => new KnockoutListItem { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" }).ToList();
 
@@ -4197,7 +4383,7 @@ order by  D.TextPath
                                 IntersectType = i.IntersectTypeID,
                                 ReferenceType = i.ReferenceType,
                                 ChildIntersectType = i.ChildIntersectTypeID,
-                                DisplayFields = (i.FieldTypeRelationLookupDisplayFields != null) ? i.FieldTypeRelationLookupDisplayFields.Select(df => $"{df.FieldTypeID}|{df.FieldTypeName}").ToList() : null,
+                                DisplayFields = (i.FieldTypeRelationLookupDisplayFields != null) ? i.FieldTypeRelationLookupDisplayFields.Select(df => new { value = $"{df.FieldTypeID}|{df.FieldTypeName}", FilterValue = df.FilterValue, Show = df.Show, SortOrder = df.SortOrder }).ToList() : null,
                                 HideHeader = i.HideHeader,
                                 HideFooter = i.HideFooter
                             });
@@ -4370,14 +4556,18 @@ order by  D.TextPath
 
                                     foreach (var df in model.RelationItem.DisplayFields)
                                     {
-                                        def.FieldTypeRelationLookupDisplayFields.Add(
-                                            new FieldTypeRelationLookupDisplayField
-                                            {
-                                                FieldTypeRelationLookupDefinitionID = def.ID,
-                                                FieldTypeName = df.FieldTypeName,
-                                                FieldTypeID = df.FieldTypeID
-                                            }
-                                        );
+                                        var ndf = new FieldTypeRelationLookupDisplayField
+                                        {
+                                            FieldTypeRelationLookupDefinitionID = def.ID,
+                                            FieldTypeName = df.FieldTypeName,
+                                            FieldTypeID = df.FieldTypeID,
+                                            FilterValue = string.IsNullOrEmpty(df.FilterValue) ? null : df.FilterValue,
+                                            SortOrder = df.SortOrder,
+                                            Show = df.Show
+                                        };
+
+                                        if (ndf.Show || !string.IsNullOrEmpty(ndf.FilterValue) || ndf.SortOrder.HasValue)
+                                            def.FieldTypeRelationLookupDisplayFields.Add(ndf);
                                     }
                                 }
                             }
@@ -4702,7 +4892,28 @@ order by  D.TextPath
                                 {
                                     if (!eri.FieldTypeRelationLookupDisplayFields.Any(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName))
                                     {
-                                        eri.FieldTypeRelationLookupDisplayFields.Add(new FieldTypeRelationLookupDisplayField { FieldTypeRelationLookupDefinitionID = eri.ID, FieldTypeID = df.FieldTypeID, FieldTypeName = df.FieldTypeName });
+                                        var ndf = new FieldTypeRelationLookupDisplayField {
+                                            FieldTypeRelationLookupDefinitionID = eri.ID,
+                                            FieldTypeID = df.FieldTypeID,
+                                            FieldTypeName = df.FieldTypeName,
+                                            FilterValue = string.IsNullOrEmpty(df.FilterValue) ? null : df.FilterValue,
+                                            SortOrder = df.SortOrder,
+                                            Show = df.Show
+                                        };
+
+                                        if (ndf.Show || !string.IsNullOrEmpty(ndf.FilterValue) || ndf.SortOrder.HasValue)
+                                            eri.FieldTypeRelationLookupDisplayFields.Add(ndf);
+                                    }
+                                    else
+                                    {
+                                        var edf = eri.FieldTypeRelationLookupDisplayFields.Single(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName);
+
+                                        edf.FilterValue = string.IsNullOrEmpty(df.FilterValue) ? null : df.FilterValue;
+                                        edf.SortOrder = df.SortOrder;
+                                        edf.Show = df.Show;
+
+                                        if (!edf.Show && string.IsNullOrEmpty(edf.FilterValue) && !edf.SortOrder.HasValue)
+                                            eri.FieldTypeRelationLookupDisplayFields.Remove(edf);
                                     }
                                 }
 
@@ -8692,6 +8903,107 @@ order by  D.TextPath
         #endregion
 
         #endregion
+
+        #endregion
+
+        #region Lineage
+
+        #region Supporting Json Feeds
+
+        /// <summary>
+        /// Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
+        /// </summary>
+        /// <returns>A list of relevant fusion attribute types.</returns>
+        public JsonNetResult Lineage_IntersectTypes()
+        {
+            return new JsonNetResult
+            {
+                Data = Company
+                    .Filter<IntersectTypeDetail>(i => i.Subject != "IntersectType" && i.Object != "IntersectType" && i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType")
+                    .ToList()
+                    .Select(i => new { title = $"{i.SubjectName} {i.PredicateName ?? "to"} {i.ObjectName}", value = $"{i.ID}" })
+                    .OrderBy(i => i.title),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
+        /// Gets a list of subjects based on the given intersect type.
+        /// </summary>
+        /// <param name="id">The Intersect Type's ID</param>
+        /// <returns>A list of name/value pairs.</returns>
+        public JsonNetResult Lineage_MapSubjects(int id)//, SystemObjects o, int oid)
+        {
+            var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
+            if (intersectType == null)
+                return new JsonNetResult { Data = new { message = "Intersect Type not found." } };
+
+            var list = Company.Query<dynamic>(@"
+select  TextPath as title, 
+        Object+'|'+cast(ObjectID as varchar) as value 
+from    cache.ObjectDetails 
+where   ObjectType = @type 
+        and ObjectTypeID = @id
+order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = intersectType.Subject }, id = id = intersectType.SubjectID });
+
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        /// <summary>
+        /// Gets a list of objects based on the given intersect type.
+        /// </summary>
+        /// <param name="id">The Intersect Type's ID</param>
+        /// <returns>A list of name/value pairs.</returns>
+        public JsonNetResult Lineage_MapObjects(int id)//, SystemObjects o, int oid)
+        {
+            var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
+            if (intersectType == null)
+                return new JsonNetResult { Data = new { message = "Intersect Type not found." } };
+
+            var list = Company.Query<dynamic>(@"
+select  TextPath as title, 
+        Object+'|'+cast(ObjectID as varchar) as value 
+from    cache.ObjectDetails 
+where   ObjectType = @type 
+        and ObjectTypeID = @id
+order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = intersectType.Object }, id = id = intersectType.ObjectID });
+
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Creates relationships for the various objects the user is adding to the diagram.
+        /// </summary>
+        /// <param name="model">An array of items to add relationships for.</param>
+        /// <returns>A list of name/value pairs.</returns>
+        [HttpPost]
+        public JsonNetResult Lineage_AddItemsToDiagram(AddItemsToDiagramModel model)
+        {
+            model.Items.ForEach(i =>
+            {
+                try
+                {
+                    var intersect = Company.AddIntersect(i.IntersectTypeID, i.Subject, i.SubjectID, i.Object, i.ObjectID);
+                    if (intersect != null)
+                    {
+                        i.Intersect = intersect;
+                        i.IntersectID = intersect.ID;
+                    }
+                    else
+                    {
+                        i.ErrorMessage = "Relationship not successfully created";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    i.ErrorMessage = ex.GetFullExceptionData();
+                }
+            });
+
+            return new JsonNetResult { Data = model.Items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
 
         #endregion
 

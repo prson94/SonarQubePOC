@@ -117,6 +117,35 @@ ko.bindingHandlers.actionFilteredDropdown = {
     update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
 };
 
+ko.bindingHandlers.intersectTypeFilteredDropdown = {
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+        $(element).on('change', function (event) {
+            viewModel.IntersectType(event.args.item.value);
+        });
+    },
+    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+};
+
+ko.bindingHandlers.subjectFilteredDropdown = {
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+        $(element).on('change', function (event) {
+            viewModel.Subject(event.args.item.value);
+            viewModel.SubjectName(event.args.item.label);
+        });
+    },
+    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+};
+
+ko.bindingHandlers.objectFilteredDropdown = {
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+        $(element).on('change', function (event) {
+            viewModel.Object(event.args.item.value);
+            viewModel.ObjectName(event.args.item.label);
+        });
+    },
+    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+};
+
 ko.bindingHandlers.typeFilteredDropdown = {
     init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
         $(element).on('change', function (event) {
@@ -424,6 +453,7 @@ ko.bindingHandlers.customFileInput = {
 //#endregion
 
 //#region    BASE MODELS
+
 function CommentTagItem(data, parent) {
     var self = this;
     data = data || {};
@@ -1027,6 +1057,7 @@ function CommentItem(data, parent) {//, hub) {
 
 }
 
+
 var ChildArtifactsMicroTileItem = function (parentID, name, id, count) {
     var self = this;
     self.ParentID = ko.observable(parentID);
@@ -1281,6 +1312,7 @@ function CompanySettingsViewModel(data) {
     return self;
 }
 
+
 function BusinessTransformationRuleModel(data, permissions) {
     var self = this;
     self.IsLoading = ko.observable(false);
@@ -1350,6 +1382,7 @@ function BusinessTransformationRuleModel(data, permissions) {
     }
     
 }
+
 
 function SourceToTargetMappingModel(data, permissions) {
     var self = this;
@@ -1743,6 +1776,7 @@ function SourceToTargetMappingSourceItem(data, parent, isSource) {
 
     return self;
 }
+
 
 function HierarchyRuleContextModel(data, parent) {
     var self = this;
@@ -2241,6 +2275,220 @@ function HierarchyPanelViewModel(data, permissions) {
     return self;
 }
 
+
+function LineagePanelViewModel(data, permissions) {
+    var self = this;
+    self.jqxLoaded = false;
+
+    //#region Observables
+
+    self.InProgress = ko.observable(false);
+    self.IsSaving = ko.observable(false);
+
+    self.Items = ko.observableArray();
+
+    self.IntersectType = ko.observable();
+    self.IntersectTypeOptions = ko.observableArray();
+
+    //if (permissions != null) {
+    //    if (permissions.HasPermission("Relationship", "Create"))
+    //        self.CanAdd(true);
+    //    if (permissions.HasPermission("Relationship", "Update"))
+    //        self.CanUpdate(true);
+    //}
+
+    //#endregion
+
+    //#region Functions
+
+    self.AddItem = function () {
+        if (self.IntersectType() > 0) {
+            var data = {
+                IntersectType: self.IntersectType()
+            }
+            self.Items.push(new LineagePanelViewItemModel(data, permissions));
+        }
+    }
+
+    self.LoadIntersectTypes = function () {
+        self.InProgress(true);
+        $.ajax({
+            url: '/form/Lineage_IntersectTypes',
+            method: 'GET'
+        }).done(function (data) {
+            self.IntersectTypeOptions(data);
+        }).always(function () {
+            self.InProgress(false);
+            //if (!self.jqxLoaded)
+            //    self.ApplyJqxBindings();
+            //self.AfterLoad();
+        });
+    }
+
+    self.RemoveItem = function () {
+        self.Items.remove(this);
+    }
+
+    self.Save = function () {
+        if (self.Items().length > 0) {
+            var deferred = $.Deferred();
+
+            self.IsSaving(true);
+
+            var items = [];
+
+            for (var i = 0; i < self.Items().length; i++) {
+                var item = self.Items()[i];
+
+                var subject = item.Subject().split('|')
+                var object = item.Object().split('|')
+
+                items.push({
+                    Position: i,
+                    IntersectTypeID: item.IntersectType(),
+                    Subject: subject[0],
+                    SubjectID: subject[1],
+                    Object: object[0],
+                    ObjectID: object[1]
+                });
+            }
+
+            var successfulItems = [];
+
+            if (items.length > 0) {
+                $.ajax({
+                    url: '/form/Lineage_AddItemsToDiagram',
+                    method: 'POST',
+                    data: { Items: items}
+                }).done(function (returnedItems) {
+                    if (returnedItems == null) {
+                        //self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclamation-circle"></i> An error occurred while saving the source rules.</span>');
+                    } else {
+                        //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
+                        $.each(returnedItems, function (returnedItemIndex, returnedItem) {
+                            if (returnedItem.ErrorMessage) {
+
+                            }
+                            else {
+                                var model = self.Items()[returnedItem.Position];
+                                model.Intersect(returnedItem.IntersectID);
+                                //items[returnedItem.Position].IntersectID = returnedItem.IntersectID;
+                                returnedItem.Name = model.SubjectName();
+                                successfulItems.push(returnedItem);
+                            }
+                        });
+
+                    }
+                }).always(function () {
+                    self.IsSaving(false);
+                    deferred.resolve(successfulItems);
+                });
+            }
+
+            return deferred.promise();
+        }
+    }
+
+    //self.OnCellValueChange = function () {
+    //    if (self.IsLoadingContexts() == true)
+    //        return;
+    //    if (self.IsItemSelected()) {
+    //        var checkedCtx = [];
+    //        self.SelectedRule().SelectedItem().Contexts([]);
+    //        for (var i = 0; i < self.Contexts().length; i++) {
+    //            if (self.Contexts()[i].Checked == true) {
+    //                var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
+    //                self.SelectedRule().SelectedItem().Contexts.push(obj);
+    //            }
+    //        }
+    //    }
+    //}
+
+    //self.ApplyJqxBindings = function () {
+    //    //$('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
+    //    //    self.OnCellValueChange();
+    //    //}).on('bindingcomplete', function () {
+    //    //    //jqx grid is not editable after bind without this
+    //    //    $(this).jqxGrid('refresh');
+    //    //});
+    //    self.jqxLoaded = true;
+    //}
+
+    //self.AfterLoad = function () {
+    //    if (self.SourceRules().length >= 1) {
+    //        self.SelectRule(self.SourceRules()[0]);
+    //        self.SelectedRuleIndex(0);
+    //        self.HasSourcesOrRules(true);
+    //    } else {
+    //        self.HasSourcesOrRules(true);
+    //    }
+    //    if (self.Sources().length < 1 && self.SourceRules().length < 1) {
+    //        self.HasSourcesOrRules(false);
+    //    }
+    //}
+
+    //#endregion
+
+    self.LoadIntersectTypes();
+
+    return self;
+}
+
+function LineagePanelViewItemModel(data, permissions) {
+    var self = this;
+
+    //#region Observables
+
+    self.IntersectType = ko.observable(data.IntersectType);
+    self.Intersect = ko.observable(); //Populated after save to diagram action from parent.
+    
+    self.Subject = ko.observable();
+    self.SubjectName = ko.observable();
+    self.SubjectsLoading = ko.observable(true);
+    self.SubjectOptions = ko.observableArray();
+
+    self.Object = ko.observable();
+    self.ObjectName = ko.observable();
+    self.ObjectsLoading = ko.observable(true);
+    self.ObjectOptions = ko.observableArray();
+
+    //#endregion
+
+    //#region Functions
+
+    self.LoadSubjects = function () {
+        $.ajax({
+            url: '/form/Lineage_MapSubjects',
+            data: { id: self.IntersectType() },
+            method: 'GET'
+        }).done(function (data) {
+            self.SubjectOptions(data);
+        }).always(function () {
+            self.SubjectsLoading(false);
+        });
+    }
+
+    self.LoadObjects = function () {
+        $.ajax({
+            url: '/form/Lineage_MapObjects',
+            data: { id: self.IntersectType() },
+            method: 'GET'
+        }).done(function (data) {
+            self.ObjectOptions(data);
+        }).always(function () {
+            self.ObjectsLoading(false);
+        });;
+    };
+
+    //#endregion
+
+    self.LoadSubjects();
+    self.LoadObjects();
+
+    return self;
+}
+
+
 function Statistic(data) {
     var self = this;
     data = data || {};
@@ -2248,6 +2496,7 @@ function Statistic(data) {
     self.Slug = data.Slug;
     self.Score = data.Score;
 }
+
 //#endregion
 
 //#region TILE VIEW MODELS

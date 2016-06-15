@@ -13,7 +13,7 @@
 </style>
 <script id="fieldTypeTmpl" type="text/html">
     <div class="left form-header-info">
-        <h4>@((Model.FieldType.ID> 0) ? "Update Field" : "Add Field")</h4>
+        <h4>@((Model.FieldType.ID > 0) ? "Update Field" : "Add Field")</h4>
     </div>
     <div class="right">
         <button type="button" data-bind="click: cancel" class="btn waves-effect waves-light brown lighten-4">Cancel</button>
@@ -209,13 +209,11 @@
 
     <div class="row" data-bind="visible: RelationLookupDataTypeSelected">
         <div class="col s12" style="margin: 10px 0 10px 0">
-            <table class="highlight, striped" cellpadding="5">
+            @*<table class="highlight, striped" cellpadding="5">
                 <thead>
                     <tr>
                         <th>Relation</th>
-                        <th>Reference Type</th>
-                        <th>Child Relation</th>
-                        <th>Reference Columns</th>
+                        <th>Fields</th>
                         <th>Table Settings</th>
                     </tr>
                 </thead>
@@ -231,6 +229,37 @@
                                  valueMember: 'value' }"></div>
                         </td>
                         <td>
+
+                        </td>
+                        <td>
+                            <div data-bind="jqxCheckBox: { theme: theme, checked: HideHeader }">Hide Header?</div>
+                            <div data-bind="jqxCheckBox: { theme: theme, checked: HideFooter }">Hide Footer?</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>*@
+            <table cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>Relation</th>
+                        <th>Reference Type</th>
+                        <th>Child Relation</th>
+                        <th>Reference Columns</th>
+                        <th>Table Settings</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: RelationItems">
+                    <tr>
+                        <td style="vertical-align: top; width: 260px">
+                            <div data-bind="relationIntersectTypeFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 selectedIndex: IntersectTypeIndex,
+                                 source: IntersectTypeOptions,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                        <td style="vertical-align: top; width: 260px">
                             <div data-bind="relationReferenceTypeFilteredDropdown, jqxDropDownList: {
                                  width: 250, dropDownWidth: 350, theme: theme,
                                  filterable: false,
@@ -239,7 +268,7 @@
                                  displayMember: 'title',
                                  valueMember: 'value' }"></div>
                         </td>
-                        <td>
+                        <td style="vertical-align: top; width: 260px">
                             <div data-bind="relationChildIntersectTypeFilteredDropdown, jqxDropDownList: {
                                  width: 250, dropDownWidth: 350, theme: theme,
                                  filterable: false,
@@ -249,17 +278,34 @@
                                  displayMember: 'title',
                                  valueMember: 'value' }"></div>
                         </td>
-                        <td>
-                            <div data-bind="relationDisplayFieldFilteredDropdown, jqxDropDownList: {
-                                 width: 250, dropDownWidth: 350, theme: theme,
-                                 filterable: false,
-                                 disabled: DisplayFieldsDisabled,
-                                 source: DisplayFieldOptions,
-                                 checkboxes: true,
-                                 displayMember: 'title',
-                                 valueMember: 'value' }"></div>
+                        <td style="vertical-align: top">
+                            <table class="striped highlight">
+                                <thead>
+                                    <th>Name</th>
+                                    <th>Show?</th>
+                                    <th>Sort</th>
+                                    <th>Filter</th>
+                                </thead>
+                                <tbody data-bind="foreach: DisplayFieldOptions" style="max-height:250px; height: 250px; overflow-y: scroll">
+                                    <tr>
+                                        <td style="width: 30%" data-bind="text: title"></td>
+                                        <td style="width: 20%"><div data-bind="jqxCheckBox: { theme: theme, checked: Show }"></div></td>
+                                        <td style="width: 15%">
+                                            <div data-bind="sortOrderDropdown, jqxDropDownList: {
+                                                 width: 75, dropDownWidth: 50, theme: theme,
+                                                 filterable: false,
+                                                 source: SortOrderOptions,
+                                                 selectedIndex: SortOrderIndex,
+                                                 displayMember: 'title',
+                                                 valueMember: 'value' }"></div>
+                                            
+                                        </td>
+                                        <td><input  data-bind="jqxInput: { theme: theme, width: field_width98, height: field_height, value: FilterValue }" /></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </td>
-                        <td>
+                        <td style="vertical-align: top; width: 125px">
                             <div data-bind="jqxCheckBox: { theme: theme, checked: HideHeader }">Hide Header?</div>
                             <div data-bind="jqxCheckBox: { theme: theme, checked: HideFooter }">Hide Footer?</div>
                         </td>
@@ -281,7 +327,7 @@
     </div>
 </script>
 
-<div class="medium-overlay">
+<div class="large-overlay">
     <div class="ui segment">
         <div id="FieldTypeFormWrapper" data-bind="template: {name: 'fieldTypeTmpl' }"></div>
     </div>
@@ -350,22 +396,29 @@
         },
         update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
     };
-    ko.bindingHandlers.fusionDisplayFieldFilteredDropdown = {
+    //ko.bindingHandlers.fusionDisplayFieldFilteredDropdown = {
+    //    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+    //        $(element).on('checkChange', function (event) {
+    //            var checked = event.args.item.checked;
+    //            var value = event.args.item.value;
+    //            if (checked) {
+    //                viewModel.DisplayFields.push(value);
+    //            }
+    //            else {
+    //                viewModel.DisplayFields.remove(value);
+    //            }
+    //        });
+    //    },
+    //    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    //};
+    ko.bindingHandlers.sortOrderDropdown = {
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-            $(element).on('checkChange', function (event) {
-                var checked = event.args.item.checked;
-                var value = event.args.item.value;
-                if (checked) {
-                    viewModel.DisplayFields.push(value);
-                }
-                else {
-                    viewModel.DisplayFields.remove(value);
-                }
+            $(element).on('change', function (event) {
+                viewModel.SortOrder(event.args.item.value);
             });
         },
         update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
     };
-
     ko.bindingHandlers.tokensFilteredDropdown = {
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             $(element).on('change', function (event) {
@@ -602,6 +655,37 @@
 
         //#endregion
     }
+    
+    function FieldTypeRelationDisplayFieldOptionViewModel(data, fieldCount) {
+        var self = this;
+        data = data || {};
+
+        self.title = ko.observable(data.title);
+        self.value = ko.observable(data.value);
+        
+        self.FilterValue = ko.observable(data.FilterValue || '');
+
+        self.Show = ko.observable(data.Show);
+
+        self.SortOrder = ko.observable(data.SortOrder);
+        self.SortOrderIndex = ko.observable(0);
+
+        var values = [{value: '', title: ''}];
+        for(var position = 1; position <= fieldCount; position++) {
+            values.push({ value: position, title: position });
+        }
+        self.SortOrderOptions = ko.observableArray(values);
+        
+        var indexToSelect = 0;
+        $.each(self.SortOrderOptions(), function (ix, item) {
+            if (self.SortOrder()) {
+                if (item.value == self.SortOrder()) {
+                    indexToSelect = ix;
+                }            
+            }
+        });
+        self.SortOrderIndex(indexToSelect);
+    }
 
     function FieldTypeRelationItemViewModel(data, parent) {
         var self = this;
@@ -681,13 +765,17 @@
                     if (existingItems) {
                         $.each(existingItems, function(e_ix, e_item){
                             $.each(items, function(ix, item) {
-                                if (item.value === e_item) {
-                                    item.checked = true;
+                                if (item.value === e_item.value) {
+                                    //item.checked = true;
+                                    item.FilterValue = e_item.FilterValue;
+                                    item.Show = e_item.Show;
+                                    item.SortOrder = e_item.SortOrder;
                                 }
                             });
                         });
                     }
-                    self.DisplayFieldOptions(items);
+                    var mappedItems = $.map(items, function (item) { return new FieldTypeRelationDisplayFieldOptionViewModel(item, items.length); });
+                    self.DisplayFieldOptions(mappedItems);//self.DisplayFieldOptions(items);
                 }
             );
         }
@@ -845,7 +933,7 @@
         //#region Validation Properties
 
         self.FormInvalid = ko.observable(false);
-        self.FormValidationMessage = ko.observable('');    
+        self.FormValidationMessage = ko.observable('');
 
         self.FriendlyNameInvalid = ko.pureComputed(function () {
             return (self.FriendlyName() === "");
@@ -1210,12 +1298,18 @@
                             if (ri.ChildIntersectType() > '') {
                                 postModel.RelationItem.ChildIntersectType = ri.ChildIntersectType().split('|')[0];
                             }
-                            $.each(ri.DisplayFields(), function(fix, fid){
-                                var values = fid.split('|');
-                                postModel.RelationItem.DisplayFields.push({
-                                    FieldTypeID: values[0],
-                                    FieldTypeName: values[1]
-                                });
+                            $.each(ri.DisplayFieldOptions(), function(fix, fid){
+                                var values = fid.value().split('|');
+                                
+                                if (fid.Show() || fid.SortOrder() || fid.FilterValue() != '') {
+                                    postModel.RelationItem.DisplayFields.push({
+                                        FieldTypeID: values[0],
+                                        FieldTypeName: values[1],
+                                        Show: fid.Show(),
+                                        SortOrder: fid.SortOrder(),
+                                        FilterValue: fid.FilterValue()
+                                    });                                
+                                }
                             });
                             postModel.RelationItem.HideHeader = ri.HideHeader();
                             postModel.RelationItem.HideFooter = ri.HideFooter();
