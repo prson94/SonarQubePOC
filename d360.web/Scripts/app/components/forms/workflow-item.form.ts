@@ -82,8 +82,8 @@ export class WorkflowItemForm implements OnInit {
         this.ObjectType = this.item.Object + '|' + this.item.ObjectID;
         this.ParentType = this.item.Parent + '|' + this.item.ParentID;
 
-        console.log(this.item.ID);
-        console.log(this.item.WorkflowType);
+        //console.log(this.item.ID);
+        //console.log(this.item.WorkflowType);
 
         this.http.get(`form/WorkflowAllocation?id=${this.item.ID}&workflowType=${this.item.WorkflowType}`)
             .map(data => data.json())
@@ -134,7 +134,7 @@ export class WorkflowItemForm implements OnInit {
 
         console.log(this.item);
 
-        this.http.post('form/EditWorkflowAllocationEditor', JSON.stringify(this.item), { headers: headers })
+        this.http.post('form/WorkflowAllocation', JSON.stringify(this.item), { headers: headers })
             .map(data => data.json())
             .subscribe(data => {
                 this.isSaving = false;

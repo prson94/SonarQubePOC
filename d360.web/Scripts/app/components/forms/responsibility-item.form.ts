@@ -59,7 +59,7 @@ export class ResponsibilityItemForm implements OnInit {
            
         this.isLoading = true;
 
-        this.http.get(`form/LoadResponsibilityItem?responsibilityID=${this.item.ResponsibilityID}&id=${this.item.ObjectID}&type=${this.item.ObjectType}`)
+        this.http.get(`form/Responsibility?responsibilityID=${this.item.ResponsibilityID}&id=${this.item.ObjectID}&type=${this.item.ObjectType}`)
             .map(data => data.json())
             .subscribe(data => {
                 this.isLoading = false;
@@ -142,7 +142,7 @@ export class ResponsibilityItemForm implements OnInit {
             ResponsibilityContextItems: contextItems
         };
 
-        this.http.post('/form/SaveResponsibilityItem', JSON.stringify(model), { headers: headers })
+        this.http.post('/form/Responsibility', JSON.stringify(model), { headers: headers })
             .map(data => data.json())
             .subscribe(data => {
                 this.isSaving = false;

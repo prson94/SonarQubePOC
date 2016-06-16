@@ -12670,7 +12670,7 @@ order by	D.Name, I.Name";
         }
 
         [HttpGet]
-        public JsonNetResult LoadResponsibilityItem(int? id, SystemObjects? type, int? responsibilityID)
+        public JsonNetResult Responsibility(int? id, SystemObjects? type, int? responsibilityID)
         {
             List<SelectListItem> contexts;
             List<SelectListItem> resources;
@@ -12761,7 +12761,7 @@ order by	D.Name, I.Name";
         }
 
         [HttpPost]
-        public JsonResult SaveResponsibilityItem(Responsibility r)
+        public JsonResult Responsibility(Responsibility r)
         {
             Responsibility model; // = new Responsibility();
 
