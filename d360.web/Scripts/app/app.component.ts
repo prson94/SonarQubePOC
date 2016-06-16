@@ -1,7 +1,8 @@
 ///<reference path="./es6-shim.d.ts"/>
 import { Component } from '@angular/core';
 import { RouteConfig, ROUTER_DIRECTIVES, AsyncRoute } from '@angular/router-deprecated';
-import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent } from './components/index'
+import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent } from './components/index';
+import { HeaderActionsService } from './services/header-actions.service';
 
 import 'rxjs/Rx';
 
@@ -17,7 +18,8 @@ import 'rxjs/Rx';
                     </div>
                 </main>
               `,
-    directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent]
+    directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent],
+    providers: [HeaderActionsService]
 })
 
 @RouteConfig([

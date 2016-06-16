@@ -1,6 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { PageHeader } from '../../services/page-header.service';
 import { TemplatesService } from '../../services/templates.service';
+import { HeaderActionsService} from '../../services/header-actions.service';
 import { Template } from '../../models/template.model';
 import {DataTable, Column, Editor, InputText, Dropdown} from 'primeng/primeng';
 import {DeleteForm} from '../forms/delete.form';
@@ -53,27 +54,27 @@ import {AdminTemplateEditorComponent} from './admin-template-editor';
     directives: [DataTable, Column, DeleteForm, Editor, InputText, Dropdown, AdminTemplateEditorComponent]
 })
 
-export class AdminTemplatesComponent {
-    pageHeader: PageHeader;
-    templateService: TemplatesService;
+export class AdminTemplatesComponent {    
     templates: Template[];
     selectedTemplate: Template; 
     error: any;
     isDeleting: boolean = false;
-    isEditing: boolean = false;
+    isEditing: boolean = false;    
     public theDeleteCallback: Function;
-    
-    constructor(pageHeader: PageHeader, templateService: TemplatesService) {
+
+    constructor(private pageHeader: PageHeader, private templateService: TemplatesService, private headerActionsService : HeaderActionsService) {
         this.pageHeader = pageHeader;
         this.pageHeader.title = 'Templates';
         this.pageHeader.description = 'All email and tooltip templates for notifications.';
-        this.templateService = templateService;        
+        this.templateService = templateService;
+        this.headerActionsService = headerActionsService;
     }
 
     ngOnInit() {
         this.getTemplates(); 
-        this.theDeleteCallback = this.deleteTemplate.bind(this);   
+        this.theDeleteCallback = this.deleteTemplate.bind(this);    
     }
+    
 
     getTemplates() {        
         this.templateService
@@ -99,7 +100,7 @@ export class AdminTemplatesComponent {
 
     showDelete(template: Template) {
         this.selectedTemplate = template;        
-        this.isDeleting = true;
+        this.isDeleting = true;        
     }
 
     updateTemplate(event) {        
