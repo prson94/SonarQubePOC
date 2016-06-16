@@ -1,11 +1,12 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
+import {Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import {Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
 import { SelectItem, FormMessage } from '../../models/form.model';
 import { FormMessagePart } from '../parts/form-message.part';
 import { CompanySettings as cs } from '../../models/company-settings.model';
 import { Dropdown, Calendar, Checkbox, Button } from 'primeng/primeng';
+import * as _ from 'lodash';
 
 
 //will use CompanySettings js object globally declared on page
@@ -46,7 +47,7 @@ export class WorkflowItemForm implements OnInit {
 
     private numDays: number = 14;
     private numMonths: number = 12;
-    private dateScheduleCalculation: string; // = new Date().toISOString().slice(0, 16);
+    private dateScheduleCalculation: string;
 
     private isLoading = false;
     private isSaving = false;
@@ -60,10 +61,16 @@ export class WorkflowItemForm implements OnInit {
 
     ngOnInit() {
         this.load();
-        this.initialItem = JSON.parse(JSON.stringify(this.item));
-        //console.log(this.dateScheduleCalculation);
-        //console.log($.isArray([]));
-        //$.datepicker
+        this.initialItem = _.cloneDeep(this.item);
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        for (let p in changes) {
+            if (p == 'item') {
+                this.initialItem = _.cloneDeep(this.item);
+                this.load();
+            }
+        }
     }
 
     private load(): void {
@@ -75,7 +82,10 @@ export class WorkflowItemForm implements OnInit {
         this.ObjectType = this.item.Object + '|' + this.item.ObjectID;
         this.ParentType = this.item.Parent + '|' + this.item.ParentID;
 
-        this.http.get(`form/EditWorkflowAllocationEditor?id=${this.item.ID}`)
+        console.log(this.item.ID);
+        console.log(this.item.WorkflowType);
+
+        this.http.get(`form/WorkflowAllocation?id=${this.item.ID}&workflowType=${this.item.WorkflowType}`)
             .map(data => data.json())
             .subscribe(data => {
 
@@ -113,10 +123,16 @@ export class WorkflowItemForm implements OnInit {
         } catch (exception) {
             this.isSaving = false;
             this.message.Error("An error occurred while parsing the select item values.");
-            this.revert();
             this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.initialItem });
             return;
         }
+
+        this.item.Fields = [];
+        this.item.Fields.push({ key: 'DateForScheduleCalculation', value: this.dateScheduleCalculation });
+        this.item.Fields.push({ key: 'DaysGivenToCompleteCertification', value: this.numDays });
+        this.item.Fields.push({ key: 'MonthsUntilCertification', value: this.numMonths });
+
+        console.log(this.item);
 
         this.http.post('form/EditWorkflowAllocationEditor', JSON.stringify(this.item), { headers: headers })
             .map(data => data.json())
@@ -128,7 +144,7 @@ export class WorkflowItemForm implements OnInit {
     }
 
     private cancel(): void {
-        this.onCancel.emit(null);
+        this.onCancel.emit({ initialItem: this.initialItem });
     }
 
     private objectTypeChange(val: any) {
@@ -155,11 +171,14 @@ export class WorkflowItemForm implements OnInit {
                 this.ResponsibilityTypes = data;
                 this.ResponsibilityTypes.map(r => { r.label = r.Text; r.value = r.Value }); 
                 this.isLoadingResponsibility = false; 
-        });
-    }
+            });
 
-    private revert(): void {
-
+        this.http.get(`/workflow/WorkflowParentTypeOptions?workflowType=${this.item.WorkflowType}&type=${obj}&id=${id}`)
+            .map(data => data.json())
+            .subscribe(data => {
+                this.ParentTypes = data;
+                this.ParentTypes.map(p => { p.label = p.Text; p.value = p.Value });
+            });
     }
 
 }

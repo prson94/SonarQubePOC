@@ -12410,6 +12410,19 @@ order by    Name
             return contexts;
         }
 
+        List<ResponsibilityContextItem> getContextFieldForResponsibility(int responsibilityID, List<ResponsibilityContextItem> contexts)
+        {
+            var ctx = new List<ResponsibilityContextItem>();
+            var IDs = contexts.Select(c => c.ObjectID).ToList();
+
+            IDs.ForEach(id =>
+            {
+                ctx.Add(new ResponsibilityContextItem { ObjectID = id, ObjectType = "DomainItem", ResponsibilityID = responsibilityID });
+            });
+
+            return ctx;
+        }
+
         void processContextFormFieldForResponsibility(int responsibilityID, FormCollection form, bool isAdding = true)
         {
             var contexts = getContextFormFieldForResponsibility(responsibilityID, form);
@@ -12421,6 +12434,23 @@ order by    Name
             {
                 foreach (var o in contexts)
                 {
+                    Company.Set<ResponsibilityContextItem>().Add(o);
+                }
+                Company.SaveChanges();
+            }
+        }
+
+        void processContextFieldForResponsibility(int responsibilityID, List<ResponsibilityContextItem> contexts, bool isAdding = true)
+        {
+            var ctx = getContextFieldForResponsibility(responsibilityID, contexts);
+            if (!isAdding)
+                Company.Delete<ResponsibilityContextItem>(i => i.ResponsibilityID == responsibilityID);
+
+            if (ctx?.Count > 0)
+            {
+                foreach (var o in ctx)
+                {
+                    o.ResponsibilityID = responsibilityID;
                     Company.Set<ResponsibilityContextItem>().Add(o);
                 }
                 Company.SaveChanges();
@@ -12640,25 +12670,25 @@ order by	D.Name, I.Name";
         }
 
         [HttpGet]
-        public JsonNetResult ResponsibilityItemEditor(int id, SystemObjects? type = null)
+        public JsonNetResult LoadResponsibilityItem(int? id, SystemObjects? type, int? responsibilityID)
         {
             List<SelectListItem> contexts;
             List<SelectListItem> resources;
             List<SelectListItem> responsibilityTypes;
             Responsibility responsibility;
-            if (type != null)
+            if (responsibilityID != null)
             {
-                contexts = getContextSelectList();
-                resources = getResponsibilityResources();
-                responsibilityTypes = getResponsibilityTypeSelectList((SystemObjects)type, id, ResponsibilityTypeGroup.People);
-                responsibility = new Responsibility { ObjectType = type.ToString(), ObjectID = id, Visible = true };
-            }
-            else
-            {
-                responsibility = Company.GetById<Responsibility>(id, i => i.ResponsibilityType, i => i.ResponsibilityContextItems);
+                responsibility = Company.GetById<Responsibility>((int)responsibilityID, i => i.ResponsibilityType, i => i.ResponsibilityContextItems);
                 contexts = getContextSelectList(responsibility.ResponsibilityContextItems.Select(i => i.ObjectID).ToList());
                 resources = getResponsibilityResources(string.Format("{0}|{1}", responsibility.ResponsibleObjectType, responsibility.ResponsibleObjectID));
                 responsibilityTypes = getResponsibilityTypeSelectList((SystemObjects)Enum.Parse(typeof(SystemObjects), responsibility.ObjectType), responsibility.ObjectID, ResponsibilityTypeGroup.People, responsibility.ResponsibilityTypeID);
+            }
+            else
+            {
+                contexts = getContextSelectList();
+                resources = getResponsibilityResources();
+                responsibilityTypes = getResponsibilityTypeSelectList((SystemObjects)type, (int)id, ResponsibilityTypeGroup.People);
+                responsibility = new Responsibility { ObjectType = type.ToString(), ObjectID = (int)id, Visible = true };
             }
 
             return new JsonNetResult
@@ -12673,7 +12703,6 @@ order by	D.Name, I.Name";
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
 
         [HttpPut]
         public JsonResult EditResponsibility(FormCollection form)
@@ -12732,11 +12761,11 @@ order by	D.Name, I.Name";
         }
 
         [HttpPost]
-        public JsonResult EditResponsibilityItemEditor(Responsibility r)
+        public JsonResult SaveResponsibilityItem(Responsibility r)
         {
             Responsibility model; // = new Responsibility();
 
-            if (r.ID == -1)
+            if (r.ID == 0)
             {
                 try
                 {
@@ -12755,18 +12784,12 @@ order by	D.Name, I.Name";
                     };
 
                     #region Existence check
-
                     var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == model.ResponsibilityTypeID && i.ObjectType == model.ObjectType && i.ObjectID == model.ObjectID, i => i.ResponsibilityContextItems).FirstOrDefault();
                     if (existing != null)
                     {
-                        //var newContexts = getContextFormFieldForResponsibility(0, form);
-                        //var IDs = form["Context"].Split(',').Select(i => int.Parse(i)).ToList();
-                        //IDs.ForEach(id =>
-                        //{
-                        //    contexts.Add(new ResponsibilityContextItem { ObjectID = id, ObjectType = "DomainItem", ResponsibilityID = responsibilityID });
-                        //});
-
                         var newContexts = r.ResponsibilityContextItems.ToList();
+
+                        //var newContexts = getContextFormFieldForResponsibility(0, form);
                         var existingContexts = existing.ResponsibilityContextItems.ToList();
                         var matchingCount = 0;
                         existingContexts.ForEach(ec =>
@@ -12785,8 +12808,8 @@ order by	D.Name, I.Name";
                     #endregion
 
                     Company.Add(model);
-
-                    //processContextFormFieldForResponsibility(o.ID, form);
+                    processContextFieldForResponsibility(model.ID, r.ResponsibilityContextItems.ToList());
+                    Company.Update(model);
                 }
                 catch (BaseException ex)
                 {
@@ -12836,6 +12859,9 @@ order by	D.Name, I.Name";
                     }
                     #endregion
 
+                    processContextFieldForResponsibility(model.ID, r.ResponsibilityContextItems?.ToList(), false);
+                    Company.Update(model);  //Do this after context so the trigger will properly re-cache with the contextxs.
+
                 }
                 catch (BaseException ex)
                 {
@@ -12849,7 +12875,6 @@ order by	D.Name, I.Name";
 
             }
             //processContextFormFieldForResponsibility(id, form, false);
-            Company.Update(model);  //Do this after context so the trigger will properly re-cache with the contextxs.
 
             return jsonSuccess("Item successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK, new { ObjectType = model.ObjectType.ToString(), ObjectID = model.ObjectID.ToString() });
         }
@@ -13470,6 +13495,52 @@ order by	D.Name, I.Name";
                 Company.SaveChanges();
 
                 return jsonSuccess("Item successfully created.", "0", form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut]
+        public JsonResult EditClaimsMatrix(List<ResponsibilityTypeObjectClaim> claims, int objectID, string objectType, int responsibilityTypeID)
+        {
+            try
+            {
+                claims.ForEach(c =>
+                {
+                    c.ObjectID = objectID;
+                    c.ObjectType = objectType;
+                    c.ResponsibilityTypeID = responsibilityTypeID;
+                });
+
+                var existingClaims = Company.Filter<ResponsibilityTypeObjectClaim>(i => i.ObjectID == objectID && i.ObjectType == objectType && i.ResponsibilityTypeID == responsibilityTypeID).ToList();
+
+                // Add new that were not present before.
+                foreach (var nc in claims)
+                {
+                    if (!existingClaims.Any(i => i.ClaimObject == nc.ClaimObject && i.Claim == nc.Claim))
+                    {
+                        Company.Set<ResponsibilityTypeObjectClaim>().Add(nc);
+                    }
+                }
+                // Remove old that are no longer present.
+                foreach (var ec in existingClaims)
+                {
+                    if (!claims.Any(i => i.ClaimObject == ec.ClaimObject && i.Claim == ec.Claim))
+                    {
+                        Company.Set<ResponsibilityTypeObjectClaim>().Remove(ec);
+                    }
+                }
+
+                Company.SaveChanges();
+
+                return jsonSuccess("Item successfully created.", "0", null, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -18362,45 +18433,68 @@ order by TextPath
         }
 
         [HttpGet]
-        public JsonNetResult EditWorkflowAllocationEditor(int id)
+        public JsonNetResult WorkflowAllocation(int? id, WorkflowType? workflowType)
         {
-            var relation = Company.GetById<WorkflowTypeRelation>(id);
+            var model = new WorkflowTypeRelationEditorModel();
 
-            var parentTypes = Company.GetWorkflowParentTypeOptions((int)relation.WorkflowType, relation.Object, relation.ObjectID, true);
-            var responsibilityTypes = Company.GetWorkflowResponsibilityTypeOptions(relation.Object, relation.ObjectID);
-
-            var desc = Resources.FormInfo.Allocate_Workflow_Description;
-            if (relation.WorkflowType == WorkflowType.ChallengeArtifact)
-                desc = Resources.FormInfo.Allocate_Workflow_Challenge_Description;
-
-            var model = new WorkflowTypeRelationEditorModel
+            if (id != null && id > 0)
             {
-                FormDescription = desc,
-                FormMethod = "PUT",
-                FormName = Resources.FormInfo.Allocate_Workflow_Title,
-                FormUri = "/form/EditWorkflowAllocation",
-                ObjectTypes = Company.GetWorkflowObjectTypeOptions().Select(i => new SelectListItem
+                var relation = Company.GetById<WorkflowTypeRelation>((int)id);
+
+                var parentTypes = Company.GetWorkflowParentTypeOptions((int)relation.WorkflowType, relation.Object, relation.ObjectID, true);
+                var responsibilityTypes = Company.GetWorkflowResponsibilityTypeOptions(relation.Object, relation.ObjectID);
+
+                var desc = Resources.FormInfo.Allocate_Workflow_Description;
+                if (relation.WorkflowType == WorkflowType.ChallengeArtifact)
+                    desc = Resources.FormInfo.Allocate_Workflow_Challenge_Description;
+
+                model = new WorkflowTypeRelationEditorModel
                 {
-                    Text = i.Name,
-                    Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID),
-                    Selected = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) == string.Format("{0}|{1}", relation.Object, relation.ObjectID)
-                }).ToList(),
-                ParentTypes = parentTypes.Select(i => new SelectListItem
+                    FormDescription = desc,
+                    FormMethod = "PUT",
+                    FormName = Resources.FormInfo.Allocate_Workflow_Title,
+                    FormUri = "/form/EditWorkflowAllocation",
+                    ObjectTypes = Company.GetWorkflowObjectTypeOptions().Select(i => new SelectListItem
+                    {
+                        Text = i.Name,
+                        Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID),
+                        Selected = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) == string.Format("{0}|{1}", relation.Object, relation.ObjectID)
+                    }).ToList(),
+                    ParentTypes = parentTypes.Select(i => new SelectListItem
+                    {
+                        Text = i.Name,
+                        Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID),
+                        Selected = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) == string.Format("{0}|{1}", relation.Parent, relation.ParentID)
+                    }).ToList(),
+                    ResponsibilityTypes = responsibilityTypes.Select(i => new SelectListItem
+                    {
+                        Text = i.Name,
+                        Value = i.ID.ToString(),
+                        Selected = (i.ID == relation.ResponsibilityTypeID)
+                    }).ToList(),
+                    Enabled = relation.Enabled,
+                    WorkflowType = relation.WorkflowType,
+                    WorkflowTypeRelation = relation
+                };
+            }
+            else
+            {
+                var desc = Resources.FormInfo.Allocate_Workflow_Description;
+                if (workflowType == WorkflowType.ChallengeArtifact)
+                    desc = Resources.FormInfo.Allocate_Workflow_Challenge_Description;
+
+                model = new WorkflowTypeRelationEditorModel
                 {
-                    Text = i.Name,
-                    Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID),
-                    Selected = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) == string.Format("{0}|{1}", relation.Parent, relation.ParentID)
-                }).ToList(),
-                ResponsibilityTypes = responsibilityTypes.Select(i => new SelectListItem
-                {
-                    Text = i.Name,
-                    Value = i.ID.ToString(),
-                    Selected = (i.ID == relation.ResponsibilityTypeID)
-                }).ToList(),
-                Enabled = relation.Enabled,
-                WorkflowType = relation.WorkflowType,
-                WorkflowTypeRelation = relation
-            };
+                    FormDescription = desc,
+                    FormMethod = "POST",
+                    FormName = Resources.FormInfo.Allocate_Workflow_Title,
+                    FormUri = "/form/AddWorkflowAllocation",
+                    ObjectTypes = Company.GetWorkflowObjectTypeOptions().Select(i => new SelectListItem { Text = i.Name, Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID) }).ToList(),
+                    WorkflowType = (WorkflowType)workflowType,
+                    WorkflowTypeRelation = new WorkflowTypeRelation { Enabled = true }
+                };
+            }
+          
 
             return new JsonNetResult
             {
@@ -18410,61 +18504,59 @@ order by TextPath
         }
 
         [HttpPost]
-        public JsonResult EditWorkflowAllocationEditor(WorkflowTypeRelation r)
+        public JsonResult WorkflowAllocation(WorkflowTypeRelation r)
         {
             try
             {
-               // if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
-
                 if (!Company.CurrentResourceIsAdmin)
                     throw new UnauthorizedException("Workflow Allocation Error", "You do not have permission to update this workflow allocation.");
 
-                var workflowType = r.WorkflowType; //(WorkflowType)Enum.Parse(typeof(WorkflowType), form["WorkflowType"]);
-               // var ObjectValue = //form["ObjectType"];
-                //var ObjectArray = //(string.IsNullOrEmpty(ObjectValue)) ? new string[2] : ObjectValue.Split('|');
-                var Object = r.Object; //ObjectArray[0];
-                int ObjectID = r.ObjectID; //int.Parse(ObjectArray[1]);
-
-                //var ParentValue = form["ParentType"];
-                //var ParentArray = (string.IsNullOrEmpty(ParentValue)) ? new string[2] { null, "0" } : ParentValue.Split('|');
-                var Parent = r.Parent; //ParentArray[0];
-                int? ParentID = r.ParentID;
-                //if (ParentArray[1] != "0") ParentID = int.Parse(ParentArray[1]);
-
-                var id = r.ID;  //parseIntField(form, "ID");
-                var responsibilityTypeID = r.ResponsibilityTypeID; // parseIntField(form, "ResponsibilityType");
-
                 if (Company.Filter<WorkflowTypeRelation>(i =>
-                    i.WorkflowType == workflowType &&
-                    i.Object == Object && i.ObjectID == ObjectID &&
-                    i.Parent == Parent && i.ParentID == ParentID &&
-                    i.ID != id
+                    i.WorkflowType == r.WorkflowType &&
+                    i.Object == r.Object && i.ObjectID == r.ObjectID &&
+                    i.Parent == r.Parent && i.ParentID == r.ParentID &&
+                    i.ID != r.ID
                    ).Any())
                 {
                     throw new DuplicateObjectException("Workflow Allocation");
                 }
 
-                var model = Company.GetById<WorkflowTypeRelation>(id);
+                var model = Company.GetById<WorkflowTypeRelation>(r.ID);
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
 
                 // Static fields
-                model.Object = Object;
-                model.ObjectID = ObjectID;
+                model.Object = r.Object;
+                model.ObjectID = r.ObjectID;
 
-                if (!string.IsNullOrEmpty(Parent))
+                if (!string.IsNullOrEmpty(r.Parent))
                 {
-                    model.Parent = Parent;
-                    model.ParentID = ParentID;
+                    model.Parent = r.Parent;
+                    model.ParentID = r.ParentID;
                 }
 
                 model.Enabled = r.Enabled; // parseBooleanField(form, "Enabled");
-                model.ResponsibilityTypeID = responsibilityTypeID;
+                model.ResponsibilityTypeID = r.ResponsibilityTypeID; // responsibilityTypeID;
 
 
-                //TODO: refactor getWorkflowTypRelationFields to not use FormCollection
-                //FormCollection f = new FormCollection();
-                //f.Add("", "");
-                //model.FieldsXml = getWorkflowTypRelationFields(workflowType, f).ToString();
+                var xml = XElement.Parse("<fields/>");
+               
+                if (r.WorkflowType == WorkflowType.CertifyArtifact)
+                {
+                    foreach(var key in r.Fields.Keys)
+                    {
+                        try
+                        {
+                            if (xml.Element(key) != null)
+                                xml.Element(key).SetValue(r.Fields[key]);
+                            else
+                                xml.Add(new XElement(key, r.Fields[key]));
+                        }
+                        catch { }
+
+                    }
+                }
+
+                model.FieldsXml = xml.ToString();
 
                 Company.Update<WorkflowTypeRelation>(model);
 

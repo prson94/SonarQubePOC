@@ -5,27 +5,18 @@ import { PageHeader } from '../../services/page-header.service';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { FieldsGridTile } from '../tiles/fields-grid.tile';
 import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
-import { WorkflowItem } from '../../models/workflow.model';
+import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
 import { WorkflowItemForm } from '../forms/workflow-item.form';
 import { DeleteForm } from '../forms/delete.form';
-import { DataTable, Column, Growl } from 'primeng/primeng';
+import { DataTable, Column, Growl, MenuItem } from 'primeng/primeng';
+import { ActionBar } from '../parts/action-bar.part';
+import { ActionBarItem } from '../../models/action-bar.model';
 
 @Component({
     selector: 'admin-workflow',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [ObjectDetailTile, WorkflowItemForm, DeleteForm, DataTable, Column, Growl ],
-    templateUrl: 'scripts/app/components/admin/admin-workflow.component.html',
-    styles: [`
-        .selected {
-        background-color: #86ccf9;        
-        }
-        tbody tr:not(.selected):not(.inline-edit):hover {
-        background-color: #ddd;
-        }
-        td {
-            padding-left:3px;
-        }
-    `]
+    directives: [ObjectDetailTile, WorkflowItemForm, DeleteForm, DataTable, Column, Growl, ActionBar ],
+    templateUrl: 'scripts/app/components/admin/admin-workflow.component.html'
 })
 
 export class AdminWorkflowComponent {
@@ -36,16 +27,33 @@ export class AdminWorkflowComponent {
 
     isEditing = false;
     isDeleting = false;
+    isAdding = false;
 
     workflowItems = new Array<WorkflowItem>();
     selectedRow = new WorkflowItem();
-    lastSelectedRow = null;
+    addingRow = new WorkflowItem();
+
+    actions = new Array<ActionBarItem>();
 
     constructor(http: Http, pageHeader: PageHeader) {
         this.http = http;
         this.pageHeader = pageHeader;
         this.pageHeader.title = 'Workflow';
         this.pageHeader.description = 'Manage all workflow settings for types within your environment.';
+
+        this.actions.push({
+            icon: 'fa-plus',
+            tooltip: 'Add a workflow allocation',
+            action: null,
+            menuItems: null
+        });
+
+        this.actions[0].menuItems = new Array<MenuItem>();
+        
+        this.actions[0].menuItems.push({ label: 'Propose new artifact', icon: '' });
+        this.actions[0].menuItems.push({ label: 'Certify artifact', icon: '' });
+        this.actions[0].menuItems.push({ label: 'Work Issue', icon: '' });
+        this.actions[0].menuItems.push({ label: 'Challenge', icon: '' });
 
         this.load();
     }
@@ -63,13 +71,25 @@ export class AdminWorkflowComponent {
 
     }
 
+    delete(id: number): void {
+        this.selectedRow = this.workflowItems.find(w => w.ID == id);
+        this.isDeleting = true;
+    }
 
-    selectRow(): void {
-        if (this.lastSelectedRow != this.selectedRow) {
-            this.isEditing = false;
-            this.isDeleting = false;
-        }
-        this.lastSelectedRow = this.selectedRow
+    edit(id: number): void {
+        this.selectedRow = this.workflowItems.find(w => w.ID == id);
+        this.isEditing = true;
+    }
+
+    add(): void {
+        this.addingRow = new WorkflowItem();
+        //TODO: replace with menu item list so user can choose workflowtype
+        this.addingRow.WorkflowType = WorkflowType.CertifyArtifact
+        this.isAdding = true;
+    }
+
+    select(): void {
+            this.isAdding = false;
     }
 
     deleteRow(id: number): void {

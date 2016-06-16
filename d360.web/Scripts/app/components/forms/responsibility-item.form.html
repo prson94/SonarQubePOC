@@ -5,15 +5,17 @@
     <div class="row">
         <div class="col s6">
             <label id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</label>
-            <select style="height:1.8em;line-height:1.8em; padding:0;" [(ngModel)]="item.ResponsibilityTypeID">
+            <p-dropdown [options]="responsibilitySelectList" [(ngModel)]="responsibilitySelectedItem" [style]="{'width':'80%', 'display':'block'}" ></p-dropdown>
+            <!--<select style="height:1.8em;line-height:1.8em; padding:0;" [(ngModel)]="item.ResponsibilityTypeID">
                 <option *ngFor="let responsibility of responsibilityTypes" [value]="responsibility.Value">{{responsibility.Text}}</option>
-            </select>
+            </select>-->
         </div>
         <div class="col s6">
             <label id='ResponsibleObjectTip' class="FieldNameRequired">Resource</label>
-            <select style="height:1.8em;line-height:1.8em; padding:0;" [(ngModel)]="responsibleObjectValue">
+            <p-dropdown [options]="resourceSelectList" [(ngModel)]="resourceSelectedItem" [style]="{'width':'80%', 'display':'block'}"></p-dropdown>
+            <!--<select style="height:1.8em;line-height:1.8em; padding:0;" [(ngModel)]="responsibleObjectValue">
                 <option *ngFor="let resource of resources" [value]="resource.Value">{{resource.Text}}</option>
-            </select>
+            </select>-->
         </div>
     </div>
     <div class="row">
@@ -21,18 +23,19 @@
             <div id='ContextTip' class="FieldName">Contexts</div>
             <div id="Context" name="Context"></div>
             <!--<select style="height:1.8em;line-height:1.8em; padding:0;"></select>-->
-            <multi-select [data]="contexts"></multi-select>
+            <!--<multi-select [data]="contexts"></multi-select>-->
+            <p-multiSelect [options]="contextsSelectList" [(ngModel)]="contextsSelectedItems"></p-multiSelect>
         </div>
     </div>
     <div *ngIf="item.ObjectType.endsWith('Type')" class="row">
         <div class="col s12">
-            <input type="checkbox" [(ngModel)]="item.Visible" />
+            <p-checkbox [(ngModel)]="item.Visible" ></p-checkbox>
             <label id='IsVisibleTip' for="IsVisible">Visible?</label>
         </div>
     </div>
     <div class="row">
         <div class="col s12">
-            <button (click)="cancel()">Cancel</button> <button [disabled]="isSaving" (click)="save()">Save</button> <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span> &nbsp; <form-message [message]="message" [inline]="true"></form-message>
+            <button pButton (click)="cancel()" label="Cancel"></button> <button pButton [disabled]="isSaving" (click)="save()" label="Save"></button> <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span> &nbsp; <form-message [message]="message" [inline]="true"></form-message>
         </div>
     </div>
 </div>

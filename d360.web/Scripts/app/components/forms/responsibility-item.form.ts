@@ -1,16 +1,17 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
-import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
+import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
+import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { ResponsibilityItem, ResponsibilityContextItem } from '../../models/responsibility.model';
-import { SelectItem, FormMessage } from '../../models/form.model';
+import { SelectItem, FormMessage, FormHelper } from '../../models/form.model';
 import { FormMessagePart } from '../parts/form-message.part';
-import { MultiSelect } from '../parts/multiselect.part';
+import { Dropdown, Button, MultiSelect, Checkbox } from 'primeng/primeng';
+import * as _ from 'lodash';
 
 @Component({
-    selector: 'responsibility-item-form',
+    selector: 'd3s-responsibility-item-form',
     templateUrl: 'scripts/app/components/forms/responsibility-item.form.html',
-    viewProviders: [HTTP_PROVIDERS],
-    directives: [FormMessagePart, MultiSelect]
+    viewProviders: [ HTTP_PROVIDERS ],
+    directives: [ FormMessagePart, Dropdown, Button, Checkbox, MultiSelect ]
 })
 
 export class ResponsibilityItemForm implements OnInit {
@@ -19,16 +20,19 @@ export class ResponsibilityItemForm implements OnInit {
     @Output() onLoadComplete = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-    private responsibleObjectValue: string;
+    private responsibilitySelectList: SelectItem[];
+    private responsibilitySelectedItem: string;
+    private resourceSelectList: SelectItem[];
+    private resourceSelectedItem: string;
+    private contextsSelectList: SelectItem[];
+    private contextsSelectedItems: string[];
+
 
     private isLoading = false;
     private isSaving = false;
 
-    private resources = new Array<SelectItem>();
-    private responsibilityTypes = new Array<SelectItem>();
     private message: FormMessage = new FormMessage();
     private initialItem = new ResponsibilityItem();
-    private contexts: any[];
 
 
     private http: Http;
@@ -38,14 +42,12 @@ export class ResponsibilityItemForm implements OnInit {
     }
 
     ngOnInit() {
-        this.responsibleObjectValue = this.item.ResponsibleObjectType + '|' + this.item.ResponsibleObjectID;
-        this.initialItem = JSON.parse(JSON.stringify(this.item));
+        this.initialItem = _.cloneDeep(this.item);
 
         if (this.item == null || (this.item.ResponsibilityID < 0 && !this.item.ObjectID && !this.item.ObjectType)) {
             throw new Error("responsibility-item-editor [item] requires either a ResponsibilityID or a ObjectID and ObjectType");
         }
-
-        this.load();
+            this.load();
     }
 
     private load(): void {
@@ -57,33 +59,37 @@ export class ResponsibilityItemForm implements OnInit {
            
         this.isLoading = true;
 
-        var url = '';
-
-        if (this.item.ResponsibilityID != -1) 
-            url = '/form/ResponsibilityItemEditor?id=' + this.item.ResponsibilityID;
-        else
-            url = '/form/ResponsibilityItemEditor?id=' + this.item.ObjectID + '&type=' + this.item.ObjectType;
-
-
-        this.http.get(url)
+        this.http.get(`form/LoadResponsibilityItem?responsibilityID=${this.item.ResponsibilityID}&id=${this.item.ObjectID}&type=${this.item.ObjectType}`)
             .map(data => data.json())
             .subscribe(data => {
                 this.isLoading = false;
 
-                this.resources = data.resources;
-                this.responsibilityTypes = data.responsibilityTypes
+                this.resourceSelectList = data.resources;
+                FormHelper.mapSelectItems(this.resourceSelectList);
+                if (data.responsibility.ResponsibleObjectType)
+                    this.resourceSelectedItem = data.responsibility.ResponsibleObjectType + '|' + data.responsibility.ResponsibleObjectID;
+                else
+                    this.resourceSelectedItem = this.resourceSelectList[0].value;
 
-                if (this.item.ResponsibilityID == -1) {
+
+                this.responsibilitySelectList = data.responsibilityTypes;
+                FormHelper.mapSelectItems(this.responsibilitySelectList);
+                if (data.responsibility.ResponsibilityTypeID)
+                    this.responsibilitySelectedItem = data.responsibility.ResponsibilityTypeID;
+                else
+                    this.responsibilitySelectedItem = this.responsibilitySelectList[0].value;
+
+                this.contextsSelectList = data.contexts;
+                FormHelper.mapSelectItems(this.contextsSelectList);
+                this.contextsSelectedItems = this.contextsSelectList.filter(c => c.Selected).map(c => c.value);
+                
+                if (!this.item.ResponsibilityID) {
                     this.item.ObjectID = data.responsibility.ObjectID;
                     this.item.ObjectType = data.responsibility.ObjectType;
                 }
 
-                this.contexts = data.contexts;
-
                 this.onLoadComplete.emit({ item: this.item });
-                
-                //console.log(data);
-                //console.log(this.item);
+
             });
     }
 
@@ -93,38 +99,34 @@ export class ResponsibilityItemForm implements OnInit {
         var headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
+        console.log(this.responsibilitySelectedItem);
+        console.log(this.resourceSelectedItem);
+
         try {
-            this.item.ResponsibleObjectID = parseInt(this.responsibleObjectValue.split('|')[1]);
-            this.item.ResponsibleObjectType = this.responsibleObjectValue.split('|')[0];
+            this.item.ResponsibleObjectType = this.resourceSelectedItem.split('|')[0];
+            this.item.ResponsibleObjectID = parseInt(this.resourceSelectedItem.split('|')[1]);
+            this.item.ResponsibilityTypeID = parseInt(this.responsibilitySelectedItem);
         } catch (exception) {
             this.isSaving = false;
             this.message.Error("An error occurred while parsing the select item values.");
-            this.revert();
             this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.initialItem });
             return;
         }
-
-        
-        var res = this.resources.find(r => r.Value == this.responsibleObjectValue);
-        var role = this.responsibilityTypes.find(r => r.Value == this.item.ResponsibilityTypeID.toString());
-
-        if (res)
-            this.item.ResponsibleObjectName = res.Text;
-        if (role)
-            this.item.Role = role.Text;
-
-        var contexts = this.contexts.filter(c => c.Selected).map(c => c.Value);
         var contextItems = new Array<ResponsibilityContextItem>();
-        contexts.forEach(c => {
+        this.contextsSelectedItems.forEach(c => {
             contextItems.push({
                 ResponsibiltyID: 0,
-                ObjectID: c.Value,
+                ObjectID: parseInt(c),
                 ObjectType: "DomainType"
             });
         });
 
+
+        console.log(this.resourceSelectedItem);
         this.item.ResponsibilityContextItems = contextItems;
-        this.item.ContextItems = contexts.filter(c => c.Selected).map(c => c.Text).join('; ');
+        this.item.ContextItems = this.contextsSelectList.filter(c => this.contextsSelectedItems.indexOf(c.value) != -1).map(c => c.label).join('; ');
+        this.item.Role = this.responsibilitySelectList.find(r => r.value == this.responsibilitySelectedItem).label;
+        this.item.ResponsibleObjectName = this.resourceSelectList.find(r => r.value == this.resourceSelectedItem).label;
 
         var model = {
             ID: this.item.ResponsibilityID,
@@ -140,45 +142,17 @@ export class ResponsibilityItemForm implements OnInit {
             ResponsibilityContextItems: contextItems
         };
 
-
-
-        this.http.post('/form/EditResponsibilityItemEditor', JSON.stringify(model), { headers: headers })
+        this.http.post('/form/SaveResponsibilityItem', JSON.stringify(model), { headers: headers })
             .map(data => data.json())
             .subscribe(data => {
-                //console.log(data);
                 this.isSaving = false;
                 this.message.Success("Save completed successfully.");
                 this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.initialItem });
             });
-            
+             
     }
 
     private cancel(): void {
-        this.onCancel.emit(null);
-    }
-
-    private revert(): void {
-        //TODO: need a better way to do this. item is passed by reference and setting the row detail to a new item does not refresh the view
-        // need to manually set each property back to initial state
-
-        this.item.AssigningItemID = this.initialItem.AssigningItemID;
-        this.item.AssigningItemType = this.initialItem.AssigningItemType;
-        this.item.ContextItems = this.initialItem.ContextItems;
-        this.item.ObjectID = this.initialItem.ObjectID;
-        this.item.ObjectName = this.initialItem.ObjectName;
-        this.item.ObjectType = this.initialItem.ObjectType;
-        this.item.ObjectTypeID = this.initialItem.ObjectTypeID;
-        this.item.ObjectTypeName = this.initialItem.ObjectTypeName;
-        this.item.PrimaryOwnerResourceID = this.initialItem.PrimaryOwnerResourceID;
-        this.item.PrimaryOwnerResourceName = this.initialItem.PrimaryOwnerResourceName;
-        this.item.PrimaryOwnerResourceUrl = this.initialItem.PrimaryOwnerResourceUrl;
-        this.item.ResponsibilityTypeID = this.initialItem.ResponsibilityTypeID;
-        this.item.ResponsibleObjectID = this.initialItem.ResponsibleObjectID;
-        this.item.ResponsibleObjectName = this.initialItem.ResponsibleObjectName;
-        this.item.ResponsibleObjectType = this.initialItem.ResponsibleObjectType;
-        this.item.ResponsibleObjectUrl = this.initialItem.ResponsibleObjectUrl;
-        this.item.Role = this.initialItem.Role;
-        this.item.Visible = this.initialItem.Visible;
-
+        this.onCancel.emit({ item: this.initialItem });
     }
 }

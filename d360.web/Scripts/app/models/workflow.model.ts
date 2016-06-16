@@ -14,7 +14,7 @@ export class WorkflowItem {
     WorkflowTypeName: string;
     WorkflowTypeDisplayName: string;
     Properties: string;
-    Fields: string;
+    Fields: any[];
 }
 
 export enum WorkflowType {

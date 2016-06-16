@@ -471,6 +471,24 @@
     <Content Include="Areas\HelpPage\HelpPage.css" />
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\logo.new.png" />
+    <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="Content\primeng\d3s\images\icons_16.png" />
+    <Content Include="Content\primeng\d3s\images\slider_handles%402x.png" />
+    <Content Include="Content\primeng\d3s\images\slider_handles.png" />
+    <Content Include="Content\primeng\d3s\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="Content\primeng\d3s\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="Content\primeng\d3s\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="Content\primeng\d3s\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="Content\primeng\d3s\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="Content\primeng\d3s\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="Content\primeng\d3s\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="Content\primeng\d3s\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="Content\primeng\d3s\images\ui-icons_222222_256x240.png" />
+    <Content Include="Content\primeng\d3s\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Content\primeng\d3s\images\ui-icons_454545_256x240.png" />
+    <Content Include="Content\primeng\d3s\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Content\primeng\d3s\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="Content\primeng\d3s\theme.css" />
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
@@ -499,6 +517,10 @@
       <DependentUpon>navigation.css</DependentUpon>
     </Content>
     <Content Include="Content\styles\angular.less" />
+    <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
     <None Include="Content\styles\typeahead.less" />
     <Content Include="Content\templates\actionsmonitor.list.html" />
     <Content Include="Content\templates\artifacts.root.html" />
@@ -1301,6 +1323,7 @@
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
@@ -1308,6 +1331,7 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\action-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\claims.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\company-settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />

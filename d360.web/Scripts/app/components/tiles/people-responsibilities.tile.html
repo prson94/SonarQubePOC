@@ -2,8 +2,8 @@
     <div>
         <header>
             {{title}}
-            <div id="FieldsTile_tools" class="TileTools">
-                <a class="btn btn-floating waves-effect waves-light brown lighten-1" (click)="addRow();">
+            <div id="FieldsTile_tools" class="TileTools" *ngIf="!isEditing && !isAdding && !isDeleting">
+                <a class="btn btn-floating waves-effect waves-light brown lighten-1" (click)="add();">
                     <i class="fa fa-plus" title="Add responsibility"></i>
                 </a>
             </div>
@@ -13,71 +13,35 @@
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading">
-        <table class="table" [mfData]="responsibilities" #mf="mfDataTable" [mfRowsOnPage]="10">
-            <thead>
-                <tr>
-                    <th style="width: 20%">
-                        <mfDefaultSorter by="Role">Role</mfDefaultSorter>
-                    </th>
-                    <th style="width: 20%">
-                        <mfDefaultSorter by="ResponsibleObjectName">Resource</mfDefaultSorter>
-                    </th>
-                    <th style="width: 20%">
-                        <mfDefaultSorter by="PrimaryOwnerResourceName">Group Owner</mfDefaultSorter>
-                    </th>
-                    <th style="width: 30%">
-                        <mfDefaultSorter by="ContextItems">Context</mfDefaultSorter>
-                    </th>
-                    <th style="width: 10%">
-                    </th>
-                </tr>
-            </thead>
-            <tbody *ngFor="let item of mf.data; let i=index;">
-                <tr *ngIf="!item.isEditing && !item.isDeleting" (click)="selectRow(item.ResponsibilityID);" [class.selected]="selectedRow?.ResponsibilityID == item.ResponsibilityID">
-                    <td>{{item.Role}}</td>
-                    <td><a [href]="item.ResponsibleObjectUrl">{{item.ResponsibleObjectName}}</a></td>
-                    <td>{{item.PrimaryOwnerResourceName}}</td>
-                    <td>{{item.ContextItems}}</td>
-                    <!-- TODO: replace href on info, fix edit/delete -->
-                    <td class="RowTools">
-                        <a (click)="editRow(item.ResponsibilityID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                        <a (click)="deleteRow(item.ResponsibilityID)" style="cursor:pointer;"><i class="fa fa-trash"></i></a>
-                    </td>
-                </tr>
-                <tr *ngIf="item.isEditing" class="inline-edit">
-                    <td colspan="5">
-                        <responsibility-item-form [item]="item" (onSaveComplete)="updateRow($event)" (onCancel)="item.isEditing=false;"></responsibility-item-form>
-                    </td>
-                </tr>
-                <tr *ngIf="item.isDeleting" class="inline-edit">
-                    <td colspan="5">
-                        <delete-form
-                            [uri]="'/form/DeleteResponsibilityByID?id=' + item.ResponsibilityID"
-                            [method]="'delete'"
-                            [prompt]="'Are you sure you want to delete this owner?'"
-                            (onDeleteSuccess)="confirmDeleteRow(item.ResponsibilityID)"
-                            (onCancel)="item.isDeleting=false;">
-                        </delete-form>
-                    </td>
-                </tr>
-            </tbody>
-            <tbody *ngIf="addingRow">
-                <tr class="inline-edit">
-                    <td colspan="5">
-                        <responsibility-item-form 
-                            [item]="addingRow" (onSaveComplete)="confirmAddRow($event)" 
-                            (onCancel)="addingRow=null;">
-                        </responsibility-item-form>
-                    </td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="5">
-                        <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
+        <div *ngIf="!isEditing && !isDeleting && !isAdding">
+            <p-dataTable [value]="responsibilities" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+                <p-column field="Role" header="Role" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
+                <p-column field="ResponsibleObjectName" header="Resource" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
+                <p-column field="PrimaryOwnerResourceName" header="Group Owner" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
+                <p-column field="ContextItems" header="Context" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
+                <p-column>
+                    <template let-item="rowData">
+                        <div class="RowTools">
+                            <a (click)="edit(item.ResponsibilityID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="delete(item.ResponsibilityID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </template>
+                </p-column>
+            </p-dataTable>
+        </div>
+        <div *ngIf="isEditing">
+            <d3s-responsibility-item-form [item]="selectedRow" (onSaveComplete)="isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
+        </div>
+        <div *ngIf="isDeleting" style="padding:15px;">
+            <delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.ResponsibilityID"
+                         [method]="'delete'"
+                         [prompt]="'Are you sure you want to delete this owner?'"
+                         (onDeleteSuccess)="confirmDeleteRow(selectedRow.ResponsibilityID)"
+                         (onCancel)="isDeleting=false;">
+            </delete-form>
+        </div>
+        <div *ngIf="isAdding">
+            <d3s-responsibility-item-form [item]="addingRow" (onSaveComplete)="load(); isAdding=false;" (onCancel)="isAdding=false;"></d3s-responsibility-item-form>
+        </div>
     </div>
 </div>

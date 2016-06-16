@@ -8,6 +8,12 @@
     value: string;
 }
 
+export module FormHelper {
+    export function mapSelectItems(s: SelectItem[]) {
+        s.forEach(s => { s.value = s.Value; s.label = s.Text });
+    }
+}
+
 
 export enum MessageType {
     Error,

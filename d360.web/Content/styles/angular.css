@@ -32,6 +32,10 @@ nav.top,
 .side-nav li {
   padding: 0;
 }
+.side-nav li .router-link-active {
+  background: #F8F3EF;
+  color: #383127 !important;
+}
 .side-nav ul,
 .side-nav a {
   height: 35px;
