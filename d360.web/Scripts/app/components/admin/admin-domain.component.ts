@@ -6,6 +6,8 @@ import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { FieldsGridTile } from '../tiles/fields-grid.tile';
 import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 
 @Component({
     selector: 'admin-domain',
@@ -34,11 +36,15 @@ export class AdminDomainComponent {
 
     isLoading = false;
 
-    constructor(http: Http, pageHeader: PageHeader) {
+    constructor(http: Http, pageHeader: PageHeader, private headerBreadcrumbService : HeaderBreadcrumbService) {
         this.http = http;
         this.pageHeader = pageHeader;
         this.pageHeader.title = 'Reference Types';
         this.pageHeader.description = 'All type of reference data lists for the organization are defined here. To add a new type of list, go under Actions and select Add type.';
+
+        headerBreadcrumbService.clearBreadcrumbs();
+        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
+        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Reference Types", ""));
 
         this.load();
     }

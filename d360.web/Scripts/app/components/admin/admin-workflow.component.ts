@@ -11,6 +11,8 @@ import { DeleteForm } from '../forms/delete.form';
 import { DataTable, Column, Growl, MenuItem } from 'primeng/primeng';
 import { ActionBar } from '../parts/action-bar.part';
 import { ActionBarItem } from '../../models/action-bar.model';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 
 @Component({
     selector: 'admin-workflow',
@@ -35,11 +37,15 @@ export class AdminWorkflowComponent {
 
     actions = new Array<ActionBarItem>();
 
-    constructor(http: Http, pageHeader: PageHeader) {
+    constructor(http: Http, pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService) {
         this.http = http;
         this.pageHeader = pageHeader;
         this.pageHeader.title = 'Workflow';
         this.pageHeader.description = 'Manage all workflow settings for types within your environment.';
+
+        headerBreadcrumbService.clearBreadcrumbs();
+        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
+        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Workflow", ""));
 
         this.actions.push({
             icon: 'fa-plus',
