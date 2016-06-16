@@ -44,6 +44,16 @@ nav.top,
 .side-nav.fixed a {
   color: white;
 }
+span.breadcrumbs {
+  margin-left: 220px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #54a4da;
+}
+span.breadcrumbs .active,
+span.breadcrumbs .sep {
+  color: #383127;
+}
 .tile {
   position: relative;
   margin-bottom: 25px;

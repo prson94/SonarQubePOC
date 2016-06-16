@@ -22974,6 +22974,10 @@ nav.top,
 .side-nav li {
   padding: 0;
 }
+.side-nav li .router-link-active {
+  background: #F8F3EF;
+  color: #383127 !important;
+}
 .side-nav ul,
 .side-nav a {
   height: 35px;
@@ -22981,6 +22985,16 @@ nav.top,
 }
 .side-nav.fixed a {
   color: white;
+}
+span.breadcrumbs {
+  margin-left: 220px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #54a4da;
+}
+span.breadcrumbs .active,
+span.breadcrumbs .sep {
+  color: #383127;
 }
 .tile {
   position: relative;

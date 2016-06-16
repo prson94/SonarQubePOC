@@ -1331,6 +1331,7 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\action-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\claims.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\company-settings.model.ts" />
@@ -1340,6 +1341,7 @@
     <TypeScriptCompile Include="Scripts\app\components\parts\multiselect.part.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\page-header.service.ts" />
     <TypeScriptCompile Include="Scripts\app\models\template.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\templates.service.ts" />

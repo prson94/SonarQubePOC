@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { RouteConfig, ROUTER_DIRECTIVES, AsyncRoute } from '@angular/router-deprecated';
 import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent } from './components/index';
 import { HeaderActionsService } from './services/header-actions.service';
+import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
 
 import 'rxjs/Rx';
 
@@ -19,7 +20,7 @@ import 'rxjs/Rx';
                 </main>
               `,
     directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent],
-    providers: [HeaderActionsService]
+    providers: [HeaderActionsService, HeaderBreadcrumbService]
 })
 
 @RouteConfig([

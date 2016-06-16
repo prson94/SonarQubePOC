@@ -5,6 +5,8 @@ import { PageHeader } from '../../services/page-header.service';
 import { TreeTable, TreeNode, Column, Header, InputText } from 'primeng/primeng';
 import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { ClaimsTile } from '../tiles/claims.tile';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -24,11 +26,15 @@ export class AdminArtifactsComponent {
 
     ArtifactTypes: TreeNode[];
 
-    constructor(http: Http, pageHeader: PageHeader) {
+    constructor(http: Http, pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService) {
         this.http = http;
         this.pageHeader = pageHeader;
         this.pageHeader.title = 'Artifact Types';
         this.pageHeader.description = 'Here you will find all artifact types and custom fields associated with them.';
+
+        headerBreadcrumbService.clearBreadcrumbs();
+        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
+        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Artifacts", ""));
 
         this.load();
     }

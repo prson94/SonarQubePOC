@@ -1,11 +1,39 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component } from '@angular/core';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { Breadcrumb } from '../../models/breadcrumb.model';
 
+import { Subscription }   from 'rxjs/Subscription';
 
 @Component({
     selector: 'd3s-header-breadcrumb',
-    template: ` 
+    template: ` <span class="breadcrumbs">
+                 <span *ngFor="let breadcrumb of breadcrumbs;#last=last" [ngClass]="{active:last}">
+                    {{ breadcrumb.text }} <span *ngIf="!last" class="sep"> :: </span>
+                 </span>                
+                </span>
               `
 })
 
-export class HeaderBreadcrumbComponent { }
+export class HeaderBreadcrumbComponent {
+    subscription: Subscription;
+    breadcrumbs : Breadcrumb[];
+
+    constructor(private headerBreadcrumbService: HeaderBreadcrumbService) {
+        this.breadcrumbs = [];
+        this.subscription = headerBreadcrumbService.breadcrumbs$.subscribe(
+            breadcrumb => {
+                this.breadcrumbs.push(breadcrumb);
+                console.log(breadcrumb);
+            });
+        this.subscription = headerBreadcrumbService.breadcrumbClear$.subscribe(
+            breadcrumb => {
+                this.breadcrumbs.splice(0, this.breadcrumbs.length);                
+            })
+    }
+
+    ngOnDestroy() {
+        // prevent memory leak when component destroyed
+        this.subscription.unsubscribe();
+    }
+}

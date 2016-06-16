@@ -1,12 +1,12 @@
 ﻿import { Component } from '@angular/core';
 import { PageHeader } from '../../services/page-header.service';
 import { TemplatesService } from '../../services/templates.service';
-import { HeaderActionsService} from '../../services/header-actions.service';
 import { Template } from '../../models/template.model';
 import {DataTable, Column, Editor, InputText, Dropdown} from 'primeng/primeng';
 import {DeleteForm} from '../forms/delete.form';
 import {AdminTemplateEditorComponent} from './admin-template-editor';
-
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 
 @Component({
     selector: 'd3s-admin-templates',
@@ -62,12 +62,13 @@ export class AdminTemplatesComponent {
     isEditing: boolean = false;    
     public theDeleteCallback: Function;
 
-    constructor(private pageHeader: PageHeader, private templateService: TemplatesService, private headerActionsService : HeaderActionsService) {
+    constructor(private pageHeader: PageHeader, private templateService: TemplatesService, private headerBreadcrumbService: HeaderBreadcrumbService) {
         this.pageHeader = pageHeader;
         this.pageHeader.title = 'Templates';
         this.pageHeader.description = 'All email and tooltip templates for notifications.';
-        this.templateService = templateService;
-        this.headerActionsService = headerActionsService;
+        headerBreadcrumbService.clearBreadcrumbs();
+        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
+        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Templates",""));
     }
 
     ngOnInit() {
