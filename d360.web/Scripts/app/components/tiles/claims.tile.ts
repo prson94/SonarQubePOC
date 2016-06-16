@@ -1,33 +1,29 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { DataTable, Column } from 'primeng/primeng';
 import { ClaimItem } from '../../models/claims.model';
 import { ClaimsMatrixPart } from '../parts/claims-matrix.part';
+import { ClaimsService } from '../../services/claims.service';
 
 
 @Component({
     selector: 'd3s-claims-tile',
     directives: [DataTable, Column, ClaimsMatrixPart],
     templateUrl: 'scripts/app/components/tiles/claims.tile.html',
-    viewProviders: [HTTP_PROVIDERS],
-    styles: [`
-    `]
+    providers: [ClaimsService]
 })
 
 export class ClaimsTile implements OnChanges {
     @Input() objectType: string;
-    @Input() objectID: string;
+    @Input() objectID: number;
     @Input() title: string = "Permissions";
     @Input() readonly: boolean = true;
 
     private claimItems = new Array<ClaimItem>();
     private isLoading = false;
 
-    http: Http;
-
-    constructor(http: Http) {
-        this.http = http;
+    constructor(private claimsService: ClaimsService) {
+        this.claimsService = claimsService;
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -49,18 +45,11 @@ export class ClaimsTile implements OnChanges {
             return;
 
         this.isLoading = true;
-        this.http.get(`/api/ownership/${this.objectType}/${this.objectID}/responsibilitytypes`)
-            .map(data => data.json())
-            .subscribe(data => {
-                this.claimItems = data;
-                //console.log(this.claimItems);
 
+        this.claimsService.getClaims(this.objectID, this.objectType)
+            .then(data => {
+                this.claimItems = data;
                 this.isLoading = false;
             });
-
     }
-
-    //selectRow(id: string): void {
-    //    this.selectedRow = this.fieldDefinitions[this.fieldDefinitions.findIndex(d => d.ID == id)];
-    //}
 }

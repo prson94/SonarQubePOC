@@ -1340,6 +1340,7 @@
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\multiselect.part.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\claims.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\page-header.service.ts" />
@@ -1349,6 +1350,7 @@
     <TypeScriptCompile Include="Scripts\app\components\parts\form-message.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-detail.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\people-responsibilities.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
   </ItemGroup>
   <ItemGroup>

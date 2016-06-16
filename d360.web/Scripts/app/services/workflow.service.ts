@@ -1,0 +1,71 @@
+﻿///<reference path="../es6-shim.d.ts"/>
+import { Injectable } from '@angular/core';
+import { Headers, Http } from '@angular/http';
+import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel } from '../models/workflow.model';
+import { SelectItem, FormHelper } from '../models/form.model';
+
+
+@Injectable()
+export class WorkflowService implements IWorkflowService {
+
+    constructor(private http: Http) { }
+
+    getWorkflows(): Promise<WorkflowItem[]> {
+        return this.http.get('/api/workflows/relations')
+            .toPromise()
+            .then(response => <WorkflowItem[]>response.json())
+            .catch(this.handleError);
+    }
+
+    getWorkflow(id: number, workflowType: WorkflowType): Promise<WorkflowTypeRelationEditorModel> {
+        return this.http.get(`form/WorkflowAllocation?id=${id}&workflowType=${workflowType}`)
+            .toPromise()
+            .then(response => <WorkflowTypeRelationEditorModel>response.json())
+            .catch(this.handleError);
+    }
+
+    postWorkflow(workflow: WorkflowItem): Promise<any>  {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        return this.http.post('form/WorkflowAllocation', JSON.stringify(workflow), { headers: headers })
+            .toPromise()
+            .catch(this.handleError);
+    }
+
+    deleteWorkflow(id: number): Promise<any> {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        return this.http.delete(`/form/DeleteWorkflowAllocationByID?id=${id}`, headers)
+            .toPromise()
+            .catch(this.handleError);
+    }
+
+    getResponsibilityTypeSelectList(id: number, type: string): Promise<SelectItem[]> {
+        return this.http.get(`/workflow/WorkflowResponsibilityTypeOptions?type=${type}&id=${id}`)
+            .toPromise()
+            .then(response => <SelectItem[]>response.json())
+            .then(r => {
+                FormHelper.mapSelectItems(r);
+                return r;
+            })
+            .catch(this.handleError);
+    }
+
+    getParentTypeSelectList(id: number, type: string, workflowType: WorkflowType): Promise<SelectItem[]> {
+        return this.http.get(`/workflow/WorkflowParentTypeOptions?workflowType=${workflowType}&type=${type}&id=${id}`)
+            .toPromise()
+            .then(response => <SelectItem[]>response.json())
+            .then(r => {
+                FormHelper.mapSelectItems(r);
+                return r;
+            })
+            .catch(this.handleError);
+    }
+
+    private handleError(error: any) {
+        console.error('An error occurred', error);
+        return Promise.reject(error.message || error);
+    }
+}

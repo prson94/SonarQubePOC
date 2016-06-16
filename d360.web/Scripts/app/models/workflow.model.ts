@@ -1,4 +1,24 @@
 ﻿///<reference path="../es6-shim.d.ts"/>
+import { SelectItem, FormMessage } from '../models/form.model';
+
+export interface IWorkflowService {
+    getWorkflow(id: number, workflowType: WorkflowType): Promise<WorkflowTypeRelationEditorModel>;
+    getWorkflows(): Promise<WorkflowItem[]>;
+    postWorkflow(workflow: WorkflowItem): Promise<any>;
+    deleteWorkflow(id: number): Promise<any>;
+    getResponsibilityTypeSelectList(id: number, type: string): Promise<SelectItem[]>;
+    getParentTypeSelectList(id: number, type: string, workflowType: WorkflowType): Promise<SelectItem[]>;
+}
+
+
+export class WorkflowTypeRelationEditorModel {
+    Enabled: boolean;
+    ObjectTypes: SelectItem[];
+    ParentTypes: SelectItem[];
+    ResponsibilityTypes: SelectItem[];
+    WorkflowType: WorkflowType;
+    WorkflowTypeRelation: WorkflowItem;
+}
 
 export class WorkflowItem {
     ID: number;

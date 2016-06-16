@@ -1,13 +1,14 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, OnInit } from '@angular/core';
-import { Http, Headers } from '@angular/http';
 import { FormMessage, MessageType } from '../../models/form.model';
 import { ClaimsMatrixDisplayModel, Claim, ClaimObject, ClaimsMatrixEditorItemModel } from '../../models/claims.model';
 import { Button } from 'primeng/primeng';
+import { ClaimsService } from '../../services/claims.service';
 
 @Component({
     selector: 'd3s-claims-matrix',
-    directives: [ Button ],
+    directives: [Button],
+    providers: [ClaimsService],
     template: `
 <div *ngIf="isLoading">
     <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
@@ -52,7 +53,6 @@ export class ClaimsMatrixPart implements OnInit {
     @Input() objectID: number;
     @Input() responsibilityTypeID: number;
 
-    http: Http;
     claimsModel: ClaimsMatrixDisplayModel;
 
     claim = [];
@@ -62,8 +62,8 @@ export class ClaimsMatrixPart implements OnInit {
     isLoading = false;
     isSaving = false;
 
-    constructor(http: Http) {
-        this.http = http;
+    constructor(private claimsService: ClaimsService) {
+        this.claimsService = claimsService;
     }
 
     ngOnInit() {
@@ -72,11 +72,10 @@ export class ClaimsMatrixPart implements OnInit {
 
     load() {
         this.isLoading = true;
-        this.http.get(`parts/ClaimsMatrix?type=${this.objectType}&id=${this.objectID}&responsibilityTypeID=${this.responsibilityTypeID}`)
-            .map(data => data.json())
-            .subscribe(data => {
-                this.claimsModel = data;
 
+        this.claimsService.getClaimsDisplayModel(this.objectID, this.objectType, this.responsibilityTypeID)
+            .then(data => {
+                this.claimsModel = data;
                 for (var o in Claim) {
                     if (typeof Claim[o] === 'number') this.claim.push({ val: Claim[o], text: o });
                 }
@@ -94,8 +93,6 @@ export class ClaimsMatrixPart implements OnInit {
                     }
                 }
 
-                //console.log(this.items);
-
                 for (var i = 0; i < this.claimsModel.Items.length; i++) {
                     var item = this.claimsModel.Items[i];
                     var c = new ClaimEditorItem();
@@ -107,18 +104,13 @@ export class ClaimsMatrixPart implements OnInit {
                     this.items[item.ClaimObject - 1][item.Claim - 1] = c;
                 }
 
-
-                //console.log(data);
-                //console.log(this.claimsModel);
                 this.isLoading = false;
-            });
+            });                
     }
 
     save() {
         this.isSaving = true;
         var flatItems = [];
-        var headers = new Headers();
-        headers.append('Content-Type', 'application/json');
 
         for (var i = 0; i < this.claimObject.length; i++) {
             for (var j = 0; j < this.claim.length; j++) {
@@ -129,21 +121,11 @@ export class ClaimsMatrixPart implements OnInit {
             }
         }
 
+        var claims = flatItems.filter(i => i.checked);
 
-        var model = {
-            claims: flatItems.filter(i => i.checked),
-            objectType: this.objectType,
-            objectID: this.objectID,
-            responsibilityTypeID: this.responsibilityTypeID
-        }
-
-        console.log(model);
-
-        this.http.put('form/EditClaimsMatrix', JSON.stringify(model), { headers: headers })
-            .map(data => data.json())
-            .subscribe(data => {
+        this.claimsService.putClaims(this.objectID, this.objectType, this.responsibilityTypeID, claims)
+            .then(data => {
                 this.isSaving = false;
-                console.log(data);
             });
     }
 }

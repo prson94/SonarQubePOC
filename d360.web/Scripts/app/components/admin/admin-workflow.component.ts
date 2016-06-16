@@ -1,6 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, NgZone } from '@angular/core';
-import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { PageHeader } from '../../services/page-header.service';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { FieldsGridTile } from '../tiles/fields-grid.tile';
@@ -13,17 +12,17 @@ import { ActionBar } from '../parts/action-bar.part';
 import { ActionBarItem } from '../../models/action-bar.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { WorkflowService } from '../../services/workflow.service';
+
 
 @Component({
     selector: 'admin-workflow',
-    viewProviders: [HTTP_PROVIDERS],
+    providers: [WorkflowService],
     directives: [ObjectDetailTile, WorkflowItemForm, DeleteForm, DataTable, Column, Growl, ActionBar ],
     templateUrl: 'scripts/app/components/admin/admin-workflow.component.html'
 })
 
 export class AdminWorkflowComponent {
-    http: Http;
-    pageHeader: PageHeader;
     isLoading = false;
     messages = new Array<any>();
 
@@ -37,8 +36,8 @@ export class AdminWorkflowComponent {
 
     actions = new Array<ActionBarItem>();
 
-    constructor(http: Http, pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService) {
-        this.http = http;
+    constructor(private pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService ) {
+        this.workflowService = workflowService;
         this.pageHeader = pageHeader;
         this.pageHeader.title = 'Workflow';
         this.pageHeader.description = 'Manage all workflow settings for types within your environment.';
@@ -66,15 +65,11 @@ export class AdminWorkflowComponent {
 
     load() {
         this.isLoading = true;
-        this.http.get('/api/workflows/relations')
-            .map(data => data.json())
-            .subscribe(data => {
-                this.workflowItems = data;
-                //console.log(this.workflowItems);
-                this.selectedRow = this.workflowItems[0];
-                this.isLoading = false;
-            });
 
+        this.workflowService.getWorkflows().then(p => {
+            this.workflowItems = p;
+            this.isLoading = false;
+        });
     }
 
     delete(id: number): void {

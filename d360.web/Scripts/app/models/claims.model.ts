@@ -1,4 +1,11 @@
-﻿export class ClaimItem {
+﻿
+export interface IClaimsService {
+    getClaims(objectID: number, objectType: string): Promise<ClaimItem[]>;
+    getClaimsDisplayModel(objectID: number, objectType: string, responsibilityTypeID: number): Promise<ClaimsMatrixDisplayModel>;
+    putClaims(objectID: number, objectType: string, responsibilityTypeID: number, claims: ClaimItem[]): Promise<any>;
+}
+
+export class ClaimItem {
     ResponsibilityTypeGroup: ResponsibilityTypeGroup;
     ResponsibilityTypeID: number;
     ObjectID: number;
