@@ -743,9 +743,15 @@
                 return false;
             if (self.ReferenceTypeIndex() == -1)
                 return false;
-            if (self.DisplayFields().length < 1)
-                return false;
-            return true;
+
+            var oneOrMoreFieldsSelected = false;
+            $.each(self.DisplayFieldOptions(), function(fix, fid){                                
+                if (!oneOrMoreFieldsSelected) {
+                    oneOrMoreFieldsSelected = (fid.Show() || fid.SortOrder() || fid.FilterValue() != '');
+                }
+            });
+
+            return (oneOrMoreFieldsSelected);
         }
 
         var loadChildIntersects = function(intersectTypeID) {
