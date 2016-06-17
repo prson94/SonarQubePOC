@@ -1305,6 +1305,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="node_modules\zone.js\dist\zone.js.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
@@ -1316,11 +1317,13 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />

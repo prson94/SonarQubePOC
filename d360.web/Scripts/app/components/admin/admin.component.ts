@@ -1,6 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component } from '@angular/core';
-import { RouteConfig, ROUTER_DIRECTIVES } from '@angular/router-deprecated';
+//import { RouteConfig, ROUTER_DIRECTIVES } from '@angular/router-deprecated';
+import { ROUTER_DIRECTIVES } from '@angular/router';
 import { AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent, AdminArtifactsComponent, AdminTemplatesComponent } from './index'
 import { PageHeader } from '../../services/page-header.service';
 import 'rxjs/Rx';
@@ -12,16 +13,6 @@ import 'rxjs/Rx';
     providers: [PageHeader]
 })
 
-
-@RouteConfig([
-        { path: '/settings', name: 'Settings', component: AdminSettingsComponent, useAsDefault: true },
-    { path: '/domain', name: 'Domain', component: AdminDomainComponent },
-    { path: '/groups', name: 'Groups', component: AdminGroupsComponent },
-    { path: '/workflow', name: 'Workflow', component: AdminWorkflowComponent },
-    { path: '/governance', name: 'Responsibilities', component: AdminGovernanceComponent },
-    { path: '/artifacts', name: 'Artifacts', component: AdminArtifactsComponent},
-    { path: '/templates', name: 'Templates', component: AdminTemplatesComponent },
-])
 export class AdminComponent {    
     constructor(private pageHeader: PageHeader) {    }
 }

@@ -1,6 +1,6 @@
 ///<reference path="./es6-shim.d.ts"/>
 import { Component } from '@angular/core';
-import { RouteConfig, ROUTER_DIRECTIVES, AsyncRoute } from '@angular/router-deprecated';
+import { ROUTER_DIRECTIVES} from '@angular/router';
 import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent } from './components/index';
 import { HeaderActionsService } from './services/header-actions.service';
 import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
@@ -23,9 +23,5 @@ import 'rxjs/Rx';
     providers: [HeaderActionsService, HeaderBreadcrumbService]
 })
 
-@RouteConfig([
-    { path: '/a/admin/...', name: 'Admin', component: AdminComponent },
-    { path: '/a', name: 'Home', component: HomeComponent, useAsDefault: true },
-])
 export class AppComponent { }
 

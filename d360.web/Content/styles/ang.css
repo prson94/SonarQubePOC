@@ -22976,10 +22976,10 @@ nav.top,
 }
 .side-nav li {
   padding: 0;
-  /*   .router-link-active {
-            background: @secondary-nav;
-            color: @primary-nav !important;
-        }*/
+}
+.side-nav li .router-link-active {
+  background: #F8F3EF;
+  color: #383127 !important;
 }
 .side-nav ul,
 .side-nav a {
