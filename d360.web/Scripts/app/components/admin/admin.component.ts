@@ -12,8 +12,9 @@ import 'rxjs/Rx';
     providers: [PageHeader]
 })
 
+
 @RouteConfig([
-    { path: '/settings', name: 'Settings', component: AdminSettingsComponent },
+        { path: '/settings', name: 'Settings', component: AdminSettingsComponent, useAsDefault: true },
     { path: '/domain', name: 'Domain', component: AdminDomainComponent },
     { path: '/groups', name: 'Groups', component: AdminGroupsComponent },
     { path: '/workflow', name: 'Workflow', component: AdminWorkflowComponent },
@@ -21,10 +22,6 @@ import 'rxjs/Rx';
     { path: '/artifacts', name: 'Artifacts', component: AdminArtifactsComponent},
     { path: '/templates', name: 'Templates', component: AdminTemplatesComponent },
 ])
-export class AdminComponent {
-    pageHeader: PageHeader;
-
-    constructor(pageHeader: PageHeader) {
-        this.pageHeader = pageHeader;
-    }
+export class AdminComponent {    
+    constructor(private pageHeader: PageHeader) {    }
 }
