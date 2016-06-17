@@ -14,7 +14,7 @@ import 'rxjs/Rx';
                     <d3s-navbar></d3s-navbar>
                 </header>
                 <main>
-                    <div class="container maincontent">                                            
+                    <div class="maincontent">                                            
                        <router-outlet></router-outlet>                                                
                     </div>
                 </main>

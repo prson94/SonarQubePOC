@@ -48,9 +48,22 @@ nav.top, .side-nav {
 .side-nav.fixed a{
     color:white;
 }
- 
+
+.maincontent {
+  margin-left:220px;
+   }
+
+@media only screen and (min-width : 601px) {
+  .maincontent {
+    margin-left:0; } }
+
+@media only screen and (min-width : 993px) {
+  .maincontent {
+    margin-left:220px; } }
+
 span.breadcrumbs{
     margin-left:220px;
+    padding-left:20px;
     font-weight:bold;
     text-transform:uppercase;
     color:@rgba-primary-0;    
@@ -58,6 +71,14 @@ span.breadcrumbs{
         color:@primary-nav;    
     }
 }
+
+@media only screen and (min-width : 601px) {
+  span.breadcrumbs {
+    margin-left:0; } }
+
+@media only screen and (min-width : 993px) {
+  span.breadcrumbs {
+    margin-left:220px; } }
 
 .tile {
     position: relative;
