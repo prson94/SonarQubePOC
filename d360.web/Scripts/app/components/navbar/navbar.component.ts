@@ -15,9 +15,24 @@ import { ROUTER_DIRECTIVES } from '@angular/router-deprecated';
                   <li><a href="#!"><i class="fa fa-database"></i> Fusion</a></li>
                   <li><a href="#!"><i class="fa fa-dashboard"></i> Monitor</a></li>
                   <li><a href="#!"><i class="fa fa-group"></i> Community</a></li>
-                  <li><a [routerLink]="['./Admin/Settings']"><i class="fa fa-gears"></i> Administration</a></li>                    
+                  <li><a (click)="showAdminLinks()"><i class="fa fa-gears"></i> Administration</a></li>
+                  <ul class="sub" *ngIf="showAdminChildLinks==true">
+                        <li><a [routerLink]="['./Admin/Settings']"><i class="fa fa-minus" aria-hidden="true"></i> Settings</a></li>
+                        <li><a [routerLink]="['./Admin/Domain']"><i class="fa fa-minus" aria-hidden="true"></i> Reference Types</a></li>
+                        <li><a [routerLink]="['./Admin/Workflow']"><i class="fa fa-minus" aria-hidden="true"></i> Workflow</a></li>
+                        <li><a [routerLink]="['./Admin/Groups']"><i class="fa fa-minus" aria-hidden="true"></i> Groups</a></li>
+                        <li><a [routerLink]="['./Admin/Responsibilities']"><i class="fa fa-minus" aria-hidden="true"></i> Responsibilities</a></li>
+                        <li><a [routerLink]="['./Admin/Artifacts']"><i class="fa fa-minus" aria-hidden="true"></i> Artifacts</a></li>
+                        <li><a [routerLink]="['./Admin/Templates']"><i class="fa fa-minus" aria-hidden="true"></i> Templates</a></li>
+                   </ul>                        
                 </ul>
               `    
 })
 
-export class NavBarComponent { }
+export class NavBarComponent {
+    private showAdminChildLinks: boolean = false;
+
+    showAdminLinks() {
+        this.showAdminChildLinks = !this.showAdminChildLinks;
+    }
+}

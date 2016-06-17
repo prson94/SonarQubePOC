@@ -4,6 +4,8 @@ body{
     background-color:@secondary-nav;
 }
 
+/* top menu*/
+
 nav.top{
     line-height:40px;
     height:40px;
@@ -29,15 +31,19 @@ nav.top, .side-nav {
     box-shadow: none;
 }
 
+/* end top menu*/
+
+/* side menu*/
+
 .side-nav{
     background-color:@primary-nav;
     width:200px;
     li{
         padding:0;
-        .router-link-active {
+     /*   .router-link-active {
             background: @secondary-nav;
             color: @primary-nav !important;
-        }
+        }*/
     }
     ul, a{
         height:35px;
@@ -48,6 +54,21 @@ nav.top, .side-nav {
 .side-nav.fixed a{
     color:white;
 }
+
+.side-nav ul.sub{
+    padding-left: 30px;
+    height:20px;
+    line-height:20px;
+    li, a{
+        font-size:x-small;
+        height:20px;
+        line-height:20px;
+    }
+}
+
+/* end side menu*/
+
+/* main content*/
 
 .maincontent {
   margin-left:0;
@@ -79,6 +100,10 @@ span.breadcrumbs{
 @media only screen and (min-width : 993px) {
   span.breadcrumbs {
     margin-left:220px; } }
+
+/* end main content*/
+
+/* grid tiles*/
 
 .tile {
     position: relative;
@@ -165,3 +190,5 @@ span.breadcrumbs{
         border-radius: 0;
         padding-bottom: 10px;
 } 
+
+/* end grid tiles*/
