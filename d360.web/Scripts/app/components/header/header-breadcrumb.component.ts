@@ -24,7 +24,7 @@ export class HeaderBreadcrumbComponent {
         this.subscription = headerBreadcrumbService.breadcrumbs$.subscribe(
             breadcrumb => {
                 this.breadcrumbs.push(breadcrumb);
-                console.log(breadcrumb);
+               // console.log(breadcrumb);
             });
         this.subscription = headerBreadcrumbService.breadcrumbClear$.subscribe(
             breadcrumb => {

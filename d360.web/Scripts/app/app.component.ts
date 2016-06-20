@@ -1,6 +1,6 @@
 ///<reference path="./es6-shim.d.ts"/>
 import { Component } from '@angular/core';
-import { ROUTER_DIRECTIVES} from '@angular/router';
+import { ROUTER_DIRECTIVES } from '@angular/router';
 import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent } from './components/index';
 import { HeaderActionsService } from './services/header-actions.service';
 import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
