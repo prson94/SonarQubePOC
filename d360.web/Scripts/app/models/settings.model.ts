@@ -1,0 +1,90 @@
+﻿export interface ICompanySettingsService {
+    getSettings(): Promise<CompanySettings>;
+    putSettings(companySettings: CompanySettings): Promise<any>;
+}
+
+export class CompanySettings {
+    DisableCommunityPosting: boolean;
+    DisableIssuePosting: boolean;
+    ArtifactType_TaxonomyTypeID: string;
+    ArtifactType_TaxonomyTypeIDNodes: string;
+    SubjectAreaNodeName: string;
+    IpRestrictions = new Array<IpRestriction>();
+    CompanyLogo: string;
+    SetLogoToDefault = false;
+    CompanyIcon: string;
+    SetIconToDefault = false;
+    CurrentLogoPath: string;
+    CurrentIconPath: string;
+    DefaultSearchTypes: string;
+}
+
+export class IpRestriction {
+    Name: string;
+    Start: string;
+    End: string;
+}
+
+export class CompanyImage {
+    file: File;
+    isLoading = false;
+    dataUrl: string;
+
+    public setDataUrl(): void {
+        this.isLoading = true;
+        var fileReader = new FileReader();
+        if (this.file) {
+            fileReader.onloadend = (e: any) => {
+                this.isLoading = false;
+                this.dataUrl = fileReader.result;
+            }
+            fileReader.readAsDataURL(this.file);
+        } else {
+            this.dataUrl = "";
+            this.isLoading = false;
+        }
+    }
+
+}
+
+export class SearchType {
+    title: string;
+    value: string;
+    selected: boolean = false;
+
+    constructor(title: string, value: string) {
+        this.title = title;
+        this.value = value;
+    }
+}
+
+export module SettingsHelper {
+    export function getSearchTypesList(): SearchType[] {
+        return [
+            { title: "Attribute", value: "Attribute", selected: false },
+            { title: "Fusion", value: "FusionAttributes", selected: false },
+            { title: "Fusion Type", value: "FusionType", selected: false },
+            { title: "Glossary", value: "Artifact", selected: false },
+            { title: "Group", value: "Group", selected: false },
+            { title: "Model", value: "Taxonomy", selected: false },
+            { title: "Reference", value: "Domain", selected: false },
+            { title: "User", value: "Users", selected: false }
+        ];
+    }
+
+    export function searchTypeListToString(list: SearchType[]): string {
+        return list.filter(l => l.selected).map(l=> l.value).join(',');
+    }
+
+    export function searchTypeStringToList(searchTypes: string): SearchType[] {
+        let t = getSearchTypesList();
+        searchTypes.split(',').forEach(i =>
+        {
+            let k = t.find(j => j.value == i);
+            if (k)
+                k.selected = true
+        });
+        return t;
+    }
+
+}

@@ -37,8 +37,6 @@ export class AdminWorkflowComponent {
     actions = new Array<ActionBarItem>();
 
     constructor(private pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService ) {
-        this.workflowService = workflowService;
-        this.pageHeader = pageHeader;
         this.pageHeader.title = 'Workflow';
         this.pageHeader.description = 'Manage all workflow settings for types within your environment.';
 

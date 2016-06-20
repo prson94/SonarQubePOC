@@ -13,47 +13,27 @@
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading">
-        <table class="table" [mfData]="fieldDefinitions" #mf="mfDataTable" [mfRowsOnPage]="10">
-            <thead>
-                <tr>
-                    <th style="width: 60%">
-                        <mfDefaultSorter by="FriendlyName">Field</mfDefaultSorter>
-                    </th>
-                    <th style="width: 10%">
-                        <mfDefaultSorter by="Category">Category</mfDefaultSorter>
-                    </th>
-                    <th style="width: 10%">
-                        <mfDefaultSorter by="IsRequired">Required?</mfDefaultSorter>
-                    </th>
-                    <th style="width: 10%">
-                        <mfDefaultSorter by="IsListable">Listable?</mfDefaultSorter>
-                    </th>
-                    <th style="width: 10%">
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let item of mf.data; let i=index;" (click)="selectRow(item.ID);" [class.selected]="selectedRow?.ID == item.ID">
-                    <td> {{item.FriendlyName}}</td>
-                    <td> {{item.Category}}</td>
-                    <td> <input type="checkbox" [(ngModel)]="fieldDefinitions[i].IsRequired" disabled /></td>
-                    <td> <input type="checkbox" [(ngModel)]="fieldDefinitions[i].IsListable" disabled /></td>
-                    <!-- TODO: replace href on info, fix edit/delete -->
-                    <td class="RowTools">
-                        <a href="/#/domains/{{item.ID}}"><i class="fa fa-info"></i></a>
-                        <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/edit'"><i class="fa fa-pencil"></i></a>
-                        <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/delete'"><i class="fa fa-trash-o"></i></a>
-                    </td>
-                </tr>
-                <tr></tr>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="5">
-                        <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
+        <p-dataTable [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+            <p-column field="FriendlyName" header="Field" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
+            <p-column field="Category" header="Category" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
+            <p-column field="IsRequired" header="Required?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }">
+                <template let-item="rowData">
+                    <input type="checkbox" [(ngModel)]="item.IsRequired" disabled />
+                </template>
+            </p-column>
+            <p-column field="IsListable" header="Listable?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }">
+                <template let-item="rowData">
+                    <input type="checkbox" [(ngModel)]="item.IsListable" disabled />
+                </template>
+            </p-column>
+            <p-column [style]="{ 'width': '16%' }">
+                <template let-col let-item="rowData">
+                    <div class="RowTools">
+                        <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                    </div>
+                </template>
+            </p-column>
+        </p-dataTable>
     </div>
 </div>

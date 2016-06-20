@@ -23,7 +23,6 @@ export class ClaimsTile implements OnChanges {
     private isLoading = false;
 
     constructor(private claimsService: ClaimsService) {
-        this.claimsService = claimsService;
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

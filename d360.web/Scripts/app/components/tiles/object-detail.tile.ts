@@ -1,25 +1,24 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
+import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+import { DetailRow, DetailField, DetailModel, IObjectDetailService } from '../../models/object-detail.model';
+import { ObjectDetailService } from '../../services/object-detail.service';
 
 @Component({
     selector: 'object-detail',
     templateUrl: 'scripts/app/components/tiles/object-detail.tile.html',
-    viewProviders: [HTTP_PROVIDERS]
+    providers: [ObjectDetailService]
 })
 
 export class ObjectDetailTile implements OnChanges {
     @Input() objectType: string;
-    @Input() objectID: string;
+    @Input() objectID: number;
 
     private isLoading = false;
 
     rows = new Array<DetailRow>();
     columns: number;
-    http: Http;
 
-    constructor(http: Http) {
-        this.http = http;
+    constructor(private objectDetailService: ObjectDetailService) {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -36,47 +35,16 @@ export class ObjectDetailTile implements OnChanges {
     }
 
     private load(): void {
-        this.isLoading = true;
 
-        if (this.objectType && this.objectID)
-            this.http.get('/api/' + this.objectType + '/' + this.objectID + '/detail').map(data => data.json()).subscribe(data => {
-                this.rows = [];
 
-                //console.log(data);
-
-                this.columns = data.columns;
-                data.rows.forEach(r => this.rows.push(r));
-
-                this.isLoading = false;
-            });
+        if (this.objectType && this.objectID) {
+            this.isLoading = true;
+            this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
+                .then(data => {
+                    this.rows = data.rows;
+                    this.columns = data.columns;
+                    this.isLoading = false;
+                });
+        }
     }
-
-
-
-}
-
-class DetailRow {
-    Category: any;
-    columns: number;
-    FirstColumnFields = new Array<DetailField>();
-    SecondColumnFields = new Array<DetailField>();
-}
-
-class DetailField {
-    Column: any;
-    FieldDescription: string;
-    FieldName: string;
-    Group: any;
-    HideFooter: boolean;
-    HideHeader: boolean;
-    LookupGridUrl: string;
-    MultipleValues: any;
-    Name: string;
-    Row: any;
-    ScriptProperty: any;
-    TooltipContext: any;
-    TooltipID: any;
-    TooltipType: any;
-    TooltipUrl: string;
-    Value: string;
 }

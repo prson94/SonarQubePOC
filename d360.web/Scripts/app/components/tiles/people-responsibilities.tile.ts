@@ -1,18 +1,17 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
-import { ResponsibilityItem } from '../../models/responsibility.model';
+import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+import { ResponsibilityItem, IResponsibilityService } from '../../models/responsibility.model';
 import { ResponsibilityItemForm } from '../forms/responsibility-item.form';
 import { FormMessage } from '../../models/form.model';
 import { DeleteForm } from '../forms/delete.form';
 import { DataTable, Column } from 'primeng/primeng';
+import { ResponsibilityService } from '../../services/responsibility.service';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
     directives: [DataTable, Column, ResponsibilityItemForm, DeleteForm],//, DeleteGeneric],
     templateUrl: 'scripts/app/components/tiles/people-responsibilities.tile.html',
-    viewProviders: [HTTP_PROVIDERS],
-    styles: []
+    providers: [ResponsibilityService],
 })
 
 export class PeopleResponsibilitiesTile implements OnChanges {
@@ -29,10 +28,7 @@ export class PeopleResponsibilitiesTile implements OnChanges {
     private isDeleting = false;
     private isAdding = false;
 
-    http: Http;
-
-    constructor(http: Http) {
-        this.http = http;
+    constructor(private responsibilityService: ResponsibilityService) {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -54,32 +50,26 @@ export class PeopleResponsibilitiesTile implements OnChanges {
             return;
 
         this.isLoading = true;
-        this.http.get('/api/' + this.objectType + '/' + this.objectID + '/ownership?showHidden=' + this.showHidden )
-            .map(data => data.json())
-            .subscribe(data => {
+        this.responsibilityService.getResponsibilityDetail(this.objectID, this.objectType)
+            .then(data => {
                 this.responsibilities = data;
-                this.selectedRow = this.responsibilities[0]; //this.responsibilities[0];
-
-                console.log(this.selectedRow);
-
+                this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
             });
-
     }
 
     edit(id: number): void {
-        this.selectedRow = this.responsibilities.find(r => r.ResponsibilityID == id);
+        this.selectedRow = this.responsibilities.find(r => r.ID == id);
         this.isEditing = true;
     }
 
     delete(id: number): void {
-        this.selectedRow = this.responsibilities.find(r => r.ResponsibilityID == id);
+        this.selectedRow = this.responsibilities.find(r => r.ID == id);
         this.isDeleting = true;
     }
 
     add(): void {
         this.addingRow = new ResponsibilityItem();
-        //this.addingRow.ResponsibilityID = -1;
         this.addingRow.ObjectID = this.objectID;
         this.addingRow.ObjectType = this.objectType;
         this.isAdding = true;

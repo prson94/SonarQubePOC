@@ -21,7 +21,6 @@
     "@angular/router": "3.0.0-alpha.6",
     "@angular/router-deprecated": "2.0.0-rc.2",
     "@angular/upgrade": "2.0.0-rc.2",
-    "angular2-datatable": "^0.4.2",
     "es6-promise": "^3.0.2",
     "es6-shim": "^0.35.0",
     "lodash": "^4.13.1",

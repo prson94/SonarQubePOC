@@ -1,74 +1,51 @@
 ///<reference path="../../es6-shim.d.ts"/>
 import { Component, NgZone } from '@angular/core';
-import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { PageHeader } from '../../services/page-header.service'
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../models/settings.model';
+import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'admin-settings',
-    viewProviders: [HTTP_PROVIDERS],
+    providers: [CompanySettingsService],
     templateUrl: 'scripts/app/components/admin/admin-settings.component.html',
     styleUrls: ['scripts/app/components/admin/admin-settings.component.css']
 })
 
 export class AdminSettingsComponent {
     isLoading = false;
-    http: Http;
-    pageHeader: PageHeader;
 
-    //TODO: rewrite to use newly created CompanySettings model
-    //private settings: CompanySettings;
+    companySettings: CompanySettings = new CompanySettings();
+    searchTypes: SearchType[] = SettingsHelper.getSearchTypesList();
+    companyLogo: CompanyImage = new CompanyImage();
+    companyIcon: CompanyImage = new CompanyImage();
 
-    disableCommunityPosting: boolean;
-    disableIssuePosting: boolean;
-    subjectAreaName: string;
-    subjectAreaNodeName: string;
-    ipRestrictions = new Array<IpRestriction>();
-    companyLogo = new CompanyImage();
-    setLogoDefault = false;
-    companyIcon = new CompanyImage();
-    setIconDefault = false;
-    currentLogoPath: string;
-    currentIconPath: string;
-
-    searchTypes: Array<SearchType> = [
-        { title: "Attribute", value: "Attribute", selected: false },
-        { title: "Fusion", value: "FusionAttributes", selected: false },
-        { title: "Fusion Type", value: "FusionType", selected: false },
-        { title: "Glossary", value: "Artifact", selected: false },
-        { title: "Group", value: "Group", selected: false },
-        { title: "Model", value: "Taxonomy", selected: false },
-        { title: "Reference", value: "Domain", selected: false },
-        { title: "User", value: "Users", selected: false },
-    ];
-
-    constructor(http: Http, pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService) {
-        this.http = http;
-        this.pageHeader = pageHeader;
+    constructor(private pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService, private companySettingsService: CompanySettingsService) {
 
         this.pageHeader.title = 'Settings';
         this.pageHeader.description = 'Manage system-wide settings for your environment.';
-
 
         headerBreadcrumbService.clearBreadcrumbs();
         headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
         headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Settings", ""));
 
         this.load();
-        //console.log(this);
     }
 
 
     addIpRestriction(): void {
-        this.ipRestrictions.push(new IpRestriction());
+        this.companySettings.IpRestrictions.push(new IpRestriction());
     }
 
     removeIpRestriction(i: number): void {
-        this.ipRestrictions.splice(i, 1);
+        this.companySettings.IpRestrictions.splice(i, 1);
     }
 
     onLogoFileChange(event): void {
+        if (this.companyLogo == null)
+            this.companyLogo = new CompanyImage();
+
         if (!event) {
             this.companyLogo.file = null;
             this.companyLogo.setDataUrl();
@@ -81,6 +58,8 @@ export class AdminSettingsComponent {
     }
 
     onIconFileChange(event): void {
+        if (this.companyIcon == null)
+            this.companyIcon = new CompanyImage();
         if (!event) {
             this.companyIcon.file = null;
             this.companyIcon.setDataUrl();
@@ -93,97 +72,29 @@ export class AdminSettingsComponent {
     }
 
     load(): void {
+        this.isLoading = true;
+        this.companySettingsService.getSettings()
+            .then(data => {
+                this.companyLogo = new CompanyImage();
+                this.companyIcon = new CompanyImage();
 
-        this.http.get('/form/CompanySettings')
-            .map(data => data.json())
-            .subscribe(settings => { 
-                //console.log(settings);
-
-                this.disableCommunityPosting = settings.DisableCommunityPosting;
-                this.disableIssuePosting = settings.DisableIssuePosting;
-                this.subjectAreaName = settings.ArtifactType_TaxonomyTypeID;
-                this.subjectAreaNodeName = settings.ArtifactType_TaxonomyTypeIDNodes;
-                this.currentLogoPath = settings.CurrentCompanyLogoPath;
-                this.currentIconPath = settings.CurrentCompanyIconPath;
-
-                settings.IpRestrictions.forEach(r => this.ipRestrictions.push({ name: r.Name, start: r.Start, end: r.End }));
-                settings.DefaultSearchTypes.split(',').forEach(s => {
-                    var f = this.searchTypes.findIndex(f => f.value == s);
-                    var t = this.searchTypes[f];
-                    if (t) t.selected = true;
-                });
+                this.companySettings = data;
+                this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes);
+                console.log(this.companySettings);
+                this.isLoading = false;
             });
     }
 
     save(): void {
         this.isLoading = true;
-        var headers = new Headers();
-        headers.append('Content-Type', 'application/json');
+        this.companySettings.DefaultSearchTypes = SettingsHelper.searchTypeListToString(this.searchTypes);
+        this.companySettings.CompanyIcon = this.companyIcon.dataUrl;
+        this.companySettings.CompanyLogo = this.companyLogo.dataUrl;
 
-        var defaultSearchTypes = "";
-        var selectedSearchTypes = this.searchTypes.filter(s => s.selected).forEach(s => defaultSearchTypes += s.value + ',');
-
-
-        var data = {
-            DisableCommunityPosting: this.disableCommunityPosting,
-            DisableIssuePosting: this.disableIssuePosting,
-            CompanyLogo: this.companyLogo.dataUrl,
-            SetLogoToDefault: this.setLogoDefault,
-            CompanyIcon: this.companyIcon.dataUrl,
-            SetIconToDefault: this.setIconDefault,
-            ArtifactType_TaxonomyTypeID: this.subjectAreaName,
-            ArtifactType_TaxonomyTypeIDNodes: this.subjectAreaNodeName,
-            IpRestrictions: this.ipRestrictions,
-            DefaultSearchTypes: defaultSearchTypes
-        };
-
-        console.log(data);
-        this.http.put('/form/UpdateCompanySettings', JSON.stringify(data), { headers: headers })
-            .map(data => data.json())
-            .subscribe(
-            data => console.log(data), //done
-            err => console.log(err), //fail
-            () => this.isLoading = false //always
-        );
-
-    }
-}
-
-class IpRestriction {
-    name: string;
-    start: string;
-    end: string;
-} 
-
-class CompanyImage {
-    file: File;
-    isLoading = false;
-    dataUrl: string;
-
-    public setDataUrl(): void {
-        this.isLoading = true;
-        var fileReader = new FileReader();
-        if (this.file) {
-            fileReader.onloadend = (e: any) => {
+        this.companySettingsService.putSettings(this.companySettings)
+            .then(data => {
+                this.load();
                 this.isLoading = false;
-                this.dataUrl = fileReader.result;
-            }
-            fileReader.readAsDataURL(this.file);
-        } else {
-            this.dataUrl = "";
-            this.isLoading = false;
-        }
-    }
-
-}
-
-class SearchType {
-    title: string;
-    value: string;
-    selected: boolean = false;
-
-    constructor(title: string, value: string) {
-        this.title = title;
-        this.value = value;
+            });
     }
 }

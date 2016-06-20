@@ -4,36 +4,17 @@
             <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
         </div>
         <div *ngIf="!isLoading">
-            <table class="table" [mfData]="domainTypes" #mf="mfDataTable" [mfRowsOnPage]="10">
-                <thead>
-                    <tr>
-                        <th style="width: 70%">
-                            <mfDefaultSorter by="Name">Name</mfDefaultSorter>
-                        </th>
-                        <th style="width: 30%">
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of mf.data; let i=index;" (click)="selectRow(item.ID);" [class.selected]="selectedRow?.ID == item.ID">
-                        <td> {{item.Name}}</td>
-                        <!-- TODO: replace href on info, fix edit/delete -->
-                        <td class="RowTools">
-                            <a href="/#/domains/{{item.ID}}"><i class="fa fa-info"></i></a>
-                            <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/edit'"><i class="fa fa-pencil"></i></a>
-                            <a onclick="ClickGridTool(event)" [attr.data-context]="'domaintypeform'" [attr.data-uri]="'/#/form/domains/' + item.ID + '/delete'"><i class="fa fa-trash-o"></i></a>
-                        </td>
-                    </tr>
-                    <tr></tr>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2">
-                            <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
+            <p-dataTable [value]="domainTypes" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+                <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '70%' }"></p-column>
+                <p-column [style]="{ 'width': '30%' }">
+                    <template let-col let-item="rowData">
+                        <div class="RowTools">
+                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </template>
+                </p-column>
+            </p-dataTable>
         </div>
     </div>
     <div class="col l8 m6 s12">

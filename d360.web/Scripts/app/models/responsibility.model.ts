@@ -1,6 +1,27 @@
 ﻿///<reference path="../es6-shim.d.ts"/>
+import { SelectItem } from '../models/form.model';
+
+export interface IResponsibilityService {
+    getResponsibilityDetail(objectID: number, objectType: string, showHidden: boolean): Promise<ResponsibilityItem[]>;
+    getResponsibilityItemEditor(objectID: number, objectType: string, responsibilityID: number): Promise<ResponsibilityEditorModel>;
+    postResponsibility(responsibility: ResponsibilityItem): Promise<any>;
+}
+
+export class ResponsibilityEditorModel {
+    resources: SelectItem[];
+    //resourceList: SelectItem[];
+    selectedResource: string;
+    contexts: SelectItem[];
+    //contextList: SelectItem[];
+    selectedContexts: string[];
+    responsibilityTypes: SelectItem[];
+    //responsibilityTypeList: SelectItem[];
+    selectedResponsibilityType: string;
+    responsibility: ResponsibilityItem;
+}
 
 export class ResponsibilityItem {
+    ID: number;
     ResponsibilityID: number;
 
     AssigningItemID: number;

@@ -22,8 +22,8 @@
                 <p-column>
                     <template let-item="rowData">
                         <div class="RowTools">
-                            <a (click)="edit(item.ResponsibilityID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                            <a (click)="delete(item.ResponsibilityID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </template>
                 </p-column>
@@ -33,10 +33,10 @@
             <d3s-responsibility-item-form [item]="selectedRow" (onSaveComplete)="isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
         </div>
         <div *ngIf="isDeleting" style="padding:15px;">
-            <delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.ResponsibilityID"
+            <delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.ID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to delete this owner?'"
-                         (onDeleteSuccess)="confirmDeleteRow(selectedRow.ResponsibilityID)"
+                         (onDeleteSuccess)="confirmDeleteRow(selectedRow.ID)"
                          (onCancel)="isDeleting=false;">
             </delete-form>
         </div>

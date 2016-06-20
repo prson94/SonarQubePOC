@@ -3,26 +3,17 @@
         <div class="root-tile">
             <header><div id="AdminResponsibilityTypeGridTools"></div></header>
             <div id="AdminResponsibilityTypeGrid"></div>
-            <table class="table" [mfData]="governanceItems" #mf="mfDataTable" [mfRowsOnPage]="50">
-                <thead>
-                    <tr>
-                        <th style="width: 90%">
-                            <mfDefaultSorter by="Name">Name</mfDefaultSorter>
-                        </th>
-                        <th style="width: 10%">
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of mf.data; let i=index;" (click)="selectRow(item.ID);" [class.selected]="selectedRow?.ID == item.ID">
-                        <td> {{item.Name}}</td>
-                        <td class="RowTools">
-                           
-                        </td>
-                    </tr>
-                    <tr></tr>
-                </tbody>
-            </table>
+            <p-dataTable [value]="governanceItems" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+                <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '70%' }"></p-column>
+                <p-column [style]="{ 'width': '30%' }">
+                    <template let-col let-item="rowData">
+                        <div class="RowTools">
+                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </template>
+                </p-column>
+            </p-dataTable>
         </div>
     </div>
     <div class="col s8">

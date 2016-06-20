@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
 import { SelectItem, FormMessage } from '../../models/form.model';
 import { FormMessagePart } from '../parts/form-message.part';
@@ -54,7 +54,6 @@ export class WorkflowItemForm implements OnInit {
     private isLoadingResponsibility = false;
 
     constructor(private workflowService: WorkflowService) {
-        this.workflowService = workflowService;
     }
 
     ngOnInit() {

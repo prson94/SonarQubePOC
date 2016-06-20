@@ -1,40 +1,26 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import {Http, HTTP_PROVIDERS, Headers} from '@angular/http';
-import { DataTable, DataTableDirectives } from 'angular2-datatable/datatable';
-
+import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+import { DataTable, Column } from 'primeng/primeng';
+import { FieldDefinition, IFieldsService } from '../../models/fields.model';
+import { FieldsService } from '../../services/fields.service';
 
 @Component({
     selector: 'fields-grid-tile',
-    directives: [DataTableDirectives],
+    directives: [ DataTable, Column ],
     templateUrl: 'scripts/app/components/tiles/fields-grid.tile.html',
-    viewProviders: [HTTP_PROVIDERS],
-    styles: [`
-    .selected {
-        background-color: #86ccf9;        
-    }
-    tbody tr:not(.selected):hover {
-        background-color: #ddd;
-    }
-    td {
-        padding-left:3px; 
-    }
-    `]
+    providers: [ FieldsService ]
 })
 
 export class FieldsGridTile implements OnChanges {
     @Input() objectType: string;
-    @Input() objectID: string;
-    @Input() title: string;
+    @Input() objectID: number;
+    @Input() title: string = 'Field Definition';
 
     private fieldDefinitions = new Array<FieldDefinition>();
     private selectedRow = new FieldDefinition();
     private isLoading = false;
-
-    http: Http;
-
-    constructor(http: Http) {
-        this.http = http;
+    
+    constructor(private fieldsService: FieldsService) {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -56,32 +42,13 @@ export class FieldsGridTile implements OnChanges {
             return;
 
         this.isLoading = true;
-        this.http.get('/fields/' + this.objectType + '/' + this.objectID + '.json')
-            .map(data => data.json())
-            .subscribe(data => {
-                this.fieldDefinitions = data;
-                this.selectedRow = null; //this.fieldDefinitions[0];
 
+        this.fieldsService.getFields(this.objectID, this.objectType)
+            .then(data => {
+                this.fieldDefinitions = data;
+                this.selectedRow = null;
                 this.isLoading = false;
             });
-
-    }
-
-    selectRow(id: string): void {
-        this.selectedRow = this.fieldDefinitions[this.fieldDefinitions.findIndex(d => d.ID == id)];
     }
 }
 
-class FieldDefinition {
-
-    ObjectType: string;
-    ObjectID: string;
-    ID: string;
-    Category: string;
-    FriendlyName: string;
-    SortOrder: string;
-    IsRequired: boolean;
-    IsListable: boolean;
-    DisplayDescription: string;
-    FormDescription: string;
-}

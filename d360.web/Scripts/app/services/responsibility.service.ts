@@ -1,0 +1,64 @@
+﻿///<reference path="../es6-shim.d.ts"/>
+import { Injectable } from '@angular/core';
+import { Headers, Http } from '@angular/http';
+import { FormHelper, SelectItem } from '../models/form.model';
+import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityContextItem, IResponsibilityService } from '../models/responsibility.model';
+
+@Injectable()
+export class ResponsibilityService implements IResponsibilityService {
+
+    constructor(private http: Http) { }
+
+    getResponsibilityDetail(objectID: number, objectType: string, showHidden: boolean = true): Promise<ResponsibilityItem[]> {
+        return this.http.get(`api/${objectType}/${objectID}/ownership?showHidden=${showHidden}`)
+            .toPromise()
+            .then(response => <ResponsibilityItem[]>response.json())
+            .then(r => {
+                //TODO: use same model in api get as post instead of Responsibility vs ResponsibilityDetail???
+                r.forEach(i => i.ID = i.ResponsibilityID);
+                return r;
+            })
+            .catch(this.handleError);
+    }
+
+    getResponsibilityItemEditor(objectID: number, objectType: string, responsibilityID: number): Promise<ResponsibilityEditorModel> {
+        return this.http.get(`form/Responsibility?responsibilityID=${responsibilityID}&id=${objectID}&type=${objectType}`)
+            .toPromise()
+            .then(response => <ResponsibilityEditorModel>response.json())
+            .then(model => {
+                FormHelper.mapSelectItems(model.resources);
+                FormHelper.mapSelectItems(model.responsibilityTypes);
+                FormHelper.mapSelectItems(model.contexts);
+
+                if (model.responsibility.ResponsibleObjectType)
+                    model.selectedResource = model.responsibility.ResponsibleObjectType + '|' + model.responsibility.ResponsibleObjectID;
+                else
+                    model.selectedResource = model.resources[0].value;
+
+                if (model.responsibility.ResponsibilityTypeID)
+                    model.selectedResponsibilityType = model.responsibility.ResponsibilityTypeID.toString();
+                else
+                    model.selectedResponsibilityType = model.responsibilityTypes[0].value;
+
+                model.selectedContexts = model.contexts.filter(c => c.Selected).map(c => c.value);
+
+                return model;
+
+            })
+            .catch(this.handleError);
+    }
+
+    postResponsibility(responsibility: ResponsibilityItem): Promise<any> {
+        var headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        return this.http.post('form/responsibility', JSON.stringify(responsibility), { headers: headers })
+            .toPromise()
+            .catch(this.handleError);
+    }
+
+    private handleError(error: any) {
+        console.error('An error occurred', error);
+        return Promise.reject(error.message || error);
+    }
+}
