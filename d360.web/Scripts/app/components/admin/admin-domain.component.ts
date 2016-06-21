@@ -2,7 +2,7 @@
 import { Component, NgZone } from '@angular/core';
 import { PageHeader } from '../../services/page-header.service';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
-import { FieldsGridTile } from '../tiles/fields-grid.tile';
+import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -13,7 +13,7 @@ import { DataTable, Column } from 'primeng/primeng';
 @Component({
     selector: 'admin-domain',
     providers: [DomainService],
-    directives: [ObjectDetailTile, FieldsGridTile, PeopleResponsibilitiesTile, DataTable, Column],
+    directives: [ObjectDetailTile, FieldDefinitionTile, PeopleResponsibilitiesTile, DataTable, Column],
     templateUrl: 'scripts/app/components/admin/admin-domain.component.html',
 })
 

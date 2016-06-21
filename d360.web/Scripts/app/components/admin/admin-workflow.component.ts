@@ -2,7 +2,6 @@
 import { Component, NgZone } from '@angular/core';
 import { PageHeader } from '../../services/page-header.service';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
-import { FieldsGridTile } from '../tiles/fields-grid.tile';
 import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
 import { WorkflowItemForm } from '../forms/workflow-item.form';

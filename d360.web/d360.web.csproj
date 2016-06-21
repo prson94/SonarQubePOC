@@ -882,6 +882,7 @@
     <Content Include="Content\templates\artifacts.admin.html" />
     <Content Include="Content\templates\_content.header.html" />
     <Content Include="images\logo.png" />
+    <Content Include="Scripts\app\components\forms\artifact-type.form.html" />
     <Content Include="Scripts\parts\NewLineageDiagram.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="ui.html" />
@@ -965,7 +966,7 @@
     <Content Include="Scripts\app\components\forms\responsibility-item.form.html" />
     <Content Include="Scripts\app\components\forms\workflow-item.form.html" />
     <Content Include="Scripts\app\components\tiles\claims.tile.html" />
-    <Content Include="Scripts\app\components\tiles\fields-grid.tile.html" />
+    <Content Include="Scripts\app\components\tiles\field-definition.tile.html" />
     <Content Include="Scripts\app\components\tiles\object-detail.tile.html" />
     <Content Include="Scripts\app\components\tiles\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\admin-groups.component.html" />
@@ -1337,6 +1338,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header.component.ts" />
@@ -1352,6 +1354,7 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\action-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\claims.model.ts" />
@@ -1365,6 +1368,7 @@
     <TypeScriptCompile Include="Scripts\app\models\settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\claims.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\domain.service.ts" />
@@ -1378,7 +1382,7 @@
     <TypeScriptCompile Include="Scripts\app\services\responsibility.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\settings.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\templates.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\fields-grid.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\field-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\form-message.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-detail.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\people-responsibilities.tile.ts" />

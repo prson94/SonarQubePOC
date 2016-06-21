@@ -57,7 +57,6 @@ export class WorkflowItemForm implements OnInit {
     }
 
     ngOnInit() {
-        this.load();
         this.initialItem = _.cloneDeep(this.item);
     }
 

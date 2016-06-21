@@ -64,6 +64,44 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "IconForeColor", Name = "Text Color", FieldDescription = "The icon's text color", FieldType = DataType.Color.ToString(), Value = f });
         }
 
+        void upsertObjectStyle(SystemObjects type, int id, string foreColor, string backColor, string objectName = "Tx")
+        {
+            var style = Company.GetObjectStyle(type, id);
+            bool add = (style == null);
+
+            string iconText = "Tx";
+
+            var words = objectName.Split(' ');
+            if (words.Length > 1)
+            {
+                iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
+            }
+            else
+            {
+                iconText = objectName[0].ToString().ToUpper() + objectName[1].ToString().ToLower();
+            }
+
+            if (add)
+            {
+                style = new ObjectStyle
+                {
+                    ObjectType = type.ToString(),
+                    ObjectID = id,
+                    IconBackColor = backColor,
+                    IconForeColor = foreColor,
+                    IconText = iconText
+                };
+                Company.Add<ObjectStyle>(style);
+            }
+            else
+            {
+                style.IconBackColor = backColor;
+                style.IconForeColor = foreColor;
+                style.IconText = iconText;
+                Company.Update<ObjectStyle>(style);
+            }
+        }
+
         void upsertObjectStyle(SystemObjects type, int id, FormCollection form, string objectName = "Tx")
         {
             var style = Company.GetObjectStyle(type, id);
@@ -977,6 +1015,186 @@ namespace d360.web.Controllers
             };
 
             return PartialView("ArtifactTypeEditForm", model);
+        }
+
+        [HttpGet]
+        [ActionName("ArtifactType")]
+        public JsonNetResult GetArtifactType(int? id, int? parentID)
+        {
+            var model = new ArtifactTypeEditorModel();
+
+            if (parentID == null)
+            {
+                var at = Company.GetById<ArtifactType>((int)id);
+                //if (at == null) return HttpNotFound();
+                var style = Company.GetObjectStyle(SystemObjects.ArtifactType, (int)id);
+
+                model = new ArtifactTypeEditorModel
+                {
+                    FormName = Resources.FormInfo.Edit_ArtifactType_Title,
+                    FormDescription = Resources.FormInfo.Edit_ArtifactType_Directions,
+                    FormUri = "/form/EditArtifactType",
+                    FormMethod = "PUT",
+                    ArtifactType = at,
+                    IconBackColor = ((style != null) ? style.IconBackColor : "#000"),
+                    IconForeColor = ((style != null) ? style.IconForeColor : "#FFF")
+                };
+            } 
+            else
+            {
+                model = new ArtifactTypeEditorModel
+                {
+                    FormName = Resources.FormInfo.Add_ArtifactType_Title,
+                    FormDescription = Resources.FormInfo.Add_ArtifactType_Directions,
+                    FormUri = "/form/AddArtifactType",
+                    FormMethod = "POST",
+                    ArtifactType = new ArtifactType { ParentID = parentID, AllowHierarchy = false, AllowRelatedArtifacts = false, CanOwnFusion = false },
+                    IconBackColor = "#000",
+                    IconForeColor = "#FFF"
+                };
+            }
+
+
+            return new JsonNetResult
+            {
+                Data = model,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        [ActionName("ArtifactType")]
+        public JsonResult PostArtifactType(ArtifactTypeEditorModel model)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.ArtifactType, 0, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new ArtifactType
+                {
+                    Name = model.ArtifactType.Name,
+                    Description = model.ArtifactType.Description,
+                    CanOwnFusion = model.ArtifactType.CanOwnFusion, //parseBooleanField(form, "CanOwnFusion"),
+                    AllowRelatedArtifacts = model.ArtifactType.AllowRelatedArtifacts, //parseBooleanField(form, "AllowRelatedArtifacts")
+                };
+
+                if (model.ArtifactType.ParentID != null)
+                {
+                    a.ParentID = model.ArtifactType.ParentID; // parseIntField(form, "ParentID");
+                    if (a.ParentID == 0) a.ParentID = null;
+                }
+
+                Company.Add(a);
+
+                upsertObjectStyle(SystemObjects.ArtifactType, a.ID, model.IconForeColor, model.IconBackColor, a.Name);
+
+                dynamic custom = new
+                {
+                    ParentID = a.ParentID,
+                    Name = a.Name,
+                    action = "add",
+                    //Context = "", // form["_context"]
+                };
+
+                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), null, "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPut]
+        [ActionName("ArtifactType")]
+        public JsonResult PutArtifactType(ArtifactTypeEditorModel model)
+        {
+            try
+            {
+                var id = model.ArtifactType.ID; // parseIntField(form, "ID");
+                var existing = Company.GetById<ArtifactType>(id);
+                if (existing == null) throw new NotFoundException("artifact type");
+
+                if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                existing.Name = model.ArtifactType.Name;  //parseTextField(form, "Name");
+                existing.Description = model.ArtifactType.Description; // parseTextField(form, "Description");
+                existing.AllowRelatedArtifacts = model.ArtifactType.AllowRelatedArtifacts; // parseBooleanField(form, "AllowRelatedArtifacts");
+                existing.CanOwnFusion = model.ArtifactType.CanOwnFusion; // parseBooleanField(form, "CanOwnFusion");
+
+                Company.Update(existing);
+
+                upsertObjectStyle(SystemObjects.ArtifactType, existing.ID, model.IconForeColor, model.IconBackColor, existing.Name);
+
+                dynamic custom = new
+                {
+                    ParentID = existing.ParentID,
+                    Name = existing.Name,
+                    action = "edit",
+                    //Context = form["_context"]
+                };
+
+                return jsonSuccess(existing.Name + " successfully updated.", id.ToString(), null, "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpDelete]
+        [ActionName("ArtifactType")]
+        public JsonResult DeleteArtifactType2(int id)
+        {
+            try
+            {
+                //if (!form.HasKeys()) throw new NoFormDataException("artifact type");
+
+               // var id = parseIntField(form, "ID");
+                var model = Company.GetById<ArtifactType>(id);
+                if (model == null) throw new NotFoundException("artifact type");
+
+                if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                if (model.ParentID.HasValue) id = model.ParentID.Value;
+
+                Company.Delete(model);
+                deleteObjectStyle(SystemObjects.ArtifactType, id);
+
+                dynamic custom = new
+                {
+                    ParentID = model.ParentID,
+                    Name = model.Name,
+                    action = "delete",
+                   // Context = form["_context"]
+                };
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), null, "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
         }
 
         [ValidateHttpAntiForgeryToken]
@@ -4638,6 +4856,30 @@ order by  D.TextPath
             }
         }
 
+        [HttpGet, ActionName("FieldType")]
+        public JsonNetResult GetFieldType(int id)
+        {
+            var a = Company.GetById<FieldType>(id);
+            if (a == null) return null;
+            var used = Company.Any<Field>(i => i.FieldTypeID == id);
+            var qry = Company.Table<FieldTypeLookupValue>().OrderBy(i => i.LookupObjectType).ThenBy(i => i.Name).AsQueryable();
+
+            var fusDef = a.FieldTypeFusionLookupDefinitions.FirstOrDefault();
+
+            if (!a.IsRequired) a.MinimumLength = 0;
+
+            var model = new FieldTypeEditorModel
+            {
+                FieldIsUsed = used,
+                FieldType = a
+            };
+            return new JsonNetResult
+            {
+                Data = model,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
 
         public ActionResult EditFieldType(int id)
         {

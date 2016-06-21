@@ -5,13 +5,13 @@ import { FieldDefinition, IFieldsService } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
 
 @Component({
-    selector: 'fields-grid-tile',
+    selector: 'd3s-field-definition-tile',
     directives: [ DataTable, Column ],
-    templateUrl: 'scripts/app/components/tiles/fields-grid.tile.html',
+    templateUrl: 'scripts/app/components/tiles/field-definition.tile.html',
     providers: [ FieldsService ]
 })
 
-export class FieldsGridTile implements OnChanges {
+export class FieldDefinitionTile implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() title: string = 'Field Definition';
@@ -48,6 +48,13 @@ export class FieldsGridTile implements OnChanges {
                 this.fieldDefinitions = data;
                 this.selectedRow = null;
                 this.isLoading = false;
+            });
+    }
+
+    edit(id: number): void {
+        this.fieldsService.getFieldTypeEditor(id)
+            .then(data => {
+                console.log(data);
             });
     }
 }

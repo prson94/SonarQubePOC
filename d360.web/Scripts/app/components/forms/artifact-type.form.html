@@ -1,0 +1,71 @@
+﻿<div *ngIf="isLoading">
+    <div class="row">
+        <div *ngIf="isLoading" style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+        <div *ngIf="!isLoading">{{prompt}}</div>
+    </div>
+</div>
+<div *ngIf="!isLoading" class="row">
+    <header>{{title}}</header>
+    <form #form="ngForm">
+        <div class="row">
+            <div class="col s8">
+                <div class="row">
+                    <div class="FieldName">Name</div>
+                    <input pInputText ngControl="Name" name="Name" #name="ngForm" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.ArtifactType.Name" required />
+                    <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
+                </div>
+                <div class="row">
+                    <div class="FieldName">Description</div>
+                    <p-editor [(ngModel)]="model.ArtifactType.Description" [style]="{'height':'150px'}"></p-editor>
+                </div>
+            </div>
+            <div class="col s4">
+                <div class="row">
+                    <input pCheckbox type="checkbox" name="CanOwnFusion" [(ngModel)]="model.ArtifactType.CanOwnFusion" />
+                    <label for="CanOwnFusion">Can Own Fusion?</label>
+                </div>
+                <div class="row">
+                    <input pCheckbox type="checkbox" name="AllowRelatedArtifacts" [(ngModel)]="model.ArtifactType.AllowRelatedArtifacts" />
+                    <label for="AllowRelatedArtifacts">Allow Related Artifacts?</label>
+                </div>
+                <div class="row">
+                    <div class="FieldName">Background Color</div>
+                    <table style="width:100%">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input pInputText ngControl="IconBackColor" style="height:25px;width:100%;display:block;" type="text" name="IconBackColor" [(ngModel)]="model.IconBackColor" />
+                                </td>
+                                <td>
+                                    <span [style.background-color]="model.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="FieldName">Text Color</div>
+                    <table style="width:100%">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input pInputText ngControl="IconForeColor" style="height:25px;width:100%;display:block;" type="text" name="IconForeColor" [(ngModel)]="model.IconForeColor" />
+                                </td>
+                                <td>
+                                    <span [style.background-color]="model.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div style="padding-top:10px;">
+                    <button pButton label="Save" type="submit" (click)="save()" [disabled]="!form.form.valid"></button><button pButton label="Cancel" (click)="cancel()"></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

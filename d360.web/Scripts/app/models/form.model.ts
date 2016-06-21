@@ -1,4 +1,12 @@
-﻿export class SelectItem {
+﻿export class BaseEditorModel {
+    FormUri: string;
+    FormMethod: string;
+    FormName: string;
+    FormDescription: string;
+    IsUsed: boolean;
+}
+
+export class SelectItem {
     Disabled: boolean;
     Group: string;
     Selected: boolean;

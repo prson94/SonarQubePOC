@@ -46,7 +46,7 @@
 /* Interaction Cues
 ----------------------------------*/
 .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: 1px solid #156090; background: #6B5A51; color: #FFFFFF; }
-.ui-state-highlight a, .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #363636; }
+.ui-state-highlight a, .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #FFFFFF; }
 .ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #f44336; background: #f5554a; color: #cd0a0a; }
 .ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header .ui-state-error a { color: #cd0a0a; }
 .ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-header .ui-state-error-text { color: #cd0a0a; }
@@ -558,11 +558,12 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 }
 
 .ui-inputtext.ui-state-focus, .ui-widget-content .ui-inputtext.ui-state-focus, .ui-widget-header .ui-inputtext.ui-state-focus {
-	-moz-box-shadow: 0px 0px 5px #1f89ce;
-	-webkit-box-shadow: 0px 0px 5px #1f89ce;
-	box-shadow: 0px 0px 5px #1f89ce;
+-webkit-box-shadow: 1px 1px 10px 0 rgba(0,0,0,0.75);
+-moz-box-shadow: 1px 1px 10px 0 rgba(0,0,0,0.75);
+box-shadow: 1px 1px 10px 0 rgba(0,0,0,0.75);
+background: #fff;
 }
-
+    
 /* InputSwitch */
 .ui-inputswitch-on {
 	background: #186ba0 !important;
@@ -656,9 +657,22 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 .ui-treetable th {
     font-weight: bold;
 }
+.ui-treetable thead {
+    border-bottom: none;
+}
+.ui-treetable thead tr {
+    border: none !important;
+}
+.ui-treetable td {
+    border-radius: 0;
+}
+
+
 .ui-treetable th.ui-state-default{
-    background: #ebedf0;
-    border-color: #d9d9d9;
+    background: #fff;
+    border: none;
+    text-transform: uppercase;
+    font-weight: bold;
 }
 .ui-treetable th.ui-state-hover{
     background: #d3d5d8;
@@ -703,6 +717,24 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
     border-color: #ffffff;
 }
 */
+.ui-multiselect-item .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { 
+    border: none; background: #eeeeee; font-weight: normal; color: #212121;
+}
+
+.ui-multiselect-item .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {
+    border: none; background: #6B5A51; color: #FFFFFF; 
+}
+
+.ui-multiselect-item .ui-corner-all .ui-state-hover {
+    border:none;
+}
+
+.ui-multiselect-header {
+    background: #F8F3F0;
+    color: #5c5e60 !important;
+}
+
+
 .ui-multiselect.ui-state-focus .ui-multiselect-label,
 .ui-multiselect .ui-multiselect-label.ui-state-hover {
     background-color: #ffffff;
@@ -815,5 +847,6 @@ p-multiselect.ng-dirty.ng-invalid > .ui-multiselect,
 p-spinner.ng-dirty.ng-invalid > .ui-inputtext,
 p-selectbutton.ng-dirty.ng-invalid .ui-button,
 p-togglebutton.ng-dirty.ng-invalid .ui-button {
-    border-bottom-color: #f44336;
+    border-bottom-color: #BC1B01;
+    border-bottom-width: 2px;
 }
