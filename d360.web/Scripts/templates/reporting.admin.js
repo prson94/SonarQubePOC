@@ -27,17 +27,6 @@
             if (data) {
                 var reportType = data.ReportType;
 
-                if (reportType == 'powerbi')
-                {
-                    $('#TilesTileWrapper').hide();
-                    $('#TilesTemplateLayout').hide();
-                }
-                else
-                {
-                    $('#TilesTileWrapper').show();
-                    $('#TilesTemplateLayout').show();
-                }
-
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
                 $('#SideIcons').PageTools("reload", type, data.ID);
@@ -50,16 +39,24 @@
                     ]);
                 }
 
-                TilesSource.url = '/reports/' + data.ID + '/tiles';
-                $("#TilesTile").jqxGrid('updatebounddata');
+                if (reportType == 'powerbi') {
+                    $('#TilesTileWrapper').hide();
+                    $('#TilesTemplateLayout').hide();
+                }
+                else {
+                    $('#TilesTileWrapper').show();
+                    $('#TilesTemplateLayout').show();
 
-                var changePromise = layoutTileVm.ChangeObject(data.ID);
-                changePromise
-                    .then(layoutTileVm.GetLayout)
-                    .done(function (message) {
-                        //layoutTileVm.Render();
-                    });
+                    TilesSource.url = '/reports/' + data.ID + '/tiles';
+                    $("#TilesTile").jqxGrid('updatebounddata');
 
+                    var changePromise = layoutTileVm.ChangeObject(data.ID);
+                    changePromise
+                        .then(layoutTileVm.GetLayout)
+                        .done(function (message) {
+                            //layoutTileVm.Render();
+                        });
+                }
             }
         }
 
