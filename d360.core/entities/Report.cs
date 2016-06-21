@@ -31,6 +31,29 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ReportLayout_Name", Description = "ReportLayout_Description")]
         public int ReportLayoutID { get; set; }
 
+        private const string DEFAULT_REPORT_TYPE = "legacy";
+        private string _reportType = DEFAULT_REPORT_TYPE;
+        [DataMember]        
+        [Column(TypeName = "varchar"), StringLength(25)]
+        public string ReportType {
+            get
+            {
+                return _reportType;
+            }
+            set
+            {
+                _reportType = value;
+            }
+        }
+
+        [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
+        public string PowerBIReportID { get; set; }
+
+        [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
+        public string PowerBIDatasetID { get; set; }
+
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 

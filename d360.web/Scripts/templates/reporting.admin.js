@@ -25,6 +25,19 @@
 
             var data = $('#List').jqxGrid('getrowdata', row);
             if (data) {
+                var reportType = data.ReportType;
+
+                if (reportType == 'powerbi')
+                {
+                    $('#TilesTileWrapper').hide();
+                    $('#TilesTemplateLayout').hide();
+                }
+                else
+                {
+                    $('#TilesTileWrapper').show();
+                    $('#TilesTemplateLayout').show();
+                }
+
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
                 $('#SideIcons').PageTools("reload", type, data.ID);
@@ -127,7 +140,8 @@
                         url: '/reports',
                         datafields: [
                             { name: 'ID' },
-                            { name: 'Name' }
+                            { name: 'Name' },
+                            { name: 'ReportType' },
                         ],
                         id: 'ID'
                     };

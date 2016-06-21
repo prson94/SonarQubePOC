@@ -680,16 +680,30 @@ where   h.ID <> @t order by h.[Level] desc;
 
                 foreach (var r in reports)
                 {
-                    reportActionMenu.Items.Add(
-                        new PageActionItem
-                        {
-                            Context = ContextList.ActionGenericReport,
-                            Icon = Resources.Actions.Report_Icon,
-                            Title = r.Name,
-                            Uri = string.Format("/reports/Overlay?reportID={0}&type={1}&id={2}", r.ID, type.ToString(), id)
-                        });
+                    if (r.ReportType.ToLower() == "powerbi")
+                    {
+                        reportActionMenu.Items.Add(
+                            new PageActionItem
+                            {
+                                Context = ContextList.ActionGenericReport,
+                                Icon = Resources.Actions.Report_Icon,
+                                Title = r.Name,
+                                Uri = string.Format("/reports/PowerBIOverlay?reportID={0}", r.PowerBIReportID)
+                            });
+                    }
+                    else
+                    {
+                        reportActionMenu.Items.Add(
+                            new PageActionItem
+                            {
+                                Context = ContextList.ActionGenericReport,
+                                Icon = Resources.Actions.Report_Icon,
+                                Title = r.Name,
+                                Uri = string.Format("/reports/Overlay?reportID={0}&type={1}&id={2}", r.ID, type.ToString(), id)
+                            });
+                    }
                 }
-
+                
                 #endregion
 
                 #region Survey Reports
@@ -4620,6 +4634,9 @@ where    A.PolicyTypeID = @id", columns, joins);
                 case SystemObjects.Report:
                     #region Fields
                     var report = Company.GetById<Report>(id, i => i.ReportLayout);
+                    if(report == null)
+                        report = Company.GetById<Report>(id);
+
                     if (report != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -4628,6 +4645,15 @@ where    A.PolicyTypeID = @id", columns, joins);
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = report.GetName(i => i.Name), FieldName = "ReportName", FieldDescription = report.GetDescription(i => i.Description), Value = report.Name }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Report Type", FieldName = "ReportType", Value = (report.ReportType == "powerbi" ? "Power BI" : "Default") }
                             }
                         });
 
@@ -4643,14 +4669,17 @@ where    A.PolicyTypeID = @id", columns, joins);
                             });
                         }
 
-                        model.rows.Add(new DetailReadOnlyRowModel
+                        if (report.ReportLayout != null)
                         {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = report.GetName(i => i.ReportLayout), FieldName = "ReportReportLayout", FieldDescription = report.GetDescription(i => i.ReportLayout), Value = report.ReportLayout.Name }
                             }
-                        });
+                            });
+                        }
 
                         var sql = "";
                         //var targetObject = 

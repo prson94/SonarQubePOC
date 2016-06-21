@@ -21,6 +21,9 @@ using d360.workflow.entities;
 using d360.web.Filters;
 using d360.web.Models.Attributes;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
+using d360.extensions.powerbi;
+using System.Web;
 
 namespace d360.web.Controllers
 {
@@ -11937,7 +11940,8 @@ order by    Name
                 FormMethod = "POST",
                 FormName = Resources.FormInfo.Add_Report_Title,
                 FormDirections = Resources.FormInfo.Add_Report_Directions,
-                Report = new Report { }
+                Report = new Report { },
+                ReportTypes = new List<SelectListItem> { new SelectListItem { Text = "Default", Value = "legacy", Selected = true }, new SelectListItem { Text = "PowerBI", Value = "powerbi" } }
             };
             loadReportEditorModel(o);
             return PartialView("ReportEditForm", o);
@@ -11945,7 +11949,7 @@ order by    Name
 
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
-        public JsonResult AddReport(FormCollection form)
+        public async Task<JsonResult> AddReport(FormCollection form)
         {
             try
             {
@@ -11955,13 +11959,38 @@ order by    Name
 
                 if (objectType.Length == 2)
                 {
+                    var fileCount = HttpContext.Request.Files.Count;
+                    var reportType = parseTextField(form, "ReportType");
+                    var name = parseTextField(form, "Name", null, true);
+                    string powerBIID = string.Empty;
+                    string datasetID = string.Empty;
+
+                    if (fileCount > 0 && reportType == "powerbi")
+                    {
+                        var file = HttpContext.Request.Files[0];
+
+                        if (file.ContentLength > 0)
+                        {
+                            var importResult = await uploadPowerBIReport(file, name);
+                            
+                            if (importResult.ImportState == "Failed")
+                                throw new Exception("FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!");
+
+                            datasetID = importResult.Datasets.FirstOrDefault().Id;
+                            powerBIID = importResult.Reports.FirstOrDefault().Id;                            
+                        }
+                    }
+
                     var model = new Report
                     {
                         Name = parseTextField(form, "Name", null, true),
                         Description = parseTextField(form, "Description"),
                         ObjectType = objectType[0],
                         ObjectID = int.Parse(objectType[1]),
-                        ReportLayoutID = parseIntField(form, "ReportLayoutID"),
+                        ReportLayoutID = parseNullableIntField(form, "ReportLayoutID", -1).GetValueOrDefault(-1),
+                        ReportType = parseTextField(form, "ReportType"),
+                        PowerBIReportID = string.IsNullOrEmpty(powerBIID) ? null : powerBIID,
+                        PowerBIDatasetID = string.IsNullOrEmpty(datasetID) ? null : datasetID
                     };
 
                     Company.Add<Report>(model);
@@ -11983,7 +12012,7 @@ order by    Name
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
+                
         public ActionResult DeleteReport(int id)
         {
             var a = Company.GetById<Report>(id);
@@ -12010,6 +12039,25 @@ order by    Name
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<Report>(id);
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
+
+                //delete any power bi reports
+                if(model.ReportType == "powerbi" && !string.IsNullOrEmpty(model.PowerBIDatasetID))
+                {
+                    var companySettings = Community.GetCompanySettings();
+                    var workspaceCollectionName = string.Empty;
+                    var workspaceId = string.Empty;
+                    var accessKey = string.Empty;
+
+                    companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
+                    companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
+                    companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
+
+                    if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
+                        throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
+
+                    PowerBI.DeleteDataset(accessKey, workspaceCollectionName, workspaceId, model.PowerBIDatasetID);
+                }
+
                 Company.Delete<Report>(model);
 
                 return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
@@ -12035,7 +12083,8 @@ order by    Name
                 FormMethod = "PUT",
                 FormName = Resources.FormInfo.Edit_Report_Title,
                 FormDirections = Resources.FormInfo.Edit_Report_Directions,
-                Report = o
+                Report = o,
+                ReportTypes = new List<SelectListItem> { new SelectListItem { Text = "Default", Value = "legacy", Selected = (o.ReportType != "powerbi") }, new SelectListItem { Text = "PowerBI", Value = "powerbi", Selected = ( o.ReportType == "powerbi") } }
             };
             loadReportEditorModel(model);
 
@@ -12051,7 +12100,7 @@ order by    Name
         }
 
         [HttpPut, ValidateInput(false)]
-        public JsonResult EditReport(FormCollection form)
+        public async Task<JsonResult> EditReport(FormCollection form)
         {
             try
             {
@@ -12062,16 +12111,49 @@ order by    Name
 
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
 
+                var fileCount = HttpContext.Request.Files.Count;
+                var reportType = parseTextField(form, "ReportType");
+                var name = parseTextField(form, "Name", null, true);
+                string powerBIID = string.Empty;
+                string datasetID = string.Empty;
+
+                if (fileCount > 0 && reportType == "powerbi")
+                {
+                    var file = HttpContext.Request.Files[0];
+
+                    if (file.ContentLength > 0)
+                    {
+                        var importResult = await uploadPowerBIReport(file, name, model.PowerBIDatasetID);
+
+                        if (importResult.ImportState == "Failed")
+                            throw new Exception("FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!");
+
+                        datasetID = importResult.Datasets.FirstOrDefault().Id;
+
+                        var rpt = importResult.Reports.FirstOrDefault();
+
+                        if (rpt != null)
+                            powerBIID = rpt.Id;
+                    }           
+                }
+
                 // Static fields
                 var objectType = form["ObjectType"].Split('|').ToArray();
 
                 if (objectType.Length == 2)
                 {
-                    model.Name = parseTextField(form, "Name", null, true);
+                    model.Name = name;
                     model.Description = parseTextField(form, "Description");
                     model.ObjectType = objectType[0];
                     model.ObjectID = int.Parse(objectType[1]);
-                    model.ReportLayoutID = parseIntField(form, "ReportLayoutID");
+                    model.ReportLayoutID = parseNullableIntField(form, "ReportLayoutID", -1).GetValueOrDefault(-1);
+                    model.ReportType = reportType;
+
+                    if (!string.IsNullOrEmpty(datasetID))
+                        model.PowerBIDatasetID = datasetID;
+
+                    if (!string.IsNullOrEmpty(powerBIID))
+                        model.PowerBIReportID = powerBIID;
 
                     Company.Update<Report>(model);
 
@@ -12092,6 +12174,52 @@ order by    Name
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
+        private async Task<Microsoft.PowerBI.Api.Beta.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
+        {
+            var companySettings = Community.GetCompanySettings();
+            var workspaceCollectionName = string.Empty;
+            var workspaceId = string.Empty;
+            var accessKey = string.Empty;
+
+            companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
+            companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
+            companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
+
+            workspaceId = (workspaceId ?? "").Trim();
+
+            // if the workspace id is null create a new one and update the companysettings
+            if (string.IsNullOrEmpty(workspaceId) && !string.IsNullOrEmpty(accessKey) && !string.IsNullOrEmpty(workspaceCollectionName))
+            {
+                var res = await PowerBI.CreateWorkspace(accessKey, workspaceCollectionName);
+
+                var workspaceSetting = Community.Filter<CompanySetting>(i => i.SettingID == 15 && i.CompanyID == Company.CurrentCompanyID).FirstOrDefault();
+
+                if (workspaceSetting == null)
+                {
+                    Community.Add<CompanySetting>(new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 15, Value = res.WorkspaceId });
+                }
+                else
+                {
+                    workspaceSetting.Value = res.WorkspaceId;
+
+                    Community.Update<CompanySetting>(workspaceSetting);
+                }
+
+                workspaceId = res.WorkspaceId;
+            }
+
+            if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
+                throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
+
+            // if an existing one exists delete it
+            if (!string.IsNullOrEmpty(datasetId))
+                await PowerBI.DeleteDataset(accessKey, workspaceCollectionName, workspaceId, datasetId);
+
+
+            return await PowerBI.ImportPbix(accessKey, workspaceCollectionName, workspaceId, name, file.InputStream);
+        }
+
 
         #endregion
 

@@ -856,6 +856,8 @@ namespace d360.web.Models
         public List<SelectListItem> ReportLayouts { get; set; }
 
         public List<SelectListItem> ObjectTypes { get; set; }
+
+        public List<SelectListItem> ReportTypes{ get; set; }
     }
 
     public class ReportTileEditorModel : BaseEditorModel

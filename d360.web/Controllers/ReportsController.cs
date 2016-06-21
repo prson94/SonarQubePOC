@@ -4,6 +4,9 @@ using d360.core.enums;
 using d360.model;
 using d360.web.Models;
 using d360.web.Models.Formatters;
+using Microsoft.PowerBI.Api.Beta;
+using Microsoft.PowerBI.Security;
+using Microsoft.Rest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -11,6 +14,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Dynamic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
@@ -29,6 +33,7 @@ namespace d360.web.Controllers
 
         #endregion
 
+  
         public ActionResult Overlay(int reportID, string type, int id)
         {
             var report = Company.GetById<Report>(reportID, i => i.ReportLayout);
@@ -123,6 +128,39 @@ namespace d360.web.Controllers
             
             return PartialView(model);
         }
+
+
+        public async Task<ActionResult> PowerBIOverlay(string reportId)
+        {
+            var companySettings = Community.GetCompanySettings();
+            var workspaceCollectionName = string.Empty;
+            var workspaceId = string.Empty;
+            var accessKey = string.Empty;
+
+            companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
+            companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
+            companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
+
+            if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
+                throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
+
+            var devToken = PowerBIToken.CreateDevToken(workspaceCollectionName, workspaceId);
+            using (var client = extensions.powerbi.PowerBI.CreateClient(devToken, accessKey))
+            {
+                var reportsResponse = await client.Reports.GetReportsAsync(workspaceCollectionName, workspaceId);
+                var report = reportsResponse.Value.FirstOrDefault(r => r.Id == reportId);
+                var embedToken = PowerBIToken.CreateReportEmbedToken(workspaceCollectionName, workspaceId, report.Id);
+
+                var viewModel = new PowerBIReportViewModel
+                {
+                    Report = report,
+                    AccessToken = embedToken.Generate(accessKey)
+                };
+
+                return View(viewModel);
+            }
+        }
+
 
         [Route("")]
         public JsonNetResult GetReports()

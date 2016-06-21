@@ -36,7 +36,8 @@
       "Scripts/parts/*.js",
       //"Scripts/parts/_Utils.js",
       "Scripts/templates/*.js",
-      "Scripts/typeahead.bundle.js"
+      "Scripts/typeahead.bundle.js",
+      "Scripts/powerbi.js"
     ]
   },
   {

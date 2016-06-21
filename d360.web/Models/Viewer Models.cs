@@ -5,6 +5,7 @@ using d360.core;
 using System.Runtime.Serialization;
 using System.Web.Mvc;
 using System.Web;
+using Microsoft.PowerBI.Api;
 
 namespace d360.web.Models
 {
@@ -710,5 +711,12 @@ namespace d360.web.Models
 
         [DataMember]
         public string IconBackColor { get; set; }
+    }
+
+    public class PowerBIReportViewModel
+    {
+        public IReport Report { get; set; }
+
+        public string AccessToken { get; set; }
     }
 }
