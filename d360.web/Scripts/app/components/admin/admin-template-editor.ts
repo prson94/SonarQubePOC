@@ -9,6 +9,7 @@ import _ from 'lodash';
 @Component({
     selector: 'd3s-admin-template-editor',
     template: ` 
+                <header>Edit Template</header>
                 <div class="row">
                     <div class="col l6 s12">
                         <div class="FieldName">Name</div>

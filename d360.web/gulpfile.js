@@ -13,8 +13,8 @@ gulp.task('clean', function (done) {
     return del([`${app}/**/*.js`, `${app}/**/*.js.map`]);
 });
 
-gulp.task('compile', ['clean'], function (done) {
-    var tsres = tsproj.src().pipe(ts(tsproj));
+gulp.task('compile', ['clean'], function (done) {    
+    var tsres = tsproj.src().pipe(ts(tsproj, {  }, ts.reporter.fullReporter(false)));
     return tsres.pipe(gulp.dest(app));
 });
 

@@ -10,26 +10,12 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 
 @Component({
     selector: 'd3s-admin-templates',
-    template: ` 
+    template: `                 
                 <div class="row">
-                <div class="col s12">                    
+                <div class="col s6">                    
                    <div class="tile tile-detail">
                         <header>Tooltip Templates</header>
-                        <p-dataTable [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" >                            
-                            <template let-template>                                
-                                <delete-form *ngIf="isDeleting"
-                                        [callback]="theDeleteCallback"
-                                        [itemId]="template.ID"
-                                         [method]="'callback'"
-                                         [prompt]="'Are you sure you want to delete this template?'"                                         
-                                ></delete-form>
-                                <d3s-admin-template-editor *ngIf="isEditing" 
-                                            [template]="template"
-                                            (updateClick)="updateTemplate($event)"
-                                            (closeClick)="isEditing=false;"
-                                        >
-                                </d3s-admin-template-editor>
-                            </template>                              
+                        <p-dataTable [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" >                                                        
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>
                             <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{width : '100px' }"></p-column>                            
                             <p-column header="Description" sortable="true" filter="true">
@@ -37,17 +23,42 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
                                     <div [innerHtml]="template?.Description"></div>
                                 </template>
                             </p-column>                             
-                            <p-column expander="true" [style]="{width:'120px'}">
+                            <p-column [style]="{width:'40px'}">
                                 <template let-template="rowData">
                                     <div class="RowTools">
-                                        <a (click)="isEditing=true;" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                                        <a (click)="showDelete(template)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                                    
+                                        <a (click)="selectedTemplate=template;isEditing=true;isDeleting=false;" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                                        
+                                    </div>
+                                </template>
+                            </p-column>                            
+                            <p-column  [style]="{width:'40px'}">
+                                <template let-template="rowData">
+                                    <div class="RowTools">                                
+                                        <a (click)="selectedTemplate=template;isEditing=false;isDeleting=true;" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
                                 </template>
                             </p-column>                            
                         </p-dataTable>
                     </div>
                 </div>  
+                <div class="col s6" >
+                    <div class="tile tile-detail" *ngIf="isDeleting">
+                    <delete-form 
+                                        [callback]="theDeleteCallback"
+                                        [itemId]="selectedTemplate.ID"
+                                         [method]="'callback'"
+                                         [prompt]="'Are you sure you want to delete ' + [selectedTemplate.Name] + '?'"                                         
+                                         (onCancel)="isDeleting=false;"
+                                ></delete-form>
+                    </div>
+                    <div class="tile tile-detail" *ngIf="isEditing">
+                    <d3s-admin-template-editor
+                                            [template]="selectedTemplate"
+                                            (updateClick)="updateTemplate($event)"
+                                            (closeClick)="isEditing=false;"
+                                        >
+                                </d3s-admin-template-editor>
+                    </div>
+                </div>
                </div>               
                 `,
     providers: [TemplatesService],
@@ -97,11 +108,6 @@ export class AdminTemplatesComponent {
             index++;
             if (template.ID == id) return index;
         }
-    }
-
-    showDelete(template: Template) {
-        this.selectedTemplate = template;        
-        this.isDeleting = true;        
     }
 
     updateTemplate(event) {        
