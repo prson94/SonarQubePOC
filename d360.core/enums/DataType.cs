@@ -27,13 +27,13 @@ namespace d360.core
         Lookup,
         [Description("Simple Text")]
         Text,
-        [Description("Password")]
+        [Description("Password"), ReadOnly(true)]
         Password,
         [Description("Link")]
         Link,
         [Description("UNC/File Link"), ReadOnly(true)]
         UncLink,
-        [Description("Color Picker")]
+        [Description("Color Picker"), ReadOnly(true)]
         Color,
         [Description("Fusion Lookup")]
         FusionLookup,

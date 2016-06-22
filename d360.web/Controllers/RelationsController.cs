@@ -1048,11 +1048,13 @@ from	(
 
             var model = new DiagramModel();
 
-            Func<string, int, string, int> getTotalSourceRules = delegate(string obj, int objID, string currentType) {
+            Func<string, int, string, int> getTotalSourceRules = delegate (string obj, int objID, string currentType)
+            {
                 return list.Where(i => i.O == obj && i.OID == objID && i.Type == "O").Sum(i => i.RawSourceRuleCount);
             };
 
-            Func<string, int, string, int> getTotalMappingRules = delegate (string obj, int objID, string currentType) {
+            Func<string, int, string, int> getTotalMappingRules = delegate (string obj, int objID, string currentType)
+            {
                 return list.Where(i => i.O == obj && i.OID == objID && i.Type == "O").Sum(i => i.RawMappingRuleCount);
             };
 
@@ -1087,7 +1089,7 @@ from	(
             return new JsonNetResult
             {
                 Data = new { model.nodes, model.links },
-                Formatting = Newtonsoft.Json.Formatting.None
+                Formatting = Formatting.None
             };
         }
 
@@ -1227,198 +1229,161 @@ for		    xml path('relationship'), root('item')
 
         #region Partials
 
-        //public ActionResult AddRelationship(SystemObjects source, int sourceID, SystemObjects target, int targetID)
-        //{
-        //    ViewData.Add("Source", source.ToString());
-        //    ViewData.Add("SourceID", sourceID);
-        //    ViewData.Add("TargetType", target.ToString());
-        //    ViewData.Add("TargetTypeID", targetID);
+//        [Obsolete, HttpPost, Route("sources")]
+//        public JsonNetResult LineageSourcePost(SourcePostModel models)
+//        {
+//            var message = "";
+//            var success = false;
 
-        //    //var row = 0;
-        //    //var list = new List<EditableField>();
-        //    //list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, at).ToList(), row + 1);
-        //    return PartialView();// (list);
-        //}
+//            models.Adds.ForEach(model =>
+//            {
+//                #region 
+//                if (string.IsNullOrEmpty(model.Focal) || model.FocalID <= 0)
+//                {
+//                    message += $"The Target, or current object, you provided is invalid.";
+//                }
+//                else
+//                {
+//                    if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
+//                    {
+//                        message += $"The Subject you provided is invalid.";
+//                    }
+//                    else
+//                    {
+//                        if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
+//                        {
+//                            message += $"The Object you provided is invalid.";
+//                        }
+//                        else
+//                        {
+//                            if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+//                            {
+//                                message += $"A source may not map to itself directly.";
+//                            }
+//                            else
+//                            {
+//                                var predicate = Company.GetById<Predicate>(model.PredicateID);
 
-        //[HttpGet, Route("sources/{type}/{id:int}/add")]
-        //public ActionResult AddSource(SystemObjects type, int id)
-        //{
-        //    var dtl = Company.GetObjectDetail(type, id);
-        //    ViewBag.ObjectName = dtl.Name;
-        //    ViewBag.Object = type.ToString();
-        //    ViewBag.ObjectID = id;
-        //    dtl = null;
-        //    return PartialView();
-        //}
+//                                if (predicate.Type == PredicateType.Lineage)
+//                                {
+//                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Subject}{model.SubjectID}")
+//                                        Company.AddRelationship(model.Focal, model.FocalID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
 
-        [HttpPost, Route("sources")]
-        public JsonNetResult LineageSourcePost(SourcePostModel models)
-        {
-            var message = "";
-            var success = false;
-
-            models.Adds.ForEach(model =>
-            {
-                #region 
-                if (string.IsNullOrEmpty(model.Focal) || model.FocalID <= 0)
-                {
-                    message += $"The Target, or current object, you provided is invalid.";
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
-                    {
-                        message += $"The Subject you provided is invalid.";
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
-                        {
-                            message += $"The Object you provided is invalid.";
-                        }
-                        else
-                        {
-                            if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
-                            {
-                                message += $"A source may not map to itself directly.";
-                            }
-                            else
-                            {
-                                var predicate = Company.GetById<Predicate>(model.PredicateID);
-
-                                if (predicate.Type == PredicateType.Lineage)
-                                {
-                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Subject}{model.SubjectID}")
-                                        Company.AddRelationship(model.Focal, model.FocalID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
-
-                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Object}{model.ObjectID}")
-                                        Company.AddRelationship(model.Focal, model.FocalID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-                                }
+//                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Object}{model.ObjectID}")
+//                                        Company.AddRelationship(model.Focal, model.FocalID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+//                                }
 
 
-                                Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-                                var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
-S.IntersectID,
-S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
-O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
-from [IntersectNode] S 
-inner join IntersectNode O on O.IntersectID = S.IntersectID 
-and S.[ObjectType] = @s and S.ObjectID = @sid 
-and O.[ObjectType] = @o and O.ObjectID = @oid",
-            new { s = new Dapper.DbString { Value = model.Subject, IsAnsi = true }, sid = model.SubjectID, o = new Dapper.DbString { Value = model.Object, IsAnsi = true }, oid = model.ObjectID }
-            ).SingleOrDefault();
-                                if (intersect != null)
-                                {
-                                    var existingSourceRecordCount = Company.Query<int>(
-                                        "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
-                                        new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
-                                    ).Single();
+//                                Company.AddRelationship(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+//                                var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
+//S.IntersectID,
+//S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
+//O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
+//from [IntersectNode] S 
+//inner join IntersectNode O on O.IntersectID = S.IntersectID 
+//and S.[ObjectType] = @s and S.ObjectID = @sid 
+//and O.[ObjectType] = @o and O.ObjectID = @oid",
+//            new { s = new Dapper.DbString { Value = model.Subject, IsAnsi = true }, sid = model.SubjectID, o = new Dapper.DbString { Value = model.Object, IsAnsi = true }, oid = model.ObjectID }
+//            ).SingleOrDefault();
+//                                if (intersect != null)
+//                                {
+//                                    var existingSourceRecordCount = Company.Query<int>(
+//                                        "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
+//                                        new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
+//                                    ).Single();
 
-                                    if (existingSourceRecordCount <= 0)
-                                    {
-                                        // If we got here, we are all good.
+//                                    if (existingSourceRecordCount <= 0)
+//                                    {
+//                                        // If we got here, we are all good.
 
-                                        var intersectMap = new IntersectMap
-                                        {
-                                            ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
-                                            PredicateID = model.PredicateID,
-                                            SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                            Type = PredicateType.Lineage
-                                        };
-                                        Company.Add<IntersectMap>(intersectMap);
-                                    }
-                                }
-                                else
-                                {
-                                    message += $"The Subject or Object did not match up with the Relationship you provided.";
-                                }
-                            }
-                        }
-                    }
-                }
-                #endregion
-            });
+//                                        var intersectMap = new IntersectMap
+//                                        {
+//                                            ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
+//                                            PredicateID = model.PredicateID,
+//                                            SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
+//                                            Type = PredicateType.Lineage
+//                                        };
+//                                        Company.Add<IntersectMap>(intersectMap);
+//                                    }
+//                                }
+//                                else
+//                                {
+//                                    message += $"The Subject or Object did not match up with the Relationship you provided.";
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                #endregion
+//            });
 
-            models.Deletes.ForEach(model =>
-            {
-                #region 
-                if (model.IntersectMapID <= 0)
-                {
-                    message = $"The source ID ({model.IntersectMapID}) is invalid.";
-                }
-                else
-                {
-                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
-                    if (o == null)
-                    {
-                        message += $"The source with ID ({model.IntersectMapID}) could not be found.";
-                    }
-                    else
-                    {
-                        if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Delete, ClaimObject.Relationship))
-                        {
-                            message = FormInfo.Permisions_Error_Delete;
-                        }
-                        else
-                        {
-                            Company.Delete<IntersectMap>(o);
-                        }
-                    }
-                }
-                #endregion
-            });
+//            models.Deletes.ForEach(model =>
+//            {
+//                #region 
+//                if (model.IntersectMapID <= 0)
+//                {
+//                    message = $"The source ID ({model.IntersectMapID}) is invalid.";
+//                }
+//                else
+//                {
+//                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
+//                    if (o == null)
+//                    {
+//                        message += $"The source with ID ({model.IntersectMapID}) could not be found.";
+//                    }
+//                    else
+//                    {
+//                        if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Delete, ClaimObject.Relationship))
+//                        {
+//                            message = FormInfo.Permisions_Error_Delete;
+//                        }
+//                        else
+//                        {
+//                            Company.Delete<IntersectMap>(o);
+//                        }
+//                    }
+//                }
+//                #endregion
+//            });
 
-            models.Edits.ForEach(model =>
-            {
-                #region 
-                if (model.IntersectMapID <= 0)
-                {
-                    message += $"The intersect map ID ({model.IntersectMapID}) is invalid.";
-                }
-                else
-                {
-                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
-                    if (o == null)
-                    {
-                        message += $"The intersect map record with ID ({model.IntersectMapID}) cound not be found.";
-                    }
-                    else
-                    {
-                        o.PredicateID = model.PredicateID;
-                        Company.Update(o);
-                    }
-                }
-                #endregion
-            });
+//            models.Edits.ForEach(model =>
+//            {
+//                #region 
+//                if (model.IntersectMapID <= 0)
+//                {
+//                    message += $"The intersect map ID ({model.IntersectMapID}) is invalid.";
+//                }
+//                else
+//                {
+//                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
+//                    if (o == null)
+//                    {
+//                        message += $"The intersect map record with ID ({model.IntersectMapID}) cound not be found.";
+//                    }
+//                    else
+//                    {
+//                        o.PredicateID = model.PredicateID;
+//                        Company.Update(o);
+//                    }
+//                }
+//                #endregion
+//            });
 
-            success = string.IsNullOrEmpty(message);
+//            success = string.IsNullOrEmpty(message);
 
-            if (string.IsNullOrEmpty(message))
-            {
-                message = "Successfully updated lineage.";
-            }
+//            if (string.IsNullOrEmpty(message))
+//            {
+//                message = "Successfully updated lineage.";
+//            }
 
-            return new JsonNetResult {
-                Data = new {
-                    message = message,
-                    success = success
-                },
-                Formatting = Formatting.None
-            };
-        }
-
-        //public ActionResult EditRelationship(int id)
-        //{
-        //    ViewData.Add("IntersectID", id);
-        //    var intersect = Company.GetById<Intersect>(id);
-        //    var model = new EditRelationshipModel {
-        //        Classification = intersect.Classification ?? 0,
-        //        Description = intersect.Description,
-        //        IntersectTypeID = intersect.IntersectTypeID
-        //    };
-        //    intersect = null;
-        //    return PartialView(model);
-        //}
+//            return new JsonNetResult {
+//                Data = new {
+//                    message = message,
+//                    success = success
+//                },
+//                Formatting = Formatting.None
+//            };
+//        }
 
         public ActionResult AggregateRelationOverlay(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly = false)
         {

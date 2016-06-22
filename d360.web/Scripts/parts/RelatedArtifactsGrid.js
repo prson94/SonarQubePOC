@@ -68,6 +68,8 @@
 
     //#region Textbox
 
+    if (!typeID) typeID = 0;
+
     var relatedArtifactsDataSource = {
         datatype: "json",
         datafields: [

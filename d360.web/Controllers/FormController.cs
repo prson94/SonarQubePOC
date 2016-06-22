@@ -660,7 +660,7 @@ namespace d360.web.Controllers
                 model.ParentID = parseIntField(form, "ParentID");
                 if (model.ParentID == 0) model.ParentID = null;
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Artifact>(model, fields);
 
                 return jsonSuccess(model.ArtifactType.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
@@ -1563,7 +1563,7 @@ namespace d360.web.Controllers
                 if (model == null) throw new NotFoundException("attribute");
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Attribute, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.AttributeType, model.AttributeTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Attribute, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.AttributeType, model.AttributeTypeID).ToList(), form, Server, false);
 
                 Company.SaveOrUpdate<core.entities.Attribute>(model, fields);
 
@@ -4530,14 +4530,14 @@ order by  D.TextPath
 
             var patterns = new Dictionary<string, string>() {
                 { "Choose sample...", "" },
-                { "Email", @"\b([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
-                { "IP Address", @"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b" },
-                { "North American Phone", @"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },
-                { "Numbers Only", @"\b\d+(\.\d{1,10})?\b" },
-                { "Unc/Network Path", @"(\\{2})([\da-z\.-]+)(\\)([\w \.-]+)" },
-                { "Internal Url", @"\b(https?:\/\/)?([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
-                { "Public Url", @"\b(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
-                { "US Zip Code", @"\b[0-9]{5}(?:-[0-9]{4})?\b" }
+                { "Email", @"^$|\b([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
+                { "IP Address", @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
+                { "North American Phone", @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },
+                //{ "International Phone", @"^$|\b\\+(9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)\W*\d\W*\d\W*\d\W*\d\W*\d\W*\d\W*\d\W*\d\W*(\d{1,2})\b" },
+                //{ "Unc/Network Path", @"^$|^([A-Za-z]:){1}\\.+$|^\\\\.+$|^\/.+$" },
+                { "Internal Url", @"^$|\b(http(s)?:\/\/){1}([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
+                { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
+                { "US Zip Code", @"^$|\b[0-9]{5}(?:-[0-9]{4})?\b" }
             };
             var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList()
                     .Where(i => !i.ReadOnly)
@@ -5457,7 +5457,7 @@ order by  D.TextPath
 
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, model.FusionTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, model.FusionTypeID).ToList(), form, Server, false);
 
                 Company.SaveOrUpdate<Fusion>(model, fields);
 
@@ -9159,6 +9159,23 @@ order by  D.TextPath
         /// Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
         /// </summary>
         /// <returns>A list of relevant fusion attribute types.</returns>
+        public JsonNetResult Lineage_IntersectRoles()
+        {
+            return new JsonNetResult
+            {
+                Data = Company
+                    .Table<IntersectRole>()
+                    .ToList()
+                    .Select(i => new { title = $"{i.Name}", value = $"{i.ID}" })
+                    .OrderBy(i => i.title),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
+        /// Gets a list of intersect types that support lineage.
+        /// </summary>
+        /// <returns>A list of relevant fusion attribute types.</returns>
         public JsonNetResult Lineage_IntersectTypes()
         {
             return new JsonNetResult
@@ -9248,6 +9265,128 @@ order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = in
             });
 
             return new JsonNetResult { Data = model.Items, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        /// <summary>
+        /// Creates relationships for the various objects the user is adding to the diagram.
+        /// </summary>
+        /// <param name="models">An array of items to add relationships for.</param>
+        /// <returns>A list of name/value pairs.</returns>
+        [HttpPost]
+        public JsonNetResult Lineage_Update(SourcePostModel models)
+        {
+            var message = "";
+            var success = false;
+
+            models.Adds.ForEach(model =>
+            {
+                #region 
+                if (model.SourceIntersectID <= 0)
+                {
+                    message += $"The source you provided is invalid.";
+                }
+                else
+                {
+                    if (model.TargetIntersectID <= 0)
+                    {
+                        message += $"The target you provided is invalid.";
+                    }
+                    else
+                    {
+                        if (model.SourceIntersectID == model.TargetIntersectID)
+                        {
+                            message += $"A source may not map to itself directly.";
+                        }
+                        else
+                        {
+                            var role = Company.GetById<IntersectRole>(model.IntersectRoleID);
+                            if (role == null)
+                            {
+                                message += $"The role you provided is invalid.";
+                            }
+                            else
+                            {
+                                var newMap = new Map { Name = $"Map between {model.SourceIntersectID} and {model.TargetIntersectID}", IntersectRoleID = model.IntersectRoleID, Transformation = "" };
+                                newMap.MapItems = new List<MapItem>();
+                                newMap.MapItems.Add(new MapItem { IsSource = true, IntersectID = model.SourceIntersectID });
+                                newMap.MapItems.Add(new MapItem { IsSource = false, IntersectID = model.TargetIntersectID });
+                                Company.Add<Map>(newMap);
+                            }
+                        }
+                    }
+                }
+                
+                #endregion
+            });
+
+            models.Deletes.ForEach(model =>
+            {
+                #region 
+                if (model.MapID <= 0)
+                {
+                    message = $"The ID ({model.MapID}) is invalid.";
+                }
+                else
+                {
+                    var o = Company.GetById<Map>(model.MapID);
+                    if (o == null)
+                    {
+                        message += $"The ID ({model.MapID}) could not be found.";
+                    }
+                    else
+                    {
+                        //if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Delete, ClaimObject.Relationship))
+                        //{
+                        //    message = FormInfo.Permisions_Error_Delete;
+                        //}
+                        //else
+                        //{
+                            Company.Delete<Map>(o);
+                        //}
+                    }
+                }
+                #endregion
+            });
+
+            models.Edits.ForEach(model =>
+            {
+                #region 
+                if (model.MapID <= 0)
+                {
+                    message += $"The map ID ({model.MapID}) is invalid.";
+                }
+                else
+                {
+                    var o = Company.GetById<Map>(model.MapID);
+                    if (o == null)
+                    {
+                        message += $"The map with ID ({model.MapID}) cound not be found.";
+                    }
+                    else
+                    {
+                        o.IntersectRoleID = model.IntersectRoleID;
+                        Company.Update(o);
+                    }
+                }
+                #endregion
+            });
+
+            success = string.IsNullOrEmpty(message);
+
+            if (string.IsNullOrEmpty(message))
+            {
+                message = "Successfully updated lineage.";
+            }
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    message = message,
+                    success = success
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
 
         #endregion
@@ -9892,7 +10031,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (!Company.HasPermission(SystemObjects.LookupType, model.LookupTypeID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, model.LookupTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Lookup, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, model.LookupTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Lookup>(model, fields);
 
                 return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
@@ -10328,7 +10467,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 Company.Update<Policy>(model);
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
                 dynamic custom = new
@@ -11847,7 +11986,7 @@ order by D.TextPath";
                 intersect.Description = description;
 
                 Company.Update<Intersect>(intersect);
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
                 return jsonSuccess("Relationship successfully updated.", intersect.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
@@ -14626,7 +14765,7 @@ order by	D.Name, I.Name";
                 Company.Update<GlobalReportingResource>(gr);
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
                 if (Request.ContentLength > 0)
@@ -14682,7 +14821,7 @@ order by	D.Name, I.Name";
                 model.LastName = parseTextField(form, "LastName");
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
                 Community.Update<Resource>(model);
@@ -17622,7 +17761,7 @@ order by TextPath
                 model.ParentID = parseIntField(form, "ParentID");
                 if (model.ParentID == 0) model.ParentID = null;
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.TaxonomyType, model.TaxonomyTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.TaxonomyType, model.TaxonomyTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Taxonomy>(model, fields);
 
                 dynamic custom = new

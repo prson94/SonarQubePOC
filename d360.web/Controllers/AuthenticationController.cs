@@ -392,13 +392,20 @@ namespace d360.web.Controllers
                         // Get the originally requested resource URL from the relay state, if any.
                         string redirectURL = "/#";
 
-                        RelayState cachedRelayState = RelayStateCache.Remove(relayState);
-
-                        if (cachedRelayState != null)
+                        try
                         {
-                            var sendToUrl = cachedRelayState.ResourceURL;
-                            if (sendToUrl.Contains("?hashPath=")) sendToUrl = Server.UrlDecode(sendToUrl.Replace("?hashPath=", "#"));
-                            redirectURL = sendToUrl;
+                            RelayState cachedRelayState = RelayStateCache.Remove(relayState);
+
+                            if (cachedRelayState != null)
+                            {
+                                var sendToUrl = cachedRelayState.ResourceURL;
+                                if (sendToUrl.Contains("?hashPath=")) sendToUrl = Server.UrlDecode(sendToUrl.Replace("?hashPath=", "#"));
+                                redirectURL = sendToUrl;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            redirectURL = "/#";
                         }
 
                         // Redirect to the originally requested resource URL, if any, or the default page.

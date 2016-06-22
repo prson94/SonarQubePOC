@@ -26,12 +26,12 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 8; //10
+            var companyID = 4; //10
             var fusionTypeID = 8;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
-            var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FieldTypes);
-            var fusionAttributeTypes = community.Filter<d360.core.entities.Plugins.FusionAttributeType>(i => i.FusionTypeID == fusionTypeID, i => i.FieldTypes).ToList();
+            var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
+            var fusionAttributeTypes = community.Filter<d360.core.entities.Plugins.FusionAttributeType>(i => i.FusionTypeID == fusionTypeID, i => i.FusionAttributeTypeFields).ToList();
             var fusionIntersectTypes = community.Filter<d360.core.entities.Plugins.FusionIntersectType>(i => i.FusionTypeID == fusionTypeID).ToList();
 
             var company = getCompanyConnection(companyID);
@@ -40,7 +40,16 @@ namespace d360.test.jobs
 if not exists(select 1 from FusionType where ID = @i) BEGIN INSERT INTO FusionType (ID, Name, Description) VALUES (@i, @n, @d) END
 SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Name, d = fusionType.Description });
 
-            loadFields(company, "FusionType", fusionType.ID, fusionType.FieldTypes);
+            foreach (var o in fusionType.FusionTypeFields)
+            {
+                var oID = company.Execute(@"
+                    declare @ft int
+                    if not exists(select 1 from FieldType where Name = @n and [Object] = 'FusionType' and ObjectID = @oid) 
+                    BEGIN 
+                    INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable) VALUES (@n, @f, @t, 'FusionType', @oid, @s, 0, @l) 
+                    END",
+                new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionTypeID, s = o.SortOrder, l = o.IsListable });
+            }
 
             loadFusionAttributeTypes(company, fusionType.ID, "FusionAttributeType", null, fusionAttributeTypes);
 
@@ -50,7 +59,7 @@ if not exists(select 1 from IntersectTypeNode S inner join IntersectTypeNode T o
 BEGIN 
             declare @intersectTypeID int
 
-			INSERT INTO IntersectType (UpdatedOn, UpdatedBy) values (getutcdate(), 0)
+			INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy) values (@type, @si, @type, @ti, getutcdate(), 0)
 			set @intersectTypeID = SCOPE_IDENTITY()
 
 			INSERT INTO IntersectTypeNode (IntersectTypeID, ObjectType, ObjectID, [Order]) values (@intersectTypeID, @type, @si, 1)
@@ -90,26 +99,21 @@ INSERT INTO FusionAttributeType (ID, ParentID, FusionTypeID, Name, Assignable) V
 SET IDENTITY_INSERT FusionAttributeType OFF
 END",
                 new { i = t.ID, p = parentID, t = fusionTypeID, n = t.Name });
-                loadFields(company, type, t.ID, t.FieldTypes);
+
+                foreach (var o in t.FusionAttributeTypeFields)
+                {
+                    var oID = company.Execute(@"
+                    declare @ft int
+                    if not exists(select 1 from FieldType where Name = @n and [Object] = 'FusionAttributeType' and ObjectID = @oid) 
+                    BEGIN 
+                    INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable) VALUES (@n, @f, @t, 'FusionAttributeType', @oid, @s, 0, @l) 
+                    END 
+                    ",
+                    new { n = o.Name, f = o.FriendlyName, t = o.Type, oid = o.FusionAttributeTypeID, s = o.SortOrder, l = o.IsListable });
+                }
+
                 loadFusionAttributeTypes(company, fusionTypeID, type, t.ID, types);
             });
-        }
-
-        void loadFields(SqlConnection company, string type, int id, ICollection<d360.core.entities.Plugins.FieldType> fieldTypes)
-        {
-            int sort = 1;
-            foreach (var o in fieldTypes)
-            {
-                var oID = company.Execute(@"
-declare @ft int
-if not exists(select 1 from FieldType where Name = @n and [Object] = @ot and ObjectID = @oid) 
-BEGIN 
-INSERT INTO FieldType (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable) VALUES (@n, @f, @t, @ot, @oid, @s, 0, 1) 
-END 
-", 
-                new { n = o.Name, f = o.FriendlyName, t = o.Type, ot = type, oid = id, s = sort });
-                sort++;
-            }        
         }
 
         [TestMethod]
@@ -199,7 +203,6 @@ from    Artifact A
             var source = new ElasticSearchSource();
             var results = source.GetSearchResults(4, 1, "Data Warehouse",10,0);
         }
-
         
         [TestMethod]
         public void Search_ClearIndexGroup()
@@ -410,7 +413,6 @@ from    Artifact A
             var storage = new AzureStorageProvider();
             Assert.IsTrue(storage.ReleaseLockOnBlobFile(folder, file));
         }
-
 
         [TestMethod]
         public void DeployFusionLookupEagleStarTagData()

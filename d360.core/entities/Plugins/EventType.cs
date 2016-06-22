@@ -15,8 +15,5 @@ namespace d360.core.entities.Plugins
         public string Description { get; set; }
         [DataMember]
         public bool MarkAsResolvedOnSynch { get; set; }
-
-        [ForeignKey("EventTypeID")]
-        public ICollection<FieldType> FieldTypes { get; set; }
     }
 }

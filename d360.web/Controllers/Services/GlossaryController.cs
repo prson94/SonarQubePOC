@@ -69,8 +69,15 @@ namespace d360.web.Controllers.Services
                         var rd = relationDefinitions.SingleOrDefault(i => i.FieldTypeID == f.ID);
                         if (rd != null)
                         {
+                            //var columnPrefix = rd.ReferenceType == 1 ? "D" : "D2";
+
                             if (rd.FieldTypeRelationLookupDisplayFields != null)
                             {
+                                var where = string.Empty;
+                                var orderBy = string.Empty;
+
+                                #region Build sub-select
+
                                 if (rd.FieldTypeRelationLookupDisplayFields.Count > 0)
                                 {
 
@@ -79,7 +86,6 @@ namespace d360.web.Controllers.Services
 
                                     foreach (var df in rd.FieldTypeRelationLookupDisplayFields)
                                     {
-
                                         if (df.FieldTypeID == 0)
                                         {
                                             columnSql.Add($"D_{rd.ID}.{df.FieldTypeName}");
@@ -92,10 +98,70 @@ namespace d360.web.Controllers.Services
                                             joinSql.Add($"left join Field {name}_{df.FieldTypeID}_RF_{df.ID} on {name}_{df.FieldTypeID}_RF_{df.ID}.FieldTypeID = {df.FieldTypeID} and {name}_{df.FieldTypeID}_RF_{df.ID}.ObjectType = D_{rd.ID}.Object and {name}_{df.FieldTypeID}_RF_{df.ID}.ObjectID = D_{rd.ID}.ObjectID");
                                         }
                                     }
-                                    columns += "(select distinct ";
+
+                                    #region Build where
+
+                                    foreach (var df in rd.FieldTypeRelationLookupDisplayFields.Where(i => !string.IsNullOrEmpty(i.FilterValue)))
+                                    {
+                                        where += (string.IsNullOrEmpty(where) ? "" : "AND ");
+                                        if (df.FieldTypeID > 0)
+                                        {
+                                            where += $" {name}_{df.FieldTypeID}_RF_{df.ID}.FormattedValue like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                                        }
+                                        else
+                                        {
+                                            where += $" D_{rd.ID}.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                                        }
+                                    }
+
+                                    #endregion Build where
+
+                                    #region Build order by
+
+
+                                    foreach (var df in rd.FieldTypeRelationLookupDisplayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
+                                    {
+                                        orderBy += (string.IsNullOrEmpty(orderBy) ? "" : ", ");
+                                        if (df.FieldTypeID > 0)
+                                        {
+                                            var prefix = $"{name}_{df.FieldTypeID}_RF_{df.ID}";
+
+                                            var fieldTypeInfo = Company.Filter<FieldType>(i => i.ID == df.FieldTypeID).SingleOrDefault();
+                                            if (fieldTypeInfo != null)
+                                            {
+                                                switch (fieldTypeInfo.Type)
+                                                {
+                                                    case "Date":
+                                                    case "DateTime":
+                                                        orderBy += $" cast({prefix}.FormattedValue as datetime) asc";
+                                                        break;
+                                                    case "Decimal":
+                                                    case "Number":
+                                                        orderBy += $" cast({prefix}.FormattedValue as decimal) asc";
+                                                        break;
+                                                    default:
+                                                        orderBy += $" {prefix}.FormattedValue asc";
+                                                        break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                orderBy += $" {prefix}.FormattedValue asc";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            orderBy += $" D_{rd.ID}.{df.FieldTypeName} asc";
+                                        }
+                                    }
+
+                                    #endregion Build order by
+
+                                    columns += "(select  "; //" distinct "
                                     columns += string.Join(", ", columnSql);
                                     if (rd.ReferenceType == 1)
                                     {
+                                        // self reference
                                         columns += $@" from [Intersect] I_{rd.ID} 
  inner join [cache].[ObjectDetails] D_{rd.ID} on D_{rd.ID}.[Object] = case when I_{rd.ID}.Subject = 'Artifact' and I_{rd.ID}.SubjectID = A.ID then I_{rd.ID}.Object else I_{rd.ID}.Subject end 
  and D_{rd.ID}.ObjectID = case when I_{rd.ID}.Subject = 'Artifact' and I_{rd.ID}.SubjectID = A.ID then I_{rd.ID}.ObjectID else I_{rd.ID}.SubjectID end ";
@@ -105,7 +171,7 @@ namespace d360.web.Controllers.Services
                                     }
                                     else
                                     {
-                                        //child reference
+                                        // child reference
                                         columns += $@" from [Intersect] I_{rd.ID} inner join [Intersect] I_C_{rd.ID} on I_{rd.ID}.IntersectTypeID = {rd.IntersectTypeID} and 
 										( 
 											(I_{rd.ID}.Subject = 'Artifact' and I_{rd.ID}.SubjectID = A.ID) OR 
@@ -121,8 +187,22 @@ namespace d360.web.Controllers.Services
                                         columns += string.Join(" ", joinSql);
                                     }
 
+                                    if (!string.IsNullOrEmpty(where))
+                                    {
+                                        where = ((rd.ReferenceType == 1) ? " and " : " where ") + where;
+                                    }
+                                    columns += where;
+
+                                    if (!string.IsNullOrEmpty(orderBy))
+                                    {
+                                        orderBy = " order by " + orderBy;
+                                    }
+                                    columns += orderBy;
+
                                     columns += $" for json path) as [{name}], ";
                                 }
+
+                                #endregion Build sub-select
                             }
                         }
                         break;
@@ -134,7 +214,6 @@ namespace d360.web.Controllers.Services
             }
 
             fields = null;
-
 
             var querySql = $@"
 select	A.ID,
@@ -150,7 +229,7 @@ select	A.ID,
 from	Artifact A 
         --left join Artifact P on P.ID = A.ParentID 
         {joins}
-where   A.ArtifactTypeID = @id
+where   A.ArtifactTypeID = @id 
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();

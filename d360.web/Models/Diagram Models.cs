@@ -41,8 +41,7 @@ namespace d360.web.Models
         public string back { get; set; }
         public string fore { get; set; }
         public int level { get; set; }
-        public bool exclude { get; set; }
-        public int intersectMapId { get; set; }
+        public int mapId { get; set; }
         public int intersectId { get; set; }
         public int sourceRuleCount { get; set; }
         public int mappingRuleCount { get; set; }
@@ -55,19 +54,23 @@ namespace d360.web.Models
         {
             return level.ToString();
         }
+
+        public int intersectMapId { get; set; }
     }
 
     public class JsonLinkItem
     {
         public int id { get; set; }
-        public int intersectTypeId { get; set; }
         public string from { get; set; }
         public string frompid { get { return "OUT"; } }
         public string to { get; set; }
         public string text { get; set; }
-        public int predicateId { get; set; }
+        public int intersectRoleId { get; set; }
         public int mappingRuleCount { get; set; }
         public int transformationCount { get; set; }
+
+        public int intersectTypeId { get; set; }
+        public int predicateId { get; set; }
     }
 
     public class DiagramModel

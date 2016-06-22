@@ -160,16 +160,16 @@
       <HintPath>..\packages\Microsoft.Owin.Security.3.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.PowerBI.Api, Version=1.0.12.16089, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Bin\Microsoft.PowerBI.Api.dll</HintPath>
+      <HintPath>..\packages\Microsoft.PowerBI.Api.1.0.12-preview\lib\portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10\Microsoft.PowerBI.Api.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.PowerBI.AspNet.Mvc, Version=1.0.12.16089, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.PowerBI.AspNet.Mvc.1.0.12-preview\lib\net45\Microsoft.PowerBI.AspNet.Mvc.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.PowerBI.Core, Version=1.0.12.16089, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Bin\Microsoft.PowerBI.Core.dll</HintPath>
+      <HintPath>..\packages\Microsoft.PowerBI.Core.1.0.12-preview\lib\net45\Microsoft.PowerBI.Core.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll</HintPath>
@@ -180,8 +180,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Rest.ClientRuntime, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Bin\Microsoft.Rest.ClientRuntime.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Rest.ClientRuntime.2.0.1\lib\net45\Microsoft.Rest.ClientRuntime.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.ServiceBus, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WindowsAzure.ServiceBus.3.2.2\lib\net45-full\Microsoft.ServiceBus.dll</HintPath>
@@ -505,6 +505,10 @@
     <Content Include="Content\primeng\d3s\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="Content\primeng\d3s\images\ui-icons_ffffff_256x240.png" />
     <Content Include="Content\primeng\d3s\theme.css" />
+    <Content Include="Content\styles\all.css" />
+    <Content Include="Content\styles\all.min.css">
+      <DependentUpon>all.css</DependentUpon>
+    </Content>
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
@@ -542,6 +546,7 @@
     <Content Include="Content\templates\artifacts.root.html" />
     <Content Include="Content\templates\parts\DetailTile.html" />
     <Content Include="Content\templates\parts\DetailTileSmall.html" />
+    <Content Include="Content\templates\parts\NewLineageDiagram.html" />
     <Content Include="Content\templates\parts\LineageDiagram.html" />
     <Content Include="Content\templates\parts\LineageDiagramBusinessTransformations.html" />
     <Content Include="Content\templates\parts\LineageDiagramMappingRules.html" />
@@ -554,10 +559,6 @@
     <Content Include="Content\templates\taxonomies.root.html" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
-    <Content Include="Content\styles\all.css" />
-    <Content Include="Content\styles\all.min.css">
-      <DependentUpon>all.css</DependentUpon>
-    </Content>
     <Content Include="Content\styles\images\check_black.png" />
     <Content Include="Content\styles\images\check_disabled.png" />
     <Content Include="Content\styles\images\check_indeterminate_black.png" />
@@ -882,9 +883,29 @@
     <Content Include="Content\templates\artifacts.admin.html" />
     <Content Include="Content\templates\_content.header.html" />
     <Content Include="images\logo.png" />
-    <Content Include="Scripts\app\components\forms\artifact-type.form.html" />
+    <Content Include="node_modules\lodash\lodash.min.js" />
+    <Content Include="node_modules\primeui\primeui-ng-all.min.css" />
+    <Content Include="node_modules\primeui\themes\omega\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="node_modules\primeui\themes\omega\images\icons_16.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\slider_handles%402x.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\slider_handles.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-icons_222222_256x240.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-icons_454545_256x240.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="node_modules\primeui\themes\omega\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="node_modules\primeui\themes\omega\theme.css" />
     <Content Include="Scripts\parts\NewLineageDiagram.js" />
     <Content Include="Scripts\powerbi.js" />
+    <Content Include="Scripts\powerbi.min.js" />
     <Content Include="ui.html" />
     <Content Include="node-test.html" />
     <Content Include="node_modules\es6-shim\es6-sham.js" />
@@ -927,6 +948,10 @@
     <Content Include="node_modules\systemjs\dist\system-polyfills.js.map" />
     <Content Include="node_modules\systemjs\dist\system-register-only.js.map" />
     <Content Include="node_modules\systemjs\dist\system.js.map" />
+    <Content Include="node_modules\primeui\themes\omega\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="node_modules\primeui\themes\omega\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="node_modules\primeui\themes\omega\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="node_modules\primeui\themes\omega\fonts\roboto-v15-latin-regular.woff2" />
     <None Include="Properties\PublishProfiles\d3s-ui-central-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />

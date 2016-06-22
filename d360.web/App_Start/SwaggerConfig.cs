@@ -32,7 +32,7 @@ namespace d360.web
                         // hold additional metadata for an API. Version and title are required but you can also provide
                         // additional fields by chaining methods off SingleApiVersion.
                         //
-                        c.SingleApiVersion("v1", "d360.web");
+                        c.SingleApiVersion("v1", "Data3Sixty Service Endpoints");
 
                         // If your API has multiple versions, use "MultipleApiVersions" instead of "SingleApiVersion".
                         // In this case, you must provide a lambda that tells Swashbuckle which actions should be
@@ -57,10 +57,10 @@ namespace d360.web
                         //c.BasicAuth("basic")
                         //    .Description("Basic HTTP Authentication");
                         //
-                        //c.ApiKey("apiKey")
-                        //    .Description("API Key Authentication")
-                        //    .Name("apiKey")
-                        //    .In("header");
+                        c.ApiKey("apiKey")
+                            .Description("API Key Authentication (i.e.   KEY;SECRET)")
+                            .Name("Authorization")
+                            .In("header");
                         //
                         //c.OAuth2("oauth2")
                         //    .Description("OAuth2 Implicit Grant")
@@ -96,7 +96,7 @@ namespace d360.web
                         // those comments into the generated docs and UI. You can enable this by providing the path to one or
                         // more Xml comment files.
                         //
-                        //c.IncludeXmlComments(GetXmlCommentsPath());
+                        c.IncludeXmlComments($@"{System.AppDomain.CurrentDomain.BaseDirectory}\App_Data\Documentation.XML");
 
                         // Swashbuckle makes a best attempt at generating Swagger compliant JSON schemas for the various types
                         // exposed in your API. However, there may be occasions when more control of the output is needed.
@@ -138,7 +138,7 @@ namespace d360.web
                         // enum type. Swashbuckle will honor this change out-of-the-box. However, if you use a different
                         // approach to serialize enums as strings, you can also force Swashbuckle to describe them as strings.
                         // 
-                        //c.DescribeAllEnumsAsStrings();
+                        c.DescribeAllEnumsAsStrings();
 
                         // Similar to Schema filters, Swashbuckle also supports Operation and Document filters:
                         //

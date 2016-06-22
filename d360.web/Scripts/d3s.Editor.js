@@ -119,7 +119,6 @@
                                 }
 
                                 validation.regex = validation.regex.replace('\\\\', '\\');
-                                console.log(validation.regex);
                                 var regex = new RegExp(validation.regex);
                                 return regex.test(value);
                             }
@@ -485,13 +484,6 @@
                                 break;
 
                                 //#endregion
-                            //case 'File':
-                            //    //#region File Field Management
-
-                            //    fld = $("<input type='file' name='" + v.FieldName + "' id='" + v.FieldName + "'/>");
-                            //    break;
-
-                            //    //#endregion
                             case 'Boolean':
                                 //#region Boolean Field Management
 
@@ -581,58 +573,33 @@
 
                                 addLabel(cpnl, v, false);
 
-                                var minValue = -99999999;
-                                var maxValue = 99999999;
+                                fld = $('<input type="text" id="' + v.FieldName + '" name="' + v.FieldName + '" />');
 
-                                if (v.RangeMin) {
-                                    minValue = v.RangeMin;
-                                }
-
-                                if (v.RangeMax) {
-                                    maxValue = v.RangeMax;
-                                }
-
-                                fld = $('<div id="' + v.FieldName + '" name="' + v.FieldName + '"></div>');
-                                fld.jqxNumberInput({ disabled: v.ReadOnly, theme: theme, min: minValue, max: maxValue, height: field_height, width: field_width, inputMode: 'simple', decimalDigits: 3, groupSeparator: ',', decimal: cleanedValue });
+                                fld.jqxInput({ disabled: v.ReadOnly, theme: theme, height: field_height, width: field_width });
+                                fld.val(cleanedValue);
                                 //addValidator(v, validatorRules);
 
                                 amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {
-                                    fld.jqxNumberInput('destroy');
+                                    fld.jqxInput('destroy');
                                 });
                                 amplify.subscribe(AmplifyActions.Unsubscribe, function () {
-                                    fld.jqxNumberInput('destroy');
+                                    fld.jqxInput('destroy');
                                 });
 
-                                cpnl.append(fld);
-                                break;
-
-                                //#endregion
-                            case 'Color':
-                                //#region Color Field Management
-
-                                addLabel(cpnl, v, false);
-
-                                var fldColorHidden = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="hidden" value="' + cleanedValue + '" />');
-                                cpnl.append(fldColorHidden);
-
-                                //if (cleanedValue != '') cleanedValue = cleanedValue.replace('#', '');
-
-                                
-                                fld = $('<div id="' + v.FieldName + "_Picker" + '"></div>');
-                                fld.jqxColorPicker({ colorMode: 'hue', width: field_width, height: 225 });
-                                fld.jqxColorPicker('setColor', cleanedValue);
-                                addValidator(v, validatorRules);
-
-                                fld.on('colorchange', function (event) {
-                                    var color = '#' + fld.jqxColorPicker('getColor').hex;//event.args;
-                                    fldColorHidden.val(color);
+                                fld.on('keypress', function (e) {
+                                    var key = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+                                    if (/[^\d.]+/.test(key)) {
+                                        e.preventDefault();
+                                        return false;
+                                    }
                                 });
-
-                                amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {
-                                    fld.jqxColorPicker('destroy');
-                                });
-                                amplify.subscribe(AmplifyActions.Unsubscribe, function () {
-                                    fld.jqxColorPicker('destroy');
+                                validatorRules.push({
+                                    input: '#' + v.FieldName,
+                                    message: 'Invalid decimal.',
+                                    action: 'keyup',
+                                    rule: function (input, commit) {
+                                        return (/^\d*\.?\d*$/.test(input.val()));
+                                    }
                                 });
 
                                 cpnl.append(fld);
@@ -645,27 +612,24 @@
 
                                 addLabel(cpnl, v, false);
 
-                                var minValue = -99999999;
-                                var maxValue = 99999999;
+                                fld = $('<input type="text" id="' + v.FieldName + '" name="' + v.FieldName + '" />');
 
-                                if (v.RangeMin) {
-                                    minValue = v.RangeMin;
-                                }
-
-                                if (v.RangeMax) {
-                                    maxValue = v.RangeMax;
-                                }
-
-                                fld = $('<div id="' + v.FieldName + '" name="' + v.FieldName + '"></div>');
-
-                                fld.jqxNumberInput({ disabled: v.ReadOnly, theme: theme, min: minValue, max: maxValue, height: field_height, width: field_width, promptChar: '', spinButtons: true, decimalDigits: 0, groupSeparator: '', decimal: cleanedValue });
-                                //addValidator(v, validatorRules);
+                                fld.jqxInput({ disabled: v.ReadOnly, theme: theme, height: field_height, width: field_width });
+                                fld.val(cleanedValue);
 
                                 amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {
-                                    fld.jqxNumberInput('destroy');
+                                    fld.jqxInput('destroy');
                                 });
                                 amplify.subscribe(AmplifyActions.Unsubscribe, function () {
-                                    fld.jqxNumberInput('destroy');
+                                    fld.jqxInput('destroy');
+                                });
+
+                                fld.on('keypress', function (e) {
+                                    var key = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+                                    if (/[\D]+/.test(key)) {
+                                        e.preventDefault();
+                                        return false;
+                                    }
                                 });
 
                                 cpnl.append(fld);
@@ -679,7 +643,7 @@
 
                                 fld = $('<textarea id="' + v.FieldName + '" name="' + v.FieldName + '"></textarea>');
                                 cpnl.append(fld);
-                                fld.redactor();//({ toolbar: false });
+                                fld.redactor();
                                 fld.redactor('set', cleanedValue);
                                 fld.val(cleanedValue);
 
@@ -697,24 +661,6 @@
                                     } catch (e) { }
                                 });
 
-                                break;
-
-                                //#endregion
-                            case "Password":
-                                //#region Password Field Management
-
-                                addLabel(cpnl, v, false);
-
-                                fld = $('<input type="password" id="' + v.FieldName + '" name="' + v.FieldName + '" />');
-                                try {
-                                    fld.jqxPasswordInput({ width: field_width, height: field_height, showStrength: true, showStrengthPosition: "right" });
-                                }
-                                catch (ex) {
-
-                                }
-                                addValidator(v, validatorRules);
-
-                                cpnl.append(fld);
                                 break;
 
                                 //#endregion
@@ -744,38 +690,6 @@
                                     cpnl.append('<br/>');                       //$obj
                                     cpnl.append(fldUrl);                        //$obj
                                     cpnl.append('<span>(Link Url)</span>');     //$obj
-                                }
-                                catch (ex) {
-
-                                }
-                                addValidator(v, validatorRules);
-                                break;
-
-                                //#endregion
-                            case "UncLink":
-                                //#region UncLink Field Management
-
-                                addLabel(cpnl, v, false);
-
-                                var valueUncLinkName = "";
-                                var valueUncLinkUrl = "";
-
-                                if (cleanedValue != "") {
-                                    var uncLinkArray = cleanedValue.split("|");
-                                    valueUncLinkName = uncLinkArray[0];
-                                    valueUncLinkUrl = uncLinkArray[1];
-                                }
-
-                                var fldName = $('<input id="' + v.FieldName + '_Name" name="' + v.FieldName + '_Name" value="' + valueUncLinkName + '" type="text" />');
-                                var fldUrl = $('<input id="' + v.FieldName + '_Url" name="' + v.FieldName + '_Url" value="' + valueUncLinkUrl + '" type="text" />');
-                                try {
-                                    fldName.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
-                                    fldUrl.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
-                                    cpnl.append(fldName);                               //$obj
-                                    cpnl.append('<span>(File/Network Name)</span>');    //$obj
-                                    cpnl.append('<br/>');                               //$obj
-                                    cpnl.append(fldUrl);                                //$obj
-                                    cpnl.append('<span>(File/Network Path)</span>');    //$obj
                                 }
                                 catch (ex) {
 

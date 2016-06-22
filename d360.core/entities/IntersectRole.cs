@@ -12,10 +12,7 @@ namespace d360.core.entities
         public string Name { get; set; }
 
         [DataMember]
-        public int? IntersectRoleID { get; set; }
-
-        [DataMember]
-        public string Transformation { get; set; }
+        public string Description { get; set; }
 
         [DataMember]
         public DateTime? CreatedOn { get; set; }

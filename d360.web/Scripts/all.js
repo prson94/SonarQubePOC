@@ -47753,19 +47753,6 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID, fusionID)
         if (self.showObjectFusionOwnerSearch() && self.fusionOwnerRules().length == 0) self.LoadFusionOwnerRules();
     });
 
-    self.selectedObjectTypeID.subscribe(function () {
-        //if the object type is direct load the object drop down 
-        if (self.selectedObjectTypeID() > 0) {
-            //self.LoadItems(self.selectedObjectTypeID(), self.selectedObjectType(), self.objectObjects, self.initialObjectItem, self.selectedObjectItemIndex);
-        }        
-    })
-
-    self.selectedSubjectTypeID.subscribe(function () {
-        if (self.selectedSubjectTypeID() > 0) {
-            //self.LoadItems(self.selectedSubjectTypeID(), self.selectedSubjectType(), self.subjectObjects, self.initialSubjectItem, self.selectedSubjectItemIndex);
-        }        
-    })
-
     // methods
     self.Load = function () {        
         if (self.intersectTypes().length == 0) self.LoadIntersectTypes();        
@@ -49820,7 +49807,6 @@ function renderSearchTypesDropdown(controlID) {
                                 }
 
                                 validation.regex = validation.regex.replace('\\\\', '\\');
-                                console.log(validation.regex);
                                 var regex = new RegExp(validation.regex);
                                 return regex.test(value);
                             }
@@ -50186,13 +50172,6 @@ function renderSearchTypesDropdown(controlID) {
                                 break;
 
                                 //#endregion
-                            //case 'File':
-                            //    //#region File Field Management
-
-                            //    fld = $("<input type='file' name='" + v.FieldName + "' id='" + v.FieldName + "'/>");
-                            //    break;
-
-                            //    //#endregion
                             case 'Boolean':
                                 //#region Boolean Field Management
 
@@ -50282,58 +50261,33 @@ function renderSearchTypesDropdown(controlID) {
 
                                 addLabel(cpnl, v, false);
 
-                                var minValue = -99999999;
-                                var maxValue = 99999999;
+                                fld = $('<input type="text" id="' + v.FieldName + '" name="' + v.FieldName + '" />');
 
-                                if (v.RangeMin) {
-                                    minValue = v.RangeMin;
-                                }
-
-                                if (v.RangeMax) {
-                                    maxValue = v.RangeMax;
-                                }
-
-                                fld = $('<div id="' + v.FieldName + '" name="' + v.FieldName + '"></div>');
-                                fld.jqxNumberInput({ disabled: v.ReadOnly, theme: theme, min: minValue, max: maxValue, height: field_height, width: field_width, inputMode: 'simple', decimalDigits: 3, groupSeparator: ',', decimal: cleanedValue });
+                                fld.jqxInput({ disabled: v.ReadOnly, theme: theme, height: field_height, width: field_width });
+                                fld.val(cleanedValue);
                                 //addValidator(v, validatorRules);
 
                                 amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {
-                                    fld.jqxNumberInput('destroy');
+                                    fld.jqxInput('destroy');
                                 });
                                 amplify.subscribe(AmplifyActions.Unsubscribe, function () {
-                                    fld.jqxNumberInput('destroy');
+                                    fld.jqxInput('destroy');
                                 });
 
-                                cpnl.append(fld);
-                                break;
-
-                                //#endregion
-                            case 'Color':
-                                //#region Color Field Management
-
-                                addLabel(cpnl, v, false);
-
-                                var fldColorHidden = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="hidden" value="' + cleanedValue + '" />');
-                                cpnl.append(fldColorHidden);
-
-                                //if (cleanedValue != '') cleanedValue = cleanedValue.replace('#', '');
-
-                                
-                                fld = $('<div id="' + v.FieldName + "_Picker" + '"></div>');
-                                fld.jqxColorPicker({ colorMode: 'hue', width: field_width, height: 225 });
-                                fld.jqxColorPicker('setColor', cleanedValue);
-                                addValidator(v, validatorRules);
-
-                                fld.on('colorchange', function (event) {
-                                    var color = '#' + fld.jqxColorPicker('getColor').hex;//event.args;
-                                    fldColorHidden.val(color);
+                                fld.on('keypress', function (e) {
+                                    var key = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+                                    if (/[^\d.]+/.test(key)) {
+                                        e.preventDefault();
+                                        return false;
+                                    }
                                 });
-
-                                amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {
-                                    fld.jqxColorPicker('destroy');
-                                });
-                                amplify.subscribe(AmplifyActions.Unsubscribe, function () {
-                                    fld.jqxColorPicker('destroy');
+                                validatorRules.push({
+                                    input: '#' + v.FieldName,
+                                    message: 'Invalid decimal.',
+                                    action: 'keyup',
+                                    rule: function (input, commit) {
+                                        return (/^\d*\.?\d*$/.test(input.val()));
+                                    }
                                 });
 
                                 cpnl.append(fld);
@@ -50346,27 +50300,24 @@ function renderSearchTypesDropdown(controlID) {
 
                                 addLabel(cpnl, v, false);
 
-                                var minValue = -99999999;
-                                var maxValue = 99999999;
+                                fld = $('<input type="text" id="' + v.FieldName + '" name="' + v.FieldName + '" />');
 
-                                if (v.RangeMin) {
-                                    minValue = v.RangeMin;
-                                }
-
-                                if (v.RangeMax) {
-                                    maxValue = v.RangeMax;
-                                }
-
-                                fld = $('<div id="' + v.FieldName + '" name="' + v.FieldName + '"></div>');
-
-                                fld.jqxNumberInput({ disabled: v.ReadOnly, theme: theme, min: minValue, max: maxValue, height: field_height, width: field_width, promptChar: '', spinButtons: true, decimalDigits: 0, groupSeparator: '', decimal: cleanedValue });
-                                //addValidator(v, validatorRules);
+                                fld.jqxInput({ disabled: v.ReadOnly, theme: theme, height: field_height, width: field_width });
+                                fld.val(cleanedValue);
 
                                 amplify.subscribe(AmplifyActions.OverlayUnsubscribe, function () {
-                                    fld.jqxNumberInput('destroy');
+                                    fld.jqxInput('destroy');
                                 });
                                 amplify.subscribe(AmplifyActions.Unsubscribe, function () {
-                                    fld.jqxNumberInput('destroy');
+                                    fld.jqxInput('destroy');
+                                });
+
+                                fld.on('keypress', function (e) {
+                                    var key = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+                                    if (/[\D]+/.test(key)) {
+                                        e.preventDefault();
+                                        return false;
+                                    }
                                 });
 
                                 cpnl.append(fld);
@@ -50380,7 +50331,7 @@ function renderSearchTypesDropdown(controlID) {
 
                                 fld = $('<textarea id="' + v.FieldName + '" name="' + v.FieldName + '"></textarea>');
                                 cpnl.append(fld);
-                                fld.redactor();//({ toolbar: false });
+                                fld.redactor();
                                 fld.redactor('set', cleanedValue);
                                 fld.val(cleanedValue);
 
@@ -50398,24 +50349,6 @@ function renderSearchTypesDropdown(controlID) {
                                     } catch (e) { }
                                 });
 
-                                break;
-
-                                //#endregion
-                            case "Password":
-                                //#region Password Field Management
-
-                                addLabel(cpnl, v, false);
-
-                                fld = $('<input type="password" id="' + v.FieldName + '" name="' + v.FieldName + '" />');
-                                try {
-                                    fld.jqxPasswordInput({ width: field_width, height: field_height, showStrength: true, showStrengthPosition: "right" });
-                                }
-                                catch (ex) {
-
-                                }
-                                addValidator(v, validatorRules);
-
-                                cpnl.append(fld);
                                 break;
 
                                 //#endregion
@@ -50445,38 +50378,6 @@ function renderSearchTypesDropdown(controlID) {
                                     cpnl.append('<br/>');                       //$obj
                                     cpnl.append(fldUrl);                        //$obj
                                     cpnl.append('<span>(Link Url)</span>');     //$obj
-                                }
-                                catch (ex) {
-
-                                }
-                                addValidator(v, validatorRules);
-                                break;
-
-                                //#endregion
-                            case "UncLink":
-                                //#region UncLink Field Management
-
-                                addLabel(cpnl, v, false);
-
-                                var valueUncLinkName = "";
-                                var valueUncLinkUrl = "";
-
-                                if (cleanedValue != "") {
-                                    var uncLinkArray = cleanedValue.split("|");
-                                    valueUncLinkName = uncLinkArray[0];
-                                    valueUncLinkUrl = uncLinkArray[1];
-                                }
-
-                                var fldName = $('<input id="' + v.FieldName + '_Name" name="' + v.FieldName + '_Name" value="' + valueUncLinkName + '" type="text" />');
-                                var fldUrl = $('<input id="' + v.FieldName + '_Url" name="' + v.FieldName + '_Url" value="' + valueUncLinkUrl + '" type="text" />');
-                                try {
-                                    fldName.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
-                                    fldUrl.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
-                                    cpnl.append(fldName);                               //$obj
-                                    cpnl.append('<span>(File/Network Name)</span>');    //$obj
-                                    cpnl.append('<br/>');                               //$obj
-                                    cpnl.append(fldUrl);                                //$obj
-                                    cpnl.append('<span>(File/Network Path)</span>');    //$obj
                                 }
                                 catch (ex) {
 
@@ -55202,7 +55103,6 @@ function LineageDiagram(controlID, type, id, readonly) {
             text: null,
             predicateId: null,
             isDeletable: true,
-            exclude: 'false',
             diagramObjectType: "Link",
             sourceMappingCount: 0,
             hasMappingRules: false,
@@ -55225,7 +55125,6 @@ function LineageDiagram(controlID, type, id, readonly) {
             backColor: null,
             foreColor: null,
             isDeletable: true,
-            exclude: 'false',
             highlightColor: null,
             diagramObjectType: "Node",
             level: null,
@@ -56345,7 +56244,6 @@ function LineageDiagram(controlID, type, id, readonly) {
             model.foreColor = d.fore;
             model.backColor = d.back;
             model.diagramObjectType = "Node";
-            model.exclude = d.exclude.toString();
             model.intersectMapId = d.intersectMapId;
             model.intersectId = d.intersectId;
             model.sourceRuleCount = d.sourceRuleCount;
@@ -56841,7 +56739,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var permissions = new PermissionsModel();
     permissions.GetPermissionsForObject(type, id);
 
-    var tmpl = Handlebars.getTemplate('LineageDiagram');
+    var tmpl = Handlebars.getTemplate('NewLineageDiagram');
     $('#' + controlID).html(tmpl({ control: controlID }));
 
     var lineageModel;
@@ -56872,10 +56770,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var controlID_info_detail_wrapper = controlID + '_info_detail_wrapper';
     var controlID_info_detail_edit = controlID + '_info_detail_edit';
 
-    var controlID_add_search_text = controlID + '_add_search_text';
-    var controlID_add_search = controlID + '_add_search';
-    var controlID_add_artifact_type = controlID + '_add_artifact_type';
-    var controlID_add_search_message = controlID + '_add_search_message';
+    //var controlID_add_search_text = controlID + '_add_search_text';
+    //var controlID_add_search = controlID + '_add_search';
+    //var controlID_add_artifact_type = controlID + '_add_artifact_type';
+    //var controlID_add_search_message = controlID + '_add_search_message';
 
     var controlID_overlay_existing = controlID + '_overlay_existing';
     var controlID_overlay_new = controlID + '_overlay_new';
@@ -56992,7 +56890,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
 
-    $("#" + controlID_add_search).jqxButton({ theme: theme, width: "15%" });
+    //$("#" + controlID_add_search).jqxButton({ theme: theme, width: "15%" });
 
 
     //#endregion
@@ -57177,6 +57075,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                 d.objecttypeid = n.Intersect.SubjectTypeID;
                 d.key = n.Intersect.Subject + n.Intersect.SubjectID;
                 d.isDeletable = true;
+                d.intersectId = n.IntersectID;
 
                 /*
                     d.backColor = data[i].backColor;
@@ -57230,7 +57129,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         $('#' + controlID_popover_transformation_editor).hide();
         $('#' + controlID_wrapper).show();
     });
-
     $('#' + controlID_ribbon_transformation_save).on('click', function () {
         transformationModel.Save().then(function(){
             $('.transformation').fadeOut();
@@ -57256,6 +57154,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     //    mode: "default",
     //    selectedIndex: 0
     //});
+
+    //#region General ribbon commands
 
     $('#' + controlID_ribbon_fullscreen).on('click', function () {
         if ($(this).jqxButton('disabled'))
@@ -57301,30 +57201,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         myDiagram.scale = (val / 1500);
     });
 
-    $('#' + controlID_overlay_predicates).on('change', function (e) {
-        var checked = true;//$('#' + controlID_overlay_radio_existing).jqxRadioButton('checked');
-        if (checked) {
-            if ($(this).val() == 0) {
-                $('#' + controlID_overlay_add).prop('disabled', true);
-            } else {
-                $('#' + controlID_overlay_add).prop('disabled', false);
-            }
-        }
-    });
-
-    $('#' + controlID_wrapper).on('mouseup', function () {
-        var height = $('#' + controlID_wrapper).height();
-        if (height != oldHeight) {
-            $('#' + controlID_diagram).height(height - 20);
-            oldHeight = height;
-            //force browser to update layout before executing
-            setTimeout(function () {
-                myDiagram.requestUpdate();
-            }, 0);
-
-        }
-    });
-
     $('#' + controlID_ribbon_zoom_100).on('click', function () {
         //$('#' + controlID_ribbon_zoom_slider).val(1500);
         myDiagram.scale = 1.0;
@@ -57368,31 +57244,51 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         }
     });
 
-    $('#' + controlID_add_search).on('click', getObjectsBySearch);
-    $('#' + controlID_overlay_cancel).on('click', cancelAddLink);
-    $('#' + controlID_overlay_add).on('click', addRelationship);
-    $('#' + controlID_popover_add).on('keypress', '#' + controlID_add_search_text, function (e) {
-        if (e.keyCode == 13) {
-            $('#' + controlID_add_search).click();
-            return false;
+    //#endregion
+
+    $('#' + controlID_overlay_predicates).on('change', function (e) {
+        var checked = true;//$('#' + controlID_overlay_radio_existing).jqxRadioButton('checked');
+        if (checked) {
+            if ($(this).val() == 0) {
+                $('#' + controlID_overlay_add).prop('disabled', true);
+            } else {
+                $('#' + controlID_overlay_add).prop('disabled', false);
+            }
         }
     });
+
+    $('#' + controlID_wrapper).on('mouseup', function () {
+        var height = $('#' + controlID_wrapper).height();
+        if (height != oldHeight) {
+            $('#' + controlID_diagram).height(height - 20);
+            oldHeight = height;
+            //force browser to update layout before executing
+            setTimeout(function () {
+                myDiagram.requestUpdate();
+            }, 0);
+
+        }
+    });
+
+    //$('#' + controlID_add_search).on('click', getObjectsBySearch);
+    $('#' + controlID_overlay_cancel).on('click', cancelAddLink);
+    $('#' + controlID_overlay_add).on('click', addRelationship);
+    //$('#' + controlID_popover_add).on('keypress', '#' + controlID_add_search_text, function (e) {
+    //    if (e.keyCode == 13) {
+    //        $('#' + controlID_add_search).click();
+    //        return false;
+    //    }
+    //});
 
     //#endregion
 
     var oldHeight = $('#' + controlID_wrapper).height();
     var oldWidth = $('#' + controlID_wrapper).width();
 
-    var newId = -1;
-    var temp = null;
-    var relationshipLabels = null;
-    var pendingExclusionObjects = [];
-    var pendingExclusionNodes = [];
     var deletedNodes = [];
     var initialLinks = [];
     var initialNodes = [];
     var newLink = null;
-    var predicates = [];
     var overlayEditLinkKey = null;
     var selection = null;
 
@@ -57508,37 +57404,28 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     //#endregion
 
-
     //#region methods
 
     function addRelationship() {
 
-        var id = $('#' + controlID_overlay_predicates).val();
-        var text = null;
-
-        for (var i = 0; i < predicates.length; i++) {
-            if (predicates[i].id.toString() == id.toString()) {
-                text = predicates[i].name;
-            }
-        }
-        //console.log(overlayEditLinkKey);
+        var intersectRoleId = $('#' + controlID_overlay_predicates).val();
+        var text = $('#' + controlID_overlay_predicates).text();
 
         myDiagram.startTransaction("nameRelationship")
         if (overlayEditLinkKey != null) {
             var link = findLinkDataForKey(overlayEditLinkKey);
             myDiagram.model.setDataProperty(link, 'text', text);
-            myDiagram.model.setDataProperty(link, 'predicateId', id);
+            myDiagram.model.setDataProperty(link, 'intersectRoleId', intersectRoleId);
 
             //get the id if possible (if link is deleted and re-added)
             for (var i = 0; i < initialLinks.length; i++) {
                 if (initialLinks[i].from == link.from && initialLinks[i].to == link.to) {
                     link.id = initialLinks[i].id;
-                    //console.log('intersectMapID: ' + link.id);
                     myDiagram.model.setDataProperty(link, 'id', initialLinks[i].id);
                 }
             }
         } else {
-            newLink.predicateId = id;
+            newLink.intersectRoleId = intersectRoleId;
             newLink.text = text;
             newLink.diagramObjectType = "Link";
             newLink.isDeletable = true;
@@ -57549,8 +57436,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     if (initialLinks[i].from == newLink.from && initialLinks[i].to == newLink.to) {
                         newLink.id = initialLinks[i].id;
                         newLink.key = initialLinks[i].key;
-                        // console.log('intersectMapID: ' + link.id);
-                        //myDiagram.model.setDataProperty(link, 'id', initialLinks[i].id);
                     }
                 }
             }
@@ -57575,7 +57460,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         overlayEditLinkKey = null;
 
         resetOverlay();
-
     };
 
     function cancelAddLink() {
@@ -57654,6 +57538,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         })
     }
 
+    //#region Model Creation
+
     function createLinkModel() {
         return {
             key: null,
@@ -57664,9 +57550,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             to: null,
             toPortId: "IN",
             text: null,
-            predicateId: null,
+            intersectRoleId: null,
             isDeletable: true,
-            exclude: 'false',
             diagramObjectType: "Link",
             sourceMappingCount: 0,
             hasMappingRules: false,
@@ -57689,12 +57574,11 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             backColor: null,
             foreColor: null,
             isDeletable: true,
-            exclude: 'false',
             highlightColor: null,
             diagramObjectType: "Node",
             level: null,
             template: "Artifact",
-            intersectMapId: null,
+            mapId: null,
             intersectId: null,
             sourceRuleCount: 0,
             sourceMappingCount: 0,
@@ -57710,6 +57594,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             hasTransformations: false
         };
     };
+
+    //#endregion
 
     function findLinkDataForKey(key) {
         for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
@@ -57743,7 +57629,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         return -1;
     }
 
-
     function getImmediateParents(key) {
         //console.log(key);
         var parents = [];
@@ -57765,7 +57650,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             deleted: []
         };
         var links = myDiagram.model.linkDataArray;
-
 
         for (var i = 0; i < links.length; i++) {
             var found = false;
@@ -57789,7 +57673,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                 }
             }
             if (!found) {
-                //console.log('not found');
                 changes.deleted.push(initialLinks[i]);
             }
         }
@@ -57799,22 +57682,18 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             for (var j = 0; j < links.length; j++) {
                 if (initialLinks[i].from == links[j].from && initialLinks[i].to == links[j].to) {
 
-                    var l1 = (initialLinks[i].predicateId || '').toString();
-                    var l2 = (links[j].predicateId || '').toString();
+                    var l1 = (initialLinks[i].intersectRoleId || '').toString();
+                    var l2 = (links[j].intersectRoleId || '').toString();
 
-                    //console.log(l1 + ', ' + l2);
                     if (l1 != l2) {
                         found = true;
-                        //console.log(l2);
                     }
 
                     break;
                 }
             }
-            if (found) {
 
-                //console.log('"' + initialLinks[i].predicateId + '"');
-                //console.log('"' + links[j].predicateId + '"');
+            if (found) {
                 changes.modified.push(links[j]);
             }
         }
@@ -57822,6 +57701,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         return changes;
     }
 
+    //We May not care about this.  Possible removal.
     function getNodeChanges() {
         var changes = {
             added: [],
@@ -57877,61 +57757,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     }
 
-    function getObjectsBySearch() {
-        var typeSelect = $('#' + controlID_add_artifact_type).val().split('|');
-        var data = {
-            type: typeSelect[0].replace('Type', ''),
-            id: typeSelect[1],
-            search: $('#' + controlID_add_search_text).val()
-        };
-
-
-        $.ajax({
-            url: '/Diagrams/ObjectsBySearch',
-            data: data,
-            success: function (data) {
-                $('#' + controlID_add_search_message).hide();
-                myPalette.model.nodeDataArray = [];
-                temp = data[0];
-                for (var i = 0; i < data.length; i++) {
-                    var d = createNodeModel();
-
-                    d.backColor = data[i].backColor;
-                    d.foreColor = data[i].foreColor;
-                    d.id = data[i].id;
-                    d.name = data[i].name;
-                    d.object = data[i].object;
-                    d.typeName = data[i].typeName;
-                    d.url = data[i].url;
-                    d.template = "Artifact";
-                    d.type = data[i].object;
-                    d.objecttype = data[i].objecttype;
-                    d.objecttypeid = data[i].objecttypeid;
-                    d.key = data[i].type + data[i].id.toString();
-                    d.isDeletable = true;
-
-                    myPalette.model.addNodeData(d);
-                }
-                if (data.length < 1) {
-                    $('#' + controlID_add_search_message).show();
-                }
-            },
-            async: true
-        }).then(function () {
-            if (temp == null) {
-                return;
-            }
-            var data = {
-                type1: $('#' + controlID_add_artifact_type + ' option:selected').text(),
-                type2: ''
-            };
-
-            populatePredicateList();
-            myPalette.scale = 1.0;
-        });
-       
-    }
-
     function initializeDiagram() {
         var dg = g(go.Diagram, controlID_diagram, {
             initialContentAlignment: go.Spot.Left,
@@ -57964,24 +57789,24 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         return ov;
     }
 
-    function initializePalette() {
+    //function initializePalette() {
 
-        var pl = g(go.Palette, controlID_palette, {
-            contentAlignment: go.Spot.TopCenter,
-            allowDrop: true,
-            initialAutoScale: go.Diagram.Uniform,
-            model: new go.GraphLinksModel([
-                { template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }
-            ])
-        });
+    //    var pl = g(go.Palette, controlID_palette, {
+    //        contentAlignment: go.Spot.TopCenter,
+    //        allowDrop: true,
+    //        initialAutoScale: go.Diagram.Uniform,
+    //        model: new go.GraphLinksModel([
+    //            { template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }
+    //        ])
+    //    });
 
-        pl.model.nodeCategoryProperty = 'template';
-        pl.model.nodeDataArray = [];
-        pl.model.class = 'go.GraphLinksModel';
-        pl.layout.spacing = new go.Size(3, 3);
+    //    pl.model.nodeCategoryProperty = 'template';
+    //    pl.model.nodeDataArray = [];
+    //    pl.model.class = 'go.GraphLinksModel';
+    //    pl.layout.spacing = new go.Size(3, 3);
 
-        return pl;
-    }
+    //    return pl;
+    //}
 
     function onLayoutCompleted() {
         //console.log(myDiagram.documentBounds.height);
@@ -58099,42 +57924,42 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         myDiagram.nodeTemplateMap.add(obj, node);
     }
 
-    function makeSearchTemplate() {
-        var node = g(go.Node, "Spot",
-               {
-                   mouseEnter: mouseEnter,
-                   mouseLeave: mouseLeave
-               },
-           g(go.Panel, "Auto", {
-               width: 250,
-               height: 22,
-               name: "NodePanel"
-           },
-           g(go.Shape, "RoundedRectangle", {
-               stroke: 'transparent',
-               strokeWidth: 2,
-               spot1: go.Spot.TopLeft,
-               spot2: go.Spot.BottomRight,
-               name: "NodeShape"
-           },
-               new go.Binding("fill", "backColor").makeTwoWay()
-          ),
-           g(go.Panel, "Table",
-               g(go.TextBlock, {
-                   row: 0,
-                   margin: 3,
-                   alignment: go.Spot.Top,
-                   editable: false,
-                   maxSize: new go.Size(250, 22),
-                   font: "8pt sans-serif"
-               },
-                   new go.Binding("text", "name").makeTwoWay()
-                   , new go.Binding("stroke", "foreColor").makeTwoWay()
-               ))
-           ));
+    //function makeSearchTemplate() {
+    //    var node = g(go.Node, "Spot",
+    //           {
+    //               mouseEnter: mouseEnter,
+    //               mouseLeave: mouseLeave
+    //           },
+    //       g(go.Panel, "Auto", {
+    //           width: 250,
+    //           height: 22,
+    //           name: "NodePanel"
+    //       },
+    //       g(go.Shape, "RoundedRectangle", {
+    //           stroke: 'transparent',
+    //           strokeWidth: 2,
+    //           spot1: go.Spot.TopLeft,
+    //           spot2: go.Spot.BottomRight,
+    //           name: "NodeShape"
+    //       },
+    //           new go.Binding("fill", "backColor").makeTwoWay()
+    //      ),
+    //       g(go.Panel, "Table",
+    //           g(go.TextBlock, {
+    //               row: 0,
+    //               margin: 3,
+    //               alignment: go.Spot.Top,
+    //               editable: false,
+    //               maxSize: new go.Size(250, 22),
+    //               font: "8pt sans-serif"
+    //           },
+    //               new go.Binding("text", "name").makeTwoWay()
+    //               , new go.Binding("stroke", "foreColor").makeTwoWay()
+    //           ))
+    //       ));
 
-        myPalette.nodeTemplateMap.add("Artifact", node);
-    }
+    //    myPalette.nodeTemplateMap.add("Artifact", node);
+    //}
 
     function makeIconPanel(icon, tooltip, binding, fontSize) {
         var iconPanel = g(go.Panel,
@@ -58383,9 +58208,9 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
                 var intersectId = 0;
 
-                if (from != null && from.intersectMapId == data.key)
+                if (from != null && from.mapId == data.key)
                     intersectId = from.intersectId;
-                if (to != null && to.intersectMapId == data.key)
+                if (to != null && to.mapId == data.key)
                     intersectId = to.intersectId;
 
                 $.ajax({
@@ -58676,7 +58501,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         var toNode = myDiagram.model.findNodeDataForKey(e.subject.data.to);
 
         var results = $.ajax({
-            url: '/diagrams/GetPredicateInfoByTypes?type1=' + fromNode.objecttype + '&id1=' + fromNode.objecttypeid + '&type2=' + toNode.objecttype + '&id2=' + toNode.objecttypeid + '&mapType=1',
+            url: '/form/Lineage_IntersectRoles',
             data: null
         }).done(function (data, status, xhr) {
             if (data.length > 0) {
@@ -58695,11 +58520,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
                 $('#' + controlID_overlay_add).show();
 
-                //var data = {
-                //    type1: fromNode.typeName,
-                //    type2: toNode.typeName
-                //};
-                populatePredicateList(data);
+                populateIntersectRoles(data);
 
                 $('#' + controlID_overlay).show();
             }
@@ -58721,7 +58542,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         var toNode = myDiagram.model.findNodeDataForKey(linkData.to);
 
         var results = $.ajax({
-            url: '/diagrams/GetPredicateInfoByTypes?type1=' + fromNode.objecttype + '&id1=' + fromNode.objecttypeid + '&type2=' + toNode.objecttype + '&id2=' + toNode.objecttypeid + '&mapType=1',
+            url: '/form/Lineage_IntersectRoles',
             data: null
         }).done(function (data, status, xhr) {
             if (data.length > 0) {
@@ -58739,13 +58560,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     + toNode.typeName + '</span>');
 
                 $('#' + controlID_overlay_add).show();
-
-                //var data = {
-                //    type1: fromNode.typeName,
-                //    type2: toNode.typeName
-                //};
-                populatePredicateList(data);
-
+                populateIntersectRoles(data);
                 $('#' + controlID_overlay).show();
                 return true;
             }
@@ -58813,8 +58628,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             model.foreColor = d.fore;
             model.backColor = d.back;
             model.diagramObjectType = "Node";
-            model.exclude = d.exclude.toString();
-            model.intersectMapId = d.intersectMapId;
+            model.mapId = d.mapId;
             model.intersectId = d.intersectId;
             model.sourceRuleCount = d.sourceRuleCount;
             model.mappingRuleCount = d.mappingRuleCount;
@@ -58839,7 +58653,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             link.from = d.from;
             link.to = d.to;
             link.text = d.text;
-            link.predicateId = d.predicateId;
+            link.intersectRoleId = d.intersectRoleId;
             link.diagramObjectType = "Link";
             link.sourceMappingCount = d.mappingRuleCount;
             link.hasMappingRules = (d.mappingRuleCount > 0);
@@ -58859,17 +58673,15 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         initialNodes = $.extend(true, [], modelList);//JSON.parse(JSON.stringify(modelList));
         initialLinks = $.extend(true, [], linkList); //JSON.parse(JSON.stringify(linkList));
 
-        //set buttons/expanders to defaults
-        refreshControls(null);
+        refreshControls(null);  //set buttons/expanders to defaults
 
         myDiagram.commitTransaction("load_all_data");
         reOrderLayout();
-
     }
 
     function populateDiagram() {
         var results = $.ajax({
-            url: '/relations/' + type + '/' + id + '/sources',
+            url: '/diagrams/' + type + '/' + id + '/lineage/1',
             data: null
         }).done(function (data, status, xhr) {
             //console.log('populate');
@@ -58880,61 +58692,15 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         });
     }
 
-    function populatePredicateList(predicates) {
+    function populateIntersectRoles(roles) {
         var output = [];
 
-        if (predicates) {
-            output.push('<option value="0_1"></option>');
-            for (var i = 0; i < predicates.length; i++) {
-                output.push('<option value="' + predicates[i].id.toString() + '">' + predicates[i].name + '</option>');
-            }
-            $('#' + controlID_overlay_predicates).html(output.join(''));
+        output.push('<option value="0"></option>');
+        for (var i = 0; i < roles.length; i++) {
+            output.push('<option value="' + roles[i].value + '">' + roles[i].title + '</option>');
         }
-        else {
-            $.ajax({
-                url: '/diagrams/getpredicateinfo?type=1',
-                success: function (data) {
-                    //predicates = [];
-                    output.push('<option value="0_1"></option>');
-                    for (var i = 0; i < data.length; i++) {
-                        output.push('<option value="' + data[i].id.toString() + '">' + data[i].name + '</option>');
-                      //  predicates.push(data[i]);
-                    }
-                    $('#' + controlID_overlay_predicates).html(output.join(''));
-                }
-            });
-        }
-    }
+        $('#' + controlID_overlay_predicates).html(output.join(''));
 
-    function populateTypeSelectList() {
-        var html = '';
-        $.ajax({
-            url: '/services/glossary/artifacts?$orderby=Name',
-            data: null,
-            success: function (data) {
-                $('#' + controlID_add_artifact_type).html('');
-                var output = [];
-                for (var i = 0; i < data.length; i++) {
-                    output.push('<option value="ArtifactType|' + data[i].ID + '">Glossary :: ' + data[i].Name + '</option>');
-                }
-                html += output.join('');
-            }
-        }).then(function () {
-            $.ajax({
-                url: '/services/glossary/models?$orderby=Name',
-                data: null,
-                success: function (data) {
-                    $('#' + controlID_add_artifact_type).html('');
-                    var output = [];
-                    for (var i = 0; i < data.length; i++) {
-                        output.push('<option value="TaxonomyType|' + data[i].ID + '">Model :: ' + data[i].Name + '</option>');
-                    }
-                    html += output.join('');
-                }
-            }).then(function () {
-                $('#' + controlID_add_artifact_type).html(html);
-            });
-        });
     }
 
     function reOrderLayout() {
@@ -58973,9 +58739,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         for (var i = 0; i < nodeChanges.deleted.length; i++) {
             var node = nodeChanges.deleted[i];
             model.Deletes.push({
-                Focal: type,
-                FocalID: id,
-                IntersectMapID: node.intersectMapId
+                MapID: node.mapId
             });
         }
 
@@ -58984,28 +58748,24 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
             var to = myDiagram.model.findNodeDataForKey(link.to);
             var from = myDiagram.model.findNodeDataForKey(link.from);
-            var predicate = link.predicateId;
+            var predicate = link.intersectRoleId;
 
             model.Adds.push({
-                Focal: type,
-                FocalID: id,
-                Subject: from.type,
-                SubjectID: from.id,
-                Object: to.type,
-                ObjectID: to.id,
-                PredicateID: link.predicateId
+                SourceIntersectID: from.intersectId,
+                TargetIntersectID: to.intersectId,
+                IntersectRoleID: link.intersectRoleId
             });
         }
 
         for (var i = 0; i < linkChanges.modified.length; i++) {
             model.Edits.push({
-                IntersectMapID: linkChanges.modified[i].id,
-                PredicateID: linkChanges.modified[i].predicateId
+                MapID: linkChanges.modified[i].id,
+                IntersectRoleID: linkChanges.modified[i].intersectRoleId
             });
         }
 
         $.ajax({
-            url: '/relations/sources',
+            url: '/form/Lineage_Update',
             async: true,
             data: JSON.stringify(model),
             processData: false,
@@ -59039,10 +58799,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         $("#" + controlID_ribbon_remove).on('click', function () {
             if ($(this).jqxButton('disabled'))
                 return;
-            //console.log(selection.length);
             markForDeletion(selection);
             $("#" + controlID_ribbon_remove).hide(200);
-            //populateDiagram();
         });
     }
 
@@ -59084,14 +58842,13 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         )
     );
 
-    var myPalette = initializePalette();
+    //var myPalette = initializePalette();
 
-    makeSearchTemplate();
+    //makeSearchTemplate();
 
     var myOverview = initializeOverview(myDiagram);
 
     populateDiagram();
-    populateTypeSelectList();
 
     //#endregion
 
@@ -59775,6 +59532,8 @@ function RelatedArtifactsGrid(controlID, permissions, typeName, typeID, id) {
     //#endregion
 
     //#region Textbox
+
+    if (!typeID) typeID = 0;
 
     var relatedArtifactsDataSource = {
         datatype: "json",
@@ -62150,6 +61909,7 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                             break;
                         case contextList.SourceToTarget:
                             LineageDiagram('SourcingTile', type, id, false);
+                            //NewLineageDiagram('SourcingTile', type, id, false);
                             break;
                         case contextList.Responsibility:                        
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
@@ -62199,6 +61959,7 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                         ObjectStatisticsTile('MicroWidget1', type, id);
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
+                        //NewLineageDiagram('SourcingTile', type, id, false);
                         LineageDiagram('SourcingTile', type, id, false);
                         CertificationNotificationTile('CertificationNotification', id);
                         ChallengeNotificationTile('ChallengeNotification', contextList, id);
@@ -64607,7 +64368,6 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
         var typeID = context.params['typeid'];
         var id = context.params['id'];
         var executionID = context.params['executionid'];
-        //var tab = context.params['tab'];
         var fusionAttributeID = context.params['fusionattributeid'];
         var fusionAttributeTypeID = context.params['fusionattributetypeid'];
 
@@ -64702,7 +64462,6 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                 var args = event.args;  // event args.
                 var row = args.row;     // row data.
                 var key = args.key;     // row key.
-                //NewFusionItemsGrid('ItemsTile', id, row.ID);
 
                 $.ajax({
                     type: "GET",
@@ -64767,6 +64526,9 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                         }
                     });
 
+                    $('#ItemsTile').on('rowselect', itemsRowSelected);
+                    $("#ItemsTile").on("bindingcomplete", itemsBindingComplete);
+
                     $('#ItemsTile').jqxGrid({
                         altrows: true,
                         width: grid_width,
@@ -64814,8 +64576,8 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
 
                 $('#AggregatesTile').fadeIn(500);
                 RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
-                //FusionRelationshipChartTile('AggregatesTile', 'FusionAttribute', data.ID);
-                AttributesTile('ItemAttributesTile', contextList, permissions, 'FusionAttribute', data.ID, 'Technical Attributes for ' + data.Name)
+
+                $('#ItemAttributesTile').Attributes('reload', 'FusionAttribute', data.ID, false);
                 FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
             }
 
@@ -64846,7 +64608,6 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
             function toolAction(data) {
                 switch (data.context) {
                     case contextList.ActionExport:
-                        //alert(data.uri);
                         $.fileDownload(data.uri, {
                             httpMethod: "GET"
                         });
@@ -64887,9 +64648,9 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                     permissions.GetPermissionsForObject(type, id);
 
                     $('#SideIcons').PageTools({ type: type, id: id });
+                    $('#ItemAttributesTile').Attributes({ object: type, objectID: id, readOnly: false, collapsible: false });
 
-                    if (fusionAttributeID != null) json.ID = fusionAttributeID;                    
-                    //FusionItemsGrid('ItemsTile', contextList, permissions, typeID, id, (fusionAttributeID != null) ? json : null);                   
+                    if (fusionAttributeID != null) json.ID = fusionAttributeID;
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '', false);
 
                     //#region Fusion Attribute Type
@@ -64944,7 +64705,7 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
 
                     //#region Fusion Attribute
 
-                    //Build Filters
+                    //#region Build Filters
                     filterVM = new ArtifactFiltersViewModel([]);
                     filterVM.FilterCallback = runFilter;
                     try {
@@ -64953,6 +64714,7 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                     catch (e) {
                         console.log(e);
                     }
+                    //#endregion
 
                     FusionAttributeSource = {
                         datatype: 'json',
@@ -64971,21 +64733,21 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                     };
 
                     FusionAttributeAdapter = new $.jqx.dataAdapter(FusionAttributeSource, {
-                    formatData: function (data) {
-                        data.filterscount = 0;
+                        formatData: function (data) {
+                            data.filterscount = 0;
                         
-                        //normal filters
-                        $.each(filterVM.filterData('normal'), function (ix, item) {                                    
-                            if (item.value != '' && item.value != null) {
-                                data['filterdatafield' + data.filterscount] = item.field;
-                                data['filtercondition' + data.filterscount] = item.condition;
-                                data['filtervalue' + (data.filterscount++)] = item.value;
-                            }
-                        });
+                            //normal filters
+                            $.each(filterVM.filterData('normal'), function (ix, item) {                                    
+                                if (item.value != '' && item.value != null) {
+                                    data['filterdatafield' + data.filterscount] = item.field;
+                                    data['filtercondition' + data.filterscount] = item.condition;
+                                    data['filtervalue' + (data.filterscount++)] = item.value;
+                                }
+                            });
 
-                        return data;
-                    }                        
-                });
+                            return data;
+                        }                        
+                    });
 
                     $('#ItemsTile').jqxGrid({
                         altrows: true,
@@ -65022,7 +64784,6 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                     $("#ItemsTile").on("bindingcomplete", itemsBindingComplete);
                     amplify.subscribe('FusionAttributeRowSelected', fusionAttributeRowSelected);
                     amplify.subscribe("ToolAction", toolAction);
-                    //amplify.subscribe("PageResized", pageResized);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //$("#ItemsTile").on("sort", function (event) {
@@ -65034,8 +64795,7 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                     //#endregion
 
                     if (fusionAttributeID != null) {
-                        var item = { ID: fusionAttributeID, Name: json.ItemName };
-                        //fusionAttributeRowSelected(item);                        
+                        var item = { ID: fusionAttributeID, Name: json.ItemName };                     
                     }
 
                     if (executionID) {
@@ -65046,8 +64806,6 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
     };
 
     app.get('#/fusion/:typeid/:id/executions/:executionid', fi);
-    //app.get('#/fusion/:typeid/:id/:tab/:fusionattributeid', fi);
-    //app.get('#/fusion/:typeid/:id/:tab', fi);
     app.get('#/fusion/:typeid/:id', fi);
     app.get('#/fusion/item/:fusionattributetypeid/:fusionattributeid', fi);
 }
@@ -65094,7 +64852,6 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                     $(controlID).html(
                         template(data)
                     );
-                    console.log(data);
                     if ($(controlID).find('.AgentKpi').length) {                        
                         var score = (data.AgentExecutions > 0) ? (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(0) : 100;                        
                         drawKpi($(controlID).find('.AgentKpi'), 'Agent % Success', score, 100 - score, true);
@@ -67616,6 +67373,8 @@ function reporting_admin(app, pageViewModel, templatePath, contextList) {
 
             var data = $('#List').jqxGrid('getrowdata', row);
             if (data) {
+                var reportType = data.ReportType;
+
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
                 $('#SideIcons').PageTools("reload", type, data.ID);
@@ -67628,16 +67387,24 @@ function reporting_admin(app, pageViewModel, templatePath, contextList) {
                     ]);
                 }
 
-                TilesSource.url = '/reports/' + data.ID + '/tiles';
-                $("#TilesTile").jqxGrid('updatebounddata');
+                if (reportType == 'powerbi') {
+                    $('#TilesTileWrapper').hide();
+                    $('#TilesTemplateLayout').hide();
+                }
+                else {
+                    $('#TilesTileWrapper').show();
+                    $('#TilesTemplateLayout').show();
 
-                var changePromise = layoutTileVm.ChangeObject(data.ID);
-                changePromise
-                    .then(layoutTileVm.GetLayout)
-                    .done(function (message) {
-                        //layoutTileVm.Render();
-                    });
+                    TilesSource.url = '/reports/' + data.ID + '/tiles';
+                    $("#TilesTile").jqxGrid('updatebounddata');
 
+                    var changePromise = layoutTileVm.ChangeObject(data.ID);
+                    changePromise
+                        .then(layoutTileVm.GetLayout)
+                        .done(function (message) {
+                            //layoutTileVm.Render();
+                        });
+                }
             }
         }
 
@@ -67718,7 +67485,8 @@ function reporting_admin(app, pageViewModel, templatePath, contextList) {
                         url: '/reports',
                         datafields: [
                             { name: 'ID' },
-                            { name: 'Name' }
+                            { name: 'Name' },
+                            { name: 'ReportType' },
                         ],
                         id: 'ID'
                     };
@@ -72419,3 +72187,278 @@ function workflow_item_status(app, pageViewModel, templatePath, contextList) {
         }
     })();
 });
+(function (powerbi) {
+    'use strict';
+
+    powerbi.Embed = Embed;
+
+    function Embed() { }
+
+    Embed.prototype = {
+        init: function () {
+            var embedUrl = this.getEmbedUrl();
+            var iframeHtml = '<iframe style="width:100%;height:100%;border-style:none;" src="' + embedUrl + '" scrolling="no" allowfullscreen="true"></iframe>';
+            this.element.innerHTML = iframeHtml;
+            this.iframe = this.element.childNodes[0];
+            this.iframe.addEventListener('load', this.load.bind(this), false);
+        },
+        load: function () {
+            var computedStyle = window.getComputedStyle(this.element);
+            var accessToken = this.getAccessToken();
+            
+            var initEventArgs = {
+                message: {
+                    action: this.options.loadAction,
+                    accessToken: accessToken,
+                    width: computedStyle.width,
+                    height: computedStyle.height
+                }
+            };
+
+            powerbi.utils.raiseCustomEvent(this.element, 'embed-init', initEventArgs);
+            this.iframe.contentWindow.postMessage(JSON.stringify(initEventArgs.message), '*');
+        },
+        getAccessToken: function () {
+            var accessToken = this.element.getAttribute('powerbi-access-token');
+
+            if (!accessToken) {
+                accessToken = powerbi.accessToken;
+                
+                if (!accessToken) {
+                    throw new Error("No access token was found for element. You must specify an access token directly on the element using attribute 'powerbi-access-token' or specify a global token at: powerbi.accessToken.");
+                }
+            }
+
+            return accessToken;
+        },
+        getEmbedUrl: function () {
+            return this.element.getAttribute('powerbi-embed');
+        },
+        fullscreen: function () {
+            var elem = this.iframe;
+
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+        },
+        exitFullscreen: function () {
+            if (!this.isFullscreen()) {
+                return;
+            }
+
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        },
+        isFullscreen: function () {
+            var options = ['fullscreenElement', 'webkitFullscreenElement', 'mozFullscreenScreenElement', 'msFullscreenElement'];
+            for (var i = 0; i < options.length; i++) {
+                if (document[options[i]] === this.iframe) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    };
+} (window.powerbi = window.powerbi || {}));
+(function(powerbi){
+    'use strict';
+    
+    powerbi.Tile = Tile;
+    powerbi.Tile.prototype = powerbi.Embed.prototype;
+    
+    function Tile(element, options) {
+        var me = this;
+        
+        this.element = element;
+        this.options = options || {};
+        this.options.loadAction = 'loadTile';
+        this.getEmbedUrl = getEmbedUrl;
+
+        this.init();
+
+        ///////////////////////////////
+
+        function getEmbedUrl() {
+            var embedUrl = powerbi.Embed.prototype.getEmbedUrl.call(me);
+            if (!embedUrl) {
+                var dashboardId = me.element.getAttribute('powerbi-dashboard');
+                var tileId = me.element.getAttribute('powerbi-tile');
+
+                if (!(dashboardId && tileId)) {
+                    throw new Error('dashboardId & tileId are required');
+                }
+
+                embedUrl = 'https://app.powerbi.com/embed?dashboardId=' + dashboardId + '&tileId=' + tileId;
+            }
+
+            return embedUrl;
+        }
+    }
+}(window.powerbi = window.powerbi || {}));
+(function(powerbi){
+    'use strict';
+    
+    powerbi.Report = Report;
+    powerbi.Report.prototype = powerbi.Embed.prototype;
+    
+    function Report(element, options) {
+        var me = this;
+        
+        this.element = element;
+        this.options = options || {};
+        this.options.loadAction = 'loadReport';
+        this.getEmbedUrl = getEmbedUrl;
+
+        this.init();
+
+        ///////////////////////////////
+
+        function getEmbedUrl() {
+            var embedUrl = powerbi.Embed.prototype.getEmbedUrl.call(me);
+            if (!embedUrl) {
+                var reportId = me.element.getAttribute('powerbi-report');
+
+                if (!reportId) {
+                    throw new Error('reportId is required');
+                }
+
+                embedUrl = 'https://embedded.powerbi.com/appTokenReportEmbed?reportId=' + reportId;
+            }
+
+            return embedUrl;
+        }
+    }
+}(window.powerbi = window.powerbi || {}));
+(function (powerbi) {
+    'use strict';
+    
+    powerbi.utils = {
+        raiseCustomEvent: raiseCustomEvent
+    };
+
+    function raiseCustomEvent(element, eventName, eventData) {
+        var customEvent;
+        if (typeof (window.CustomEvent) === 'function') {
+            customEvent = new CustomEvent(eventName, {
+                detail: eventData,
+                bubbles: true,
+                cancelable: true
+            });
+        } else {
+            customEvent = document.createEvent('CustomEvent');
+            customEvent.initCustomEvent(eventName, true, true, eventData);
+        }
+
+        element.dispatchEvent(customEvent);
+        if (customEvent.defaultPrevented || !customEvent.returnValue) {
+            return;
+        }
+
+        var inlineEventAttr = 'on' + eventName.replace('-', '');
+        var inlineScript = element.getAttribute(inlineEventAttr);
+        if (inlineScript) {
+            eval.call(element, inlineScript);
+        }
+    }
+} (window.powerbi = window.powerbi || {}));
+(function (powerbi) {
+    'use strict';
+
+    var embeds = [];
+    var componentTypes = [];
+
+    powerbi.get = get;
+    powerbi.embed = embed;
+    powerbi.init = init;
+
+    activate();
+    
+    //////////////////////////////////    
+    
+    function activate() {
+        window.addEventListener('DOMContentLoaded', init, false);
+        window.addEventListener('message', onReceiveMessage, false);
+
+        componentTypes = [
+            { type: 'powerbi-tile', component: powerbi.Tile },
+            { type: 'powerbi-report', component: powerbi.Report }
+        ];
+    }
+
+    var EmbedEventMap = {
+        'tileClicked': 'tile-click',
+        'tileLoaded': 'tile-load',
+        'reportPageLoaded': 'report-load'
+    };
+
+    function init(container) {
+        container = (container && container instanceof HTMLElement) ? container : document.body;
+        
+        var components = container.querySelectorAll('[powerbi-embed]');
+        for (var i = 0; i < components.length; i++) {
+            embed(components[i]);
+        }
+    }
+
+    function get(element) {
+        return element.powerBIEmbed || embed(element);
+    }
+
+    function embed(element) {
+        var instance;
+
+        if (element.powerBIEmbed) {
+            return element.powerBIEmbed;
+        }
+
+        for (var j = 0; j < componentTypes.length; j++) {
+            var componentType = componentTypes[j];
+
+            if (element.getAttribute(componentType.type) !== null) {
+                instance = new componentType.component(element);
+                element.powerBIEmbed = instance;
+                embeds.push(instance);
+                break;
+            }
+        }
+
+        return instance;
+    }
+
+    function onReceiveMessage(event) {
+        if (!event) {
+            return;
+        }
+
+        try {
+            var messageData = JSON.parse(event.data);
+            for (var i = 0; i < embeds.length; i++) {
+                var embed = embeds[i];
+
+                // Only raise the event on the embed that matches the post message origin
+                if (event.source === embed.iframe.contentWindow) {
+                    powerbi.utils.raiseCustomEvent(embed.element, EmbedEventMap[messageData.event], messageData);
+                }
+            }
+        }
+        catch (e) {
+            if (typeof (window.powerbi.onError) === 'function') {
+                window.powerbi.onError.call(window, e);
+            }
+        }
+    }
+} (window.powerbi = window.powerbi || {}));

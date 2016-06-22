@@ -3,21 +3,15 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.model;
 using d360.web.Models;
-using d360.web.Models.Formatters;
 using Microsoft.PowerBI.Api.Beta;
 using Microsoft.PowerBI.Security;
-using Microsoft.Rest;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Dynamic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
-using System.Web.Script.Serialization;
 using System.Xml.Linq;
 
 namespace d360.web.Controllers

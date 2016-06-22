@@ -41,7 +41,6 @@
                     $(controlID).html(
                         template(data)
                     );
-                    console.log(data);
                     if ($(controlID).find('.AgentKpi').length) {                        
                         var score = (data.AgentExecutions > 0) ? (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(0) : 100;                        
                         drawKpi($(controlID).find('.AgentKpi'), 'Agent % Success', score, 100 - score, true);

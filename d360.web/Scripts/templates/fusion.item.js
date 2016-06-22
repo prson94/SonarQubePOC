@@ -7,7 +7,6 @@
         var typeID = context.params['typeid'];
         var id = context.params['id'];
         var executionID = context.params['executionid'];
-        //var tab = context.params['tab'];
         var fusionAttributeID = context.params['fusionattributeid'];
         var fusionAttributeTypeID = context.params['fusionattributetypeid'];
 
@@ -102,7 +101,6 @@
                 var args = event.args;  // event args.
                 var row = args.row;     // row data.
                 var key = args.key;     // row key.
-                //NewFusionItemsGrid('ItemsTile', id, row.ID);
 
                 $.ajax({
                     type: "GET",
@@ -167,6 +165,9 @@
                         }
                     });
 
+                    $('#ItemsTile').on('rowselect', itemsRowSelected);
+                    $("#ItemsTile").on("bindingcomplete", itemsBindingComplete);
+
                     $('#ItemsTile').jqxGrid({
                         altrows: true,
                         width: grid_width,
@@ -214,8 +215,8 @@
 
                 $('#AggregatesTile').fadeIn(500);
                 RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
-                //FusionRelationshipChartTile('AggregatesTile', 'FusionAttribute', data.ID);
-                AttributesTile('ItemAttributesTile', contextList, permissions, 'FusionAttribute', data.ID, 'Technical Attributes for ' + data.Name)
+
+                $('#ItemAttributesTile').Attributes('reload', 'FusionAttribute', data.ID, false);
                 FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
             }
 
@@ -246,7 +247,6 @@
             function toolAction(data) {
                 switch (data.context) {
                     case contextList.ActionExport:
-                        //alert(data.uri);
                         $.fileDownload(data.uri, {
                             httpMethod: "GET"
                         });
@@ -287,9 +287,9 @@
                     permissions.GetPermissionsForObject(type, id);
 
                     $('#SideIcons').PageTools({ type: type, id: id });
+                    $('#ItemAttributesTile').Attributes({ object: type, objectID: id, readOnly: false, collapsible: false });
 
-                    if (fusionAttributeID != null) json.ID = fusionAttributeID;                    
-                    //FusionItemsGrid('ItemsTile', contextList, permissions, typeID, id, (fusionAttributeID != null) ? json : null);                   
+                    if (fusionAttributeID != null) json.ID = fusionAttributeID;
                     PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '', false);
 
                     //#region Fusion Attribute Type
@@ -344,7 +344,7 @@
 
                     //#region Fusion Attribute
 
-                    //Build Filters
+                    //#region Build Filters
                     filterVM = new ArtifactFiltersViewModel([]);
                     filterVM.FilterCallback = runFilter;
                     try {
@@ -353,6 +353,7 @@
                     catch (e) {
                         console.log(e);
                     }
+                    //#endregion
 
                     FusionAttributeSource = {
                         datatype: 'json',
@@ -371,21 +372,21 @@
                     };
 
                     FusionAttributeAdapter = new $.jqx.dataAdapter(FusionAttributeSource, {
-                    formatData: function (data) {
-                        data.filterscount = 0;
+                        formatData: function (data) {
+                            data.filterscount = 0;
                         
-                        //normal filters
-                        $.each(filterVM.filterData('normal'), function (ix, item) {                                    
-                            if (item.value != '' && item.value != null) {
-                                data['filterdatafield' + data.filterscount] = item.field;
-                                data['filtercondition' + data.filterscount] = item.condition;
-                                data['filtervalue' + (data.filterscount++)] = item.value;
-                            }
-                        });
+                            //normal filters
+                            $.each(filterVM.filterData('normal'), function (ix, item) {                                    
+                                if (item.value != '' && item.value != null) {
+                                    data['filterdatafield' + data.filterscount] = item.field;
+                                    data['filtercondition' + data.filterscount] = item.condition;
+                                    data['filtervalue' + (data.filterscount++)] = item.value;
+                                }
+                            });
 
-                        return data;
-                    }                        
-                });
+                            return data;
+                        }                        
+                    });
 
                     $('#ItemsTile').jqxGrid({
                         altrows: true,
@@ -422,7 +423,6 @@
                     $("#ItemsTile").on("bindingcomplete", itemsBindingComplete);
                     amplify.subscribe('FusionAttributeRowSelected', fusionAttributeRowSelected);
                     amplify.subscribe("ToolAction", toolAction);
-                    //amplify.subscribe("PageResized", pageResized);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
                     //$("#ItemsTile").on("sort", function (event) {
@@ -434,8 +434,7 @@
                     //#endregion
 
                     if (fusionAttributeID != null) {
-                        var item = { ID: fusionAttributeID, Name: json.ItemName };
-                        //fusionAttributeRowSelected(item);                        
+                        var item = { ID: fusionAttributeID, Name: json.ItemName };                     
                     }
 
                     if (executionID) {
@@ -446,8 +445,6 @@
     };
 
     app.get('#/fusion/:typeid/:id/executions/:executionid', fi);
-    //app.get('#/fusion/:typeid/:id/:tab/:fusionattributeid', fi);
-    //app.get('#/fusion/:typeid/:id/:tab', fi);
     app.get('#/fusion/:typeid/:id', fi);
     app.get('#/fusion/item/:fusionattributetypeid/:fusionattributeid', fi);
 }

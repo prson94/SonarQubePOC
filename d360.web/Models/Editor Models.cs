@@ -109,43 +109,20 @@ namespace d360.web.Models
 
     public class SourcePostAddModel
     {
-        /// <summary>
-        /// The current object that we are creating sources for.
-        /// </summary>
-        public string Focal { get; set; }
-
-        /// <summary>
-        /// The current object's ID that we are creating sources for.
-        /// </summary>
-        public int FocalID { get; set; }
-
-        public string Subject { get; set; }
-        public int SubjectID { get; set; }
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-        public int PredicateID { get; set; }
+        public int SourceIntersectID { get; set; }
+        public int TargetIntersectID { get; set; }
+        public int IntersectRoleID { get; set; }
     }
 
     public class SourcePostDeleteModel
     {
-        /// <summary>
-        /// The current object that we are deleting sources for.
-        /// </summary>
-        public SystemObjects Focal { get; set; }
-
-        /// <summary>
-        /// The current object's ID that we are deleting sources for.
-        /// </summary>
-        public int FocalID { get; set; }
-
-        public int IntersectMapID { get; set; }
+        public int MapID { get; set; }
     }
 
     public class SourcePostEditModel
     {
-        public int IntersectMapID { get; set; }
-        public int PredicateID { get; set; }
-
+        public int MapID { get; set; }
+        public int IntersectRoleID { get; set; }
     }
 
     public class SynonymEditModel

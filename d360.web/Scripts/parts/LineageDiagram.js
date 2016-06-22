@@ -751,7 +751,6 @@
             text: null,
             predicateId: null,
             isDeletable: true,
-            exclude: 'false',
             diagramObjectType: "Link",
             sourceMappingCount: 0,
             hasMappingRules: false,
@@ -774,7 +773,6 @@
             backColor: null,
             foreColor: null,
             isDeletable: true,
-            exclude: 'false',
             highlightColor: null,
             diagramObjectType: "Node",
             level: null,
@@ -1894,7 +1892,6 @@
             model.foreColor = d.fore;
             model.backColor = d.back;
             model.diagramObjectType = "Node";
-            model.exclude = d.exclude.toString();
             model.intersectMapId = d.intersectMapId;
             model.intersectId = d.intersectId;
             model.sourceRuleCount = d.sourceRuleCount;

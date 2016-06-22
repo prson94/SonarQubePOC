@@ -2867,4 +2867,9 @@ GO
 --Pappas: Added above on 05/17/2016
 
 
-
+--Pappas: Added below on 06/17/2016
+alter table FieldTypeRelationLookupDisplayField add Show bit not null constraint DF_FieldTypeRelationLookupDisplayField_Show default(1)
+alter table FieldTypeRelationLookupDisplayField add SortOrder int null 
+alter table FieldTypeRelationLookupDisplayField add FilterValue nvarchar(250) null 
+go
+--Pappas: Added above on 06/17/2016

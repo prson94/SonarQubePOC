@@ -58,6 +58,12 @@ nav.top,
   height: 20px;
   line-height: 20px;
 }
+.side-nav ul.sub li.router-link-active {
+  background: #F8F3EF;
+}
+.side-nav ul.sub li.router-link-active a {
+  color: #383127 !important;
+}
 /* end side menu*/
 /* main content*/
 .maincontent {
@@ -180,3 +186,10 @@ span.breadcrumbs .sep {
   padding-bottom: 10px;
 }
 /* end grid tiles*/
+/* forms */
+.validation-text {
+  font-size: .9em;
+  color: #BC1B01;
+  padding-left: 5px;
+}
+/* end forms */

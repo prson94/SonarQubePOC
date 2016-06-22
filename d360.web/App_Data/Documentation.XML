@@ -2663,9 +2663,15 @@
         <member name="M:d360.web.Controllers.FormController.Group_EditFields(System.Int32)">
             <param name="id">GroupID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Lineage_IntersectTypes">
+        <member name="M:d360.web.Controllers.FormController.Lineage_IntersectRoles">
             <summary>
             Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
+            </summary>
+            <returns>A list of relevant fusion attribute types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Lineage_IntersectTypes">
+            <summary>
+            Gets a list of intersect types that support lineage.
             </summary>
             <returns>A list of relevant fusion attribute types.</returns>
         </member>
@@ -2688,6 +2694,13 @@
             Creates relationships for the various objects the user is adding to the diagram.
             </summary>
             <param name="model">An array of items to add relationships for.</param>
+            <returns>A list of name/value pairs.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Lineage_Update(d360.web.Models.SourcePostModel)">
+            <summary>
+            Creates relationships for the various objects the user is adding to the diagram.
+            </summary>
+            <param name="models">An array of items to add relationships for.</param>
             <returns>A list of name/value pairs.</returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Lookup_AddFields(System.Int32)">
@@ -2889,26 +2902,6 @@
         <member name="T:d360.web.Models.AddItemsToDiagramModel">
             <summary>
             Serves as the base editor model for all forms.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.SourcePostAddModel.Focal">
-            <summary>
-            The current object that we are creating sources for.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.SourcePostAddModel.FocalID">
-            <summary>
-            The current object's ID that we are creating sources for.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.SourcePostDeleteModel.Focal">
-            <summary>
-            The current object that we are deleting sources for.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.SourcePostDeleteModel.FocalID">
-            <summary>
-            The current object's ID that we are deleting sources for.
             </summary>
         </member>
         <member name="P:d360.web.Models.FieldValidationModel.message">

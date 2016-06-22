@@ -2599,6 +2599,8 @@ from    IntersectNode S
                 var sqlWhere = "";
                 var sqlOrderBy = "";
 
+                var columnPrefix = def.ReferenceType == 1 ? "D" : "D2";
+
                 #region Load Columns/Fields
 
                 if (displayFields.Any(i => i.FieldTypeName == "Name" && i.Show))
@@ -2619,34 +2621,70 @@ from    IntersectNode S
                         var displayField = displayFields.Single(i => i.FieldTypeID == fieldType.ID);
                         if (displayField.Show)
                         {
+                            var cellsformat = "";
+                            var columntype = GridColumn.COLUMN_TYPE_STRING;
                             var gridfieldType = "string";
                             switch (fieldType.Type)
                             {
                                 case "Boolean":
+                                    columntype = GridColumn.COLUMN_TYPE_CHECKBOX;
                                     gridfieldType = "bool";
                                     break;
                                 case "Date":
+                                    cellsformat = "MM/dd/yyyy";
+                                    columntype = GridColumn.COLUMN_TYPE_DATE;
+                                    gridfieldType = "date";
+                                    break;
                                 case "DateTime":
+                                    cellsformat = "MM/dd/yyyy hh:mm tt";
+                                    columntype = GridColumn.COLUMN_TYPE_DATE;
                                     gridfieldType = "date";
                                     break;
                                 case "Decimal":
+                                    cellsformat = "d";
+                                    columntype = GridColumn.COLUMN_TYPE_NUMBER;
+                                    gridfieldType = "number";
+                                    break;
                                 case "Number":
+                                    cellsformat = "n";
+                                    columntype = GridColumn.COLUMN_TYPE_NUMBER;
                                     gridfieldType = "number";
                                     break;
                             }
 
                             gridFields.Add(new GridField { name = fieldType.Name, type = gridfieldType });
-                            columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
+                            var gc = new GridColumn { text = fieldType.FriendlyName, columntype = columntype, datafield = fieldType.Name, width = "auto" };
+                            if (!string.IsNullOrEmpty(cellsformat))
+                            {
+                                gc.cellsformat = cellsformat;
+                            }
+                            columns.Add(gc);
                             sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
                         }
 
                         if (displayField.FieldTypeName.Contains("Relation."))
                         {
-                            sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = R.IntersectID");
+                            switch (def.ReferenceType)
+                            {
+                                case 1: //self reference
+                                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = I.ID");
+                                    break;
+                                default:
+                                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = I2.ID");
+                                    break;
+                            }
                         }
                         else
                         {
-                            sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = R.TargetObject and F{fieldType.ID}.ObjectID = R.TargetObjectID");
+                            switch (def.ReferenceType)
+                            {
+                                case 1: //self reference
+                                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = D.Object and F{fieldType.ID}.ObjectID = D.ObjectID ");
+                                    break;
+                                default:
+                                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = D2.Object and F{fieldType.ID}.ObjectID = D2.ObjectID ");
+                                    break;
+                            }
                         }
                     }
                 }
@@ -2655,7 +2693,52 @@ from    IntersectNode S
                 gridFields.Add(new GridField { name = "Url", type = "string" });
                 gridFields.Add(new GridField { name = "ID", type = "number" });
 
-                
+                foreach (var df in displayFields.Where(i => !string.IsNullOrEmpty(i.FilterValue)))
+                {
+                    sqlWhere += (string.IsNullOrEmpty(sqlWhere) ? "" : "AND ");
+                    if (df.FieldTypeID > 0)
+                    {
+                        sqlWhere += $" F{df.FieldTypeID}.FormattedValue like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                    }
+                    else
+                    {
+                        sqlWhere += $" {columnPrefix}.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                    }
+                }
+
+                foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
+                {
+                    sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ");
+                    if (df.FieldTypeID > 0)
+                    {
+                        var fieldTypeInfo = Company.Filter<FieldType>(i => i.ID == df.FieldTypeID).SingleOrDefault();
+                        if (fieldTypeInfo != null)
+                        {
+                            switch (fieldTypeInfo.Type)
+                            {
+                                case "Date":
+                                case "DateTime":
+                                    sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as datetime) asc";
+                                    break;
+                                case "Decimal":
+                                case "Number":
+                                    sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as decimal) asc";
+                                    break;
+                                default:
+                                    sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
+                        }
+                    }
+                    else
+                    {
+                        sqlOrderBy += $" {columnPrefix}.{df.FieldTypeName} asc";
+                    }
+                }
 
                 #endregion
 
@@ -2670,7 +2753,7 @@ from    IntersectNode S
                 {
                     case 1: //Self Reference
                         sql = $@"
-    select  R.IntersectID,
+    select  I.ID as IntersectID,
             D.[Object],
 		    D.ObjectID,
             D.ObjectID as ID,
@@ -2678,41 +2761,16 @@ from    IntersectNode S
 		    D.[TextPath],
 		    D.Url 
             {sqlColumnString}
-    from    cache.Relationship R
-		    inner join [Intersect] I on I.ID = R.IntersectID AND I.IntersectTypeID = {def.IntersectTypeID} and R.SourceObject = '{type}' and R.SourceObjectID = {id}
-		    inner join [cache].[ObjectDetails] D on D.[Object] = R.TargetObject and D.ObjectID = R.TargetObjectID
+    from    [Intersect] I
+		    inner join [cache].[ObjectDetails] D on I.IntersectTypeID = {def.IntersectTypeID} 
+                                                    and ( (I.Subject = '{type}' and I.SubjectID = {id}) OR (I.Object = '{type}' and I.ObjectID = {id}) ) 
+                                                    and D.[Object] = case when (I.Subject = '{type}' and I.SubjectID = {id}) then I.Object else I.Subject end 
+                                                    and D.ObjectID = case when (I.Subject = '{type}' and I.SubjectID = {id}) then I.ObjectID else I.SubjectID end 
             {sqlJoinString}";
-
-                        foreach (var df in displayFields.Where(i => !string.IsNullOrEmpty(i.FilterValue)))
-                        {
-                            sqlWhere += (string.IsNullOrEmpty(sqlOrderBy) ? "" : "AND ");
-                            if (df.FieldTypeID > 0)
-                            {
-                                sqlWhere += $" F{df.FieldTypeID}.FormattedValue like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
-                            }
-                            else
-                            {
-                                sqlWhere += $" D.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
-                            }
-                        }
-
-                        foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
-                        {
-                            sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ");
-                            if (df.FieldTypeID > 0)
-                            {
-                                sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
-                            }
-                            else
-                            {
-                                sqlOrderBy += $" D.{df.FieldTypeName} asc";
-                            }
-                        }
-
                         break;
                     default: //Child Reference
                         sql = $@"
-    select  R.IntersectID,
+    select  I2.ID as IntersectID,
             D2.[Object],
 		    D2.ObjectID,
             D2.ObjectID as ID,
@@ -2720,40 +2778,18 @@ from    IntersectNode S
 		    D2.[TextPath],
 		    D2.Url
             {sqlColumnString}
-    from    cache.Relationship R1
-		    inner join [Intersect] I1 on I1.ID = R1.IntersectID AND I1.IntersectTypeID = {def.IntersectTypeID} and R1.SourceObject = '{type}' and R1.SourceObjectID = {id}
-		    inner join [cache].[ObjectDetails] D1 on D1.[Object] = R1.TargetObject and D1.ObjectID = R1.TargetObjectID
-		    inner join cache.Relationship R ON R.SourceObject = 'Intersect' and R.SourceObjectID = I1.ID
-		    inner join [Intersect] I2 on I2.ID = R.IntersectID and I2.IntersectTypeID = {def.ChildIntersectTypeID}
-		    inner join [cache].[ObjectDetails] D2 on D2.[Object] = R.TargetObject and D2.ObjectID = R.TargetObjectID
+    from    [Intersect] I1
+		    inner join [cache].[ObjectDetails] D1 on I1.IntersectTypeID = {def.IntersectTypeID} 
+                                                    and ( (I1.Subject = '{type}' and I1.SubjectID = {id}) OR (I1.Object = '{type}' and I1.ObjectID = {id}) ) 
+                                                    and D1.[Object] = case when (I1.Subject = '{type}' and I1.SubjectID = {id}) then I1.Object else I1.Subject end 
+                                                    and D1.ObjectID = case when (I1.Subject = '{type}' and I1.SubjectID = {id}) then I1.ObjectID else I1.SubjectID end 
+
+		    inner join [Intersect] I2 on I2.IntersectTypeID = {def.ChildIntersectTypeID} 
+                                                    and ( (I2.Subject = 'Intersect' and I2.SubjectID = I1.ID) OR (I2.Object = 'Intersect' and I2.ObjectID = I1.ID) ) 
+
+            inner join [cache].[ObjectDetails] D2 on D2.[Object] = case when (I2.Subject = 'Intersect' and I2.SubjectID = I1.ID) then I2.Object else I2.Subject end 
+                                                    and D2.ObjectID = case when (I2.Subject = 'Intersect' and I2.SubjectID = I1.ID) then I2.ObjectID else I2.SubjectID end 
             {sqlJoinString}";
-
-                        foreach (var df in displayFields.Where(i => !string.IsNullOrEmpty(i.FilterValue)))
-                        {
-                            sqlWhere += (string.IsNullOrEmpty(sqlOrderBy) ? "" : "AND ");
-                            if (df.FieldTypeID > 0)
-                            {
-                                sqlWhere += $" F{df.FieldTypeID}.FormattedValue like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
-                            }
-                            else
-                            {
-                                sqlWhere += $" D2.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
-                            }
-                        }
-
-                        foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
-                        {
-                            sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ");
-                            if (df.FieldTypeID > 0)
-                            {
-                                sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
-                            }
-                            else
-                            {
-                                sqlOrderBy += $" D2.{df.FieldTypeName} asc";
-                            }
-                        }
-
                         break;
                 }
 

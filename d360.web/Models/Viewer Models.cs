@@ -210,7 +210,7 @@ namespace d360.web.Models
 
         //    return fields;
         //}
-        public List<Field> GetFormDynamicFieldValues(ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server)
+        public List<Field> GetFormDynamicFieldValues(ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server, bool ignoreFieldIfNull = true)
         {
             var fields = new List<Field>();
 
@@ -240,14 +240,21 @@ namespace d360.web.Models
                             break;
                     }
 
-                    if (!string.IsNullOrEmpty(value))
+                    if (ignoreFieldIfNull)
+                    {
+                        if (!string.IsNullOrEmpty(value))
+                            fields.Add(new Field { FieldTypeID = ft.ID, Value = value });
+                    }
+                    else
+                    {
                         fields.Add(new Field { FieldTypeID = ft.ID, Value = value });
+                    }
                 }
             }
             return fields;
         }
 
-        public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldTypeWithRelation> fieldTypes, FormCollection form, HttpServerUtilityBase Server)
+        public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldTypeWithRelation> fieldTypes, FormCollection form, HttpServerUtilityBase Server, bool ignoreFieldIfNull = true)
         {
             var fields = new List<Field>();
 
@@ -281,8 +288,15 @@ namespace d360.web.Models
                             break;
                     }
 
-                    if (!string.IsNullOrEmpty(value))
+                    if (ignoreFieldIfNull)
+                    {
+                        if (!string.IsNullOrEmpty(value))
+                            fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
+                    }
+                    else
+                    {
                         fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
+                    }
                 }
             }
             return fields;

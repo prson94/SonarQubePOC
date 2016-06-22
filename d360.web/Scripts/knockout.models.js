@@ -4644,19 +4644,6 @@ var promotionStepRelateActionViewModel = function (ruleID, ruleStepID, fusionID)
         if (self.showObjectFusionOwnerSearch() && self.fusionOwnerRules().length == 0) self.LoadFusionOwnerRules();
     });
 
-    self.selectedObjectTypeID.subscribe(function () {
-        //if the object type is direct load the object drop down 
-        if (self.selectedObjectTypeID() > 0) {
-            //self.LoadItems(self.selectedObjectTypeID(), self.selectedObjectType(), self.objectObjects, self.initialObjectItem, self.selectedObjectItemIndex);
-        }        
-    })
-
-    self.selectedSubjectTypeID.subscribe(function () {
-        if (self.selectedSubjectTypeID() > 0) {
-            //self.LoadItems(self.selectedSubjectTypeID(), self.selectedSubjectType(), self.subjectObjects, self.initialSubjectItem, self.selectedSubjectItemIndex);
-        }        
-    })
-
     // methods
     self.Load = function () {        
         if (self.intersectTypes().length == 0) self.LoadIntersectTypes();        

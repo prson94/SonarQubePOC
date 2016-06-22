@@ -15,6 +15,6 @@ namespace d360.core.entities.Plugins
         public string Name { get; set; }
 
         [ForeignKey("FusionAttributeTypeID")]
-        public ICollection<FieldType> FieldTypes { get; set; }
+        public ICollection<FusionAttributeTypeField> FusionAttributeTypeFields { get; set; }
     }
 }

@@ -122,6 +122,8 @@
     <Compile Include="entities\MapSequence.cs" />
     <Compile Include="entities\Map.cs" />
     <Compile Include="entities\Language.cs" />
+    <Compile Include="entities\Plugins\FusionTypeField.cs" />
+    <Compile Include="entities\Plugins\FusionAttributeTypeField.cs" />
     <Compile Include="entities\Relation.cs" />
     <Compile Include="entities\RelationType.cs" />
     <Compile Include="entities\Environment.cs" />

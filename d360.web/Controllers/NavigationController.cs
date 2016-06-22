@@ -368,7 +368,7 @@ SELECT	'#Admin' as MenuID,
 											NULL AS items
 									union all
 									SELECT	'API' AS name, 
-											'/help' AS url, 
+											'/swagger' AS url, 
 											0 as feature,
 											NULL AS items
 									) bg
