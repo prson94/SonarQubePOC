@@ -150,7 +150,7 @@
                 
                 $("#home-search-text").focus();
                         
-                SearchBarTypeahead('home-search-text', simpleSearch, searchTypeString, 5);
+                SearchBarTypeahead('home-search-text', simpleSearch, searchTypeString, 9);
             });
     });
 }
