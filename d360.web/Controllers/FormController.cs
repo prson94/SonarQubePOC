@@ -18524,6 +18524,20 @@ order by TextPath
 
         #region Form Get/Post
 
+
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddTooltipTemplateRaw(TemplateModel template)
+        {
+
+            var form = new FormCollection();            
+            form.Add("Name", template.Name);
+            form.Add("Description", template.Description);
+            form.Add("TemplateBody", template.TemplateBody);
+            form.Add("Action", template.Action);
+
+            return AddTooltipTemplate(form);
+        }
+
         [Route("templates/tooltip/add")]
         public ActionResult AddTooltipTemplate()
         {

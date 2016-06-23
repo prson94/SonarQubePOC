@@ -9,7 +9,7 @@ import _ from 'lodash';
 @Component({
     selector: 'd3s-admin-template-editor',
     template: ` 
-                <header>Edit Template</header>
+                <header>{{action}} Template</header>
                 <div class="row">
                     <div class="col l6 s12">
                         <div class="FieldName">Name</div>
@@ -42,7 +42,7 @@ export class AdminTemplateEditorComponent {
     @Input() template: Template;   
     @Output() closeClick = new EventEmitter();
     @Output() updateClick = new EventEmitter();
-    
+    action: string = "Edit";
 
     editedTemplate: Template;
 
@@ -57,7 +57,13 @@ export class AdminTemplateEditorComponent {
     }
 
     ngOnInit() {
-        this.editedTemplate = _.cloneDeep(this.template);
+        console.log(this.template);
+        if (this.template != undefined)
+            this.editedTemplate = _.cloneDeep(this.template);
+        else {
+            this.editedTemplate = new Template();
+            this.action = "New";
+        }
     }
 
     update()
@@ -67,6 +73,6 @@ export class AdminTemplateEditorComponent {
 
     close()
     {
-        this.closeClick.emit({ templateId: this.template.ID });
+        this.closeClick.emit({ templateId: (this.template ? this.template.ID : -1) });
     }
 };

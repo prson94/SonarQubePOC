@@ -52,9 +52,11 @@ export class TemplatesService {
     postTemplate(template: Template) {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
+
+        let url = `form/AddTooltipTemplateRaw`;
                 
         return this.http
-            .post(this.templatesUrl, JSON.stringify(template), { headers: headers })
+            .post(url, JSON.stringify(template), { headers: headers })
             .toPromise()
             .catch(this.handleError);
     }
