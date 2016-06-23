@@ -8,7 +8,7 @@ import { Subscription }   from 'rxjs/Subscription';
 @Component({
     selector: 'd3s-header-breadcrumb',
     template: ` <span class="breadcrumbs">
-                 <span *ngFor="let breadcrumb of breadcrumbs;#last=last" [ngClass]="{active:last}">
+                 <span *ngFor="let breadcrumb of breadcrumbs;let last=last" [ngClass]="{active:last}">
                     {{ breadcrumb.text }} <span *ngIf="!last" class="sep"> :: </span>
                  </span>                
                 </span>
