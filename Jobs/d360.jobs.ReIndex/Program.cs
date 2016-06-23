@@ -14,6 +14,8 @@ namespace d360.jobs.ReIndex
 {
     class Program: FunctionsBase
     {
+        private static int _defaultQueryCommandTimeout = 180;
+
         static void Main()
         {
             var host = new JobHost(new JobHostConfiguration(d360.core.constants.WEBJOBS_STORAGE_CONNECTION));
@@ -322,10 +324,10 @@ namespace d360.jobs.ReIndex
         private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
         {            
             var sType = SystemObjects.Artifact.ToString();
+            
+            var fields = context.Query<FieldWithRelation>("select * from FieldWithRelation where ObjectType = @t", new { t = sType }, commandTimeout: _defaultQueryCommandTimeout).ToList();
 
-            var fields = context.Query<FieldWithRelation>("select * from FieldWithRelation where ObjectType = @t", new { t = sType }).ToList();
-
-            foreach (var a in context.Query("select A.*, T.Name as ArtifactType, V.Name as Taxonomy from Artifact A inner join ArtifactType T on T.ID = A.ArtifactTypeID inner join TaxonomyType V on V.ID = A.TaxonomyTypeID"))
+            foreach (var a in context.Query("select A.*, T.Name as ArtifactType, V.Name as Taxonomy from Artifact A inner join ArtifactType T on T.ID = A.ArtifactTypeID inner join TaxonomyType V on V.ID = A.TaxonomyTypeID", commandTimeout: _defaultQueryCommandTimeout))
             {
                 var item = new AddToIndexModel { Group = "Artifact", CompanyID = companyID, ID = a.ID, Type = a.ArtifactType, RelativeUrl = string.Format("#/artifacts/{0}/{1}", a.ArtifactTypeID, a.ID) };
                 item.Fields = new Dictionary<string, string>();
