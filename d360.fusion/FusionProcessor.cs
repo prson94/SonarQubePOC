@@ -1363,8 +1363,8 @@ namespace d360.fusion
 
             for (int i = relationships.Count - 1; i >= 0; i--)                
             {
-                relationships[i].EndID = relationships[i].EndID.Replace(" ", string.Empty).ToUpper();
-                relationships[i].StartID = relationships[i].StartID.Replace(" ", string.Empty).ToUpper();
+                relationships[i].EndID = (relationships[i].EndID ?? "").Replace(" ", string.Empty).ToUpper();
+                relationships[i].StartID = (relationships[i].StartID ?? "").Replace(" ", string.Empty).ToUpper();
 
                 if(string.IsNullOrEmpty(relationships[i].StartID))
                 {
