@@ -1,22 +1,24 @@
 ﻿///<reference path="../es6-shim.d.ts"/>
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-
 import { Template } from '../models/template.model';
+import {BaseService} from './base.service';
+import { MessagesService } from './messages.service';
+
 
 import 'rxjs/add/operator/toPromise';
 
 @Injectable()
-export class TemplatesService {
+export class TemplatesService extends BaseService {
     private templatesUrl = 'api/templates/tooltip';
-    
-    constructor(private http: Http) { }
+
+    constructor(private http: Http, messagesService: MessagesService) { super(messagesService);  }
 
     getTemplates(): Promise<Template[]> {
         return this.http.get(this.templatesUrl)
             .toPromise()
             .then(response => <Template[]>response.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err) );
     }
 
     getTemplate(id: number) {
@@ -33,7 +35,7 @@ export class TemplatesService {
         return this.http
             .delete(url, headers)
             .toPromise()
-            .catch(this.handleError);
+            .catch(err => this.handleError(err) );
     }
 
     putTemplate(template: Template) {
@@ -45,7 +47,7 @@ export class TemplatesService {
         return this.http
             .put(url, JSON.stringify(template), { headers: headers })
             .toPromise()
-            .catch(this.handleError);
+            .catch(err => this.handleError(err) );
     }
 
 
@@ -58,11 +60,6 @@ export class TemplatesService {
         return this.http
             .post(url, JSON.stringify(template), { headers: headers })
             .toPromise()
-            .catch(this.handleError);
-    }
-
-    private handleError(error: any) {
-        console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
-    }
+            .catch(err => this.handleError(err) );
+    }    
 }

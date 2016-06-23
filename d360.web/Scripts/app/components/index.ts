@@ -1,9 +1,11 @@
 ﻿import { HomeComponent } from './home/home.component';
 import { HeaderComponent } from './header/header.component';
 import { NavBarComponent } from './navbar/navbar.component';
+import { MessagesComponent } from './shared/index';
 import { AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminTemplatesComponent, AdminComponent } from './admin/index';
 
 export * from './home/home.component';
 export * from './admin/index';
 export * from './header/header.component';
 export * from './navbar/navbar.component';
+export * from './shared/index';
