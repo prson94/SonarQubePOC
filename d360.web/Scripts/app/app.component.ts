@@ -2,9 +2,7 @@
 import { Component } from '@angular/core';
 import { ROUTER_DIRECTIVES } from '@angular/router';
 import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent, MessagesComponent } from './components/index';
-import { HeaderActionsService } from './services/header-actions.service';
-import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
-import { MessagesService } from './services/messages.service';
+import { MessagesService, HeaderBreadcrumbService, HeaderActionsService  } from './services/index';
 
 import 'rxjs/Rx';
 

@@ -1405,6 +1405,7 @@
     <TypeScriptCompile Include="Scripts\app\services\governance.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\index.ts" />
     <TypeScriptCompile Include="Scripts\app\services\messages.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-detail.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\page-header.service.ts" />
