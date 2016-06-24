@@ -16,6 +16,7 @@ import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
                             [suggestions]="results" 
                             (completeMethod)="search($event)" 
                             field="Name" 
+                            placeholder="Search Data3Sixty"
                             (onSelect)="selectItem()">                       
                     </p-autoComplete>
                 <span>`,
