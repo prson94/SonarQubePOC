@@ -1366,6 +1366,7 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\header\header-typeahead-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
@@ -1394,6 +1395,7 @@
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-message.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\typeahead-search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
@@ -1417,6 +1419,7 @@
     <TypeScriptCompile Include="Scripts\app\components\parts\form-message.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-detail.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\people-responsibilities.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\typeahead-search.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
   </ItemGroup>

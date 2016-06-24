@@ -1,0 +1,19 @@
+﻿///<reference path="../es6-shim.d.ts"/>
+import { Injectable } from '@angular/core';
+import { Headers, Http } from '@angular/http';
+import { MessagesService } from './index';
+import { BaseService } from './base.service';
+import { TypeaheadSearchResult } from '../models/typeahead-search-result.model';
+
+@Injectable()
+export class TypeaheadSearchService extends BaseService {
+
+    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+
+    getResults(size, term): Promise<TypeaheadSearchResult[]> {
+        return this.http.get(`search/typeahead?q=${term}&num=${size}&t=`)
+            .toPromise()
+            .then(response => <TypeaheadSearchResult[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+}
