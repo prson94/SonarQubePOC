@@ -10,7 +10,7 @@ export class BaseService {
 
     handleError(error: any) {
         console.error('An error occurred', error);        
-        this.messages.showError('Error', error.statusText);
+        this.messages.showError('Error', error.toString());
         return Promise.reject(error.message || error);
     }
 }
