@@ -3,11 +3,13 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FormHelper, SelectItem } from '../models/form.model';
 import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityContextItem, IResponsibilityService } from '../models/responsibility.model';
+import { MessagesService } from './index';
+import { BaseService } from './base.service';
 
 @Injectable()
-export class ResponsibilityService implements IResponsibilityService {
+export class ResponsibilityService extends BaseService implements IResponsibilityService {
 
-    constructor(private http: Http) { }
+    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getResponsibilityDetail(objectID: number, objectType: string, showHidden: boolean = true): Promise<ResponsibilityItem[]> {
         return this.http.get(`api/${objectType}/${objectID}/ownership?showHidden=${showHidden}`)
@@ -18,7 +20,7 @@ export class ResponsibilityService implements IResponsibilityService {
                 r.forEach(i => i.ID = i.ResponsibilityID);
                 return r;
             })
-            .catch(this.handleError);
+            .catch(err=>this.handleError(err));
     }
 
     getResponsibilityItemEditor(objectID: number, objectType: string, responsibilityID: number): Promise<ResponsibilityEditorModel> {
@@ -45,7 +47,7 @@ export class ResponsibilityService implements IResponsibilityService {
                 return model;
 
             })
-            .catch(this.handleError);
+            .catch(err=>this.handleError(err));
     }
 
     postResponsibility(responsibility: ResponsibilityItem): Promise<any> {
@@ -54,11 +56,6 @@ export class ResponsibilityService implements IResponsibilityService {
 
         return this.http.post('form/responsibility', JSON.stringify(responsibility), { headers: headers })
             .toPromise()
-            .catch(this.handleError);
-    }
-
-    private handleError(error: any) {
-        console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
-    }
+            .catch(err=>this.handleError(err));
+    }    
 }

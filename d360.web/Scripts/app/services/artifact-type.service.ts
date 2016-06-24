@@ -3,29 +3,31 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { TreeNode } from 'primeng/primeng';
 import { ArtifactTypeEditorModel, ArtifactType } from '../models/artifact-type.model';
+import { BaseService } from './base.service';
+import { MessagesService } from './index';
 
 @Injectable()
-export class ArtifactTypeService {
+export class ArtifactTypeService extends BaseService {
 
-    constructor(private http: Http) { }
+    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getArtifactTypeEditor(id: number, parentID: number): Promise<ArtifactTypeEditorModel> {
         return this.http.get(`form/ArtifactType?parentID=${parentID}&id=${id}`)
             .toPromise()
             .then(response => <ArtifactTypeEditorModel>response.json())
-            .catch(this.handleError);
+            .catch(err=>this.handleError(err));
     }
 
     putArtifactType(model: ArtifactTypeEditorModel): Promise<any> {
         return this.http.put('form/ArtifactType', model)
             .toPromise()
-            .catch(this.handleError);
+            .catch(err=>this.handleError(err));
     }
 
     postArtifactType(model: ArtifactTypeEditorModel): Promise<any> {
         return this.http.post('form/ArtifactType', model)
             .toPromise().
-            catch(this.handleError);
+            catch(err=>this.handleError(err));
     }
 
     getArtifactTypeTree(): Promise<TreeNode[]> {
@@ -33,7 +35,7 @@ export class ArtifactTypeService {
             .toPromise()
             .then(response => <TreeNode[]>response.json())
             .then(r => this.formTree(r))
-            .catch(this.handleError);
+            .catch(err=>this.handleError(err));
     }
 
     findArtifactType(tree: TreeNode[], id: number): TreeNode {
@@ -70,9 +72,5 @@ export class ArtifactTypeService {
             this.formTreeR(child, data);
         });
     }
-
-    private handleError(error: any) {
-        console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
-    }
+    
 }

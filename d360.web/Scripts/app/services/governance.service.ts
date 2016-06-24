@@ -2,21 +2,18 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { GovernanceItem, IGovernanceService } from '../models/governance.model';
+import { MessagesService } from './index';
+import { BaseService } from './base.service';
 
 @Injectable()
-export class GovernanceService implements IGovernanceService {
+export class GovernanceService extends BaseService implements IGovernanceService {
 
-    constructor(private http: Http) { }
+    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getGovernanceItems(): Promise<GovernanceItem[]> {
         return this.http.get('api/ownership/types')
             .toPromise()
             .then(response => <GovernanceItem[]>response.json())
-            .catch(this.handleError);
-    }
-
-    private handleError(error: any) {
-        console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
+            .catch(err=>this.handleError(err));
     }
 }

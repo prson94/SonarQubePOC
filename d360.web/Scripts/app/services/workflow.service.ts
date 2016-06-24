@@ -3,25 +3,27 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
+import { MessagesService } from './index';
+import { BaseService } from './base.service';
 
 
 @Injectable()
-export class WorkflowService implements IWorkflowService {
+export class WorkflowService extends BaseService implements IWorkflowService {
 
-    constructor(private http: Http) { }
+    constructor(private http: Http, messagesService: MessagesService) { super(messagesService);}
 
     getWorkflows(): Promise<WorkflowItem[]> {
         return this.http.get('/api/workflows/relations')
             .toPromise()
             .then(response => <WorkflowItem[]>response.json())
-            .catch(this.handleError);
+            .catch(err=>this.handleError(err));
     }
 
     getWorkflow(id: number, workflowType: WorkflowType): Promise<WorkflowTypeRelationEditorModel> {
         return this.http.get(`form/WorkflowAllocation?id=${id}&workflowType=${workflowType}`)
             .toPromise()
             .then(response => <WorkflowTypeRelationEditorModel>response.json())
-            .catch(this.handleError);
+            .catch(err =>this.handleError(err));
     }
 
     postWorkflow(workflow: WorkflowItem): Promise<any>  {
@@ -30,7 +32,7 @@ export class WorkflowService implements IWorkflowService {
 
         return this.http.post('form/WorkflowAllocation', JSON.stringify(workflow), { headers: headers })
             .toPromise()
-            .catch(this.handleError);
+            .catch(err =>this.handleError(err));
     }
 
     deleteWorkflow(id: number): Promise<any> {
@@ -39,7 +41,7 @@ export class WorkflowService implements IWorkflowService {
 
         return this.http.delete(`/form/DeleteWorkflowAllocationByID?id=${id}`, headers)
             .toPromise()
-            .catch(this.handleError);
+            .catch(err =>this.handleError(err));
     }
 
     getResponsibilityTypeSelectList(id: number, type: string): Promise<SelectItem[]> {
@@ -50,7 +52,7 @@ export class WorkflowService implements IWorkflowService {
                 FormHelper.mapSelectItems(r);
                 return r;
             })
-            .catch(this.handleError);
+            .catch(err =>this.handleError(err));
     }
 
     getParentTypeSelectList(id: number, type: string, workflowType: WorkflowType): Promise<SelectItem[]> {
@@ -61,11 +63,7 @@ export class WorkflowService implements IWorkflowService {
                 FormHelper.mapSelectItems(r);
                 return r;
             })
-            .catch(this.handleError);
+            .catch(err =>this.handleError(err));
     }
-
-    private handleError(error: any) {
-        console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
-    }
+    
 }

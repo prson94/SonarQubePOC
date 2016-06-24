@@ -2,17 +2,19 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { CompanySettings, ICompanySettingsService } from '../models/settings.model';
+import { MessagesService } from './index';
+import { BaseService } from './base.service';
 
 @Injectable()
-export class CompanySettingsService implements ICompanySettingsService {
+export class CompanySettingsService extends BaseService implements ICompanySettingsService {
 
-    constructor(private http: Http) { }
+    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getSettings(): Promise<CompanySettings> {
         return this.http.get('/form/CompanySettings')
             .toPromise()
             .then(response => <CompanySettings>response.json())
-            .catch(this.handleError);
+            .catch(err =>this.handleError(err));
     }
 
     putSettings(companySettings: CompanySettings): Promise<any> { 
@@ -21,11 +23,6 @@ export class CompanySettingsService implements ICompanySettingsService {
 
         return this.http.put('/form/UpdateCompanySettings', JSON.stringify(companySettings), { headers: headers })
             .toPromise()
-            .catch(this.handleError);
-    }
-
-    private handleError(error: any) {
-        console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
-    }
+            .catch(err => this.handleError(err));
+    }    
 }

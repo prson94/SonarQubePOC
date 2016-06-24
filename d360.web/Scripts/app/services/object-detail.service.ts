@@ -2,21 +2,18 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { DetailField, DetailRow, DetailModel, IObjectDetailService } from '../models/object-detail.model';
+import { MessagesService } from './index';
+import { BaseService } from './base.service';
 
 @Injectable()
-export class ObjectDetailService implements IObjectDetailService {
+export class ObjectDetailService extends BaseService implements IObjectDetailService {
 
-    constructor(private http: Http) { }
+    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getObjectDetail(objectID: number, objectType: string): Promise<DetailModel> {
         return this.http.get(`api/${objectType}/${objectID}/detail`)
             .toPromise()
             .then(response => <DetailModel>response.json())
-            .catch(this.handleError);
-    }
-
-    private handleError(error: any) {
-        console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
+            .catch(err=>this.handleError(err));
     }
 }
