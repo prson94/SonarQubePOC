@@ -453,8 +453,7 @@ namespace d360.fusion
 				            USING   (
 						            SELECT  sr.IntersectTypeID isectid, 
                                             2 as class, 
-                                            sr.ID as srID,
-                                            
+                                            sr.ID as srID
 							        FROM    #tempResolvedRel sr							            
 						            ) s
 				            ON      (1 = 0)
