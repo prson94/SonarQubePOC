@@ -7,9 +7,16 @@ import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
 
 @Component({
     selector: 'd3s-header-typeahead-search',
-    template: ` <span style="display:table;">
+    template: ` <span style="display:table;" id="typesearch" [ngClass]="{'active':showSearch}">
                     <a style="display:table-cell;" (click)="showSearch=!showSearch;"><i class="fa fa-search"></i></a>
-                    <p-autoComplete size="50" *ngIf="showSearch" [(ngModel)]="result" [suggestions]="results" (completeMethod)="search($event)" field="Name" (onSelect)="selectItem()">                       
+                    <p-autoComplete size="50" 
+                            styleClass="searchTypeahead" 
+                            scrollHeight="400px" *ngIf="showSearch" 
+                            [(ngModel)]="result" 
+                            [suggestions]="results" 
+                            (completeMethod)="search($event)" 
+                            field="Name" 
+                            (onSelect)="selectItem()">                       
                     </p-autoComplete>
                 <span>`,
     directives: [AutoComplete],
