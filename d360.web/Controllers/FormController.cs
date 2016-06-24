@@ -16557,7 +16557,7 @@ order by	D.Name, I.Name";
 
                         if (intersectId < 1)
                         {
-                            Company.AddRelationship(SystemObjects.FusionAttribute, source.FusionID, SystemObjects.FusionAttribute, target.FusionID, IntersectClassification.Normal, null, null);
+                            Company.AddIntersect(SystemObjects.FusionAttribute, source.FusionID, SystemObjects.FusionAttribute, target.FusionID, IntersectClassification.Normal, null, null);
                             intersectId = Company.Query<int>(intersectSql, new { sourceId = source.FusionID, targetId = target.FusionID }).FirstOrDefault();
                         }
 

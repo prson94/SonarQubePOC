@@ -1,40 +1,43 @@
 ﻿@{
     var id = ViewBag.WorkflowID;
+    var fullOverlay = ViewBag.IsFullOverlay;
+    var startTag = (fullOverlay) ? "<div class=\"medium-overlay\"><div class=\"ui segment\">" : "";
+    var endTag = (fullOverlay) ? "</div></div>" : "";
 }
-
-        <div class="left form-header-info">
-            <h4 id="FormTitle"></h4>
+@Html.Raw(startTag)
+<div class="left form-header-info">
+    <h4 id="FormTitle"></h4>
+</div>
+<div class="right">
+    <button type="button" id="RejectButton" class="btn waves-effect waves-light brown lighten-4" data-context="Workflow">Reject</button>
+    <button type="button" id="ApproveButton" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="Workflow">Approve</button>
+</div>
+<div class="clear"></div>
+<div id="FormDescription" class="form-instructions"></div>
+<div id="progress"></div>
+<div class="row">
+    <div class="col s6">
+        <div id="RequestDetail">
+            <div class="FieldName">Type</div>
+            <div id="TypeValue"></div>
+            <div class="FieldName">Proposed Name</div>
+            <div id="ProposedNameValue"></div>
+            <div class="FieldName">Proposed Description</div>
+            <div id="ProposedDescriptionValue"></div>
+            <div class="FieldName">Requestor</div>
+            <div id="RequestorValue"></div>
+            <div class="FieldName">Subject Area</div>
+            <div id="SubjectAreaValue"></div>
         </div>
-        <div class="right">
-            <button type="button" id="RejectButton" class="btn waves-effect waves-light brown lighten-4" data-context="Workflow">Reject</button>
-            <button type="button" id="ApproveButton" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="Workflow">Approve</button>
+    </div>
+    <div class="col s6">
+        <div id="ApproverCommentArea">
+            <div class="FieldName">Comment</div>
+            <textarea id="ApproverComment"></textarea>
         </div>
-        <div class="clear"></div>
-        <div id="FormDescription" class="form-instructions"></div>
-        <div id="progress"></div>
-        <div class="row">
-            <div class="col s6">
-                <div id="RequestDetail">
-                    <div class="FieldName">Type</div>
-                    <div id="TypeValue"></div>
-                    <div class="FieldName">Proposed Name</div>
-                    <div id="ProposedNameValue"></div>
-                    <div class="FieldName">Proposed Description</div>
-                    <div id="ProposedDescriptionValue"></div>
-                    <div class="FieldName">Requestor</div>
-                    <div id="RequestorValue"></div>
-                    <div class="FieldName">Subject Area</div>
-                    <div id="SubjectAreaValue"></div>
-                </div>
-            </div>
-            <div class="col s6">
-                <div id="ApproverCommentArea">
-                    <div class="FieldName">Comment</div>
-                    <textarea id="ApproverComment"></textarea>
-                </div>
-            </div>
-        </div>
-
+    </div>
+</div>
+@Html.Raw(endTag)
 
 <script type="text/javascript">
     var workflowID = "@(id)";

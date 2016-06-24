@@ -11,7 +11,7 @@
                 $(controlID).append('<article>');
                 $(controlID).append('<header>Certification Is Due</header>');
                 $(controlID).append('<div style="text-align: center; margin-bottom: 15px">You need to certify this item.</div>');
-                $(controlID).append('<div style="text-align: center; margin-bottom: 15px"><button id="' + buttonControlID + '" type="button" class="btn btn-success" onclick="ClickGridTool(event)" data-context="Workflow" data-uri="/workflow/' + data.WorkflowID + '/overlay">Certify Now!</button></div>');
+                $(controlID).append('<div style="text-align: center; margin-bottom: 15px"><button id="' + buttonControlID + '" type="button" class="btn btn-success" onclick="ClickGridTool(event)" data-context="Workflow" data-uri="/workflow/' + data.WorkflowID + '/overlay/true">Certify Now!</button></div>');
                 $(controlID).append('</article>');
                 $(controlID).fadeIn(250);
             }

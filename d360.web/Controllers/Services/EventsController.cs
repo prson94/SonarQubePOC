@@ -452,7 +452,7 @@ namespace d360.web.Controllers.Services
                 models.ForEach(m =>
                 {
                     var t = (SystemObjects)Enum.Parse(typeof(SystemObjects), m.ObjectType);
-                    Company.AddRelationship(SystemObjects.Rule, id, t, m.ObjectID, IntersectClassification.Normal, null, null);
+                    Company.AddIntersect(SystemObjects.Rule, id, t, m.ObjectID, IntersectClassification.Normal, null, null);
                 });
                 //Company.AddRelationships(SystemObjects.Rule, id, IntersectClassification.Normal, null, null, models);
 

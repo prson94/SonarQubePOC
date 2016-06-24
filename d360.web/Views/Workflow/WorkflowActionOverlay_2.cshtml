@@ -1,36 +1,39 @@
 ﻿@{
     var id = ViewBag.WorkflowID;
+    var fullOverlay = ViewBag.IsFullOverlay;
+    var startTag = (fullOverlay) ? "<div class=\"medium-overlay\"><div class=\"ui segment\">" : "";
+    var endTag = (fullOverlay) ? "</div></div>" : "";
 }
-
-        <div class="left form-header-info">
-            <h4 id="FormTitle"></h4>
+@Html.Raw(startTag)
+<div class="left form-header-info">
+    <h4 id="FormTitle"></h4>
+</div>
+<div class="right">
+    <button type="button" id="CertifyButton" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="Workflow">Certify</button>
+</div>
+<div class="clear"></div>
+<div id="FormDescription" class="form-instructions"></div>
+<div id="progress"></div>
+<div class="row">
+    <div class="col s6">
+        <div id="RequestDetail">
+            <div class="FieldName">Type</div>
+            <div id="TypeValue"></div>
+            <div class="FieldName">Name</div>
+            <div id="NameValue"></div>
+            <div class="FieldName">Start Date</div>
+            <div id="StartDateValue"></div>
+            <div class="FieldName">Due Date</div>
+            <div id="DueDateValue"></div>
         </div>
-        <div class="right">
-            <button type="button" id="CertifyButton" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="Workflow">Certify</button>
+    </div>
+    <div class="col s6">
+        <div id="CertificationMessage">
+            By clicking the Certify button above, I certify that all data on this item is correct.
         </div>
-        <div class="clear"></div>
-        <div id="FormDescription" class="form-instructions"></div>
-        <div id="progress"></div>
-        <div class="row">
-            <div class="col s6">
-                <div id="RequestDetail">
-                    <div class="FieldName">Type</div>
-                    <div id="TypeValue"></div>
-                    <div class="FieldName">Name</div>
-                    <div id="NameValue"></div>
-                    <div class="FieldName">Start Date</div>
-                    <div id="StartDateValue"></div>
-                    <div class="FieldName">Due Date</div>
-                    <div id="DueDateValue"></div>
-                </div>
-            </div>
-            <div class="col s6">
-                <div id="CertificationMessage">
-                    By clicking the Certify button above, I certify that all data on this item is correct.
-                </div>
-            </div>
-        </div>
-    
+    </div>
+</div>
+@Html.Raw(endTag)
 
 <script type="text/javascript">
     var workflowID = "@(id)";
@@ -78,12 +81,12 @@
 
                 $('#FormTitle').text(title);
                 $('#FormDescription').html(description);
-                
+
                 $('#TypeValue').html(data.TypeName);
                 $('#NameValue').html('<a href="' + data.Url + '">' + data.Name + '</a>');
                 $('#StartDateValue').html(moment.utc(data.StartDate).local().format('dddd, MMMM Do YYYY, h:mm:ss a'));
                 $('#DueDateValue').html(moment.utc(data.DueDate).local().format('dddd, MMMM Do YYYY, h:mm:ss a'));
-                
+
                 $('#CertifyButton').on('click', function () {
                     postApprovalForm();
                 });

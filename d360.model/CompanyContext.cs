@@ -1256,12 +1256,14 @@ order by Name");
 
         #region Relationships
 
-        public Intersect AddIntersect(SystemObjects subject, int subjectID, SystemObjects @object, int objectID, IntersectClassification classification, int predicateID, string description)
+        public Intersect AddIntersect(SystemObjects subject, int subjectID, SystemObjects @object, int objectID, IntersectClassification classification, int? predicateID, string description)
+        {
+            return AddIntersect(subject.ToString(), subjectID, @object.ToString(), objectID, classification, predicateID, description);
+        }
+
+        public Intersect AddIntersect(string subject, int subjectID, string @object, int objectID, IntersectClassification classification, int? predicateID, string description)
         {
             Intersect intersect = null;
-
-            var sSubject = subject.ToString();
-            var sObject = @object.ToString();
 
             var subjectDetail = GetObjectDetail(subject, subjectID);
             var objectDetail = GetObjectDetail(@object, objectID);
@@ -1275,28 +1277,49 @@ order by Name");
             var intersectType = Filter<IntersectType>(i => (
                     (i.Subject == subjectDetail.Type && i.SubjectID == subjectDetail.TypeID && i.Object == objectDetail.Type && i.ObjectID == objectDetail.TypeID) ||
                     (i.Object == subjectDetail.Type && i.ObjectID == subjectDetail.TypeID && i.Subject == objectDetail.Type && i.SubjectID == objectDetail.TypeID)
-                ) &&
-                i.IntersectTypePredicates.Any(p => p.PredicateType == PredicateType.Synonym), 
-                i => i.Nodes
+                ) //&&
+                //(predicateID.HasValue && i.IntersectTypePredicates.Any(p => p.PredicateType == PredicateType.Synonym), 
+                , i => i.Nodes
             ).FirstOrDefault();
 
             if (intersectType == null)
                 throw new NotFoundException("Intersect Type");
 
             intersect = Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && (
-                    (i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID) ||
-                    (i.Object == sSubject && i.ObjectID == subjectID && i.Subject == sObject && i.SubjectID == objectID)
+                    (i.Subject == subject && i.SubjectID == subjectID && i.Object == @object && i.ObjectID == objectID) ||
+                    (i.Object == subject && i.ObjectID == subjectID && i.Subject == @object && i.SubjectID == objectID)
                 ), i => i.Nodes
             ).SingleOrDefault();
 
             if (intersect == null)
             {
                 var nodes = intersectType.Nodes.OrderBy(i => i.Order).ToList();
-                intersect = new Intersect { IntersectTypeID = intersectType.ID, Classification = classification, Description = description, Subject = sSubject, SubjectID = subjectID, Object = sObject, ObjectID = objectID };
+                intersect = new Intersect { IntersectTypeID = intersectType.ID, Classification = classification, Description = description };
                 intersect.Nodes = new List<IntersectNode>();
-                intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = sSubject, ObjectID = subjectID });
-                intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = sObject, ObjectID = objectID });
-                Intersects.Add(intersect);
+
+                if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
+                {
+                    intersect.Subject = subject;
+                    intersect.SubjectID = subjectID;
+                    intersect.Object = @object;
+                    intersect.ObjectID = objectID;
+
+                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = subject, ObjectID = subjectID });
+                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = @object, ObjectID = objectID });
+                    Intersects.Add(intersect);
+                }
+                else
+                {
+                    intersect.Subject = @object;
+                    intersect.SubjectID = objectID;
+                    intersect.Object = subject;
+                    intersect.ObjectID = subjectID;
+
+                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = @object, ObjectID = objectID });
+                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = subject, ObjectID = subjectID });
+                    Intersects.Add(intersect);
+                }
+
                 SaveChanges();
             }
             else
@@ -1345,11 +1368,32 @@ order by Name");
                 if (dtl == null)
                 {
                     var nodes = intersectType.Nodes.OrderBy(i => i.Order).ToList();
-                    intersect = new Intersect { IntersectTypeID = intersectType.ID, Subject = sSubject, SubjectID = subjectID, Object = sObject, ObjectID = objectID };
+                    intersect = new Intersect { IntersectTypeID = intersectType.ID };
                     intersect.Nodes = new List<IntersectNode>();
-                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = sSubject, ObjectID = subjectID });
-                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = sObject, ObjectID = objectID });
-                    Intersects.Add(intersect);
+
+                    if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
+                    {
+                        intersect.Subject = sSubject;
+                        intersect.SubjectID = subjectID;
+                        intersect.Object = sObject;
+                        intersect.ObjectID = objectID;
+
+                        intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = sSubject, ObjectID = subjectID });
+                        intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = sObject, ObjectID = objectID });
+                        Intersects.Add(intersect);
+                    }
+                    else
+                    {
+                        intersect.Subject = sObject;
+                        intersect.SubjectID = objectID;
+                        intersect.Object = sSubject;
+                        intersect.ObjectID = subjectID;
+
+                        intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = sObject, ObjectID = objectID });
+                        intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = sSubject, ObjectID = subjectID });
+                        Intersects.Add(intersect);
+                    }
+
                     SaveChanges();
 
                     dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
@@ -1363,63 +1407,63 @@ order by Name");
             }
         }
 
-        public void AddRelationship(SystemObjects type, int id, SystemObjects targetType, int targetID, IntersectClassification classification, int? roleID, string description)
-        {
-            AddRelationship(type.ToString(), id, targetType.ToString(), targetID, classification, roleID, description);
-        }
+        //public void AddRelationship(SystemObjects type, int id, SystemObjects targetType, int targetID, IntersectClassification classification, int? roleID, string description)
+        //{
+        //    AddRelationship(type.ToString(), id, targetType.ToString(), targetID, classification, roleID, description);
+        //}
 
-        public void AddRelationship(string type, int id, string targetType, int targetID, IntersectClassification classification, int? roleID, string description)
-        {
-            if (!roleID.HasValue) roleID = 0;
+        //public void AddRelationship(string type, int id, string targetType, int targetID, IntersectClassification classification, int? roleID, string description)
+        //{
+        //    if (!roleID.HasValue) roleID = 0;
 
-            Database.Connection.Execute(
-                "AddRelationship @ResourceID, @Date, @Type, @ID, @Classification, @IntersectRole, @Description, @TargetType, @TargetID",
-                new
-                {
-                    ResourceID = CurrentResourceID,
-                    Date = DateTime.UtcNow,
-                    Type = type,
-                    ID = id,
-                    Classification = (int)classification,
-                    IntersectRole = roleID,
-                    Description = description,
-                    TargetType = targetType,
-                    TargetID = targetID
-                });
-        }
+        //    Database.Connection.Execute(
+        //        "AddRelationship @ResourceID, @Date, @Type, @ID, @Classification, @IntersectRole, @Description, @TargetType, @TargetID",
+        //        new
+        //        {
+        //            ResourceID = CurrentResourceID,
+        //            Date = DateTime.UtcNow,
+        //            Type = type,
+        //            ID = id,
+        //            Classification = (int)classification,
+        //            IntersectRole = roleID,
+        //            Description = description,
+        //            TargetType = targetType,
+        //            TargetID = targetID
+        //        });
+        //}
 
 
-        public void AddRelationships(SystemObjects type, int id, IntersectClassification classification, int? roleID, string description, List<ObjectModel> objects)
-        {
-            #region Load Objects Parameter
+        //public void AddRelationships(SystemObjects type, int id, IntersectClassification classification, int? roleID, string description, List<ObjectModel> objects)
+        //{
+        //    #region Load Objects Parameter
 
-            var tObjects = new DataTable();
-            tObjects.Columns.Add("ObjectType");
-            tObjects.Columns.Add("ObjectID");
+        //    var tObjects = new DataTable();
+        //    tObjects.Columns.Add("ObjectType");
+        //    tObjects.Columns.Add("ObjectID");
 
-            objects.ForEach(o =>
-            {
-                tObjects.Rows.Add(o.ObjectType, o.ObjectID);
-            });
+        //    objects.ForEach(o =>
+        //    {
+        //        tObjects.Rows.Add(o.ObjectType, o.ObjectID);
+        //    });
 
-            #endregion
+        //    #endregion
 
-            if (!roleID.HasValue) roleID = 0;
+        //    if (!roleID.HasValue) roleID = 0;
 
-            ExecuteNonQueryCommand(
-                "EXEC AddRelationships @ResourceID, @Date, @Type, @ID, @Classification, @IntersectRole, @Description, @Objects",
-                new List<SqlParameter>() {
-                    new SqlParameter("ResourceID", CurrentResourceID),
-                    new SqlParameter("Date", DateTime.UtcNow) { SqlDbType = SqlDbType.DateTime },
-                    new SqlParameter("Type", type.ToString()),
-                    new SqlParameter("ID", id),
-                    new SqlParameter("Classification", (int)classification),
-                    new SqlParameter("IntersectRole", roleID),
-                    new SqlParameter("Description", description + ""),
-                    new SqlParameter("Objects", tObjects) { SqlDbType = SqlDbType.Structured, TypeName = "dbo.ObjectsTable" }
-                }
-            );
-        }
+        //    ExecuteNonQueryCommand(
+        //        "EXEC AddRelationships @ResourceID, @Date, @Type, @ID, @Classification, @IntersectRole, @Description, @Objects",
+        //        new List<SqlParameter>() {
+        //            new SqlParameter("ResourceID", CurrentResourceID),
+        //            new SqlParameter("Date", DateTime.UtcNow) { SqlDbType = SqlDbType.DateTime },
+        //            new SqlParameter("Type", type.ToString()),
+        //            new SqlParameter("ID", id),
+        //            new SqlParameter("Classification", (int)classification),
+        //            new SqlParameter("IntersectRole", roleID),
+        //            new SqlParameter("Description", description + ""),
+        //            new SqlParameter("Objects", tObjects) { SqlDbType = SqlDbType.Structured, TypeName = "dbo.ObjectsTable" }
+        //        }
+        //    );
+        //}
 
         public bool DeleteRelationship(int id)
         {
@@ -1429,22 +1473,22 @@ order by Name");
             return Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
         }
 
-        public void EditRelationship(int id, int? roleID, IntersectClassification classification, string description)
-        {
-            if (!roleID.HasValue) roleID = 0;
+        //public void EditRelationship(int id, int? roleID, IntersectClassification classification, string description)
+        //{
+        //    if (!roleID.HasValue) roleID = 0;
 
-            ExecuteNonQueryCommand(
-                "EditRelationship @ResourceID, @Date, @ID, @Classification, @IntersectRole, @Description",
-                new List<SqlParameter>() {
-                    new SqlParameter("ResourceID", CurrentResourceID),
-                    new SqlParameter("Date", DateTime.UtcNow) { SqlDbType = SqlDbType.DateTime },
-                    new SqlParameter("ID", id),
-                    new SqlParameter("Classification", (int)classification),
-                    new SqlParameter("IntersectRole", roleID),
-                    new SqlParameter("Description", description + "")
-                }
-            );
-        }
+        //    ExecuteNonQueryCommand(
+        //        "EditRelationship @ResourceID, @Date, @ID, @Classification, @IntersectRole, @Description",
+        //        new List<SqlParameter>() {
+        //            new SqlParameter("ResourceID", CurrentResourceID),
+        //            new SqlParameter("Date", DateTime.UtcNow) { SqlDbType = SqlDbType.DateTime },
+        //            new SqlParameter("ID", id),
+        //            new SqlParameter("Classification", (int)classification),
+        //            new SqlParameter("IntersectRole", roleID),
+        //            new SqlParameter("Description", description + "")
+        //        }
+        //    );
+        //}
 
         public IQueryable<CriticalRelationshipsByObject> GetCriticalRelationshipsByObject(SystemObjects type, int id)
         {
@@ -1588,99 +1632,99 @@ where	R.SourceObject = 'FusionAttribute'
             return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
         }
 
-        public List<IntersectTypeOption> GetRelationTypeOptions(SystemObjects? sub = null, int? subID = null, SystemObjects? obj = null, int? objID = null)
-        {
-            var sql = @"
-	SELECT		I.ID,
-				I.Name,
-				I.Type
-	FROM		(
-				SELECT	ID,
-						'Artifacts :: ' + Name AS Name,
-						'ArtifactType' AS Type
-				FROM	ArtifactType
-				UNION
-				SELECT	ID,
-						'Reference :: ' + Name AS Name,
-						'DomainType' AS Type
-				FROM	DomainType
-				UNION
-				SELECT	A.ID,
-						'Fusion Attributes :: ' + A.TextPath AS Name,
-						'FusionAttributeType' AS Type
-				FROM	FusionAttributeType A
-						INNER JOIN FusionType T ON A.FusionTypeID = T.ID
-				UNION
-				SELECT	1 as ID,
-						'Group' as Name,
-						'GroupType' as Type
-				UNION
-				SELECT	ID,
-						'Models :: ' + Name AS Name,
-						'TaxonomyType' AS Type
-				FROM	TaxonomyType
-				UNION
-				SELECT	ID,
-						'Policies :: ' + Name AS Name,
-						'PolicyType' AS Type
-				FROM	PolicyType
-				UNION
-				SELECT	CAST(ID as int) ID,
-						'Relationships :: ' + Name AS Name,
-						'IntersectType' AS Type
-				FROM	IntersectType
-				UNION
-				SELECT	1 as ID,
-						'Resource' as Name,
-						'ResourceType' as Type
-				UNION
-				SELECT	1 as ID,
-						'Rules :: Informational' as Name,
-						'RuleType' as Type
-				UNION
-				SELECT	2 as ID,
-						'Rules :: Quality Check' as Name,
-						'RuleType' as Type
-				UNION
-				SELECT	3 as ID,
-						'Rules :: Metric' as Name,
-						'RuleType' as Type
-				UNION
-				SELECT	4 as ID,
-						'Rules :: Profile' as Name,
-						'RuleType' as Type
-) I";
+//        public List<IntersectTypeOption> GetRelationTypeOptions(SystemObjects? sub = null, int? subID = null, SystemObjects? obj = null, int? objID = null)
+//        {
+//            var sql = @"
+//	SELECT		I.ID,
+//				I.Name,
+//				I.Type
+//	FROM		(
+//				SELECT	ID,
+//						'Artifacts :: ' + Name AS Name,
+//						'ArtifactType' AS Type
+//				FROM	ArtifactType
+//				UNION
+//				SELECT	ID,
+//						'Reference :: ' + Name AS Name,
+//						'DomainType' AS Type
+//				FROM	DomainType
+//				UNION
+//				SELECT	A.ID,
+//						'Fusion Attributes :: ' + A.TextPath AS Name,
+//						'FusionAttributeType' AS Type
+//				FROM	FusionAttributeType A
+//						INNER JOIN FusionType T ON A.FusionTypeID = T.ID
+//				UNION
+//				SELECT	1 as ID,
+//						'Group' as Name,
+//						'GroupType' as Type
+//				UNION
+//				SELECT	ID,
+//						'Models :: ' + Name AS Name,
+//						'TaxonomyType' AS Type
+//				FROM	TaxonomyType
+//				UNION
+//				SELECT	ID,
+//						'Policies :: ' + Name AS Name,
+//						'PolicyType' AS Type
+//				FROM	PolicyType
+//				UNION
+//				SELECT	CAST(ID as int) ID,
+//						'Relationships :: ' + Name AS Name,
+//						'IntersectType' AS Type
+//				FROM	IntersectType
+//				UNION
+//				SELECT	1 as ID,
+//						'Resource' as Name,
+//						'ResourceType' as Type
+//				UNION
+//				SELECT	1 as ID,
+//						'Rules :: Informational' as Name,
+//						'RuleType' as Type
+//				UNION
+//				SELECT	2 as ID,
+//						'Rules :: Quality Check' as Name,
+//						'RuleType' as Type
+//				UNION
+//				SELECT	3 as ID,
+//						'Rules :: Metric' as Name,
+//						'RuleType' as Type
+//				UNION
+//				SELECT	4 as ID,
+//						'Rules :: Profile' as Name,
+//						'RuleType' as Type
+//) I";
 
-            if (sub.HasValue && subID.HasValue)
-            {
-                sql += @"
- left join [RelationType] T on	(T.[Subject] = @sub and T.SubjectID = @subID and T.[Object] = I.[Type] and T.ObjectID = I.ID) 
-                                or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = I.[Type] and T.SubjectID = I.ID)
- left join Predicate P on P.ID = T.PredicateID and P.Type not in (5)";
+//            if (sub.HasValue && subID.HasValue)
+//            {
+//                sql += @"
+// left join [RelationType] T on	(T.[Subject] = @sub and T.SubjectID = @subID and T.[Object] = I.[Type] and T.ObjectID = I.ID) 
+//                                or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = I.[Type] and T.SubjectID = I.ID)
+// left join Predicate P on P.ID = T.PredicateID and P.Type not in (5)";
 
-                if (obj.HasValue && objID.HasValue)
-                {
-                    sql += @" where P.ID is null OR (
-(T.[Subject] = @sub and T.SubjectID = @subID and T.[Object] = @obj and T.ObjectID = @objID) 
-or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = @obj and T.SubjectID = @objID)
-)";
-                }
-                else
-                {
-                    sql += " where P.ID is null";
-                }
-            }
-            sql += " GROUP BY I.ID, I.Name, I.Type ORDER BY I.Name";
+//                if (obj.HasValue && objID.HasValue)
+//                {
+//                    sql += @" where P.ID is null OR (
+//(T.[Subject] = @sub and T.SubjectID = @subID and T.[Object] = @obj and T.ObjectID = @objID) 
+//or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = @obj and T.SubjectID = @objID)
+//)";
+//                }
+//                else
+//                {
+//                    sql += " where P.ID is null";
+//                }
+//            }
+//            sql += " GROUP BY I.ID, I.Name, I.Type ORDER BY I.Name";
 
-            if (obj.HasValue && objID.HasValue)
-            {
-                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = new Dapper.DbString { Value = sub.ToString(), IsAnsi = true }, subID, obj = new Dapper.DbString { Value = obj.ToString(), IsAnsi = true }, objID }).ToList();
-            }
-            else
-            {
-                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = new Dapper.DbString { Value = sub.ToString(), IsAnsi = true }, subID }).ToList();
-            }
-        }
+//            if (obj.HasValue && objID.HasValue)
+//            {
+//                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = new Dapper.DbString { Value = sub.ToString(), IsAnsi = true }, subID, obj = new Dapper.DbString { Value = obj.ToString(), IsAnsi = true }, objID }).ToList();
+//            }
+//            else
+//            {
+//                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = new Dapper.DbString { Value = sub.ToString(), IsAnsi = true }, subID }).ToList();
+//            }
+//        }
 
         internal class RelationModel
         {

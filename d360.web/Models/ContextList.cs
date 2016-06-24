@@ -95,6 +95,8 @@ public static class ContextList
         public const string Workflow = "workflowform";
         public const string WorkflowIssue = "IssueWorkflow";
         public const string WorkflowTypeRelation = "workflowtyperelationform";
+        public const string WorkflowStatusReport = "workflowstatusreportform";
+
 
         public const string ActionBoard = "board";
         public const string ActionCommand = "command";

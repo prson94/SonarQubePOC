@@ -459,7 +459,7 @@ namespace d360.fusion
 						            ) s
 				            ON      (1 = 0)
 				            WHEN NOT MATCHED THEN
-				            INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID, CreatedBy, CreatedOn, UdatedBy, UpdatedOn)
+				            INSERT  (IntersectTypeID, Classification, Description) --, Subject, SubjectID, Object, ObjectID, CreatedBy, CreatedOn, UdatedBy, UpdatedOn
 				            VALUES  (isectid, class, NULL)
 				            OUTPUT  INSERTED.ID, s.srID into @IDList;
 

@@ -991,7 +991,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             }
 
                             if (hasPermission(permissions, Claim.Update, ClaimObject.Root) && wtr.Count > 0)
-                                list.Add(new PageActionItem { Context = ContextList.Workflow, Icon = "code-fork", Title = "Workflow Status", Uri = $"/workflow/ArtifactTypeWorkflowStatusOverlay?id={id}" });
+                                list.Add(new PageActionItem { Context = ContextList.WorkflowStatusReport, Icon = "code-fork", Title = "Workflow Status", Uri = $"/workflow/ArtifactTypeWorkflowStatusOverlay?id={id}" });
 
                             var exportActionMenu = new PageActionItem { Context = ContextList.ActionExport, Icon = Resources.Actions.ExportToExcel_Icon, Title = Resources.Actions.ExportToExcel_Text, CustomData = { new PageActionItemData { Name = "ExportType", Value = "xls" } } };
                             list.Add(exportActionMenu);

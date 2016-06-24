@@ -1,14 +1,11 @@
 ﻿@{
     var id = ViewBag.WorkflowID;
     var fullOverlay = ViewBag.IsFullOverlay;
+    var startTag = (fullOverlay) ? "<div class=\"medium-overlay\"><div class=\"ui segment\">" : "";
+    var endTag = (fullOverlay) ? "</div></div>" : "";
 }
 
-@if (fullOverlay)
-{
-    @:<div class="medium-overlay">
-        @:<div class="ui segment">
-}
-
+@Html.Raw(startTag)
 <div class="left form-header-info">
     <h4 id="FormTitle"></h4>
 </div>
@@ -52,12 +49,7 @@
         </div>
     </div>
 </div>
-
-@if (fullOverlay)
-{
-    @:</div>
-            @:</div>
-}
+@Html.Raw(endTag)
 
 <script type="text/javascript">
     var workflowID = "@(id)";

@@ -2904,6 +2904,26 @@
             Serves as the base editor model for all forms.
             </summary>
         </member>
+        <member name="P:d360.web.Models.SourcePostAddModel.Focal">
+            <summary>
+            The current object that we are creating sources for.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.SourcePostAddModel.FocalID">
+            <summary>
+            The current object's ID that we are creating sources for.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.SourcePostDeleteModel.Focal">
+            <summary>
+            The current object that we are deleting sources for.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.SourcePostDeleteModel.FocalID">
+            <summary>
+            The current object's ID that we are deleting sources for.
+            </summary>
+        </member>
         <member name="P:d360.web.Models.FieldValidationModel.message">
             <summary>
             The error message to display to the user.
