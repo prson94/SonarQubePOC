@@ -1357,6 +1357,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-template-editor.ts" />
@@ -1379,6 +1380,7 @@
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\delete.form.ts" />
@@ -1394,6 +1396,7 @@
     <TypeScriptCompile Include="Scripts\app\models\fields.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\governance.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\taxonomy.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-detail.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\settings.model.ts" />
@@ -1412,6 +1415,7 @@
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\index.ts" />
     <TypeScriptCompile Include="Scripts\app\services\messages.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\taxonomies.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-detail.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\page-header.service.ts" />
     <TypeScriptCompile Include="Scripts\app\models\template.model.ts" />

@@ -2,7 +2,7 @@
 import { Component } from '@angular/core';
 //import { RouteConfig, ROUTER_DIRECTIVES } from '@angular/router-deprecated';
 import { ROUTER_DIRECTIVES } from '@angular/router';
-import { AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent, AdminArtifactsComponent, AdminTemplatesComponent } from './index'
+import { AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent, AdminArtifactsComponent, AdminTemplatesComponent, AdminTaxonomiesComponent } from './index'
 import { PageHeader } from '../../services/page-header.service';
 import 'rxjs/Rx';
 

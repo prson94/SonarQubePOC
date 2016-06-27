@@ -76,6 +76,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         adminItems.push({ name: 'Responsibilities', route: '/a/admin/responsibilities', subItems: null, expanded: false });
         adminItems.push({ name: 'Artifacts', route: '/a/admin/artifacts', subItems: null, expanded: false });
         adminItems.push({ name: 'Templates', route: '/a/admin/templates', subItems: null, expanded: false });
+        adminItems.push({ name: 'Models', route: '/a/admin/taxonomies', subItems: null, expanded: false });
         this.expandRoute();
 
         this.sub = this.router.events.subscribe(e => {

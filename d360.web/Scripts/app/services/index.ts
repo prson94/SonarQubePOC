@@ -13,6 +13,7 @@ import { CompanySettingsService } from './settings.service';
 import { TemplatesService } from './templates.service';
 import { WorkflowService } from './workflow.service';
 import { TypeaheadSearchService } from './typeahead-search.service';
+import { TaxonomiesService } from './taxonomies.service';
 
 
 export * from './messages.service';
@@ -30,4 +31,5 @@ export * from './settings.service';
 export * from './templates.service';
 export * from './workflow.service';
 export * from './typeahead-search.service';
+export * from './taxonomies.service';
 

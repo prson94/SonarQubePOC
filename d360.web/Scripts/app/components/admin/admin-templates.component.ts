@@ -5,6 +5,7 @@ import {DeleteForm} from '../forms/delete.form';
 import {AdminTemplateEditorComponent} from './admin-template-editor';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader  } from '../../services/index';
+import { TileActionsComponent } from '../shared/tile-actions.component';
 
 @Component({
     selector: 'd3s-admin-templates',
@@ -13,11 +14,7 @@ import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader 
                 <div class="col" [ngClass]="{'s8':isDeleting||isEditing||isAdding}" [ngClass]="{'s12':!isDeleting&&!isEditing&&!isAdding}">                    
                    <div class="tile tile-detail">
                         <header>Tooltip Templates
-                            <div id="FieldsTile_tools" class="TileTools">
-                                <a class="btn btn-floating waves-effect waves-light brown lighten-1" (click)="isAdding = true;isEditing=false;isDeleting=false;">
-                                    <i class="fa fa-plus" title="Add template"></i>
-                                </a>
-                            </div>
+                            <d3s-tile-actions [hasAdd]="true" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
                         </header>
                         <p-dataTable [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" >                                                        
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>
@@ -73,7 +70,7 @@ import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader 
                </div>               
                 `,
     providers: [TemplatesService],
-    directives: [DataTable, Column, DeleteForm, Editor, InputText, Dropdown, AdminTemplateEditorComponent]
+    directives: [DataTable, Column, DeleteForm, Editor, InputText, Dropdown, AdminTemplateEditorComponent, TileActionsComponent]
 })
 
 export class AdminTemplatesComponent {    
