@@ -15,6 +15,8 @@ import * as _ from 'lodash';
 
 export class FieldTypeForm implements OnInit, OnChanges {
     @Input() id: number;
+    @Input() objectType: string;
+    @Input() objectID: number;
     @Input() title: string = "Add Field Type";
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
@@ -51,29 +53,40 @@ export class FieldTypeForm implements OnInit, OnChanges {
     //#region load functions
 
     private load(): void {
-        this.isLoading = true;
-        this.fieldsService.getFieldTypeEditor(this.id)
-            .then(data => {
-                this.model = data;
-                this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
-            })
-            .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
-            .then(d => {
-                this.lookups = d;
-                this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
-            })
-            .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
-            .then(f => {
-                if (f) {
-                    this.model.FusionItems = f.FusionItems;
-                    console.log('Model');
-                    console.log(this.model);
-                }
-            })
-            .then(() => {
-                return this.loadDataType(this.model.FieldType.Type);
-            })
-            .then(() => this.isLoading = false);
+        if (this.id > 0) {
+            this.isLoading = true;
+            this.fieldsService.getFieldTypeEditor(this.id)
+                .then(data => {
+                    this.model = data;
+                    this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
+                })
+                .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
+                .then(d => {
+                    this.lookups = d;
+                    this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
+                })
+                .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
+                .then(f => {
+                    if (f) {
+                        this.model.FusionItems = f.FusionItems;
+                        console.log('Model');
+                        console.log(this.model);
+                    }
+                })
+                .then(() => {
+                    return this.loadDataType(this.model.FieldType.Type);
+                })
+                .then(() => this.isLoading = false);
+        } else {
+            this.model = new FieldTypeEditorModel();
+            this.model.FieldType = new FieldType();
+
+            this.fieldsService.getLookups(this.objectID, this.objectType)
+                .then(d => {
+                    this.lookups = d;
+                    this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
+                });
+        }
     }
 
     private loadDataType(value: string): Promise<void> {

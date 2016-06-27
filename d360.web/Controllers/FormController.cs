@@ -4856,6 +4856,14 @@ order by  D.TextPath
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteFieldTypeByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteFieldType(form);
+        }
+
         [HttpGet, ActionName("FieldType")]
         public JsonNetResult GetFieldType(int id)
         {

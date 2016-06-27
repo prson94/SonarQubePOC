@@ -3,7 +3,7 @@
         <header>
             {{title}}
             <div id="FieldsTile_tools" class="TileTools" *ngIf="!isLoading && !isAdding && !isEditing && !isDeleting">
-                <a class="btn btn-floating waves-effect waves-light brown lighten-1">
+                <a class="btn btn-floating waves-effect waves-light brown lighten-1" (click)="add()">
                     <i class="fa fa-plus" title="Add definition attribute"></i>
                 </a>
             </div>
@@ -13,13 +13,18 @@
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="isEditing">
-        <d3s-field-type-form [id]="selectedRow.ID" (onCancel)="isEditing = false;"></d3s-field-type-form>
+        <d3s-field-type-form [id]="selectedRow.ID" [objectType]="objectType" [objectID]="objectID" (onCancel)="isEditing = false;"></d3s-field-type-form>
     </div>
     <div *ngIf="isAdding">
-
+        <d3s-field-type-form [id]="0" [objectType]="objectType" [objectID]="objectID" (onCancel)="isAdding = false;"></d3s-field-type-form>
     </div>
     <div *ngIf="isDeleting">
-
+        <delete-form [uri]="'/form/DeleteFieldTypeByID?id=' + selectedRow.ID"
+                     [method]="'delete'"
+                     [prompt]="'Are you sure you want to delete this field type definition?'"
+                     (onDeleteSuccess)="isDeleting=false;"
+                     (onCancel)="isDeleting=false;">
+        </delete-form>
     </div>
     <div *ngIf="!isLoading && !isAdding && !isEditing && !isDeleting">
         <p-dataTable [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">

@@ -4,10 +4,11 @@ import { DataTable, Column } from 'primeng/primeng';
 import { FieldDefinition, IFieldsService } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
 import { FieldTypeForm } from '../forms/field-type.form';
+import { DeleteForm } from '../forms/delete.form';
 
 @Component({
     selector: 'd3s-field-definition-tile',
-    directives: [DataTable, Column, FieldTypeForm ],
+    directives: [DataTable, Column, FieldTypeForm, DeleteForm ],
     templateUrl: 'scripts/app/components/tiles/field-definition.tile.html',
     providers: [ FieldsService ]
 })
@@ -65,6 +66,19 @@ export class FieldDefinitionTile implements OnChanges {
         //    .then(data => {
         //        console.log(data);
         //    });
+    }
+
+    add(): void {
+        this.isEditing = false;
+        this.isDeleting = false;
+        this.isAdding = true;
+    }
+
+    delete(id: number): void {
+        this.selectedRow = this.fieldDefinitions.find(f => f.ID == id);
+        this.isEditing = false;
+        this.isDeleting = true;
+        this.isAdding = false;
     }
 }
 

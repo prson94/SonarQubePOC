@@ -121,6 +121,12 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
+    deleteFieldType(id: number): Promise<any> {
+        return this.http.delete(`form/DeleteFieldTypeByID?id=${id}`)
+            .toPromise()
+            .catch(err => this.handleError(err));
+    }
+
     private ftItemToSelectItem(items: FtItem[]): SelectItem[] {
         let s = new Array<SelectItem>();
         items.forEach(i => {
