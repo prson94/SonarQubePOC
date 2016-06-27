@@ -2665,7 +2665,7 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    searchSetting.Value = formModel.DefaultSearchTypes.ToString();
+                    searchSetting.Value = (formModel.DefaultSearchTypes ?? "").ToString();
                     Community.SaveChanges();
                 }
 
