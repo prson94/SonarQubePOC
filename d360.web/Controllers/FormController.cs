@@ -16229,8 +16229,10 @@ order by	D.Name, I.Name";
 
             var items = rule.Items.ToList();
             rule.Items = null;
-            if (rule.ID < 0)
+            if (rule.ID <= 0)
                 rule.ID = 0;
+            else
+                rule = Company.GetById<SourceRule>(rule.ID);
 
             SystemObjects obj = SystemObjects.Artifact;
 
@@ -16300,6 +16302,7 @@ order by	D.Name, I.Name";
                     try
                     {
                         Company.SaveChanges();
+                        message = rule.ID.ToString();
                     }
                     catch (Exception ex)
                     {
@@ -16339,6 +16342,65 @@ order by	D.Name, I.Name";
                 Data = new { error, message },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+        }
+
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpDelete, Route("SourceRules/delete"), ValidateInput(false)]
+        public JsonNetResult DeleteSourceRule(int id)
+        {
+            var rule = Company.GetById<SourceRule>(id);
+            var message = "";
+            var error = false;
+
+            if (rule == null)
+            {
+                message += "An error occurred, source rule id not found.";
+                error = true;
+                return new JsonNetResult
+                {
+                    Data = new { error, message },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
+            else
+            {
+                try
+                {
+                    var contexts = Company.Filter<SourceRuleContext>(c => c.SourceRuleID == rule.ID);
+                    var intersectSourceRules = Company.Filter<IntersectMapSourceRule>(i => i.SourceRuleID == rule.ID).ToList();
+
+
+
+
+                    var imContexts = new List<IntersectMapSourceRuleContext>();
+
+
+                    foreach(var i in intersectSourceRules)
+                    {
+                        imContexts.AddRange(Company.Filter<IntersectMapSourceRuleContext>(c => c.IntersectMapSourceRuleID == i.ID));
+                    }
+                   
+
+                    Company.SourceRuleContexts.RemoveRange(contexts);
+                    Company.IntersectMapSourceRuleContexts.RemoveRange(imContexts);
+                    Company.IntersectMapSourceRules.RemoveRange(intersectSourceRules);
+                    Company.SaveChanges();
+                    
+                    Company.Delete(rule);
+                    
+                }
+                catch (Exception ex)
+                {
+                    error = true;
+                    message += $"An error occurred: {ex.Message}\n\n{ex.StackTrace}";
+                }
+                return new JsonNetResult
+                {
+                    Data = new { error, message },
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
         }
 
         #endregion

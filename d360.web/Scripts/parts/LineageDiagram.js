@@ -2213,6 +2213,15 @@
                                 myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "hasSourceRules", true);
                             }
                         }
+                        if (data.action == 'delete') {
+                            var count = data.count;
+                            var ix = findNodeIndexByObject(data.object, data.objectid);
+                            if (ix > -1) {
+                                var node = myDiagram.model.nodeDataArray[ix];
+                                myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "sourceRuleCount", count);
+                                myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "hasSourceRules", (count > 0));
+                            }
+                        }
                     }
                     refreshControls(selectedData);
                     break;

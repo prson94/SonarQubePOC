@@ -1948,6 +1948,7 @@ function HierarchySourceRuleModel(data, permissions) {
         }).always(function (data) {
             self.IsSaving(false);
             if (!data.error) {
+                self.ID(data.message);
                 self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
                 amplify.publish("SaveAction", { context: 'sourcerule', action: action, object: self.Object(), objectid: self.ObjectID() });
             } else {
@@ -1989,6 +1990,8 @@ function HierarchyPanelViewModel(data, permissions) {
     self.Sources = ko.observableArray();
     self.SourceRules = ko.observableArray();
 
+    self.DeleteMessage = ko.observable('');
+    self.IsDeleting = ko.observable(false);
 
     self.SelectedItemIndex = ko.observable(-1);
     self.SelectedSourceIndex = ko.observable(-1);
@@ -2009,8 +2012,50 @@ function HierarchyPanelViewModel(data, permissions) {
 
     }
 
+
+    self.DeleteSourceRule = function () {
+        self.Mode('delete');
+        //console.log('mode delete');
+    }
+
+    self.DeleteConfirm = function () {
+        self.IsDeleting(true);
+        $.ajax({
+            url: '/form/SourceRules/delete?id=' + self.SelectedRule().ID(),
+            method: 'delete'
+        }).done(function (data) {
+            if (!data.error) {
+
+                for (var i = 0; i < self.SelectedRule().Items().length; i++) {
+                    self.Sources.push(self.SelectedRule().Items()[i]);
+                }
+
+                self.SelectedRule().Items.removeAll(self.SelectedRule().Items());
+
+                //self.SelectedItemIndex(-1);
+                self.SourceRules.remove(self.SelectedRule());
+                self.AfterLoad();
+                amplify.publish("SaveAction", { context: 'sourcerule', action: 'delete', object: self.Object(), objectid: self.ObjectID(), count: self.SourceRules().length });
+                self.Mode('add');
+            } else {
+                self.DeleteMessage('An error occurred while attempting to delete the source rule.');
+                console.log(data.message);
+            }
+            
+        }).always(function() {
+            self.IsDeleting(false);
+        });
+
+        //console.log('delete confirm');
+    }
+
+    self.DeleteCancel = function () {
+        self.Mode('add');
+    }
+
     self.AddSourceRule = function () {
         var data = {
+            ID: 0,
             Name: 'New Rule',
             Object: self.Object(),
             ObjectID: self.ObjectID(),
@@ -2040,7 +2085,7 @@ function HierarchyPanelViewModel(data, permissions) {
     self.SelectedRuleIndex.subscribe(function () {
         var rule = self.SourceRules()[self.SelectedRuleIndex()];
         self.SelectedRule(rule);
-        self.SelectedItemIndex(-1);
+        //self.SelectedItemIndex(-1);
         self.CheckUsedContextItems();
     });
 
@@ -2057,6 +2102,7 @@ function HierarchyPanelViewModel(data, permissions) {
     //#region Functions
 
     self.LoadRules = function () {
+        //console.log('load rules');
         self.InProgress(true);
         $.ajax({
             url: '/form/SourceRules/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
@@ -2088,6 +2134,7 @@ function HierarchyPanelViewModel(data, permissions) {
     }
 
     self.LoadSources = function () {
+      //  console.log('load sources');
         self.InProgress(true);
 
         $.ajax({
@@ -2116,6 +2163,7 @@ function HierarchyPanelViewModel(data, permissions) {
     self.LoadSources();
 
     self.LoadContexts = function () {
+       // console.log('load contexts');
         $.ajax({
             url: '/form/SourceRules/contexts',
             method: 'GET'
@@ -2147,7 +2195,7 @@ function HierarchyPanelViewModel(data, permissions) {
             return;
         if (self.SelectedItemIndex() == -1)
             return;
-        console.log(ko.toJS(self.SelectedRule().Items()[self.SelectedItemIndex()]));
+        //console.log(ko.toJS(self.SelectedRule().Items()[self.SelectedItemIndex()]));
         self.Sources.push(self.SelectedRule().Items()[self.SelectedItemIndex()]);
         self.SelectedRule().Items.remove(self.SelectedRule().Items()[self.SelectedItemIndex()]);
         self.SelectedItemIndex(-1);
@@ -2201,13 +2249,15 @@ function HierarchyPanelViewModel(data, permissions) {
     }
 
     self.ApplyJqxBindings = function () {
+       // console.log('jqx bindings start');
         $('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
             self.OnCellValueChange();
         }).on('bindingcomplete', function () {
             //jqx grid is not editable after bind without this
             $(this).jqxGrid('refresh');
         });
-        self.jqxLoaded = true;       
+        self.jqxLoaded = true;
+       // console.log('jqx bindings end');
     }
 
     self.FindItemByOrder = function (order, array) {
@@ -2226,10 +2276,7 @@ function HierarchyPanelViewModel(data, permissions) {
     self.CheckUsedContextItems = function () {
 
         var isItemSelected = self.IsItemSelected();
-
         self.IsGridLoading(true);
-        self.IsLoadingContexts(true);
-
         for (var i = 0; i < self.Contexts().length; i++) {
             var c = self.Contexts()[i];
             c.Checked = false;
@@ -2244,12 +2291,10 @@ function HierarchyPanelViewModel(data, permissions) {
         }
         self.IsLoadingContexts(false);
         self.IsGridLoading(false);
-
     }
 
     self.SelectRule = function (selectedRule) {
         self.SelectedRule(selectedRule);
-
     }
 
     self.SelectItem = function (selectedItem) {
@@ -2260,6 +2305,7 @@ function HierarchyPanelViewModel(data, permissions) {
     self.AfterLoad = function () {
         if (self.SourceRules().length >= 1) {
             self.SelectRule(self.SourceRules()[0]);
+            
             self.SelectedRuleIndex(0);
             self.HasSourcesOrRules(true);
         } else {

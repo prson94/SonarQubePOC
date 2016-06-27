@@ -196,7 +196,7 @@
         There are no available sources for this item.
     </div>
     <div data-bind="fadeVisible: (Sources().length > 0 && !InProgress())">
-        <div data-bind="jqxButton: { theme: theme }, click: AddSourceRule" style="margin:8px 25px 8px 25px;"><i class="fa fa-plus"></i> Add Source Rule</div>
+        <div data-bind="jqxButton: { theme: theme, disabled: (SelectedRule().ID() < 1 && SourceRules().length > 0) }, click: AddSourceRule" style="margin:8px 25px 8px 25px;"><i class="fa fa-plus"></i> Add Source Rule</div>
     </div>
     <div data-bind="visible: (Sources().length > 0 && SourceRules().length < 1 && !InProgress())" style="text-align: center; padding: 15px;">
         There are no rules defined for this item
@@ -209,7 +209,25 @@
         </div>
         @*<div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioAddChecked, disabled: (Sources().length < 1 || !CanAdd()) }"> Add Source Rules</div>
             <div data-bind="jqxRadioButton: {theme: theme, groupName: 'ruletype', checked: RadioEditChecked, disabled: (SourceRules().length < 1) }"> Edit Source Rules</div>*@
-        <div data-bind="fadeVisible: Mode() != 'template'">
+        <div data-bind="fadeVisible: (Mode() == 'delete')" style="padding:15px;">
+            <div class="row">
+                Are you sure you want to delete the '<span data-bind="text: SelectedRule().Name"></span>' source rule?
+            </div>
+            <div class="row">
+                <div class="col s6">
+                    <div data-bind="jqxButton: { theme: theme, width: 80, disabled: IsDeleting() }, click: DeleteConfirm">Delete</div>
+               </div>
+                <div class="col s6">
+                    <div data-bind="jqxButton: { theme: theme, width: 80 }, click: DeleteCancel">Cancel</div>
+                </div>
+            </div>
+            <div class="row" data-bind="visible: (DeleteMessage().length > 0)">
+                <div class="col s12">
+                    <span data-bind="text: DeleteMessage" style="color:maroon"></span>
+                </div>
+            </div>
+        </div>
+        <div data-bind="fadeVisible: (Mode() != 'template' && Mode() != 'delete')">
             <div style="padding-left: 20px" data-bind="fadeVisible: (SourceRules().length > 1)">
                 <div class="FieldName">Source Rules</div>
                 <div>
@@ -223,8 +241,10 @@
                             <td rowspan="9" width="20"></td>
                             <td colspan="3">
                                 <div class="FieldName" style="padding-top:9px">Rule Name</div>
+                                <span data-bind="text: SelectedRule().ID"></span>
                                 <div>
                                     <input type="text" data-bind="jqxInput: { width: 250, height: field_height, theme: theme, disabled: !CanUpdate() }, value: SelectedRule().Name" />
+                                    <span style="display:inline-block;" data-bind="jqxButton: { theme: theme, width: 80 }, click: DeleteSourceRule, visible: (SourceRules().length >= 1 && SelectedRule().ID() > 0)">Delete</span>
                                 </div>
                             </td>
                             <td></td>
