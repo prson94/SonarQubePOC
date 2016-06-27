@@ -1,9 +1,9 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
 import { ResponsibilityItem, ResponsibilityContextItem, ResponsibilityEditorModel } from '../../models/responsibility.model';
-import { SelectItem, FormMessage, FormHelper } from '../../models/form.model';
+import { FormMessage, FormHelper } from '../../models/form.model';
 import { FormMessagePart } from '../parts/form-message.part';
-import { Dropdown, Button, MultiSelect, Checkbox } from 'primeng/primeng';
+import { Dropdown, Button, MultiSelect, Checkbox, SelectItem } from 'primeng/primeng';
 import { ResponsibilityService } from '../../services/responsibility.service';
 import * as _ from 'lodash';
 

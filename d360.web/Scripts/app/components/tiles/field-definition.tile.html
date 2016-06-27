@@ -2,7 +2,7 @@
     <div>
         <header>
             {{title}}
-            <div id="FieldsTile_tools" class="TileTools">
+            <div id="FieldsTile_tools" class="TileTools" *ngIf="!isLoading && !isAdding && !isEditing && !isDeleting">
                 <a class="btn btn-floating waves-effect waves-light brown lighten-1">
                     <i class="fa fa-plus" title="Add definition attribute"></i>
                 </a>
@@ -12,7 +12,16 @@
     <div *ngIf="isLoading" style="width:100%; text-align:center;">
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
-    <div *ngIf="!isLoading">
+    <div *ngIf="isEditing">
+        <d3s-field-type-form [id]="selectedRow.ID" (onCancel)="isEditing = false;"></d3s-field-type-form>
+    </div>
+    <div *ngIf="isAdding">
+
+    </div>
+    <div *ngIf="isDeleting">
+
+    </div>
+    <div *ngIf="!isLoading && !isAdding && !isEditing && !isDeleting">
         <p-dataTable [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
             <p-column field="FriendlyName" header="Field" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
             <p-column field="Category" header="Category" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>

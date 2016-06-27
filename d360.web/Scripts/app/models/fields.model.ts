@@ -1,12 +1,24 @@
-﻿export interface IFieldsService {
+﻿import { SelectItem } from 'primeng/primeng';
+
+export interface IFieldsService {
     getFields(objectID: number, objectType: string): Promise<FieldDefinition[]>;
+    getFieldTypeEditor(id: number): Promise<FieldTypeEditorModel>;
+    getFusionLookupDisplayFields(id: number): Promise<SelectItem[]>;
+    getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Promise<SelectItem[]>;
+    getRelationLookupChildIntersectTypes(id: number): Promise<SelectItem[]>;
+    getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Promise<SelectItem[]>;
+    getLookupTokens(id: number, type: string): Promise<SelectItem[]>;
+    getLookups(id: number, type: string): Promise<Lookups>;
+    getFormData(id: number): Promise<FieldTypeEditorModel>;
+    putFieldType(model: FieldTypeEditorModel): Promise<any>;
+    postFieldType(model: FieldTypeEditorModel): Promise<any>;
 }
 
 export class FieldDefinition {
 
     ObjectType: string;
     ObjectID: string;
-    ID: string;
+    ID: number;
     Category: string;
     FriendlyName: string;
     SortOrder: string;
@@ -20,8 +32,12 @@ export class FieldDefinition {
 export class FieldTypeEditorModel {
     FieldIsUsed: boolean;
     FieldType: FieldType;
-    FusionItems: FieldTypeFusionItemEditorModel[];
+    FusionItems: FieldTypeFusionItemEditorModel[] = new Array<FieldTypeFusionItemEditorModel>();
     RelationItem: FieldTypeRelationItemEditorModel;
+
+    selectedLookup: string;
+    LookupTokens: SelectItem[] = new Array<SelectItem>();
+
 }
 
 export class FieldType {
@@ -66,7 +82,10 @@ export class FieldTypeFusionItemEditorModel {
     TargetFusionAttributeType: number;
     HideHeader: boolean;
     HideFooter: boolean;
-    DisplayFields: FieldTypeItemDisplayFieldEditorModel[];
+    DisplayFields: string[] | FieldTypeFusionLookupDisplayField[] = new Array<string>();
+
+    TargetFusionAttributeTypes: SelectItem[] = new Array<SelectItem>();
+    FusionDisplayFields: SelectItem[] = new Array<SelectItem>();
 }
 
 export class FieldTypeItemDisplayFieldEditorModel {
@@ -129,4 +148,15 @@ export class FieldTypeFusionLookupDisplayField {
     FieldTypeID: number;
     FieldTypeName: string;
     FieldTypeFusionLookupDefinition: FieldTypeFusionLookupDefinition;
+}
+
+export class Lookups {
+    
+    DataTypes: SelectItem[];
+    Patterns: SelectItem[];
+    IntersectTypes: SelectItem[];
+    FusionAttributeTypes: SelectItem[];
+    Lookups: SelectItem[];
+
+    ReferenceTypes: SelectItem[] = new Array<SelectItem>();
 }

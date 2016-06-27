@@ -903,6 +903,8 @@
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_ffffff_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\theme.css" />
+    <Content Include="Scripts\app\components\forms\artifact-type.form.html" />
+    <Content Include="Scripts\app\components\forms\field-type.form.html" />
     <Content Include="Scripts\parts\NewLineageDiagram.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="Scripts\powerbi.min.js" />
@@ -1364,6 +1366,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\forms\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-typeahead-search.component.ts" />

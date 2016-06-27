@@ -3,10 +3,11 @@ import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core
 import { DataTable, Column } from 'primeng/primeng';
 import { FieldDefinition, IFieldsService } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
+import { FieldTypeForm } from '../forms/field-type.form';
 
 @Component({
     selector: 'd3s-field-definition-tile',
-    directives: [ DataTable, Column ],
+    directives: [DataTable, Column, FieldTypeForm ],
     templateUrl: 'scripts/app/components/tiles/field-definition.tile.html',
     providers: [ FieldsService ]
 })
@@ -19,6 +20,10 @@ export class FieldDefinitionTile implements OnChanges {
     private fieldDefinitions = new Array<FieldDefinition>();
     private selectedRow = new FieldDefinition();
     private isLoading = false;
+    private isEditing = false; 
+    private isAdding = false;
+    private isDeleting = false;
+
     
     constructor(private fieldsService: FieldsService) {
     }
@@ -52,10 +57,15 @@ export class FieldDefinitionTile implements OnChanges {
     }
 
     edit(id: number): void {
-        this.fieldsService.getFieldTypeEditor(id)
-            .then(data => {
-                console.log(data);
-            });
+        this.selectedRow = this.fieldDefinitions.find(f => f.ID == id);
+        this.isEditing = true;
+        this.isDeleting = false;
+        this.isAdding = false;
+        //this.fieldsService.getFieldTypeEditor(id)
+        //    .then(data => {
+        //        console.log(data);
+        //    });
     }
 }
+
 

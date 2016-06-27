@@ -45,7 +45,7 @@
     </div>
     <div *ngIf="!isEditing && !isAdding && !isDeleting" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-field-definition-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-field-definition-tile>
+            <d3s-field-definition-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" ></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail">
             <d3s-people-responsibilities-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" [title]="'Default Responsibilities'" [showHidden]="true"></d3s-people-responsibilities-tile>

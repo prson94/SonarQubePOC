@@ -1,0 +1,226 @@
+﻿<div class="left form-header-info">
+    <h4>{{title}}</h4>
+</div>
+<div class="clear"></div>
+<div class="form-instructions">
+    Modify your field using the form below.  There are many types of fields from Simple Text and HTML to Lookups and Dates.
+    <div class="form-instructions-error" data-bind="visible: FormInvalid, text: FormValidationMessage">
+    </div>
+</div>
+<div *ngIf="isLoading" style="text-align:center;">
+    <i class="fa fa-spinner fa-spin fa-2x"></i>
+</div>
+<div *ngIf="!isLoading">
+    <div class="row">
+        <div class="col s4">
+            <div id='FriendlyNameTip' class="FieldNameRequired">Name<span class="FieldNameError" data-bind="visible: FriendlyNameInvalid">*</span></div>
+            <input pInputText type="text" [(ngModel)]="model.FieldType.FriendlyName" style="width: 98%; display: block;" />
+        </div>
+        <div class="col s4">
+            <div id='NameTip' class="FieldNameRequired">API Name<span class="FieldNameError" data-bind="visible: ApiNameInvalid">*</span></div>
+            <input pInputText type="text" [(ngModel)]="model.FieldType.Name" style="width: 98%; display: block;" />
+        </div>
+        <div class="col s4">
+            <div id='CategoryTip' class="FieldNameRequired">Category</div>
+            <input pInputText type="text" [(ngModel)]="model.FieldType.Category" style="width: 98%; display: block;" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s6">
+            <div id='TypeTip' class="FieldNameRequired">Input Type<span class="FieldNameError" data-bind="visible: DataTypeInvalid">*</span></div>
+            <p-dropdown [options]="lookups.DataTypes" [(ngModel)]="model.FieldType.Type" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadDataType($event.value)"></p-dropdown>
+        </div>
+        <div class="col s6">
+            <div class="col s3 input-field">
+                <input pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsListable" />Is Listable?
+            </div>
+            <div class="col s3 input-field">
+                <input #isRequired pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsRequired" (change)="model.FieldType.MinimumLength = (isRequired.checked) ? 1 : 0" />Is Required?
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="model.FieldType.Type == 'Lookup'">
+        <div class="col s6">
+            <div id='LookupDisplayFormatTip' class="FieldNameRequired">Type of List</div>
+            <p-dropdown [options]="lookups.Lookups" [(ngModel)]="model.selectedLookup" [style]="{ 'width': '98%' }" (onChange)="loadTokens($event.value)"></p-dropdown>
+        </div>
+        <div class="col s3">
+            <div id='LookupDisplayFormatTip' class="FieldNameRequired">List Display Format</div><!--<span class="FieldNameError" data-bind="visible: LookupDisplayFormatInvalid">*</span></div>-->
+            <input pInputText type="text" [(ngModel)]="model.FieldType.LookupDisplayFormat" style="width: 98%; display: block;" />
+        </div>
+        <div class="col s3">
+            <div class="FieldName">&nbsp;</div>
+            <p-dropdown [options]="model.LookupTokens" (onChange)="selectToken($event.value)" [disabled]="model.LookupTokens?.length < 1" [style]="{'width':'98%'}"></p-dropdown>
+        </div>
+    </div>
+    <div class="row" *ngIf="model.FieldType.Type == 'Text'" >
+        <div class="col s3">
+            <div id='PatternTip' class="FieldName">Validation Pattern</div>
+            <input pInputText type="text" [(ngModel)]="model.FieldType.Pattern" (change)="validatePattern()" style="width: 98%; display: block;" />
+        </div>
+        <div class="col s3">
+            <div class="FieldName">&nbsp;</div>
+            <p-dropdown [options]="lookups.Patterns" (onChange)="model.FieldType.Pattern = $event.value; validatePattern()" [style]="{ 'width': '98%' }"></p-dropdown>
+        </div>
+        <div class="col s3">
+            <div id='MinimumLengthTip' class="FieldName">Minimum Length</div>
+            <input type="number" [(ngModel)]="model.FieldType.MinimumLength" style="width: 98%; display: block;" />
+        </div>
+        <div class="col s3">
+            <div id='MaximumLengthTip' class="FieldName">Maximum Length</div>
+            <input type="number" [(ngModel)]="model.FieldType.MaximumLength" style="width: 98%; display: block;"/>
+        </div>
+    </div>
+    <div class="row" *ngIf="model.FieldType.Type == 'Text' && model.FieldType.Pattern?.length > 0" >
+        <div class="col s3">
+            <div class="FieldNameRequired">Test Pattern</div>
+            <input pInputText type="text" [(ngModel)]="testPattern" (change)="validatePattern()" style="width: 98%; display: block;" />
+        </div>
+        <div class="col s3">
+            <div for="FieldNameRequired">&nbsp;</div>
+            <div>{{testPatternValidationText}}</div>
+        </div>
+    </div>
+    <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.MinimumLength > 0 || model.FieldType.IsRequired" >
+        <div class="col s12">
+            <div id='ValidationDescriptionTip' class="FieldName">Validation Message</div>
+            <p-editor [(ngModel)]="model.FieldType.ValidationDescription" [style]="{'height':'150px'}"></p-editor>
+        </div>
+    </div>
+    <div class="row" *ngIf="model.FieldType.Type == 'FusionLookup'" >
+        <div class="col s12" style="margin: 10px 0 10px 0">
+            <h5>Fusion Lookups</h5>
+            <table class="highlight, striped" cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>Target Item</th>
+                        <th>Reference Type</th>
+                        <th>Reference Item</th>
+                        <th>Reference Columns</th>
+                        <th>Table Settings</th>
+                        <th style="width: 50px; text-align: right">
+                            <a class='btn btn-flat waves-effect blue-text' (click)="addFusion()"><i class='fa fa-plus' title='Add fusion item'></i></a>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody *ngFor="let item of model.FusionItems; let i=index;">
+                    <tr>
+                        <td>
+                            <p-dropdown [options]="lookups.FusionAttributeTypes" [(ngModel)]="item.SourceFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                        </td>
+                        <td>
+                            <p-dropdown [options]="lookups.ReferenceTypes" [(ngModel)]="item.ReferenceType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                        </td>
+                        <td>
+                            <p-dropdown [options]="item.TargetFusionAttributeTypes" [(ngModel)]="item.TargetFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadFusionDisplayFields(item)"></p-dropdown>
+                        </td>
+                        <td>
+                            <p-multiSelect [options]="item.FusionDisplayFields" [(ngModel)]="item.DisplayFields" [style]="{ 'width' : '95%' }"></p-multiSelect>
+                        </td>
+                        <td>
+                            <div><input pCheckbox type="checkbox" [(ngModel)]="item.HideHeader" /> Hide Header?</div>
+                            <div><input pCheckbox type="checkbox" [(ngModel)]="item.HideFooter" /> Hide Footer?</div>
+                        </td>
+                        <td><a class='btn btn-flat waves-effect red-text' (click)="removeFusion(i)" ><i class='fa fa-trash' title='Remove'></i></a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!--<div class="row" [hidden]="true" data-bind="visible: RelationLookupDataTypeSelected">
+        <div class="col s12" style="margin: 10px 0 10px 0">
+            <table cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>Relation</th>
+                        <th>Reference Type</th>
+                        <th>Child Relation</th>
+                        <th>Reference Columns</th>
+                        <th>Table Settings</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: RelationItems">
+                    <tr>
+                        <td style="vertical-align: top; width: 260px">
+                            <div data-bind="relationIntersectTypeFilteredDropdown, jqxDropDownList: {
+                             width: 250, dropDownWidth: 350, theme: theme,
+                             filterable: false,
+                             selectedIndex: IntersectTypeIndex,
+                             source: IntersectTypeOptions,
+                             displayMember: 'title',
+                             valueMember: 'value' }"></div>
+                        </td>
+                        <td style="vertical-align: top; width: 260px">
+                            <div data-bind="relationReferenceTypeFilteredDropdown, jqxDropDownList: {
+                             width: 250, dropDownWidth: 350, theme: theme,
+                             filterable: false,
+                             selectedIndex: ReferenceTypeIndex,
+                             source: ReferenceTypeOptions,
+                             displayMember: 'title',
+                             valueMember: 'value' }"></div>
+                        </td>
+                        <td style="vertical-align: top; width: 260px">
+                            <div data-bind="relationChildIntersectTypeFilteredDropdown, jqxDropDownList: {
+                             width: 250, dropDownWidth: 350, theme: theme,
+                             filterable: false,
+                             selectedIndex: ChildIntersectTypeIndex,
+                             disabled: ChildIntersectTypeDisabled,
+                             source: ChildIntersectTypeOptions,
+                             displayMember: 'title',
+                             valueMember: 'value' }"></div>
+                        </td>
+                        <td style="vertical-align: top">
+                            <table class="striped highlight">
+                                <thead>
+                                <th>Name</th>
+                                <th>Show?</th>
+                                <th>Sort</th>
+                                <th>Filter</th>
+                                </thead>
+                                <tbody data-bind="foreach: DisplayFieldOptions" style="max-height:250px; height: 250px; overflow-y: scroll">
+                                    <tr>
+                                        <td style="width: 30%" data-bind="text: title"></td>
+                                        <td style="width: 20%"><div data-bind="jqxCheckBox: { theme: theme, checked: Show }"></div></td>
+                                        <td style="width: 15%">
+                                            <div data-bind="sortOrderDropdown, jqxDropDownList: {
+                                             width: 75, dropDownWidth: 50, theme: theme,
+                                             filterable: false,
+                                             source: SortOrderOptions,
+                                             selectedIndex: SortOrderIndex,
+                                             displayMember: 'title',
+                                             valueMember: 'value' }"></div>
+
+                                        </td>
+                                        <td><input data-bind="jqxInput: { theme: theme, width: field_width98, height: field_height, value: FilterValue }" /></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td style="vertical-align: top; width: 125px">
+                            <div data-bind="jqxCheckBox: { theme: theme, checked: HideHeader }">Hide Header?</div>
+                            <div data-bind="jqxCheckBox: { theme: theme, checked: HideFooter }">Hide Footer?</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>-->
+    <div class="row">
+        <div class="col s6">
+            <div id='DisplayDescriptionTip' class="FieldName">Display Description</div>
+            <p-editor [(ngModel)]="model.FieldType.DisplayDescription" [style]="{'height':'150px'}"></p-editor>
+        </div>
+        <div class="col s6">
+            <div id='FormDescriptionTip' class="FieldName">Form Description</div>
+            <p-editor [(ngModel)]="model.FieldType.FormDescription" [style]="{'height':'150px'}"></p-editor>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div style="padding-top:10px">
+                <button pButton type="button" label="Save" (click)="save()"></button><button pButton type="button" label="Cancel" (click)="cancel()"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
