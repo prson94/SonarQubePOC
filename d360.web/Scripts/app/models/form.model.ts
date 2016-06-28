@@ -101,3 +101,11 @@ export class JsonResult {
         return ((this.type || '').toLowerCase().trim() == 'confirm' || (this.type || '').toLowerCase().trim() == 'success');
     }
 }
+
+export enum FormMode {
+    Default = 1,
+    Editing = 2,
+    Adding = 3,
+    Deleting = 4,
+}
+

@@ -58,6 +58,7 @@ export class AdminArtifactsComponent {
         this.artifactsService.getArtifactTypeTree()
             .then(data => {
                 this.ArtifactTypes = data;
+                this.selectedRow = this.ArtifactTypes[0];
                 this.isLoading = false;
             }); 
     }

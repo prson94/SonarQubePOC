@@ -65,6 +65,7 @@ export class AdminWorkflowComponent {
 
         this.workflowService.getWorkflows().then(p => {
             this.workflowItems = p;
+            this.selectedRow = this.workflowItems[0];
             this.isLoading = false;
         });
     }

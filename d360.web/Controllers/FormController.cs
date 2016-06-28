@@ -13563,6 +13563,14 @@ order by	D.Name, I.Name";
             }
         }
 
+        [HttpDelete, ValidateHttpAntiForgeryToken]
+        public JsonResult DeleteResponsibilityTypeByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteResponsibilityType(form);
+        }
+
         public ActionResult EditResponsibilityType(int id)
         {
             var model = Company.GetById<ResponsibilityType>(id);
@@ -13579,6 +13587,170 @@ order by	D.Name, I.Name";
             };
 
             return PartialView("EditableForm", pModel);
+        }
+
+        [HttpGet, ActionName("ResponsibilityType")]
+        public JsonNetResult GetResponsibilityType(int id, ResponsibilityTypeGroup group = ResponsibilityTypeGroup.People)
+        {
+
+            ResponsibilityType model;
+
+            var selectedAllocations = Company.Filter<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == id)
+            .ToList()
+            .Select(i => new
+            {
+                ResponsibilityTypeID = i.ResponsibilityTypeID,
+                ObjectID = i.ObjectID,
+                ObjectType = i.ObjectType
+            }).ToList();
+
+
+            if (id < 1)
+            {
+                model = new ResponsibilityType();
+                model.ResponsibilityTypeGroup = group;
+                selectedAllocations = null;
+            }
+            else
+            {
+                model = Company.GetById<ResponsibilityType>(id);
+
+            }
+
+            var allocations = Company
+                .GetAvailableAllocationPossibilities()
+                .Select(i => new
+                {
+                    label = i.Name,
+                    value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
+                });
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    model,
+                    allocations,
+                    selectedAllocations
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityType")]
+        public JsonResult PutResponsibilityType(ResponsibilityType model)
+        {
+            try
+            {
+                //if (!form.HasKeys()) throw new NoFormDataException("ownership type");
+
+                // var id = parseIntField(form, "ID");
+                //var model = Company.GetById<ResponsibilityType>(id);
+                var existing = Company.GetById<ResponsibilityType>(model.ID);
+                if (existing == null) throw new NotFoundException("ownership type");
+
+                existing.Name = model.Name;
+                existing.Description = model.Description;
+                
+
+                
+
+                //if (string.IsNullOrEmpty(form["AllocationType"]))
+                //{
+                //    throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
+                //}
+
+                //model.Name = parseTextField(form, "Name", null, true);
+                //model.Description = parseTextField(form, "Description");
+
+                Company.Update(existing);
+
+                Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == model.ID);
+
+                //var items = form["AllocationType"].Split(',')
+                //    .Select(i => i.Split('|'))
+                //    .Select(i => new ObjectModel
+                //    {
+                //        ObjectType = i[0],
+                //        ObjectID = int.Parse(i[1])
+                //    }).ToList();
+
+                foreach(var r in model.ResponsibilityTypeRelations)
+                {
+                    Company.Set<ResponsibilityTypeRelation>().Add(r);
+                }
+
+                //foreach (var o in items)
+                //{
+                //    var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = id };
+                //    Company.Set<ResponsibilityTypeRelation>().Add(r);
+                //}
+                Company.SaveChanges();
+
+                return jsonSuccess("Item successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityType")]
+        public JsonResult PostResponsibilityType(ResponsibilityType model)
+        {
+            try
+            {
+                // if (!form.HasKeys()) throw new NoFormDataException("ownership type");
+
+                //if (string.IsNullOrEmpty(form["AllocationType"]))
+                //{
+                //    throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
+                //}
+                var a = model;
+                //var a = new ResponsibilityType
+                //{
+                //    Name = parseTextField(form, "Name", null, true),
+                //    ResponsibilityTypeGroup = (ResponsibilityTypeGroup)Enum.Parse(typeof(ResponsibilityTypeGroup), form["ResponsibilityTypeGroup"]),
+                //    Description = parseTextField(form, "Description")
+                //};
+
+                Company.Add(a);
+
+                //var items = form["AllocationType"].Split(',')
+                //    .Select(i => i.Split('|'))
+                //    .Select(i => new ObjectModel
+                //    {
+                //        ObjectType = i[0],
+                //        ObjectID = int.Parse(i[1])
+                //    }).ToList();
+
+                foreach(var r in model.ResponsibilityTypeRelations)
+                {
+                    Company.Set<ResponsibilityTypeRelation>().Add(r);
+                }
+                //foreach (var o in items)
+                //{
+                //    var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = a.ID };
+                  //  Company.Set<ResponsibilityTypeRelation>().Add(r);
+                //}
+                Company.SaveChanges();
+
+                return jsonSuccess("Item successfully created.", a.ID.ToString(), null, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
         }
 
         [HttpPut, ValidateInput(false)]
