@@ -6,10 +6,11 @@ import { FormMessage } from '../../models/form.model';
 import { DeleteForm } from '../forms/delete.form';
 import { DataTable, Column } from 'primeng/primeng';
 import { ResponsibilityService } from '../../services/responsibility.service';
+import { TileActionsComponent } from './tile-actions.component';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
-    directives: [DataTable, Column, ResponsibilityItemForm, DeleteForm],//, DeleteGeneric],
+    directives: [DataTable, Column, ResponsibilityItemForm, DeleteForm, TileActionsComponent],//, DeleteGeneric],
     templateUrl: 'scripts/app/components/tiles/people-responsibilities.tile.html',
     providers: [ResponsibilityService],
 })
@@ -17,7 +18,7 @@ import { ResponsibilityService } from '../../services/responsibility.service';
 export class PeopleResponsibilitiesTile implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
-    @Input() title: string;
+    @Input() title: string = "Responsibilities";
     @Input() showHidden: boolean = false;
 
     responsibilities = new Array<ResponsibilityItem>();

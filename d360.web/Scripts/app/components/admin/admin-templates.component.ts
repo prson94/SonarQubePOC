@@ -5,7 +5,7 @@ import {DeleteForm} from '../forms/delete.form';
 import {AdminTemplateEditorComponent} from './admin-template-editor';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader  } from '../../services/index';
-import { TileActionsComponent } from '../shared/tile-actions.component';
+import { TileActionsComponent } from '../tiles/tile-actions.component';
 
 @Component({
     selector: 'd3s-admin-templates',
@@ -14,7 +14,7 @@ import { TileActionsComponent } from '../shared/tile-actions.component';
                 <div class="col" [ngClass]="{'s8':isDeleting||isEditing||isAdding}" [ngClass]="{'s12':!isDeleting&&!isEditing&&!isAdding}">                    
                    <div class="tile tile-detail">
                         <header>Tooltip Templates
-                            <d3s-tile-actions [hasAdd]="true" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
+                            <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Template'" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
                         </header>
                         <p-dataTable [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" >                                                        
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>

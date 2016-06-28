@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { Taxonomy } from '../models/taxonomy.model';
+import { Taxonomy, TaxonomyLevel } from '../models/taxonomy.model';
 
 @Injectable()
 export class TaxonomiesService extends BaseService {
@@ -22,7 +22,14 @@ export class TaxonomiesService extends BaseService {
             .toPromise()
             .then(response => <Taxonomy>response.json())
             .catch(err => this.handleError(err));
-    }    
+    }   
+
+    getTaxonomyLevels(taxonomy: Taxonomy): Promise<TaxonomyLevel[]> {
+        return this.http.get(`/api/TaxonomyType/${taxonomy.ID}/levels`)
+            .toPromise()
+            .then(response => <TaxonomyLevel[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 }
 
 

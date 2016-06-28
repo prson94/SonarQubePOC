@@ -5,3 +5,10 @@
     Description: string;
     MaximumDepth: number;
 }
+
+export class TaxonomyLevel {
+    Name: string;
+    Description: string;
+    Level: number;
+    TaxonomyTypeID: number;
+}

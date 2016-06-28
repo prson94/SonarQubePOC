@@ -10,6 +10,7 @@ import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { ArtifactTypeForm } from '../forms/artifact-type.form';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { DeleteForm } from '../forms/delete.form';
+import { TileActionsComponent } from '../tiles/tile-actions.component';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -23,7 +24,8 @@ import { DeleteForm } from '../forms/delete.form';
         ClaimsTile,
         ArtifactTypeForm,
         FieldDefinitionTile,
-        DeleteForm
+        DeleteForm,
+        TileActionsComponent
     ],
     templateUrl: 'scripts/app/components/admin/admin-artifacts.component.html',
 })

@@ -2,11 +2,7 @@
     <div>
         <header>
             {{title}}
-            <div id="FieldsTile_tools" class="TileTools" *ngIf="!isEditing && !isAdding && !isDeleting">
-                <a class="btn btn-floating waves-effect waves-light brown lighten-1" (click)="add();">
-                    <i class="fa fa-plus" title="Add responsibility"></i>
-                </a>
-            </div>
+            <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add responsibility'" (addClick)="add();" *ngIf="!isEditing && !isAdding && !isDeleting"></d3s-tile-actions>                
         </header>
     </div>
     <div *ngIf="isLoading" style="width:100%; text-align:center;">

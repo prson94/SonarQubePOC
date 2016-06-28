@@ -7,7 +7,7 @@ import {Component, EventEmitter, Output, Input} from '@angular/core';
     template: `
                 <div id="FieldsTile_tools" class="TileTools">
                     <a *ngIf="hasAdd" class="btn btn-floating waves-effect waves-light brown lighten-1" (click)="addBtnClick()">
-                        <i class="fa fa-plus" title="Add template"></i>
+                        <i class="fa fa-plus" [title]="addTitle"></i>
                     </a>
                 </div>          
                 `
@@ -16,6 +16,7 @@ import {Component, EventEmitter, Output, Input} from '@angular/core';
 export class TileActionsComponent {
     @Output() addClick = new EventEmitter();
     @Input() hasAdd: boolean;
+    @Input() addTitle: string = "Add";
 
     addBtnClick() {        
         this.addClick.emit(null);

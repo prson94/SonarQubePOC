@@ -1354,12 +1354,14 @@
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="node_modules\zone.js\dist\zone.js.d.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomy-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-template-editor.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
@@ -1381,7 +1383,7 @@
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\tile-actions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\delete.form.ts" />
