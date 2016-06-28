@@ -64,7 +64,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent {
     getTaxonomies() {        
         this.taxonomiesService
             .getTaxonomies()
-            .then(taxonomies => this.taxonomies = taxonomies)
+            .then(taxonomies => { this.taxonomies = taxonomies; if (this.taxonomies.length && this.taxonomies.length > 0) { this.selectedTaxonomy = this.taxonomies[0]; } })
             .catch(error => this.error = error); // TODO: Display error message
     }
 
