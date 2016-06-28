@@ -6549,8 +6549,8 @@ select {
   .side-nav li {
     float: none;
     padding: 0 15px; }
-    .side-nav li:hover, .side-nav li.active {
-      background-color: #ddd; }
+    /*.side-nav li:hover, .side-nav li.active {
+      background-color: #ddd; }*/
   .side-nav a {
     color: #444;
     display: block;

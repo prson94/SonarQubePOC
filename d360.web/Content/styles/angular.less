@@ -50,20 +50,58 @@ nav.top, .side-nav {
 /* side menu*/
 
 .side-nav{
-    background-color:@primary-nav;
+    background-color:@primary-nav; 
     width:200px;
     li{
         padding:0;
-        .router-link-active {
-            background: @secondary-nav;
-            color: @primary-nav !important;
-        }
     }
     ul, a{
-        height:35px;
-        line-height:35px;
+        height: auto;
+        line-height: normal;
     }
 }
+
+d3s-navbar-item {
+    >div {
+        &.router-link-active>a {
+                background-color: @secondary-nav;
+                color: @primary-nav !important;
+        }
+        .nav-item {
+            height: 25px;
+            line-height: 25px;
+            color: white;
+            padding: 0 15px;
+            display: block;
+            font-size: small;
+            cursor: pointer;
+        }
+        :hover {
+            background-color: #ddd;
+            color: black !important;
+        }
+    }
+    &.top {
+        >div {
+            >span {
+                &.nav-item {
+                    height: 35px;
+                    line-height: 35px;
+                    color: white;
+                    padding: 0 15px;
+                    display: block;
+                    font-size: 1rem;
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: #ddd;
+                        color: black;
+                    }
+                }
+            }
+        }
+    }
+}                
 
 .side-nav.fixed a{
     color:white;
@@ -77,12 +115,6 @@ nav.top, .side-nav {
         font-size:x-small;
         height:20px;
         line-height:20px;
-    }
-    li.router-link-active {
-        background: @secondary-nav;
-        a {
-            color: @primary-nav !important;
-        }
     }
 }
 

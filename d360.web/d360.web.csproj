@@ -1375,6 +1375,7 @@
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\navbar\navbar-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />

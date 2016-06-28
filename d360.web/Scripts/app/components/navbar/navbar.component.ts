@@ -1,88 +1,64 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
+import {  NavBarItem, NavBarItemComponent } from '../navbar/navbar-item.component';
 
 @Component({
-    selector: 'd3s-navbar',
-    directives: [ROUTER_DIRECTIVES], 
+    selector: 'd3s-navbar', 
+    directives: [ROUTER_DIRECTIVES, NavBarItemComponent], 
     template: `
     <ul class="side-nav fixed" style="overflow: auto; transform: translateX(0px);">
         <li class="logo"></li> 
+        <!-- TODO: hardcoded, remove later -->
         <li><a href="/"><i class="fa fa-pencil"></i> Legacy site</a></li>
-        <template ngFor let-item [ngForOf]="navItems">
-                <li>
-                    <a *ngIf="item.route" [routerLink]="[item.route]" (click)="toggleSubMenu(item)"><i [class]="'fa fa-' + item.icon"></i> {{item.name}}</a>
-                    <a *ngIf="!item.route" href="#!" (click)="toggleSubMenu(item)"><i [class]="'fa fa-' + item.icon"></i> {{item.name}}</a>
-                </li>
-                <ul *ngIf="item.subItems && item.subItems.length > 0 && item.expanded" class="sub">
-                    <li *ngFor="let sub of item.subItems" [class.router-link-active]="currentRoute == sub.route">
-                        <a *ngIf="sub.route" [routerLink]="[sub.route]"><i class="fa fa-minus" aria-hidden="true"></i> {{sub.name}}</a>
-                        <a *ngIf="!sub.route" href="#!"><i class="fa fa-minus" aria-hidden="true"></i> {{sub.name}}</a>
-                    </li>
-                </ul>
-        </template>
+
+        <li *ngFor="let item of items">
+            <d3s-navbar-item [item]="item" class="top"></d3s-navbar-item>
+        </li>
     </ul>
-`
-    
-    //`
-    //            <ul class="side-nav fixed" style="overflow: auto; transform: translateX(0px);">
-    //              <li class="logo"></li>    
-    //              <li><a href="/"><i class="fa fa-pencil"></i> Legacy site</a></li>
-    //              <li><a href="#!"><i class="fa fa-book"></i> Glossary</a></li>
-    //              <li><a href="#!"><i class="fa fa-sitemap"></i> Models</a></li>
-    //              <li><a href="#!"><i class="fa fa-university"></i> Policies</a></li>
-    //              <li><a href="#!"><i class="fa fa-database"></i> Fusion</a></li>
-    //              <li><a href="#!"><i class="fa fa-dashboard"></i> Monitor</a></li>
-    //              <li><a href="#!"><i class="fa fa-group"></i> Community</a></li>
-    //              <li><a (click)="showAdminLinks()"><i class="fa fa-gears"></i> Administration</a></li>
-    //              <ul class="sub" *ngIf="showAdminChildLinks==true">
-    //                    <li [class.router-link-active]="currentRoute == '/a/admin/settings'"><a [routerLink]="['/a/admin/settings']"><i class="fa fa-minus" aria-hidden="true"></i> Settings</a></li>
-    //                    <li><a [routerLink]="['/a/admin/domain']"><i class="fa fa-minus" aria-hidden="true"></i> Reference Types</a></li>
-    //                    <li><a [routerLink]="['/a/admin/workflow']"><i class="fa fa-minus" aria-hidden="true"></i> Workflow</a></li>
-    //                    <li><a [routerLink]="['/a/admin/groups']"><i class="fa fa-minus" aria-hidden="true"></i> Groups</a></li>
-    //                    <li><a [routerLink]="['/a/admin/responsibilities']"><i class="fa fa-minus" aria-hidden="true"></i> Responsibilities</a></li>
-    //                    <li><a [routerLink]="['/a/admin/artifacts']"><i class="fa fa-minus" aria-hidden="true"></i> Artifacts</a></li>
-    //                    <li><a [routerLink]="['/a/admin/templates']"><i class="fa fa-minus" aria-hidden="true"></i> Templates</a></li>
-    //               </ul>                        
-    //            </ul>
-    //          `    
+ 
+` 
 })
 
-export class NavBarComponent implements OnInit, OnDestroy {
-    //private showAdminChildLinks: boolean = false;
+export class NavBarComponent implements OnInit, OnDestroy { 
     private sub: any;
     private currentRoute = "";
     private navItems: NavBarItem[];
+
+    @Input() items: NavBarItem[] = new Array<NavBarItem>();
 
     constructor(private router: Router) {
     }
 
     ngOnInit() {
-        this.navItems = new Array<NavBarItem>();
+        this.items = new Array<NavBarItem>();
 
-        this.navItems.push({ icon: 'book', name: 'Glossary', route: null, subItems: null, expanded: false });
-        this.navItems.push({ icon: 'sitemap', name: 'Models', route: null, subItems: null, expanded: false });
-        this.navItems.push({ icon: 'university', name: 'Policies', route: null, subItems: null, expanded: false });
-        this.navItems.push({ icon: 'database', name: 'Fusion', route: null, subItems: null, expanded: false });
-        this.navItems.push({ icon: 'dashboard', name: 'Monitor', route: null, subItems: null, expanded: false });
-        this.navItems.push({ icon: 'group', name: 'Community', route: null, subItems: null, expanded: false });
+        this.addNavItem('Glossary', 'book', null);
+        this.addNavItem('Models', 'sitemap', null);
+        this.addNavItem('Policies', 'university', null);
+        this.addNavItem('Fusion', 'database', null);
+        this.addNavItem('Monitor', 'dashboard', null);
+        this.addNavItem('Community', 'group', null);
 
-        var adminItems = new Array<NavBarSubItem>();
-        this.navItems.push({ icon: 'gears', name: 'Administration', route: null, subItems: adminItems, expanded: false });
-        adminItems.push({ name: 'Settings', route: '/a/admin/settings', subItems: null, expanded: false });
-        adminItems.push({ name: 'Reference Types', route: '/a/admin/domain', subItems: null, expanded: false });
-        adminItems.push({ name: 'Workflow', route: '/a/admin/workflow', subItems: null, expanded: false });
-        adminItems.push({ name: 'Groups', route: '/a/admin/groups', subItems: null, expanded: false });
-        adminItems.push({ name: 'Responsibilities', route: '/a/admin/responsibilities', subItems: null, expanded: false });
-        adminItems.push({ name: 'Artifacts', route: '/a/admin/artifacts', subItems: null, expanded: false });
-        adminItems.push({ name: 'Templates', route: '/a/admin/templates', subItems: null, expanded: false });
-        adminItems.push({ name: 'Models', route: '/a/admin/taxonomies', subItems: null, expanded: false });
-        this.expandRoute();
+        let admin = this.addNavItem('Administration', 'book', null);
+        this.addSubItem(admin, 'Settings', null, '/a/admin/settings');
+        this.addSubItem(admin, 'Reference Types', null, '/a/admin/domain');
+        this.addSubItem(admin, 'Workflow', null, '/a/admin/workflow');
+        this.addSubItem(admin, 'Templates', null, '/a/admin/templates');
+
+        let metaModel = this.addSubItem(admin, 'MetaModel', ' ', null);
+        this.addSubItem(metaModel, 'Artifacts', null, '/a/admin/artifacts');
+        this.addSubItem(metaModel, 'Models', null, '/a/admin/taxonomies');
+
+        let security = this.addSubItem(admin, 'Security', ' ', null);
+        this.addSubItem(security, 'Groups', null, '/a/admin/groups');
+        this.addSubItem(security, 'Responsibilities', null, '/a/admin/responsibilities');
 
         this.sub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.currentRoute = e.url;
-                this.expandRoute();
+                this.currentRoute = e.url; 
+                let i = this.activateRoute(this.currentRoute);
+                //console.log(i);
             }
         });
     }
@@ -91,71 +67,61 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.sub.unsubscribe();
     }
 
-    toggleSubMenu(item: NavBarItem | NavBarSubItem) {
-        var i = this.findCurrentItem();
-        //disallow toggle if current route is in a sub menu
-        if (i) {
-            if (i == item)
-                return false;
-            if (item.subItems && item.subItems.length > 0 && item.subItems.indexOf(i) > -1)
-                return false;
+    addNavItem(name: string, icon: string, route: string): NavBarItem {
+        let i = new NavBarItem();
+        i.name = name;
+        i.icon = icon;
+        i.route = route;
+        this.items.push(i);
+        return i;
+    }
+
+    addSubItem(item: NavBarItem, name: string, icon: string, route: string): NavBarItem {
+        let i = new NavBarItem();
+        if (!item.subItems) {
+            item.subItems = new Array<NavBarItem>();
         }
-        item.expanded = !item.expanded;
-        return false;
+        i.name = name;
+        i.icon = icon;
+        i.route = route;
+        item.subItems.push(i);
+        return i;
+    }
+  
+
+    findNavItem(route: string, itms: NavBarItem[] = null): NavBarItem {
+        if (!itms)
+            itms = this.items;
+        for (var i = 0; i < itms.length; i++) {
+            let r = null;
+            var item = itms[i];
+            if (item.route == route) {
+                return item;
+            }
+            if (item.subItems && item.subItems.length > 0)
+                r = this.findNavItem(route, item.subItems);
+            if (r) return r;
+        }
+        return null;
     }
 
-    expandRoute() {
-        this.navItems.forEach(i => {
-            i.expanded = false;
-            if (this.currentRoute == i.route) {
-                i.expanded = true;
+    activateRoute(route: string, itms: NavBarItem[] = null): NavBarItem {
+        let r = null;
+        if (!itms)
+            itms = this.items;
+        for (var i = 0; i < itms.length; i++) {
+            var item = itms[i];
+            item.expanded = false;
+            item.active = false;
+            if (item.route == route) r = item;
+            if (item.subItems && item.subItems.length > 0) {
+                let s = this.activateRoute(route, item.subItems);
+                if (s) r = s;
             }
-            if (i.subItems && i.subItems.length) {
-                i.subItems.forEach(j => {
-                    if (this.currentRoute == j.route) {
-                        i.expanded = true;
-                        return;
-                    } 
-                });
-            }
-        });
+        }
+        if (r) {
+            r.active = true;
+        }
+        return r;
     }
-
-    findCurrentItem(): NavBarItem | NavBarSubItem {
-        var ret = null;
-        this.navItems.forEach(i => {
-            if (this.currentRoute == i.route) {
-                ret = i;
-            }
-            if (i.subItems && i.subItems.length) {
-                i.subItems.forEach(j => {
-                    if (this.currentRoute == j.route) {
-                        ret = j;
-                        return;
-                    }
-                });
-            }
-        });
-        return ret;
-    }
-
-    //showAdminLinks() {
-    //    this.showAdminChildLinks = !this.showAdminChildLinks;
-    //}
-}
-
-class NavBarItem {
-    icon: string;
-    name: string;
-    route: string;
-    expanded = false;
-    subItems: NavBarSubItem[];
-}
-
-class NavBarSubItem {
-    name: string;
-    route: string;
-    //TODO: recursive?
-    expanded = false;
-    subItems: NavBarSubItem[];
 }
