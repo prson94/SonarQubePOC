@@ -16,7 +16,10 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
                         <header>Tooltip Templates
                             <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Template'" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
                         </header>
-                        <p-dataTable [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" >                                                        
+                        <div *ngIf="isLoading" style="width:100%; text-align:center;">
+                            <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                        </div>
+                        <p-dataTable *ngIf="!isLoading" [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTemplate" (onRowDblclick)="isEditing=true;" >                                                        
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>
                             <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{width : '100px' }"></p-column>                            
                             <p-column header="Description" sortable="true" filter="true">
@@ -79,7 +82,8 @@ export class AdminTemplatesComponent {
     error: any;
     isDeleting: boolean = false;
     isEditing: boolean = false;  
-    isAdding: boolean = false;  
+    isAdding: boolean = false;
+    isLoading: boolean = false;
     public theDeleteCallback: Function;
 
     constructor(private pageHeader: PageHeader, private templateService: TemplatesService, private headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService) {
@@ -96,10 +100,14 @@ export class AdminTemplatesComponent {
         this.theDeleteCallback = this.deleteTemplate.bind(this);        
     }
     
-    getTemplates() {        
+    getTemplates() {    
+        this.isLoading = true;
         this.templateService
             .getTemplates()
-            .then(templates => this.templates = templates)
+            .then(templates => {
+                this.templates = templates;
+                this.isLoading = false;
+            })
             .catch(error => this.error = error); // TODO: Display error message
     }
 

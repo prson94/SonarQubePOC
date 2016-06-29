@@ -23,7 +23,7 @@
         </delete-form>
     </div>
     <div *ngIf="!isLoading && !isAdding && !isEditing && !isDeleting">
-        <p-dataTable [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+        <p-dataTable [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
             <p-column field="FriendlyName" header="Field" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
             <p-column field="Category" header="Category" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
             <p-column field="IsRequired" header="Required?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }">

@@ -18602,6 +18602,26 @@ order by TextPath
 
         #region Form Get/Post
 
+        public class TaxonomyTypeLevelModel
+        {
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public string Level { get; set; }
+            public string TaxonomyTypeID { get; set; }
+        }
+
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddTaxonomyTypeLevelRaw(TaxonomyTypeLevelModel template)
+        {
+            var form = new FormCollection();
+            form.Add("Name", template.Name);
+            form.Add("Description", template.Description);
+            form.Add("Level", template.Level);
+            form.Add("ID", template.TaxonomyTypeID);
+
+            return AddTaxonomyTypeLevel(form);
+        }
+
         public ActionResult AddTaxonomyTypeLevel(int id)
         {
             var type = Company.GetById<TaxonomyType>(id);
@@ -18656,6 +18676,16 @@ order by TextPath
             }
         }
 
+
+        [Route("TaxonomyType/{taxonomyTypeId:int}/levels/{taxonomyTypeLevelId:int}")]
+        public ActionResult DeleteTaxonomyTypeLevelById(int taxonomyTypeId, int taxonomyTypeLevelId)
+        {
+            var form = new FormCollection();
+            form.Add("Level", taxonomyTypeLevelId.ToString());
+            form.Add("ID", taxonomyTypeId.ToString());
+            return DeleteTaxonomyTypeLevel(form);
+        }
+
         public ActionResult DeleteTaxonomyTypeLevel(int id, int level)
         {
             var a = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level).SingleOrDefault();
@@ -18698,6 +18728,18 @@ order by TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditTaxonomyTypeLevelRaw(TaxonomyTypeLevelModel template)
+        {
+            var form = new FormCollection();
+            form.Add("Name", template.Name);
+            form.Add("Description", template.Description);
+            form.Add("Level", template.Level);
+            form.Add("ID", template.TaxonomyTypeID);
+
+            return EditTaxonomyTypeLevel(form);
         }
 
         public ActionResult EditTaxonomyTypeLevel(int id, int level)
@@ -18818,7 +18860,6 @@ order by TextPath
         [HttpPost, ValidateInput(false)]
         public JsonResult AddTooltipTemplateRaw(TemplateModel template)
         {
-
             var form = new FormCollection();            
             form.Add("Name", template.Name);
             form.Add("Description", template.Description);

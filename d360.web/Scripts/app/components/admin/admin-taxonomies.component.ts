@@ -21,7 +21,7 @@ import {DeleteForm} from '../forms/delete.form';
                             <header *ngIf="!showEditor">Models
                                 <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Model'" (addClick)="add()"></d3s-tile-actions>                            
                             </header>
-                            <p-dataTable *ngIf="!showEditor && !showDelete" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTaxonomy"  >                                                        
+                            <p-dataTable *ngIf="!showEditor && !showDelete" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTaxonomy"  (onRowDblclick)="showEditor=true;" >                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="true"></p-column>                            
