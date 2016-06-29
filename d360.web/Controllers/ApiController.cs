@@ -3608,6 +3608,12 @@ where    A.PolicyTypeID = @id", columns, joins);
             return list.AsQueryable();
         }
 
+        [Route("{type}/{id:int}/style")]
+        public ObjectStyle GetObjectStyle(SystemObjects type, int id)
+        {
+            return Company.GetObjectStyle(type, id);
+        }
+
         [Route("{type}/{id:int}/detail")]
         public DetailReadOnlyModel GetObjectDetailFields(SystemObjects type, int id)
         {
@@ -5671,6 +5677,13 @@ where    A.PolicyTypeID = @id", columns, joins);
         public IQueryable<TaxonomyTypeLevel> GetTaxonomyTypeLevels(int id)
         {
             return Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id).OrderBy(i => i.Level);
+        }
+
+
+        [Route("TaxonomyClassifications")]
+        public IQueryable<TaxonomyTypeClass> GetTaxonomyClassifications()
+        {
+            return Company.Table<TaxonomyTypeClass>().OrderBy(i => i.Name);            
         }
 
         [Route("catalogs/{typeID:int}")]

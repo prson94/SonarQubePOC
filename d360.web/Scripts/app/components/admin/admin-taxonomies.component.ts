@@ -7,37 +7,47 @@ import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { FieldDefinition } from '../../models/fields.model';
 import {AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
+import {AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
+import {DeleteForm} from '../forms/delete.form';
 
 
 @Component({
     selector: 'd3s-admin-models-component',    
-    directives: [DataTable, Column, TileActionsComponent, AdminTaxonomyDetailComponent],
+    directives: [DataTable, Column, TileActionsComponent, AdminTaxonomyDetailComponent, AdminTaxonomyEditorComponent, DeleteForm],
     providers: [TaxonomiesService, FieldsService],
     template:   `<div class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
-                            <header>Models
-                                <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Model'" (addClick)="addTaxonomy()"></d3s-tile-actions>                            
+                            <header *ngIf="!showEditor">Models
+                                <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Model'" (addClick)="add()"></d3s-tile-actions>                            
                             </header>
-                            <p-dataTable [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTaxonomy"  >                                                        
+                            <p-dataTable *ngIf="!showEditor && !showDelete" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTaxonomy"  >                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column [style]="{width:'40px'}">
                                     <template let-template="rowData">
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                                        
+                                            <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
                                 </p-column>                            
                                 <p-column  [style]="{width:'40px'}">
                                     <template let-template="rowData">
                                         <div class="RowTools">                                
-                                            <a style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                                    
+                                            <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
                                     </template>
                                 </p-column>                            
                             </p-dataTable>
+                            <d3s-admin-model-editor *ngIf="showEditor" [taxonomy]="selectedTaxonomy" (saveClick)="saveModel($event)" (closeClick)="closeEditor()"></d3s-admin-model-editor>
+                            <delete-form *ngIf="showDelete"
+                                        [callback]="theDeleteCallback"
+                                        [itemId]="selectedTaxonomy?.ID"
+                                         [method]="'callback'"
+                                         [prompt]="'Are you sure you want to delete the model [' + [selectedTaxonomy?.Name] + ']?'"                                         
+                                         (onCancel)="showDelete=false;"
+                                ></delete-form>
                         </div>
                     </div>
                     <div class="col l8 s12">                                            
@@ -51,6 +61,9 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent {
     taxonomies: Taxonomy[] = [];    
     error: any;
     selectedTaxonomy: Taxonomy = null;
+    showEditor: boolean = false;
+    showDelete: boolean = false;
+    theDeleteCallback: Function;
     
 
     constructor(private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, private headerBreadcrumbService: HeaderBreadcrumbService) {
@@ -59,6 +72,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent {
 
     ngOnInit() {
         this.getTaxonomies();        
+        this.theDeleteCallback = this.deleteTaxonomy.bind(this);        
     }
 
     getTaxonomies() {        
@@ -69,9 +83,55 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent {
     }
 
     
-    addTaxonomy() {
-        //show new taxonomy ui 
+    add() {
+        this.selectedTaxonomy = null;
+        this.showEditor = true;                
     }
 
-    
+    closeEditor() {
+        this.showEditor = false;
+        if (this.selectedTaxonomy == null && this.taxonomies.length > 0) this.selectedTaxonomy = this.taxonomies[0];
+    }
+
+    saveModel(event) {
+        this.taxonomiesService
+             .saveTaxonomy(event.taxonomy)
+            .then(response => {                
+                this.showEditor = false;
+                let actionName = "Created";
+                if (event.action == "new") {
+                    event.taxonomy.ID = Number(response.id);
+                    event.taxonomy.Class = undefined;
+                    this.taxonomies[this.taxonomies.length] = event.taxonomy;                     
+                }
+                else {
+                    var index = this.findTaxonomyIndex(event.taxonomy.ID);
+                    actionName = "Edited";
+                    if (index >= 0)
+                        this.taxonomies[index] = event.taxonomy;
+                }
+                this.messagesService.showInfoMessage("Success", `${actionName} model [${event.taxonomy.Name}] Successfully`);
+                this.selectedTaxonomy = event.taxonomy;                
+            })
+             .catch(error => this.error = error);        
+    }
+
+    deleteTaxonomy(id : number) {
+        this.taxonomiesService.deleteTaxonomy(id);
+        let index = this.findTaxonomyIndex(id);
+        let name = this.taxonomies[index].Name;
+
+        this.taxonomies.splice(index, 1);    
+        this.messagesService.showInfoMessage("Success", `Deleted model [${name}]`);   
+        this.showDelete = false;
+        this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
+    }
+
+    findTaxonomyIndex(id: number) {
+        var index: number = -1;
+        for (var taxonomy of this.taxonomies) {
+            index++;
+            if (taxonomy.ID == id) return index;
+        }
+    }
 }

@@ -18033,6 +18033,17 @@ order by TextPath
 
         #region TaxonomyType
 
+        public class TaxonomyTypeModel
+        {
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public string MaximumDepth { get; set; }
+            public string Class { get; set; }
+            public string IconBackColor { get; set; }
+            public string IconForeColor { get; set; }
+            public string ID { get; set; }
+        }
+
         #region Field Generation
 
         public JsonResult TaxonomyType_AddFields()
@@ -18095,6 +18106,21 @@ order by TextPath
 
         #region Form Get/Post
 
+
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddTaxonomyTypeRaw(TaxonomyTypeModel taxonomyType)
+        {
+            var form = new FormCollection();
+            form.Add("Name", taxonomyType.Name);
+            form.Add("Description", taxonomyType.Description);
+            form.Add("Class", taxonomyType.Class);
+            form.Add("MaximumDepth", taxonomyType.MaximumDepth);
+            form.Add("IconBackColor", taxonomyType.IconBackColor);
+            form.Add("IconForeColor", taxonomyType.IconForeColor);            
+
+            return AddTaxonomyType(form);            
+        }
+
         [Route("catalogs/add")]
         public ActionResult AddTaxonomyType()
         {
@@ -18153,6 +18179,13 @@ order by TextPath
             }
         }
 
+        [Route("catalogs/{taxonomyTypeId:int}")]
+        public ActionResult DeleteTaxonomyById(int taxonomyTypeId)
+        {
+            var form = new FormCollection();
+            form.Add("ID", taxonomyTypeId.ToString());
+            return DeleteTaxonomyType(form);
+        }
 
         [Route("catalogs/{id:int}/delete")]
         public ActionResult DeleteTaxonomyType(int id)
@@ -18203,6 +18236,21 @@ order by TextPath
             }
         }
 
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditTaxonomyTypeRaw(TaxonomyTypeModel taxonomyType)
+        {
+            var form = new FormCollection();
+            form.Add("Name", taxonomyType.Name);
+            form.Add("Description", taxonomyType.Description);
+            form.Add("Class", taxonomyType.Class);
+            form.Add("MaximumDepth", taxonomyType.MaximumDepth);
+            form.Add("IconBackColor", taxonomyType.IconBackColor);
+            form.Add("IconForeColor", taxonomyType.IconForeColor);
+            form.Add("ID", taxonomyType.ID);
+
+            return EditTaxonomyType(form);
+        }
 
         [Route("catalogs/{id:int}/edit")]
         public ActionResult EditTaxonomyType(int id)

@@ -14,7 +14,7 @@ import { TemplatesService } from './templates.service';
 import { WorkflowService } from './workflow.service';
 import { TypeaheadSearchService } from './typeahead-search.service';
 import { TaxonomiesService } from './taxonomies.service';
-
+import { ObjectStyleService } from './object-style.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -31,5 +31,5 @@ export * from './settings.service';
 export * from './templates.service';
 export * from './workflow.service';
 export * from './typeahead-search.service';
-export * from './taxonomies.service'; 
-
+export * from './taxonomies.service';
+export * from './object-style.service';

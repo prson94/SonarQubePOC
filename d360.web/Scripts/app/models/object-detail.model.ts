@@ -32,3 +32,8 @@ export class DetailField {
     TooltipUrl: string;
     Value: string;
 }
+
+export class ObjectStyle {
+    IconBackColor: string;
+    IconForeColor: string;
+}

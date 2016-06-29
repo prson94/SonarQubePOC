@@ -51,7 +51,7 @@ export class TemplatesService extends BaseService {
     }
 
 
-    postTemplate(template: Template) {
+    postTemplate(template: Template)  {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
