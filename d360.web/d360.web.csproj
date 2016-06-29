@@ -1384,8 +1384,10 @@
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\lookup-items.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
@@ -1403,7 +1405,9 @@
     <TypeScriptCompile Include="Scripts\app\models\fields.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\governance.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\grid-definition.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\jsonresult.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\lookup.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\taxonomy.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-detail.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
@@ -1419,9 +1423,11 @@
     <TypeScriptCompile Include="Scripts\app\services\domain.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\governance.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\lookup.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\messages.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-style.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\taxonomies.service.ts" />

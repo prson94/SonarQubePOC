@@ -17,7 +17,6 @@ import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.til
                     <div class="tile tile-detail">                                              
                         <d3s-field-definition-tile [objectType]="'TaxonomyType'" [objectID]="taxonomy?.ID" ></d3s-field-definition-tile>
                     </div>
-
                     <div class="tile tile-detail">
                         <d3s-model-level-tile [(taxonomy)]="taxonomy"></d3s-model-level-tile>
                     </div>                    
