@@ -49,6 +49,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         let metaModel = this.addSubItem(admin, 'MetaModel', ' ', null);
         this.addSubItem(metaModel, 'Artifacts', null, '/a/admin/artifacts');
         this.addSubItem(metaModel, 'Models', null, '/a/admin/taxonomies');
+        this.addSubItem(metaModel, 'Lookups', null, '/a/admin/lookups');
 
         let security = this.addSubItem(admin, 'Security', ' ', null);
         this.addSubItem(security, 'Groups', null, '/a/admin/groups');

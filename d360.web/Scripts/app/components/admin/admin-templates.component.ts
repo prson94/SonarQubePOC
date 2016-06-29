@@ -6,6 +6,7 @@ import {AdminTemplateEditorComponent} from './admin-template-editor';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader  } from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
+import { AdminBaseComponent } from './admin-base.component'
 
 @Component({
     selector: 'd3s-admin-templates',
@@ -76,23 +77,21 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
     directives: [DataTable, Column, DeleteForm, Editor, InputText, Dropdown, AdminTemplateEditorComponent, TileActionsComponent]
 })
 
-export class AdminTemplatesComponent {    
+export class AdminTemplatesComponent extends AdminBaseComponent {    
     templates: Template[];
     selectedTemplate: Template; 
     error: any;
     isDeleting: boolean = false;
     isEditing: boolean = false;  
     isAdding: boolean = false;
-    isLoading: boolean = false;
+    
     public theDeleteCallback: Function;
 
-    constructor(private pageHeader: PageHeader, private templateService: TemplatesService, private headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService) {
-        this.pageHeader = pageHeader;
-        this.pageHeader.title = 'Templates';
-        this.pageHeader.description = 'All email and tooltip templates for notifications.';
-        headerBreadcrumbService.clearBreadcrumbs();
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Templates",""));
+    constructor(pageHeader: PageHeader, private templateService: TemplatesService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService) {        
+        super(headerBreadcrumbService, pageHeader);
+        this.areaDescription = "All email and tooltip templates for notifications.";
+        this.areaName = "Templates";
+        this.setCommonItems();
     }
 
     ngOnInit() {

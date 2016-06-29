@@ -1,11 +1,21 @@
 ﻿import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, PageHeader  } from '../../services/index';
 
 export class AdminBaseComponent {
+    public areaName: string;
+    public areaDescription: string = "base";
+    public area: string = "Administration";
 
-    constructor(private areaName : string, headerBreadcrumbService : HeaderBreadcrumbService) {
-        headerBreadcrumbService.clearBreadcrumbs();
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb(areaName, ""));
+    protected isLoading = false;
+
+    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected pageHeader: PageHeader) {
+        
+    }
+
+    setCommonItems() {
+        this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, ""));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, ""));
+        this.pageHeader.description = this.areaDescription;
     }
 }

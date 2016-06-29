@@ -12,6 +12,7 @@ import { ActionBarItem } from '../../models/action-bar.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { WorkflowService } from '../../services/workflow.service';
+import { AdminBaseComponent} from './admin-base.component';
 
 
 @Component({
@@ -21,8 +22,7 @@ import { WorkflowService } from '../../services/workflow.service';
     templateUrl: 'scripts/app/components/admin/admin-workflow.component.html'
 })
 
-export class AdminWorkflowComponent {
-    isLoading = false;
+export class AdminWorkflowComponent extends AdminBaseComponent {
     messages = new Array<any>();
 
     isEditing = false;
@@ -35,14 +35,12 @@ export class AdminWorkflowComponent {
 
     actions = new Array<ActionBarItem>();
 
-    constructor(private pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService ) {
-        this.pageHeader.title = 'Workflow';
-        this.pageHeader.description = 'Manage all workflow settings for types within your environment.';
-
-        headerBreadcrumbService.clearBreadcrumbs();
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Workflow", ""));
-
+    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService) {
+        super(headerBreadcrumbService, pageHeader);
+        this.areaDescription = 'Manage all workflow settings for types within your environment.';
+        this.areaName = "Workflow";
+        this.setCommonItems();
+        
         this.actions.push({
             icon: 'fa-plus',
             tooltip: 'Add a workflow allocation',

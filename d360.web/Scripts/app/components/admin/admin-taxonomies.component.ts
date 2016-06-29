@@ -2,7 +2,7 @@
 import { Component} from '@angular/core';
 import {DataTable, Column} from 'primeng/primeng';
 import {Taxonomy} from '../../models/taxonomy.model';
-import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, PageHeader  } from '../../services/index';
 import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { FieldDefinition } from '../../models/fields.model';
@@ -66,8 +66,11 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent {
     theDeleteCallback: Function;
     
 
-    constructor(private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, private headerBreadcrumbService: HeaderBreadcrumbService) {
-        super("Models", headerBreadcrumbService);
+    constructor(pageHeader: PageHeader, private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService) {        
+        super(headerBreadcrumbService, pageHeader);
+        this.areaDescription = "All top-level information models for the organization are defined here. To add a new top-level model, go under Actions and select Add Type.";
+        this.areaName = "Models";
+        this.setCommonItems();
     }
 
     ngOnInit() {

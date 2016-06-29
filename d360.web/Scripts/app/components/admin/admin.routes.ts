@@ -1,10 +1,10 @@
-﻿import { AdminComponent, AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent, AdminArtifactsComponent, AdminTemplatesComponent, AdminTaxonomiesComponent } from './index'
+﻿import { AdminComponent, AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent, AdminArtifactsComponent, AdminTemplatesComponent, AdminTaxonomiesComponent, AdminLookupsComponent } from './index'
 
 export const AdminRoutes = [
     {
         path: 'a/admin',
         component: AdminComponent,
-       // index: true,
+        // index: true,
         children: [
             { path: 'settings', component: AdminSettingsComponent },
             { path: 'domain', component: AdminDomainComponent },
@@ -13,7 +13,8 @@ export const AdminRoutes = [
             { path: 'responsibilities', component: AdminGovernanceComponent },
             { path: 'artifacts', component: AdminArtifactsComponent },
             { path: 'templates', component: AdminTemplatesComponent },
-            { path: 'taxonomies', component: AdminTaxonomiesComponent }
+            { path: 'taxonomies', component: AdminTaxonomiesComponent },
+            { path: 'lookups', component: AdminLookupsComponent }
         ]
     }
 ];

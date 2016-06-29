@@ -12,6 +12,7 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { FormMode } from '../../models/form.model';
 import { ResponsibilityTypeForm } from '../forms/responsibility-type.form';
 import { DeleteForm } from '../forms/delete.form';
+import { AdminBaseComponent} from './admin-base.component';
 
 @Component({
     selector: 'admin-governance',
@@ -30,23 +31,19 @@ import { DeleteForm } from '../forms/delete.form';
     templateUrl: 'scripts/app/components/admin/admin-governance.component.html',
 })
 
-export class AdminGovernanceComponent {
-    private isLoading = false; 
-
+export class AdminGovernanceComponent extends AdminBaseComponent {    
     private formMode = FormMode.Default;
     private FormMode = FormMode;
 
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
-    constructor(private responsibilityTypeService: ResponsibilityTypeService, private pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService) {
-        this.pageHeader.title = 'Responsibility Types';
-        this.pageHeader.description = 'Assign which objects can be owned, and whether groups, users or both may own them. You may also define application and licensing source types.';
-
-        headerBreadcrumbService.clearBreadcrumbs();
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Responsibility Types", ""));
-
+    constructor(private responsibilityTypeService: ResponsibilityTypeService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService) {
+        super(headerBreadcrumbService, pageHeader);
+        this.areaDescription = 'Assign which objects can be owned, and whether groups, users or both may own them. You may also define application and licensing source types.';
+        this.areaName = "Responsibility Types";
+        this.setCommonItems();
+        
         this.load();
     }
 

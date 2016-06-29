@@ -11,6 +11,7 @@ import { ArtifactTypeForm } from '../forms/artifact-type.form';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { DeleteForm } from '../forms/delete.form';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
+import { AdminBaseComponent } from './admin-base.component'
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -30,9 +31,7 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
     templateUrl: 'scripts/app/components/admin/admin-artifacts.component.html',
 })
 
-export class AdminArtifactsComponent { 
-
-    isLoading = false;
+export class AdminArtifactsComponent extends AdminBaseComponent { 
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     selectedRow: TreeNode;
@@ -42,13 +41,11 @@ export class AdminArtifactsComponent {
     isDeleting = false;
     ArtifactTypes: TreeNode[];
 
-    constructor(private pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService) {
-        this.pageHeader.title = 'Artifact Types';
-        this.pageHeader.description = 'Here you will find all artifact types and custom fields associated with them.';
-
-        headerBreadcrumbService.clearBreadcrumbs();
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Artifacts", ""));
+    constructor( pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService) {        
+        super(headerBreadcrumbService, pageHeader);
+        this.areaDescription = "Here you will find all artifact types and custom fields associated with them.";
+        this.areaName = "Artifacts";
+        this.setCommonItems();
 
         this.load();
     }

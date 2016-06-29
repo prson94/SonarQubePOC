@@ -9,6 +9,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { DomainType, IDomainService } from '../../models/domain.model';
 import { DomainService } from '../../services/domain.service';
 import { DataTable, Column } from 'primeng/primeng';
+import { AdminBaseComponent} from './admin-base.component';
 
 @Component({
     selector: 'admin-domain',
@@ -17,20 +18,17 @@ import { DataTable, Column } from 'primeng/primeng';
     templateUrl: 'scripts/app/components/admin/admin-domain.component.html',
 })
 
-export class AdminDomainComponent {
+export class AdminDomainComponent extends AdminBaseComponent {
     domainTypes = new Array<DomainType>(); 
     objectType = 'DomainType';
     selectedRow: DomainType;
+    
 
-    isLoading = false;
-
-    constructor(private domainService: DomainService, private pageHeader: PageHeader, private headerBreadcrumbService : HeaderBreadcrumbService) {
-        this.pageHeader.title = 'Reference Types';
-        this.pageHeader.description = 'All type of reference data lists for the organization are defined here. To add a new type of list, go under Actions and select Add type.';
-
-        headerBreadcrumbService.clearBreadcrumbs();
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Reference Types", ""));
+    constructor(private domainService: DomainService, pageHeader: PageHeader, headerBreadcrumbService : HeaderBreadcrumbService) {        
+        super(headerBreadcrumbService, pageHeader);
+        this.areaDescription = "All type of reference data lists for the organization are defined here. To add a new type of list, go under Actions and select Add type.";
+        this.areaName = "Reference Types";
+        this.setCommonItems();
 
         this.load();
     }
