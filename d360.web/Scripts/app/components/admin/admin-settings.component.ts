@@ -5,6 +5,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../models/settings.model';
 import { CompanySettingsService } from '../../services/settings.service';
+import {AdminBaseComponent} from './admin-base.component';
 
 @Component({
     selector: 'admin-settings',
@@ -13,22 +14,18 @@ import { CompanySettingsService } from '../../services/settings.service';
     styleUrls: ['scripts/app/components/admin/admin-settings.component.css']
 })
 
-export class AdminSettingsComponent {
-    isLoading = false;
-
+export class AdminSettingsComponent extends AdminBaseComponent {
+    
     companySettings: CompanySettings = new CompanySettings();
     searchTypes: SearchType[] = SettingsHelper.getSearchTypesList();
     companyLogo: CompanyImage = new CompanyImage();
     companyIcon: CompanyImage = new CompanyImage();
 
-    constructor(private pageHeader: PageHeader, private headerBreadcrumbService: HeaderBreadcrumbService, private companySettingsService: CompanySettingsService) {
-
-        this.pageHeader.title = 'Settings';
-        this.pageHeader.description = 'Manage system-wide settings for your environment.';
-
-        headerBreadcrumbService.clearBreadcrumbs();
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Administration", ""));
-        headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Settings", ""));
+    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private companySettingsService: CompanySettingsService) {
+        super(headerBreadcrumbService, pageHeader);
+        this.areaDescription = "Manage system-wide settings for your environment.";
+        this.areaName = "Settings";
+        this.setCommonItems();
 
         this.load();
     }
