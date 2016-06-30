@@ -11,12 +11,12 @@
             <div class="col s8">
                 <div class="row">
                     <div class="FieldName">Name</div>
-                    <input pInputText ngControl="Name" name="Name" #name="ngForm" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.ArtifactType.Name" required />
+                    <input pInputText name="name" #name="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.ArtifactType.Name" required />
                     <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                 </div>
                 <div class="row">
                     <div class="FieldName">Description</div>
-                    <p-editor  [(ngModel)]="model.ArtifactType.Description" [style]="{'height':'150px'}"></p-editor>
+                    <p-editor name="Description" [(ngModel)]="model.ArtifactType.Description" [style]="{'height':'150px'}"></p-editor>
                 </div>
             </div>
             <div class="col s4">
@@ -34,7 +34,7 @@
                         <tbody>
                             <tr>
                                 <td>
-                                    <input pInputText ngControl="IconBackColor" style="height:25px;width:100%;display:block;" type="text" name="IconBackColor" [(ngModel)]="model.IconBackColor" />
+                                    <input pInputText style="height:25px;width:100%;display:block;" type="text" name="IconBackColor" [(ngModel)]="model.IconBackColor" />
                                 </td>
                                 <td>
                                     <span [style.background-color]="model.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
@@ -49,7 +49,7 @@
                         <tbody>
                             <tr>
                                 <td>
-                                    <input pInputText ngControl="IconForeColor" style="height:25px;width:100%;display:block;" type="text" name="IconForeColor" [(ngModel)]="model.IconForeColor" />
+                                    <input pInputText style="height:25px;width:100%;display:block;" type="text" name="IconForeColor" [(ngModel)]="model.IconForeColor" />
                                 </td>
                                 <td>
                                     <span [style.background-color]="model.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>

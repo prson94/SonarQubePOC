@@ -1,4 +1,34 @@
-﻿<div>
-    groups-template
-
+﻿<div class="row">
+    <div class="col l3 m4 s12">
+        <div class="root-tile">
+            <header><d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
+            <div id="List">
+                <p-dataTable [value]="groupItems" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" [style]="{'width':'100%'}">
+                    <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '75%' }"></p-column>
+                    <p-column>
+                        <template let-col let-item="rowData">
+                            <div class="RowTools">
+                                <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                                <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </template>
+                    </p-column>
+                </p-dataTable>
+            </div>
+        </div>
+    </div>
+    <div class="col l9 m8 s12" [ngSwitch]="formMode">
+        <div *ngSwitchDefault class="tile tile-detail">
+            <d3s-group-members-tile [id]="selectedRow?.ID"></d3s-group-members-tile>
+        </div>
+        <div *ngSwitchCase="FormMode.Adding">
+            adding
+        </div>
+        <div *ngSwitchCase="FormMode.Editing">
+            editing {{selectedRow.ID}}
+        </div>
+        <div *ngSwitchCase="FormMode.Deleting">
+            deleting {{selectedRow.ID}}
+        </div>
+    </div>
 </div>

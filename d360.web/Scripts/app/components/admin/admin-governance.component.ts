@@ -65,8 +65,9 @@ export class AdminGovernanceComponent extends AdminBaseComponent {
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
         //console.log(this.selectedRow);
         //console.log(this.responsibilityTypeItems);
-    }
 
+    }
+     
     delete(id: number): void {
         this.formMode = FormMode.Deleting;
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);

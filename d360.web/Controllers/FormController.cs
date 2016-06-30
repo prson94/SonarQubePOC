@@ -9152,6 +9152,50 @@ order by  D.TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+    
+        [HttpGet, ActionName("Group")]
+        public JsonNetResult GetGroup(int id)
+        {
+            var group = new Group();
+            var resourceList = new List<SelectListItem>();
+
+            if (id == 0)
+            {
+                resourceList = GetCompanyResources()
+                    .OrderBy(i => i.LastName)
+                    .ThenBy(i => i.FirstName)
+                    .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName })
+                    .ToList()
+                    .Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() })
+                    .ToList();
+            }
+            else
+            {
+                group = Company.GetById<Group>(id);
+                var currentUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
+                resourceList = GetCompanyResources()
+                    .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName, MembershipStatus = currentUsers.Any(o => o == i.ResourceID) ? "Current Member" : "Not Yet a Member" })
+                    .OrderBy(i => i.MembershipStatus)
+                    .ThenBy(i => i.LastName)
+                    .ThenBy(i => i.FirstName)
+                    .ToList()
+                    .Select(i => new SelectListItem { Group = new SelectListGroup { Name = i.MembershipStatus }, Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() })
+                    .ToList();
+            }
+
+            resourceList.Insert(0, new SelectListItem { Text = "None", Value = "", Group = new SelectListGroup { Name = "" } });
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    group,
+                    resourceList,
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
 
         #endregion
 

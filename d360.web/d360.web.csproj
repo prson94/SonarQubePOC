@@ -905,6 +905,9 @@
     <Content Include="node_modules\primeui\themes\omega\theme.css" />
     <Content Include="Scripts\app\components\forms\artifact-type.form.html" />
     <Content Include="Scripts\app\components\forms\field-type.form.html" />
+    <Content Include="Scripts\app\components\forms\group.form.html" />
+    <Content Include="Scripts\app\components\forms\responsibility-type.form.html" />
+    <Content Include="Scripts\app\components\tiles\group-members.tile.html" />
     <Content Include="Scripts\parts\NewLineageDiagram.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="Scripts\powerbi.min.js" />
@@ -1373,6 +1376,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\field-type.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\forms\group.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-typeahead-search.component.ts" />
@@ -1389,6 +1394,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\lookup-items.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
@@ -1408,6 +1414,8 @@
     <TypeScriptCompile Include="Scripts\app\models\grid-definition.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\jsonresult.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lookup.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\group.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\responsibility-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\taxonomy.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-detail.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
@@ -1424,6 +1432,8 @@
     <TypeScriptCompile Include="Scripts\app\services\fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\governance.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\group.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\responsibility-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\index.ts" />
