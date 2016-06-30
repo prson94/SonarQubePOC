@@ -6,11 +6,12 @@ import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, UriBasedService} from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import {DeleteForm} from '../forms/delete.form';
+import { DynamicEditorComponent } from './dynamic-editor.component';
 
 
 @Component({
     selector: 'd3s-dynamic-grid',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm],
+    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent],
     providers: [GridDefinitionService, UriBasedService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{title}}
@@ -19,23 +20,24 @@ import {DeleteForm} from '../forms/delete.form';
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>           
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="editItemClick.emit(selectedItem)" [(selection)]="selected" >                                                                       
+               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selectedItem)" [(selection)]="selected" >                                                                       
                     <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="true" [sortable]="true"></p-column>
                     <p-column [style]="{width:'40px'}">
-                            <template let-template="rowData">
+                            <template let-item="rowData">
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </template>
                     </p-column>                            
                     <p-column  [style]="{width:'40px'}">
-                            <template let-template="rowData">
+                            <template let-item="rowData">
                                 <div class="RowTools">                                
-                                    <a style="cursor:pointer;" (click)="showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                             </template>
                     </p-column>                            
                 </p-dataTable>   
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType" [title]="'Lookup Item'" [selection]="selected" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
@@ -102,12 +104,25 @@ export class DynamicGridComponent implements OnChanges {
             });
     }  
 
-    findItemIndex(id: number) {
+    private findItemIndex(id: number) {
         var index: number = -1;
         for (var item of this.items) {
             index++;
             if (item.ID == id) return index;
         }
+    }
+
+    closeEditor() {
+        this.showEditor = false;
+    }
+
+    add() {
+        this.selected = null;
+        this.showEditor = true;
+    }
+
+    saveItem(event) {
+
     }
 }
 

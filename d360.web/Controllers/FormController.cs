@@ -304,6 +304,32 @@ namespace d360.web.Controllers
 
         #endregion
 
+        #region Dynamic Editor Field Type Information For Angular2
+
+        [HttpGet, Route("dynamiceditor/edit/{objectType}/{ID:int}")]
+        public JsonResult DynamicEditorEditFields(string objectType, int ID)
+        {
+            switch ((objectType ?? "").ToUpper())
+            {
+                case "LOOKUPTYPE":
+                    return Lookup_EditFields(ID);
+            }
+            throw new Exception("Invalid or non implemented editor type");
+        }
+
+        [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID:int}")]
+        public JsonResult DynamicEditorAddFields(string objectType, int objectID)
+        {
+            switch ((objectType ?? "").ToUpper())
+            {
+                case "LOOKUPTYPE":
+                    return Lookup_AddFields(objectID);
+            }
+            throw new Exception("Invalid or non implemented editor type");
+        }
+
+        #endregion
+
         #region Artifact
 
         #region Field Generation

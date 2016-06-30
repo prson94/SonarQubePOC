@@ -1390,6 +1390,8 @@
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
@@ -1408,6 +1410,7 @@
     <TypeScriptCompile Include="Scripts\app\models\claims.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\company-settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\domain.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\editor-field.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fields.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\grid-definition.model.ts" />
@@ -1428,6 +1431,7 @@
     <TypeScriptCompile Include="Scripts\app\services\base.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\claims.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\domain.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\editor-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\group.service.ts" />
