@@ -9153,6 +9153,54 @@ order by  D.TextPath
             }
         }
     
+        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group")]
+        public JsonResult PutGroup(Group model)
+        {
+            try
+            {
+               // if (!form.HasKeys()) throw new NoFormDataException("group");
+
+                //var id = parseIntField(form, "ID");
+                var existing = Company.GetById<Group>(model.ID);
+                if (existing == null) throw new NotFoundException("group");
+
+                //var primaryOwnerResourceID = parseIntField(form, "PrimaryOwnerResourceID");
+                //var secondaryOwnerResourceID = parseNullableIntField(form, "SecondaryOwnerResourceID");
+
+                existing.Name = model.Name;  //parseTextField(form, "Name", null, true);
+                existing.Description = model.Description; // parseTextField(form, "Description");
+                existing.PrimaryOwnerResourceID = model.PrimaryOwnerResourceID; 
+                existing.SecondaryOwnerResourceID = model.SecondaryOwnerResourceID;
+
+                Company.Update(existing);
+
+                var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == model.ID).Select(i => i.ResourceID).ToList();
+
+                if (!currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
+                {
+                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value, IsOwner = true });
+                }
+                if (model.SecondaryOwnerResourceID.HasValue)
+                {
+                    if (!currentGroupUsers.Any(o => o == model.SecondaryOwnerResourceID))
+                    {
+                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
+                    }
+                }
+
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [HttpGet, ActionName("Group")]
         public JsonNetResult GetGroup(int id)
         {

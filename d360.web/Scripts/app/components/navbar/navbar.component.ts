@@ -41,19 +41,19 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.addNavItem('Community', 'group', null);
 
         let admin = this.addNavItem('Administration', 'book', null);
-        this.addSubItem(admin, 'Settings', null, '/a/admin/settings');
-        this.addSubItem(admin, 'Reference Types', null, '/a/admin/domain');
-        this.addSubItem(admin, 'Workflow', null, '/a/admin/workflow');
-        this.addSubItem(admin, 'Templates', null, '/a/admin/templates');
+        this.addSubItem(admin, 'Settings', null, 'a/admin/settings');
+        this.addSubItem(admin, 'Reference Types', null, 'a/admin/domain');
+        this.addSubItem(admin, 'Workflow', null, 'a/admin/workflow');
+        this.addSubItem(admin, 'Templates', null, 'a/admin/templates');
 
         let metaModel = this.addSubItem(admin, 'MetaModel', ' ', null);
-        this.addSubItem(metaModel, 'Artifacts', null, '/a/admin/artifacts');
-        this.addSubItem(metaModel, 'Models', null, '/a/admin/taxonomies');
-        this.addSubItem(metaModel, 'Lookups', null, '/a/admin/lookups');
+        this.addSubItem(metaModel, 'Artifacts', null, 'a/admin/artifacts');
+        this.addSubItem(metaModel, 'Models', null, 'a/admin/taxonomies');
+        this.addSubItem(metaModel, 'Lookups', null, 'a/admin/lookups');
 
         let security = this.addSubItem(admin, 'Security', ' ', null);
-        this.addSubItem(security, 'Groups', null, '/a/admin/groups');
-        this.addSubItem(security, 'Responsibilities', null, '/a/admin/responsibilities');
+        this.addSubItem(security, 'Groups', null, 'a/admin/groups');
+        this.addSubItem(security, 'Responsibilities', null, 'a/admin/responsibilities');
 
         this.sub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {

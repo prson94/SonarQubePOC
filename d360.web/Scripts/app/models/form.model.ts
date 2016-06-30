@@ -1,4 +1,6 @@
-﻿export class BaseEditorModel {
+﻿import { EventEmitter } from '@angular/core';
+
+export class BaseEditorModel {
     FormUri: string;
     FormMethod: string;
     FormName: string;
@@ -107,5 +109,18 @@ export enum FormMode {
     Editing = 2,
     Adding = 3,
     Deleting = 4,
+}
+
+export interface FormEvents {
+    ///when the form action is canceled
+    onCancel: EventEmitter<any>;
+    ///when the form actions completes, regardless of success/fail
+    onComplete: EventEmitter<any>; 
+    ///when the form action completes successfully
+    onSuccess: EventEmitter<any>;
+    ///when the form action fails
+    onError: EventEmitter<any>; 
+    ///when the form has loaded
+    onLoadComplete: EventEmitter<any>;
 }
 

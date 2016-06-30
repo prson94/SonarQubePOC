@@ -10,12 +10,13 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { GroupMembersTile } from '../tiles/group-members.tile';
 import { GroupService } from '../../services/group.service';
 import { GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel } from '../../models/group.model';
+import { GroupForm } from '../forms/group.form';
 import { FormMode } from '../../models/form.model';
 
 
 @Component({
     selector: 'd3s-admin-groups',
-    directives: [DataTable, Column, TileActionsComponent, NgSwitch, NgSwitchCase, NgSwitchDefault, GroupMembersTile ],
+    directives: [DataTable, Column, TileActionsComponent, NgSwitch, NgSwitchCase, NgSwitchDefault, GroupMembersTile, GroupForm ],
     providers: [ GroupService ],
     templateUrl: 'scripts/app/components/admin/admin-groups.component.html' 
 })
@@ -53,17 +54,26 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     }
 
     edit(id: number) {
-        this.formMode = FormMode.Editing;
         this.selectedRow = this.groupItems.find(i => i.ID == id);
+        //console.log(id);
+        //console.log(this.groupItems);
+        //console.log(this.selectedRow);
+        this.formMode = FormMode.Editing;
+
     }
 
     delete(id: number) {
-        this.formMode = FormMode.Deleting;
         this.selectedRow = this.groupItems.find(i => i.ID == id);
+        this.formMode = FormMode.Deleting;
     }
 
     confirmDelete() {
         this.formMode = FormMode.Default;
         this.load();
+    }
+
+    select(e) {
+        this.selectedRow = e.data;
+        //console.log(this.selectedRow);
     }
 }

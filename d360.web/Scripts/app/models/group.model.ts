@@ -40,7 +40,7 @@ export class ResourceGroup {
 
 export class GroupEditorModel {
     group: Group;
-    resourceList: SelectItem[]; 
+    resourceList: SelectItem[];
 }
 
 

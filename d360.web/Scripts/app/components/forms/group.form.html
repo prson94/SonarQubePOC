@@ -1,3 +1,39 @@
-﻿<div>
-
+﻿<div class="left form-header-info">
+    <h4>{{title}}</h4>
 </div>
+<div class="clear"></div>
+<div *ngIf="isLoading" style="text-align:center;">
+    <i class="fa fa-spinner fa-spin fa-2x"></i>
+</div>
+<div *ngIf="!isLoading">
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName" style="display:block;">Name</div>
+            <input pInputText [(ngModel)]="model.group.Name" type="text" style="width:98%"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s6">
+            <div class="FieldName" style="display:block;">Primary Owner</div>
+            <p-dropdown [options]="model.resourceList" [(ngModel)]="model.group.PrimaryOwnerResourceID" [style]="{'width':'98%'}"></p-dropdown>
+        </div>
+        <div class="col s6">
+            <div class="FieldName" style="display:block;">Secondary Owner</div>
+            <p-dropdown [options]="model.resourceList" [(ngModel)]="model.group.SecondaryOwnerResourceID" [style]="{'width':'98%'}"></p-dropdown>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName" style="display:block;">Description</div>
+            <p-editor [(ngModel)]="model.group.Description"></p-editor>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div style="padding-top:10px">
+                <button pButton type="button" label="Save" (click)="save()"></button><button pButton type="button" label="Cancel" (click)="cancel()"></button>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -30,6 +30,12 @@ export class GroupService extends BaseService implements IGroupService {
             .then(response => <GroupEditorModel>response.json())
             .catch(err => this.handleError(err)); 
     }
+
+    putGroup(group: Group): Promise<any> {
+        return this.http.put('form/Group', group)
+            .toPromise()
+            .catch(err => this.handleError(err));
+    }
     
 }
 

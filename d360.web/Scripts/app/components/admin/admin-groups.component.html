@@ -3,7 +3,7 @@
         <div class="root-tile">
             <header><d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
             <div id="List">
-                <p-dataTable [value]="groupItems" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" [style]="{'width':'100%'}">
+                <p-dataTable [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [style]="{'width':'100%'}" (onRowSelect)="select($event)" >
                     <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '75%' }"></p-column>
                     <p-column>
                         <template let-col let-item="rowData">
@@ -21,13 +21,13 @@
         <div *ngSwitchDefault class="tile tile-detail">
             <d3s-group-members-tile [id]="selectedRow?.ID"></d3s-group-members-tile>
         </div>
-        <div *ngSwitchCase="FormMode.Adding">
+        <div *ngSwitchCase="FormMode.Adding" class="tile tile-detail">
             adding
         </div>
-        <div *ngSwitchCase="FormMode.Editing">
-            editing {{selectedRow.ID}}
+        <div *ngSwitchCase="FormMode.Editing" class="tile tile-detail">
+            <d3s-group-form [id]="selectedRow.ID" [title]="'Edit ' + selectedRow.Name" (onCancel)="formMode = FormMode.Default;"></d3s-group-form>
         </div>
-        <div *ngSwitchCase="FormMode.Deleting">
+        <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
             deleting {{selectedRow.ID}}
         </div>
     </div>
