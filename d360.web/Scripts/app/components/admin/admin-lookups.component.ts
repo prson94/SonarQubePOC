@@ -8,11 +8,12 @@ import {DeleteForm} from '../forms/delete.form';
 import {Lookup} from '../../models/lookup.model';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { DynamicGridComponent } from '../shared/dynamic-grid.component';
+import { AdminLookupTypeEditorComponent } from './admin-lookup-type-editor.component';
 
 
 @Component({
     selector: 'd3s-admin-lookups-component',
-    directives: [DataTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, DynamicGridComponent],
+    directives: [DataTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, DynamicGridComponent, AdminLookupTypeEditorComponent ],
     providers: [LookupService],
     template: `<div class="row">
                     <div class="col l4 s12">                    
@@ -20,20 +21,20 @@ import { DynamicGridComponent } from '../shared/dynamic-grid.component';
                             <header *ngIf="!showEditor && !showDelete">Lookup Types
                                 <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Lookup'" (addClick)="add()"></d3s-tile-actions>                            
                             </header>                            
-                            <p-dataTable *ngIf="!showEditor && !showDelete" [value]="lookups" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedLookup"  (onRowDblclick)="showEditor=true;" >                                                        
+                            <p-dataTable *ngIf="!showEditor && !showDelete" [value]="lookups" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedLookup"  (onRowDblclick)="selectedLookup=$event.data;showEditor=true;" >                                                        
                                 <p-column field="ID" header="ID" [sortable]="true" [filter]="true"></p-column>                                                            
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column [style]="{width:'40px'}">
-                                    <template let-template="rowData">
+                                    <template let-lookup="rowData">
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                            <a style="cursor:pointer;" (click)="selectedLookup=lookup;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
                                 </p-column>                            
                                 <p-column  [style]="{width:'40px'}">
-                                    <template let-template="rowData">
+                                    <template let-lookup="rowData">
                                         <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                            <a style="cursor:pointer;" (click)="selectedLookup=lookup;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
                                     </template>
                                 </p-column>                            
@@ -44,7 +45,8 @@ import { DynamicGridComponent } from '../shared/dynamic-grid.component';
                                 [method]="'callback'"
                                 [prompt]="'Are you sure you want to delete the lookup [' + [selectedLookup?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
-                            ></delete-form>                         
+                            ></delete-form>  
+                            <d3s-admin-lookup-type-editor *ngIf="showEditor" [lookup]="selectedLookup" (saveClick)="saveLookup($event)" (closeClick)="closeEditor()"></d3s-admin-lookup-type-editor>                       
                         </div>
                     </div>                    
                     <div class="col l8 s12">
@@ -99,6 +101,8 @@ export class AdminLookupsComponent extends AdminBaseComponent {
     deleteLookup(id: number) {
         this.lookupService.deleteLookup(id);
         this.showDelete = false;
+        this.selectedLookup = this.lookups.length > 0 ? this.lookups[0] : null;
+        this.lookups.splice(this.findLookupIndex(id), 1);
     }
 
     lookupUri() {
@@ -106,5 +110,40 @@ export class AdminLookupsComponent extends AdminBaseComponent {
 
         return `resources/lookups/${this.selectedLookup.ID}/items.json`;
     }    
-    
+
+    add() {
+        this.showEditor = true;
+        this.selectedLookup = null;
+    }
+
+    closeEditor() {
+        this.showEditor = false;
+        if (this.selectedLookup == null) {
+            this.selectedLookup = this.lookups.length > 0 ? this.lookups[0] : null;
+        }
+    }
+
+    saveLookup(event) {
+        this.lookupService.saveLookup(event.lookup)
+            .then(result => {
+                if (event.lookup.ID == undefined) {
+                    event.lookup.ID = Number(result.id);
+                    this.lookups[this.lookups.length] = event.lookup;
+                }
+                else {
+                    this.lookups[this.findLookupIndex(event.lookup.ID)] = event.lookup;
+                }
+                this.selectedLookup = event.lookup;
+                this.showEditor = false;
+            });
+        
+    }
+
+    findLookupIndex(id: number) {
+        var index: number = -1;
+        for (var lookup of this.lookups) {
+            index++;
+            if (lookup.ID == id) return index;
+        }
+    }
 }

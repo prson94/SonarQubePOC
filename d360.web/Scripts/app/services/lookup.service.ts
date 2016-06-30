@@ -4,6 +4,7 @@ import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
 import { Lookup, LookupItem } from '../models/lookup.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class LookupService extends BaseService {
@@ -18,13 +19,45 @@ export class LookupService extends BaseService {
     }
 
     deleteLookup(lookupId: number) {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
 
-    }
+        let url = `form/LookupType/${lookupId}`;
 
-    getLookupItems(lookup: Lookup): Promise<LookupItem[]> {
-        return this.http.get(`resources/lookups/${lookup.ID}/items.json`)
+        return this.http
+            .delete(url, headers)
             .toPromise()
-            .then(response => <LookupItem[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    saveLookup(lookup: Lookup): Promise<JsonResult> {
+        if (lookup.ID == undefined || !lookup.ID) {
+            return this.post(lookup);
+        }
+        return this.put(lookup);    
+    }
+
+    private post(lookup: Lookup): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/json'
+        });
+        return this.http
+            .post("form/AddLookupTypeRaw", JSON.stringify(lookup), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
+    }
+
+    private put(lookup: Lookup): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/json'
+        });
+        let url = `form/EditLookupTypeRaw/${lookup.ID}`;
+        return this.http
+            .put(url, JSON.stringify(lookup), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
+    }
+    
 }

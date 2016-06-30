@@ -10159,6 +10159,21 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
         #region Form Get/Post
 
+        public class LookupTypeModel
+        {
+            public int ID { get; set; }
+            public string Name { get; set; }
+        }
+
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddLookupTypeRaw(LookupTypeModel lookup)
+        {
+            var form = new FormCollection();
+            form.Add("Name", lookup.Name);            
+
+            return AddLookupType(form);
+        }
+
         public ActionResult AddLookupType()
         {
             var model = new EditableForm
@@ -10222,6 +10237,15 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             }
         }
 
+        [HttpDelete]
+        [Route("lookuptype/{lookupTypeId:int}")]
+        public ActionResult DeleteLookupTypeById(int lookupTypeId)
+        {
+            var form = new FormCollection();
+            form.Add("ID", lookupTypeId.ToString());
+            return DeleteLookupType(form);
+        }
+
         [HttpGet]
         public ActionResult DeleteLookupType(int id)
         {
@@ -10265,6 +10289,16 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditLookupTypeRaw(LookupTypeModel lookup)
+        {
+            var form = new FormCollection();
+            form.Add("Name", lookup.Name);
+            form.Add("ID", lookup.ID.ToString());
+
+            return EditLookupType(form);
         }
 
         public ActionResult EditLookupType(int id)

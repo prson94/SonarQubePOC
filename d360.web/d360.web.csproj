@@ -1361,6 +1361,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-lookup-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-lookups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
